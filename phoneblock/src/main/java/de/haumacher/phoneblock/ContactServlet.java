@@ -138,35 +138,44 @@ public class ContactServlet extends HttpServlet {
 		}
 		
 		Document requestDoc = getBuilder().parse(req.getInputStream());
-		List<Element> properties = toList(elements(requestDoc, CARDDAV_ADDRESSBOOK_MULTIGET, DAV_PROP));
-		
-		System.out.println(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
-		dumpHeaders(req);
-		
-		Document responseDoc = getBuilder().newDocument();
-		Element multistatus = appendElement(responseDoc, DAV_MULTISTATUS);
+		if (CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
+			List<Element> properties = toList(elements(requestDoc, CARDDAV_ADDRESSBOOK_MULTIGET, DAV_PROP));
+			
+			System.out.println(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
+			dumpHeaders(req);
+			dumpRequestDoc(requestDoc);
+			
+			Document responseDoc = getBuilder().newDocument();
+			Element multistatus = appendElement(responseDoc, DAV_MULTISTATUS);
 
-		for (Element href : filter(elements(filter(elements(requestDoc), CARDDAV_ADDRESSBOOK_MULTIGET)), DAV_HREF)) {
-			String url = href.getTextContent();
-			
-			Element response = appendElement(multistatus, ContactServlet.DAV_RESPONSE);
-			appendTextElement(response, ContactServlet.DAV_HREF, url);
-			
-			Resource content = resource.get(url);
-			
-			Element propstat = appendElement(response, ContactServlet.DAV_PROPSTAT);
-			if (content != null) {
-				Element prop = appendElement(propstat, ContactServlet.DAV_PROP);
-				for (Element property : properties) {
-					content.fillProperty(prop, property);
+			for (Element href : filter(elements(filter(elements(requestDoc), CARDDAV_ADDRESSBOOK_MULTIGET)), DAV_HREF)) {
+				String url = href.getTextContent();
+				
+				Element response = appendElement(multistatus, ContactServlet.DAV_RESPONSE);
+				appendTextElement(response, ContactServlet.DAV_HREF, url);
+				
+				Resource content = resource.get(url);
+				
+				Element propstat = appendElement(response, ContactServlet.DAV_PROPSTAT);
+				if (content != null) {
+					Element prop = appendElement(propstat, ContactServlet.DAV_PROP);
+					for (Element property : properties) {
+						content.fillProperty(prop, property);
+					}
+					appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
+				} else {
+					appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
 				}
-				appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
-			} else {
-				appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
 			}
+			
+			marshalMultiStatus(resp, responseDoc);
+		} else {
+			dumpMethod(req);
+			dumpHeaders(req);
+			dumpRequestDoc(requestDoc);
+
+			resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 		}
-		
-		marshalMultiStatus(resp, responseDoc);
 	}
 
 	private void handleNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -200,6 +209,13 @@ public class ContactServlet extends HttpServlet {
 		
 		// Not found.
 		return null;
+	}
+
+	private void dumpRequestDoc(Document requestDoc) {
+		System.out.println("<<<");
+		dump(requestDoc);
+		System.out.println();
+		System.out.println("<<<");
 	}
 
 	private void dump(Document doc) {

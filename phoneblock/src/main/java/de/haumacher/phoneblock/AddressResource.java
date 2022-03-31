@@ -37,13 +37,15 @@ public class AddressResource extends Resource {
 	@Override
 	protected int fillProperty(Element propElement, Element propertyElement, QName property) {
 		if (ContactServlet.CARDDAV_ADDRESS_DATA.equals(property)) {
+			String phoneNumber = getDisplayName();
+			
 			Element container = appendElement(propElement, property);
 			appendText(container, 
 				"BEGIN:VCARD\n"
 				+ "VERSION:3.0\n"
-				+ "UID:" + getDisplayName() + "\n"
-				+ "FN:" + getDisplayName() + "\n"
-				+ "TEL;TYPE=WORK:4711\n"
+				+ "UID:" + phoneNumber + "\n"
+				+ "FN:" + phoneNumber + "\n"
+				+ "TEL;TYPE=WORK:" + phoneNumber + "\n"
 				+ "END:VCARD");
 			return HttpServletResponse.SC_OK;
 		}

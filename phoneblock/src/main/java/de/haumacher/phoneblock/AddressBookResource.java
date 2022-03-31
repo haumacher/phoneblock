@@ -37,8 +37,8 @@ public class AddressBookResource extends Resource {
 	@Override
 	public Collection<Resource> list() {
 		return Arrays.asList(
-			new AddressResource(getRootUrl(), getResourcePath() + "A1"),
-			new AddressResource(getRootUrl(), getResourcePath() + "A2"));
+			new AddressResource(getRootUrl(), getResourcePath() + "123456"),
+			new AddressResource(getRootUrl(), getResourcePath() + "789654"));
 	}
 	
 	@Override
