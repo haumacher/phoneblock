@@ -1,0 +1,247 @@
+/*
+ * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
+ */
+package de.haumacher.phoneblock;
+
+import static de.haumacher.phoneblock.DomUtil.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map.Entry;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
+
+import org.apache.http.impl.EnglishReasonPhraseCatalog;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.SAXException;
+
+/**
+ * TODO
+ */
+@WebServlet(urlPatterns = "/contacts/*")
+public class ContactServlet extends HttpServlet {
+
+	private static final int SC_MULTI_STATUS = 207;
+	
+	static final String PRINCIPALS_PATH = "/principals/";
+
+	static final String ADDRESSES_PATH = "/addresses/";
+
+	private static final String DAV = "DAV:";
+	static final QName DAV_MULTISTATUS = qname(DAV, "multistatus");
+	static final QName DAV_RESPONSE = qname(DAV, "response");
+	static final QName DAV_PROPSTAT = qname(DAV, "propstat");
+	static final QName DAV_STATUS = qname(DAV, "status");
+	static final QName DAV_HREF = qname(DAV, "href");
+	static final QName DAV_DISPLAYNAME = qname(DAV, "displayname");
+	static final QName DAV_RESOURCETYPE = qname(DAV, "resourcetype");
+	static final QName DAV_COLLECTION = qname(DAV, "collection");
+	static final QName DAV_GETETAG = qname(DAV, "getetag");
+	static final QName DAV_PROPFIND = qname(DAV, "propfind");
+	static final QName DAV_PROP = qname(DAV, "prop");
+	
+	private static final String CARDDAV = "urn:ietf:params:xml:ns:carddav";
+	static final QName CARDDAV_ADDRESSBOOK = qname(CARDDAV, "addressbook");
+	static final QName CARDDAV_ADDRESS_DATA = qname(CARDDAV, "address-data");
+	static final QName CARDDAV_ADDRESSBOOK_MULTIGET = qname(CARDDAV, "addressbook-multiget");
+	static final QName CARDDAV_ADDRESSBOOK_DESCRIPTION = qname(CARDDAV, "addressbook-description");
+	static final QName CARDDAV_SUPPORTED_ADDRESS_DATA = qname(CARDDAV, "supported-address-data");
+	static final QName CARDDAV_MAX_RESOURCE_SIZE = qname(CARDDAV, "max-resource-size");
+
+	static final QName CURRENT_USER_PRINCIPAL = qname(DAV, "current-user-principal");
+	public static final QName ADDRESSBOOK_HOME_SET = qname(CARDDAV, "addressbook-home-set");
+
+	static final String SERVER_LOC = "https://home.haumacher.de";
+
+	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		try {
+			if ("PROPFIND".equals(req.getMethod())) {
+				doPropfind(req, resp);
+			}
+			else if ("REPORT".equals(req.getMethod())) {
+				doReport(req, resp);
+			}
+			else {
+				dump(req);
+				super.service(req, resp);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+		}
+	}
+
+	private void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException {
+		Resource resource = getResource(req);
+		if (resource == null) {
+			handleNotFound(req, resp);
+			return;
+		}
+
+		Document requestDoc = getBuilder().parse(req.getInputStream());
+		Depth depth = Depth.fromHeader(req.getHeader("depth"));
+		List<Element> properties = toList(elements(requestDoc, DAV_PROPFIND, DAV_PROP));
+
+		System.out.println(req.getMethod() + " " + req.getPathInfo() + " " + depth + ": " + toList(qnames(properties)));
+		dumpHeaders(req);
+
+		Document responseDoc = getBuilder().newDocument();
+		Element multistatus = appendElement(responseDoc, DAV_MULTISTATUS);
+
+		resource.propfind(multistatus, properties);
+		if (depth != Depth.EMPTY) {
+			for (Resource content : resource.list()) {
+				content.propfind(multistatus, properties);
+			}
+		}
+		
+		marshalMultiStatus(resp, responseDoc);
+	}
+
+	private void marshalMultiStatus(HttpServletResponse resp,
+			Document responseDoc) throws IOException {
+		resp.setStatus(SC_MULTI_STATUS);
+		resp.setCharacterEncoding("utf-8");
+		resp.setContentType("application/xml");
+		
+		DOMImplementationLS ls = (DOMImplementationLS) responseDoc.getImplementation().getFeature("LS", "3.0");
+		LSOutput output = ls.createLSOutput();
+		output.setEncoding("utf-8");
+		output.setByteStream(resp.getOutputStream());
+		LSSerializer serializer = ls.createLSSerializer();
+		serializer.write(responseDoc, output);
+		
+		System.out.println(">>>");
+		dump(responseDoc);
+		System.out.println();
+		System.out.println(">>>");
+	}
+
+	private void doReport(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException {
+		Resource resource = getResource(req);
+		if (resource == null) {
+			handleNotFound(req, resp);
+			return;
+		}
+		
+		Document requestDoc = getBuilder().parse(req.getInputStream());
+		List<Element> properties = toList(elements(requestDoc, CARDDAV_ADDRESSBOOK_MULTIGET, DAV_PROP));
+		
+		System.out.println(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
+		dumpHeaders(req);
+		
+		Document responseDoc = getBuilder().newDocument();
+		Element multistatus = appendElement(responseDoc, DAV_MULTISTATUS);
+
+		for (Element href : filter(elements(filter(elements(requestDoc), CARDDAV_ADDRESSBOOK_MULTIGET)), DAV_HREF)) {
+			String url = href.getTextContent();
+			
+			Element response = appendElement(multistatus, ContactServlet.DAV_RESPONSE);
+			appendTextElement(response, ContactServlet.DAV_HREF, url);
+			
+			Resource content = resource.get(url);
+			
+			Element propstat = appendElement(response, ContactServlet.DAV_PROPSTAT);
+			if (content != null) {
+				Element prop = appendElement(propstat, ContactServlet.DAV_PROP);
+				for (Element property : properties) {
+					content.fillProperty(prop, property);
+				}
+				appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
+			} else {
+				appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
+			}
+		}
+		
+		marshalMultiStatus(resp, responseDoc);
+	}
+
+	private void handleNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		dump(req);
+		
+		System.out.println(">>> 404 >>>");
+		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+	}
+
+	private Resource getResource(HttpServletRequest req) {
+		String rootUrl = ContactServlet.SERVER_LOC + req.getContextPath() + req.getServletPath();
+		String resourcePath = req.getPathInfo();
+
+		if ("/".equals(resourcePath)) {
+			return new RootResource(rootUrl, resourcePath);
+		}
+		
+		if (resourcePath.startsWith(PRINCIPALS_PATH)) {
+			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
+			return new PrincipalResource(rootUrl, resourcePath, principal);
+		}
+		
+		if (resourcePath.startsWith(ADDRESSES_PATH)) {
+			int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
+			if (endIdx < 0) {
+				return null;
+			}
+			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
+			return new AddressBookResource(rootUrl, resourcePath, principal);
+		}
+		
+		// Not found.
+		return null;
+	}
+
+	private void dump(Document doc) {
+		DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0");
+		LSOutput debug = ls.createLSOutput();
+		debug.setEncoding("utf-8");
+		debug.setByteStream(System.out);
+		LSSerializer serializer = ls.createLSSerializer();
+		serializer.write(doc, debug);
+	}
+
+	private void dump(HttpServletRequest req) throws IOException {
+		dumpMethod(req);
+		dumpParams(req);
+		dumpHeaders(req);
+		System.out.println("<<<");
+		BufferedReader reader = req.getReader();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			System.out.println(line);
+		}
+		System.out.println("<<<");
+		System.out.println();
+	}
+
+	private void dumpMethod(HttpServletRequest req) {
+		System.out.println(req.getMethod() + " " + req.getPathInfo());
+	}
+
+	private void dumpParams(HttpServletRequest req) {
+		for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+			System.out.println("  P: " + entry.getKey() + ": " + Arrays.asList(entry.getValue()));
+		}
+	}
+
+	private void dumpHeaders(HttpServletRequest req) {
+		for (Enumeration<String> keyIt = req.getHeaderNames(); keyIt.hasMoreElements(); ) {
+			String key = keyIt.nextElement();
+			for (Enumeration<String> valueIt = req.getHeaders(key); valueIt.hasMoreElements(); ) {
+				System.out.println("  H: " + key + ": " + valueIt.nextElement());
+			}
+		}
+	}
+
+}
