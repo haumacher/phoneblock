@@ -1,14 +1,16 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock;
+package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
+
+import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 
 /**
  * TODO
@@ -26,7 +28,7 @@ public class AddressResource extends Resource {
 	
 	@Override
 	protected QName getResourceType() {
-		return ContactServlet.CARDDAV_ADDRESS_DATA;
+		return CardDavSchema.CARDDAV_ADDRESS_DATA;
 	}
 
 	@Override
@@ -36,7 +38,7 @@ public class AddressResource extends Resource {
 	
 	@Override
 	protected int fillProperty(Element propElement, Element propertyElement, QName property) {
-		if (ContactServlet.CARDDAV_ADDRESS_DATA.equals(property)) {
+		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
 			String phoneNumber = getDisplayName();
 			
 			Element container = appendElement(propElement, property);

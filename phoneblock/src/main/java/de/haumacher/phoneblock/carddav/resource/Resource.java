@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock;
+package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +14,9 @@ import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.w3c.dom.Element;
+
+import de.haumacher.phoneblock.carddav.CardDavServlet;
+import de.haumacher.phoneblock.carddav.schema.DavSchema;
 
 /**
  * TODO
@@ -61,13 +64,13 @@ public class Resource {
 	 * @param properties The {@link Element}s describing the properties to retrieve.
 	 */
 	public void propfind(Element multistatus, List<Element> properties) {
-		Element response = appendElement(multistatus, ContactServlet.DAV_RESPONSE);
-		appendTextElement(response, ContactServlet.DAV_HREF, url());
+		Element response = appendElement(multistatus, DavSchema.DAV_RESPONSE);
+		appendTextElement(response, DavSchema.DAV_HREF, url());
 		for (Element property : properties) {
-			Element propstat = appendElement(response, ContactServlet.DAV_PROPSTAT);
-			Element prop = appendElement(propstat, ContactServlet.DAV_PROP);
+			Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
+			Element prop = appendElement(propstat, DavSchema.DAV_PROP);
 			int status = fillProperty(prop, property);
-			appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + status + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(status, null));
+			appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + status + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(status, null));
 		}
 	}
 
@@ -96,12 +99,12 @@ public class Resource {
 	 * @return The status code for the request.
 	 */
 	protected int fillProperty(Element propElement, Element propertyElement, QName property) {
-		if (ContactServlet.CURRENT_USER_PRINCIPAL.equals(property)) {
+		if (DavSchema.DAV_CURRENT_USER_PRINCIPAL.equals(property)) {
 			Element container = appendElement(propElement, property);
-			appendTextElement(container, ContactServlet.DAV_HREF, url(ContactServlet.PRINCIPALS_PATH + "foobar"));
+			appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.PRINCIPALS_PATH + "foobar"));
 			return HttpServletResponse.SC_OK;
 		}
-		else if (ContactServlet.DAV_DISPLAYNAME.equals(property)) {
+		else if (DavSchema.DAV_DISPLAYNAME.equals(property)) {
 			String displayName = getDisplayName();
 			if (displayName != null) {
 				Element container = appendElement(propElement, property);
@@ -109,10 +112,10 @@ public class Resource {
 				return HttpServletResponse.SC_OK;
 			}
 		}
-		else if (ContactServlet.DAV_RESOURCETYPE.equals(property)) {
+		else if (DavSchema.DAV_RESOURCETYPE.equals(property)) {
 			Element container = appendElement(propElement, property);
 			if (isCollection()) {
-				appendElement(container, ContactServlet.DAV_COLLECTION);
+				appendElement(container, DavSchema.DAV_COLLECTION);
 			}
 			QName type = getResourceType();
 			if (type != null) {
@@ -120,7 +123,7 @@ public class Resource {
 			}
 			return HttpServletResponse.SC_OK;
 		}
-		else if (ContactServlet.DAV_GETETAG.equals(property)) {
+		else if (DavSchema.DAV_GETETAG.equals(property)) {
 			String etag = getEtag();
 			if (etag != null) {
 				Element container = appendElement(propElement, property);

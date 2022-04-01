@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock;
+package de.haumacher.phoneblock.carddav;
 
-import static de.haumacher.phoneblock.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +17,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.w3c.dom.Document;
@@ -27,41 +26,24 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
+import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
+import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
+import de.haumacher.phoneblock.carddav.resource.Resource;
+import de.haumacher.phoneblock.carddav.resource.RootResource;
+import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
+import de.haumacher.phoneblock.carddav.schema.DavSchema;
+
 /**
  * TODO
  */
 @WebServlet(urlPatterns = "/contacts/*")
-public class ContactServlet extends HttpServlet {
+public class CardDavServlet extends HttpServlet {
 
 	private static final int SC_MULTI_STATUS = 207;
 	
-	static final String PRINCIPALS_PATH = "/principals/";
+	public static final String PRINCIPALS_PATH = "/principals/";
 
-	static final String ADDRESSES_PATH = "/addresses/";
-
-	private static final String DAV = "DAV:";
-	static final QName DAV_MULTISTATUS = qname(DAV, "multistatus");
-	static final QName DAV_RESPONSE = qname(DAV, "response");
-	static final QName DAV_PROPSTAT = qname(DAV, "propstat");
-	static final QName DAV_STATUS = qname(DAV, "status");
-	static final QName DAV_HREF = qname(DAV, "href");
-	static final QName DAV_DISPLAYNAME = qname(DAV, "displayname");
-	static final QName DAV_RESOURCETYPE = qname(DAV, "resourcetype");
-	static final QName DAV_COLLECTION = qname(DAV, "collection");
-	static final QName DAV_GETETAG = qname(DAV, "getetag");
-	static final QName DAV_PROPFIND = qname(DAV, "propfind");
-	static final QName DAV_PROP = qname(DAV, "prop");
-	
-	private static final String CARDDAV = "urn:ietf:params:xml:ns:carddav";
-	static final QName CARDDAV_ADDRESSBOOK = qname(CARDDAV, "addressbook");
-	static final QName CARDDAV_ADDRESS_DATA = qname(CARDDAV, "address-data");
-	static final QName CARDDAV_ADDRESSBOOK_MULTIGET = qname(CARDDAV, "addressbook-multiget");
-	static final QName CARDDAV_ADDRESSBOOK_DESCRIPTION = qname(CARDDAV, "addressbook-description");
-	static final QName CARDDAV_SUPPORTED_ADDRESS_DATA = qname(CARDDAV, "supported-address-data");
-	static final QName CARDDAV_MAX_RESOURCE_SIZE = qname(CARDDAV, "max-resource-size");
-
-	static final QName CURRENT_USER_PRINCIPAL = qname(DAV, "current-user-principal");
-	public static final QName ADDRESSBOOK_HOME_SET = qname(CARDDAV, "addressbook-home-set");
+	public static final String ADDRESSES_PATH = "/addresses/";
 
 	static final String SERVER_LOC = "https://home.haumacher.de";
 
@@ -93,13 +75,13 @@ public class ContactServlet extends HttpServlet {
 
 		Document requestDoc = getBuilder().parse(req.getInputStream());
 		Depth depth = Depth.fromHeader(req.getHeader("depth"));
-		List<Element> properties = toList(elements(requestDoc, DAV_PROPFIND, DAV_PROP));
+		List<Element> properties = toList(elements(requestDoc, DavSchema.DAV_PROPFIND, DavSchema.DAV_PROP));
 
 		System.out.println(req.getMethod() + " " + req.getPathInfo() + " " + depth + ": " + toList(qnames(properties)));
 		dumpHeaders(req);
 
 		Document responseDoc = getBuilder().newDocument();
-		Element multistatus = appendElement(responseDoc, DAV_MULTISTATUS);
+		Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
 
 		resource.propfind(multistatus, properties);
 		if (depth != Depth.EMPTY) {
@@ -138,33 +120,33 @@ public class ContactServlet extends HttpServlet {
 		}
 		
 		Document requestDoc = getBuilder().parse(req.getInputStream());
-		if (CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
-			List<Element> properties = toList(elements(requestDoc, CARDDAV_ADDRESSBOOK_MULTIGET, DAV_PROP));
+		if (CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
+			List<Element> properties = toList(elements(requestDoc, CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET, DavSchema.DAV_PROP));
 			
 			System.out.println(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
 			dumpHeaders(req);
 			dumpRequestDoc(requestDoc);
 			
 			Document responseDoc = getBuilder().newDocument();
-			Element multistatus = appendElement(responseDoc, DAV_MULTISTATUS);
+			Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
 
-			for (Element href : filter(elements(filter(elements(requestDoc), CARDDAV_ADDRESSBOOK_MULTIGET)), DAV_HREF)) {
+			for (Element href : filter(elements(filter(elements(requestDoc), CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET)), DavSchema.DAV_HREF)) {
 				String url = href.getTextContent();
 				
-				Element response = appendElement(multistatus, ContactServlet.DAV_RESPONSE);
-				appendTextElement(response, ContactServlet.DAV_HREF, url);
+				Element response = appendElement(multistatus, DavSchema.DAV_RESPONSE);
+				appendTextElement(response, DavSchema.DAV_HREF, url);
 				
 				Resource content = resource.get(url);
 				
-				Element propstat = appendElement(response, ContactServlet.DAV_PROPSTAT);
+				Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
 				if (content != null) {
-					Element prop = appendElement(propstat, ContactServlet.DAV_PROP);
+					Element prop = appendElement(propstat, DavSchema.DAV_PROP);
 					for (Element property : properties) {
 						content.fillProperty(prop, property);
 					}
-					appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
+					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
 				} else {
-					appendTextElement(propstat, ContactServlet.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
+					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
 				}
 			}
 			
@@ -186,7 +168,7 @@ public class ContactServlet extends HttpServlet {
 	}
 
 	private Resource getResource(HttpServletRequest req) {
-		String rootUrl = ContactServlet.SERVER_LOC + req.getContextPath() + req.getServletPath();
+		String rootUrl = CardDavServlet.SERVER_LOC + req.getContextPath() + req.getServletPath();
 		String resourcePath = req.getPathInfo();
 
 		if ("/".equals(resourcePath)) {

@@ -3,7 +3,7 @@
  */
 package de.haumacher.phoneblock;
 
-import static de.haumacher.phoneblock.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.*;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -17,7 +17,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import de.haumacher.phoneblock.DomUtil;
+import de.haumacher.phoneblock.util.DomUtil;
 import junit.framework.TestCase;
 
 /**

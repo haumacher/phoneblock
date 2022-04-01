@@ -1,12 +1,14 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock;
+package de.haumacher.phoneblock.carddav.resource;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import javax.xml.namespace.QName;
+
+import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 
 /**
  * TODO
@@ -31,7 +33,7 @@ public class AddressBookResource extends Resource {
 	
 	@Override
 	protected QName getResourceType() {
-		return ContactServlet.CARDDAV_ADDRESSBOOK;
+		return CardDavSchema.CARDDAV_ADDRESSBOOK;
 	}
 	
 	@Override
