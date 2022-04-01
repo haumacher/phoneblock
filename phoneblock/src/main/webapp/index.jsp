@@ -18,10 +18,12 @@ The spam reports received in the last hour are listed below.
 		<tr>
 			<th>Phone number</th>
 			<th>Confidence</th>
+			<th>Received</th>
 		</tr>
 	</thead>
 	<tbody>
 <%
+		long now = System.currentTimeMillis();
 		for (SpamReport report : DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000)) {
 %>
 			<tr>
@@ -31,6 +33,10 @@ The spam reports received in the last hour are listed below.
 				
 				<td>
 					<%= report.getVotes() %>
+				</td>
+				
+				<td>
+					<%= (now - report.getLastUpdate()) / 1000 / 60 %> minutes ago
 				</td>
 			</tr>
 <%	

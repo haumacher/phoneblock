@@ -33,7 +33,7 @@ public interface SpamReports {
 	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
 	void delete(String phone);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where LASTUPDATE >= #{after}")
+	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
 	List<SpamReport> getLatestReports(long after);
 	
 }
