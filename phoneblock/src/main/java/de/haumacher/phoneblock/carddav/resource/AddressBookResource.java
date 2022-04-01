@@ -4,14 +4,17 @@
 package de.haumacher.phoneblock.carddav.resource;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
+import org.apache.ibatis.session.SqlSession;
+
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.SpamReport;
+import de.haumacher.phoneblock.db.SpamReports;
 
 /**
  * TODO
@@ -19,6 +22,8 @@ import de.haumacher.phoneblock.db.SpamReport;
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
 public class AddressBookResource extends Resource {
+
+	private static final long CURRENT_USER = 1;
 
 	/** 
 	 * Creates a {@link AddressBookResource}.
@@ -39,12 +44,24 @@ public class AddressBookResource extends Resource {
 	
 	@Override
 	public Collection<Resource> list() {
-		return allReports().stream().map(
-			r -> new AddressResource(getRootUrl(), getResourcePath() + r.getPhone())).collect(Collectors.toList());
+		return allPhoneNumbers()
+			.stream()
+			.sorted()
+			.map(r -> new AddressResource(getRootUrl(), getResourcePath() + r))
+			.collect(Collectors.toList());
 	}
 
-	private List<SpamReport> allReports() {
-		return DBService.getInstance().getSpamReports(3);
+	private Set<String> allPhoneNumbers() {
+		try (SqlSession session = DBService.getInstance().openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			BlockList blocklist = session.getMapper(BlockList.class);
+			
+			Set<String> result = reports.getSpamList(3);
+			result.removeAll(blocklist.getExcluded(CURRENT_USER));
+			result.addAll(blocklist.getPersonalizations(CURRENT_USER));
+			
+			return result;
+		}
 	}
 	
 	@Override
@@ -65,6 +82,6 @@ public class AddressBookResource extends Resource {
 
 	@Override
 	protected String getEtag() {
-		return Integer.toString(allReports().stream().map(r -> r.getPhone().hashCode()).reduce(0, (x, y) -> x + y));
+		return Integer.toString(allPhoneNumbers().stream().map(r -> r.hashCode()).reduce(0, (x, y) -> x + y));
 	}
 }

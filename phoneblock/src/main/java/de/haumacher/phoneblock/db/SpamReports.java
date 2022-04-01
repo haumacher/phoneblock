@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.db;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -38,5 +39,8 @@ public interface SpamReports {
 	
 	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
+	
+	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
+	Set<String> getSpamList(int minVotes);
 	
 }

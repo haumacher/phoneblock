@@ -126,13 +126,6 @@ public class DB {
 		}
 	}
 
-	public List<SpamReport> getSpamReports(int minVotes) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getReports(minVotes);
-		}
-	}
-	
 	public long getSpamVotesFor(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
