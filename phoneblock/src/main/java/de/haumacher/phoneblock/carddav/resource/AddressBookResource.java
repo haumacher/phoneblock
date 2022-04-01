@@ -3,12 +3,15 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.SpamReport;
 
 /**
  * TODO
@@ -17,8 +20,6 @@ import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
  */
 public class AddressBookResource extends Resource {
 
-	private static int _etag = 1;
-	
 	/** 
 	 * Creates a {@link AddressBookResource}.
 	 */
@@ -38,9 +39,12 @@ public class AddressBookResource extends Resource {
 	
 	@Override
 	public Collection<Resource> list() {
-		return Arrays.asList(
-			new AddressResource(getRootUrl(), getResourcePath() + "123456"),
-			new AddressResource(getRootUrl(), getResourcePath() + "789654"));
+		return allReports().stream().map(
+			r -> new AddressResource(getRootUrl(), getResourcePath() + r.getPhone())).collect(Collectors.toList());
+	}
+
+	private List<SpamReport> allReports() {
+		return DBService.getInstance().getSpamReports(3);
 	}
 	
 	@Override
@@ -61,6 +65,6 @@ public class AddressBookResource extends Resource {
 
 	@Override
 	protected String getEtag() {
-		return Integer.toString(_etag++);
+		return Integer.toString(allReports().stream().map(r -> r.getPhone().hashCode()).reduce(0, (x, y) -> x + y));
 	}
 }

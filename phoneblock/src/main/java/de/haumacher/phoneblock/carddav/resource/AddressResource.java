@@ -46,7 +46,7 @@ public class AddressResource extends Resource {
 				"BEGIN:VCARD\n"
 				+ "VERSION:3.0\n"
 				+ "UID:" + phoneNumber + "\n"
-				+ "FN:" + phoneNumber + "\n"
+				+ "FN:SPAM: " + phoneNumber + "\n"
 				+ "TEL;TYPE=WORK:" + phoneNumber + "\n"
 				+ "END:VCARD");
 			return HttpServletResponse.SC_OK;
