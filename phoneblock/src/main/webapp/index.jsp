@@ -4,10 +4,10 @@
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <html>
 <head>
-<title>The spam blocker for your phone</title>
+<title>PhoneBlock: The spam blocker for your phone</title>
 </head>
 <body>
-<h1>The spam blocker for your phone.</h1>
+<h1>PhoneBlock: The spam blocker for your phone.</h1>
 
 <p>
 The spam reports received in the last hour are listed below.
