@@ -48,10 +48,11 @@ public class DB {
 		Configuration configuration = new Configuration(environment);
 		configuration.setUseActualParamName(true);
 		configuration.addMapper(SpamReports.class);
+		configuration.addMapper(BlockList.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		Set<String> tableNames = new HashSet<>();
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			try (ResultSet rset = session.getConnection().getMetaData().getTables(null, "PUBLIC", "%", null)) {
 				while (rset.next()) {
 					String tableName = rset.getString("TABLE_NAME");
@@ -70,7 +71,7 @@ public class DB {
 	}
 	
 	public boolean hasSpamReportFor(String phone) {
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.isKnown(phone);
 		}
@@ -81,7 +82,7 @@ public class DB {
 			return;
 		}
 		
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			processVote(reports, phone, votes, time);
 			session.commit();
@@ -108,35 +109,39 @@ public class DB {
 	}
 
 	public long getLastSpamReport() {
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLastUpdate();
 		}
 	}
+
+	public SqlSession openSession() {
+		return _sessionFactory.openSession();
+	}
 	
 	public List<SpamReport> getLatestSpamReports(long notBefore) {
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
 		}
 	}
 
 	public List<SpamReport> getSpamReports(int minVotes) {
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getReports(minVotes);
 		}
 	}
 	
 	public long getSpamVotesFor(String phone) {
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.isKnown(phone) ? reports.getVotes(phone) : 0;
 		}
 	}
 	
 	public void shutdown() {
-		try (SqlSession session = _sessionFactory.openSession()) {
+		try (SqlSession session = openSession()) {
 			try (Statement statement = session.getConnection().createStatement()) {
 				statement.execute("SHUTDOWN");
 			}
