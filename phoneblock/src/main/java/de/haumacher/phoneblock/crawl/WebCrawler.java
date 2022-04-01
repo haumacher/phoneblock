@@ -63,7 +63,7 @@ public class WebCrawler implements Runnable {
 	
 	SimpleDateFormat _dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 	
-	private long _notBefore = 0;
+	private long _notBefore;
 
 	private URL _url;
 
@@ -71,8 +71,11 @@ public class WebCrawler implements Runnable {
 	
 	/** 
 	 * Creates a {@link WebCrawler}.
+	 * 
+	 * @param notBefore The time of the latest spam report that has already been processed. 
 	 */
-	public WebCrawler() throws MalformedURLException {
+	public WebCrawler(long notBefore) throws MalformedURLException {
+		_notBefore = notBefore;
 		_url = new URL("https://www.cleverdialer.de/");
 	}
 
@@ -131,6 +134,8 @@ public class WebCrawler implements Runnable {
 			if (ratingMatcher.find()) {
 				int rating = Integer.parseInt(ratingMatcher.group(1));
 				System.out.println(fmt(20, caller) + " " + "x*****".substring(rating));
+				
+				reportCaller(caller, rating, time);
 			}
 		}
 		
@@ -139,7 +144,20 @@ public class WebCrawler implements Runnable {
 		long oldest = getEntryTime(rows.last());
 		long resultRange = now - oldest;
 		
-		return resultRange / 2;
+		long delay = Math.min(60 * MINUTES + _rnd.nextInt(10 * MINUTES), resultRange / 2);
+		
+		return delay;
+	}
+
+	/** 
+	 * Report a caller as potential source of nuisance.
+	 *
+	 * @param caller The phone number.
+	 * @param rating a value between 1 and 5. A low value indicates a nuisance caller. 
+	 * @param time The time of the spam report. 
+	 */
+	protected void reportCaller(String caller, int rating, long time) {
+		// Hook for subclasses.
 	}
 
 	private String fmt(int cols, String str) {
@@ -155,7 +173,7 @@ public class WebCrawler implements Runnable {
 	}
 
 	public static void main(String[] args) throws InterruptedException, MalformedURLException {
-		WebCrawler crawler = new WebCrawler();
+		WebCrawler crawler = new WebCrawler(0L);
 		crawler.run();
 	}
 

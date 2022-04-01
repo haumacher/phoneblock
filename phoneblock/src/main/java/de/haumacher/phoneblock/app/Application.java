@@ -3,39 +3,39 @@
  */
 package de.haumacher.phoneblock.app;
 
-import java.net.MalformedURLException;
-
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import de.haumacher.phoneblock.crawl.WebCrawler;
+import de.haumacher.phoneblock.crawl.CrawlerService;
+import de.haumacher.phoneblock.db.DBService;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Central controller of services.
  */
 @WebListener
 public class Application implements ServletContextListener {
-
-	private Thread _crawlerThread;
+	
+	ServletContextListener[] _services = {
+		new DBService(),
+		new CrawlerService()
+	};
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		try {
-			_crawlerThread = new Thread(new WebCrawler());
-			_crawlerThread.start();
-		} catch (MalformedURLException ex) {
-			ex.printStackTrace();
+		for (int n = 0, cnt = _services.length; n < cnt; n++) {
+			_services[n].contextInitialized(sce);
 		}
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		if (_crawlerThread != null) {
-			_crawlerThread.interrupt();
-			_crawlerThread = null;
+		for (int n = _services.length - 1; n > 0; n--) {
+			try {
+				_services[n].contextInitialized(sce);
+			} catch (Throwable ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 

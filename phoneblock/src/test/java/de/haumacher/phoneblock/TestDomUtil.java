@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package phoneblock;
+package de.haumacher.phoneblock;
 
 import static de.haumacher.phoneblock.DomUtil.*;
 
