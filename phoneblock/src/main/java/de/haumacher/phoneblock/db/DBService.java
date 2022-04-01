@@ -52,7 +52,7 @@ public class DBService implements ServletContextListener {
 	}
 
 	protected int defaultDbPort() {
-		return 9093;
+		return 9095;
 	}
 
 	protected String defaultDbUrl(ServletContextEvent servletContextEvent) {
