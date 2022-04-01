@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -75,10 +76,6 @@ public class DB {
 		}
 	}
 
-	public void addSpam(String phone, int votes) {
-		addSpam(phone, votes, now());
-	}
-	
 	public void addSpam(String phone, int votes, long time) {
 		if (votes == 0) {
 			return;
@@ -117,15 +114,18 @@ public class DB {
 		}
 	}
 	
+	public List<SpamReport> getLatestSpamReports(long notBefore) {
+		try (SqlSession session = _sessionFactory.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getLatestReports(notBefore);
+		}
+	}
+
 	public long getSpamVotesFor(String phone) {
 		try (SqlSession session = _sessionFactory.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.isKnown(phone) ? reports.getVotes(phone) : 0;
 		}
-	}
-	
-	private long now() {
-		return System.currentTimeMillis();
 	}
 	
 	public void shutdown() {

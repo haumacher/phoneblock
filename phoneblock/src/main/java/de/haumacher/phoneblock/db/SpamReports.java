@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -30,5 +32,8 @@ public interface SpamReports {
 
 	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
 	void delete(String phone);
+	
+	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where LASTUPDATE >= #{after}")
+	List<SpamReport> getLatestReports(long after);
 	
 }
