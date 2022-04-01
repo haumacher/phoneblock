@@ -68,6 +68,8 @@ public class WebCrawler implements Runnable {
 	private URL _url;
 
 	private Random _rnd = new Random();
+
+	private boolean _stopped;
 	
 	/** 
 	 * Creates a {@link WebCrawler}.
@@ -82,18 +84,30 @@ public class WebCrawler implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
+			if (isStopped()) {
+				System.out.println("Stopping crawler.");
+				return;
+			}
+			
 			long delay = process();
 			
-			System.out.println("Sleeping for " + (delay / MINUTES) + " minutes.");
+			System.out.println("Crawler sleeping for " + (delay / MINUTES) + " minutes.");
 			try {
 				Thread.sleep(delay);
 			} catch (InterruptedException ex) {
-				System.out.println("Stopping.");
+				System.out.println("Stopping crawler.");
 				return;
 			}
 		}
 	}
 	
+	/** 
+	 * Whether this instance has been {@link #isStopped() stopped}.
+	 */
+	public synchronized boolean isStopped() {
+		return _stopped;
+	}
+
 	public long process() {
 		try {
 			return tryProcess();
@@ -108,10 +122,14 @@ public class WebCrawler implements Runnable {
 		
 		Document document ;
 		HttpURLConnection connection = (HttpURLConnection) _url.openConnection();
-		connection.setRequestProperty("User-Agent", AGENTS[_rnd.nextInt(AGENTS.length)]);
-		
-		try (InputStream in = _url.openStream()) {
-			document = Jsoup.parse(in, connection.getContentEncoding(), _url.toExternalForm());
+		try {
+			connection.setRequestProperty("User-Agent", AGENTS[_rnd.nextInt(AGENTS.length)]);
+			
+			try (InputStream in = _url.openStream()) {
+				document = Jsoup.parse(in, connection.getContentEncoding(), _url.toExternalForm());
+			}
+		} finally {
+			connection.disconnect();
 		}
 		
 		Element comments = document.getElementById("comments");
@@ -175,6 +193,14 @@ public class WebCrawler implements Runnable {
 	public static void main(String[] args) throws InterruptedException, MalformedURLException {
 		WebCrawler crawler = new WebCrawler(0L);
 		crawler.run();
+	}
+
+	/** 
+	 * Requests to stop.
+	 */
+	public synchronized void stop() {
+		_stopped = true;
+		notifyAll();
 	}
 
 }

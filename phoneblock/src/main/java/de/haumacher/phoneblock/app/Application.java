@@ -23,6 +23,7 @@ public class Application implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		System.out.println("Starting phoneblock application.");
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
 			_services[n].contextInitialized(sce);
 		}
@@ -30,9 +31,10 @@ public class Application implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		for (int n = _services.length - 1; n > 0; n--) {
+		System.out.println("Stopping phoneblock application.");
+		for (int n = _services.length - 1; n >= 0; n--) {
 			try {
-				_services[n].contextInitialized(sce);
+				_services[n].contextDestroyed(sce);
 			} catch (Throwable ex) {
 				ex.printStackTrace();
 			}

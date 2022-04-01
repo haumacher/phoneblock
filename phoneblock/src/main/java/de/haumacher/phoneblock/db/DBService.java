@@ -4,9 +4,7 @@
 package de.haumacher.phoneblock.db;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -23,31 +21,42 @@ public class DBService implements ServletContextListener {
 	
 	private Server _server;
 
-	private JdbcDataSource _dataSource;
-	
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
+		System.out.println("Starting DB service.");
         try {
             org.h2.Driver.load();
         	
-            String url = "jdbc:h2:/var/lib/tomcat9/work/" + appName(servletContextEvent) + "/h2";   
+            String url = defaultDbUrl(servletContextEvent);
             String user = "phone";        
             String password = "block";
 
-			_dataSource = new JdbcDataSource();
-			_dataSource.setUrl(url);
-			_dataSource.setUser(user);
-			_dataSource.setPassword(password);
+			JdbcDataSource dataSource = new JdbcDataSource();
+			dataSource.setUrl(url);
+			dataSource.setUser(user);
+			dataSource.setPassword(password);
 
-			_server = Server.createTcpServer("-tcpAllowOthers");
-			_server.start();
+			try {
+				_server = Server.createTcpServer("-tcpPort", Integer.toString(defaultDbPort()), "-tcpAllowOthers");
+				_server.start();
+				System.out.println("DB server: " + url + " at port " + _server.getPort());
+			} catch (Exception ex) {
+				System.err.println("Failed to start DB server: " + ex.getMessage());
+				ex.printStackTrace();
+			}
 			
-			System.out.println("Opening DB: " + url + " at port " + _server.getPort());
-			
-			INSTANCE = new DB(_dataSource);
+			INSTANCE = new DB(dataSource);
 		} catch (SQLException | UnsupportedEncodingException ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	protected int defaultDbPort() {
+		return 9093;
+	}
+
+	protected String defaultDbUrl(ServletContextEvent servletContextEvent) {
+		return "jdbc:h2:/var/lib/tomcat9/work/" + appName(servletContextEvent) + "/h2";
 	}
 	
 	private String appName(ServletContextEvent servletContextEvent) {
@@ -67,22 +76,26 @@ public class DBService implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
-    	if (_dataSource != null) {
-    		try (Connection connection = _dataSource.getConnection(); Statement statement = connection.createStatement()) {
-    			statement.execute("SHUTDOWN");
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-    	}
-        
-        if (_server != null) {
-            _server.stop();
-            _server = null;
-        }
-        
-        org.h2.Driver.unload();
-        
-        INSTANCE = null;
+		System.out.println("Stopping DB service.");
+
+        try {
+        	try {
+        		if (INSTANCE  != null) {
+        			System.out.println("Stopping database.");
+        			INSTANCE.shutdown();
+        			INSTANCE = null;
+        		}
+        	} finally {
+        		if (_server != null) {
+        			System.out.println("Stopping database server.");
+        			_server.stop();
+        			_server = null;
+        		}
+        	}
+		} finally {
+			System.out.println("Unloading DB driver.");
+			org.h2.Driver.unload();
+		}
     }
 	
 }

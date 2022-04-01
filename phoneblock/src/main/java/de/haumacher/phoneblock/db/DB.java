@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class DB {
 		Configuration configuration = new Configuration(environment);
 		configuration.setUseActualParamName(true);
 		configuration.addMapper(SpamReports.class);
-		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);			
+		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		Set<String> tableNames = new HashSet<>();
 		try (SqlSession session = _sessionFactory.openSession()) {
@@ -125,6 +126,17 @@ public class DB {
 	
 	private long now() {
 		return System.currentTimeMillis();
+	}
+	
+	public void shutdown() {
+		try (SqlSession session = _sessionFactory.openSession()) {
+			try (Statement statement = session.getConnection().createStatement()) {
+				statement.execute("SHUTDOWN");
+			}
+		} catch (Exception e) {
+			System.err.println("Database shutdown failed.");
+			e.printStackTrace();
+		}
 	}
 
 }
