@@ -27,6 +27,7 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
+import de.haumacher.phoneblock.carddav.resource.AddressResource;
 import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
 import de.haumacher.phoneblock.carddav.resource.Resource;
 import de.haumacher.phoneblock.carddav.resource.RootResource;
@@ -57,13 +58,37 @@ public class CardDavServlet extends HttpServlet {
 				doReport(req, resp);
 			}
 			else {
-				dump(req);
+				dumpMethod(req);
+				dumpParams(req);
+				dumpHeaders(req);
 				super.service(req, resp);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
+	}
+	
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Resource resource = getResource(req);
+		if (resource == null) {
+			handleNotFound(req, resp);
+			return;
+		}
+		
+		resource.put(req, resp);
+	}
+	
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Resource resource = getResource(req);
+		if (resource == null) {
+			handleNotFound(req, resp);
+			return;
+		}
+
+		resource.delete(resp);
 	}
 
 	private void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException {
@@ -107,7 +132,7 @@ public class CardDavServlet extends HttpServlet {
 		serializer.write(responseDoc, output);
 		
 		System.out.println(">>>");
-		dump(responseDoc);
+		dumpDoc(responseDoc);
 		System.out.println();
 		System.out.println(">>>");
 	}
@@ -185,8 +210,14 @@ public class CardDavServlet extends HttpServlet {
 			if (endIdx < 0) {
 				return null;
 			}
+			
 			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
-			return new AddressBookResource(rootUrl, resourcePath, principal);
+			
+			if (endIdx < resourcePath.length() - 1) {
+				return new AddressResource(rootUrl, resourcePath);
+			} else {
+				return new AddressBookResource(rootUrl, resourcePath, principal);
+			}
 		}
 		
 		// Not found.
@@ -195,12 +226,12 @@ public class CardDavServlet extends HttpServlet {
 
 	private void dumpRequestDoc(Document requestDoc) {
 		System.out.println("<<<");
-		dump(requestDoc);
+		dumpDoc(requestDoc);
 		System.out.println();
 		System.out.println("<<<");
 	}
 
-	private void dump(Document doc) {
+	private void dumpDoc(Document doc) {
 		DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0");
 		LSOutput debug = ls.createLSOutput();
 		debug.setEncoding("utf-8");
@@ -213,6 +244,10 @@ public class CardDavServlet extends HttpServlet {
 		dumpMethod(req);
 		dumpParams(req);
 		dumpHeaders(req);
+		dumpContent(req);
+	}
+
+	private void dumpContent(HttpServletRequest req) throws IOException {
 		System.out.println("<<<");
 		BufferedReader reader = req.getReader();
 		String line;

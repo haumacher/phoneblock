@@ -5,12 +5,24 @@ package de.haumacher.phoneblock.carddav.resource;
 
 import static de.haumacher.phoneblock.util.DomUtil.*;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
+import org.apache.ibatis.session.SqlSession;
 import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
+import de.haumacher.phoneblock.db.BlockList;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.SpamReports;
+import ezvcard.VCard;
+import ezvcard.VCardVersion;
+import ezvcard.io.text.VCardReader;
+import ezvcard.property.Telephone;
 
 /**
  * TODO
@@ -52,5 +64,53 @@ public class AddressResource extends Resource {
 			return HttpServletResponse.SC_OK;
 		}
 		return super.fillProperty(propElement, propertyElement, property);
+	}
+	
+	@Override
+	public void put(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		VCardReader reader = new VCardReader(req.getReader(), VCardVersion.V3_0);
+		VCard card = reader.readNext();
+		if (card == null) {
+			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+		
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			SpamReports spamreport = session.getMapper(SpamReports.class);
+			BlockList blockList = session.getMapper(BlockList.class);
+			
+			for (Telephone phone : card.getTelephoneNumbers()) {
+				String phoneNumber = phone.getText();
+				
+				System.out.println("Adding to block list: " + phoneNumber);
+				
+				blockList.removeExclude(1, phoneNumber);
+				blockList.addPersonalization(1, phoneNumber);
+				db.processVote(spamreport, phoneNumber, 2, System.currentTimeMillis());
+			}
+			
+			session.commit();
+		}
+		
+		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+	}
+	
+	@Override
+	public void delete(HttpServletResponse resp) {
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			SpamReports spamreport = session.getMapper(SpamReports.class);
+			BlockList blockList = session.getMapper(BlockList.class);
+			
+			String phoneNumber = getDisplayName();
+			blockList.removePersonalization(1, phoneNumber);
+			blockList.addExclude(1, phoneNumber);
+			db.processVote(spamreport, phoneNumber, -2, System.currentTimeMillis());
+			
+			session.commit();
+		}
+		
+		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 }

@@ -5,10 +5,12 @@ package de.haumacher.phoneblock.carddav.resource;
 
 import static de.haumacher.phoneblock.util.DomUtil.*;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
@@ -142,7 +144,7 @@ public class Resource {
 		if (sepIndex < 0) {
 			return _resourcePath;
 		}
-		return _resourcePath.substring(sepIndex);
+		return _resourcePath.substring(sepIndex + 1);
 	}
 
 	/** 
@@ -196,5 +198,27 @@ public class Resource {
 	 */
 	public Resource get(String url) {
 		return null;
+	}
+
+	/** 
+	 * Requests to delete this resource.
+	 */
+	public void delete(HttpServletResponse resp) {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	/**
+	 * Creates this resource from the data in the given request.
+	 * 
+	 * @param req
+	 *        The request that carries the <code>vcard</code> data.
+	 * @param resp
+	 *        The response to report errors to.
+	 * 
+	 * @throws IOException
+	 *         If reading the content fails.
+	 */
+	public void put(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 	}
 }

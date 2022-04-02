@@ -89,7 +89,7 @@ public class DB {
 		}
 	}
 
-	private void processVote(SpamReports reports, String phone, int votes, long time) {
+	public void processVote(SpamReports reports, String phone, int votes, long time) {
 		if (votes < 0) {
 			if (reports.isKnown(phone)) {
 				long currentVotes = reports.getVotes(phone);

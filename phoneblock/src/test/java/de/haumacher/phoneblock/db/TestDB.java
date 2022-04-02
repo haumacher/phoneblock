@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.h2.jdbcx.JdbcDataSource;
 
@@ -114,6 +115,20 @@ public class TestDB extends TestCase {
 		}
 	}
 
+	public void testDuplicateAdd() throws UnsupportedEncodingException, SQLException {
+		try (SqlSession session = _db.openSession()) {
+			BlockList blockList = session.getMapper(BlockList.class);
+
+			blockList.addExclude(1, "123");
+			try {
+				blockList.addExclude(1, "123");
+				fail("Expecting duplicate key constraint violation.");
+			} catch (PersistenceException ex) {
+				// Expected.
+			}
+		}
+	}
+	
 	private DataSource createTestDataSource() {
 		JdbcDataSource result = new JdbcDataSource();
 		result.setUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
