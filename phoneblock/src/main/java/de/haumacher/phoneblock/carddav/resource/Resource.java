@@ -17,6 +17,7 @@ import javax.xml.namespace.QName;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.w3c.dom.Element;
 
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 
@@ -59,39 +60,45 @@ public class Resource {
 		return _resourcePath;
 	}
 
-	/** 
+	/**
 	 * Answers the <code>propfind</code> request.
-	 *
-	 * @param multistatus The result element to add the response to.
-	 * @param properties The {@link Element}s describing the properties to retrieve.
+	 * 
+	 * @param req
+	 *        The current request.
+	 * @param multistatus
+	 *        The result element to add the response to.
+	 * @param properties
+	 *        The {@link Element}s describing the properties to retrieve.
 	 */
-	public void propfind(Element multistatus, List<Element> properties) {
+	public void propfind(HttpServletRequest req, Element multistatus, List<Element> properties) {
 		Element response = appendElement(multistatus, DavSchema.DAV_RESPONSE);
 		appendTextElement(response, DavSchema.DAV_HREF, url());
 		for (Element property : properties) {
 			Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
 			Element prop = appendElement(propstat, DavSchema.DAV_PROP);
-			int status = fillProperty(prop, property);
+			int status = fillProperty(req, prop, property);
 			appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + status + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(status, null));
 		}
 	}
 
 	/**
 	 * Fills the given property container element with property information.
-	 * 
+	 * @param req
+	 *        The current request.
 	 * @param propElement
 	 *        The {@link Element} to fill with property information.
 	 * @param propertyElement
 	 *        The qualified name of the property to read.
 	 * @return The status code for the request.
 	 */
-	public final int fillProperty(Element propElement, Element propertyElement) {
-		return fillProperty(propElement, propertyElement, qname(propertyElement));
+	public final int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement) {
+		return fillProperty(req, propElement, propertyElement, qname(propertyElement));
 	}
 
 	/**
 	 * Fills the given property container element with property information.
-	 * 
+	 * @param req
+	 *        The current request.
 	 * @param propElement
 	 *        The {@link Element} to fill with property information.
 	 * @param propertyElement
@@ -100,11 +107,14 @@ public class Resource {
 	 *        The qualified name of the property to retrieve.
 	 * @return The status code for the request.
 	 */
-	protected int fillProperty(Element propElement, Element propertyElement, QName property) {
+	protected int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (DavSchema.DAV_CURRENT_USER_PRINCIPAL.equals(property)) {
-			Element container = appendElement(propElement, property);
-			appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.PRINCIPALS_PATH + "foobar"));
-			return HttpServletResponse.SC_OK;
+			String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
+			if (userName != null) {
+				Element container = appendElement(propElement, property);
+				appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.PRINCIPALS_PATH + userName));
+				return HttpServletResponse.SC_OK;
+			}
 		}
 		else if (DavSchema.DAV_DISPLAYNAME.equals(property)) {
 			String displayName = getDisplayName();

@@ -1,0 +1,6 @@
+#
+# Rename to .phoneblock and fill out
+#
+db.url=jdbc:h2:...
+db.user=
+db.passwd=

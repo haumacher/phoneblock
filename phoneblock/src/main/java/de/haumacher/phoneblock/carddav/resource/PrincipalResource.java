@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.carddav.resource;
 
 import static de.haumacher.phoneblock.util.DomUtil.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
@@ -33,13 +34,13 @@ public class PrincipalResource extends Resource {
 	}
 	
 	@Override
-	protected int fillProperty(Element propElement, Element propertyElement, QName property) {
+	protected int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET.equals(property)) {
 			Element container = appendElement(propElement, property);
 			DomUtil.appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.ADDRESSES_PATH + _principal + "/"));
 			return HttpServletResponse.SC_OK;
 		}
-		return super.fillProperty(propElement, propertyElement, property);
+		return super.fillProperty(req, propElement, propertyElement, property);
 	}
 
 }

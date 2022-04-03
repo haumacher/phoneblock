@@ -3,9 +3,11 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 
@@ -129,6 +131,18 @@ public class TestDB extends TestCase {
 		}
 	}
 	
+	public void testUserManagement() throws SQLException, IOException {
+		_db.addUser("foo@bar.com", "123");
+		
+		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "123")));
+		assertEquals(null, _db.basicAuth(header("foo@bar.com", "321")));
+		assertEquals(null, _db.basicAuth(header("xxx@bar.com", "123")));
+	}
+	
+	private String header(String user, String pw) throws UnsupportedEncodingException {
+		return "Basic " + Base64.getEncoder().encodeToString((user + ':' + pw).getBytes("utf-8"));
+	}
+
 	private DataSource createTestDataSource() {
 		JdbcDataSource result = new JdbcDataSource();
 		result.setUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");

@@ -26,6 +26,7 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
 import de.haumacher.phoneblock.carddav.resource.AddressResource;
 import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
@@ -37,8 +38,10 @@ import de.haumacher.phoneblock.carddav.schema.DavSchema;
 /**
  * TODO
  */
-@WebServlet(urlPatterns = "/contacts/*")
+@WebServlet(urlPatterns = CardDavServlet.URL_PATTERN)
 public class CardDavServlet extends HttpServlet {
+
+	public static final String URL_PATTERN = "/contacts/*";
 
 	private static final int SC_MULTI_STATUS = 207;
 	
@@ -46,7 +49,7 @@ public class CardDavServlet extends HttpServlet {
 
 	public static final String ADDRESSES_PATH = "/addresses/";
 
-	static final String SERVER_LOC = "https://home.haumacher.de";
+	static final String SERVER_LOC = "https://phoneblock.haumacher.de";
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -108,10 +111,10 @@ public class CardDavServlet extends HttpServlet {
 		Document responseDoc = getBuilder().newDocument();
 		Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
 
-		resource.propfind(multistatus, properties);
+		resource.propfind(req, multistatus, properties);
 		if (depth != Depth.EMPTY) {
 			for (Resource content : resource.list()) {
-				content.propfind(multistatus, properties);
+				content.propfind(req, multistatus, properties);
 			}
 		}
 		
@@ -167,7 +170,7 @@ public class CardDavServlet extends HttpServlet {
 				if (content != null) {
 					Element prop = appendElement(propstat, DavSchema.DAV_PROP);
 					for (Element property : properties) {
-						content.fillProperty(prop, property);
+						content.fillProperty(req, prop, property);
 					}
 					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
 				} else {
@@ -202,7 +205,9 @@ public class CardDavServlet extends HttpServlet {
 		
 		if (resourcePath.startsWith(PRINCIPALS_PATH)) {
 			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
-			return new PrincipalResource(rootUrl, resourcePath, principal);
+			if (isAuthenticated(req, principal)) {
+				return new PrincipalResource(rootUrl, resourcePath, principal);
+			}
 		}
 		
 		if (resourcePath.startsWith(ADDRESSES_PATH)) {
@@ -212,16 +217,21 @@ public class CardDavServlet extends HttpServlet {
 			}
 			
 			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
-			
-			if (endIdx < resourcePath.length() - 1) {
-				return new AddressResource(rootUrl, resourcePath);
-			} else {
-				return new AddressBookResource(rootUrl, resourcePath, principal);
+			if (isAuthenticated(req, principal)) {
+				if (endIdx < resourcePath.length() - 1) {
+					return new AddressResource(rootUrl, resourcePath);
+				} else {
+					return new AddressBookResource(rootUrl, resourcePath, principal);
+				}
 			}
 		}
 		
 		// Not found.
 		return null;
+	}
+
+	private boolean isAuthenticated(HttpServletRequest req, String principal) {
+		return principal.equals(req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR));
 	}
 
 	private void dumpRequestDoc(Document requestDoc) {

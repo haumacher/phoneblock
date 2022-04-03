@@ -3,12 +3,17 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +40,9 @@ public class DB {
 	private SqlSessionFactory _sessionFactory;
 	private DataSource _dataSource;
 
+	private static final String BASIC_PREFIX = "Basic ";
+	private MessageDigest _sha256;
+
 	/** 
 	 * Creates a {@link DB}.
 	 *
@@ -49,6 +57,7 @@ public class DB {
 		configuration.setUseActualParamName(true);
 		configuration.addMapper(SpamReports.class);
 		configuration.addMapper(BlockList.class);
+		configuration.addMapper(Users.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		Set<String> tableNames = new HashSet<>();
@@ -67,6 +76,12 @@ public class DB {
 		        sr.setDelimiter(";");
 		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-schema.sql"), "utf-8"));
 			}
+		}
+		
+		try {
+			_sha256 = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException ex) {
+			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
 	}
 	
@@ -142,6 +157,55 @@ public class DB {
 			System.err.println("Database shutdown failed.");
 			e.printStackTrace();
 		}
+	}
+
+	/** 
+	 * Adds the given user with the given password.
+	 */
+	public void addUser(String userName, String passwd) throws UnsupportedEncodingException {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			users.addUser(userName, pwhash(passwd));
+			session.commit();
+		}
+	}
+
+	/**
+	 * Checks credentials in the given authorization header.
+	 * 
+	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
+	 */
+	public String basicAuth(String authHeader) throws IOException {
+		if (authHeader.startsWith(BASIC_PREFIX)) {
+			String credentials = authHeader.substring(BASIC_PREFIX.length());
+			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
+			String decoded = new String(decodedBytes, "utf-8");
+			int sepIndex = decoded.indexOf(':');
+			if (sepIndex >= 0) {
+				String userName = decoded.substring(0, sepIndex);
+				String passwd = decoded.substring(sepIndex + 1);
+				
+				byte[] pwhash = pwhash(passwd);
+				
+				try (SqlSession session = openSession()) {
+					Users users = session.getMapper(Users.class);
+					InputStream hashIn = users.getHash(userName);
+					if (hashIn != null) {
+						byte[] expectedHash = hashIn.readAllBytes();
+						if (Arrays.equals(pwhash, expectedHash)) {
+							return userName;
+						}
+					}
+				}
+			}
+		}
+		System.err.println("Invalid authentication received: " + authHeader);
+		return null;
+	}
+
+	private byte[] pwhash(String passwd) throws UnsupportedEncodingException {
+		return _sha256.digest(passwd.getBytes("utf-8"));
 	}
 
 }

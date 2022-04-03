@@ -49,7 +49,7 @@ public class AddressResource extends Resource {
 	}
 	
 	@Override
-	protected int fillProperty(Element propElement, Element propertyElement, QName property) {
+	protected int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
 			String phoneNumber = getDisplayName();
 			
@@ -63,7 +63,7 @@ public class AddressResource extends Resource {
 				+ "END:VCARD");
 			return HttpServletResponse.SC_OK;
 		}
-		return super.fillProperty(propElement, propertyElement, property);
+		return super.fillProperty(req, propElement, propertyElement, property);
 	}
 	
 	@Override
