@@ -56,7 +56,7 @@ public class AddressBookResource extends Resource {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			BlockList blocklist = session.getMapper(BlockList.class);
 			
-			Set<String> result = reports.getSpamList(3);
+			Set<String> result = reports.getSpamList(1);
 			result.removeAll(blocklist.getExcluded(CURRENT_USER));
 			result.addAll(blocklist.getPersonalizations(CURRENT_USER));
 			
