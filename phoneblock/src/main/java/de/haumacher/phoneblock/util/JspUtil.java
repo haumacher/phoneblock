@@ -10,11 +10,18 @@ package de.haumacher.phoneblock.util;
  */
 public class JspUtil {
 
-	public static String quote(String s) {
-		return s
-			.replace("<", "&lt;")
-			.replace(">", "&gt;")
-			.replace("&", "&amp;");
+	public static String quote(Object value) {
+		if (value == null) {
+			return "";
+		}
+		
+		return value.toString()
+				.replace("&", "&amp;")
+				.replace("<", "&lt;")
+				.replace(">", "&gt;")
+				.replace("\"", "&quot;")
+				.replace("'", "&apos;")
+				;
 	}
 	
 }

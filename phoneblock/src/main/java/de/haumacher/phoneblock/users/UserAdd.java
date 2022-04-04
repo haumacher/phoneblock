@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -23,8 +22,6 @@ import de.haumacher.phoneblock.db.DB;
  */
 public class UserAdd {
 	
-	private static final String SAVE_CHARS = "123456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
-
 	public static void main(String[] args) throws SQLException, IOException {
 		DB db = new DB(createDataSource());
 		
@@ -35,14 +32,7 @@ public class UserAdd {
 		} else {
 			userName = args[0];
 		}
-		SecureRandom rnd = new SecureRandom();
-		StringBuilder pwbuffer = new StringBuilder();
-		for (int n = 0; n < 20; n++) {
-			pwbuffer.append(SAVE_CHARS.charAt(rnd.nextInt(SAVE_CHARS.length())));
-		}
-		
-		String passwd = pwbuffer.toString();
-		db.addUser(userName, passwd);
+		String passwd = db.createUser(userName);
 		
 		System.out.println(passwd);
 	}

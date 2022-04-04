@@ -9,6 +9,7 @@ import javax.servlet.annotation.WebListener;
 
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.mail.MailServiceStarter;
 
 /**
  * Central controller of services.
@@ -18,7 +19,8 @@ public class Application implements ServletContextListener {
 	
 	ServletContextListener[] _services = {
 		new DBService(),
-		new CrawlerService()
+		new CrawlerService(),
+		new MailServiceStarter()
 	};
 
 	@Override

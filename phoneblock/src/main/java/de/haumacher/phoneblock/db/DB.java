@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -35,6 +36,8 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
  */
 public class DB {
 
+	private static final String SAVE_CHARS = "123456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
+
 	private static final Collection<String> TABLE_NAMES = Arrays.asList("BLOCKLIST", "SPAMREPORTS", "USERS");
 	
 	private SqlSessionFactory _sessionFactory;
@@ -43,6 +46,8 @@ public class DB {
 	private static final String BASIC_PREFIX = "Basic ";
 	private MessageDigest _sha256;
 
+	private SecureRandom _rnd = new SecureRandom();
+	
 	/** 
 	 * Creates a {@link DB}.
 	 *
@@ -85,6 +90,26 @@ public class DB {
 		}
 	}
 	
+	public String generateVerificationCode() {
+		StringBuilder codeBuffer = new StringBuilder();
+		for (int n = 0; n < 8; n++) {
+			codeBuffer.append(_rnd.nextInt(10));
+		}
+		String code = codeBuffer.toString();
+		return code;
+	}
+
+	public String createUser(String userName) throws UnsupportedEncodingException {
+		StringBuilder pwbuffer = new StringBuilder();
+		for (int n = 0; n < 20; n++) {
+			pwbuffer.append(SAVE_CHARS.charAt(_rnd.nextInt(SAVE_CHARS.length())));
+		}
+		
+		String passwd = pwbuffer.toString();
+		addUser(userName, passwd);
+		return passwd;
+	}
+
 	public boolean hasSpamReportFor(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -166,6 +191,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
+			users.deleteUser(userName);
 			users.addUser(userName, pwhash(passwd));
 			session.commit();
 		}

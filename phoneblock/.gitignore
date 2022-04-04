@@ -1,5 +1,2 @@
 /target/
-/node_modules/
-/frontend/
-/webpack.generated.js
 /.phoneblock
