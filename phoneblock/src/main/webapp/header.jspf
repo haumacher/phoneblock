@@ -23,7 +23,7 @@
 					<a class="navbar-item" href="block.jsp">Rufsperre hinzufügen</a>
 					
 					<hr class="navbar-divider">
-					<a class="navbar-item" href="https://github.com/haumacher/phoneblock/newticket" target="_blank">Report an issue</a>
+					<a class="navbar-item" href="https://github.com/haumacher/phoneblock/issues/new" target="_blank">Report an issue</a>
 				</div>
 			</div>
 		</div>
