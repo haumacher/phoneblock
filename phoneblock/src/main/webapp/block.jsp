@@ -70,7 +70,7 @@
 			          </p>
 			          
 			          <p>
-			          Bei Verstößen wird Dein Account ohne Vorwarnung und unwiderruflich gesperrt!
+			          Bei Verstößen wird Dein Account ohne Vorwarnung unwiderruflich gesperrt!
 			          </p>
 			        </div>
 			  	</article>
