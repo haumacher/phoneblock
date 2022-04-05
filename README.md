@@ -1,3 +1,5 @@
+<img align="right" src="phoneblock/src/main/webapp/app-logo.svg"/>
+
 # PhoneBlock
 The Spam-Filter for your phone
 
