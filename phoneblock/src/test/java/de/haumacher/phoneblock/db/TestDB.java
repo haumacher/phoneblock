@@ -133,10 +133,20 @@ public class TestDB extends TestCase {
 	
 	public void testUserManagement() throws SQLException, IOException {
 		_db.addUser("foo@bar.com", "123");
+		_db.addUser("baz@bar.com", "123");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "123")));
 		assertEquals(null, _db.basicAuth(header("foo@bar.com", "321")));
 		assertEquals(null, _db.basicAuth(header("xxx@bar.com", "123")));
+		
+		try (SqlSession session = _db.openSession()) {
+			long userA = session.getMapper(Users.class).getUserId("foo@bar.com");
+			long userB = session.getMapper(Users.class).getUserId("baz@bar.com");
+			
+			assertTrue(userA != 0);
+			assertTrue(userB != 0);
+			assertTrue(userA != userB);
+		}
 	}
 	
 	private String header(String user, String pw) throws UnsupportedEncodingException {
