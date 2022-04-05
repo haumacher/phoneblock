@@ -15,21 +15,21 @@ import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.Users;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * {@link Resource} representing a collection of {@link AddressBookResource}s.
  */
 public class AddressBookResource extends Resource {
 
-	private static final long CURRENT_USER = 1;
+	private final String _principal;
 
 	/** 
 	 * Creates a {@link AddressBookResource}.
 	 */
 	public AddressBookResource(String rootUrl, String resourcePath, String principal) {
 		super(rootUrl, resourcePath);
+		_principal = principal;
 	}
 	
 	@Override
@@ -47,7 +47,7 @@ public class AddressBookResource extends Resource {
 		return allPhoneNumbers()
 			.stream()
 			.sorted()
-			.map(r -> new AddressResource(getRootUrl(), getResourcePath() + r))
+			.map(r -> new AddressResource(getRootUrl(), getResourcePath() + r, _principal))
 			.collect(Collectors.toList());
 	}
 
@@ -55,10 +55,13 @@ public class AddressBookResource extends Resource {
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			BlockList blocklist = session.getMapper(BlockList.class);
+			Users users = session.getMapper(Users.class);
+			
+			long currentUser = users.getUserId(_principal);
 			
 			Set<String> result = reports.getSpamList(1);
-			result.removeAll(blocklist.getExcluded(CURRENT_USER));
-			result.addAll(blocklist.getPersonalizations(CURRENT_USER));
+			result.removeAll(blocklist.getExcluded(currentUser));
+			result.addAll(blocklist.getPersonalizations(currentUser));
 			
 			return result;
 		}
@@ -77,7 +80,7 @@ public class AddressBookResource extends Resource {
 		if (!url.startsWith(getResourcePath(), getRootUrl().length())) {
 			return null;
 		}
-		return new AddressResource(getRootUrl(), url.substring(getRootUrl().length() + getResourcePath().length()));
+		return new AddressResource(getRootUrl(), url.substring(getRootUrl().length() + getResourcePath().length()), _principal);
 	}
 
 	@Override

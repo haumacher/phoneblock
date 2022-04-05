@@ -4,9 +4,7 @@
 package de.haumacher.phoneblock.util;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Utilities for safe content generation on JSP pages.
  */
 public class JspUtil {
 

@@ -36,7 +36,7 @@ import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 
 /**
- * TODO
+ * {@link HttpServlet} serving the CardDAV address book(s).
  */
 @WebServlet(urlPatterns = CardDavServlet.URL_PATTERN)
 public class CardDavServlet extends HttpServlet {
@@ -219,7 +219,7 @@ public class CardDavServlet extends HttpServlet {
 			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
 			if (isAuthenticated(req, principal)) {
 				if (endIdx < resourcePath.length() - 1) {
-					return new AddressResource(rootUrl, resourcePath);
+					return new AddressResource(rootUrl, resourcePath, principal);
 				} else {
 					return new AddressBookResource(rootUrl, resourcePath, principal);
 				}

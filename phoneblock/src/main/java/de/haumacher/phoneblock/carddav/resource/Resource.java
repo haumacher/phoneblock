@@ -22,11 +22,9 @@ import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Base class for CardDAV resources.
  */
-public class Resource {
+public abstract class Resource {
 
 	private final String _rootUrl;
 	
@@ -203,6 +201,9 @@ public class Resource {
 
 	/** 
 	 * The sub-resource with the given URL, if this is a collection.
+	 * 
+	 * @param url URL of a child resource to retrieve.
+	 * @return The URL of the child resource, or <code>null</code> of no such child exists.
 	 * 
 	 * @see #isCollection()
 	 */

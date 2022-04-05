@@ -20,5 +20,11 @@ public interface Users {
 	
 	@Select("select PWHASH from USERS where EMAIL=#{email}")
 	java.io.InputStream getHash(String email);
+
+	/** 
+	 * Retrieves the user ID for the user with the given user name (e-mail).
+	 */
+	@Select("select ID from USERS where EMAIL=#{email}")
+	long getUserId(String email);
 	
 }

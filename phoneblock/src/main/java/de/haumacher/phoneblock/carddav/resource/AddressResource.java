@@ -19,23 +19,27 @@ import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.Users;
 import ezvcard.VCard;
 import ezvcard.VCardVersion;
 import ezvcard.io.text.VCardReader;
 import ezvcard.property.Telephone;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * {@link Resource} representing an individual entry in an {@link AddressBookResource}.
  */
 public class AddressResource extends Resource {
 
+	private String _principal;
+
 	/** 
 	 * Creates a {@link AddressResource}.
+	 * 
+	 * @param principal The user name of the address books owner.
 	 */
-	public AddressResource(String rootUrl, String resourcePath) {
+	public AddressResource(String rootUrl, String resourcePath, String principal) {
 		super(rootUrl, resourcePath);
+		_principal = principal;
 	}
 	
 	@Override
@@ -79,15 +83,18 @@ public class AddressResource extends Resource {
 		try (SqlSession session = db.openSession()) {
 			SpamReports spamreport = session.getMapper(SpamReports.class);
 			BlockList blockList = session.getMapper(BlockList.class);
+			Users users = session.getMapper(Users.class);
+			
+			long currentUser = users.getUserId(_principal);
 			
 			for (Telephone phone : card.getTelephoneNumbers()) {
 				String phoneNumber = phone.getText();
 				
 				System.out.println("Adding to block list: " + phoneNumber);
 				
-				blockList.removeExclude(1, phoneNumber);
-				blockList.addPersonalization(1, phoneNumber);
-				db.processVote(spamreport, phoneNumber, 2, System.currentTimeMillis());
+				blockList.removeExclude(currentUser, phoneNumber);
+				blockList.addPersonalization(currentUser, phoneNumber);
+				db.processVotes(spamreport, phoneNumber, 2, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -98,18 +105,9 @@ public class AddressResource extends Resource {
 	
 	@Override
 	public void delete(HttpServletResponse resp) {
-		DB db = DBService.getInstance();
-		try (SqlSession session = db.openSession()) {
-			SpamReports spamreport = session.getMapper(SpamReports.class);
-			BlockList blockList = session.getMapper(BlockList.class);
-			
-			String phoneNumber = getDisplayName();
-			blockList.removePersonalization(1, phoneNumber);
-			blockList.addExclude(1, phoneNumber);
-			db.processVote(spamreport, phoneNumber, -2, System.currentTimeMillis());
-			
-			session.commit();
-		}
+		String phoneNumber = getDisplayName();
+		
+		DBService.getInstance().deleteEntry(_principal, phoneNumber);
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}

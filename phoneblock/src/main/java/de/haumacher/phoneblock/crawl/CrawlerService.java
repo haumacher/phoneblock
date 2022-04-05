@@ -30,7 +30,7 @@ public class CrawlerService implements ServletContextListener {
 			_crawler = new WebCrawler(notBefore) {
 				@Override
 				protected void reportCaller(String caller, int rating, long time) {
-					db.addSpam(caller, -(rating - 3), time);
+					db.processVotes(caller, -(rating - 3), time);
 				}
 			};
 			_crawlerThread = new Thread(_crawler);

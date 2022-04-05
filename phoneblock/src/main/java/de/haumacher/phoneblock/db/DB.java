@@ -90,6 +90,9 @@ public class DB {
 		}
 	}
 	
+	/**
+	 * Generates a random number that is sent to a e-mail address for verification.
+	 */
 	public String generateVerificationCode() {
 		StringBuilder codeBuffer = new StringBuilder();
 		for (int n = 0; n < 8; n++) {
@@ -99,6 +102,12 @@ public class DB {
 		return code;
 	}
 
+	/**
+	 * Creates a new PhoneBlock user account.
+	 *
+	 * @param userName The user name (e-mail address) of the new account.
+	 * @return The randomly generated password for the account.
+	 */
 	public String createUser(String userName) throws UnsupportedEncodingException {
 		StringBuilder pwbuffer = new StringBuilder();
 		for (int n = 0; n < 20; n++) {
@@ -110,6 +119,9 @@ public class DB {
 		return passwd;
 	}
 
+	/**
+	 * Whether ther is an entry for the given phone numner in the database.
+	 */
 	public boolean hasSpamReportFor(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -117,19 +129,29 @@ public class DB {
 		}
 	}
 
-	public void addSpam(String phone, int votes, long time) {
+	/**
+	 * Adds/removes votes for the given phone number.
+	 *
+	 * @param phone The phone number to vote.
+	 * @param votes The votes to add/remove for the given phone number.
+	 * @param time The current time to update the last update time to.
+	 */
+	public void processVotes(String phone, int votes, long time) {
 		if (votes == 0) {
 			return;
 		}
 		
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			processVote(reports, phone, votes, time);
+			processVotes(reports, phone, votes, time);
 			session.commit();
 		}
 	}
 
-	public void processVote(SpamReports reports, String phone, int votes, long time) {
+	/**
+	 * Implementation of {@link #processVotes(String, int, long)} when there is already a database session.
+	 */
+	public void processVotes(SpamReports reports, String phone, int votes, long time) {
 		if (votes < 0) {
 			if (reports.isKnown(phone)) {
 				long currentVotes = reports.getVotes(phone);
@@ -148,6 +170,9 @@ public class DB {
 		}
 	}
 
+	/**
+	 * The time in milliseconds since epoch when the last update to the spam report table was done.
+	 */
 	public long getLastSpamReport() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -155,10 +180,16 @@ public class DB {
 		}
 	}
 
+	/**
+	 * Opens a session to query/update the database.
+	 */
 	public SqlSession openSession() {
 		return _sessionFactory.openSession();
 	}
 	
+	/**
+	 * Looks up all spam reports that were done after the given time in milliseconds since epoch.
+	 */
 	public List<SpamReport> getLatestSpamReports(long notBefore) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -166,13 +197,19 @@ public class DB {
 		}
 	}
 
-	public long getSpamVotesFor(String phone) {
+	/**
+	 * The number of votes that are stored for the given phone number.
+	 */
+	public long getVotesFor(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.isKnown(phone) ? reports.getVotes(phone) : 0;
 		}
 	}
 	
+	/**
+	 * Shuts down the database layer.
+	 */
 	public void shutdown() {
 		try (SqlSession session = openSession()) {
 			try (Statement statement = session.getConnection().createStatement()) {
@@ -232,6 +269,32 @@ public class DB {
 
 	private byte[] pwhash(String passwd) throws UnsupportedEncodingException {
 		return _sha256.digest(passwd.getBytes("utf-8"));
+	}
+
+	/** 
+	 * Explicitly allows a certain number by storing an exclude to the global blocklist.
+	 *
+	 * @param principal The current user.
+	 * @param phoneNumber The phone number to explicitly allow.
+	 */
+	public void deleteEntry(String principal, String phoneNumber) {
+		try (SqlSession session = openSession()) {
+			SpamReports spamreport = session.getMapper(SpamReports.class);
+			BlockList blockList = session.getMapper(BlockList.class);
+			Users users = session.getMapper(Users.class);
+			
+			long currentUser = users.getUserId(principal);
+			
+			boolean wasAddedBefore = blockList.removePersonalization(currentUser, phoneNumber);
+			blockList.addExclude(currentUser, phoneNumber);
+			
+			if (wasAddedBefore) {
+				// Note: Only a spam reporter may revoke his vote. This prevents vandals from deleting the whole list.
+				processVotes(spamreport, phoneNumber, -2, System.currentTimeMillis());
+			}
+			
+			session.commit();
+		}
 	}
 
 }

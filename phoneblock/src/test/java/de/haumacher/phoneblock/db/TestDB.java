@@ -44,33 +44,33 @@ public class TestDB extends TestCase {
 	public void testSpamReports() throws UnsupportedEncodingException, SQLException {
 		assertFalse(_db.hasSpamReportFor("123"));
 
-		_db.addSpam("123", 2, 1000);
+		_db.processVotes("123", 2, 1000);
 		
 		assertTrue(_db.hasSpamReportFor("123"));
 		
-		_db.addSpam("456", 1, 1001);
+		_db.processVotes("456", 1, 1001);
 		
-		assertEquals(2, _db.getSpamVotesFor("123"));
+		assertEquals(2, _db.getVotesFor("123"));
 		
 		assertFalse(_db.hasSpamReportFor("999"));
-		assertEquals(0, _db.getSpamVotesFor("999"));
+		assertEquals(0, _db.getVotesFor("999"));
 		
-		_db.addSpam("999", -1, 1002);
+		_db.processVotes("999", -1, 1002);
 		assertFalse(_db.hasSpamReportFor("999"));
-		assertEquals(0, _db.getSpamVotesFor("999"));
+		assertEquals(0, _db.getVotesFor("999"));
 		
-		_db.addSpam("999", 0, 1003);
+		_db.processVotes("999", 0, 1003);
 		assertFalse(_db.hasSpamReportFor("999"));
-		assertEquals(0, _db.getSpamVotesFor("999"));
+		assertEquals(0, _db.getVotesFor("999"));
 		
-		_db.addSpam("123", 1, 1004);
-		assertEquals(3, _db.getSpamVotesFor("123"));
+		_db.processVotes("123", 1, 1004);
+		assertEquals(3, _db.getVotesFor("123"));
 		
-		_db.addSpam("123", -1, 1005);
-		assertEquals(2, _db.getSpamVotesFor("123"));
+		_db.processVotes("123", -1, 1005);
+		assertEquals(2, _db.getVotesFor("123"));
 		
-		_db.addSpam("123", -2, 1006);
-		assertEquals(0, _db.getSpamVotesFor("123"));
+		_db.processVotes("123", -2, 1006);
+		assertEquals(0, _db.getVotesFor("123"));
 		assertFalse(_db.hasSpamReportFor("123"));
 		
 		assertEquals(1001, _db.getLastSpamReport());

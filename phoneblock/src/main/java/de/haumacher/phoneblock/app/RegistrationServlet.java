@@ -14,9 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import de.haumacher.phoneblock.db.DBService;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * {@link HttpServlet} invoked from the <code>signup-code.jsp</code> form after the e-mail verification code has been
+ * entered.
  */
 @WebServlet(urlPatterns = "/registration-code")
 public class RegistrationServlet extends HttpServlet {

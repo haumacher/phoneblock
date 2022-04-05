@@ -18,9 +18,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Utilities for inspecting XML {@link Document}s.
  */
 public class DomUtil {
 
@@ -37,7 +35,7 @@ public class DomUtil {
 	}
 
 	/**
-	 * TODO
+	 * The global {@link DocumentBuilder} for parsing and creating {@link Document}s.
 	 */
 	public static DocumentBuilder getBuilder() {
 		return documentBuilder;

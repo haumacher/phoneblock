@@ -16,9 +16,7 @@ import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * {@link HttpServlet} that is invoked from the <code>signup.jsp</code> form.
  */
 @WebServlet(urlPatterns = "/verify-email")
 public class EMailVerificationServlet extends HttpServlet {

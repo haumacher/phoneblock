@@ -4,18 +4,27 @@
 package de.haumacher.phoneblock.carddav;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * A depth specifier for retrieving parts of the CardDAV resource tree.
  */
 public enum Depth {
-	EMPTY, IMMEDIATES, INFINITY;
+	
+	/**
+	 * Only the resource whose URL was requested.
+	 */
+	EMPTY, 
+	
+	/**
+	 * The requested collection and all of its children.
+	 */
+	IMMEDIATES, 
+	
+	/**
+	 * The whole sub-tree rooted at the requested resource.
+	 */
+	INFINITY;
 
 	/** 
-	 * TODO
-	 *
-	 * @param depthValue
-	 * @return
+	 * Converts from a <code>depth</code> header value of the DAV protocol.
 	 */
 	public static Depth fromHeader(String depthValue) {
 		if (depthValue == null) {

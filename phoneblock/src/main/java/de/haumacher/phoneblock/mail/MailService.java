@@ -116,8 +116,7 @@ public class MailService {
 	}
 	
 	/** 
-	 * TODO
-	 *
+	 * Shuts down the {@link MailService}.
 	 */
 	public void shutdown() {
 		if (_session != null) {

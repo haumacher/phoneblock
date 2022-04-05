@@ -17,9 +17,7 @@ import de.haumacher.phoneblock.carddav.schema.DavSchema;
 import de.haumacher.phoneblock.util.DomUtil;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * {@link Resource} representing a PhoneBlock user account.
  */
 public class PrincipalResource extends Resource {
 

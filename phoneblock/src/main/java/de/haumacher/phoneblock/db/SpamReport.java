@@ -4,9 +4,7 @@
 package de.haumacher.phoneblock.db;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Data object representing a single spam report.
  */
 public class SpamReport {
 	
@@ -24,21 +22,21 @@ public class SpamReport {
 	}
 
 	/**
-	 * TODO
+	 * The phone number reported as spam.
 	 */
 	public String getPhone() {
 		return _phone;
 	}
 
 	/**
-	 * TODO
+	 * Time in milliseconds since epoch when the last vote for this phone number was seen.
 	 */
 	public long getLastUpdate() {
 		return _lastUpdate;
 	}
 
 	/**
-	 * TODO
+	 * The total number of votes that report this phone number as spam.
 	 */
 	public int getVotes() {
 		return _votes;
