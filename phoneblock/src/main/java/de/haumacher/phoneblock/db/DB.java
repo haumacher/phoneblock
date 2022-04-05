@@ -36,7 +36,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
  */
 public class DB {
 
-	private static final String SAVE_CHARS = "123456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
+	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList("BLOCKLIST", "SPAMREPORTS", "USERS");
 	
