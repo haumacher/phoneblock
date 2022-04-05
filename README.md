@@ -13,3 +13,6 @@ PhoneBlock works on a "landline" in combination with a "FRITZ!Box" internet rout
 
 The only other thing you need is a PhoneBlock account, with which you can set up the phone block list in your FRITZ!Box.
 
+## Ready to get started?
+
+Try PhoneBlock live at: https://phoneblock.haumacher.de/
