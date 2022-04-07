@@ -32,7 +32,7 @@ public class PrincipalResource extends Resource {
 	}
 	
 	@Override
-	protected int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
+	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET.equals(property)) {
 			Element container = appendElement(propElement, property);
 			DomUtil.appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.ADDRESSES_PATH + _principal + "/"));

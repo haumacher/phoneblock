@@ -48,12 +48,13 @@ public class AddressResource extends Resource {
 	}
 
 	@Override
-	protected String getEtag() {
+	public String getEtag() {
+		// Address entries never change. The consist only of the bare phone number. 
 		return "1";
 	}
 	
 	@Override
-	protected int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
+	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
 			String phoneNumber = getDisplayName();
 			

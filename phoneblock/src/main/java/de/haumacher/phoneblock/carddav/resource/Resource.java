@@ -105,11 +105,11 @@ public abstract class Resource {
 	 *        The qualified name of the property to retrieve.
 	 * @return The status code for the request.
 	 */
-	protected int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
+	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (DavSchema.DAV_CURRENT_USER_PRINCIPAL.equals(property)) {
 			String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
 			if (userName != null) {
-				Element container = appendElement(propElement, property);
+				Element container = appendElement(propElement, DavSchema.DAV_CURRENT_USER_PRINCIPAL);
 				appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.PRINCIPALS_PATH + userName));
 				return HttpServletResponse.SC_OK;
 			}
@@ -117,13 +117,13 @@ public abstract class Resource {
 		else if (DavSchema.DAV_DISPLAYNAME.equals(property)) {
 			String displayName = getDisplayName();
 			if (displayName != null) {
-				Element container = appendElement(propElement, property);
+				Element container = appendElement(propElement, DavSchema.DAV_DISPLAYNAME);
 				appendText(container, displayName);
 				return HttpServletResponse.SC_OK;
 			}
 		}
 		else if (DavSchema.DAV_RESOURCETYPE.equals(property)) {
-			Element container = appendElement(propElement, property);
+			Element container = appendElement(propElement, DavSchema.DAV_RESOURCETYPE);
 			if (isCollection()) {
 				appendElement(container, DavSchema.DAV_COLLECTION);
 			}
@@ -136,7 +136,7 @@ public abstract class Resource {
 		else if (DavSchema.DAV_GETETAG.equals(property)) {
 			String etag = getEtag();
 			if (etag != null) {
-				Element container = appendElement(propElement, property);
+				Element container = appendElement(propElement, DavSchema.DAV_GETETAG);
 				appendText(container, quote(etag));
 				return HttpServletResponse.SC_OK;
 			}
@@ -171,11 +171,21 @@ public abstract class Resource {
 		return false;
 	}
 
-	private static String quote(String etag) {
+	/**
+	 * Quotes the given <code>etag</code> contents producing an <code>etag</code> string.
+	 * 
+	 * @see #getEtag()
+	 */
+	public static String quote(String etag) {
 		return '"' + etag.replace("\"", "\\\"") + '"';
 	}
 
-	protected String getEtag() {
+	/**
+	 * The unquoted <code>etag</code> content.
+	 * 
+	 * @see #quote(String)
+	 */
+	public String getEtag() {
 		return null;
 	}
 

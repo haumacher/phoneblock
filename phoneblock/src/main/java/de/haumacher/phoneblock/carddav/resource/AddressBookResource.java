@@ -84,7 +84,7 @@ public class AddressBookResource extends Resource {
 	}
 
 	@Override
-	protected String getEtag() {
+	public String getEtag() {
 		return Integer.toString(allPhoneNumbers().stream().map(r -> r.hashCode()).reduce(0, (x, y) -> x + y));
 	}
 }

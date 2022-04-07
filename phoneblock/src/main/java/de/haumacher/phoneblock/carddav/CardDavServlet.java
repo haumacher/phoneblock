@@ -17,6 +17,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.w3c.dom.Document;
@@ -168,9 +169,22 @@ public class CardDavServlet extends HttpServlet {
 				
 				Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
 				if (content != null) {
-					Element prop = appendElement(propstat, DavSchema.DAV_PROP);
+					Element propElement = appendElement(propstat, DavSchema.DAV_PROP);
+					
+					String etag = content.getEtag();
+					if (etag != null) {
+						Element container = appendElement(propElement, DavSchema.DAV_GETETAG);
+						appendText(container, Resource.quote(etag));
+					}
+					
 					for (Element property : properties) {
-						content.fillProperty(req, prop, property);
+						QName qname = qname(property);
+						if (DavSchema.DAV_GETETAG.equals(qname)) {
+							// Unconditionally added above.
+							continue;
+						}
+						
+						content.fillProperty(req, propElement, property, qname);
 					}
 					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
 				} else {
