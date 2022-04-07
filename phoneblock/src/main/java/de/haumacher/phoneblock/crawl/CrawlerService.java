@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import de.haumacher.phoneblock.carddav.resource.AddressResource;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -30,7 +31,7 @@ public class CrawlerService implements ServletContextListener {
 			_crawler = new WebCrawler(notBefore) {
 				@Override
 				protected void reportCaller(String caller, int rating, long time) {
-					db.processVotes(caller, -(rating - 3), time);
+					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);
 				}
 			};
 			_crawlerThread = new Thread(_crawler);

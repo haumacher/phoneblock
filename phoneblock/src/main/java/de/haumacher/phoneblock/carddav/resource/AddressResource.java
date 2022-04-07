@@ -88,7 +88,7 @@ public class AddressResource extends Resource {
 			long currentUser = users.getUserId(_principal);
 			
 			for (Telephone phone : card.getTelephoneNumbers()) {
-				String phoneNumber = phone.getText();
+				String phoneNumber = normalizeNumber(phone.getText());
 				
 				System.out.println("Adding to block list: " + phoneNumber);
 				
@@ -101,6 +101,13 @@ public class AddressResource extends Resource {
 		}
 		
 		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+	}
+
+	/** 
+	 * Removes grouping characters from the given phone number.
+	 */
+	public static String normalizeNumber(String phoneNumber) {
+		return phoneNumber.replaceAll("[- ]", "");
 	}
 	
 	@Override
