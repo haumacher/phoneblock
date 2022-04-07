@@ -33,15 +33,15 @@ public class Captcha {
 	private static final int MAX_WIDTH = 60;
 	private static final int MAX_HEIGHT = 40;
 	private static final float HUE_RESERVE = 0.2f;
-	private static final float HUE_RANGE = 0.15f;
+	private static final float HUE_RANGE = 0.1f;
 
 	private final Random _rnd;
 	
 	private float _textHue;
 	
 	boolean _innerRange;
-	private float _hueReservedMin;
-	private float _hueReservedMax;
+	private float _hueReservedStart;
+	private float _hueReservedStop;
 
 	private String _text;
 
@@ -82,24 +82,24 @@ public class Captcha {
 		Graphics2D graphics = (Graphics2D) img.getGraphics();
 		
 		_textHue = _rnd.nextFloat();
-		_hueReservedMin = _textHue - HUE_RESERVE;
-		_hueReservedMax = _textHue + HUE_RESERVE;
+		_hueReservedStart = _textHue - HUE_RESERVE;
+		_hueReservedStop = _textHue + HUE_RESERVE;
 		
-		if (_hueReservedMin < 0.0f) {
+		if (_hueReservedStart < 0.0f) {
 			//    |---- t ----|
 			// ------|----------------------|-----
 			//       0                      1
 			//       |-- t ----|         |--|
-			_hueReservedMin = 1.0f + _hueReservedMin;
+			_hueReservedStart = 1.0f + _hueReservedStart;
 			_innerRange = true;
 		}
 		
-		if (_hueReservedMax > 1.0f) {
+		if (_hueReservedStop > 1.0f) {
 			//                    |---- t ----|
 			// ------|----------------------|-----
 			//       0                      1
 			//       |--|         |---- t --|
-			_hueReservedMax = _hueReservedMax - 1.0f;
+			_hueReservedStop = _hueReservedStop - 1.0f;
 			_innerRange = true;
 		}
 		
@@ -177,11 +177,11 @@ public class Captcha {
 		while (true) {
 			hue = _rnd.nextFloat();
 			if (_innerRange) {
-				if (hue <= _hueReservedMax || hue >= _hueReservedMin) {
+				if (hue <= _hueReservedStop || hue >= _hueReservedStart) {
 					continue;
 				}
 			} else {
-				if (hue >= _hueReservedMin && hue <= _hueReservedMax) {
+				if (hue >= _hueReservedStart && hue <= _hueReservedStop) {
 					continue;
 				}
 			}
@@ -192,7 +192,7 @@ public class Captcha {
 	}
 
 	private Color getColor(float hue) {
-		return Color.getHSBColor(hue, 1.0f, 1.0f);
+		return Color.getHSBColor(hue, 1.0f, 0.8f + _rnd.nextFloat() * 0.2f);
 	}
 
 	/**
