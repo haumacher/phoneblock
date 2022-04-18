@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.db;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * Operations for user management.
@@ -26,5 +27,11 @@ public interface Users {
 	 */
 	@Select("select ID from USERS where EMAIL=#{email}")
 	long getUserId(String email);
+
+	/**
+	 * Updates the user's last access timestamp.
+	 */
+	@Update("update USERS set LASTACCESS=#{lastAccess} where EMAIL=#{email}")
+	void setLastAccess(String email, long lastAccess);
 	
 }

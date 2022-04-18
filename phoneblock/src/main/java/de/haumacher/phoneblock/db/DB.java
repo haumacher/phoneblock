@@ -196,6 +196,16 @@ public class DB {
 			return reports.getLatestReports(notBefore);
 		}
 	}
+	
+	/**
+	 * The current spam report statistics.
+	 */
+	public List<Statistics> getSpamReportStatistic() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getStatistics();
+		}
+	}
 
 	/**
 	 * The number of votes that are stored for the given phone number.
@@ -230,6 +240,18 @@ public class DB {
 			
 			users.deleteUser(userName);
 			users.addUser(userName, pwhash(passwd));
+			session.commit();
+		}
+	}
+
+	/** 
+	 * Sets the last access time for the given user to the given timestamp.
+	 */
+	public void updateLastAccess(String userName, long timestamp) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			users.setLastAccess(userName, timestamp);
 			session.commit();
 		}
 	}

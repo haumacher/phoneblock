@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page pageEncoding="UTF-8" %>
 <%@page import="java.util.List"%>
 <%@page import="de.haumacher.phoneblock.db.SpamReport"%>
@@ -18,17 +19,35 @@
 
 <section class="section">
 <div class="content">
+	<p>
+		Bekannte SPAM-Nummern: 
+<%
+	List<Statistics> statistic = DBService.getInstance().getSpamReportStatistic();
+	int cnt = 0;
+	String[] labels = {"berichtet", "bestätigt", "sicher"};
+	
+	for (Statistics statistics : statistic) {
+		cnt += statistics.getCnt();
+		String label = labels[statistics.getContidence()];
+%>		
+		<%= statistics.getCnt() %> <%= JspUtil.quote(label) %>,
+<%
+	}
+%>	
+	insgesammt <%= cnt %> Nummern.
+	</p>
+
 <%
 	long now = System.currentTimeMillis();
 	List<SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
 	if (reports.isEmpty()) {
 %>
-		<p>No recent spam reports.</p>
+		<p>Keine aktuellen Spam-Reports.</p>
 <%			
 	} else {
 %>
 		<p>
-		The spam reports received in the last hour are listed below.
+		Die Spam-Reports der letzten Stunde: 
 		</p>
 
 		<table class="table">

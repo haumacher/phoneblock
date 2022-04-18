@@ -43,4 +43,6 @@ public interface SpamReports {
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
 	Set<String> getSpamList(int minVotes);
 	
+	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < 3 THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
+	List<Statistics> getStatistics();
 }
