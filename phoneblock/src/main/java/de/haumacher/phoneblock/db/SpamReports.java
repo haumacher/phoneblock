@@ -63,8 +63,8 @@ public interface SpamReports {
 	
 	@Select("SELECT PHONE, VOTES, LASTUPDATE FROM SPAMREPORTS s"
 			+ " WHERE s.LASTUPDATE >= #{notBefore}"
-			+ " ORDER BY s.VOTES DESC LIMIT 20")
-	List<SpamReport> getTopSpammers(long notBefore);
+			+ " ORDER BY s.VOTES DESC LIMIT #{cnt}")
+	List<SpamReport> getTopSpammers(int cnt, long notBefore);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);

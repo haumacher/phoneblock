@@ -224,7 +224,7 @@ public class DB {
 	/**
 	 * Looks up spam reports with the most votes in the last month.
 	 */
-	public List<SpamReport> getTopSpamReports() {
+	public List<SpamReport> getTopSpamReports(int cnt) {
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.add(Calendar.MONTH, -1);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -233,7 +233,7 @@ public class DB {
 		long notBefore = cal.getTimeInMillis();
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getTopSpammers(notBefore);
+			return reports.getTopSpammers(cnt, notBefore);
 		}
 	}
 	

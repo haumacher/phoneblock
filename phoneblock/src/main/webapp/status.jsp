@@ -90,7 +90,7 @@
 
 
 <%
-	reports = DBService.getInstance().getTopSpamReports();
+	reports = DBService.getInstance().getTopSpamReports(15);
 	if (!reports.isEmpty()) {
 		DateFormat format = SimpleDateFormat.getDateTimeInstance();
 %>

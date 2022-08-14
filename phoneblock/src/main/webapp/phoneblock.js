@@ -21,3 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+function showaddr(target) {
+  var addr =
+    "haui" + String.fromCharCode(64) + "haumacher" +
+    String.fromCharCode(46) + "de";
+  var link = document.createElement("a");
+  link.setAttribute("href", "mailto:" + addr);
+  link.appendChild(
+    document.createTextNode(addr));
+  target.parentNode.replaceChild(link, target);
+  return false;
+}

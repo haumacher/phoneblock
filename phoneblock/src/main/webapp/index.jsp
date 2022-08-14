@@ -72,7 +72,7 @@
 		<div class="tile is-parent is-6">
 			<a class="tile is-child notification is-primary" href="signup.jsp">
 				<p class="title">Klar zum Loslegen?</p>
-				<p class="subtitle">Dann mach einen PhoneBlock-Account!</p>
+				<p class="subtitle">PhoneBlock-Account erstellen!</p>
 			</a>
 		</div>
 
