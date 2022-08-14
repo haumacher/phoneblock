@@ -21,6 +21,9 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -49,6 +52,8 @@ public class DB {
 	private MessageDigest _sha256;
 
 	private SecureRandom _rnd = new SecureRandom();
+	
+	private ScheduledExecutorService _scheduler;
 	
 	/** 
 	 * Creates a {@link DB}.
@@ -90,6 +95,23 @@ public class DB {
 		} catch (NoSuchAlgorithmException ex) {
 			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
+		
+		 _scheduler = new ScheduledThreadPoolExecutor(1);
+		 
+		 Calendar cal = GregorianCalendar.getInstance();
+		 long millisNow = cal.getTimeInMillis();
+		 int hourNow = cal.get(Calendar.HOUR_OF_DAY);
+		 cal.set(Calendar.HOUR_OF_DAY, 10);
+		 cal.set(Calendar.MINUTE, 0);
+		 cal.set(Calendar.SECOND, 0);
+		 cal.set(Calendar.MILLISECOND, 0);
+		 if (hourNow >= 10) {
+			 cal.add(Calendar.DAY_OF_MONTH, 1);
+		 }
+		 long millisFirst = cal.getTimeInMillis();
+		 
+		 _scheduler.scheduleAtFixedRate(this::cleanup, millisFirst - millisNow, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS);
+		 System.out.println("Scheduled next DB cleanup: " + cal.getTime());
 	}
 	
 	/**
@@ -216,12 +238,12 @@ public class DB {
 	}
 	
 	/**
-	 * The current spam report statistics.
+	 * The current DB status.
 	 */
-	public List<Statistics> getSpamReportStatistic() {
+	public Status getStatus() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getStatistics();
+			return new Status(reports.getStatistics(), reports.getTotalVotes(), reports.getArchivedReportCount());
 		}
 	}
 
@@ -335,6 +357,38 @@ public class DB {
 			
 			session.commit();
 		}
+	}
+
+	private void cleanup() {
+		System.out.println("Starting DB cleanup.");
+		
+		Calendar cal = GregorianCalendar.getInstance();
+		long now = cal.getTimeInMillis();
+		cal.add(Calendar.DAY_OF_MONTH, -14);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		long before = cal.getTimeInMillis();
+		
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
+			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
+			int archived = reports.archiveReportsWithLowVotes(before);
+			int deletedNew = reports.deleteArchivedReports(now);
+			
+			System.out.println("Reactivated " + reactivated + " reports, archived " + archived + " reports.");
+			if (deletedOld != reactivated) {
+				System.out.println("ERROR: Reactivated " + reactivated + " records but deleted " + deletedOld + " reports from archive.");
+			}
+			if (deletedNew != archived) {
+				System.out.println("ERROR: Archived " + archived + " records but deleted " + deletedNew + " reports from database.");
+			}
+			
+			session.commit();
+		}
+		
+		System.out.println("Finished DB cleanup.");
 	}
 
 }

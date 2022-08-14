@@ -31,8 +31,32 @@ public interface SpamReports {
 	@Select("select VOTES from SPAMREPORTS where PHONE = #{phone}")
 	int getVotes(String phone);
 
+	@Select("SELECT SUM(s.VOTES) FROM SPAMREPORTS s")
+	int getTotalVotes();
+	
+	@Select("SELECT COUNT(1) FROM OLDREPORTS o")
+	int getArchivedReportCount();
+	
 	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
 	void delete(String phone);
+	
+	@Update("UPDATE SPAMREPORTS s"
+			+ " SET s.VOTES = s.VOTES + (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE)"
+			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(x.VOTES) FROM OLDREPORTS x WHERE s.PHONE = x.PHONE) > 0")
+	int reactivateOldReportsWithNewVotes(long now);
+	
+	@Delete("DELETE FROM OLDREPORTS o "
+			+ " WHERE (SELECT SUM(s.VOTES) FROM SPAMREPORTS s WHERE s.LASTUPDATE <= #{now} AND s.PHONE = o.PHONE) > 0")
+	int deleteOldReportsWithNewVotes(long now);
+	
+	@Insert("INSERT INTO OLDREPORTS ("
+			+ " SELECT s.* FROM SPAMREPORTS s"
+			+ " WHERE s.LASTUPDATE < #{before} AND s.VOTES <= 3)")
+	int archiveReportsWithLowVotes(long before);
+	
+	@Delete("DELETE FROM SPAMREPORTS s "
+			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE) > 0")
+	int deleteArchivedReports(long now);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
 	List<SpamReport> getLatestReports(long after);

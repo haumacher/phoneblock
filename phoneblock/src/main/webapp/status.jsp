@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.text.DateFormat"%>
@@ -26,19 +27,20 @@
 	<p>
 		Bekannte SPAM-Nummern: 
 <%
-	List<Statistics> statistic = DBService.getInstance().getSpamReportStatistic();
-	int cnt = 0;
-	String[] labels = {"berichtet", "bestätigt", "sicher"};
-	
-	for (Statistics statistics : statistic) {
+	Status status = DBService.getInstance().getStatus();
+	List<Statistics> statistic = status.getStatistics();
+			int cnt = 0;
+			String[] labels = {"berichtet", "bestätigt", "sicher"};
+			
+			for (Statistics statistics : statistic) {
 		cnt += statistics.getCnt();
-		String label = labels[statistics.getContidence()];
-%>		
+		String label = labels[statistics.getConfidence()];
+	%>		
 		<%= statistics.getCnt() %> <%= JspUtil.quote(label) %>,
 <%
 	}
 %>	
-	insgesammt <%= cnt %> Nummern.
+	<%= cnt %> aktive Nummern auf der Blocklist. Insgesamt <%= status.getTotalVotes() %> User-Reports, <%= status.getArchivedReports() %> inaktive Nummer mit Spam-Verdacht.
 	</p>
 
 <%

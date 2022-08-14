@@ -9,18 +9,18 @@ package de.haumacher.phoneblock.db;
 public class Statistics {
 	
 	private final int _cnt;
-	private final int _contidence;
+	private final int _confidence;
 	
 	/** 
 	 * Creates a {@link Statistics}.
 	 */
 	public Statistics(int cnt, int contidence) {
 		_cnt = cnt;
-		_contidence = contidence;
+		_confidence = contidence;
 	}
 
 	/**
-	 * The amount of spam numbers with given {@link #getContidence()}.
+	 * The amount of spam numbers with given {@link #getConfidence()}.
 	 */
 	public int getCnt() {
 		return _cnt;
@@ -29,8 +29,8 @@ public class Statistics {
 	/**
 	 * The confidence level of the spam report: 0 - reported, 1 - confirmed, 2 - certain
 	 */
-	public int getContidence() {
-		return _contidence;
+	public int getConfidence() {
+		return _confidence;
 	}
 
 }
