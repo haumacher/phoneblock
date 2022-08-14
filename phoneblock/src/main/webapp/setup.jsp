@@ -1,6 +1,7 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
-<%@page pageEncoding="UTF-8" %>
 <html>
 <head>
 	<title>PhoneBlock: Der Spam-Filter für Dein Telefon</title>

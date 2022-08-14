@@ -1,3 +1,10 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%-- 
+  - Author(s): Bernhard Haumacher et al.
+  - Copyright Notice: Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
+  - Description: JSP fragment that renders the application footer. It must be included just before the end of the body tag.
+  --%>
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p>

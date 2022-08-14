@@ -1,7 +1,14 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%-- 
+  - Author(s): Bernhard Haumacher et al.
+  - Copyright Notice: Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
+  - Description: JSP fragment that renders the application header. It must be included directly following the body tag.
+  --%>
 <nav class="navbar" role="navigation" aria-label="main navigation">
 	<div class="navbar-brand">
 		<a class="navbar-item" href="https://phoneblock.haumacher.de"><img
-			src="app-logo.svg" height="28" style="padding-right: 1ex;"> PhoneBlock
+			src="<%=request.getContextPath()%>/app-logo.svg" height="28" style="padding-right: 1ex;"> PhoneBlock
 		</a> <a role="button" class="navbar-burger" aria-label="menu"
 			aria-expanded="false" data-target="navbarBasicExample"> <span
 			aria-hidden="true"></span> <span aria-hidden="true"></span> <span

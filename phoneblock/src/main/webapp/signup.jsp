@@ -1,14 +1,10 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
-<%@page pageEncoding="UTF-8" %>
 <html>
 <head>
-	<title>PhoneBlock: Der Spam-Filter für Dein Telefon</title>
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-	<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/6.1.0/css/all.min.css">
-	<script type="text/javascript" src="phoneblock.js"></script>
+	<jsp:include page="head-content.jspf"></jsp:include>
 </head>
 
 <body>
