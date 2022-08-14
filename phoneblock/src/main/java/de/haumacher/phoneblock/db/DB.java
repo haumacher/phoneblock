@@ -279,7 +279,7 @@ public class DB {
 			Users users = session.getMapper(Users.class);
 			
 			users.deleteUser(userName);
-			users.addUser(userName, pwhash(passwd));
+			users.addUser(userName, pwhash(passwd), System.currentTimeMillis());
 			session.commit();
 		}
 	}

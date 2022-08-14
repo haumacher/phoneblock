@@ -13,8 +13,8 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface Users {
 
-	@Insert("insert into USERS (EMAIL, PWHASH) values (#{email}, #{pwhash})")
-	void addUser(String email, byte[] pwhash);
+	@Insert("insert into USERS (EMAIL, PWHASH, REGISTERED) values (#{email}, #{pwhash}, #{registered})")
+	void addUser(String email, byte[] pwhash, long registered);
 	
 	@Delete("delete from USERS where EMAIL=#{email}")
 	void deleteUser(String email);
