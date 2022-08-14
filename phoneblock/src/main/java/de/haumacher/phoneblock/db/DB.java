@@ -15,7 +15,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -194,6 +196,22 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
+		}
+	}
+	
+	/**
+	 * Looks up spam reports with the most votes in the last month.
+	 */
+	public List<SpamReport> getTopSpamReports() {
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.add(Calendar.MONTH, -1);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		long notBefore = cal.getTimeInMillis();
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getTopSpammers(notBefore);
 		}
 	}
 	

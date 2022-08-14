@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<%@page import="java.util.Date"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.text.DateFormat"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
@@ -47,9 +50,7 @@
 <%			
 	} else {
 %>
-		<p>
-		Die Spam-Reports der letzten Stunde: 
-		</p>
+		<h2>Spam-Reports der letzten Stunde</h2> 
 
 		<table class="table">
 			<thead>
@@ -74,6 +75,48 @@
 						
 						<td>
 							<%= (now - report.getLastUpdate()) / 1000 / 60 %> minutes ago
+						</td>
+					</tr>
+<%	
+				}
+%>
+			</tbody>
+		</table>
+<%	
+	}
+%>
+
+
+<%
+	reports = DBService.getInstance().getTopSpamReports();
+	if (!reports.isEmpty()) {
+		DateFormat format = SimpleDateFormat.getDateTimeInstance();
+%>
+		<h2>Aktuelle Top-Spammer</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Phone number</th>
+					<th>Confidence</th>
+					<th>Last update</th>
+				</tr>
+			</thead>
+			<tbody>
+<%			
+				for (SpamReport report : reports) {
+%>
+					<tr>
+						<td>
+							<%= JspUtil.quote(report.getPhone()) %>
+						</td>
+						
+						<td>
+							<%= report.getVotes() %>
+						</td>
+						
+						<td>
+							<%= format.format(new Date(report.getLastUpdate()))%>
 						</td>
 					</tr>
 <%	
