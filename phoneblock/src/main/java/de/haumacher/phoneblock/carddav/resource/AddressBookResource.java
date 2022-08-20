@@ -59,7 +59,7 @@ public class AddressBookResource extends Resource {
 			
 			long currentUser = users.getUserId(_principal);
 			
-			Set<String> result = reports.getSpamList(1);
+			Set<String> result = reports.getSpamList(3);
 			result.removeAll(blocklist.getExcluded(currentUser));
 			result.addAll(blocklist.getPersonalizations(currentUser));
 			

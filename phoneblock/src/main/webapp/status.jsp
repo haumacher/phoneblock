@@ -25,13 +25,16 @@
 <%
 	Status status = DBService.getInstance().getStatus();
 	List<Statistics> statistic = status.getStatistics();
-			int cnt = 0;
-			String[] labels = {"berichtet", "bestätigt", "sicher"};
-			
-			for (Statistics statistics : statistic) {
-		cnt += statistics.getCnt();
+	int cnt = 0;
+	String[] labels = {"berichtet", "bestätigt", "sicher"};
+	
+	for (Statistics statistics : statistic) {
+		// Exclude numbers reported only once.
+		if (statistics.getConfidence() > 0) {
+			cnt += statistics.getCnt();
+		}
 		String label = labels[statistics.getConfidence()];
-	%>		
+%>		
 		<%= statistics.getCnt() %> <%= JspUtil.quote(label) %>,
 <%
 	}

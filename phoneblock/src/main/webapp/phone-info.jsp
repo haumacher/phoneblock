@@ -21,14 +21,16 @@
 
 <%
 	SpamReport info = (SpamReport) request.getAttribute("info");
-	if (info.getVotes() == 0) {
 %>
+
 <section class="section">
 <div class="content">
 	<h2>Telefonnummer <%= info.getPhone()%></h2>
-
+<%
+	if (info.getVotes() == 0) {
+%>
 	<p>
-		Status: <span class="tag is-info is-success">Keine Beschwerden</span>
+		<span class="tag is-info is-success">Keine Beschwerden</span>
 	</p>
 
 	<p>
@@ -36,43 +38,82 @@
 		Es gibt bisher keine Beschwerden über unerwünschte Anrufe von der Telefonnummer 
 		<code><%= info.getPhone() %></code>.
 	</p>
-</div>
 
-<div class="columns">
-  <div class="column is-half is-offset-one-quarter">
-	<a href="<%=request.getContextPath() %>/block.jsp"><button class="button is-medium is-primary is-fullwidth">Rufnummer sperren</button></a>
-  </div>
-</div>
-
-</section>
+	<p>
+		Wenn Du Dich von Anrufen von dieser Rufnummer belästigt fühlst, trage 
+		die Nummer in Deiner Fritz!Box in die Blocklist ein und schütze damit Dich und andere PhoneBlock-Nutzer
+		vor weiterem Telefonterror von dieser Nummer.
+	</p>
 <%
 	} else {
 %>		
-<section class="section">
-<div class="content">
-	<h2>Telefonnummer <%= info.getPhone()%></h2>
+<% 
+		if (info.getVotes() < 3) {
+%>
+	<p><span class="tag is-info is-warning">Beschwerde liegt vor</span></p>
 
 	<p>
-		Status: <span class="tag is-info is-danger">Blockiert</span>
+		Es gibt bereits Beschwerden über unerwünschte Anrufe von der Telefonnummer <code><%= info.getPhone() %></code>. 
+		Die Nummer wird aber noch nicht blockiert. 
 	</p>
 
 	<p>
-		Die Telefonnummer <code><%= info.getPhone() %></code> wurde bereits als Quelle von unerwünschten 
-		Telefonanrufen gemeldet. Mit PhoneBlock hast Du vor Anrufen von dieser Rufnummer Ruhe.
+		Wenn Du PhoneBlock installiert hast und ebenfalls von dieser Nummer unerwünscht angerufen wurdest, trage 
+		diese Nummer in Deiner Fritz!Box in die Blocklist ein und schütze damit Dich und andere PhoneBlock-Nutzer
+		vor weiterem Telefonterror von dieser Nummer.
 	</p>
-	
+<%
+		} else {
+%>			
+	<p><span class="tag is-info is-danger">Blockiert</span></p>
+
+	<p>
+		Die Telefonnummer <code><%= info.getPhone() %></code> is eine mehrfach berichtete Quelle von unerwünschten 
+		Telefonanrufen. Mit PhoneBlock hast Du vor Anrufen von dieser Rufnummer Ruhe.
+	</p>
+
 	<p>
 		Wenn Du PhoneBlock bereits installiert hast, und trotzdem von dieser 
 		Nummer angerufen wurdest, ist der Eintrag entweder ganz neu und Deine Fritz!Box hat das Update 
 		noch nicht heruntergeladen, oder etwas stimmt mit Deinen Einstellungen nicht.
 	</p>
+<%
+		}
+%>			
 	
 	<h2>Details</h2>
 	<ul>
-		<li>Anzahl Beschwerden: <%= info.getVotes() %></li>
+		<li>Anzahl Beschwerden: <%= (info.getVotes() + 1) / 2 %></li>
 		<li>Letzte Beschwerde vom: <%= DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN).format(new Date(info.getLastUpdate())) %></li>
 	</ul>
+<%		
+	}
+%>
 </div>
+
+<%
+	if (info.getVotes() < 3) {
+%>
+
+<div class="tile is-ancestor">
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/block.jsp">
+			<p class="title">Rufnummer sperren</p>
+			<p class="subtitle">Melde neue Quelle von Telefonterror!</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/signup.jsp">
+			<p class="title">PhoneBlock installieren</p>
+			<p class="subtitle">Noch nicht installiert? Dann los!</p>
+		</a>
+	</div>
+</div>
+
+<%
+	} else {
+%>
 
 <div class="tile is-ancestor">
 	<div class="tile is-parent is-6">
@@ -90,10 +131,11 @@
 	</div>
 </div>
 
-</section>
-<%		
+<%
 	}
 %>
+
+</section>
 
 <jsp:include page="footer.jspf"></jsp:include>
 </body>
