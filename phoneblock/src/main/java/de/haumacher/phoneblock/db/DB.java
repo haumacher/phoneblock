@@ -197,7 +197,7 @@ public class DB {
 	/**
 	 * The time in milliseconds since epoch when the last update to the spam report table was done.
 	 */
-	public long getLastSpamReport() {
+	public Long getLastSpamReport() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLastUpdate();

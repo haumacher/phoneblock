@@ -73,7 +73,7 @@ public class TestDB extends TestCase {
 		assertEquals(0, _db.getVotesFor("123"));
 		assertFalse(_db.hasSpamReportFor("123"));
 		
-		assertEquals(1001, _db.getLastSpamReport());
+		assertEquals(1001, _db.getLastSpamReport().longValue());
 		
 		List<SpamReport> reports = _db.getLatestSpamReports(1001);
 		assertEquals(1, reports.size());

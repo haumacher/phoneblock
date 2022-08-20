@@ -26,9 +26,9 @@ public class CrawlerService implements ServletContextListener {
 		try {
 			DB db = DBService.getInstance();
 			
-			long notBefore = db.getLastSpamReport();
+			Long notBefore = db.getLastSpamReport();
 			
-			_crawler = new WebCrawler(notBefore) {
+			_crawler = new WebCrawler(notBefore == null ? System.currentTimeMillis() : notBefore.longValue()) {
 				@Override
 				protected void reportCaller(String caller, int rating, long time) {
 					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);

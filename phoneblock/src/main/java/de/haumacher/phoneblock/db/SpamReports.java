@@ -20,7 +20,7 @@ public interface SpamReports {
 	void addReport(String phone, int votes, long now);
 	
 	@Select("select max(LASTUPDATE) from SPAMREPORTS")
-	long getLastUpdate();
+	Long getLastUpdate();
 
 	@Update("update SPAMREPORTS set VOTES = VOTES + #{delta}, LASTUPDATE = #{now} where PHONE = #{phone}")
 	void addVote(String phone, int delta, long now);
