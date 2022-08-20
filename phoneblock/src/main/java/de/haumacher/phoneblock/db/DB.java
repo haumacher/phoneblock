@@ -243,8 +243,12 @@ public class DB {
 	public Status getStatus() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return new Status(reports.getStatistics(), reports.getTotalVotes(), reports.getArchivedReportCount());
+			return new Status(reports.getStatistics(), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
 		}
+	}
+
+	private static int nonNull(Integer n) {
+		return n == null ? 0 : n.intValue();
 	}
 
 	/**
@@ -254,6 +258,16 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.isKnown(phone) ? reports.getVotes(phone) : 0;
+		}
+	}
+	
+	/**
+	 * Info about the given phone number, or <code>null</code>, if the given number is not a known source of spam.
+	 */
+	public SpamReport getPhoneInfo(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getPhoneInfo(phone);
 		}
 	}
 	

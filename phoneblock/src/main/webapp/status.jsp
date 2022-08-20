@@ -64,7 +64,7 @@
 %>
 					<tr>
 						<td>
-							<%= JspUtil.quote(report.getPhone()) %>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>"><%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>
@@ -106,7 +106,7 @@
 %>
 					<tr>
 						<td>
-							<%= JspUtil.quote(report.getPhone()) %>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>"><%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>

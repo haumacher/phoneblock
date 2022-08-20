@@ -66,14 +66,14 @@
 
 	<div class="tile is-ancestor">
 		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" href="signup.jsp">
+			<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/signup.jsp">
 				<p class="title">Klar zum Loslegen?</p>
 				<p class="subtitle">PhoneBlock-Account erstellen!</p>
 			</a>
 		</div>
 
 		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" href="setup.jsp">
+			<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/setup.jsp">
 				<p class="title">Noch Fragen?</p>
 				<p class="subtitle">Check die Installationsanleitung!</p>
 			</a>

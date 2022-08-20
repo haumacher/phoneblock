@@ -26,7 +26,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="signup.jsp">
+			<a href="<%=request.getContextPath() %>/signup.jsp">
 				<button class="button is-medium is-info is-fullwidth">Erstelle jetzt Deinen PhoneBlock-Account</button>
 			</a>
 		  </div>
@@ -203,7 +203,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="block.jsp"><button class="button is-medium is-primary is-fullwidth">Rufnummer sperren</button></a>
+			<a href="<%=request.getContextPath() %>/block.jsp"><button class="button is-medium is-primary is-fullwidth">Rufnummer sperren</button></a>
 		  </div>
 		</div>
 	</div>

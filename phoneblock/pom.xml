@@ -62,6 +62,12 @@
 		</dependency>
 
 		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>bulma</artifactId>
+		    <version>0.9.4</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<version>1.6.2</version>
 		    <artifactId>javax.mail</artifactId>
@@ -128,8 +134,8 @@
 
 				<configuration>
 					<ignorePackaging>true</ignorePackaging>
-					<url>${wizard.server.deployUrl}</url>
-					<server>wizard-server</server>
+					<url>${phoneblock.server.deployUrl}</url>
+					<server>${phoneblock.server.id}</server>
 					<path>/phoneblock</path>
 				</configuration>
 			</plugin>

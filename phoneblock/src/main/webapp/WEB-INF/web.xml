@@ -14,4 +14,8 @@
 		<error-code>405</error-code>
 		<location>/error-not-allowed.jsp</location>
 	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/error-not-found.jsp</location>
+	</error-page>
 </web-app>

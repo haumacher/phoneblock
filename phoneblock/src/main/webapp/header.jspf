@@ -18,16 +18,16 @@
 
 	<div id="navbarBasicExample" class="navbar-menu">
 		<div class="navbar-start">
-			<a class="navbar-item" href="index.jsp">Home</a>
-			<a class="navbar-item" href="setup.jsp">Installation</a>
-			<a class="navbar-item" href="status.jsp">Status</a>
+			<a class="navbar-item" href="<%=request.getContextPath() %>/index.jsp">Home</a>
+			<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Installation</a>
+			<a class="navbar-item" href="<%=request.getContextPath() %>/status.jsp">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link">More</a>
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="https://github.com/haumacher/phoneblock" target="_blank">GitHub Project</a>
-					<a class="navbar-item" href="block.jsp">Rufsperre hinzufügen</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/block.jsp">Rufsperre hinzufügen</a>
 					
 					<hr class="navbar-divider">
 					<a class="navbar-item" href="https://github.com/haumacher/phoneblock/issues/new" target="_blank">Report an issue</a>
@@ -37,8 +37,19 @@
 
 		<div class="navbar-end">
 			<div class="navbar-item">
+				<div class="control has-icons-left has-icons-right">
+				  <input id="pb-seach-input" class="input is-rounded" type="email" placeholder="Telefonnummer untersuchen">
+				  <span class="icon is-small is-left">
+				    <i class="fas fa-phone"></i>
+				  </span>
+				  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
+				    <i class="fas fa-search"></i>
+				  </span>
+				</div>
+			</div>
+			<div class="navbar-item">
 				<div class="buttons">
-					<a class="button is-primary" href="signup.jsp"><strong>Sign up</strong></a>
+					<a class="button is-primary" href="<%=request.getContextPath() %>/signup.jsp"><strong>Sign up</strong></a>
 					<a class="button is-light">Log in</a>
 				</div>
 			</div>

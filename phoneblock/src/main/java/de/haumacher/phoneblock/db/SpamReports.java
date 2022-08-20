@@ -32,10 +32,10 @@ public interface SpamReports {
 	int getVotes(String phone);
 
 	@Select("SELECT SUM(s.VOTES) FROM SPAMREPORTS s")
-	int getTotalVotes();
+	Integer getTotalVotes();
 	
 	@Select("SELECT COUNT(1) FROM OLDREPORTS o")
-	int getArchivedReportCount();
+	Integer getArchivedReportCount();
 	
 	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
 	void delete(String phone);
@@ -60,6 +60,9 @@ public interface SpamReports {
 	
 	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
 	List<SpamReport> getLatestReports(long after);
+	
+	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where PHONE = #{phone}")
+	SpamReport getPhoneInfo(String phone);
 	
 	@Select("SELECT PHONE, VOTES, LASTUPDATE FROM SPAMREPORTS s"
 			+ " WHERE s.LASTUPDATE >= #{notBefore}"

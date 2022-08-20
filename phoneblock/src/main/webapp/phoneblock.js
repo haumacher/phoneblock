@@ -20,6 +20,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+  
+	document.getElementById("pb-seach-input").addEventListener("keypress", function(event) {
+	  if (event.key === "Enter") {
+	    event.preventDefault();
+	    
+	    document.getElementById("pb-seach-button").click();
+	  }
+	}); 
+	
+	document.getElementById("pb-seach-button").addEventListener("click", function(event) {
+	  var number = document.getElementById("pb-seach-input").value;
+	  var location = document.location;
+	  var slashIndex = location.pathname.indexOf("/", 1);
+	  var contextPath = location.pathname.substring(0, slashIndex);
+	  var url = location.protocol + "//" + location.host + contextPath + "/nums/" + number;
+	  location.assign(url);
+	});
+
 });
 
 function showaddr(target) {
