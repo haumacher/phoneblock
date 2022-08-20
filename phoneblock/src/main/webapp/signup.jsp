@@ -4,7 +4,7 @@
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <head>
-	<jsp:include page="head-content.jspf"></jsp:include>
+<jsp:include page="head-content.jspf"></jsp:include>
 </head>
 
 <body>
