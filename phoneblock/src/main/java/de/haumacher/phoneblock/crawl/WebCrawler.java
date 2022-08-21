@@ -70,6 +70,8 @@ public class WebCrawler implements Runnable {
 	private Random _rnd = new Random();
 
 	private boolean _stopped;
+
+	private SpamReporter _reporter;
 	
 	/**
 	 * Creates a {@link WebCrawler}.
@@ -79,8 +81,9 @@ public class WebCrawler implements Runnable {
 	 * @param notBefore
 	 *        The time of the latest spam report that has already been processed.
 	 */
-	public WebCrawler(String url, long notBefore) throws MalformedURLException {
+	public WebCrawler(String url, long notBefore, SpamReporter reporter) throws MalformedURLException {
 		_notBefore = notBefore;
+		_reporter = reporter;
 		_url = new URL(url);
 	}
 
@@ -111,6 +114,11 @@ public class WebCrawler implements Runnable {
 		return _stopped;
 	}
 
+	/**
+	 * Fetches web page and analyzes it.
+	 *
+	 * @return The number of milliseconds to wait before the next fetch should be performed.
+	 */
 	public long process() {
 		try {
 			return tryProcess();
@@ -162,7 +170,7 @@ public class WebCrawler implements Runnable {
 				int rating = Integer.parseInt(ratingMatcher.group(1));
 				System.out.println(fmt(20, caller) + " " + "x*****".substring(rating));
 				
-				reportCaller(caller, rating, time);
+				_reporter.reportCaller(caller, rating, time);
 			}
 		}
 		
@@ -176,17 +184,6 @@ public class WebCrawler implements Runnable {
 		return delay;
 	}
 
-	/** 
-	 * Report a caller as potential source of nuisance.
-	 *
-	 * @param caller The phone number.
-	 * @param rating a value between 1 and 5. A low value indicates a nuisance caller. 
-	 * @param time The time of the spam report. 
-	 */
-	protected void reportCaller(String caller, int rating, long time) {
-		// Hook for subclasses.
-	}
-
 	private String fmt(int cols, String str) {
 		StringBuilder result = new StringBuilder(str);
 		while (result.length() < cols) {
@@ -197,11 +194,6 @@ public class WebCrawler implements Runnable {
 
 	private long getEntryTime(Element resultRow) throws ParseException {
 		return _dateFormat.parse(resultRow.getElementsByTag("td").get(4).text()).getTime();
-	}
-
-	public static void main(String[] args) throws InterruptedException, MalformedURLException {
-		WebCrawler crawler = new WebCrawler("https://www.cleverdialer.de/", 0L);
-		crawler.run();
 	}
 
 	/** 

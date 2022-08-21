@@ -38,12 +38,14 @@ public class CrawlerService implements ServletContextListener {
 			
 			Long notBefore = db.getLastSpamReport();
 			
-			_crawler = new WebCrawler(url, notBefore == null ? System.currentTimeMillis() : notBefore.longValue()) {
+			SpamReporter reporter = new SpamReporter() {
 				@Override
-				protected void reportCaller(String caller, int rating, long time) {
+				public void reportCaller(String caller, int rating, long time) {
 					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);
 				}
 			};
+			
+			_crawler = new WebCrawler(url, notBefore == null ? System.currentTimeMillis() : notBefore.longValue(), reporter);
 			_crawlerThread = new Thread(_crawler);
 			_crawlerThread.start();
 		} catch (IOException ex) {
