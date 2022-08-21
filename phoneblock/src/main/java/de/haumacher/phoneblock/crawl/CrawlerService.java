@@ -3,7 +3,8 @@
  */
 package de.haumacher.phoneblock.crawl;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.util.Properties;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -23,12 +24,21 @@ public class CrawlerService implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		System.out.println("Starting crawler service.");
+		
 		try {
+			Properties properties = new Properties();
+			properties.load(CrawlerService.class.getResourceAsStream("/phoneblock.properties"));
+			String url = properties.getProperty("crawler.url");
+			if (url == null || url.isEmpty() || url.startsWith("${")) {
+				System.out.println("No crawler URL configured, skipping.");
+				return;
+			}
+			
 			DB db = DBService.getInstance();
 			
 			Long notBefore = db.getLastSpamReport();
 			
-			_crawler = new WebCrawler(notBefore == null ? System.currentTimeMillis() : notBefore.longValue()) {
+			_crawler = new WebCrawler(url, notBefore == null ? System.currentTimeMillis() : notBefore.longValue()) {
 				@Override
 				protected void reportCaller(String caller, int rating, long time) {
 					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);
@@ -36,7 +46,7 @@ public class CrawlerService implements ServletContextListener {
 			};
 			_crawlerThread = new Thread(_crawler);
 			_crawlerThread.start();
-		} catch (MalformedURLException ex) {
+		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 	}

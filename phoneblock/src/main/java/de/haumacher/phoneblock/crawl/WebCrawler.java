@@ -71,14 +71,17 @@ public class WebCrawler implements Runnable {
 
 	private boolean _stopped;
 	
-	/** 
+	/**
 	 * Creates a {@link WebCrawler}.
 	 * 
-	 * @param notBefore The time of the latest spam report that has already been processed. 
+	 * @param url
+	 *        The URL to crawl.
+	 * @param notBefore
+	 *        The time of the latest spam report that has already been processed.
 	 */
-	public WebCrawler(long notBefore) throws MalformedURLException {
+	public WebCrawler(String url, long notBefore) throws MalformedURLException {
 		_notBefore = notBefore;
-		_url = new URL("https://www.cleverdialer.de/");
+		_url = new URL(url);
 	}
 
 	@Override
@@ -146,6 +149,12 @@ public class WebCrawler implements Runnable {
 				continue;
 			}
 			
+			if (!caller.startsWith("0")) {
+				// A local number without prefix - makes no sense in a shared address book.
+				System.out.println("Ignoring: " + caller);
+				continue;
+			}
+			
 			String ratingClass = columns.get(1).attr("class");
 			Pattern starsPattern = Pattern.compile("stars-(\\d+)");
 			Matcher ratingMatcher = starsPattern.matcher(ratingClass);
@@ -191,7 +200,7 @@ public class WebCrawler implements Runnable {
 	}
 
 	public static void main(String[] args) throws InterruptedException, MalformedURLException {
-		WebCrawler crawler = new WebCrawler(0L);
+		WebCrawler crawler = new WebCrawler("https://www.cleverdialer.de/", 0L);
 		crawler.run();
 	}
 

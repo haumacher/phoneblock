@@ -82,9 +82,17 @@
 	</dependencies>
 
 	<build>
+		<filters>
+			<filter>.phoneblock</filter>
+		</filters>
+	
 		<resources>
 			<resource>
 				<directory>${project.build.sourceDirectory}</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+				<filtering>true</filtering>
 			</resource>
 		</resources>
 
