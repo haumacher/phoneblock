@@ -4,6 +4,16 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 	<display-name>PhoneBlock</display-name>
 
+	<servlet>
+	    <servlet-name>sitemap</servlet-name>
+	    <jsp-file>/sitemap.jsp</jsp-file>
+	</servlet>
+	
+	<servlet-mapping>
+	    <servlet-name>sitemap</servlet-name>
+	    <url-pattern>/sitemap.xml</url-pattern>
+	</servlet-mapping>
+
 	<servlet-mapping>
 		<servlet-name>jsp</servlet-name>
 		<url-pattern>*.jsp</url-pattern>

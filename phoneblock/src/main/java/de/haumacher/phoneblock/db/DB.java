@@ -222,6 +222,16 @@ public class DB {
 	}
 	
 	/**
+	 * Looks all spam reports.
+	 */
+	public List<SpamReport> getAll() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getAll();
+		}
+	}
+	
+	/**
 	 * Looks up spam reports with the most votes in the last month.
 	 */
 	public List<SpamReport> getTopSpamReports(int cnt) {
