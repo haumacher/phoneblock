@@ -41,8 +41,19 @@ public class CrawlerService implements ServletContextListener {
 			SpamReporter reporter = new SpamReporter() {
 				@Override
 				public void reportCaller(String caller, int rating, long time) {
+					System.out.println(fmt(20, caller) + " " + "x*****".substring(rating));
+					
 					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);
 				}
+				
+				private String fmt(int cols, String str) {
+					StringBuilder result = new StringBuilder(str);
+					while (result.length() < cols) {
+						result.append(' ');
+					}
+					return result.toString();
+				}
+
 			};
 			
 			_crawler = new WebCrawler(url, notBefore == null ? System.currentTimeMillis() : notBefore.longValue(), reporter);
