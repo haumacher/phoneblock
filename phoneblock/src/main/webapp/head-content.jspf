@@ -1,7 +1,19 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 
-<title>PhoneBlock: Der Werbeblocker für's Telefon</title>
+<%
+	String title = (String) request.getAttribute("title");
+	if (title == null) {
+		title = "PhoneBlock: Der Werbeblocker für's Telefon";
+	}
+	
+	String path = request.getServletPath();
+	if (path.endsWith("index.jsp")) {
+		path = path.substring(0, path.length() - "index.jsp".length());
+	}
+%>
+
+<title><%=title %></title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Mit Deiner Fritz!Box und PhoneBlock Werbeanrufe automatisch blockieren. Kostenlos und ohne Zusatzhardware sofort einsatzbereit.">
@@ -11,8 +23,8 @@
 <meta name="twitter:creator" content="@bhaumacher" />
 <meta name="twitter:image" content="<%=request.getContextPath() %>/app-preview.png" />
 
-<meta property="og:title" content="PhoneBlock: Der Werbeblocker für's Telefon" />
-<meta property="og:url" content="https://phoneblock.haumacher.de/" />
+<meta property="og:title" content="<%=title %>" />
+<meta property="og:url" content="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 <meta property="og:description" content="Mit Deiner Fritz!Box und PhoneBlock Werbeanrufe automatisch blockieren. Kostenlos und ohne Zusatzhardware sofort einsatzbereit." />
 <meta property="og:image" content="<%=request.getContextPath() %>/app-preview.png" />
 <meta property="og:type" content="website" />

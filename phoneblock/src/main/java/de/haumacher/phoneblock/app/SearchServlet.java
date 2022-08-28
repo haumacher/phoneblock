@@ -39,9 +39,19 @@ public class SearchServlet extends HttpServlet {
 			info = new SpamReport(phone, 0, 0);
 		}
 		req.setAttribute("info", info);
-		req.setAttribute("title", "PhoneBlock Status für Telefonnummer " + phone);
+		req.setAttribute("title", "PhoneBlock: Rufnummer " + phone + ": " + status(info.getVotes()));
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
+	}
+
+	private String status(int votes) {
+		if (votes == 0) {
+			return "Keine Beschwerden";
+		} else if (votes < 3) {
+			return "Spamverdacht";
+		} else {
+			return "Blockiert";
+		}
 	}
 
 }
