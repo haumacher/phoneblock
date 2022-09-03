@@ -30,7 +30,7 @@
    </url>
 
 <%
-DateFormat format = new SimpleDateFormat("YYYY-MM-DD'T'hh:mm:ssXXX");
+DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	List<SpamReport> reports = DBService.getInstance().getAll();
 	long oneWeekBefore = System.currentTimeMillis() - 1000L*60*60*24*7;
 	for (SpamReport report : reports) {
