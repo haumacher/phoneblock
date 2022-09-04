@@ -36,7 +36,7 @@ public class SearchServlet extends HttpServlet {
 		
 		SpamReport info = DBService.getInstance().getPhoneInfo(phone);
 		if (info == null) {
-			info = new SpamReport(phone, 0, 0);
+			info = new SpamReport(phone, 0, 0, 0);
 		}
 		req.setAttribute("info", info);
 		req.setAttribute("title", "PhoneBlock: Rufnummer " + phone + ": " + status(info.getVotes()));

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<%@page pageEncoding="UTF-8" contentType="text/xml; charset=UTF-8"
+<%@page pageEncoding="UTF-8" contentType="application/xml; charset=UTF-8" session="false"
 %><%@page import="java.util.Date"
 %><%@page import="java.text.DateFormat"
 %><%@page import="java.text.SimpleDateFormat"

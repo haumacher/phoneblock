@@ -11,14 +11,16 @@ public class SpamReport {
 	private final String _phone;
 	private final int _votes;
 	private final long _lastUpdate;
+	private final long _dateAdded;
 	
 	/** 
 	 * Creates a {@link SpamReport}.
 	 */
-	public SpamReport(String phone, int votes, long lastUpdate) {
+	public SpamReport(String phone, int votes, long lastUpdate, long dateAdded) {
 		_phone = phone;
 		_votes = votes;
 		_lastUpdate = lastUpdate;
+		_dateAdded = dateAdded;
 	}
 
 	/**
@@ -40,6 +42,13 @@ public class SpamReport {
 	 */
 	public int getVotes() {
 		return _votes;
+	}
+	
+	/**
+	 * Time in milliseconds since epoch when the first spam report for this number was received.
+	 */
+	public long getDateAdded() {
+		return _dateAdded;
 	}
 	
 }

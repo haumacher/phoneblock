@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface SpamReports {
 	
-	@Insert("insert into SPAMREPORTS (PHONE, VOTES, LASTUPDATE) values (#{phone}, #{votes}, #{now})")
+	@Insert("insert into SPAMREPORTS (PHONE, VOTES, LASTUPDATE, DATEADDED) values (#{phone}, #{votes}, #{now}, #{now})")
 	void addReport(String phone, int votes, long now);
 	
 	@Select("select max(LASTUPDATE) from SPAMREPORTS")
@@ -58,21 +58,21 @@ public interface SpamReports {
 			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE) > 0")
 	int deleteArchivedReports(long now);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
 	List<SpamReport> getLatestReports(long after);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS order by LASTUPDATE desc")
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS order by LASTUPDATE desc")
 	List<SpamReport> getAll();
 	
-	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where PHONE = #{phone}")
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where PHONE = #{phone}")
 	SpamReport getPhoneInfo(String phone);
 	
-	@Select("SELECT PHONE, VOTES, LASTUPDATE FROM SPAMREPORTS s"
+	@Select("SELECT PHONE, VOTES, LASTUPDATE, DATEADDED FROM SPAMREPORTS s"
 			+ " WHERE s.LASTUPDATE >= #{notBefore}"
 			+ " ORDER BY s.VOTES DESC LIMIT #{cnt}")
 	List<SpamReport> getTopSpammers(int cnt, long notBefore);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
 	
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")

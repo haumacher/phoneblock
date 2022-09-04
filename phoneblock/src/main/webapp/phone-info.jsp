@@ -79,12 +79,22 @@
 	</p>
 <%
 		}
+
+		DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
 %>			
 	
 	<h2>Details</h2>
 	<ul>
 		<li>Anzahl Beschwerden: <%= (info.getVotes() + 1) / 2 %></li>
-		<li>Letzte Beschwerde vom: <%= DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN).format(new Date(info.getLastUpdate())) %></li>
+		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
+<%
+		long dateAdded = info.getDateAdded();
+		if (dateAdded > 0) {
+%>
+		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
+<%			
+		}
+%>
 	</ul>
 <%		
 	}

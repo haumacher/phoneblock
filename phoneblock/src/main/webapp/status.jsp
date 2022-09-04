@@ -43,6 +43,8 @@
 	</p>
 
 <%
+	DateFormat format = SimpleDateFormat.getDateTimeInstance();
+
 	long now = System.currentTimeMillis();
 	List<SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
 	if (reports.isEmpty()) {
@@ -59,6 +61,7 @@
 					<th>Phone number</th>
 					<th>Confidence</th>
 					<th>Received</th>
+					<th>Active since</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -77,6 +80,10 @@
 						<td>
 							<%= (now - report.getLastUpdate()) / 1000 / 60 %> minutes ago
 						</td>
+						
+						<td>
+							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+						</td>
 					</tr>
 <%	
 				}
@@ -91,7 +98,6 @@
 <%
 	reports = DBService.getInstance().getTopSpamReports(15);
 	if (!reports.isEmpty()) {
-		DateFormat format = SimpleDateFormat.getDateTimeInstance();
 %>
 		<h2>Aktuelle Top-Spammer</h2> 
 
@@ -101,6 +107,7 @@
 					<th>Phone number</th>
 					<th>Confidence</th>
 					<th>Last update</th>
+					<th>Active since</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -118,6 +125,10 @@
 						
 						<td>
 							<%= format.format(new Date(report.getLastUpdate()))%>
+						</td>
+
+						<td>
+							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
 						</td>
 					</tr>
 <%	
