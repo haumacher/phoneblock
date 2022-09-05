@@ -11,7 +11,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>https://phoneblock.haumacher.de/phoneblock/</loc>
-      <lastmod>2022-08-28</lastmod>
       <changefreq>monthly</changefreq>
       <priority>1.0</priority>
    </url>
@@ -22,14 +21,19 @@
 %>
    <url>
       <loc>https://phoneblock.haumacher.de/phoneblock/status.jsp</loc>
-      <lastmod><%= lastUpdate == null ? "2022-08-28" : format.format(new Date(lastUpdate.longValue())) %></lastmod>
+<%
+	if (lastUpdate != null) {
+%>
+      <lastmod><%= format.format(new Date(lastUpdate.longValue())) %></lastmod>
+<%		
+	}
+%>
       <changefreq>hourly</changefreq>
       <priority>1.0</priority>
    </url>
 
    <url>
       <loc>https://phoneblock.haumacher.de/phoneblock/setup.jsp</loc>
-      <lastmod>2022-08-28</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
    </url>
