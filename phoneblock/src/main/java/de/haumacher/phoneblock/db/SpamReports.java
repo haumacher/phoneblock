@@ -72,6 +72,10 @@ public interface SpamReports {
 			+ " ORDER BY s.VOTES DESC LIMIT #{cnt}")
 	List<SpamReport> getTopSpammers(int cnt, long notBefore);
 	
+	@Select("SELECT x.* FROM PUBLIC.SPAMREPORTS x"
+			+ " WHERE VOTES > 3 AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
+	List<SpamReport> getLatestBlocklistEntries();
+	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
 	

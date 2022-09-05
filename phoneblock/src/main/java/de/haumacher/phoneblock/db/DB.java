@@ -248,6 +248,16 @@ public class DB {
 	}
 	
 	/**
+	 * Looks up the newest entries in the blocklist.
+	 */
+	public List<SpamReport> getLatestBlocklistEntries() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getLatestBlocklistEntries();
+		}
+	}
+	
+	/**
 	 * The current DB status.
 	 */
 	public Status getStatus() {
