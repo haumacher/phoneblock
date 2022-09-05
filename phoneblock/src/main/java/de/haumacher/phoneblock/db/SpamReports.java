@@ -51,8 +51,8 @@ public interface SpamReports {
 	
 	@Insert("INSERT INTO OLDREPORTS ("
 			+ " SELECT s.* FROM SPAMREPORTS s"
-			+ " WHERE s.LASTUPDATE < #{before} AND s.VOTES <= 3)")
-	int archiveReportsWithLowVotes(long before);
+			+ " WHERE s.LASTUPDATE < #{before} AND s.VOTES < #{minVotes})")
+	int archiveReportsWithLowVotes(long before, int minVotes);
 	
 	@Delete("DELETE FROM SPAMREPORTS s "
 			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE) > 0")
@@ -73,8 +73,8 @@ public interface SpamReports {
 	List<SpamReport> getTopSpammers(int cnt, long notBefore);
 	
 	@Select("SELECT x.* FROM PUBLIC.SPAMREPORTS x"
-			+ " WHERE VOTES > 3 AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
-	List<SpamReport> getLatestBlocklistEntries();
+			+ " WHERE VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
+	List<SpamReport> getLatestBlocklistEntries(int minVotes);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
@@ -82,6 +82,6 @@ public interface SpamReports {
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
 	Set<String> getSpamList(int minVotes);
 	
-	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < 3 THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
-	List<Statistics> getStatistics();
+	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
+	List<Statistics> getStatistics(int minVotes);
 }

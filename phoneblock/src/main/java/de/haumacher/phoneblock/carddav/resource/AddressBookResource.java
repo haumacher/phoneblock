@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -59,7 +60,7 @@ public class AddressBookResource extends Resource {
 			
 			long currentUser = users.getUserId(_principal);
 			
-			Set<String> result = reports.getSpamList(3);
+			Set<String> result = reports.getSpamList(DB.MIN_VOTES);
 			result.removeAll(blocklist.getExcluded(currentUser));
 			result.addAll(blocklist.getPersonalizations(currentUser));
 			

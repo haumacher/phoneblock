@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.db.DB"%>
 <%@page import="java.util.Locale"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="java.util.Date"%>
@@ -48,7 +49,7 @@
 	} else {
 %>		
 <% 
-		if (info.getVotes() < 3) {
+		if (info.getVotes() < DB.MIN_VOTES) {
 %>
 	<p><span class="tag is-info is-warning">Beschwerde liegt vor</span></p>
 
@@ -102,7 +103,7 @@
 </div>
 
 <%
-	if (info.getVotes() < 3) {
+	if (info.getVotes() < DB.MIN_VOTES) {
 %>
 
 <div class="tile is-ancestor">

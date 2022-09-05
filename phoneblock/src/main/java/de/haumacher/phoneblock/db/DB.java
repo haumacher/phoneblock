@@ -41,6 +41,15 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
  */
 public class DB {
 
+	/**
+	 * Minimum number of votes to add a number to the blocklist.
+	 * 
+	 * <p>
+	 * Note: For historic reasons, one entry to the personal blocklist by a PhoneBlock user is worth 2 votes.
+	 * </p>
+	 */
+	public static final int MIN_VOTES = 4;
+
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList("BLOCKLIST", "SPAMREPORTS", "USERS");
@@ -253,7 +262,7 @@ public class DB {
 	public List<SpamReport> getLatestBlocklistEntries() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getLatestBlocklistEntries();
+			return reports.getLatestBlocklistEntries(MIN_VOTES);
 		}
 	}
 	
@@ -263,7 +272,7 @@ public class DB {
 	public Status getStatus() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return new Status(reports.getStatistics(), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
+			return new Status(reports.getStatistics(MIN_VOTES), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
 		}
 	}
 
@@ -408,7 +417,7 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
 			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
-			int archived = reports.archiveReportsWithLowVotes(before);
+			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES);
 			int deletedNew = reports.deleteArchivedReports(now);
 			
 			System.out.println("Reactivated " + reactivated + " reports, archived " + archived + " reports.");

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReport;
 
@@ -47,7 +48,7 @@ public class SearchServlet extends HttpServlet {
 	private String status(int votes) {
 		if (votes == 0) {
 			return "Keine Beschwerden";
-		} else if (votes < 3) {
+		} else if (votes < DB.MIN_VOTES) {
 			return "Spamverdacht";
 		} else {
 			return "Blockiert";
