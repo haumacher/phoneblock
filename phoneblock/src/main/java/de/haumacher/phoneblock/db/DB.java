@@ -50,6 +50,17 @@ public class DB {
 	 */
 	public static final int MIN_VOTES = 4;
 
+	/**
+	 * Minimum number of votes that a number must receive within two weeks to stay on the blocklist.
+	 */
+	private static final int MIN_OLD_VOTES = 6;
+
+	/**
+	 * Number of days a number stays on the blocklist when {@link #MIN_VOTES} are received. After that time limit,
+	 * {@link #MIN_OLD_VOTES} must habe been received.
+	 */
+	private static final int OLD_VOTE_DAYS = 14;
+
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList("BLOCKLIST", "SPAMREPORTS", "USERS");
@@ -58,6 +69,7 @@ public class DB {
 	private DataSource _dataSource;
 
 	private static final String BASIC_PREFIX = "Basic ";
+
 	private MessageDigest _sha256;
 
 	private SecureRandom _rnd = new SecureRandom();
@@ -407,7 +419,7 @@ public class DB {
 		
 		Calendar cal = GregorianCalendar.getInstance();
 		long now = cal.getTimeInMillis();
-		cal.add(Calendar.DAY_OF_MONTH, -14);
+		cal.add(Calendar.DAY_OF_MONTH, -OLD_VOTE_DAYS);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.MILLISECOND, 0);
@@ -417,7 +429,7 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
 			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
-			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES);
+			int archived = reports.archiveReportsWithLowVotes(before, MIN_OLD_VOTES);
 			int deletedNew = reports.deleteArchivedReports(now);
 			
 			System.out.println("Reactivated " + reactivated + " reports, archived " + archived + " reports.");
