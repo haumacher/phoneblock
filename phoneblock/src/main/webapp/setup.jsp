@@ -21,13 +21,13 @@
 %>
 		<p>
 			Für die Installation benötigst Du einen <a href="https://avm.de/produkte/fritzbox/">"FRITZ!Box"
-				Internetrouter von AVM</a> und einen PhoneBlock-Account. Noch kein Account?
+				Internetrouter von AVM</a> und einen PhoneBlock-Account. Du hast noch keinen PhoneBlock-Account? Dann erstelle Dir jetzt einen!
 		</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="<%=request.getContextPath() %>/signup.jsp">
-				<button class="button is-medium is-info is-fullwidth">Erstelle jetzt Deinen PhoneBlock-Account</button>
+				<button class="button is-medium is-info is-fullwidth">PhoneBlock-Account erstellen</button>
 			</a>
 		  </div>
 		</div>
@@ -86,7 +86,7 @@
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="http://fritz.box" target="_blank">
-				<button class="button is-medium is-primary is-fullwidth">Zur Installation an FRITZ!Box anmelden</button>
+				<button class="button is-medium is-primary is-fullwidth">An FRITZ!Box anmelden</button>
 			</a>
 		  </div>
 		</div>
