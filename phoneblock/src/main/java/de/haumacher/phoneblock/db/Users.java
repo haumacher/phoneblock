@@ -34,4 +34,19 @@ public interface Users {
 	@Update("update USERS set LASTACCESS=#{lastAccess} where EMAIL=#{email}")
 	void setLastAccess(String email, long lastAccess);
 	
+	@Select("select TIMESTAMP, LASTID from CALLREPORT where USERID=#{userId}")
+	DBReportInfo getReportInfo(long userId);
+	
+	@Update("update CALLREPORT set TIMESTAMP=#{timestamp}, LASTID=#{lastId}, LASTACCESS=#{now} where USERID=#{userId}")
+	int updateReportInfo(long userId, String timestamp, String lastId, long now);
+	
+	@Insert("insert into CALLREPORT (USERID, TIMESTAMP, LASTID, LASTACCESS) values (#{userId}, #{timestamp}, #{lastId}, #{now})")
+	void createReportInfo(long userId, String timestamp, String lastId, long now);
+	
+	@Insert("insert into CALLERS (USERID, PHONE, CALLS, LASTUPDATE) values (#{userId}, #{phone}, 1, #{now})")
+	void insertCaller(long userId, String phone, long now);
+	
+	@Update("update CALLERS set CALLS=CALLS + 1, LASTUPDATE=#{now} where USERID=#{userId} and PHONE=#{phone}")
+	int addCall(long userId, String phone, long now);
+	
 }

@@ -36,6 +36,9 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
+import de.haumacher.phoneblock.callreport.model.CallReport;
+import de.haumacher.phoneblock.callreport.model.ReportInfo;
+
 /**
  * The database abstraction layer.
  */
@@ -370,17 +373,23 @@ public class DB {
 				
 				try (SqlSession session = openSession()) {
 					Users users = session.getMapper(Users.class);
+					
 					InputStream hashIn = users.getHash(userName);
 					if (hashIn != null) {
 						byte[] expectedHash = hashIn.readAllBytes();
 						if (Arrays.equals(pwhash, expectedHash)) {
 							return userName;
+						} else {
+							System.err.println("Invalid password for user: " + userName);
 						}
+					} else {
+						System.err.println("Invalid user name supplied: " + userName);
 					}
 				}
 			}
+		} else {
+			System.err.println("Invalid authentication received: " + authHeader);
 		}
-		System.err.println("Invalid authentication received: " + authHeader);
 		return null;
 	}
 
@@ -444,6 +453,50 @@ public class DB {
 		}
 		
 		System.out.println("Finished DB cleanup.");
+	}
+
+	/** 
+	 * The call report context for the given user.
+	 */
+	public ReportInfo getCallReportInfo(String userName) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			long userId = users.getUserId(userName);
+			DBReportInfo info = users.getReportInfo(userId);
+			if (info == null) {
+				return ReportInfo.create();
+			}
+			return info;
+		}
+	}
+
+	/** 
+	 * Update the call report for the given user.
+	 */
+	public void storeCallReport(String userName, CallReport callReport) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			SpamReports reports = session.getMapper(SpamReports.class);
+			long now = System.currentTimeMillis();
+		
+			long userId = users.getUserId(userName);
+			int cnt = users.updateReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
+			if (cnt == 0) {
+				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
+			}
+			
+			for (String phone : callReport.getCallers()) {
+				int ok = users.addCall(userId, phone, now);
+				if (ok == 0) {
+					users.insertCaller(userId, phone, now);
+				}
+				
+				processVotes(reports, phone, 2, now);
+			}
+			
+			session.commit();
+		}
 	}
 
 }

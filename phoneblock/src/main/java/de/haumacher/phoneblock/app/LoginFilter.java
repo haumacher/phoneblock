@@ -16,13 +16,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.DBService;
 
 /**
  * Filter doing basic authentication.
  */
-@WebFilter(urlPatterns = CardDavServlet.URL_PATTERN)
+@WebFilter(urlPatterns = {
+	CardDavServlet.URL_PATTERN,
+	CallReportServlet.URL_PATTERN,
+})
 public class LoginFilter implements Filter {
 
 	public static final String AUTHENTICATED_USER_ATTR = "authenticated-user";

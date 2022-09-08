@@ -1,0 +1,29 @@
+package de.haumacher.phoneblock.callreport.model;
+
+/**
+ * Message sent by the CallReportServlet upon GET request.
+ */
+message ReportInfo {
+
+	/** The {@link CallReport#timestamp} value that was received during the last update. */
+	@Nullable
+	string timestamp;
+	
+	/** The {@link CallReport#lastid} value that was received during the last update. */
+	@Nullable
+	string lastid;
+}
+
+/**
+ * Message expected by the CallReportServlet in a PUT request.
+ */
+message CallReport {
+	/** The timestamp value as reported in a Fritz!Box GetCallers result. */
+	string timestamp;
+
+	/** The ID of the last call reported in a Fritz!Box GetCallers result. */
+	string lastid;
+	
+	/** The phone number that have been blocked be the Fritz!Box since the last report. */
+	repeated string callers;
+}
