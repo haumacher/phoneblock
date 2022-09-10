@@ -15,7 +15,7 @@
 			<img alt="PhoneBlock Logo" src="animation.svg">
 		</div>
 
-		<h2>Unerwünschte Anrufer automatisch abweisen</h2>
+		<h1>Unerwünschte Anrufer automatisch abweisen</h1>
 
 		<p>
 			Ist Deine Telefonnummer auch zwielichtigen Addresshändlern in die
