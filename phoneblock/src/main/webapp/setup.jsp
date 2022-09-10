@@ -107,7 +107,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="navigate-to-calls" src="02-navigate-to-addressbooks.png"/>
+			<img class="image" alt="Anrufliste der Fritz!Box" src="02-navigate-to-addressbooks.png"/>
 		  </div>
 		</div>
 		
@@ -148,7 +148,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="enter-account-data" src="03-add-address-book.svg"/>
+			<img class="image" alt="Neues Adressbuch anlegen" src="03-add-address-book.svg"/>
 		  </div>
 		</div>
 
@@ -162,7 +162,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="enter-account-data" src="04-check-blocklist.png"/>
+			<img class="image" alt="Abgerufene Blocklist anzeigen" src="04-check-blocklist.png"/>
 		  </div>
 		</div>
 
@@ -180,7 +180,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="enter-account-data" src="05-add-blocklist.png"/>
+			<img class="image" alt="Neue Rufsperre hinzufügen" src="05-add-blocklist.png"/>
 		  </div>
 		</div>
 		
@@ -191,7 +191,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="enter-account-data" src="06-create-blocklist.png"/>
+			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" src="06-create-blocklist.png"/>
 		  </div>
 		</div>
 		

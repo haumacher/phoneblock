@@ -7,7 +7,7 @@
   --%>
 <nav class="navbar" role="navigation" aria-label="main navigation">
 	<div class="navbar-brand">
-		<a class="navbar-item" href="https://phoneblock.haumacher.de"><img
+		<a class="navbar-item" href="https://phoneblock.haumacher.de"><img alt="PhoneBlock Logo"
 			src="<%=request.getContextPath()%>/app-logo.svg" height="28" style="padding-right: 1ex;"> PhoneBlock
 		</a> <a role="button" class="navbar-burger" aria-label="menu"
 			aria-expanded="false" data-target="navbarBasicExample"> <span
@@ -62,9 +62,8 @@
 		<p class="title">PhoneBlock</p>
 		<p class="subtitle">Der Spam-Filter für Deinen Telefonanschluss</p>
 		<a href="https://github.com/haumacher/phoneblock" target="_blank">
-			<img width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
-				src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149"
-				alt="Fork me on GitHub" />
+			<img alt="Fork me on GitHub" width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
+				src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" />
 		</a>
 	</div>
 </section>

@@ -18,7 +18,7 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <p class="title">Registriere Deinen PhoneBlock-Account</p>
+	        <h1 class="title">Erstelle Deinen PhoneBlock-Account</h1>
 	        <p class="subtitle">Erhalte Zugangsdaten für die Einrichtung</p>
 	        <div class="content">
 				<p>

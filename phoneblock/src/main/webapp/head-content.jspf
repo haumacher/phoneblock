@@ -15,6 +15,8 @@
 
 <title><%=title %></title>
 
+<meta http-equiv='content-language' content='de-DE'>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Mit Deiner Fritz!Box und PhoneBlock Werbeanrufe automatisch blockieren. Kostenlos und ohne Zusatzhardware sofort einsatzbereit.">
 

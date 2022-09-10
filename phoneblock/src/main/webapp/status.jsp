@@ -20,6 +20,8 @@
 
 <section class="section">
 <div class="content">
+	<h1>Aktuelle Berichte über unerwünschte Anrufer</h1>
+	
 	<p>
 		Bekannte SPAM-Nummern: 
 <%

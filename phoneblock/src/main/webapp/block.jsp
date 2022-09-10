@@ -34,7 +34,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="navigate-to-calls" src="07-spam-caller.png"/>
+			<img class="image" alt="Anrufliste der Fritz!Box" src="07-spam-caller.png"/>
 		  </div>
 		</div>
 		
@@ -95,7 +95,7 @@
 	
 	<div class="columns">
 	  <div class="column is-8 is-offset-2">
-		<img class="image" alt="navigate-to-calls" src="08-mark-as-spam.png"/>
+		<img class="image" alt="Anruf als unerwünscht markieren" src="08-mark-as-spam.png"/>
 	  </div>
 	</div>
 	
@@ -105,7 +105,7 @@
 	
 	<div class="columns">
 	  <div class="column is-8 is-offset-2">
-		<img class="image" alt="navigate-to-calls" src="09-create-entry-create.png"/>
+		<img class="image" alt="Neuen Eintrag in der Blocklist anlegen" src="09-create-entry-create.png"/>
 	  </div>
 	</div>
 	
@@ -117,7 +117,7 @@
 
 	<div class="columns">
 	  <div class="column is-8 is-offset-2">
-		<img class="image" alt="navigate-to-calls" src="10-add-entry-save.png"/>
+		<img class="image" alt="Neuen Eintrag in der Blockliste übernehmen" src="10-add-entry-save.png"/>
 	  </div>
 	</div>
 	

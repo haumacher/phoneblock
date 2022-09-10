@@ -11,8 +11,7 @@
 
 	<section class="section">
 		<div class="content">
-
-			<h2>Seite nicht gefunden.</h2>
+			<h1>Seite nicht gefunden.</h1>
 
 			<p>
 				Die angeforderte Seite wurde nicht gefunden. Überprüfe Deine Eingaben und probier's nochmal!.

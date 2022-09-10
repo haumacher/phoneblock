@@ -11,8 +11,7 @@
 
 	<section class="section">
 		<div class="content">
-
-			<h2>Datenschutzerklärung</h2>
+			<h1>Datenschutzerklärung</h1>
 
 			<p>
 				Bei Besuch dieser Seite wird die IP-Adresse Deines Rechners zu

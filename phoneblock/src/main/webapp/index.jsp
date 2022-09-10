@@ -12,8 +12,10 @@
 <section class="section">
 	<div class="content">
 		<div style="float: right;">
-			<img alt="logo" src="animation.svg">
+			<img alt="PhoneBlock Logo" src="animation.svg">
 		</div>
+
+		<h2>Unerwünschte Anrufer automatisch abweisen</h2>
 
 		<p>
 			Ist Deine Telefonnummer auch zwielichtigen Addresshändlern in die
@@ -44,7 +46,7 @@
 		<h2>Was sind die Vorausetzungen?</h2>
 
 		<div style="float: right;">
-			<a href="https://avm.de/produkte/fritzbox/"> <img width="200"
+			<a href="https://avm.de/produkte/fritzbox/"> <img width="200" alt="AVM Fritz!Box 7590"
 				src="https://avm.de/fileadmin/user_upload/Global/Produkte/FRITZBox/7590/fritzbox_7590_left_de_stiftung_warentest_640x400.png" />
 			</a>
 		</div>

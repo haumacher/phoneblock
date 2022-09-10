@@ -26,7 +26,7 @@
 
 <section class="section">
 <div class="content">
-	<h2>Telefonnummer <%= info.getPhone()%></h2>
+	<h1>Telefonnummer <%= info.getPhone()%></h1>
 <%
 	if (info.getVotes() == 0) {
 %>

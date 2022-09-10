@@ -25,7 +25,7 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <p class="title">Code eingeben</p>
+	        <h1 class="title">Code eingeben</h1>
 	        <p class="subtitle">E-Mail-Adresse bestätigen.</p>
 	        <div class="content">
 				<p>

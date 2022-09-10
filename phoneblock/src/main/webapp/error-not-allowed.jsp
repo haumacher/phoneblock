@@ -11,8 +11,7 @@
 
 	<section class="section">
 		<div class="content">
-
-			<h2>Diese Seite kann nicht im Browser angezeigt werden</h2>
+			<h1>Diese Seite kann nicht im Browser angezeigt werden</h1>
 
 			<p>
 				Deinen Addressbuch-Link, den Du bei der <a
