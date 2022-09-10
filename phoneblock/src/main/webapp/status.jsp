@@ -189,7 +189,7 @@
 
 <div class="tile is-ancestor">
 	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/index.jsp">
+		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/">
 			<p class="title">Noch kein PhoneBlock?</p>
 			<p class="subtitle">So wirst du den Telefonterror los!</p>
 		</a>
