@@ -20,6 +20,7 @@
 		<div class="navbar-start">
 			<a class="navbar-item" href="<%=request.getContextPath() %>/">Home</a>
 			<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Installation</a>
+			<a class="navbar-item" href="<%=request.getContextPath() %>/faq.jsp">FAQ</a>
 			<a class="navbar-item" href="<%=request.getContextPath() %>/status.jsp">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
