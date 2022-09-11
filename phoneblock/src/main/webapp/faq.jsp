@@ -40,7 +40,7 @@
 			alle Anrufe von allen Kontakten einer Gruppe zu blockieren. Die App, die diese Funktionalität verspricht 
 			(<a href="http://android.insadco.com/group_blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
 			zu geben. Außerdem will man eigentlich auch nicht alle Telefonterroristen in seinen Kontakten haben. 
-			Hier müsst man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
+			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
 			Nummern zu den Kontakten hinzuzufügen. 
 		</p>
 
