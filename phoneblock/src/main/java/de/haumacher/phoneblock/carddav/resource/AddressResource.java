@@ -58,6 +58,7 @@ public class AddressResource extends Resource {
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.setContentType("text/x-vcard");
 		resp.setCharacterEncoding("utf-8");
+		resp.setHeader("ETag", quote(getEtag()));
 		
 		resp.getWriter().append(vCardContent());
 	}
