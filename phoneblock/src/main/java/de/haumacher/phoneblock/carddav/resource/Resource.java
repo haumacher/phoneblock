@@ -242,4 +242,19 @@ public abstract class Resource {
 	public void put(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 	}
+
+	/** 
+	 * Retrieves the content of this resource.
+	 *
+	 * @param req
+	 *        The request.
+	 * @param resp
+	 *        The response where the contents is written to.
+	 * 
+	 * @throws IOException
+	 *         If reading the content fails.
+	 */
+	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
 }

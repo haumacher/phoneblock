@@ -24,12 +24,17 @@ import de.haumacher.phoneblock.db.Users;
 public class AddressBookResource extends Resource {
 
 	private final String _principal;
+	private String _serverRoot;
 
 	/** 
 	 * Creates a {@link AddressBookResource}.
+	 * 
+	 * @param rootUrl The full URl (including protocol) of the CardDAV servlet.
+	 * @param serverRoot The absolute path of the CardDAV servlet relative to the server.
 	 */
-	public AddressBookResource(String rootUrl, String resourcePath, String principal) {
+	public AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal) {
 		super(rootUrl, resourcePath);
+		_serverRoot = serverRoot;
 		_principal = principal;
 	}
 	
@@ -75,13 +80,26 @@ public class AddressBookResource extends Resource {
 	
 	@Override
 	public Resource get(String url) {
-		if (!url.startsWith(getRootUrl())) {
+		String rootUrl = getRootUrl();
+		
+		int prefixLength;
+		if (url.startsWith(rootUrl)) {
+			prefixLength = rootUrl.length();
+		} else {
+			if (url.startsWith(_serverRoot)) {
+				prefixLength = _serverRoot.length();
+			} else {
+				// Invalid URL.
+				System.out.println("ERROR: Received invalid contact URL outside server '" + rootUrl + "': " + url);
+				return null;
+			}
+		}
+		if (!url.startsWith(getResourcePath(), prefixLength)) {
+			System.out.println("ERROR: Received invalid contact URL outside address book '" + getResourcePath() + "': " + url);
 			return null;
 		}
-		if (!url.startsWith(getResourcePath(), getRootUrl().length())) {
-			return null;
-		}
-		return new AddressResource(getRootUrl(), url.substring(getRootUrl().length() + getResourcePath().length()), _principal);
+		
+		return new AddressResource(rootUrl, url.substring(prefixLength + getResourcePath().length()), _principal);
 	}
 
 	@Override

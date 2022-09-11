@@ -50,25 +50,38 @@ public class AddressResource extends Resource {
 	@Override
 	public String getEtag() {
 		// Address entries never change. The consist only of the bare phone number. 
-		return "1";
+		return "2";
+	}
+	
+	@Override
+	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		resp.setStatus(HttpServletResponse.SC_OK);
+		resp.setContentType("text/x-vcard");
+		resp.setCharacterEncoding("utf-8");
+		
+		resp.getWriter().append(vCardContent());
 	}
 	
 	@Override
 	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
-			String phoneNumber = getDisplayName();
-			
 			Element container = appendElement(propElement, property);
-			appendText(container, 
-				"BEGIN:VCARD\n"
-				+ "VERSION:3.0\n"
-				+ "UID:" + phoneNumber + "\n"
-				+ "FN:SPAM: " + phoneNumber + "\n"
-				+ "TEL;TYPE=WORK:" + phoneNumber + "\n"
-				+ "END:VCARD");
+			appendText(container, vCardContent());
 			return HttpServletResponse.SC_OK;
 		}
 		return super.fillProperty(req, propElement, propertyElement, property);
+	}
+
+	private String vCardContent() {
+		String displayName = getDisplayName();
+		
+		return "BEGIN:VCARD\n"
+			+ "VERSION:3.0\n"
+			+ "UID:" + displayName + "\n"
+			+ "FN:SPAM: " + displayName + "\n"
+			+ "CATEGORIES:SPAM" + "\n"
+			+ "TEL;TYPE=WORK:" + displayName + "\n"
+			+ "END:VCARD";
 	}
 	
 	@Override

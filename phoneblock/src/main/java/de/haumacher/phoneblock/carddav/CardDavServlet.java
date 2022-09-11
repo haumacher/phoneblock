@@ -42,23 +42,36 @@ import de.haumacher.phoneblock.carddav.schema.DavSchema;
 @WebServlet(urlPatterns = CardDavServlet.URL_PATTERN)
 public class CardDavServlet extends HttpServlet {
 
+	private static final String METHOD_REPORT = "REPORT";
+
+	private static final String METHOD_PROPFIND = "PROPFIND";
+
+	/**
+	 * URL pattern of URLs the {@link CardDavServlet} processes.
+	 */
 	public static final String URL_PATTERN = "/contacts/*";
 
 	private static final int SC_MULTI_STATUS = 207;
 	
+	/**
+	 * The request path where user-specific information is served.
+	 */
 	public static final String PRINCIPALS_PATH = "/principals/";
 
+	/**
+	 * The path relative to the servlet's #URL_PATTERN} where address information is located.
+	 */
 	public static final String ADDRESSES_PATH = "/addresses/";
 
-	static final String SERVER_LOC = "https://phoneblock.haumacher.de";
+	public static final String SERVER_LOC = "https://phoneblock.haumacher.de";
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
-			if ("PROPFIND".equals(req.getMethod())) {
+			if (METHOD_PROPFIND.equals(req.getMethod())) {
 				doPropfind(req, resp);
 			}
-			else if ("REPORT".equals(req.getMethod())) {
+			else if (METHOD_REPORT.equals(req.getMethod())) {
 				doReport(req, resp);
 			}
 			else {
@@ -71,6 +84,24 @@ public class CardDavServlet extends HttpServlet {
 			ex.printStackTrace();
 			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
+	}
+	
+	@Override
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.setHeader("Allow", 
+			"GET" + ", " + "HEAD" + ", " + METHOD_PROPFIND + ", " + METHOD_REPORT + ", " + "TRACE" + ", " + "OPTIONS");
+		resp.setHeader("DAV", "addressbook");
+	}
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Resource resource = getResource(req);
+		if (resource == null) {
+			handleNotFound(req, resp);
+			return;
+		}
+		
+		resource.get(req, resp);
 	}
 	
 	@Override
@@ -210,7 +241,9 @@ public class CardDavServlet extends HttpServlet {
 	}
 
 	private Resource getResource(HttpServletRequest req) {
-		String rootUrl = CardDavServlet.SERVER_LOC + req.getContextPath() + req.getServletPath();
+		String serverRoot = req.getContextPath() + req.getServletPath();
+		
+		String rootUrl = CardDavServlet.SERVER_LOC + serverRoot;
 		String resourcePath = req.getPathInfo();
 
 		if ("/".equals(resourcePath)) {
@@ -235,7 +268,7 @@ public class CardDavServlet extends HttpServlet {
 				if (endIdx < resourcePath.length() - 1) {
 					return new AddressResource(rootUrl, resourcePath, principal);
 				} else {
-					return new AddressBookResource(rootUrl, resourcePath, principal);
+					return new AddressBookResource(rootUrl, serverRoot, resourcePath, principal);
 				}
 			}
 		}
