@@ -5,7 +5,7 @@ Der Spam-Filter für deine Fritz!Box - English version see below.
 
 ## Wie funktioniert PhoneBlock?
 
-PhoneBlock zentrales Adressbuch mit von der PhoneBlock-Community gepflegten Telefonnummern von Spam-Anrufern. Dieses Adressbuch wird in deinem Internet-Router "FRITZ!Box" als Sperrliste eingerichtet. Sobald eine Nummer zu dieser Sperrliste hinzugefügt wird, weist deine FRITZ!Box Anrufer mit dieser Nummer automatisch ab. Das Telefon bleibt stumm.
+PhoneBlock ist ein zentrales Adressbuch mit von der PhoneBlock-Community gepflegten Telefonnummern von Spam-Anrufern. Dieses Adressbuch wird in deinem Internet-Router "FRITZ!Box" als Sperrliste eingerichtet. Sobald eine Nummer zu dieser Sperrliste hinzugefügt wird, weist deine FRITZ!Box Anrufer mit dieser Nummer automatisch ab. Das Telefon bleibt stumm.
 
 Solltest du trotzdem einen unerwünschten Anruf erhalten, weil die Nummer noch nicht in der Sperrliste ist, kannst du die Nummer ganz einfach in das PhoneBlock-Adressbuch deiner FRITZ!Box aufnehmen. Sobald du dies getan hast, aktualisiert deine FrizBox die Sperrliste und Anrufe von dieser neuen Nummer werden bei allen anderen Mitgliedern der PhoneBlock-Community sofort abgewiesen.
 
