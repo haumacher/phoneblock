@@ -20,7 +20,8 @@ Das Einzige, was du noch brauchst, ist ein PhoneBlock-Konto, mit dem du die Tele
 Nutze PhoneBlock live unter: https://phoneblock.haumacher.de/ - keine Kosten, keine Zusatzhardware notwendig.
 
 
-# Enghlish Version
+
+# English Version
 The Spam-Filter for your Fritz!Box
 
 ## How does PhoneBlock work?
