@@ -137,9 +137,15 @@
 		</div>
 		
 		<p>
-			Trage Deine E-Mail-Adresse, die Du für die PhoneBlock-Registrierung verwendet hast, in das Feld 
-			<i>Benutzername</i> ein. Den Sicherheitsschlüssel, den Du bei der Registrierung erhalten hast, muss Du 
-			in das Feld <i>Passwort</i> eintragen.
+			Trage Deine E-Mail-Adresse <code><%= JspUtil.quote(email) %></code>, die Du für die 
+			PhoneBlock-Registrierung verwendet hast, in das Feld <i>Benutzername</i> ein. Achte auf Groß- und 
+			Kleinschreibung: Schreibe die E-Mail-Adresse genauso, wie Du sie in bei der Registrierung geschrieben hast. 
+			Am besten überträgst Du sie mit Cut&amp;Paste.
+		</p>
+		
+		<p>
+			Das Passwort <code><%= JspUtil.quote(token) %></code>, muss Du jetzt noch in das Feld <i>Passwort</i> 
+			in dem Formular in der Fritz!Box eintragen.
 		</p>
 		
 		<p>
