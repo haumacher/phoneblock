@@ -14,7 +14,7 @@
 			<h1>Seite nicht gefunden.</h1>
 
 			<p>
-				Die angeforderte Seite wurde nicht gefunden. Überprüfe Deine Eingaben und probier's nochmal!.
+				Die angeforderte Seite wurde nicht gefunden. Überprüfe Deine Eingaben und probier's nochmal!
 			</p>
 
 		</div>
