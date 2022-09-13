@@ -86,13 +86,25 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>font-awesome</artifactId>
-			<version>6.1.0</version>
+			<version>6.1.2</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.webjars.npm</groupId>
 		    <artifactId>bulma</artifactId>
 		    <version>0.9.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.shredzone.shariff</groupId>
+			<artifactId>backend</artifactId>
+			<version>1.15</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>shariff</artifactId>
+			<version>3.2.1</version>
 		</dependency>
 
 		<dependency>
@@ -149,6 +161,14 @@
 						<goals>
 							<goal>war</goal>
 						</goals>
+						
+						<configuration>
+							<filters>
+								<filter>.phoneblock</filter>
+							</filters>
+							
+							<filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
