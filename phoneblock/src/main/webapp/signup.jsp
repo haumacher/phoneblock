@@ -23,7 +23,7 @@
 	        <div class="content">
 				<p>
 					Um PhoneBlock in Deinem Internet-Router zu installieren, benötigst Du einen PhoneBlock-Account. 
-					Bitte melde Dich hier an, um Zugangsdaten für Deine Installation zu erhalten.
+					Bitte registriere Dich, um Zugangsdaten für Deine Installation zu erhalten.
 				</p>
 				
 				<form action="<%= request.getContextPath() %>/verify-email" method="post" enctype="application/x-www-form-urlencoded">
@@ -58,7 +58,7 @@
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" type="submit">Anmelden</button>
+				    	<button class="button is-link" type="submit">Registrieren</button>
 					</div>
 				</form>
 	        </div>
