@@ -48,10 +48,26 @@
 				  </span>
 				</div>
 			</div>
+			
+			<a class="navbar-item" href="https://www.facebook.com/PhoneBlock" target="_blank">
+				<span class="icon" style="color: #1877F2;">
+			    	<i class="fa-brands fa-lg fa-facebook"></i>
+		        </span>
+		    </a>
+      			
 			<div class="navbar-item">
 				<div class="buttons">
-					<a class="button is-primary" href="<%=request.getContextPath() %>/signup.jsp"><strong>Sign up</strong></a>
-					<a class="button is-light">Log in</a>
+					<a class="button is-primary" href="<%=request.getContextPath() %>/signup.jsp">
+						<span class="icon">
+							<i class="fa-solid fa-user-plus"></i>
+          				</span>
+						<strong>Sign up</strong></a>
+					<a class="button is-light">
+						<span class="icon">
+							<i class="fa-solid fa-right-to-bracket"></i>
+          				</span>
+						<strong>Log in</strong>
+					</a>
 				</div>
 			</div>
 		</div>
