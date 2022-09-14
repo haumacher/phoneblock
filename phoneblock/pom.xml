@@ -6,6 +6,28 @@
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	
+	<name>PhoneBlock</name>
+	<description>Ad blocker for your Fritz!Box</description>
+	<inceptionYear>2022</inceptionYear>
+	
+	<licenses>
+		<license>
+			<name>GPL-3.0-only</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Bernhard Haumacher</name>
+			<organizationUrl>https://haumacher.de</organizationUrl>
+		</developer>
+	</developers>
+
+	<organization>
+		<url>https://phoneblock.haumacher.de</url>
+	</organization>
 
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
