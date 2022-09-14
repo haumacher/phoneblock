@@ -338,8 +338,12 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.deleteUser(userName);
-			users.addUser(userName, pwhash(passwd), System.currentTimeMillis());
+			Long userId = users.getUserId(userName);
+			if (userId == null) {
+				users.addUser(userName, pwhash(passwd), System.currentTimeMillis());
+			} else {
+				users.setPassword(userId.longValue(), pwhash(passwd));
+			}
 			session.commit();
 		}
 	}

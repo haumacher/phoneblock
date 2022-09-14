@@ -16,6 +16,9 @@ public interface Users {
 	@Insert("insert into USERS (EMAIL, PWHASH, REGISTERED) values (#{email}, #{pwhash}, #{registered})")
 	void addUser(String email, byte[] pwhash, long registered);
 	
+	@Update("update USERS set PWHASH=#{pwhash} where ID=#{userId}")
+	void setPassword(long userId, byte[] pwhash);
+	
 	@Delete("delete from USERS where EMAIL=#{email}")
 	void deleteUser(String email);
 	
@@ -26,7 +29,7 @@ public interface Users {
 	 * Retrieves the user ID for the user with the given user name (e-mail).
 	 */
 	@Select("select ID from USERS where EMAIL=#{email}")
-	long getUserId(String email);
+	Long getUserId(String email);
 
 	/**
 	 * Updates the user's last access timestamp.
