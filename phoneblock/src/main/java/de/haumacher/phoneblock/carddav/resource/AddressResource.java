@@ -108,6 +108,10 @@ public class AddressResource extends Resource {
 				System.out.println("Adding to block list: " + phoneNumber);
 				
 				blockList.removeExclude(currentUser, phoneNumber);
+				
+				// Safety, prevent duplicate key constraint violation.
+				blockList.removePersonalization(currentUser, phoneNumber);
+				
 				blockList.addPersonalization(currentUser, phoneNumber);
 				db.processVotes(spamreport, phoneNumber, 2, System.currentTimeMillis());
 			}

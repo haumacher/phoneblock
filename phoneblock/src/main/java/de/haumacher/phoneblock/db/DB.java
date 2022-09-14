@@ -412,6 +412,10 @@ public class DB {
 			long currentUser = users.getUserId(principal);
 			
 			boolean wasAddedBefore = blockList.removePersonalization(currentUser, phoneNumber);
+
+			// For safety reasons, to prevent primary key constraint violation.
+			blockList.removeExclude(currentUser, phoneNumber);
+			
 			blockList.addExclude(currentUser, phoneNumber);
 			
 			if (wasAddedBefore) {
