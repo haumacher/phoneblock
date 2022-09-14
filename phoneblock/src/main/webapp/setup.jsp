@@ -17,7 +17,10 @@
 <%
   		Object email = request.getAttribute("email");
   		Object token = request.getAttribute("token");
-	  	if (token == null) {
+%>
+
+<%
+		if (token == null) {
 %>
 		<p>
 			Für die Installation benötigst Du einen <a href="https://avm.de/produkte/fritzbox/">"FRITZ!Box"
@@ -44,14 +47,14 @@
 	        <div class="content">
 		
 				<div class="field">
-				  <label class="label">PhoneBlock-URL</label>
+				  <label class="label">Internetadresse des CardDAV-Servers</label>
 				  <div class="control">
 				    <code>https://phoneblock.haumacher.de/phoneblock/contacts/</code>
 				  </div>
 				</div>
 				
 				<div class="field">
-				  <label class="label">E-Mail</label>
+				  <label class="label">Benutzername</label>
 				  <div class="control">
 				    <code><%= JspUtil.quote(email) %></code>
 				  </div>
@@ -127,7 +130,7 @@
 
 		<p>
 			Fast geschafft, jetzt kommen die Anmeldedaten <span class="tag is-danger">4</span>! Trage die URL
-			von PhoneBlock in das Feld <i>Internetadresse des CardDAV-Servers</i> ein:
+			von des PhoneBlock-Adressbuchs in das Feld <i>Internetadresse des CardDAV-Servers</i> ein:
 		</p>
 		
 		<div class="columns">
@@ -137,15 +140,17 @@
 		</div>
 		
 		<p>
-			Trage Deine E-Mail-Adresse <code><%= JspUtil.quote(email) %></code>, die Du für die 
-			PhoneBlock-Registrierung verwendet hast, in das Feld <i>Benutzername</i> ein. Achte auf Groß- und 
-			Kleinschreibung: Schreibe die E-Mail-Adresse genauso, wie Du sie in bei der Registrierung geschrieben hast. 
-			Am besten überträgst Du sie mit Cut&amp;Paste.
+			Trage als Benutzernamen Deine E-Mail-Adresse<%if (email != null) {%> <code><%= JspUtil.quote(email) %></code><%} %>, die Du für die 
+			<a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> verwendet hast, in das Feld 
+			<i>Benutzername</i> ein. Achte auf Groß- und Kleinschreibung: Schreibe die E-Mail-Adresse genauso, wie 
+			Du sie in bei der Registrierung geschrieben hast. Am besten überträgst Du sie mit Cut&amp;Paste.
 		</p>
 		
 		<p>
-			Das Passwort <code><%= JspUtil.quote(token) %></code>, muss Du jetzt noch in das Feld <i>Passwort</i> 
-			in dem Formular in der Fritz!Box eintragen.
+			Das Passwort<%if (token == null) {%>, 
+			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten 
+			hast, <%} else  {%> <code><%= JspUtil.quote(token) %></code>,<%}%> muss Du jetzt noch in das Feld 
+			<i>Passwort</i> in dem Formular in der Fritz!Box eintragen.
 		</p>
 		
 		<p>
