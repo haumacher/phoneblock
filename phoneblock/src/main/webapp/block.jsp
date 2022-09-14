@@ -16,11 +16,12 @@
 		<p>
 			Es ist doch noch eine Nervensäge durch das PhoneBlock-Netz geschlüpft? Ärgerlich aber kein Problem, 
 			gleich bist Du ihn los. Hierfür fügst Du die Nummer des Störenfrieds einfach der "Blocklist" hinzu. 
+			Melde Dich hierfür an Deiner Fritz!Box an.
 		</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="http://fritz.box" target="_blank"><button class="button is-medium is-primary is-fullwidth">Melde Dich dafür an Deiner FRITZ!Box an</button></a>
+			<a href="http://fritz.box" target="_blank"><button class="button is-medium is-primary is-fullwidth">An FRITZ!Box anmelden</button></a>
 		  </div>
 		</div>
 		
