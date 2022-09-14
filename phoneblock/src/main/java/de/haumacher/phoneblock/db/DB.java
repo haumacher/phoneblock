@@ -327,6 +327,8 @@ public class DB {
 			System.err.println("Database shutdown failed.");
 			e.printStackTrace();
 		}
+		
+		_scheduler.shutdown();
 	}
 
 	/** 
