@@ -49,7 +49,7 @@
 				</div>
 			</div>
 			
-			<a class="navbar-item" href="https://www.facebook.com/PhoneBlock" target="_blank">
+			<a class="navbar-item" title="Zur Facebook-Seite" href="https://www.facebook.com/PhoneBlock" target="_blank">
 				<span class="icon" style="color: #1877F2;">
 			    	<i class="fa-brands fa-lg fa-facebook"></i>
 		        </span>

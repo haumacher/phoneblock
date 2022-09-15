@@ -65,7 +65,7 @@
 
 		<h2>Meine Frage wird hier nicht beantwortet, wer hilft?</h2>
 		<p>
-			Schreib doch einen Kommentar auf auf der <a href="https://www.facebook.com/PhoneBlock" target="_blank">FaceBook-Seite von PhoneBlock</a>, 
+			Schreib doch einen Kommentar auf auf der <a href="https://www.facebook.com/PhoneBlock" target="_blank">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
 			Natürlich kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  

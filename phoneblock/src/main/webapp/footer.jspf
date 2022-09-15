@@ -5,6 +5,30 @@
   - Copyright Notice: Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
   - Description: JSP fragment that renders the application footer. It must be included just before the end of the body tag.
   --%>
+<section class="section">
+	<div class="content">
+		<h2>Beteilige Dich!</h2>
+		
+		<p>
+		Wenn Dir PhoneBlock gefällt, bitte hilf mit, es bekannt zu machen, und teile es mit Deinen Freunden. Je mehr 
+		Leute mitmachen, desto geringer die Chance, dass Dich trotzdem noch ein Werbeanruf trifft!
+		</p>
+		 
+		<div class="shariff"
+			data-backend-url="<%= request.getContextPath() %>/shariff/" 
+			data-url="https://phoneblock.haumacher.de" 
+			data-button-style="icon-count"
+			data-services="[&quot;addthis&quot;,&quot;whatsapp&quot;,&quot;facebook&quot;,&quot;xing&quot;,&quot;pinterest&quot;,&quot;linkedin&quot;,&quot;tumblr&quot;,&quot;diaspora&quot;,&quot;reddit&quot;,&quot;stumbleupon&quot;,&quot;threema&quot;,&quot;weibo&quot;,&quot;tencent-weibo&quot;,&quot;qzone&quot;,&quot;telegram&quot;,&quot;vk&quot;,&quot;flipboard&quot;,&quot;pocket&quot;,&quot;buffer&quot;]"
+			data-lang="de"
+		></div>
+		
+		<p>
+		Die Social-Media-Buttons sind übrigens "pricacy-aware" und verletzen nicht Deine Privatshäre. 
+		Nähere Informationen findest Du unter dem Stichwort <a target="_blank" href="http://ct.de/-2467514">"shariff"</a>.
+		</p>
+	</div>
+</section>
+  
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p>
@@ -24,3 +48,5 @@
 		</p>
 	</div>
 </footer>
+
+<script src="<%= request.getContextPath() %>/webjars/shariff/3.2.1/shariff.min.js"></script>
