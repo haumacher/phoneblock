@@ -40,7 +40,7 @@ public class SearchServlet extends HttpServlet {
 			info = new SpamReport(phone, 0, 0, 0);
 		}
 		req.setAttribute("info", info);
-		req.setAttribute("title", "PhoneBlock: Rufnummer " + phone + ": " + status(info.getVotes()));
+		req.setAttribute("title", status(info.getVotes()) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
 	}
