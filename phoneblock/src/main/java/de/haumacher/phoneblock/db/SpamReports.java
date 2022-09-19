@@ -61,8 +61,8 @@ public interface SpamReports {
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
 	List<SpamReport> getLatestReports(long after);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS order by LASTUPDATE desc")
-	List<SpamReport> getAll();
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS order by LASTUPDATE desc limit #{limit}")
+	List<SpamReport> getAll(int limit);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where PHONE = #{phone}")
 	SpamReport getPhoneInfo(String phone);

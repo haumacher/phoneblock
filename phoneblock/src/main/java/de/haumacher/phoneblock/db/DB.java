@@ -248,10 +248,10 @@ public class DB {
 	/**
 	 * Looks all spam reports.
 	 */
-	public List<SpamReport> getAll() {
+	public List<SpamReport> getAll(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getAll();
+			return reports.getAll(limit);
 		}
 	}
 	

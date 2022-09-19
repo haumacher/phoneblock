@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<%@page import="java.util.Calendar"%>
+<%@page import="java.util.GregorianCalendar"%>
 <%@page pageEncoding="UTF-8" contentType="application/xml; charset=UTF-8" session="false"
 %><%@page import="java.text.DateFormat"
 %><%@page import="java.text.SimpleDateFormat"
@@ -38,9 +40,38 @@
       <priority>0.5</priority>
    </url>
 
+   <url>
+      <loc>https://phoneblock.haumacher.de/phoneblock/faq.jsp</loc>
+      <changefreq>weekly</changefreq>
+      <priority>0.5</priority>
+   </url>
+
+   <url>
+      <loc>https://phoneblock.haumacher.de/phoneblock/datenschutz.jsp</loc>
+      <changefreq>monthly</changefreq>
+      <priority>0.5</priority>
+   </url>
+
+   <url>
+      <loc>https://phoneblock.haumacher.de/phoneblock/block.jsp</loc>
+      <changefreq>monthly</changefreq>
+      <priority>0.5</priority>
+   </url>
+
+   <url>
+      <loc>https://phoneblock.haumacher.de/phoneblock/signup.jsp</loc>
+      <changefreq>monthly</changefreq>
+      <priority>0.5</priority>
+   </url>
+
 <%
-	List<SpamReport> reports = db.getAll();
-	long oneWeekBefore = System.currentTimeMillis() - 1000L*60*60*24*7;
+	long now = System.currentTimeMillis();
+	long age = now - new GregorianCalendar(2022, Calendar.SEPTEMBER, 19).getTimeInMillis();
+
+	// Simulate site growth to convince google reading all pages.
+	int limit = 50 + (int) (age / (1000L*60*60*24)) * 10;
+	List<SpamReport> reports = db.getAll(limit);
+	long oneWeekBefore = now - 1000L*60*60*24*7;
 	for (SpamReport report : reports) {
 %>
    <url>
