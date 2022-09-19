@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.db.DB"%>
-<%@page import="java.util.Locale"%>
-<%@page import="de.haumacher.phoneblock.db.Status"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@page import="java.util.Date"%>
-<%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.text.DateFormat"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
-<%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="java.util.List"%>
-<%@page import="de.haumacher.phoneblock.db.SpamReport"%>
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
+<%@page import="java.util.Locale"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="de.haumacher.phoneblock.db.DB"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
+<%@page import="de.haumacher.phoneblock.db.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.db.Status"%>
+<%@page import="de.haumacher.phoneblock.db.Statistics"%>
+<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
@@ -26,7 +25,7 @@
 
 <section class="section">
 <div class="content">
-	<h1>Telefonnummer <%= info.getPhone()%></h1>
+	<h1>Telefonnummer ☎ <%= info.getPhone()%></h1>
 <%
 	if (info.getVotes() == 0) {
 %>
@@ -37,7 +36,7 @@
 	<p>
 		Die Telefonnummer ist nicht in der Datenbank vorhanden. 
 		Es gibt bisher keine Beschwerden über unerwünschte Anrufe von der Telefonnummer 
-		<code><%= info.getPhone() %></code>.
+		☎ <code><%= info.getPhone() %></code>.
 	</p>
 
 	<p>
@@ -54,8 +53,8 @@
 	<p><span class="tag is-info is-warning">Beschwerde liegt vor</span></p>
 
 	<p>
-		Es gibt bereits Beschwerden über unerwünschte Anrufe von der Telefonnummer <code><%= info.getPhone() %></code>. 
-		Die Nummer wird aber noch nicht blockiert. 
+		Es gibt bereits <%= (info.getVotes() + 1) / 2 %> Beschwerden über unerwünschte Anrufe von der 
+		Telefonnummer ☎ <code><%= info.getPhone() %></code>. Die Nummer wird aber noch nicht blockiert. 
 	</p>
 
 	<p>
@@ -69,7 +68,7 @@
 	<p><span class="tag is-info is-danger">Blockiert</span></p>
 
 	<p>
-		Die Telefonnummer <code><%= info.getPhone() %></code> is eine mehrfach berichtete Quelle von unerwünschten 
+		Die Telefonnummer ☎ <code><%= info.getPhone() %></code> is eine mehrfach berichtete Quelle von unerwünschten 
 		Telefonanrufen. Mit PhoneBlock hast Du vor Anrufen von dieser Rufnummer Ruhe.
 	</p>
 
