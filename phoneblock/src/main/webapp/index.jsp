@@ -3,6 +3,7 @@
 	pageEncoding="UTF-8"%>
 <html>
 <head>
+<link rel="canonical" href="https://phoneblock.haumacher.de/phoneblock/" />
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>
 
@@ -11,7 +12,7 @@
 
 <section class="section">
 	<div class="content">
-		<div style="float: right;">
+		<div style="float: right; max-width: 15%;">
 			<img alt="PhoneBlock Logo" src="animation.svg">
 		</div>
 
