@@ -60,10 +60,10 @@
 		<table class="table">
 			<thead>
 				<tr>
-					<th>Phone number</th>
-					<th>Confidence</th>
-					<th>Received</th>
-					<th>Active since</th>
+					<th>Rufnummer</th>
+					<th title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Konfidenz</th>
+					<th>Berichtet</th>
+					<th title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Aktiv seit</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -105,10 +105,10 @@
 		<table class="table">
 			<thead>
 				<tr>
-					<th>Phone number</th>
-					<th>Confidence</th>
-					<th>Last update</th>
-					<th>Active since</th>
+					<th>Rufnummer</th>
+					<th title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Konfidenz</th>
+					<th>Letze Beschwerde</th>
+					<th title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Aktiv seit</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -150,10 +150,10 @@
 		<table class="table">
 			<thead>
 				<tr>
-					<th>Phone number</th>
-					<th>Confidence</th>
-					<th>Last update</th>
-					<th>Active since</th>
+					<th>Rufnummer</th>
+					<th title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Konfidenz</th>
+					<th>Letze Beschwerde</th>
+					<th title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Aktiv seit</th>
 				</tr>
 			</thead>
 			<tbody>
