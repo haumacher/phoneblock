@@ -8,8 +8,6 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import javax.servlet.ServletContextEvent;
-
 import junit.framework.TestCase;
 
 /**
@@ -22,7 +20,7 @@ public class TestDbService extends TestCase {
 	public void testStart() throws UnknownHostException, IOException {
 		DBService service = new DBService() {
 			@Override
-			protected String defaultDbUrl(ServletContextEvent servletContextEvent) {
+			protected String defaultDbUrl(String appName) {
 				return "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
 			}
 			

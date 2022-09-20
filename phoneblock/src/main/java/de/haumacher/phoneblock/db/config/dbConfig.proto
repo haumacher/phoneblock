@@ -1,0 +1,16 @@
+package de.haumacher.phoneblock.db.config;
+
+/** Configuration settings for the embedded H2 database */
+message DBConfig {
+	/** The DB url, where the file is located. */
+	string url;
+	
+	/** The DB user to access the database. */
+	string user;
+	
+	/** The DB password to access the database. */
+	string password;
+	
+	/** The port, where to start a server for external access. <code>0</code> to prevent starting a DB server. */
+	int port;
+}
