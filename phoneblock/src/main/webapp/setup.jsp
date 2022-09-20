@@ -48,25 +48,18 @@
 		
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control">
-				    <code>https://phoneblock.haumacher.de/phoneblock/contacts/</code>
-				  </div>
+				  <div class="control"><code>https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control">
-				    <code><%= JspUtil.quote(email) %></code>
-				  </div>
+				  <div class="control"><code><%= JspUtil.quote(email) %></code></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control">
-				    <code><%= JspUtil.quote(token) %></code>
-				  </div>
+				  <div class="control"><code><%= JspUtil.quote(token) %></code></div>
 				</div>
-				
 			</div>
 		</article>
 	  </div>
@@ -135,7 +128,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<code>https://phoneblock.haumacher.de/phoneblock/contacts/</code>
+			<code>https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code>
 		  </div>
 		</div>
 		
