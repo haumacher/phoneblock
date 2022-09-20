@@ -47,8 +47,8 @@
 		<h2>Was sind die Vorausetzungen?</h2>
 
 		<div style="float: right;">
-			<a href="https://avm.de/produkte/fritzbox/"> <img width="200" alt="AVM Fritz!Box 7590"
-				src="https://avm.de/fileadmin/user_upload/Global/Produkte/FRITZBox/7590/fritzbox_7590_left_de_stiftung_warentest_640x400.png" />
+			<a href="https://avm.de/produkte/fritzbox/"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
+				src="<%=request.getContextPath() %>/fritzbox.png" />
 			</a>
 		</div>
 		
@@ -61,10 +61,19 @@
 			anhand der Installationsanleitung, ob Deine Version die notwendigen
 			Optionen schon bietet.
 		</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a id="search-fritzbox">
+				<button class="button is-medium is-info is-fullwidth" onclick="return checkFritzBox('<%=request.getContextPath() %>', this);">Fritz!Box suchen</button>
+			</a>
+		  </div>
+		</div>
 
-		<p>Als weiteres benötigst Du nur noch einen PhoneBlock-Account,
-			mit dem Du die Telefonsperrliste in Deiner FRITZ!Box einrichten
-			kannst.</p>
+		<p>
+			Du bist nicht sicher, ob Du eine Fritz!Box hast? Wenn Du Dich gerade zu Hause im WLan befindest, dann drück
+			den Such-Button oben. PhoneBlock versucht dann, eine Fritz!Box in Deiner Nähe zu finden.
+		</p>
 	</div>
 
 	<div class="tile is-ancestor">

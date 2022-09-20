@@ -51,3 +51,34 @@ function showaddr(target) {
   target.parentNode.replaceChild(link, target);
   return false;
 }
+
+function checkFritzBox(contextPath, button) {
+	if (!button.classList.contains("is-info")) {
+		return true;
+	}
+	
+	button.classList.add("is-loading");
+	button.textContent = "Moment..."
+
+	var image = new Image();
+	
+	image.onload = function() {
+		button.classList.remove("is-loading");
+		button.classList.remove("is-info");
+		button.classList.add("is-primary");
+		button.textContent = "Gefunden, leg los!"
+		document.getElementById("search-fritzbox").href="setup.jsp";
+		document.getElementById("fritzbox").src = contextPath + "/fritzbox-found.png";
+	}
+	image.onerror = function() {
+		button.classList.remove("is-loading");
+		button.classList.remove("is-info");
+		button.classList.add("is-danger");
+		button.textContent = "Nicht gefunden, was tun?";
+		document.getElementById("search-fritzbox").href="no-fritzbox.jsp";
+		document.getElementById("fritzbox").src = contextPath + "/fritzbox-not-found.png";
+	}
+	
+	image.src = "http://fritz.box/favicon.ico";
+	return false;
+}
