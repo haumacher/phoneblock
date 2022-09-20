@@ -21,6 +21,25 @@
 			PhoneBlock-Nutzern erfordern.
 		</p>
 
+		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="https://amzn.eu/d/hc6WGbz">tellows Anrufschutz</a>"?</h2>
+		<p>
+			Beide Ansätze funktionieren ähnlich über ein Internet-Telefonbuch, das man in seiner Fritz!Box einrichtet 
+			und die Nummern in diesem Telefonbuch blockiert. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
+			Deine Blocklist zu personalisieren und ist zudem auch noch kostenlos (siehe oben).
+		</p>
+		<p> 
+			In Deine personalisierte Blocklist kannst Du selbst Nummern hinzufügen und, was 
+			noch wichtiger ist, auch Nummern aus dem Telefonbuch löschen (siehe auch "Eine Nummer wird 
+			fälschlicherweise blockiert, was tun?" weiter unten). Interessant ist das, wenn PhoneBlock eine 
+			Nummer auf die Blocklist aufgenommen hat, von der Du aber angerufen werden möchtest. Z.B. kann ganz leicht
+			eine Nummer z.B. von einem Internet-Anbieter auf die Blocklist geraten, wenn sich viele Leute von 
+			Rückrufen von dieser Nummer genervt fühlen, Du aber auf einen Rückruf wartest. Das wird auch ganz schön in 
+			diesem <a target="_blank" href="https://www.youtube.com/watch?v=hNlRczRivGo">YouTube-Video</a> erklärt. Mit PhoneBlock 
+			kannst Du Deine Blocklist anpassen, Nummern, die Du selbst darauf gesetzt hast, bleiben gesperrt und 
+			Nummern, die Du von der Liste gelöscht hast, werden sicher nie wieder zu Deiner persönlichen Liste 
+			hinzugefügt. 
+		</p>
+
 		<h2>Ich habe keine Fritz!Box, kann ich PhoneBlock trotzdem nutzen?</h2>
 		<p>
 			Vielleicht, das hängt von deinem Internet-Router/Telefonanlage ab. Deine Telefonanlage (das Ding, das Dir 
@@ -34,11 +53,11 @@
 		<h2>Kann ich PhoneBlock auch auf meinem Mobiltelefon nutzen?</h2>
 		<p>
 			Nein, bzw. ich habe noch keinen Weg gefunden. Man kann auf Android mit der App 
-			<a href="https://play.google.com/store/apps/details?id=com.deependhulla.opensync">Open Sync</a> 
+			<a target="_blank" href="https://play.google.com/store/apps/details?id=com.deependhulla.opensync">Open Sync</a> 
 			das PhoneBlock-Adressbuch auf das Mobiltelefon synchronisieren. Dann hat man alle Telefonnummern der
 			Blocklist in seinen Kontakten in der Gruppe "SPAM". Allerdings habe ich bisher keine Möglichkeit gefunden,
 			alle Anrufe von allen Kontakten einer Gruppe zu blockieren. Die App, die diese Funktionalität verspricht 
-			(<a href="http://android.insadco.com/group_blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
+			(<a target="_blank" href="http://android.insadco.com/group_blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
 			zu geben. Außerdem will man eigentlich auch nicht alle Telefonterroristen in seinen Kontakten haben. 
 			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
 			Nummern zu den Kontakten hinzuzufügen. 
@@ -63,9 +82,22 @@
 			Ausnahmeregel, die verhindert, dass diese Nummer je wieder in Deine Blocklist aufgenommen wird. 
 		</p>
 
+		<h2>Ich habe Angst, dass PhoneBlock Nummern blockiert, die ich benötige, was tun?</h2>
+		<p>
+			Mit PhoneBlock musst du Nummern nicht unbedingt blockieren. Du hast die folgenden Möglichkeiten:
+		</p>
+		<ol>
+			<li>Statt einer Blockierung richte eine Weiterleitung auf Deinen Anrufbeantworter ein. Wenn jemand anruft, 
+			der wirklich etwas von Dir will, dann wird er eine Nachricht hinterlassen und Du kannst zurückrufen.</li>
+			<li>Lass den Installationsschritt mit der Blockierung ganz weg. Richte nur das PhoneBlock-Telefonbuch in 
+			Deiner Fritz!Box ein. Dann wird Dir beim Anruf im Display des Telefons z.B. "SPAM: 03016637169" angezeigt. 
+			Du kannst dann entscheiden, ob Du ran gehst, weil Du gerade auf einen Rückruf wartest, oder ob Du den 
+			Anrufer wegdrückst.</li>
+		</ol>
+
 		<h2>Meine Frage wird hier nicht beantwortet, wer hilft?</h2>
 		<p>
-			Schreib doch einen Kommentar auf auf der <a href="https://www.facebook.com/PhoneBlock" target="_blank">Facebook-Seite von PhoneBlock</a>, 
+			Schreib doch einen Kommentar auf auf der <a target="_blank" href="https://www.facebook.com/PhoneBlock" target="_blank">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
 			Natürlich kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
