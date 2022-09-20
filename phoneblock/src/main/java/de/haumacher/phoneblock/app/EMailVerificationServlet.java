@@ -37,6 +37,7 @@ public class EMailVerificationServlet extends HttpServlet {
 			MailService mailService = MailServiceStarter.getInstance();
 			mailService.sendActivationMail(email, code);
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			req.setAttribute("message", "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
 			req.getRequestDispatcher("/signup.jsp").forward(req, resp);
 			return;
