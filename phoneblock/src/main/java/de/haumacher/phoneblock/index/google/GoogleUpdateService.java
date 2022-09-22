@@ -107,12 +107,12 @@ public class GoogleUpdateService implements IndexUpdateService {
 				System.out.println("Added URL to Goolge index: " + url);
 			} else {
 				try (InputStream in = response.getContent()) {
-					System.out.println("ERROR adding URL to Goolge index (" + code + "): " + 
+					System.out.println("ERROR adding URL to Goolge index (" + code + "): " + url + ": " +
 						ConnectionUtil.readText(in, response.getContentEncoding()));
 				}
 			}
 		} catch (IOException ex) {
-			System.out.println("ERROR adding URL to Goolge index: " + ex.getMessage());
+			System.out.println("ERROR adding URL to Goolge index: " +  url + ": " + ex.getMessage());
 			ex.printStackTrace();
 		}
 	}

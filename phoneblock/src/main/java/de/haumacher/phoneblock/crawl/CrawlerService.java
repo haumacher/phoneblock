@@ -60,6 +60,7 @@ public class CrawlerService implements ServletContextListener {
 			_crawlerThread = new Thread(_crawler);
 			_crawlerThread.start();
 		} catch (IOException ex) {
+			System.out.println("Failed to start crawler service.");
 			ex.printStackTrace();
 		}
 	}
