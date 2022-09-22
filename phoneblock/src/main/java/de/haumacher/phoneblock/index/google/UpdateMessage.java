@@ -1,11 +1,23 @@
 package de.haumacher.phoneblock.index.google;
 
+/**
+ * Message sent to the Google update service.
+ */
 public class UpdateMessage extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
+	/**
+	 * The type of an update.
+	 */
 	public enum Type implements de.haumacher.msgbuf.data.ProtocolEnum {
 
+		/**
+		 * The content of an URL was updated.
+		 */
 		URL_UPDATED("URL_UPDATED"),
 
+		/**
+		 * The resouce of an URL was deleted.
+		 */
 		URL_DELETED("URL_DELETED"),
 
 		;
@@ -100,6 +112,9 @@ public class UpdateMessage extends de.haumacher.msgbuf.data.AbstractDataObject i
 		super();
 	}
 
+	/**
+	 * The modified URL.
+	 */
 	public final String getUrl() {
 		return _url;
 	}
@@ -118,6 +133,9 @@ public class UpdateMessage extends de.haumacher.msgbuf.data.AbstractDataObject i
 	}
 
 
+	/**
+	 * The type of update to inform about.
+	 */
 	public final Type getType() {
 		return _type;
 	}

@@ -9,22 +9,27 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URLConnection;
 
 /**
- * TODO
- *
- * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
+ * Utilities for connection handling.
  */
 public class ConnectionUtil {
 
-	public static StringBuilder readText(HttpURLConnection connection) throws IOException, UnsupportedEncodingException {
+	/**
+	 * Reads the contents of a {@link HttpURLConnection} as text.
+	 */
+	public static StringBuilder readText(URLConnection connection) throws IOException, UnsupportedEncodingException {
+		String encoding = connection.getContentEncoding();
+		
 		try (InputStream in = connection.getInputStream()) {
-			String encoding = connection.getContentEncoding();
-			
 			return readText(in, encoding);
 		}
 	}
 
+	/**
+	 * Reads the contents of a {@link InputStream} as text.
+	 */
 	public static StringBuilder readText(InputStream in, String encoding) throws IOException, UnsupportedEncodingException {
 		StringBuilder contents = new StringBuilder();
 		char[] buffer = new char[4096];

@@ -1,11 +1,21 @@
 package de.haumacher.phoneblock.index.google;
 
+/**
+ * Message sent to the Google update service.
+ */
 message UpdateMessage {
+	/** The type of an update. */
 	enum Type {
+		/** The content of an URL was updated. */
 		URL_UPDATED;
+
+		/** The resouce of an URL was deleted. */
 		URL_DELETED;
 	}
 
+	/** The modified URL. */
 	string url;
+	
+	/** The type of update to inform about. */
 	Type type;
 }

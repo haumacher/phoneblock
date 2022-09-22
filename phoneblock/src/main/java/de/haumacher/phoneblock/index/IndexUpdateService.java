@@ -38,6 +38,9 @@ public interface IndexUpdateService extends ServletContextListener {
 	 */
 	void publishUpdate(String path);
 	
+	/**
+	 * Process index updates asynchronously.
+	 */
 	static IndexUpdateService async(SchedulerService scheduler, IndexUpdateService service) {
 		return new IndexUpdateService() {
 			@Override
@@ -56,28 +59,43 @@ public interface IndexUpdateService extends ServletContextListener {
 			}
 		};
 	}
-	
+
+	/**
+	 * Distribute index updates to multiple services.
+	 */
 	static IndexUpdateService tee(IndexUpdateService... services) {
 		return new IndexUpdateService() {
 			
 			@Override
 			public void contextInitialized(ServletContextEvent sce) {
 				for (IndexUpdateService service : services) {
-					service.contextInitialized(sce);
+					try {
+						service.contextInitialized(sce);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 			
 			@Override
 			public void contextDestroyed(ServletContextEvent sce) {
 				for (IndexUpdateService service : services) {
-					service.contextDestroyed(sce);
+					try {
+						service.contextDestroyed(sce);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 			
 			@Override
 			public void publishUpdate(String path) {
 				for (IndexUpdateService service : services) {
-					service.publishUpdate(path);
+					try {
+						service.publishUpdate(path);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 		};
