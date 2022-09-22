@@ -47,16 +47,22 @@
 			in der Lage sein, ein Telefonbuch über das <code>CardDAV</code>-Protokoll zu abonieren und alle Anrufe von 
 			einer Nummer in einem bestimmten Telefonbuch automatisch abzuweisen (oder an den Anrufbeantworter 
 			weiterzuleiten). Ob das bei Deiner Telefonanlage möglich ist, musst Du im Handbuch nachlesen, oder frag 
-			Deinen Telefonanbieter.  
+			Deinen Telefonanbieter. Solltest Du die Blocklist erfolgreich in einen anderen Router installiert haben, 
+			sag bitte Bescheid, damit die Installationsanleitung angepasst werden kann.
 		</p>
 
 		<h2>Kann ich PhoneBlock auch auf meinem Mobiltelefon nutzen?</h2>
 		<p>
-			Nein, bzw. ich habe noch keinen Weg gefunden. Man kann auf Android mit der App 
+			Nein, nicht zum Blockieren von Anrufen - bzw. ich habe noch keinen Weg gefunden. Man kann auf Android mit der App 
 			<a target="_blank" href="https://play.google.com/store/apps/details?id=com.deependhulla.opensync">Open Sync</a> 
 			das PhoneBlock-Adressbuch auf das Mobiltelefon synchronisieren. Dann hat man alle Telefonnummern der
-			Blocklist in seinen Kontakten in der Gruppe "SPAM". Allerdings habe ich bisher keine Möglichkeit gefunden,
-			alle Anrufe von allen Kontakten einer Gruppe zu blockieren. Die App, die diese Funktionalität verspricht 
+			Blocklist in seinen Kontakten in der Gruppe "SPAM". Ein Anruf von einer Nummer aus der Blocklist wird dann 
+			beispielsweise als "SPAM: 03016637169" angezeigt, und man weiß, dass man das wegdrücken kann. 
+		</p>
+		
+		<p>
+			Allerdings habe ich bisher keine Möglichkeit gefunden,
+			alle Anrufe von allen Kontakten einer Gruppe (z.B. "SPAM") zu blockieren. Die App, die diese Funktionalität verspricht 
 			(<a target="_blank" href="http://android.insadco.com/group_blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
 			zu geben. Außerdem will man eigentlich auch nicht alle Telefonterroristen in seinen Kontakten haben. 
 			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
@@ -95,11 +101,18 @@
 			Anrufer wegdrückst.</li>
 		</ol>
 
+		<h2>Ich habe einen Wunsch, was PhoneBlock unbedingt können sollte, wo kann ich den äußern?</h2>
+		<p>
+			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="https://github.com/haumacher/phoneblock/issues" target="_blank">PhoneBlock Projekt-Seite</a> 
+			ein Ticket öffnen und den Wunsch beschreiben. Gerne kannst Du den Vorschlag aber auch mit mir per E-Mail 
+			diskutieren: <code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
+		</p>
+
 		<h2>Meine Frage wird hier nicht beantwortet, wer hilft?</h2>
 		<p>
 			Schreib doch einen Kommentar auf auf der <a target="_blank" href="https://www.facebook.com/PhoneBlock" target="_blank">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
-			Natürlich kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
+			Gerne kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
 		</p>
 
