@@ -1,0 +1,11 @@
+package de.haumacher.phoneblock.index.google;
+
+message UpdateMessage {
+	enum Type {
+		URL_UPDATED;
+		URL_DELETED;
+	}
+
+	string url;
+	Type type;
+}

@@ -38,6 +38,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.index.IndexUpdateService;
 
 /**
  * The database abstraction layer.
@@ -78,14 +79,21 @@ public class DB {
 	private SecureRandom _rnd = new SecureRandom();
 	
 	private ScheduledExecutorService _scheduler;
+
+	private IndexUpdateService _indexer;
+	
+	public DB(DataSource dataSource) throws SQLException, UnsupportedEncodingException {
+		this(dataSource, IndexUpdateService.NONE);
+	}
 	
 	/** 
 	 * Creates a {@link DB}.
 	 *
 	 * @param dataSource
 	 */
-	public DB(DataSource dataSource) throws SQLException, UnsupportedEncodingException {
+	public DB(DataSource dataSource, IndexUpdateService indexer) throws SQLException, UnsupportedEncodingException {
 		_dataSource = dataSource;
+		_indexer = indexer;
 		
 		TransactionFactory transactionFactory = new JdbcTransactionFactory();
 		Environment environment = new Environment("phoneblock", transactionFactory, _dataSource);
@@ -202,22 +210,53 @@ public class DB {
 	 * Implementation of {@link #processVotes(String, int, long)} when there is already a database session.
 	 */
 	public void processVotes(SpamReports reports, String phone, int votes, long time) {
+		long currentVotes;
+		long newVotes;
 		if (votes < 0) {
 			if (reports.isKnown(phone)) {
-				long currentVotes = reports.getVotes(phone);
-				if (currentVotes + votes <= 0) {
+				currentVotes = reports.getVotes(phone);
+				newVotes = currentVotes + votes;
+				if (newVotes <= 0) {
 					reports.delete(phone);
 				} else {
 					reports.addVote(phone, votes, time);
 				}
+			} else {
+				currentVotes = 0;
+				newVotes = 0;
 			}
 		} else {
 			if (reports.isKnown(phone)) {
+				currentVotes = reports.getVotes(phone);
+
 				reports.addVote(phone, votes, time);
 			} else {
+				currentVotes = 0;
+
 				reports.addReport(phone, votes, time);
 			}
+			newVotes = currentVotes + votes;
 		}
+		
+		if (classify(currentVotes) != classify(newVotes)) {
+			publishUpdate(phone);
+		}
+	}
+
+	private int classify(long newVotes) {
+		if (newVotes == 0) {
+			return 0;
+		}
+		else if (newVotes < MIN_VOTES) {
+			return 1;
+		} 
+		else {
+			return 2;
+		}
+	}
+
+	private void publishUpdate(String phone) {
+		_indexer.publishUpdate("/nums/" + phone);
 	}
 
 	/**

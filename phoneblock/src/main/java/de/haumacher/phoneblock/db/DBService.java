@@ -16,6 +16,7 @@ import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Server;
 
 import de.haumacher.phoneblock.db.config.DBConfig;
+import de.haumacher.phoneblock.index.IndexUpdateService;
 
 /**
  * {@link ServletContextListener} starting the database.
@@ -25,6 +26,19 @@ public class DBService implements ServletContextListener {
 	private static DB INSTANCE;
 	
 	private Server _server;
+
+	private final IndexUpdateService _indexer;
+	
+	public DBService() {
+		this(IndexUpdateService.NONE);
+	}
+	
+	/** 
+	 * Creates a {@link DBService}.
+	 */
+	public DBService(IndexUpdateService indexer) {
+		_indexer = indexer;
+	}
 
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -102,7 +116,7 @@ public class DBService implements ServletContextListener {
 			ex.printStackTrace();
 		}
 		
-		INSTANCE = new DB(dataSource);
+		INSTANCE = new DB(dataSource, _indexer);
 	}
 
 	protected int defaultDbPort() {
