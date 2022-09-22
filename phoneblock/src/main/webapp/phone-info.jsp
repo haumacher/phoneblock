@@ -34,7 +34,7 @@
 	</p>
 
 	<p>
-		Die Telefonnummer ist nicht in der Datenbank vorhanden. 
+		Die Telefonnummer ist nicht in der <a href="<%=request.getContextPath() %>/">PhoneBlock</a>-Datenbank vorhanden. 
 		Es gibt bisher keine Beschwerden über unerwünschte Anrufe von der Telefonnummer 
 		☎ <code><%= info.getPhone() %></code>.
 	</p>
@@ -58,7 +58,7 @@
 	</p>
 
 	<p>
-		Wenn Du PhoneBlock installiert hast und ebenfalls von dieser Nummer unerwünscht angerufen wurdest, trage 
+		Wenn Du <a href="<%=request.getContextPath() %>/">PhoneBlock</a> installiert hast und ebenfalls von dieser Nummer unerwünscht angerufen wurdest, trage 
 		diese Nummer in Deiner Fritz!Box in die Blocklist ein und schütze damit Dich und andere PhoneBlock-Nutzer
 		vor weiterem Telefonterror von dieser Nummer.
 	</p>
@@ -73,7 +73,7 @@
 	</p>
 
 	<p>
-		Wenn Du PhoneBlock bereits installiert hast, und trotzdem von dieser 
+		Wenn Du <a href="<%=request.getContextPath() %>/">PhoneBlock</a> bereits installiert hast, und trotzdem von dieser 
 		Nummer angerufen wurdest, ist der Eintrag entweder ganz neu und Deine Fritz!Box hat das Update 
 		noch nicht heruntergeladen, oder etwas stimmt mit Deinen Einstellungen nicht.
 	</p>
