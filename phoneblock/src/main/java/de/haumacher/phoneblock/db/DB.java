@@ -54,15 +54,15 @@ public class DB {
 	public static final int MIN_VOTES = 4;
 
 	/**
-	 * Minimum number of votes that a number must receive within two weeks to stay on the blocklist.
-	 */
-	private static final int MIN_OLD_VOTES = 6;
-
-	/**
 	 * Number of days a number stays on the blocklist when {@link #MIN_VOTES} are received. After that time limit,
-	 * {@link #MIN_OLD_VOTES} must habe been received.
+	 * {@link #WEEK_PER_VOTE} are substracted per week.
 	 */
 	private static final int OLD_VOTE_DAYS = 14;
+
+	/**
+	 * Number of weeks to pass to substract a vote (after a number has not been reported active for {@link #OLD_VOTE_DAYS}). 
+	 */
+	private static final int WEEK_PER_VOTE = 3;
 
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
@@ -125,7 +125,7 @@ public class DB {
 		 Calendar cal = GregorianCalendar.getInstance();
 		 long millisNow = cal.getTimeInMillis();
 		 int hourNow = cal.get(Calendar.HOUR_OF_DAY);
-		 cal.set(Calendar.HOUR_OF_DAY, 10);
+		 cal.set(Calendar.HOUR_OF_DAY, 20);
 		 cal.set(Calendar.MINUTE, 0);
 		 cal.set(Calendar.SECOND, 0);
 		 cal.set(Calendar.MILLISECOND, 0);
@@ -133,6 +133,8 @@ public class DB {
 			 cal.add(Calendar.DAY_OF_MONTH, 1);
 		 }
 		 long millisFirst = cal.getTimeInMillis();
+		 
+		 cleanup();
 		 
 		 _scheduler.scheduleAtFixedRate(this::cleanup, millisFirst - millisNow, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS);
 		 System.out.println("Scheduled next DB cleanup: " + cal.getTime());
@@ -448,7 +450,7 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
 			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
-			int archived = reports.archiveReportsWithLowVotes(before, MIN_OLD_VOTES);
+			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
 			int deletedNew = reports.deleteArchivedReports(now);
 			
 			System.out.println("Reactivated " + reactivated + " reports, archived " + archived + " reports.");

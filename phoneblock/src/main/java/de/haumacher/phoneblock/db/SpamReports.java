@@ -50,9 +50,13 @@ public interface SpamReports {
 	int deleteOldReportsWithNewVotes(long now);
 	
 	@Insert("INSERT INTO OLDREPORTS ("
-			+ " SELECT s.* FROM SPAMREPORTS s"
-			+ " WHERE s.LASTUPDATE < #{before} AND s.VOTES < #{minVotes})")
-	int archiveReportsWithLowVotes(long before, int minVotes);
+			+ "SELECT * FROM SPAMREPORTS s WHERE "
+			+ "CASE "
+			+ "WHEN s.LASTUPDATE >= #{before} THEN 1=0 "
+			+ "ELSE s.VOTES - (#{before} - s.LASTUPDATE)/1000/60/60/24/7/#{weekPerVote} < #{minVotes} "
+			+ "END"
+			+ ")")
+	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
 	
 	@Delete("DELETE FROM SPAMREPORTS s "
 			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE) > 0")
