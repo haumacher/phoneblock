@@ -50,21 +50,21 @@ public class DBService implements ServletContextListener {
 				String url = (String) envCtx.lookup("db/url");
 				config.setUrl(url);
 			} catch (NamingException ex) {
-				System.out.print(ex.getMessage() + ", using default DB url: " + config.getUrl());
+				System.out.println(ex.getMessage() + ", using default DB url: " + config.getUrl());
 			}
 			
 			try {
 				String user = (String) envCtx.lookup("db/user");
 				config.setUser(user);
 			} catch (NamingException ex) {
-				System.out.print(ex.getMessage() + ", using default DB user: " + config.getUser());
+				System.out.println(ex.getMessage() + ", using default DB user: " + config.getUser());
 			}
 			
 			try {
 				String password = (String) envCtx.lookup("db/password");
 				config.setPassword(password);
 			} catch (NamingException ex) {
-				System.out.print(ex.getMessage() + ", using default DB password.");
+				System.out.println(ex.getMessage() + ", using default DB password.");
 			}
 
 			try {
@@ -73,10 +73,10 @@ public class DBService implements ServletContextListener {
 					config.setPort(port.intValue());
 				}
 			} catch (NamingException ex) {
-				System.out.print(ex.getMessage() + ", using default DB port: " + config.getPort());
+				System.out.println(ex.getMessage() + ", using default DB port: " + config.getPort());
 			}
 		} catch (NamingException ex) {
-			System.out.print("Not using JNDI configuration: " + ex.getMessage());
+			System.out.println("Not using JNDI configuration: " + ex.getMessage());
 		}
 		
 		return config;
