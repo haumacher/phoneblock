@@ -12,6 +12,7 @@
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <html>
 <head>
+<% request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBlock schafft Ruhe"); %>
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>
 
@@ -41,7 +42,15 @@
 <%
 	}
 %>	
-	<%= cnt %> aktive Nummern auf der Blocklist. Insgesamt <%= status.getTotalVotes() %> User-Reports, <%= status.getArchivedReports() %> inaktive Nummer mit Spam-Verdacht.
+	<%= cnt %> aktive Nummern auf der Blocklist. Insgesamt <%= status.getTotalVotes() %> User-Reports, <%= status.getArchivedReports() %> 
+	inaktive Nummer mit Spam-Verdacht.
+	</p>
+	
+	<p>
+	<a href="<%= request.getContextPath()%>/">PhoneBlock</a> weist Anrufe von Nummern 
+	bekannter Werbeanrufer und Telefonbetrüger automatisch ab. Täglich kommen mehrere Nummern dazu. 
+	<a href="<%= request.getContextPath()%>/setup.jsp">Installiere PhoneBlock</a> 
+	und mach dem Telefonterror ein Ende.  
 	</p>
 
 <%
