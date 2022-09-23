@@ -53,11 +53,17 @@
 
 		<h2>Kann ich PhoneBlock auch auf meinem Mobiltelefon nutzen?</h2>
 		<p>
-			Nein, nicht zum Blockieren von Anrufen - bzw. ich habe noch keinen Weg gefunden. Man kann auf Android mit der App 
-			<a target="_blank" href="https://play.google.com/store/apps/details?id=com.deependhulla.opensync">Open Sync</a> 
+			Nicht zum Blockieren, sondern nur für die Anzeige, dass ein Anrufer potentiell unerwünscht ist. Auf Android kann man 
+			mit der App <a target="_blank" href="https://play.google.com/store/apps/details?id=com.deependhulla.opensync">Open Sync</a> 
 			das PhoneBlock-Adressbuch auf das Mobiltelefon synchronisieren. Dann hat man alle Telefonnummern der
 			Blocklist in seinen Kontakten in der Gruppe "SPAM". Ein Anruf von einer Nummer aus der Blocklist wird dann 
-			beispielsweise als "SPAM: 03016637169" angezeigt, und man weiß, dass man das wegdrücken kann. 
+			beispielsweise als "SPAM: 03016637169" angezeigt, und man weiß, dass man das wegdrücken kann.
+		</p>
+		
+		<p> 
+			Mit dem IPhone <a href="https://www.reiermann.de/hilfe/carddav-auf-ipad-oder-iphone-einrichten/470/">geht das sogar 
+			ganz ohne Zusatzinstallation</a> - ich habe es allerdings nicht ausprobiert. Wenn Du das testest und
+			es nicht funktionieren sollte, dann melde Dich bitte (siehe unten).
 		</p>
 		
 		<p>
