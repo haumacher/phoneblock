@@ -14,9 +14,9 @@
 			<h1>Diese Seite kann nicht im Browser angezeigt werden</h1>
 
 			<p>
-				Deinen Addressbuch-Link, den Du bei der <a
-					href="<%=request.getContextPath()%>/signup.jsp">Anmeldung</a>
-				erhalten hast, musst Du wie dort beschrieben zusammen mit Deiner
+				Deinen Addressbuch-Link, den Du bei der <a href="<%=request.getContextPath()%>/signup.jsp">Anmeldung</a>
+				erhalten hast, musst Du wie in der <a href="<%=request.getContextPath()%>/setup.jsp">Installationsanleitung</a> 
+				beschrieben zusammen mit Deiner
 				E-Mail-Adresse und dem Dir zugeschickten Passwort in Deiner
 				Fritz!Box als Adressbuch eintragen. Du kannst diesen Link nicht
 				direkt im Browser anzeigen, weil der Zugriff auf Adressbücher über
