@@ -44,7 +44,7 @@ public class LoginFilter implements Filter {
 		// Short-cut to prevent authenticating every request.
 		HttpSession session = req.getSession(false);
 		if (session != null) {
-			Object userName = session.getAttribute(AUTHENTICATED_USER_ATTR);
+			String userName = getAuthenticatedUser(session);
 			if (userName != null) {
 				req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
 				chain.doFilter(request, response);
@@ -56,8 +56,7 @@ public class LoginFilter implements Filter {
 		if (authHeader != null) {
 			String userName = DBService.getInstance().basicAuth(authHeader);
 			if (userName != null) {
-				req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
-				req.getSession().setAttribute(AUTHENTICATED_USER_ATTR, userName);
+				setAuthenticatedUser(req, userName);
 				chain.doFilter(request, response);
 				return;
 			}
@@ -65,6 +64,24 @@ public class LoginFilter implements Filter {
 
 		resp.setHeader("WWW-Authenticate", "Basic realm=\"PhoneBlock\", charset=\"UTF-8\"");
 		resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	}
+
+	/** 
+	 * The authenticated user of the given session.
+	 */
+	public static String getAuthenticatedUser(HttpSession session) {
+		if (session == null) {
+			return null;
+		}
+		return (String) session.getAttribute(AUTHENTICATED_USER_ATTR);
+	}
+
+	/** 
+	 * Adds the given user name to the request and session.
+	 */
+	public static final void setAuthenticatedUser(HttpServletRequest req, String userName) {
+		req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+		req.getSession().setAttribute(AUTHENTICATED_USER_ATTR, userName);
 	}
 
 	@Override
