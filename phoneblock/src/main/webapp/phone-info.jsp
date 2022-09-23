@@ -21,6 +21,7 @@
 
 <%
 	SpamReport info = (SpamReport) request.getAttribute("info");
+	int complaints = (info.getVotes() + 1) / 2;
 %>
 
 <section class="section">
@@ -53,7 +54,7 @@
 	<p><span class="tag is-info is-warning">Beschwerde liegt vor</span></p>
 
 	<p>
-		Es gibt bereits <%= (info.getVotes() + 1) / 2 %> Beschwerden über unerwünschte Anrufe von der 
+		Es gibt bereits <% if (complaints == 1) { %>eine Beschwerde<%} else {%><%= complaints %> Beschwerden<%}%> über unerwünschte Anrufe von der 
 		Telefonnummer ☎ <code><%= info.getPhone() %></code>. Die Nummer wird aber noch nicht blockiert. 
 	</p>
 
@@ -69,7 +70,8 @@
 
 	<p>
 		Die Telefonnummer ☎ <code><%= info.getPhone() %></code> is eine mehrfach berichtete Quelle von unerwünschten 
-		Telefonanrufen. Mit PhoneBlock hast Du vor Anrufen von dieser Rufnummer Ruhe.
+		Telefonanrufen. Mit <a href="<%=request.getContextPath() %>/">PhoneBlock</a> hast Du vor Anrufen von dieser und 
+		<a href="<%=request.getContextPath() %>/status.jsp">vieler anderer Rufnummern</a> sofort Ruhe.
 	</p>
 
 	<p>
@@ -85,7 +87,7 @@
 	
 	<h2>Details</h2>
 	<ul>
-		<li>Anzahl Beschwerden: <%= (info.getVotes() + 1) / 2 %></li>
+		<li>Anzahl Beschwerden: <%= complaints %></li>
 		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
 <%
 		long dateAdded = info.getDateAdded();
