@@ -1,0 +1,13 @@
+package de.haumacher.phoneblock.db.settings;
+
+/** Account settings. */
+message UserSettings {
+	/** The internal user ID. */
+	long id;
+	
+	/** Minumum number of votes to create a blocklist entry. */
+	int minVotes;
+	
+	/** Maximum number of blocklist entries. */
+	int maxLength;
+}

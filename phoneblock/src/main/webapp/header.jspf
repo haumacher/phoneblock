@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%-- 
   - Author(s): Bernhard Haumacher et al.
   - Copyright Notice: Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
@@ -57,17 +57,35 @@
       			
 			<div class="navbar-item">
 				<div class="buttons">
+					<% if (LoginFilter.getAuthenticatedUser(session) == null) { %>
 					<a class="button is-primary" href="<%=request.getContextPath() %>/signup.jsp">
 						<span class="icon">
 							<i class="fa-solid fa-user-plus"></i>
           				</span>
-						<strong>Sign up</strong></a>
-					<a class="button is-light">
+						<strong>Sign up</strong>
+					</a>
+					
+					<a class="button is-light" href="<%=request.getContextPath() %>/login.jsp">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
 						<strong>Log in</strong>
 					</a>
+					<% } else { %>
+					<a class="button is-primary" href="<%=request.getContextPath() %>/settings.jsp">
+						<span class="icon">
+							<i class="fa-solid fa-user"></i>
+          				</span>
+						<strong>Settings</strong>
+					</a>
+					
+					<a class="button is-light" href="<%=request.getContextPath() %>/logout">
+						<span class="icon">
+							<i class="fa-solid fa-right-from-bracket"></i>
+          				</span>
+						<strong>Log out</strong>
+					</a>
+					<% } %>
 				</div>
 			</div>
 		</div>

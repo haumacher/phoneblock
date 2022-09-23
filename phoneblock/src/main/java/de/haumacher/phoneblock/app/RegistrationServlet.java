@@ -47,6 +47,8 @@ public class RegistrationServlet extends HttpServlet {
 			return;
 		}
 		
+		LoginFilter.setAuthenticatedUser(req, email);
+		
 		req.setAttribute("email", email);
 		req.setAttribute("token", passwd);
 		req.getRequestDispatcher("/setup.jsp").forward(req, resp);

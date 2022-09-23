@@ -31,6 +31,12 @@ public interface Users {
 	@Select("select ID from USERS where EMAIL=#{email}")
 	Long getUserId(String email);
 
+	@Select("select ID, MIN_VOTES, MAX_LENGTH from USERS where EMAIL=#{email}")
+	DBUserSettings getSettings(String email);
+	
+	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength} where ID=#{id}")
+	int updateSettings(long id, int minVotes, int maxLength);
+	
 	/**
 	 * Updates the user's last access timestamp.
 	 */

@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.carddav.resource;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,10 +14,10 @@ import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 
 /**
  * {@link Resource} representing a collection of {@link AddressBookResource}s.
@@ -62,12 +63,15 @@ public class AddressBookResource extends Resource {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			BlockList blocklist = session.getMapper(BlockList.class);
 			Users users = session.getMapper(Users.class);
+			UserSettings settings = users.getSettings(_principal);
 			
 			long currentUser = users.getUserId(_principal);
 			
-			Set<String> result = reports.getSpamList(DB.MIN_VOTES);
+			List<String> personalizations = blocklist.getPersonalizations(currentUser);
+			
+			Set<String> result = reports.getSpamList(settings.getMinVotes(), settings.getMaxLength() - personalizations.size());
 			result.removeAll(blocklist.getExcluded(currentUser));
-			result.addAll(blocklist.getPersonalizations(currentUser));
+			result.addAll(personalizations);
 			
 			return result;
 		}

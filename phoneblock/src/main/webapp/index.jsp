@@ -85,9 +85,9 @@
 		</div>
 
 		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/setup.jsp">
+			<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/faq.jsp">
 				<p class="title">Noch Fragen?</p>
-				<p class="subtitle">Check die Installationsanleitung!</p>
+				<p class="subtitle">Check die FAQ!</p>
 			</a>
 		</div>
 	</div>

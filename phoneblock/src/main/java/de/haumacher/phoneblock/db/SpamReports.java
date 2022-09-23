@@ -83,8 +83,8 @@ public interface SpamReports {
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
 	
-	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
-	Set<String> getSpamList(int minVotes);
+	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes} order by LASTUPDATE desc limit #{maxLength}")
+	Set<String> getSpamList(int minVotes, int maxLength);
 	
 	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
 	List<Statistics> getStatistics(int minVotes);

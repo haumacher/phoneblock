@@ -1,10 +1,10 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.text.DateFormat"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="java.util.List"%>
 <%@page import="de.haumacher.phoneblock.db.SpamReport"%>
@@ -26,7 +26,8 @@
 	<p>
 		Bekannte SPAM-Nummern: 
 <%
-	Status status = DBService.getInstance().getStatus();
+	String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
+	Status status = DBService.getInstance().getStatus(userName);
 	List<Statistics> statistic = status.getStatistics();
 	int cnt = 0;
 	String[] labels = {"berichtet", "bestätigt", "sicher"};
@@ -106,7 +107,7 @@
 %>
 
 <%
-	reports = DBService.getInstance().getLatestBlocklistEntries();
+	reports = DBService.getInstance().getLatestBlocklistEntries(userName);
 	if (!reports.isEmpty()) {
 %>
 		<h2>Neuste Einträge in der Block-List</h2> 

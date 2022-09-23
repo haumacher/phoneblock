@@ -38,6 +38,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 
 /**
@@ -315,20 +316,34 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<SpamReport> getLatestBlocklistEntries() {
+	public List<SpamReport> getLatestBlocklistEntries(String userName) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getLatestBlocklistEntries(MIN_VOTES);
+
+			int minVotes = getMinVotes(session, userName);
+			return reports.getLatestBlocklistEntries(minVotes);
 		}
+	}
+
+	private int getMinVotes(SqlSession session, String userName) {
+		int minVotes = (userName == null) ? MIN_VOTES : getSettings(session, userName).getMinVotes();
+		return minVotes;
+	}
+
+	private DBUserSettings getSettings(SqlSession session, String userName) {
+		Users users = session.getMapper(Users.class);
+		DBUserSettings settings = users.getSettings(userName);
+		return settings;
 	}
 	
 	/**
 	 * The current DB status.
 	 */
-	public Status getStatus() {
+	public Status getStatus(String userName) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return new Status(reports.getStatistics(MIN_VOTES), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
+			int minVotes = getMinVotes(session, userName);
+			return new Status(reports.getStatistics(minVotes), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
 		}
 	}
 
@@ -400,7 +415,30 @@ public class DB {
 			session.commit();
 		}
 	}
-
+	
+	/** 
+	 * Retrieves the settings for a user.
+	 */
+	public UserSettings getSettings(String userName) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			return users.getSettings(userName);
+		}
+	}
+	
+	/** 
+	 * Updates the settings for a user.
+	 */
+	public void updateSettings(UserSettings settings) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength());
+			session.commit();
+		}
+	}
+	
 	/**
 	 * Checks credentials in the given authorization header.
 	 * 
@@ -415,27 +453,36 @@ public class DB {
 			if (sepIndex >= 0) {
 				String userName = decoded.substring(0, sepIndex);
 				String passwd = decoded.substring(sepIndex + 1);
-				
-				byte[] pwhash = pwhash(passwd);
-				
-				try (SqlSession session = openSession()) {
-					Users users = session.getMapper(Users.class);
-					
-					InputStream hashIn = users.getHash(userName);
-					if (hashIn != null) {
-						byte[] expectedHash = hashIn.readAllBytes();
-						if (Arrays.equals(pwhash, expectedHash)) {
-							return userName;
-						} else {
-							System.err.println("Invalid password for user: " + userName);
-						}
-					} else {
-						System.err.println("Invalid user name supplied: " + userName);
-					}
-				}
+				return login(userName, passwd);
 			}
 		} else {
 			System.err.println("Invalid authentication received: " + authHeader);
+		}
+		return null;
+	}
+
+	/** 
+	 * Checks the given credentials.
+	 * 
+	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
+	 */
+	public String login(String userName, String passwd) throws UnsupportedEncodingException, IOException {
+		byte[] pwhash = pwhash(passwd);
+		
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			InputStream hashIn = users.getHash(userName);
+			if (hashIn != null) {
+				byte[] expectedHash = hashIn.readAllBytes();
+				if (Arrays.equals(pwhash, expectedHash)) {
+					return userName;
+				} else {
+					System.err.println("Invalid password for user: " + userName);
+				}
+			} else {
+				System.err.println("Invalid user name supplied: " + userName);
+			}
 		}
 		return null;
 	}
