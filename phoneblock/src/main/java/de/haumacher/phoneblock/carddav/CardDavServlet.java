@@ -39,8 +39,12 @@ import de.haumacher.phoneblock.carddav.schema.DavSchema;
 /**
  * {@link HttpServlet} serving the CardDAV address book(s).
  */
-@WebServlet(urlPatterns = CardDavServlet.URL_PATTERN)
+@WebServlet(urlPatterns = {CardDavServlet.DIR_NAME, CardDavServlet.URL_PATTERN})
 public class CardDavServlet extends HttpServlet {
+
+	static final String DIR_NAME = "/contacts";
+
+	private static final String BASE_PATH = DIR_NAME + "/";
 
 	private static final String METHOD_REPORT = "REPORT";
 
@@ -49,7 +53,7 @@ public class CardDavServlet extends HttpServlet {
 	/**
 	 * URL pattern of URLs the {@link CardDavServlet} processes.
 	 */
-	public static final String URL_PATTERN = "/contacts/*";
+	public static final String URL_PATTERN = BASE_PATH + "*";
 
 	private static final int SC_MULTI_STATUS = 207;
 	
@@ -67,6 +71,11 @@ public class CardDavServlet extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		if (req.getPathInfo() == null && req.getServletPath().equals(DIR_NAME)) {
+			resp.sendRedirect(req.getContextPath() + BASE_PATH);
+			return;
+		}
+		
 		try {
 			if (METHOD_PROPFIND.equals(req.getMethod())) {
 				doPropfind(req, resp);
