@@ -35,6 +35,13 @@ public class EMailVerificationServlet extends HttpServlet {
 		// End verification code to email address.
 		try {
 			MailService mailService = MailServiceStarter.getInstance();
+			if (mailService == null) {
+				System.out.println("ERROR: Mail service not active!");
+				req.setAttribute("message", "Es kann aktuell keine E-Mail versendet werden, bitte probiere es später noch einmal.");
+				req.getRequestDispatcher("/signup.jsp").forward(req, resp);
+				return;
+			}
+
 			mailService.sendActivationMail(email, code);
 		} catch (Exception ex) {
 			ex.printStackTrace();
