@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>
+<%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.DateFormat"%>
@@ -27,7 +29,9 @@
 <section class="section">
 <div class="content">
 	<h1>Telefonnummer ☎ <%= info.getPhone()%></h1>
+	
 <%
+	PhoneNumer analysis = NumberAnalyzer.analyze(info.getPhone());
 	if (info.getVotes() == 0) {
 %>
 	<p>
@@ -87,6 +91,13 @@
 	
 	<h2>Details</h2>
 	<ul>
+		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
+		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>
+
+		<%if (analysis.getCity() != null) { %>		
+		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
+		<%}%>
+	
 		<li>Anzahl Beschwerden: <%= complaints %></li>
 		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
 <%

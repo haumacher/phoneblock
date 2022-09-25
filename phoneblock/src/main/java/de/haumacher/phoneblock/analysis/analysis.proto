@@ -1,0 +1,27 @@
+package de.haumacher.phoneblock.analysis;
+
+message PhoneNumer {
+	@Nullable
+	string shortcut;
+	
+	string plus;
+	string zeroZero;
+	
+	string countryCode;
+	string country;
+	
+	@Nullable
+	string cityCode;
+	@Nullable
+	string city;
+}
+
+message AreaCodes {
+	map<string, AreaCode> codes;
+}
+
+message AreaCode {
+	string phone_area_code;
+	string city;
+	boolean active;
+}
