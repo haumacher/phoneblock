@@ -8,8 +8,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import de.haumacher.msgbuf.json.JsonReader;
-import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.ICSVParser;
 
 /**
  * Utility for analyzing phone numbers.
@@ -314,23 +316,36 @@ public class NumberAnalyzer {
 			node._country = entry[1];
 		}
 		
-		try (InputStream in = NumberAnalyzer.class.getResourceAsStream("area-codes-germany.json")) {
+		// See https://www.bundesnetzagentur.de/SharedDocs/Downloads/DE/Sachgebiete/Telekommunikation/Unternehmen_Institutionen/Nummerierung/Rufnummern/ONRufnr/Vorwahlverzeichnis_ONB.zip.html
+		try (InputStream in = NumberAnalyzer.class.getResourceAsStream("NVONB.INTERNET.20220727.ONB.csv")) {
 			try (Reader r = new InputStreamReader(in, "utf-8")) {
-				AreaCodes codes = AreaCodes.readAreaCodes(new JsonReader(new ReaderAdapter(r)));
-				
 				Node germany = root.find("+49", 1, root);
-				for (AreaCode entry : codes.getCodes().values()) {
-					if (!entry.isActive()) {
-						continue;
-					}
-					
-					Node node = germany.enter(entry.getPhoneAreaCode(), 0);
-					assert node._cityCode == null : "Anbiguous city code: " + node._cityCode;
-					node._contryCode = germany.getCountryCode();
-					node._country = germany.getCountry();
-					node._cityCode = "0" + entry.getPhoneAreaCode();
-					node._city = entry.getCity();
-				}
+				
+				ICSVParser parser = new CSVParserBuilder().withSeparator(';').withStrictQuotes(false).build();
+		        try (CSVReader csv = new CSVReaderBuilder(r).withCSVParser(parser).build()) {
+		        	// Skip header.
+		        	csv.readNext();
+		        	while (true) {
+		        		String[] line = csv.readNext();
+		        		if (line == null || line.length < 3) {
+		        			break;
+		        		}
+		        		
+		        		if (!"1".equals(line[2])) {
+		        			continue;
+		        		}
+		        		
+		        		String cityCode = line[0];
+		        		String city = line[1];
+		        		
+		        		Node node = germany.enter(cityCode, 0);
+		        		assert node._cityCode == null : "Anbiguous city code: " + node._cityCode;
+		        		node._contryCode = germany.getCountryCode();
+		        		node._country = germany.getCountry();
+		        		node._cityCode = "0" + cityCode;
+		        		node._city = city;
+		        	}
+		        }				
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();
