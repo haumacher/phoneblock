@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReport;
@@ -29,17 +31,21 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		
-		String phone = pathInfo.substring(1).replaceAll("[^0-9]", "");
+		String phone = pathInfo.substring(1).replaceAll("[^\\+0-9]", "");
 		if (phone.isEmpty()) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 		
-		SpamReport info = DBService.getInstance().getPhoneInfo(phone);
+		PhoneNumer number = NumberAnalyzer.analyze(phone);
+		
+		String shortcut = number.getShortcut();
+		SpamReport info = DBService.getInstance().getPhoneInfo(shortcut == null ? number.getZeroZero() : shortcut);
 		if (info == null) {
 			info = new SpamReport(phone, 0, 0, 0);
 		}
 		req.setAttribute("info", info);
+		req.setAttribute("number", number);
 		req.setAttribute("title", status(info.getVotes()) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);

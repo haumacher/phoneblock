@@ -1,7 +1,7 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>
 <%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.DateFormat"%>
 <%@page import="java.util.List"%>
@@ -22,6 +22,7 @@
 <jsp:include page="header.jspf"></jsp:include>
 
 <%
+	PhoneNumer analysis = (PhoneNumer) request.getAttribute("number");
 	SpamReport info = (SpamReport) request.getAttribute("info");
 	int complaints = (info.getVotes() + 1) / 2;
 %>
@@ -31,7 +32,6 @@
 	<h1>Telefonnummer ☎ <%= info.getPhone()%></h1>
 	
 <%
-	PhoneNumer analysis = NumberAnalyzer.analyze(info.getPhone());
 	if (info.getVotes() == 0) {
 %>
 	<p>
@@ -85,11 +85,13 @@
 	</p>
 <%
 		}
+	}
+%>
 
-		DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
-%>			
-	
 	<h2>Details</h2>
+<%
+	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
+%>			
 	<ul>
 		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
 		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>
@@ -97,21 +99,24 @@
 		<%if (analysis.getCity() != null) { %>		
 		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
 		<%}%>
-	
+
+<%
+		if (complaints > 0) {
+%>	
 		<li>Anzahl Beschwerden: <%= complaints %></li>
 		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
+
 <%
-		long dateAdded = info.getDateAdded();
-		if (dateAdded > 0) {
+			long dateAdded = info.getDateAdded();
+			if (dateAdded > 0) {
 %>
 		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
 <%			
-		}
+			}
+		} 
 %>
 	</ul>
-<%		
-	}
-%>
+
 </div>
 
 <%
