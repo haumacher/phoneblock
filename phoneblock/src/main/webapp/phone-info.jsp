@@ -22,6 +22,8 @@
 <jsp:include page="header.jspf"></jsp:include>
 
 <%
+	String userAgent = request.getHeader("User-Agent");
+	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
 	PhoneNumer analysis = (PhoneNumer) request.getAttribute("number");
 	SpamReport info = (SpamReport) request.getAttribute("info");
 	int complaints = (info.getVotes() + 1) / 2;
@@ -44,11 +46,14 @@
 		☎ <code><%= info.getPhone() %></code>.
 	</p>
 
+<% if (!android) { %>
 	<p>
 		Wenn Du Dich von Anrufen von dieser Rufnummer belästigt fühlst, trage 
 		die Nummer in Deiner Fritz!Box in die Blocklist ein und schütze damit Dich und andere PhoneBlock-Nutzer
 		vor weiterem Telefonterror von dieser Nummer.
 	</p>
+<% } %>
+
 <%
 	} else {
 %>		
@@ -62,11 +67,14 @@
 		Telefonnummer ☎ <code><%= info.getPhone() %></code>. Die Nummer wird aber noch nicht blockiert. 
 	</p>
 
+<% if (!android) { %>
 	<p>
 		Wenn Du <a href="<%=request.getContextPath() %>/">PhoneBlock</a> installiert hast und ebenfalls von dieser Nummer unerwünscht angerufen wurdest, trage 
 		diese Nummer in Deiner Fritz!Box in die Blocklist ein und schütze damit Dich und andere PhoneBlock-Nutzer
 		vor weiterem Telefonterror von dieser Nummer.
 	</p>
+<% } %>
+
 <%
 		} else {
 %>			
@@ -78,11 +86,13 @@
 		<a href="<%=request.getContextPath() %>/status.jsp">vieler anderer Rufnummern</a> sofort Ruhe.
 	</p>
 
+<% if (!android) { %>
 	<p>
 		Wenn Du <a href="<%=request.getContextPath() %>/">PhoneBlock</a> bereits installiert hast, und trotzdem von dieser 
 		Nummer angerufen wurdest, ist der Eintrag entweder ganz neu und Deine Fritz!Box hat das Update 
 		noch nicht heruntergeladen, oder etwas stimmt mit Deinen Einstellungen nicht.
 	</p>
+<% } %>
 <%
 		}
 	}
@@ -116,8 +126,29 @@
 		} 
 %>
 	</ul>
+	
+<% if (android) { %>
+
+	<h2>Keine Lust mehr nach Telefonnummern zu googeln?</h2>
+	<p>
+		<a href="<%=request.getContextPath() %>/setup-android/">Installiere PhoneBlock auf Deinem Android-Mobiltelefon</a> 
+		und du weißt sofort, ob es sich lohnt den Anruf anzunehmen oder eine Nummer zurückzurufen. 
+	</p>	
+<% } %>
 
 </div>
+
+<% if (android) { %>
+<div class="tile is-ancestor">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/setup-android/">
+			<p class="title">PhoneBlock für Android</p>
+			<p class="subtitle">Noch nicht installiert? Dann los!</p>
+		</a>
+	</div>
+</div>
+
+<% } else { %>
 
 <%
 	if (info.getVotes() < DB.MIN_VOTES) {
@@ -159,9 +190,8 @@
 	</div>
 </div>
 
-<%
-	}
-%>
+<% } %>
+<% } %>
 
 </section>
 

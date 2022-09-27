@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="svg2"
+   width="1080"
+   height="2400"
+   viewBox="0 0 1080 2400"
+   sodipodi:docname="17-spam-contacts.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:export-filename="/home/bhu/git/phoneblock/phoneblock/src/main/webapp/setup-android/17-spam-contacts.png"
+   inkscape:export-xdpi="40.959999"
+   inkscape:export-ydpi="40.959999">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1003"
+     inkscape:window-height="667"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="0.13906433"
+     inkscape:cx="903.67504"
+     inkscape:cy="1283.7454"
+     inkscape:window-x="912"
+     inkscape:window-y="520"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <image
+     sodipodi:absref="/home/bhu/git/phoneblock/phoneblock/src/main/webapp/setup-android/17-spam-contacts.jpg"
+     xlink:href="17-spam-contacts.jpg"
+     y="0"
+     x="0"
+     id="image10"
+     preserveAspectRatio="none"
+     height="2400"
+     width="1080" />
+  <g
+     transform="matrix(10.074252,0,0,10.074252,556.40959,820.70743)"
+     id="g824"
+     style="stroke-width:0.09926295;opacity:0.782">
+    <circle
+       style="fill:#42ae45;fill-opacity:1;stroke-width:0.09926295"
+       id="circle2"
+       r="21"
+       cy="24"
+       cx="24" />
+    <polygon
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.09926295"
+       id="polygon4"
+       points="12.6,25.4 21,33.8 37.4,17.4 34.6,14.6 21,28.2 15.4,22.6 " />
+  </g>
+</svg>

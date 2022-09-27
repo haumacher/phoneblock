@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="svg2"
+   width="1080"
+   height="2400"
+   viewBox="0 0 1080 2400"
+   sodipodi:docname="07-open-sync-no-tasks.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:export-filename="/home/bhu/git/phoneblock/phoneblock/src/main/webapp/setup-android/07-open-sync-no-tasks.png"
+   inkscape:export-xdpi="40.959999"
+   inkscape:export-ydpi="40.959999">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1136"
+     inkscape:window-height="795"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="0.27812867"
+     inkscape:cx="-122.01314"
+     inkscape:cy="1073.136"
+     inkscape:window-x="1032"
+     inkscape:window-y="422"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <image
+     sodipodi:absref="/home/bhu/git/phoneblock/phoneblock/src/main/webapp/setup-android/07-open-sync-no-tasks.jpg"
+     xlink:href="07-open-sync-no-tasks.jpg"
+     width="1080"
+     height="2400"
+     preserveAspectRatio="none"
+     id="image10"
+     x="0"
+     y="0" />
+  <path
+     id="path4"
+     style="fill:#ff1af6;fill-opacity:1;stroke-width:0.99999994"
+     d="m 1041.3993,1460.4089 -60.41762,-60.4178 16.70531,-16.7054 a 7.2853853,7.2853853 0 0 0 -5.1507,-12.4362 l -72.85391,10e-5 a 7.2853853,7.2853853 0 0 0 -7.2854,7.2853 v 72.8539 a 7.2853853,7.2853853 0 0 0 12.4362,5.1507 l 16.7054,-16.7054 60.41772,60.4178 a 7.2853853,7.2853853 0 0 0 10.3015,-10e-5 l 29.1415,-29.1415 a 7.2853853,7.2853853 0 0 0 0,-10.3014 z"
+     inkscape:connector-curvature="0" />
+</svg>

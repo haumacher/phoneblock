@@ -53,11 +53,10 @@
 
 		<h2>Kann ich PhoneBlock auch auf meinem Mobiltelefon nutzen?</h2>
 		<p>
-			Nicht zum Blockieren, sondern nur für die Anzeige, dass ein Anrufer potentiell unerwünscht ist. Auf Android kann man 
-			mit der App <a target="_blank" href="https://play.google.com/store/apps/details?id=com.deependhulla.opensync">Open Sync</a> 
-			das PhoneBlock-Adressbuch auf das Mobiltelefon synchronisieren. Dann hat man alle Telefonnummern der
-			Blocklist in seinen Kontakten in der Gruppe "SPAM". Ein Anruf von einer Nummer aus der Blocklist wird dann 
-			beispielsweise als "SPAM: 03016637169" angezeigt, und man weiß, dass man das wegdrücken kann.
+			Ja, du kannst das PhoneBlock-Adressbuch abonieren und siehst dann gleich, ob es sich lohnt, einen Anruf
+			anzunehmen oder bei einem verpassten Anruf zurückzurufen. Spam-Anrufe direkt abweisen geht aktuell nur 
+			im Festnetz mit einer Fritz!Box. Für Android gibt es eine 
+			<a href="<%= request.getContextPath()%>/setup-android/">ausführliche Installationsanleitung</a>. 
 		</p>
 		
 		<p> 
