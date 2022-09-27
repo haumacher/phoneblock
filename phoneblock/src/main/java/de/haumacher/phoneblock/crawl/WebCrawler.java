@@ -19,6 +19,8 @@ import org.jsoup.select.Elements;
  */
 public class WebCrawler extends AbstractWebCrawler {
 	
+	private static final Pattern STARS_PATTERN = Pattern.compile("stars-(\\d+)");
+
 	SimpleDateFormat _dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 	
 	private long _notBefore;
@@ -64,8 +66,7 @@ public class WebCrawler extends AbstractWebCrawler {
 			}
 			
 			String ratingClass = columns.get(1).attr("class");
-			Pattern starsPattern = Pattern.compile("stars-(\\d+)");
-			Matcher ratingMatcher = starsPattern.matcher(ratingClass);
+			Matcher ratingMatcher = STARS_PATTERN.matcher(ratingClass);
 			if (ratingMatcher.find()) {
 				int rating = Integer.parseInt(ratingMatcher.group(1));
 				reportCaller(caller, rating, time);
