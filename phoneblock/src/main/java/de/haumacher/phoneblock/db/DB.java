@@ -36,6 +36,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
+import de.haumacher.phoneblock.app.Rating;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -241,6 +242,43 @@ public class DB {
 		
 		if (classify(currentVotes) != classify(newVotes)) {
 			publishUpdate(phone);
+		}
+	}
+
+	/** 
+	 * Adds a rating for a phone number.
+	 *
+	 * @param phone The phone number to rate.
+	 * @param rating The user rating.
+	 * @param now The current time in milliseconds since epoch.
+	 */
+	public void addRating(String phone, Rating rating, long now) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			int votes = rating.getVotes();
+			processVotes(reports, phone, votes, now);
+
+			if (rating != Rating.B_MISSED) {
+				Integer count = reports.getRatingCount(phone, rating);
+				if (count == null) {
+					reports.addRating(phone, rating);
+				} else {
+					reports.incRating(phone, rating);
+				}
+			}
+			
+			session.commit();
+		}
+	}
+
+	/** 
+	 * Retrieve the {@link Rating} for the given phone number with the maximum number of votes.
+	 */
+	public Rating getRating(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			return reports.getRating(phone);
 		}
 	}
 

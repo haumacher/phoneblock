@@ -36,6 +36,11 @@
 				nicht schnell genug ist, schreib mir bitte ein E-Mail an 
 				<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>.
 			</p>
+			
+			<p>
+				Nur bei der Anmeldung und der Bewertung von Telefonnummern wird 
+				ein technisch notwendiges Session-Cookie gesetzt. 
+			</p>
 
 			<p>
 				Sollte Deine Telefonnummer irrtümlicherweise auf die Blocklist

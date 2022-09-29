@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.PhoneNumer;
@@ -20,9 +21,11 @@ import de.haumacher.phoneblock.db.SpamReport;
 /**
  * Servlet displaying information about a telephone number in the DB.
  */
-@WebServlet(urlPatterns = "/nums/*")
+@WebServlet(urlPatterns = SearchServlet.NUMS_PREFIX + "/*")
 public class SearchServlet extends HttpServlet {
 	
+	static final String NUMS_PREFIX = "/nums";
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String pathInfo = req.getPathInfo();
@@ -38,19 +41,45 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		PhoneNumer number = NumberAnalyzer.analyze(phone);
+		if (number == null) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+		String phoneId = getPhoneId(number);
 		
-		String shortcut = number.getShortcut();
-		SpamReport info = DBService.getInstance().getPhoneInfo(shortcut == null ? number.getZeroZero() : shortcut);
+		DB db = DBService.getInstance();
+		SpamReport info = db.getPhoneInfo(phoneId);
 		if (info == null) {
 			info = new SpamReport(phone, 0, 0, 0);
 		}
+		
+		Rating rating = db.getRating(phone);
+		
+		String ratingAttribute = RatingServlet.ratingAttribute(phoneId);
+		if (getSessionAttribute(req, ratingAttribute) != null) {
+			req.setAttribute("thanks", Boolean.TRUE);
+		}
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
+		req.setAttribute("rating", rating);
 		req.setAttribute("title", status(info.getVotes()) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
 	}
 
+	private static Object getSessionAttribute(HttpServletRequest req, String attribute) {
+		HttpSession session = req.getSession(false);
+		if (session == null) {
+			return null;
+		}
+		return session.getAttribute(attribute);
+	}
+
+	public static String getPhoneId(PhoneNumer number) {
+		String shortcut = number.getShortcut();
+		return shortcut == null ? number.getZeroZero() : shortcut;
+	}
+	
 	private String status(int votes) {
 		if (votes == 0) {
 			return "Keine Beschwerden";

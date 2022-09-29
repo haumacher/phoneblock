@@ -288,7 +288,8 @@ public class NumberAnalyzer {
 		} else if (phone.startsWith("+")) {
 			plus = phone;
 		} else {
-			plus = "+49" + phone;
+			// No valid number.
+			return null;
 		}
 		result.setPlus(plus);
 		result.setZeroZero("00" + plus.substring(1));

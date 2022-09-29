@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.Rating"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>
 <%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
@@ -26,13 +27,16 @@
 	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
 	PhoneNumer analysis = (PhoneNumer) request.getAttribute("number");
 	SpamReport info = (SpamReport) request.getAttribute("info");
+	Rating rating = (Rating) request.getAttribute("rating");
 	int complaints = (info.getVotes() + 1) / 2;
+	
+	boolean thanks = request.getAttribute("thanks") != null;
 %>
 
 <section class="section">
 <div class="content">
 	<h1>Telefonnummer ☎ <%= info.getPhone()%></h1>
-	
+
 <%
 	if (info.getVotes() == 0) {
 %>
@@ -60,7 +64,12 @@
 <% 
 		if (info.getVotes() < DB.MIN_VOTES) {
 %>
-	<p><span class="tag is-info is-warning">Beschwerde liegt vor</span></p>
+	<p>
+		<span class="tag is-info is-warning">Beschwerde liegt vor</span>
+<% if (rating != null) { %>
+		<span class="tag is-info <%= rating.cssClass()%>"><%= rating.label()%></span>
+<% } %>		
+	</p>
 
 	<p>
 		Es gibt bereits <% if (complaints == 1) { %>eine Beschwerde<%} else {%><%= complaints %> Beschwerden<%}%> über unerwünschte Anrufe von der 
@@ -78,7 +87,12 @@
 <%
 		} else {
 %>			
-	<p><span class="tag is-info is-danger">Blockiert</span></p>
+	<p>
+		<span class="tag is-info is-danger">Blockiert</span>
+<% if (rating != null) { %>
+		<span class="tag is-info <%= rating.cssClass()%>"><%= rating.label()%></span>
+<% } %>		
+	</p>
 
 	<p>
 		Die Telefonnummer ☎ <code><%= info.getPhone() %></code> is eine mehrfach berichtete Quelle von unerwünschten 
@@ -127,6 +141,31 @@
 %>
 	</ul>
 	
+	<h2>Bewertung</h2>
+	
+<% if (thanks) { %>
+	<div id="thanks" class="notification is-info">
+	  Danke für Deine Bewertung, Du hilfst damit anderen, die ebenfalls angerufen werden. 
+	</div>
+<% } else {%>
+	<p>
+	Du wurdest von <code><%= info.getPhone()%></code> angerufen? Sag anderen, was sie von dieser Nummer zu erwarten haben:
+	</p>
+	
+	<form action="<%=request.getContextPath()%>/rating" method="post">
+		<input type="hidden" name="phone" value="<%= info.getPhone() %>"/>
+		<div class="buttons">
+		  <button name="rating" value="<%=Rating.A_LEGITIMATE%>" type="submit" class="button <%=Rating.A_LEGITIMATE.cssClass()%>">Seriöser Anruf</button>
+		  <button name="rating" value="<%=Rating.B_MISSED%>" type="submit" class="button <%=Rating.B_MISSED.cssClass()%>">Habe den Anruf verpasst</button>
+		  <button name="rating" value="<%=Rating.C_PING%>" type="submit" class="button <%=Rating.C_PING.cssClass()%>">Anrufer hat direkt aufgelegt</button>
+		  <button name="rating" value="<%=Rating.D_POLL%>" type="submit" class="button <%=Rating.D_POLL.cssClass()%>">Umfrage</button>
+		  <button name="rating" value="<%=Rating.E_ADVERTISING%>" type="submit" class="button <%=Rating.E_ADVERTISING.cssClass()%>">Werbung</button>
+		  <button name="rating" value="<%=Rating.F_GAMBLE%>" type="submit" class="button <%=Rating.F_GAMBLE.cssClass()%>">Gewinnspiel</button>
+		  <button name="rating" value="<%=Rating.G_FRAUD%>" type="submit" class="button <%=Rating.G_FRAUD.cssClass()%>">Betrug/Inkasso</button>
+		</div>
+	</form>
+<% } %>
+	
 <% if (android) { %>
 
 	<h2>Keine Lust mehr nach Telefonnummern zu googeln?</h2>
@@ -137,6 +176,10 @@
 <% } %>
 
 </div>
+</section>
+
+
+<section class="section">
 
 <% if (android) { %>
 <div class="tile is-ancestor">
@@ -151,7 +194,7 @@
 <% } else { %>
 
 <%
-	if (info.getVotes() < DB.MIN_VOTES) {
+		if (info.getVotes() < DB.MIN_VOTES) {
 %>
 
 <div class="tile is-ancestor">
@@ -171,7 +214,7 @@
 </div>
 
 <%
-	} else {
+		} else {
 %>
 
 <div class="tile is-ancestor">
@@ -190,7 +233,7 @@
 	</div>
 </div>
 
-<% } %>
+<% 		} %>
 <% } %>
 
 </section>

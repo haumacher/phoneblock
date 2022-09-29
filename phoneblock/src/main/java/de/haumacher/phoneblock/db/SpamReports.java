@@ -11,6 +11,8 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import de.haumacher.phoneblock.app.Rating;
+
 /**
  * Interface for the spam report table.
  */
@@ -88,4 +90,17 @@ public interface SpamReports {
 	
 	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
 	List<Statistics> getStatistics(int minVotes);
+
+	@Select("select s.COUNT from RATINGS s where s.PHONE=#{phone} and s.RATING=#{rating}")
+	Integer getRatingCount(String phone, Rating rating);
+	
+	@Select("select s.RATING from RATINGS s where s.PHONE=#{phone} order by s.COUNT desc, s.RATING desc limit 1")
+	Rating getRating(String phone);
+	
+	@Insert("insert into RATINGS (PHONE, RATING, COUNT) values (#{phone}, #{rating}, 1)")
+	void addRating(String phone, Rating rating);
+	
+	@Update("update RATINGS s set s.COUNT = s.COUNT + 1 where s.PHONE=#{phone} and s.RATING=#{rating}")
+	void incRating(String phone, Rating rating);
+	
 }
