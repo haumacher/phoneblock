@@ -4,6 +4,9 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,6 +28,24 @@ import de.haumacher.phoneblock.db.SpamReport;
 public class SearchServlet extends HttpServlet {
 	
 	static final String NUMS_PREFIX = "/nums";
+	
+	private static final Pattern BOT_PATTERN = Pattern.compile(
+			or("Googlebot"
+			, "YandexBot"
+			, "bingbot"
+			, "SemrushBot"
+			, "facebookexternalhit"
+			, "CFNetwork"
+			, "Googlebot-Image"
+			, "BingPreview"
+			, "custo"
+			, "AdsBot-Google"
+			, "libwww-perl"
+			, "Curl"
+			, "YandexImages"
+			, "DuckDuckGo-Favicons-Bot"
+			, "LinkedInBot"
+			, "python"));
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -49,8 +70,14 @@ public class SearchServlet extends HttpServlet {
 		
 		DB db = DBService.getInstance();
 		SpamReport info = db.getPhoneInfo(phoneId);
-		
 		Rating rating = db.getRating(phone);
+		
+		String userAgent = req.getHeader("User-Agent");
+		if (userAgent != null && !BOT_PATTERN.matcher(userAgent).find()) {
+			if (req.getParameter("link") == null) {
+				db.addSearchHit(phoneId);
+			}
+		}
 		
 		String ratingAttribute = RatingServlet.ratingAttribute(phoneId);
 		if (getSessionAttribute(req, ratingAttribute) != null) {
@@ -62,6 +89,10 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("title", status(info.getVotes()) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
+	}
+
+	private static String or(String... strs) {
+		return Stream.of(strs).map(Pattern::quote).collect(Collectors.joining("|"));
 	}
 
 	private static Object getSessionAttribute(HttpServletRequest req, String attribute) {

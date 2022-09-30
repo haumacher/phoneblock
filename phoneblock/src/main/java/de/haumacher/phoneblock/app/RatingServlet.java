@@ -58,7 +58,7 @@ public class RatingServlet extends HttpServlet {
 			System.out.println("ERROR: Ignored rating for the same number: " + phoneId + " (" + ratingName + ")");
 		}
 		
-		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId);
+		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "?link=true");
 	}
 
 	public static String ratingAttribute(String phone) {

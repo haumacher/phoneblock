@@ -82,7 +82,7 @@
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>"><%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>
@@ -127,7 +127,7 @@
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>"><%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>
@@ -172,7 +172,7 @@
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>"><%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>

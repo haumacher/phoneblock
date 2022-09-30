@@ -419,6 +419,23 @@ public class DB {
 	}
 	
 	/**
+	 * Records a search hit for the given phone number.
+	 */
+	public void addSearchHit(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			long now = System.currentTimeMillis();
+			int rows = reports.incSearchCount(phone, now);
+			if (rows == 0) {
+				reports.addSearchEntry(phone, now);
+			}
+			
+			session.commit();
+		}
+	}
+	
+	/**
 	 * Shuts down the database layer.
 	 */
 	public void shutdown() {

@@ -46,11 +46,21 @@ function makeSearchButton(buttonId, inputId) {
 }
 
 function searchNumber(inputId) {
-  var number = document.getElementById(inputId).value;
+	var number = document.getElementById(inputId).value;
+	displayNumber(number, false);
+	return false;
+}
+
+function showNumber(number) {
+	displayNumber(number, true);
+	return false;
+}
+
+function displayNumber(number, link) {
   var location = document.location;
   var slashIndex = location.pathname.indexOf("/", 1);
   var contextPath = location.pathname.substring(0, slashIndex);
-  var url = location.protocol + "//" + location.host + contextPath + "/nums/" + number;
+  var url = location.protocol + "//" + location.host + contextPath + "/nums/" + number + (link ? "?link=true" : "");
   location.assign(url);
 }
 

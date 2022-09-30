@@ -106,4 +106,9 @@ public interface SpamReports {
 	@Update("update RATINGS s set s.COUNT = s.COUNT + 1 where s.PHONE=#{phone} and s.RATING=#{rating}")
 	void incRating(String phone, Rating rating);
 	
+	@Update("update SEARCHES s set s.COUNT = s.COUNT + 1, LASTUPDATE=#{now} where s.PHONE=#{phone}")
+	int incSearchCount(String phone, long now);
+	
+	@Insert("insert into SEARCHES (PHONE, LASTUPDATE) values (#{phone}, #{now})")
+	void addSearchEntry(String phone, long now);
 }
