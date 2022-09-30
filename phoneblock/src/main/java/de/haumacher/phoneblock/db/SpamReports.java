@@ -111,4 +111,32 @@ public interface SpamReports {
 	
 	@Insert("insert into SEARCHES (PHONE, LASTUPDATE) values (#{phone}, #{now})")
 	void addSearchEntry(String phone, long now);
+	
+	@Insert("insert into SEARCHCLUSTER (CREATED) values (#{now})")
+	void addSearchCluster(long now);
+	
+	@Select("select max(ID) from SEARCHCLUSTER")
+	int getLastSearchClusterId();
+	
+	@Select("select min(ID) from SEARCHCLUSTER")
+	int getOldestSearchClusterId();
+	
+	@Insert("insert into SEARCHHISTORY (select #{id}, s.PHONE, s.COUNT - s.BACKUP from SEARCHES s)")
+	void fillSearchCluster(int id);
+	
+	@Update("update SEARCHES s set s.BACKUP = s.COUNT")
+	void backupSearch();
+	
+	@Delete("delete from SEARCHHISTORY where CLUSTER=#{id}")
+	void cleanSearchCluster(int id);
+	
+	@Delete("delete from SEARCHCLUSTER where ID=#{id}")
+	void removeSearchCluster(int id);
+
+	@Select("select case when s.COUNT is NULL then 0 else s.COUNT end from SEARCHCLUSTER c left outer join SEARCHHISTORY s on s.PHONE=#{phone} and s.CLUSTER = c.ID order by c.ID")
+	List<Integer> getSearchHistory(String phone);
+	
+	@Select("select s.COUNT - s.BACKUP from SEARCHES s where s.PHONE=#{phone}")
+	Integer getCurrentSearchHits(String phone);
+	
 }

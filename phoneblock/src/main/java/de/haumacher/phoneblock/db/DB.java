@@ -13,15 +13,18 @@ import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -69,7 +72,10 @@ public class DB {
 
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
-	private static final Collection<String> TABLE_NAMES = Arrays.asList("BLOCKLIST", "SPAMREPORTS", "USERS");
+	private static final Collection<String> TABLE_NAMES = Arrays.asList(
+		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES", 
+		"SEARCHCLUSTER", "SEARCHHISTORY"
+	);
 	
 	private SqlSessionFactory _sessionFactory;
 	private DataSource _dataSource;
@@ -83,6 +89,8 @@ public class DB {
 	private ScheduledExecutorService _scheduler;
 
 	private IndexUpdateService _indexer;
+
+	private List<ScheduledFuture<?>> _tasks = new ArrayList<>();
 	
 	public DB(DataSource dataSource) throws SQLException, UnsupportedEncodingException {
 		this(dataSource, IndexUpdateService.NONE);
@@ -132,22 +140,31 @@ public class DB {
 		
 		 _scheduler = new ScheduledThreadPoolExecutor(1);
 		 
-		 Calendar cal = GregorianCalendar.getInstance();
+		 cleanup();
+
+		 Date timeCleanup = schedule(20, this::cleanup);
+		 System.out.println("Scheduled next DB cleanup: " + timeCleanup);
+		 
+		 Date timeHistory = schedule(0, this::runCleanupSearchHistory);
+		 System.out.println("Scheduled search history cleanup: " + timeHistory);
+	}
+
+	private Date schedule(int atHour, Runnable command) {
+		Calendar cal = GregorianCalendar.getInstance();
 		 long millisNow = cal.getTimeInMillis();
 		 int hourNow = cal.get(Calendar.HOUR_OF_DAY);
-		 cal.set(Calendar.HOUR_OF_DAY, 20);
+		 cal.set(Calendar.HOUR_OF_DAY, atHour);
 		 cal.set(Calendar.MINUTE, 0);
 		 cal.set(Calendar.SECOND, 0);
 		 cal.set(Calendar.MILLISECOND, 0);
-		 if (hourNow >= 10) {
+		 if (hourNow >= atHour) {
 			 cal.add(Calendar.DAY_OF_MONTH, 1);
 		 }
 		 long millisFirst = cal.getTimeInMillis();
+		 long initialDelay = millisFirst - millisNow;
 		 
-		 cleanup();
-		 
-		 _scheduler.scheduleAtFixedRate(this::cleanup, millisFirst - millisNow, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS);
-		 System.out.println("Scheduled next DB cleanup: " + cal.getTime());
+		_tasks.add(_scheduler.scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
+		return cal.getTime();
 	}
 	
 	/**
@@ -448,7 +465,17 @@ public class DB {
 			e.printStackTrace();
 		}
 		
+		for (ScheduledFuture<?> task : _tasks) {
+			task.cancel(false);
+		}
+		
 		_scheduler.shutdown();
+		
+		try {
+			_scheduler.awaitTermination(10, TimeUnit.SECONDS);
+		} catch (InterruptedException ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	/** 
@@ -615,6 +642,50 @@ public class DB {
 		}
 		
 		System.out.println("Finished DB cleanup.");
+	}
+
+	private void runCleanupSearchHistory() {
+		System.out.println("Processing search history.");
+		cleanupSearchHistory();
+	}
+
+	/** 
+	 * Creates a new snapshot of search history.
+	 */
+	public void cleanupSearchHistory() {
+		long now = System.currentTimeMillis();
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			reports.addSearchCluster(now);
+			int newest = reports.getLastSearchClusterId();
+			reports.fillSearchCluster(newest);
+			reports.backupSearch();
+			
+			int oldest = reports.getOldestSearchClusterId();
+			if (newest - oldest >= 30) {
+				reports.cleanSearchCluster(oldest);
+				reports.removeSearchCluster(oldest);
+			}
+			
+			session.commit();
+		}
+	}
+	
+	/** 
+	 * Retrieves the number of search hits for the given number in the past days.
+	 * 
+	 * <p>
+	 * The entry last in the list represents the searches recorded today.
+	 * </p>
+	 */
+	public List<Integer> getSearchHistory(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			List<Integer> data = reports.getSearchHistory(phone);
+			data.add(nonNull(reports.getCurrentSearchHits(phone)));
+			return data;
+		}
 	}
 
 	/** 

@@ -152,6 +152,41 @@ public class TestDB extends TestCase {
 	private String header(String user, String pw) throws UnsupportedEncodingException {
 		return "Basic " + Base64.getEncoder().encodeToString((user + ':' + pw).getBytes("utf-8"));
 	}
+	
+	public void testSearchHistory() {
+		
+		_db.addSearchHit("123");
+		_db.addSearchHit("123");
+		_db.addSearchHit("456");
+		
+		_db.cleanupSearchHistory();
+		
+		_db.addSearchHit("456");
+		_db.addSearchHit("789");
+		
+		_db.cleanupSearchHistory();
+		
+		_db.addSearchHit("123");
+		
+		_db.cleanupSearchHistory();
+		
+		_db.addSearchHit("456");
+		_db.addSearchHit("789");
+		
+		assertEquals(Arrays.asList(2, 0, 1, 0), _db.getSearchHistory("123"));
+		assertEquals(Arrays.asList(1, 1, 0, 1), _db.getSearchHistory("456"));
+		assertEquals(Arrays.asList(0, 1, 0, 1), _db.getSearchHistory("789"));
+	}
+	
+	public void testSearchHistoryCleanup() {
+		for (int n = 0; n < 100; n++) {
+			_db.addSearchHit("123");
+			_db.cleanupSearchHistory();
+		}
+		_db.addSearchHit("123");
+		
+		assertEquals(31, _db.getSearchHistory("123").size());
+	}
 
 	private DataSource createTestDataSource() {
 		JdbcDataSource result = new JdbcDataSource();
