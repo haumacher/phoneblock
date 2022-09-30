@@ -62,7 +62,7 @@
 	} else {
 %>		
 <% 
-		if (info.getVotes() < DB.MIN_VOTES) {
+		if (info.getVotes() < DB.MIN_VOTES || info.isArchived()) {
 %>
 	<p>
 		<span class="tag is-info is-warning">Beschwerde liegt vor</span>

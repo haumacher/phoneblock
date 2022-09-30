@@ -41,7 +41,7 @@
 	  <% if (error) {%>
 		  <p class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
 	  <% } else { %>
-		  <p class="help">Das Passwort wurde Dir bei der <a href="<%=request.getContextPath()%>/signup.jsp">Registrierung</a> zugeschickt.</p>
+		  <p class="help">Das Passwort wurde Dir nach der <a href="<%=request.getContextPath()%>/signup.jsp">Registrierung</a> angezeigt.</p>
 	  <% } %>
 	</div>
 	

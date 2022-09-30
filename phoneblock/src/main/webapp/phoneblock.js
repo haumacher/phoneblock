@@ -29,16 +29,30 @@ document.addEventListener('DOMContentLoaded', () => {
 	  }
 	}); 
 	
-	document.getElementById("pb-seach-button").addEventListener("click", function(event) {
-	  var number = document.getElementById("pb-seach-input").value;
-	  var location = document.location;
-	  var slashIndex = location.pathname.indexOf("/", 1);
-	  var contextPath = location.pathname.substring(0, slashIndex);
-	  var url = location.protocol + "//" + location.host + contextPath + "/nums/" + number;
-	  location.assign(url);
-	});
-
+	makeSearchButton("pb-seach-button", "pb-seach-input");
 });
+
+function makeSearchButton(buttonId, inputId) {
+	document.getElementById(buttonId).addEventListener("click", function(event) {
+		searchNumber(inputId);
+	});
+	
+	document.getElementById(inputId).addEventListener("keypress", function(event) {
+	  if (event.key === "Enter") {
+	    event.preventDefault();
+		searchNumber(inputId);
+	  }
+	});
+}
+
+function searchNumber(inputId) {
+  var number = document.getElementById(inputId).value;
+  var location = document.location;
+  var slashIndex = location.pathname.indexOf("/", 1);
+  var contextPath = location.pathname.substring(0, slashIndex);
+  var url = location.protocol + "//" + location.host + contextPath + "/nums/" + number;
+  location.assign(url);
+}
 
 function showaddr(target) {
   var addr =

@@ -37,4 +37,4 @@
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/3.2.1/shariff.min.css">
 
 <script type="text/javascript" src="<%=request.getContextPath() %>/webjars/jquery/3.6.0/jquery.min.js"></script>
-<script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=2"></script>

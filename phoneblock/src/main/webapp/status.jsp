@@ -14,38 +14,24 @@
 <head>
 <% request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBlock schafft Ruhe"); %>
 <jsp:include page="head-content.jspf"></jsp:include>
+
+<script type="text/javascript">
+	document.addEventListener('DOMContentLoaded', () => {
+		makeSearchButton("pb-status-search-button", "pb-status-search-input");		
+	});
+</script>
 </head>
 
 <body>
 <jsp:include page="header.jspf"></jsp:include>
 
+<%
+	String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
+%>
+
 <section class="section">
 <div class="content">
 	<h1>Aktuelle Berichte über unerwünschte Anrufer</h1>
-	
-	<p>
-		Bekannte SPAM-Nummern: 
-<%
-	String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
-	Status status = DBService.getInstance().getStatus(userName);
-	List<Statistics> statistic = status.getStatistics();
-	int cnt = 0;
-	String[] labels = {"berichtet", "bestätigt", "sicher"};
-	
-	for (Statistics statistics : statistic) {
-		// Exclude numbers reported only once.
-		if (statistics.getConfidence() > 0) {
-			cnt += statistics.getCnt();
-		}
-		String label = labels[statistics.getConfidence()];
-%>		
-		<%= statistics.getCnt() %> <%= JspUtil.quote(label) %>,
-<%
-	}
-%>	
-	<%= cnt %> aktive Nummern auf der Blocklist. Insgesamt <%= status.getTotalVotes() %> User-Reports, <%= status.getArchivedReports() %> 
-	inaktive Nummer mit Spam-Verdacht.
-	</p>
 	
 	<p>
 	<a href="<%= request.getContextPath()%>/">PhoneBlock</a> weist Anrufe von Nummern 
@@ -53,7 +39,21 @@
 	<a href="<%= request.getContextPath()%>/setup.jsp">Installiere PhoneBlock</a> 
 	und mach dem Telefonterror ein Ende.  
 	</p>
-
+	
+	<p>
+		Du wurdest von einer unbekannten Nummer angerufen? Schau nach, ob sie in der PhoneBlock-Datenbank enthalten ist:
+	</p>
+	
+	<div class="control has-icons-left has-icons-right">
+	  <input id="pb-status-search-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
+	  <span class="icon is-small is-left">
+	    <i class="fas fa-phone"></i>
+	  </span>
+	  <span id="pb-status-search-button" class="icon is-small is-right is-clickable">
+	    <i class="fas fa-search"></i>
+	  </span>
+	</div>
+	
 <%
 	DateFormat format = SimpleDateFormat.getDateTimeInstance();
 
@@ -195,6 +195,32 @@
 <%	
 	}
 %>
+
+	<h2>PhoneBlock-Datenbank</h2>
+
+	<p>
+		Bekannte SPAM-Nummern: 
+<%
+	Status status = DBService.getInstance().getStatus(userName);
+	List<Statistics> statistic = status.getStatistics();
+	int cnt = 0;
+	String[] labels = {"berichtet", "bestätigt", "sicher"};
+	
+	for (Statistics statistics : statistic) {
+		// Exclude numbers reported only once.
+		if (statistics.getConfidence() > 0) {
+			cnt += statistics.getCnt();
+		}
+		String label = labels[statistics.getConfidence()];
+%>		
+		<%= statistics.getCnt() %> <%= JspUtil.quote(label) %>,
+<%
+	}
+%>	
+	<%= cnt %> aktive Nummern auf der Blocklist. Insgesamt <%= status.getTotalVotes() %> User-Reports, <%= status.getArchivedReports() %> 
+	inaktive Nummer mit Spam-Verdacht.
+	</p>
+
 </div>
 
 <div class="tile is-ancestor">

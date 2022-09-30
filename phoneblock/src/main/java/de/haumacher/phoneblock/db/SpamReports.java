@@ -73,6 +73,9 @@ public interface SpamReports {
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where PHONE = #{phone}")
 	SpamReport getPhoneInfo(String phone);
 	
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from OLDREPORTS where PHONE = #{phone}")
+	SpamReport getPhoneInfoArchived(String phone);
+	
 	@Select("SELECT PHONE, VOTES, LASTUPDATE, DATEADDED FROM SPAMREPORTS s"
 			+ " WHERE s.LASTUPDATE >= #{notBefore}"
 			+ " ORDER BY s.VOTES DESC LIMIT #{cnt}")

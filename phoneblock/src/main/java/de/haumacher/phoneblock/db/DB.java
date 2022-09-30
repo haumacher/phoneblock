@@ -405,7 +405,16 @@ public class DB {
 	public SpamReport getPhoneInfo(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getPhoneInfo(phone);
+			SpamReport result = reports.getPhoneInfo(phone);
+			if (result == null) {
+				result = reports.getPhoneInfoArchived(phone);
+				if (result == null) {
+					result = new SpamReport(phone, 0, 0, 0);
+				} else {
+					result.setArchived(true);
+				}
+			}
+			return result;
 		}
 	}
 	

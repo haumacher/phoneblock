@@ -49,9 +49,6 @@ public class SearchServlet extends HttpServlet {
 		
 		DB db = DBService.getInstance();
 		SpamReport info = db.getPhoneInfo(phoneId);
-		if (info == null) {
-			info = new SpamReport(phone, 0, 0, 0);
-		}
 		
 		Rating rating = db.getRating(phone);
 		

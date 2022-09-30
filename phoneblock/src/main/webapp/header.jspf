@@ -48,7 +48,7 @@
 		<div class="navbar-end">
 			<div class="navbar-item">
 				<div class="control has-icons-left has-icons-right">
-				  <input id="pb-seach-input" class="input is-rounded" type="email" placeholder="Telefonnummer untersuchen">
+				  <input id="pb-seach-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
 				  <span class="icon is-small is-left">
 				    <i class="fas fa-phone"></i>
 				  </span>

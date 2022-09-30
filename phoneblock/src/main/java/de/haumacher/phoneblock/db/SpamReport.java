@@ -12,6 +12,7 @@ public class SpamReport {
 	private final int _votes;
 	private final long _lastUpdate;
 	private final long _dateAdded;
+	private boolean _archived;
 	
 	/** 
 	 * Creates a {@link SpamReport}.
@@ -21,6 +22,17 @@ public class SpamReport {
 		_votes = votes;
 		_lastUpdate = lastUpdate;
 		_dateAdded = dateAdded;
+	}
+	
+	/**
+	 * Whether this entry is not in the active list.
+	 */
+	public boolean isArchived() {
+		return _archived;
+	}
+	
+	public void setArchived(boolean archived) {
+		_archived = archived;
 	}
 
 	/**
