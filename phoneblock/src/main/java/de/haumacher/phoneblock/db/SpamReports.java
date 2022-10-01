@@ -100,11 +100,11 @@ public interface SpamReports {
 	@Select("select s.RATING from RATINGS s where s.PHONE=#{phone} order by s.COUNT desc, s.RATING desc limit 1")
 	Rating getRating(String phone);
 	
-	@Insert("insert into RATINGS (PHONE, RATING, COUNT) values (#{phone}, #{rating}, 1)")
-	void addRating(String phone, Rating rating);
+	@Insert("insert into RATINGS (PHONE, RATING, COUNT, LASTUPDATE) values (#{phone}, #{rating}, 1, #{now})")
+	void addRating(String phone, Rating rating, long now);
 	
-	@Update("update RATINGS s set s.COUNT = s.COUNT + 1 where s.PHONE=#{phone} and s.RATING=#{rating}")
-	void incRating(String phone, Rating rating);
+	@Update("update RATINGS s set s.COUNT = s.COUNT + 1, LASTUPDATE=#{now} where s.PHONE=#{phone} and s.RATING=#{rating}")
+	int incRating(String phone, Rating rating, long now);
 	
 	@Update("update SEARCHES s set s.COUNT = s.COUNT + 1, LASTUPDATE=#{now} where s.PHONE=#{phone}")
 	int incSearchCount(String phone, long now);
@@ -113,19 +113,25 @@ public interface SpamReports {
 	void addSearchEntry(String phone, long now);
 	
 	@Insert("insert into SEARCHCLUSTER (CREATED) values (#{now})")
-	void addSearchCluster(long now);
+	void createRevision(long now);
 	
 	@Select("select max(ID) from SEARCHCLUSTER")
-	int getLastSearchClusterId();
+	int getLastRevision();
 	
 	@Select("select min(ID) from SEARCHCLUSTER")
-	int getOldestSearchClusterId();
+	int getOldestRevision();
 	
-	@Insert("insert into SEARCHHISTORY (select #{id}, s.PHONE, s.COUNT - s.BACKUP from SEARCHES s)")
-	void fillSearchCluster(int id);
+	@Insert("insert into RATINGHISTORY (select #{id}, s.PHONE, s.RATING, s.COUNT - s.BACKUP from RATINGS s where s.COUNT > s.BACKUP)")
+	void fillRatingRevision(int id);
+	
+	@Update("update RATINGS s set s.BACKUP = s.COUNT")
+	void backupRatings();
+	
+	@Insert("insert into SEARCHHISTORY (select #{id}, s.PHONE, s.COUNT - s.BACKUP from SEARCHES s where s.COUNT > s.BACKUP)")
+	void fillSearchRevision(int id);
 	
 	@Update("update SEARCHES s set s.BACKUP = s.COUNT")
-	void backupSearch();
+	void backupSearches();
 	
 	@Delete("delete from SEARCHHISTORY where CLUSTER=#{id}")
 	void cleanSearchCluster(int id);

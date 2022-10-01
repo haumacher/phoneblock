@@ -17,6 +17,7 @@ import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.h2.jdbcx.JdbcDataSource;
 
+import de.haumacher.phoneblock.app.Rating;
 import junit.framework.TestCase;
 
 /**
@@ -153,22 +154,44 @@ public class TestDB extends TestCase {
 		return "Basic " + Base64.getEncoder().encodeToString((user + ':' + pw).getBytes("utf-8"));
 	}
 	
+	public void testRatings() {
+		long now = 1;
+		
+		_db.addRating("123", Rating.G_FRAUD, now++);
+		_db.addRating("123", Rating.B_MISSED, now++);
+		_db.addRating("123", Rating.B_MISSED, now++);
+		_db.addRating("123", Rating.C_PING, now++);
+		_db.addRating("123", Rating.D_POLL, now++);
+		_db.addRating("123", Rating.E_ADVERTISING, now++);
+		_db.addRating("123", Rating.F_GAMBLE, now++);
+
+		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
+		
+		_db.cleanupSearchHistory(10);
+		
+		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
+		
+		_db.addRating("123", Rating.C_PING, now++);
+		
+		assertEquals(Rating.C_PING, _db.getRating("123"));
+	}
+	
 	public void testSearchHistory() {
 		
 		_db.addSearchHit("123");
 		_db.addSearchHit("123");
 		_db.addSearchHit("456");
 		
-		_db.cleanupSearchHistory();
+		_db.cleanupSearchHistory(30);
 		
 		_db.addSearchHit("456");
 		_db.addSearchHit("789");
 		
-		_db.cleanupSearchHistory();
+		_db.cleanupSearchHistory(30);
 		
 		_db.addSearchHit("123");
 		
-		_db.cleanupSearchHistory();
+		_db.cleanupSearchHistory(30);
 		
 		_db.addSearchHit("456");
 		_db.addSearchHit("789");
@@ -181,7 +204,7 @@ public class TestDB extends TestCase {
 	public void testSearchHistoryCleanup() {
 		for (int n = 0; n < 100; n++) {
 			_db.addSearchHit("123");
-			_db.cleanupSearchHistory();
+			_db.cleanupSearchHistory(30);
 		}
 		_db.addSearchHit("123");
 		

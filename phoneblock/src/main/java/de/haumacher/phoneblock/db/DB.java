@@ -276,11 +276,9 @@ public class DB {
 			processVotes(reports, phone, votes, now);
 
 			if (rating != Rating.B_MISSED) {
-				Integer count = reports.getRatingCount(phone, rating);
-				if (count == null) {
-					reports.addRating(phone, rating);
-				} else {
-					reports.incRating(phone, rating);
+				int rows = reports.incRating(phone, rating, now);
+				if (rows == 0) {
+					reports.addRating(phone, rating, now);
 				}
 			}
 			
@@ -646,24 +644,27 @@ public class DB {
 
 	private void runCleanupSearchHistory() {
 		System.out.println("Processing search history.");
-		cleanupSearchHistory();
+		cleanupSearchHistory(365);
 	}
 
 	/** 
 	 * Creates a new snapshot of search history.
 	 */
-	public void cleanupSearchHistory() {
+	public void cleanupSearchHistory(int maxHistory) {
 		long now = System.currentTimeMillis();
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			reports.addSearchCluster(now);
-			int newest = reports.getLastSearchClusterId();
-			reports.fillSearchCluster(newest);
-			reports.backupSearch();
+			reports.createRevision(now);
+			int newest = reports.getLastRevision();
+			reports.fillSearchRevision(newest);
+			reports.backupSearches();
 			
-			int oldest = reports.getOldestSearchClusterId();
-			if (newest - oldest >= 30) {
+			reports.fillRatingRevision(newest);
+			reports.backupRatings();
+			
+			int oldest = reports.getOldestRevision();
+			if (newest - oldest >= maxHistory) {
 				reports.cleanSearchCluster(oldest);
 				reports.removeSearchCluster(oldest);
 			}
