@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
@@ -20,6 +23,8 @@ import de.haumacher.phoneblock.mail.MailServiceStarter;
  */
 @WebServlet(urlPatterns = "/verify-email")
 public class EMailVerificationServlet extends HttpServlet {
+
+	private static final Logger LOG = LoggerFactory.getLogger(EMailVerificationServlet.class);
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,7 +41,7 @@ public class EMailVerificationServlet extends HttpServlet {
 		try {
 			MailService mailService = MailServiceStarter.getInstance();
 			if (mailService == null) {
-				System.out.println("ERROR: Mail service not active!");
+				LOG.error("Mail service not active!");
 				req.setAttribute("message", "Es kann aktuell keine E-Mail versendet werden, bitte probiere es später noch einmal.");
 				req.getRequestDispatcher("/signup.jsp").forward(req, resp);
 				return;
@@ -44,7 +49,8 @@ public class EMailVerificationServlet extends HttpServlet {
 
 			mailService.sendActivationMail(email, code);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to send message", ex);
+			
 			req.setAttribute("message", "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
 			req.getRequestDispatcher("/signup.jsp").forward(req, resp);
 			return;

@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
@@ -23,6 +25,8 @@ import de.haumacher.phoneblock.db.settings.UserSettings;
  * {@link Resource} representing a collection of {@link AddressBookResource}s.
  */
 public class AddressBookResource extends Resource {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AddressBookResource.class);
 
 	private final String _principal;
 	private String _serverRoot;
@@ -94,12 +98,12 @@ public class AddressBookResource extends Resource {
 				prefixLength = _serverRoot.length();
 			} else {
 				// Invalid URL.
-				System.out.println("ERROR: Received invalid contact URL outside server '" + rootUrl + "': " + url);
+				LOG.warn("Received invalid contact URL outside server '" + rootUrl + "': " + url);
 				return null;
 			}
 		}
 		if (!url.startsWith(getResourcePath(), prefixLength)) {
-			System.out.println("ERROR: Received invalid contact URL outside address book '" + getResourcePath() + "': " + url);
+			LOG.warn("Received invalid contact URL outside address book '" + getResourcePath() + "': " + url);
 			return null;
 		}
 		

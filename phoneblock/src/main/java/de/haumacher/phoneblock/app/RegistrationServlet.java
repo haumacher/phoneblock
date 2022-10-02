@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.phoneblock.db.DBService;
 
 /**
@@ -19,6 +22,8 @@ import de.haumacher.phoneblock.db.DBService;
  */
 @WebServlet(urlPatterns = "/registration-code")
 public class RegistrationServlet extends HttpServlet {
+
+	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -41,7 +46,8 @@ public class RegistrationServlet extends HttpServlet {
 		try {
 			passwd = DBService.getInstance().createUser(email);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to create user: " + email, ex);
+
 			req.setAttribute("message", "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
 			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
 			return;

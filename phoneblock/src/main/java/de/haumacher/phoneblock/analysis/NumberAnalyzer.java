@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -17,6 +20,8 @@ import com.opencsv.ICSVParser;
  * Utility for analyzing phone numbers.
  */
 public class NumberAnalyzer {
+
+	private static final Logger LOG = LoggerFactory.getLogger(NumberAnalyzer.class);
 
 	/**
 	 * @see "https://de.wikipedia.org/wiki/L%C3%A4ndervorwahlliste_sortiert_nach_Nummern"
@@ -349,7 +354,7 @@ public class NumberAnalyzer {
 		        }				
 			}
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to read phone prefix list.", ex);
 		}
 		
 		return root;

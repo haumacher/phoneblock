@@ -14,11 +14,16 @@ import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The {@link MailService} singleton.
  */
 public class MailServiceStarter implements ServletContextListener {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(MailServiceStarter.class);
+
 	private static MailService INSTANCE;
 	
 	/**
@@ -37,7 +42,7 @@ public class MailServiceStarter implements ServletContextListener {
 			String user = (String) envCtx.lookup("smtp/user");        
 			String password = (String) envCtx.lookup("smtp/password");
 			if (user == null && password == null) {
-				System.err.println("No mail configuration found.");
+				LOG.warn("No mail configuration found.");
 			} else {
 				Properties properties = new Properties();
 				Context propertyContext = (Context) envCtx.lookup("smtp/properties");
@@ -60,7 +65,7 @@ public class MailServiceStarter implements ServletContextListener {
 				INSTANCE = mailService;
 			}
 		} catch (NamingException | MessagingException ex) {
-			ex.printStackTrace();
+			LOG.error("Starting mail service failed.", ex);
 		}
 	}
 	

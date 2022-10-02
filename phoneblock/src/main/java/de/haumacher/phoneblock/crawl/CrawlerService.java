@@ -9,6 +9,9 @@ import java.util.Properties;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.phoneblock.carddav.resource.AddressResource;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
@@ -18,19 +21,21 @@ import de.haumacher.phoneblock.db.DBService;
  */
 public class CrawlerService implements ServletContextListener {
 
+	private static final Logger LOG = LoggerFactory.getLogger(CrawlerService.class);
+
 	private Thread _crawlerThread;
 	private WebCrawler _crawler;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		System.out.println("Starting crawler service.");
+		LOG.info("Starting crawler service.");
 		
 		try {
 			Properties properties = new Properties();
 			properties.load(CrawlerService.class.getResourceAsStream("/phoneblock.properties"));
 			String url = properties.getProperty("crawler.url");
 			if (url == null || url.isEmpty() || url.startsWith("${")) {
-				System.out.println("No crawler URL configured, skipping.");
+				LOG.warn("No crawler URL configured, skipping.");
 				return;
 			}
 			
@@ -41,7 +46,7 @@ public class CrawlerService implements ServletContextListener {
 			SpamReporter reporter = new SpamReporter() {
 				@Override
 				public void reportCaller(String caller, int rating, long time) {
-					System.out.println(fmt(20, caller) + " " + "x*****".substring(rating));
+					LOG.info(fmt(20, caller) + " " + "x*****".substring(rating));
 					
 					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);
 				}
@@ -60,14 +65,13 @@ public class CrawlerService implements ServletContextListener {
 			_crawlerThread = new Thread(_crawler);
 			_crawlerThread.start();
 		} catch (IOException ex) {
-			System.out.println("Failed to start crawler service.");
-			ex.printStackTrace();
+			LOG.error("Failed to start crawler service.", ex);
 		}
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		System.out.println("Stopping crawler service.");
+		LOG.info("Stopping crawler service.");
 		if (_crawler != null) {
 			_crawler.stop();
 		}

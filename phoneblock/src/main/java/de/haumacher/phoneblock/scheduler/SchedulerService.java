@@ -10,10 +10,15 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Service providing a {@link ScheduledExecutorService}.
  */
 public class SchedulerService implements ServletContextListener {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SchedulerService.class);
 
 	private ScheduledExecutorService _executor;
 
@@ -24,10 +29,16 @@ public class SchedulerService implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
+		LOG.info("Shutting down scheduler.");
+		_executor.shutdown();
+		
 		try {
-			_executor.awaitTermination(5, TimeUnit.SECONDS);
+			boolean finished = _executor.awaitTermination(10, TimeUnit.SECONDS);
+			if (!finished) {
+				LOG.warn("Scheduler did not terminate in time.");
+			}
 		} catch (InterruptedException ex) {
-			ex.printStackTrace();
+			LOG.error("Stopping scheduler failed.", ex);
 		}
 	}
 

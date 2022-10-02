@@ -38,6 +38,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.Rating;
 import de.haumacher.phoneblock.callreport.model.CallReport;
@@ -49,6 +51,8 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
  * The database abstraction layer.
  */
 public class DB {
+
+	private static final Logger LOG = LoggerFactory.getLogger(DB.class);
 
 	/**
 	 * Minimum number of votes to add a number to the blocklist.
@@ -143,10 +147,10 @@ public class DB {
 		 cleanup();
 
 		 Date timeCleanup = schedule(20, this::cleanup);
-		 System.out.println("Scheduled next DB cleanup: " + timeCleanup);
+		 LOG.info("Scheduled next DB cleanup: " + timeCleanup);
 		 
 		 Date timeHistory = schedule(0, this::runCleanupSearchHistory);
-		 System.out.println("Scheduled search history cleanup: " + timeHistory);
+		 LOG.info("Scheduled search history cleanup: " + timeHistory);
 	}
 
 	private Date schedule(int atHour, Runnable command) {
@@ -458,9 +462,8 @@ public class DB {
 			try (Statement statement = session.getConnection().createStatement()) {
 				statement.execute("SHUTDOWN");
 			}
-		} catch (Exception e) {
-			System.err.println("Database shutdown failed.");
-			e.printStackTrace();
+		} catch (Exception ex) {
+			LOG.error("Database shutdown failed.", ex);
 		}
 		
 		for (ScheduledFuture<?> task : _tasks) {
@@ -470,9 +473,12 @@ public class DB {
 		_scheduler.shutdown();
 		
 		try {
-			_scheduler.awaitTermination(10, TimeUnit.SECONDS);
+			boolean finished = _scheduler.awaitTermination(10, TimeUnit.SECONDS);
+			if (!finished) {
+				LOG.warn("DB scheduler did not terminate in time.");
+			}
 		} catch (InterruptedException ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to shut down scheduler.", ex);
 		}
 	}
 
@@ -545,7 +551,7 @@ public class DB {
 				return login(userName, passwd);
 			}
 		} else {
-			System.err.println("Invalid authentication received: " + authHeader);
+			LOG.warn("Invalid authentication received: " + authHeader);
 		}
 		return null;
 	}
@@ -567,10 +573,10 @@ public class DB {
 				if (Arrays.equals(pwhash, expectedHash)) {
 					return userName;
 				} else {
-					System.err.println("Invalid password for user: " + userName);
+					LOG.warn("Invalid password for user: " + userName);
 				}
 			} else {
-				System.err.println("Invalid user name supplied: " + userName);
+				LOG.warn("Invalid user name supplied: " + userName);
 			}
 		}
 		return null;
@@ -611,7 +617,7 @@ public class DB {
 	}
 
 	private void cleanup() {
-		System.out.println("Starting DB cleanup.");
+		LOG.info("Starting DB cleanup.");
 		
 		Calendar cal = GregorianCalendar.getInstance();
 		long now = cal.getTimeInMillis();
@@ -628,22 +634,22 @@ public class DB {
 			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
 			int deletedNew = reports.deleteArchivedReports(now);
 			
-			System.out.println("Reactivated " + reactivated + " reports, archived " + archived + " reports.");
+			LOG.info("Reactivated " + reactivated + " reports, archived " + archived + " reports.");
 			if (deletedOld != reactivated) {
-				System.out.println("ERROR: Reactivated " + reactivated + " records but deleted " + deletedOld + " reports from archive.");
+				LOG.error("Reactivated " + reactivated + " records but deleted " + deletedOld + " reports from archive.");
 			}
 			if (deletedNew != archived) {
-				System.out.println("ERROR: Archived " + archived + " records but deleted " + deletedNew + " reports from database.");
+				LOG.error("Archived " + archived + " records but deleted " + deletedNew + " reports from database.");
 			}
 			
 			session.commit();
 		}
 		
-		System.out.println("Finished DB cleanup.");
+		LOG.info("Finished DB cleanup.");
 	}
 
 	private void runCleanupSearchHistory() {
-		System.out.println("Processing search history.");
+		LOG.info("Processing search history.");
 		cleanupSearchHistory(365);
 	}
 

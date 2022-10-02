@@ -15,6 +15,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.ByteArrayContent;
@@ -37,6 +40,8 @@ import de.haumacher.phoneblock.util.ConnectionUtil;
  */
 public class GoogleUpdateService implements IndexUpdateService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(GoogleUpdateService.class);
+
 	private String _contextPath;
 	private HttpTransport _httpTransport;
 	private GoogleCredential _credentials;
@@ -49,7 +54,7 @@ public class GoogleUpdateService implements IndexUpdateService {
 		
 		String accountFile = lookupAccountFile();
 		if (accountFile == null) {
-			System.out.println("No google account file found, deactivating google update.");
+			LOG.warn("No google account file found, deactivating google update.");
 		} else {
 			try (InputStream in = new FileInputStream(accountFile)) {
 				_httpTransport = new NetHttpTransport();
@@ -57,10 +62,9 @@ public class GoogleUpdateService implements IndexUpdateService {
 				_credentials = GoogleCredential.fromStream(in, _httpTransport, new GsonFactory())
 					.createScoped(Collections.singleton("https://www.googleapis.com/auth/indexing"));
 				_active = true;
-				System.out.println("Activated google update service.");
+				LOG.info("Activated google update service.");
 			} catch (IOException ex) {
-				System.out.println("ERROR: Failed to activate google update service.");
-				ex.printStackTrace();
+				LOG.error("Failed to activate google update service.", ex);
 			}
 		}
 	}
@@ -73,10 +77,10 @@ public class GoogleUpdateService implements IndexUpdateService {
 			try {
 				return (String) envCtx.lookup("google/accountfile");
 			} catch (NamingException ex) {
-				System.out.print("No Google account file: " + ex.getMessage());
+				LOG.info("No Google account file: " + ex.getMessage());
 			}
 		} catch (NamingException ex) {
-			System.out.print("No JNDI configuration, no Google account file: " + ex.getMessage());
+			LOG.info("No JNDI configuration, no Google account file: " + ex.getMessage());
 		}
 		return null;
 	}
@@ -104,16 +108,15 @@ public class GoogleUpdateService implements IndexUpdateService {
 			
 			int code = response.getStatusCode();
 			if (code == HttpURLConnection.HTTP_OK) {
-				System.out.println("Added URL to Goolge index: " + url);
+				LOG.info("Added URL to Goolge index: " + url);
 			} else {
 				try (InputStream in = response.getContent()) {
-					System.out.println("ERROR adding URL to Goolge index (" + code + "): " + url + ": " +
+					LOG.error("Failed to add URL to Goolge index (" + code + "): " + url + ": " +
 						ConnectionUtil.readText(in, response.getContentEncoding()));
 				}
 			}
 		} catch (IOException ex) {
-			System.out.println("ERROR adding URL to Goolge index: " +  url + ": " + ex.getMessage());
-			ex.printStackTrace();
+			LOG.error("Failed to add URL to Goolge index: " +  url + ".", ex);
 		}
 	}
 

@@ -13,6 +13,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.util.ConnectionUtil;
 
@@ -20,6 +23,8 @@ import de.haumacher.phoneblock.util.ConnectionUtil;
  * Service pushing updated URLs to an "indexnow" API.
  */
 public class IndexNowUpdateService implements IndexUpdateService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(IndexUpdateService.class);
 
 	private String _apiKey;
 	private String _contextPath;
@@ -31,9 +36,9 @@ public class IndexNowUpdateService implements IndexUpdateService {
 		_active = _apiKey != null;
 		if (_active) {
 			_contextPath = sce.getServletContext().getContextPath();
-			System.out.println("Activated indexnow service.");
+			LOG.info("Activated indexnow service.");
 		} else {
-			System.out.println("No API key for indexnow, deactivating updates.");
+			LOG.warn("No API key for indexnow, deactivating updates.");
 		}
 	}
 
@@ -45,10 +50,10 @@ public class IndexNowUpdateService implements IndexUpdateService {
 			try {
 				return (String) envCtx.lookup("indexnow/key");
 			} catch (NamingException ex) {
-				System.out.print("No API key for indexnow: " + ex.getMessage());
+				LOG.info("No API key for indexnow: " + ex.getMessage());
 			}
 		} catch (NamingException ex) {
-			System.out.print("Not using JNDI configuration: " + ex.getMessage());
+			LOG.info("Not using JNDI configuration: " + ex.getMessage());
 		}
 		return null;
 	}
@@ -73,13 +78,12 @@ public class IndexNowUpdateService implements IndexUpdateService {
 			connection.connect();
 			int code = connection.getResponseCode();
 			if (code != HttpURLConnection.HTTP_OK) {
-				System.out.println("ERROR: Failed to send URL update of '" + url + "' (status " + code + "): " + ConnectionUtil.readText(connection));
+				LOG.error("Failed to send URL update of '" + url + "' (status " + code + "): " + ConnectionUtil.readText(connection));
 			} else {
-				System.out.println("Updated URL in indexnow: " + url);
+				LOG.info("Updated URL in indexnow: " + url);
 			}
 		} catch (IOException ex) {
-			System.out.println("ERROR: Failed to send URL update of '" + url + "': " + ex.getMessage());
-			ex.printStackTrace();
+			LOG.error("Failed to send URL update of '" + url + "'.", ex);
 		}
 	}
 

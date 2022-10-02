@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
@@ -18,6 +21,7 @@ import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -26,6 +30,8 @@ import de.haumacher.phoneblock.db.DBService;
  */
 @WebServlet(urlPatterns = CallReportServlet.URL_PATTERN)
 public class CallReportServlet extends HttpServlet {
+
+	private static final Logger LOG = LoggerFactory.getLogger(CardDavServlet.class);
 
 	public static final String URL_PATTERN = "/callreport";
 
@@ -40,7 +46,7 @@ public class CallReportServlet extends HttpServlet {
 			resp.setCharacterEncoding("utf-8");
 			info.writeTo(new JsonWriter(new WriterAdapter(resp.getWriter())));
 		} catch (Throwable ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to retrieve call report info.", ex);
 			throw ex;
 		}
 	}
@@ -54,7 +60,7 @@ public class CallReportServlet extends HttpServlet {
 			DB db = DBService.getInstance();
 			db.storeCallReport(userName, callReport);
 		} catch (Throwable ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to store call report.", ex);
 			throw ex;
 		}
 	}

@@ -14,6 +14,8 @@ import javax.servlet.ServletContextListener;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.index.IndexUpdateService;
@@ -22,6 +24,8 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
  * {@link ServletContextListener} starting the database.
  */
 public class DBService implements ServletContextListener {
+
+	private static final Logger LOG = LoggerFactory.getLogger(DBService.class);
 
 	private static DB INSTANCE;
 	
@@ -42,13 +46,13 @@ public class DBService implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
-		System.out.println("Starting DB service.");
+		LOG.info("Starting DB service.");
         try {
             org.h2.Driver.load();
 			DBConfig config = lookupConfig(servletContextEvent);
 			startDB(config);
 		} catch (SQLException | UnsupportedEncodingException ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to start DB.", ex);
 		}
 	}
 
@@ -64,21 +68,21 @@ public class DBService implements ServletContextListener {
 				String url = (String) envCtx.lookup("db/url");
 				config.setUrl(url);
 			} catch (NamingException ex) {
-				System.out.println(ex.getMessage() + ", using default DB url: " + config.getUrl());
+				LOG.info(ex.getMessage() + ", using default DB url: " + config.getUrl());
 			}
 			
 			try {
 				String user = (String) envCtx.lookup("db/user");
 				config.setUser(user);
 			} catch (NamingException ex) {
-				System.out.println(ex.getMessage() + ", using default DB user: " + config.getUser());
+				LOG.info(ex.getMessage() + ", using default DB user: " + config.getUser());
 			}
 			
 			try {
 				String password = (String) envCtx.lookup("db/password");
 				config.setPassword(password);
 			} catch (NamingException ex) {
-				System.out.println(ex.getMessage() + ", using default DB password.");
+				LOG.info(ex.getMessage() + ", using default DB password.");
 			}
 
 			try {
@@ -87,17 +91,17 @@ public class DBService implements ServletContextListener {
 					config.setPort(port.intValue());
 				}
 			} catch (NamingException ex) {
-				System.out.println(ex.getMessage() + ", using default DB port: " + config.getPort());
+				LOG.info(ex.getMessage() + ", using default DB port: " + config.getPort());
 			}
 		} catch (NamingException ex) {
-			System.out.println("Not using JNDI configuration: " + ex.getMessage());
+			LOG.info("Not using JNDI configuration: " + ex.getMessage());
 		}
 		
 		return config;
 	}
 
 	private void startDB(DBConfig config) throws SQLException, UnsupportedEncodingException {
-		System.out.println("Opening H2 database: " + config.getUrl() + " for user '" + config.getUser() + "'.");
+		LOG.info("Opening H2 database: " + config.getUrl() + " for user '" + config.getUser() + "'.");
 		JdbcDataSource dataSource = new JdbcDataSource();
 		dataSource.setUrl(config.getUrl());
 		dataSource.setUser(config.getUser());
@@ -105,15 +109,14 @@ public class DBService implements ServletContextListener {
 
 		try {
 			if (config.getPort() > 0) {
-				System.out.println("Starting DB server: " + config.getUrl() + " at port " + config.getPort());
+				LOG.info("Starting DB server: " + config.getUrl() + " at port " + config.getPort());
 				_server = Server.createTcpServer("-tcpPort", Integer.toString(config.getPort()), "-tcpAllowOthers");
 				_server.start();
 			} else {
-				System.out.println("No DB server.");
+				LOG.info("No DB server.");
 			}
 		} catch (Exception ex) {
-			System.err.println("Failed to start DB server: " + ex.getMessage());
-			ex.printStackTrace();
+			LOG.error("Failed to start DB server. ", ex);
 		}
 		
 		INSTANCE = new DB(dataSource, _indexer);
@@ -147,24 +150,24 @@ public class DBService implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
-		System.out.println("Stopping DB service.");
+		LOG.info("Stopping DB service.");
 
         try {
         	try {
         		if (INSTANCE  != null) {
-        			System.out.println("Stopping database.");
+        			LOG.info("Stopping database.");
         			INSTANCE.shutdown();
         			INSTANCE = null;
         		}
         	} finally {
         		if (_server != null) {
-        			System.out.println("Stopping database server.");
+        			LOG.info("Stopping database server.");
         			_server.stop();
         			_server = null;
         		}
         	}
 		} finally {
-			System.out.println("Unloading DB driver.");
+			LOG.info("Unloading DB driver.");
 			org.h2.Driver.unload();
 		}
     }

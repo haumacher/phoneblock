@@ -64,41 +64,7 @@ public interface IndexUpdateService extends ServletContextListener {
 	 * Distribute index updates to multiple services.
 	 */
 	static IndexUpdateService tee(IndexUpdateService... services) {
-		return new IndexUpdateService() {
-			
-			@Override
-			public void contextInitialized(ServletContextEvent sce) {
-				for (IndexUpdateService service : services) {
-					try {
-						service.contextInitialized(sce);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-			
-			@Override
-			public void contextDestroyed(ServletContextEvent sce) {
-				for (IndexUpdateService service : services) {
-					try {
-						service.contextDestroyed(sce);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-			
-			@Override
-			public void publishUpdate(String path) {
-				for (IndexUpdateService service : services) {
-					try {
-						service.publishUpdate(path);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		};
+		return new IndexUpdateMultiplexer(services);
 	}
 
 }

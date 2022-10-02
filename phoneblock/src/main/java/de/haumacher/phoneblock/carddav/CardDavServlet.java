@@ -7,6 +7,8 @@ import static de.haumacher.phoneblock.util.DomUtil.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
@@ -20,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -42,6 +46,8 @@ import de.haumacher.phoneblock.carddav.schema.DavSchema;
 @WebServlet(urlPatterns = {CardDavServlet.DIR_NAME, CardDavServlet.URL_PATTERN})
 public class CardDavServlet extends HttpServlet {
 
+	private static final Logger LOG = LoggerFactory.getLogger(CardDavServlet.class);
+	
 	static final String DIR_NAME = "/contacts";
 
 	private static final String BASE_PATH = DIR_NAME + "/";
@@ -84,13 +90,17 @@ public class CardDavServlet extends HttpServlet {
 				doReport(req, resp);
 			}
 			else {
-				dumpMethod(req);
-				dumpParams(req);
-				dumpHeaders(req);
+				StringWriter out = new StringWriter();
+				dumpMethod(out, req);
+				dumpParams(out, req);
+				dumpHeaders(out, req);
+				LOG.warn("Unknown request: " + out.toString());
+
 				super.service(req, resp);
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to process CardDAV request.", ex);
+			
 			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
 	}
@@ -146,8 +156,13 @@ public class CardDavServlet extends HttpServlet {
 		Depth depth = Depth.fromHeader(req.getHeader("depth"));
 		List<Element> properties = toList(elements(requestDoc, DavSchema.DAV_PROPFIND, DavSchema.DAV_PROP));
 
-		System.out.println(req.getMethod() + " " + req.getPathInfo() + " " + depth + ": " + toList(qnames(properties)));
-		dumpHeaders(req);
+		if (LOG.isDebugEnabled()) {
+			StringWriter out = new StringWriter();
+			out.write(req.getMethod() + " " + req.getPathInfo() + " " + depth + ": " + toList(qnames(properties)));
+			out.write('\n');
+			dumpHeaders(out, req);
+			LOG.debug(out.toString());
+		}
 
 		Document responseDoc = getBuilder().newDocument();
 		Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
@@ -175,10 +190,11 @@ public class CardDavServlet extends HttpServlet {
 		LSSerializer serializer = ls.createLSSerializer();
 		serializer.write(responseDoc, output);
 		
-		System.out.println(">>>");
-		dumpDoc(responseDoc);
-		System.out.println();
-		System.out.println(">>>");
+		if (LOG.isDebugEnabled()) {
+			StringWriter out = new StringWriter();
+			dumpDoc(out, responseDoc);
+			LOG.debug("Response" + out.toString());
+		}
 	}
 
 	private void doReport(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException {
@@ -192,9 +208,14 @@ public class CardDavServlet extends HttpServlet {
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
 			List<Element> properties = toList(elements(requestDoc, CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET, DavSchema.DAV_PROP));
 			
-			System.out.println(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
-			dumpHeaders(req);
-			dumpRequestDoc(requestDoc);
+			if (LOG.isDebugEnabled()) {
+				StringWriter out = new StringWriter();
+				out.write(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
+				out.write('\n');
+				dumpHeaders(out, req);
+				dumpDoc(out, requestDoc);
+				LOG.debug(out.toString());
+			}
 			
 			Document responseDoc = getBuilder().newDocument();
 			Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
@@ -234,18 +255,24 @@ public class CardDavServlet extends HttpServlet {
 			
 			marshalMultiStatus(resp, responseDoc);
 		} else {
-			dumpMethod(req);
-			dumpHeaders(req);
-			dumpRequestDoc(requestDoc);
+			StringWriter out = new StringWriter();
+			dumpMethod(out, req);
+			dumpHeaders(out, req);
+			dumpDoc(out, requestDoc);
+			LOG.warn("Not implemented: " + out.toString());
 
 			resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 		}
 	}
 
 	private void handleNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		dump(req);
-		
-		System.out.println(">>> 404 >>>");
+		StringWriter out = new StringWriter();
+		dumpMethod(out, req);
+		dumpParams(out, req);
+		dumpHeaders(out, req);
+		dumpContent(out, req);
+		LOG.warn("Not found: " + out.toString());
+			
 		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 
@@ -290,56 +317,42 @@ public class CardDavServlet extends HttpServlet {
 		return principal.equals(req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR));
 	}
 
-	private void dumpRequestDoc(Document requestDoc) {
-		System.out.println("<<<");
-		dumpDoc(requestDoc);
-		System.out.println();
-		System.out.println("<<<");
-	}
-
-	private void dumpDoc(Document doc) {
+	private void dumpDoc(StringWriter out, Document doc) {
 		DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0");
 		LSOutput debug = ls.createLSOutput();
-		debug.setEncoding("utf-8");
-		debug.setByteStream(System.out);
+		debug.setCharacterStream(out);
 		LSSerializer serializer = ls.createLSSerializer();
 		serializer.write(doc, debug);
 	}
 
-	private void dump(HttpServletRequest req) throws IOException {
-		dumpMethod(req);
-		dumpParams(req);
-		dumpHeaders(req);
-		dumpContent(req);
+	private void dumpMethod(Writer out, HttpServletRequest req) throws IOException {
+		out.write(req.getMethod() + " " + req.getPathInfo());
+		out.write('\n');
 	}
 
-	private void dumpContent(HttpServletRequest req) throws IOException {
-		System.out.println("<<<");
-		BufferedReader reader = req.getReader();
-		String line;
-		while ((line = reader.readLine()) != null) {
-			System.out.println(line);
-		}
-		System.out.println("<<<");
-		System.out.println();
-	}
-
-	private void dumpMethod(HttpServletRequest req) {
-		System.out.println(req.getMethod() + " " + req.getPathInfo());
-	}
-
-	private void dumpParams(HttpServletRequest req) {
+	private void dumpParams(Writer out, HttpServletRequest req) throws IOException {
 		for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
-			System.out.println("  P: " + entry.getKey() + ": " + Arrays.asList(entry.getValue()));
+			out.write("  P: " + entry.getKey() + ": " + Arrays.asList(entry.getValue()));
+			out.write('\n');
 		}
 	}
 
-	private void dumpHeaders(HttpServletRequest req) {
+	private void dumpHeaders(Writer out, HttpServletRequest req) throws IOException {
 		for (Enumeration<String> keyIt = req.getHeaderNames(); keyIt.hasMoreElements(); ) {
 			String key = keyIt.nextElement();
 			for (Enumeration<String> valueIt = req.getHeaders(key); valueIt.hasMoreElements(); ) {
-				System.out.println("  H: " + key + ": " + valueIt.nextElement());
+				out.write("  H: " + key + ": " + valueIt.nextElement());
+				out.write('\n');
 			}
+		}
+	}
+
+	private void dumpContent(Writer out, HttpServletRequest req) throws IOException {
+		BufferedReader reader = req.getReader();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			out.write(line);
+			out.write('\n');
 		}
 	}
 

@@ -13,12 +13,16 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Graze web source for nuisance call sources.
  */
 public class WebCrawler extends AbstractWebCrawler {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(WebCrawler.class);
+
 	private static final Pattern STARS_PATTERN = Pattern.compile("stars-(\\d+)");
 
 	SimpleDateFormat _dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -55,13 +59,13 @@ public class WebCrawler extends AbstractWebCrawler {
 			
 			long time = getEntryTime(row);
 			if (time <= _notBefore) {
-				System.out.println("Skipping: " + caller);
+				LOG.info("Skipping: " + caller);
 				continue;
 			}
 			
 			if (!caller.startsWith("0")) {
 				// A local number without prefix - makes no sense in a shared address book.
-				System.out.println("Ignoring: " + caller);
+				LOG.info("Ignoring: " + caller);
 				continue;
 			}
 			

@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
@@ -23,6 +26,8 @@ import de.haumacher.phoneblock.db.DBService;
 @WebServlet(urlPatterns = "/rating")
 public class RatingServlet extends HttpServlet {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(RatingServlet.class);
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String phoneParam = req.getParameter("phone");
@@ -48,14 +53,14 @@ public class RatingServlet extends HttpServlet {
 				DB db = DBService.getInstance();
 				db.addRating(phoneId, rating, System.currentTimeMillis());
 				
-				System.out.println("Recorded rating: " + phoneId + " (" + rating + ")");
+				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
 			} else {
-				System.out.println("ERROR: Ignored rating, exceeded max rating count: " + phoneId + " (" + ratingName + ")");
+				LOG.warn("Ignored rating, exceeded max rating count: " + phoneId + " (" + ratingName + ")");
 			}
 			
 			session.setAttribute(ratingAttr, Boolean.TRUE);
 		} else {
-			System.out.println("ERROR: Ignored rating for the same number: " + phoneId + " (" + ratingName + ")");
+			LOG.warn("Ignored rating for the same number: " + phoneId + " (" + ratingName + ")");
 		}
 		
 		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "?link=true");

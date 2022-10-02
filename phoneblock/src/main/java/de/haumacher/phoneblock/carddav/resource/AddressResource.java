@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
@@ -29,6 +31,8 @@ import ezvcard.property.Telephone;
  * {@link Resource} representing an individual entry in an {@link AddressBookResource}.
  */
 public class AddressResource extends Resource {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AddressResource.class);
 
 	private String _principal;
 
@@ -105,7 +109,7 @@ public class AddressResource extends Resource {
 			for (Telephone phone : card.getTelephoneNumbers()) {
 				String phoneNumber = normalizeNumber(phone.getText());
 				
-				System.out.println("Adding to block list: " + phoneNumber);
+				LOG.info("Adding to block list: " + phoneNumber);
 				
 				blockList.removeExclude(currentUser, phoneNumber);
 				

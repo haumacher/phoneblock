@@ -12,11 +12,15 @@ import java.util.Random;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for crawler implementations that search the web for spam reports.
  */
 public abstract class AbstractWebCrawler implements Runnable {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractWebCrawler.class);
 
 	/**
 	 * Agent strings to hide in the mass.
@@ -78,17 +82,17 @@ public abstract class AbstractWebCrawler implements Runnable {
 	public void run() {
 		while (true) {
 			if (isStopped()) {
-				System.out.println("Stopping crawler.");
+				LOG.info("Stopping crawler.");
 				return;
 			}
 			
 			long delay = process();
 			
-			System.out.println("Crawler sleeping for " + (delay / MINUTES) + " minutes.");
+			LOG.info("Crawler sleeping for " + (delay / MINUTES) + " minutes.");
 			try {
 				Thread.sleep(delay);
 			} catch (InterruptedException ex) {
-				System.out.println("Stopping crawler.");
+				LOG.info("Stopping crawler.");
 				return;
 			}
 		}
@@ -103,7 +107,8 @@ public abstract class AbstractWebCrawler implements Runnable {
 		try {
 			return tryProcess();
 		} catch (Throwable ex) {
-			ex.printStackTrace();
+			LOG.error("Failed to crawl.", ex);
+
 			return 20 * MINUTES;
 		}
 	}

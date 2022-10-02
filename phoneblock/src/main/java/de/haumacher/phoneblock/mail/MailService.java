@@ -24,10 +24,15 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 import javax.mail.internet.MimeMultipart;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Service for sending e-mail messages.
  */
 public class MailService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
 
 	private Session _session;
 	private String _user;
@@ -123,7 +128,7 @@ public class MailService {
 			try {
 				_transport.close();
 			} catch (MessagingException ex) {
-				ex.printStackTrace();
+				LOG.error("Stopping mail transport failed.", ex);
 			}
 			
 			_transport = null;

@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.app.LoginFilter;
@@ -26,6 +28,8 @@ import de.haumacher.phoneblock.carddav.schema.DavSchema;
  */
 public abstract class Resource {
 
+	private static final Logger LOG = LoggerFactory.getLogger(Resource.class);
+	
 	private final String _rootUrl;
 	
 	private final String _resourcePath;
@@ -141,6 +145,8 @@ public abstract class Resource {
 				return HttpServletResponse.SC_OK;
 			}
 		}
+		
+		LOG.warn("Property not found: " + property + " of " + _resourcePath);
 		return HttpServletResponse.SC_NOT_FOUND;
 	}
 

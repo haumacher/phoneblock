@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.phoneblock.db.DBService;
 
 /**
@@ -18,6 +21,8 @@ import de.haumacher.phoneblock.db.DBService;
  */
 @WebServlet(urlPatterns = "/login")
 public class LoginServlet extends HttpServlet {
+
+	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -30,20 +35,20 @@ public class LoginServlet extends HttpServlet {
 		String password = req.getParameter("password");
 		
 		if (userName == null || userName.isEmpty()) {
-			System.out.println("Login without user name.");
+			LOG.info("Login without user name.");
 			sendFailure(req, resp);
 			return;
 		}
 		
 		if (password == null || password.isEmpty()) {
-			System.out.println("Login without password.");
+			LOG.info("Login without password.");
 			sendFailure(req, resp);
 			return;
 		}
 		
 		String authenticatedUser = DBService.getInstance().login(userName, password);
 		if (authenticatedUser == null) {
-			System.out.println("Login failed for user: " + userName);
+			LOG.warn("Login failed for user: " + userName);
 			sendFailure(req, resp);
 			return;
 		}
