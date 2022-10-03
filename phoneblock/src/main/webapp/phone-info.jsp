@@ -112,35 +112,6 @@
 	}
 %>
 
-	<h2>Details</h2>
-<%
-	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
-%>			
-	<ul>
-		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
-		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>
-
-		<%if (analysis.getCity() != null) { %>		
-		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
-		<%}%>
-
-<%
-		if (complaints > 0) {
-%>	
-		<li>Anzahl Beschwerden: <%= complaints %></li>
-		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
-
-<%
-			long dateAdded = info.getDateAdded();
-			if (dateAdded > 0) {
-%>
-		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
-<%			
-			}
-		} 
-%>
-	</ul>
-	
 	<h2>Bewertung</h2>
 	
 <% if (thanks) { %>
@@ -174,6 +145,35 @@
 		und du weißt sofort, ob es sich lohnt den Anruf anzunehmen oder eine Nummer zurückzurufen. 
 	</p>	
 <% } %>
+
+	<h2>Details</h2>
+<%
+	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
+%>			
+	<ul>
+		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
+		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>
+
+		<%if (analysis.getCity() != null) { %>		
+		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
+		<%}%>
+
+<%
+		if (complaints > 0) {
+%>	
+		<li>Anzahl Beschwerden: <%= complaints %></li>
+		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
+
+<%
+			long dateAdded = info.getDateAdded();
+			if (dateAdded > 0) {
+%>
+		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
+<%			
+			}
+		} 
+%>
+	</ul>
 
 </div>
 </section>
