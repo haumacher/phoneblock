@@ -5,6 +5,12 @@
 <head>
 <link rel="canonical" href="https://phoneblock.haumacher.de/phoneblock/" />
 <jsp:include page="head-content.jspf"></jsp:include>
+
+<script type="text/javascript">
+	document.addEventListener('DOMContentLoaded', () => {
+		makeSearchButton("pb-status-search-button", "pb-status-search-input");		
+	});
+</script>
 </head>
 
 <body>
@@ -27,6 +33,48 @@
 			genau das was Du brauchst!
 		</p>
 
+<%
+	String userAgent = request.getHeader("User-Agent");
+	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
+	String setupAndroidClass = android ? "is-primary" : "is-info";
+	String setupFritzBoxClass = android ? "is-info" : "is-primary";
+%>
+
+		<div class="columns">
+		  <div class="column is-half">
+			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span>PhoneBlock für Android</span>
+			</a>
+		  </div>
+		  <div class="column is-half">
+			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span>PhoneBlock für Fritz!Box</span>			
+			</a>
+		  </div>
+		</div>
+
+		<h2>Telefonnummer untersuchen</h2>
+
+		<p>
+			Du wurdest von einer unbekannten Nummer angerufen? Schau nach, ob sie in der PhoneBlock-Datenbank enthalten ist:
+		</p>
+		
+		<div class="control has-icons-left has-icons-right">
+		  <input id="pb-status-search-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
+		  <span class="icon is-small is-left">
+		    <i class="fas fa-phone"></i>
+		  </span>
+		  <span id="pb-status-search-button" class="icon is-small is-right is-clickable">
+		    <i class="fas fa-search"></i>
+		  </span>
+		</div>
+		
 		<h2>Wie funktioniert PhoneBlock?</h2>
 
 		<p>PhoneBlock ist eine von der PhoneBlock-Community gepflegte
@@ -64,8 +112,11 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a id="search-fritzbox">
-				<button class="button is-medium is-info is-fullwidth" onclick="return checkFritzBox('<%=request.getContextPath() %>', this);">Fritz!Box suchen</button>
+			<a id="search-fritzbox" class="button is-medium is-info is-fullwidth" href="#" onclick="return checkFritzBox('<%=request.getContextPath() %>', this);">
+				<span class="icon is-small is-left">
+					<i class="fa-solid fa-magnifying-glass"></i>
+				</span>
+				<span>Fritz!Box suchen</span>
 			</a>
 		  </div>
 		</div>
