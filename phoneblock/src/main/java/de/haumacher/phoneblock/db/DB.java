@@ -233,35 +233,19 @@ public class DB {
 	 * Implementation of {@link #processVotes(String, int, long)} when there is already a database session.
 	 */
 	public void processVotes(SpamReports reports, String phone, int votes, long time) {
-		long currentVotes;
-		long newVotes;
-		if (votes < 0) {
-			if (reports.isKnown(phone)) {
-				currentVotes = reports.getVotes(phone);
-				newVotes = currentVotes + votes;
-				if (newVotes <= 0) {
-					reports.delete(phone);
-				} else {
-					reports.addVote(phone, votes, time);
-				}
-			} else {
-				currentVotes = 0;
-				newVotes = 0;
-			}
+		final int oldVotes = nonNull(reports.getVotes(phone));
+		final int newVotes = oldVotes + votes;
+		
+		if (newVotes <= 0) {
+			reports.delete(phone);
 		} else {
-			if (reports.isKnown(phone)) {
-				currentVotes = reports.getVotes(phone);
-
-				reports.addVote(phone, votes, time);
-			} else {
-				currentVotes = 0;
-
+			int rows = reports.addVote(phone, votes, time);
+			if (rows == 0) {
 				reports.addReport(phone, votes, time);
 			}
-			newVotes = currentVotes + votes;
 		}
 		
-		if (classify(currentVotes) != classify(newVotes)) {
+		if (classify(oldVotes) != classify(newVotes)) {
 			publishUpdate(phone);
 		}
 	}
@@ -276,10 +260,17 @@ public class DB {
 	public void addRating(String phone, Rating rating, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			int votes = rating.getVotes();
-			processVotes(reports, phone, votes, now);
 
-			if (rating != Rating.B_MISSED) {
+			if (rating == Rating.B_MISSED) {
+				final int currentVotes = nonNull(reports.getVotes(phone));
+				if (currentVotes > 0) {
+					// The number was already reported, a missed call makes the probability for spam higher.
+					reports.addVote(phone, 2, now);
+				}
+			} else {
+				processVotes(reports, phone, rating.getVotes(), now);
+
+				// Record rating.
 				int rows = reports.incRating(phone, rating, now);
 				if (rows == 0) {
 					reports.addRating(phone, rating, now);
@@ -301,7 +292,7 @@ public class DB {
 		}
 	}
 
-	private int classify(long newVotes) {
+	private int classify(int newVotes) {
 		if (newVotes == 0) {
 			return 0;
 		}
@@ -411,10 +402,10 @@ public class DB {
 	/**
 	 * The number of votes that are stored for the given phone number.
 	 */
-	public long getVotesFor(String phone) {
+	public int getVotesFor(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.isKnown(phone) ? reports.getVotes(phone) : 0;
+			return nonNull(reports.getVotes(phone));
 		}
 	}
 	

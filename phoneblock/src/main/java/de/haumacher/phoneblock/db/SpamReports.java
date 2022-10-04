@@ -18,20 +18,20 @@ import de.haumacher.phoneblock.app.Rating;
  */
 public interface SpamReports {
 	
+	@Select("select max(LASTUPDATE) from SPAMREPORTS")
+	Long getLastUpdate();
+	
 	@Insert("insert into SPAMREPORTS (PHONE, VOTES, LASTUPDATE, DATEADDED) values (#{phone}, #{votes}, #{now}, #{now})")
 	void addReport(String phone, int votes, long now);
 	
-	@Select("select max(LASTUPDATE) from SPAMREPORTS")
-	Long getLastUpdate();
-
 	@Update("update SPAMREPORTS set VOTES = VOTES + #{delta}, LASTUPDATE = #{now} where PHONE = #{phone}")
-	void addVote(String phone, int delta, long now);
+	int addVote(String phone, int delta, long now);
 
 	@Select("select count(1) from SPAMREPORTS where PHONE = #{phone}")
 	boolean isKnown(String phone);
 
 	@Select("select VOTES from SPAMREPORTS where PHONE = #{phone}")
-	int getVotes(String phone);
+	Integer getVotes(String phone);
 
 	@Select("SELECT SUM(s.VOTES) FROM SPAMREPORTS s")
 	Integer getTotalVotes();
