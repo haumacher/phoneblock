@@ -36,6 +36,12 @@ public interface SpamReports {
 	@Select("SELECT SUM(s.VOTES) FROM SPAMREPORTS s")
 	Integer getTotalVotes();
 	
+	@Select("SELECT SUM(s.COUNT) FROM RATINGS s")
+	Integer getTotalRatings();
+	
+	@Select("SELECT SUM(s.COUNT) FROM SEARCHES s")
+	Integer getTotalSearches();
+	
 	@Select("SELECT COUNT(1) FROM OLDREPORTS o")
 	Integer getArchivedReportCount();
 	

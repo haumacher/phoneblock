@@ -730,4 +730,39 @@ public class DB {
 		}
 	}
 
+	public int getUsers() {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			return users.getUserCount();
+		}
+	}
+
+	public int getInactiveUsers() {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			return users.getInactiveUserCount(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
+		}
+	}
+
+	public int getVotes() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return nonNull(reports.getTotalVotes());
+		}
+	}
+
+	public int getRatings() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return nonNull(reports.getTotalRatings());
+		}
+	}
+
+	public int getSearches() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return nonNull(reports.getTotalSearches());
+		}
+	}
+
 }

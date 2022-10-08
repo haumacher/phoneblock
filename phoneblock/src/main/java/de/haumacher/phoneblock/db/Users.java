@@ -22,6 +22,12 @@ public interface Users {
 	@Delete("delete from USERS where EMAIL=#{email}")
 	void deleteUser(String email);
 	
+	@Select("select count(1) from USERS")
+	int getUserCount();
+	
+	@Select("select count(1) from USERS where LASTACCESS < #{lastAccessLimit}")
+	int getInactiveUserCount(long lastAccessLimit);
+	
 	@Select("select PWHASH from USERS where EMAIL=#{email}")
 	java.io.InputStream getHash(String email);
 
@@ -57,5 +63,5 @@ public interface Users {
 	
 	@Update("update CALLERS set CALLS=CALLS + 1, LASTUPDATE=#{now} where USERID=#{userId} and PHONE=#{phone}")
 	int addCall(long userId, String phone, long now);
-	
+
 }
