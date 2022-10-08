@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
+import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
@@ -35,14 +36,16 @@ public class Application implements ServletContextListener {
 	public Application() {
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
+		DBService db;
 		_services = new ServletContextListener[] {
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
 				new IndexNowUpdateService(),
 				new GoogleUpdateService())),
-			new DBService(indexer),
+			db = new DBService(indexer),
 			new CrawlerService(),
-			new MailServiceStarter()
+			new MailServiceStarter(),
+			new ManagementService(db),
 		};
 	}
 
