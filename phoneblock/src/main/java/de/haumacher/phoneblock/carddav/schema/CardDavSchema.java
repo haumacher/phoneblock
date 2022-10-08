@@ -23,4 +23,8 @@ public interface CardDavSchema {
 	QName CARDDAV_MAX_RESOURCE_SIZE = qname(CARDDAV_NS, "max-resource-size", CARDDAV_PREFIX);
 	QName CARDDAV_ADDRESSBOOK_HOME_SET = qname(CARDDAV_NS, "addressbook-home-set", CARDDAV_PREFIX);
 
+	String CALENDARSERVER_NS = "http://calendarserver.org/ns/";
+	String CALENDARSERVER_PREFIX = "s";
+	
+	QName CALENDARSERVER_GETCTAG = qname(CALENDARSERVER_NS, "getctag", CALENDARSERVER_PREFIX);
 }

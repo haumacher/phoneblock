@@ -21,6 +21,7 @@ import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
+import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 
 /**
@@ -145,6 +146,14 @@ public abstract class Resource {
 			if (etag != null) {
 				Element container = appendElement(propElement, DavSchema.DAV_GETETAG);
 				appendText(container, quote(etag));
+				return HttpServletResponse.SC_OK;
+			}
+		}
+		else if (CardDavSchema.CALENDARSERVER_GETCTAG.equals(property)) {
+			String etag = getEtag();
+			if (etag != null) {
+				Element container = appendElement(propElement, CardDavSchema.CALENDARSERVER_GETCTAG);
+				appendText(container, etag);
 				return HttpServletResponse.SC_OK;
 			}
 		}
