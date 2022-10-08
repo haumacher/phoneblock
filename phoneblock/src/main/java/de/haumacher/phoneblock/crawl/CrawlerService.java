@@ -4,8 +4,10 @@
 package de.haumacher.phoneblock.crawl;
 
 import java.io.IOException;
-import java.util.Properties;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -31,9 +33,7 @@ public class CrawlerService implements ServletContextListener {
 		LOG.info("Starting crawler service.");
 		
 		try {
-			Properties properties = new Properties();
-			properties.load(CrawlerService.class.getResourceAsStream("/phoneblock.properties"));
-			String url = properties.getProperty("crawler.url");
+			String url = lookupCrawlerUrl();
 			if (url == null || url.isEmpty() || url.startsWith("${")) {
 				LOG.warn("No crawler URL configured, skipping.");
 				return;
@@ -67,6 +67,19 @@ public class CrawlerService implements ServletContextListener {
 		} catch (IOException ex) {
 			LOG.error("Failed to start crawler service.", ex);
 		}
+	}
+
+	private String lookupCrawlerUrl() {
+		try {
+			InitialContext initCtx = new InitialContext();
+			Context envCtx = (Context) initCtx.lookup("java:comp/env");
+			
+			return (String) envCtx.lookup("crawler/url");
+		} catch (NamingException ex) {
+			LOG.info(ex.getMessage());
+		}
+
+		return null;
 	}
 
 	@Override
