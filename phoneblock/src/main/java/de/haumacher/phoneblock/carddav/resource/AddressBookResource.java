@@ -94,12 +94,21 @@ public class AddressBookResource extends Resource {
 		if (url.startsWith(rootUrl)) {
 			prefixLength = rootUrl.length();
 		} else {
-			if (url.startsWith(_serverRoot)) {
-				prefixLength = _serverRoot.length();
-			} else {
+			if (url.startsWith("/")) {
+				if (url.startsWith(_serverRoot)) {
+					prefixLength = _serverRoot.length();
+				} else {
+					// Invalid URL.
+					LOG.warn("Received invalid absolute contact URL outside service '" + rootUrl + "': " + url);
+					return null;
+				}
+			} else if (url.indexOf(':') >= 0) {
 				// Invalid URL.
 				LOG.warn("Received invalid contact URL outside server '" + rootUrl + "': " + url);
 				return null;
+			} else {
+				// Relative URL.
+				return new AddressResource(rootUrl, getResourcePath() + url, _principal);
 			}
 		}
 		if (!url.startsWith(getResourcePath(), prefixLength)) {

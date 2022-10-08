@@ -70,7 +70,7 @@ public class AddressResource extends Resource {
 	@Override
 	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
-			Element container = appendElement(propElement, property);
+			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESS_DATA);
 			appendText(container, vCardContent());
 			return HttpServletResponse.SC_OK;
 		}

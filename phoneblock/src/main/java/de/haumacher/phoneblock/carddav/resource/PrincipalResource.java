@@ -35,16 +35,16 @@ public class PrincipalResource extends Resource {
 	}
 	
 	@Override
-	public void propfind(HttpServletRequest req, Element multistatus, List<Element> properties) {
+	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<Element> properties) {
 		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis());
 		
-		super.propfind(req, multistatus, properties);
+		super.propfind(req, parent, multistatus, properties);
 	}
 	
 	@Override
 	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET.equals(property)) {
-			Element container = appendElement(propElement, property);
+			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET);
 			DomUtil.appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.ADDRESSES_PATH + _principal + "/"));
 			return HttpServletResponse.SC_OK;
 		}

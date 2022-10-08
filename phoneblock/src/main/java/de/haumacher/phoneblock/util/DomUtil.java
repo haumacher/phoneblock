@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,11 +43,11 @@ public class DomUtil {
 	}
 
 	public static void appendTextElement(Element response, QName qname, String text) {
-		appendTextElement(response, qname.getNamespaceURI(), qname.getLocalPart(), text);
+		appendTextElement(response, qname.getNamespaceURI(), qname.getLocalPart(), qname.getPrefix(), text);
 	}
 	
-	public static void appendTextElement(Element response, String nsUri, String localName, String text) {
-		appendText(appendElement(response, nsUri, localName), text);
+	public static void appendTextElement(Element response, String nsUri, String localName, String prefix, String text) {
+		appendText(appendElement(response, nsUri, localName, prefix), text);
 	}
 
 	public static void appendText(Element element, String string) {
@@ -54,11 +55,16 @@ public class DomUtil {
 	}
 
 	public static Element appendElement(Node parent, QName qname) {
-		return appendElement(parent, qname.getNamespaceURI(), qname.getLocalPart());
+		return appendElement(parent, qname.getNamespaceURI(), qname.getLocalPart(), qname.getPrefix());
 	}
 	
-	public static Element appendElement(Node parent, String nsUri, String localName) {
-		Element element = ownerDocument(parent).createElementNS(nsUri, localName);
+	public static Element appendElement(Node parent, String nsUri, String localName, String prefix) {
+		Element element;
+		if (prefix.isEmpty()) {
+			element = ownerDocument(parent).createElementNS(nsUri, localName);
+		} else {
+			element = ownerDocument(parent).createElementNS(nsUri, prefix + ':' + localName);
+		}
 		parent.appendChild(element);
 		return element;
 	}
@@ -198,11 +204,11 @@ public class DomUtil {
 	}
 
 	public static QName qname(Element element) {
-		return qname(element.getNamespaceURI(), element.getLocalName());
+		return qname(element.getNamespaceURI(), element.getLocalName(), XMLConstants.DEFAULT_NS_PREFIX);
 	}
 	
-	public static QName qname(String namespaceURI, String localPart) {
-		return new QName(namespaceURI, localPart);
+	public static QName qname(String namespaceURI, String localPart, String prefix) {
+		return new QName(namespaceURI, localPart, prefix);
 	}
 
 	public static <T> List<T> toList(Iterable<T> elements) {

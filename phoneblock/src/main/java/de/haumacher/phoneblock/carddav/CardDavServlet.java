@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
@@ -158,11 +159,13 @@ public class CardDavServlet extends HttpServlet {
 
 		Document responseDoc = getBuilder().newDocument();
 		Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
+		multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, DavSchema.DAV_NS);
+		multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE + ':' + CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
 
-		resource.propfind(req, multistatus, properties);
+		resource.propfind(req, null, multistatus, properties);
 		if (depth != Depth.EMPTY) {
 			for (Resource content : resource.list()) {
-				content.propfind(req, multistatus, properties);
+				content.propfind(req, resource, multistatus, properties);
 			}
 		}
 		
@@ -185,7 +188,7 @@ public class CardDavServlet extends HttpServlet {
 		if (LOG.isDebugEnabled()) {
 			StringWriter out = new StringWriter();
 			DebugUtil.dumpDoc(out, responseDoc);
-			LOG.debug("Response" + out.toString());
+			LOG.debug("Response: " + out.toString());
 		}
 	}
 
@@ -211,6 +214,8 @@ public class CardDavServlet extends HttpServlet {
 			
 			Document responseDoc = getBuilder().newDocument();
 			Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
+			multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, DavSchema.DAV_NS);
+			multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE + ':' + CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
 
 			for (Element href : filter(elements(filter(elements(requestDoc), CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET)), DavSchema.DAV_HREF)) {
 				String url = href.getTextContent();
@@ -283,6 +288,7 @@ public class CardDavServlet extends HttpServlet {
 		if (resourcePath.startsWith(ADDRESSES_PATH)) {
 			int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
 			if (endIdx < 0) {
+				LOG.warn("No principal found in address path: " + resourcePath);
 				return null;
 			}
 			
@@ -296,7 +302,7 @@ public class CardDavServlet extends HttpServlet {
 			}
 		}
 		
-		// Not found.
+		LOG.warn("Addressbook resource not found: " + resourcePath);
 		return null;
 	}
 

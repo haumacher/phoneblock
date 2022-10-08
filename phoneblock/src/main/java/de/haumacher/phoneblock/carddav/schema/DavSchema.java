@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.carddav.schema;
 
 import static de.haumacher.phoneblock.util.DomUtil.*;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 /**
@@ -13,18 +14,19 @@ import javax.xml.namespace.QName;
 public interface DavSchema {
 
 	String DAV_NS = "DAV:";
+	String DAV_PREFIX = XMLConstants.DEFAULT_NS_PREFIX;
 	
-	QName DAV_MULTISTATUS = qname(DAV_NS, "multistatus");
-	QName DAV_RESPONSE = qname(DAV_NS, "response");
-	QName DAV_PROPSTAT = qname(DAV_NS, "propstat");
-	QName DAV_STATUS = qname(DAV_NS, "status");
-	QName DAV_HREF = qname(DAV_NS, "href");
-	QName DAV_DISPLAYNAME = qname(DAV_NS, "displayname");
-	QName DAV_RESOURCETYPE = qname(DAV_NS, "resourcetype");
-	QName DAV_COLLECTION = qname(DAV_NS, "collection");
-	QName DAV_GETETAG = qname(DAV_NS, "getetag");
-	QName DAV_PROPFIND = qname(DAV_NS, "propfind");
-	QName DAV_PROP = qname(DAV_NS, "prop");
-	QName DAV_CURRENT_USER_PRINCIPAL = qname(DAV_NS, "current-user-principal");
+	QName DAV_MULTISTATUS = qname(DAV_NS, "multistatus", DAV_PREFIX);
+	QName DAV_RESPONSE = qname(DAV_NS, "response", DAV_PREFIX);
+	QName DAV_PROPSTAT = qname(DAV_NS, "propstat", DAV_PREFIX);
+	QName DAV_STATUS = qname(DAV_NS, "status", DAV_PREFIX);
+	QName DAV_HREF = qname(DAV_NS, "href", DAV_PREFIX);
+	QName DAV_DISPLAYNAME = qname(DAV_NS, "displayname", DAV_PREFIX);
+	QName DAV_RESOURCETYPE = qname(DAV_NS, "resourcetype", DAV_PREFIX);
+	QName DAV_COLLECTION = qname(DAV_NS, "collection", DAV_PREFIX);
+	QName DAV_GETETAG = qname(DAV_NS, "getetag", DAV_PREFIX);
+	QName DAV_PROPFIND = qname(DAV_NS, "propfind", DAV_PREFIX);
+	QName DAV_PROP = qname(DAV_NS, "prop", DAV_PREFIX);
+	QName DAV_CURRENT_USER_PRINCIPAL = qname(DAV_NS, "current-user-principal", DAV_PREFIX);
 
 }

@@ -67,14 +67,17 @@ public abstract class Resource {
 	 * 
 	 * @param req
 	 *        The current request.
+	 * @param parent
+	 *        The parent resource in which context a property of this resource was requested. <code>null</code>, if this
+	 *        is the top-level requested resource.
 	 * @param multistatus
 	 *        The result element to add the response to.
 	 * @param properties
 	 *        The {@link Element}s describing the properties to retrieve.
 	 */
-	public void propfind(HttpServletRequest req, Element multistatus, List<Element> properties) {
+	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<Element> properties) {
 		Element response = appendElement(multistatus, DavSchema.DAV_RESPONSE);
-		appendTextElement(response, DavSchema.DAV_HREF, url());
+		appendTextElement(response, DavSchema.DAV_HREF, url(parent));
 		for (Element property : properties) {
 			Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
 			Element prop = appendElement(propstat, DavSchema.DAV_PROP);
@@ -146,7 +149,7 @@ public abstract class Resource {
 			}
 		}
 		
-		LOG.warn("Property not found: " + property + " of " + _resourcePath);
+		LOG.warn("Property '" + property + "' not found: " + _resourcePath);
 		return HttpServletResponse.SC_NOT_FOUND;
 	}
 
@@ -208,11 +211,19 @@ public abstract class Resource {
 		return Collections.emptyList();
 	}
 
-	/** 
+	/**
 	 * The URL of this resource.
+	 * 
+	 * @param parent
+	 *        The parent {@link Resource} from which a relative url can be constructed. <code>null</code> to construct
+	 *        an absolute URL.
 	 */
-	public String url() {
-		return _rootUrl + _resourcePath;
+	public String url(Resource parent) {
+		if (parent == null) {
+			return _rootUrl + _resourcePath;
+		} else {
+			return _resourcePath.substring(parent.getResourcePath().length());
+		}
 	}
 
 	/** 
