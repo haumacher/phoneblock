@@ -87,8 +87,6 @@ public class CardDavServlet extends HttpServlet {
 				doReport(req, resp);
 			}
 			else {
-				LOG.warn("Unknown request: " + DebugUtil.dumpRequestInfo(req));
-
 				super.service(req, resp);
 			}
 		} catch (Exception ex) {
