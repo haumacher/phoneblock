@@ -2,6 +2,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <html>
+<%
+	request.setAttribute("title", "Rufnummer sperren - PhoneBlock");
+%>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>

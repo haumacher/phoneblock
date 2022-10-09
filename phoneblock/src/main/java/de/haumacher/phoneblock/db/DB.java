@@ -231,8 +231,18 @@ public class DB {
 
 	/**
 	 * Implementation of {@link #processVotes(String, int, long)} when there is already a database session.
+	 * 
+	 * @return Whether an index update should be performed.
 	 */
-	public void processVotes(SpamReports reports, String phone, int votes, long time) {
+	public boolean processVotes(SpamReports reports, String phone, int votes, long time) {
+		boolean updateRequired = internalProcessVotes(reports, phone, votes, time);
+		if (updateRequired) {
+			publishUpdate(phone);
+		}
+		return updateRequired;
+	}
+
+	private boolean internalProcessVotes(SpamReports reports, String phone, int votes, long time) {
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
 		
@@ -245,9 +255,7 @@ public class DB {
 			}
 		}
 		
-		if (classify(oldVotes) != classify(newVotes)) {
-			publishUpdate(phone);
-		}
+		return classify(oldVotes) != classify(newVotes);
 	}
 
 	/** 
@@ -258,6 +266,7 @@ public class DB {
 	 * @param now The current time in milliseconds since epoch.
 	 */
 	public void addRating(String phone, Rating rating, long now) {
+		boolean updateRequired;
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
@@ -265,19 +274,30 @@ public class DB {
 				final int currentVotes = nonNull(reports.getVotes(phone));
 				if (currentVotes > 0) {
 					// The number was already reported, a missed call makes the probability for spam higher.
-					reports.addVote(phone, 2, now);
+					updateRequired = internalProcessVotes(reports, phone, 2, now);
+				} else {
+					updateRequired = false;
 				}
 			} else {
-				processVotes(reports, phone, rating.getVotes(), now);
+				updateRequired = internalProcessVotes(reports, phone, rating.getVotes(), now);
 
+				Rating oldRating = reports.getRating(phone);
+				
 				// Record rating.
 				int rows = reports.incRating(phone, rating, now);
 				if (rows == 0) {
 					reports.addRating(phone, rating, now);
 				}
+				
+				Rating newRating = reports.getRating(phone);
+				updateRequired = updateRequired || oldRating != newRating;
 			}
 			
 			session.commit();
+		}
+		
+		if (updateRequired) {
+			publishUpdate(phone);
 		}
 	}
 

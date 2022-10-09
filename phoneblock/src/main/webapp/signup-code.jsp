@@ -3,6 +3,9 @@
 	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
+<%
+	request.setAttribute("title", "Dein PhoneBlock Einrichtungscode");
+%>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>

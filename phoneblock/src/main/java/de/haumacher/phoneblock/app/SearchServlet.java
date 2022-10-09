@@ -86,7 +86,11 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
 		req.setAttribute("rating", rating);
-		req.setAttribute("title", status(info.getVotes()) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
+		int votes = info.getVotes();
+		req.setAttribute("title", (votes > 0 && rating != null ? rating.label() + " " : "") + status(votes) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
+		if (votes > 0) {
+			req.setAttribute("description", votes + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
+		}
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
 	}

@@ -11,8 +11,10 @@
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <html>
+<% 
+request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBlock schafft Ruhe"); 
+%>
 <head>
-<% request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBlock schafft Ruhe"); %>
 <jsp:include page="head-content.jspf"></jsp:include>
 
 <script type="text/javascript">

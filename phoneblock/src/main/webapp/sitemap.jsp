@@ -41,6 +41,12 @@
    </url>
 
    <url>
+      <loc>https://phoneblock.haumacher.de/phoneblock/setup-android/</loc>
+      <changefreq>monthly</changefreq>
+      <priority>0.5</priority>
+   </url>
+
+   <url>
       <loc>https://phoneblock.haumacher.de/phoneblock/faq.jsp</loc>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>
