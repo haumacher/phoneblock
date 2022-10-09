@@ -1,9 +1,8 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="true"%>
 <%@page import="de.haumacher.phoneblock.db.settings.UserSettings"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8" session="true"%>
 <html>
 <%
 	request.setAttribute("title", "Persönliche Einstellungen - PhoneBlock");

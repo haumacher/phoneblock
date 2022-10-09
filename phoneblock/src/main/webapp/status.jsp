@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
+<%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
-<%@page import="java.util.Date"%>
-<%@page import="java.text.SimpleDateFormat"%>
-<%@page import="java.text.DateFormat"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
-<%@page import="java.util.List"%>
 <%@page import="de.haumacher.phoneblock.db.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
-<%@page import="de.haumacher.phoneblock.db.DBService"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.util.List"%>
+<%@page import="java.text.DateFormat"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <html>
 <% 
 request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBlock schafft Ruhe"); 

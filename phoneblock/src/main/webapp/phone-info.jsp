@@ -1,6 +1,6 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.Rating"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>
 <%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
 <%@page import="java.util.Date"%>
