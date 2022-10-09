@@ -293,7 +293,7 @@ public class DB {
 	}
 
 	private int classify(int newVotes) {
-		if (newVotes == 0) {
+		if (newVotes <= 0) {
 			return 0;
 		}
 		else if (newVotes < MIN_VOTES) {
