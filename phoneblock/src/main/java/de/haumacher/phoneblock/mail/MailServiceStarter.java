@@ -5,7 +5,6 @@ package de.haumacher.phoneblock.mail;
 
 import java.util.Properties;
 
-import javax.mail.MessagingException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
@@ -64,7 +63,7 @@ public class MailServiceStarter implements ServletContextListener {
 				
 				INSTANCE = mailService;
 			}
-		} catch (NamingException | MessagingException ex) {
+		} catch (NamingException ex) {
 			LOG.error("Starting mail service failed.", ex);
 		}
 	}

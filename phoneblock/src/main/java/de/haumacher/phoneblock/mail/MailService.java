@@ -77,7 +77,7 @@ public class MailService {
 	}
 
 	public Message createMessage() throws MessagingException {
-		Message msg = new MimeMessage(_session);
+		Message msg = new MimeMessage(getSession());
 		msg.setFrom(_from);
 		return msg;
 	}
@@ -87,26 +87,29 @@ public class MailService {
 		msg.setRecipient(RecipientType.TO, address);
 		Address[] addresses = {address};
 		
-		if (!_transport.isConnected()) {
-			connect();
-		}
 		try {
-			_transport.sendMessage(msg, addresses);
+			getTransport().sendMessage(msg, addresses);
 		} catch (MessagingException | IllegalStateException ex) {
 			// Re-try.
-			connect();
-			_transport.sendMessage(msg, addresses);
+			shutdownTransport();
+			getTransport().sendMessage(msg, addresses);
 		}
 	}
 
-	public void startUp() throws NoSuchProviderException, MessagingException {
-		_session = startSession();
-		connect();
+	public void startUp() {
+		try {
+			getTransport();
+		} catch (MessagingException ex) {
+			LOG.error("Cannot start mail service.", ex);
+		}
 	}
 
-	private void connect() throws NoSuchProviderException, MessagingException {
-		_transport = _session.getTransport();
-		_transport.connect(_user, _password);
+	private Transport getTransport() throws NoSuchProviderException, MessagingException {
+		if (_transport == null || !_transport.isConnected()) {
+			_transport = getSession().getTransport();
+			_transport.connect(_user, _password);
+		}
+		return _transport;
 	}
 
 	private Session startSession() throws AddressException {
@@ -124,16 +127,25 @@ public class MailService {
 	 * Shuts down the {@link MailService}.
 	 */
 	public void shutdown() {
-		if (_session != null) {
-			try {
-				_transport.close();
-			} catch (MessagingException ex) {
-				LOG.error("Stopping mail transport failed.", ex);
-			}
-			
-			_transport = null;
-			_session = null;
+		if (_transport != null) {
+			shutdownTransport();
 		}
+		
+		if (_session != null) {
+			_session = null;
+			LOG.info("Mail service shut down.");
+		} else {
+			LOG.info("Mail service was not started, skipping shutdown.");
+		}
+	}
+
+	private void shutdownTransport() {
+		try {
+			_transport.close();
+		} catch (MessagingException ex) {
+			LOG.error("Shutting down mail transport failed.", ex);
+		}
+		_transport = null;
 	}
 
 	private String read(String resource, String code, String image) throws IOException {
@@ -151,6 +163,13 @@ public class MailService {
 			}
 		}
 		return result.toString().replace("{code}", code).replace("{image}", image);
+	}
+
+	private Session getSession() throws AddressException {
+		if (_session == null) {
+			_session = startSession();
+		}
+		return _session;
 	}
 
 }
