@@ -59,11 +59,17 @@
 <%
 					  	if (message != null) {
 %>
-							<p class="help is-danger"><%= JspUtil.quote(request.getAttribute("message")) %></p>
+							<p class="help is-danger">
+								<%= JspUtil.quote(request.getAttribute("message")) %>
+								<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+							</p>
 <%
 						} else {
 %>
-							<p class="help is-info">Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!</p>
+							<p class="help is-info">
+								Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!
+								<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+							</p>
 <%							
 					  	}
 %>
