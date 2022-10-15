@@ -70,8 +70,13 @@ public class MailServiceStarter implements ServletContextListener {
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		INSTANCE.shutdown();
-		INSTANCE = null;
+		if (INSTANCE != null) {
+			LOG.info("Shutting down mail server.");
+			INSTANCE.shutdown();
+			INSTANCE = null;
+		} else {
+			LOG.info("Skipping mail server shutdown, not started.");
+		}
 	}
 	
 }
