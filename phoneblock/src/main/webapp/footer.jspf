@@ -31,7 +31,7 @@
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p>
-			<strong title="Version ${maven.build.timestamp}">PhoneBlock</strong> &#x00A9; by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. 
+			<strong title="Version ${maven.build.timestamp}">PhoneBlock</strong> © 2022 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. 
 			The source code is licensed under <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. The
 			website content is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY
 			NC SA 4.0</a>.
@@ -43,7 +43,7 @@
 		</p>
 
 		<p>
-			<strong><a href="<%= request.getContextPath() %>/datenschutz.jsp">Datenschutzerklärung</a></strong>
+			<strong><a href="<%= request.getContextPath() %>/datenschutz.jsp">Datenschutz – Kein Tracking, keine Werbung, keine Kekse</a></strong>
 		</p>
 	</div>
 </footer>
