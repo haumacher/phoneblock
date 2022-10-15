@@ -3,6 +3,7 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -91,20 +92,40 @@ public interface SpamReports {
 			+ " WHERE VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
 	List<SpamReport> getLatestBlocklistEntries(int minVotes);
 	
-	@Select("SELECT 0, x.PHONE, x.COUNT - x.BACKUP, x.COUNT, x.LASTUPDATE FROM SEARCHES x"
+	@Select("SELECT x.PHONE FROM SEARCHES x"
 			+ " where x.COUNT - x.BACKUP > 0 ORDER BY x.LASTUPDATE DESC LIMIT 5")
-	List<DBSearchInfo> getLatestSearchesToday();
+	Set<String> getLatestSearchesToday();
 	
-	@Select("SELECT x.CLUSTER, x.PHONE, 0, x.COUNT, x.LASTUPDATE FROM SEARCHHISTORY x"
+	@Select("SELECT x.PHONE FROM SEARCHHISTORY x"
 			+ " where x.CLUSTER=#{revision} ORDER BY x.COUNT DESC LIMIT 5")
-	List<DBSearchInfo> getTopSearches(int revision);
+	Set<String> getTopSearches(int revision);
 	
 	@Select("SELECT x.CLUSTER, x.PHONE, x.COUNT, 0, x.LASTUPDATE FROM SEARCHHISTORY x"
 			+ " where x.CLUSTER >= #{revision} and x.PHONE = #{phone} order by x.CLUSTER")
 	List<DBSearchInfo> getSearchHistory(int revision, String phone);
 
-	@Select("SELECT 0, x.PHONE, x.COUNT - x.BACKUP, x.COUNT, x.LASTUPDATE FROM SEARCHES x where x.PHONE = #{phone}")
+	@Select("SELECT 0 revision, x.PHONE phone, x.COUNT - x.BACKUP count, x.COUNT total, x.LASTUPDATE lastUpdate FROM SEARCHES x where x.PHONE = #{phone}")
 	DBSearchInfo getSearchesToday(String phone);
+	
+	@Select({
+		"<script>",
+		"SELECT 0 revision, x.PHONE, x.COUNT - x.BACKUP count, x.COUNT total, x.LASTUPDATE FROM SEARCHES x where ",
+		"    <foreach item=\"item\" index=\"index\" collection=\"numbers\"",
+		"        open=\"x.PHONE in (\" separator=\",\" close=\")\">",
+		"          #{item}",
+		"    </foreach>",
+		"</script>"})
+	List<DBSearchInfo> getSearchesTodayAll(Collection<String> numbers);
+	
+	@Select({
+		"<script>",
+		"SELECT x.CLUSTER revision, x.PHONE phone, x.COUNT count, 0 total, x.LASTUPDATE lastUpdate FROM SEARCHHISTORY x where x.CLUSTER=#{revision} and ",
+		"    <foreach item=\"item\" index=\"index\" collection=\"numbers\"",
+		"        open=\"x.PHONE in (\" separator=\",\" close=\")\" nullable=\"true\">",
+		"          #{item}",
+		"    </foreach>",
+		"</script>"})
+	List<DBSearchInfo> getSearchesAtAll(int revision, Collection<String> numbers);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);

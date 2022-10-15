@@ -371,47 +371,52 @@ public class DB {
 			return reports.getLatestReports(notBefore);
 		}
 	}
+
+	private static Comparator<? super SearchInfo> byDate = (s1, s2) -> -Long.compare(s1.getLastSearch(), s2.getLastSearch());
 	
 	/**
 	 * Looks up the latest searches.
 	 */
 	public List<? extends SearchInfo> getTopSearches() {
+		return getTopSearches(3, 3);
+	}
+	
+	List<? extends SearchInfo> getTopSearches(int cntLatest, int cntSearches) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
 			int revision = reports.getLastRevision();
-			List<DBSearchInfo> yesterdaySearches = reports.getTopSearches(revision);
-			Map<Object, DBSearchInfo> yesterdayByPhone = yesterdaySearches.stream().collect(Collectors.toMap(i -> i.getPhone(), i -> i));
+			Set<String> yesterdaySearches = reports.getTopSearches(revision);
 			
-			List<DBSearchInfo> topSearches = reports.getLatestSearchesToday();
+			Set<String> topNumbers = reports.getLatestSearchesToday();
+			topNumbers.addAll(yesterdaySearches);
+
+			List<DBSearchInfo> topSearches = reports.getSearchesTodayAll(topNumbers);
+			Map<String, DBSearchInfo> yesterdayByPhone = reports.getSearchesAtAll(revision, topNumbers).stream().collect(Collectors.toMap(i -> i.getPhone(), i -> i));
+			
 			for (DBSearchInfo today : topSearches) {
-				DBSearchInfo yesterday = yesterdayByPhone.remove(today.getPhone());
+				DBSearchInfo yesterday = yesterdayByPhone.get(today.getPhone());
 				if (yesterday == null) {
 					today.setTotal(0);
 				} else {
-					today.setTotal(yesterday.getTotal());
+					today.setTotal(yesterday.getCount());
 				}
 			}
-			Comparator<? super SearchInfo> byDate = (s1, s2) -> -Long.compare(s1.getLastSearch(), s2.getLastSearch());
 
-			for (DBSearchInfo yesterday : yesterdayByPhone.values()) {
-				DBSearchInfo today = reports.getSearchesToday(yesterday.getPhone());
-				today.setTotal(yesterday.getTotal());
-				topSearches.add(today);
-			}
 			topSearches.sort(byDate);
 			
 			List<SearchInfo> result = new ArrayList<>();
 
 			// Latest 3 (most likely from today).
-			result.addAll(topSearches.subList(0, Math.min(3, topSearches.size())));
+			int index = Math.min(cntLatest, topSearches.size());
+			result.addAll(topSearches.subList(0, index));
 			
 			// Sort the rest by total amount of searches (from today and yesterday).
-			ArrayList<DBSearchInfo> tail = new ArrayList<>(topSearches.subList(Math.min(3, topSearches.size()), topSearches.size())); 
+			ArrayList<DBSearchInfo> tail = new ArrayList<>(topSearches.subList(index, topSearches.size())); 
 			tail.sort((s1, s2) -> -Integer.compare(s1.getCount() + s1.getTotal(), s2.getCount() + s2.getTotal()));
 			
 			// Top 3
-			result.addAll(tail.subList(0, Math.min(3, tail.size())));
+			result.addAll(tail.subList(0, Math.min(cntSearches, tail.size())));
 			
 			// Present all in last search order.
 			result.sort(byDate);

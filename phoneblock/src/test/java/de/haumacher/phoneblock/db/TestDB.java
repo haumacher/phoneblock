@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -45,17 +44,31 @@ public class TestDB extends TestCase {
 	}
 
 	public void testTopSearches() throws UnsupportedEncodingException, SQLException {
-		_db.addSearchHit("123", 1);
-		_db.addSearchHit("456", 2);
-		_db.addSearchHit("456", 3);
+		_db.addSearchHit("5", 0);
+		_db.addSearchHit("0", 0);
+		_db.addSearchHit("0", 0);
+		_db.addSearchHit("0", 0);
+		
+		_db.addSearchHit("1", 1);
+		_db.addSearchHit("2", 2);
+		_db.addSearchHit("3", 3);
 		_db.cleanupSearchHistory(30);
 		
-		_db.addSearchHit("456", 4);
-		_db.addSearchHit("789", 5);
+		_db.addSearchHit("0", 4);
+		_db.addSearchHit("4", 5);
+		_db.addSearchHit("5", 6);
 		
-		List<? extends SearchInfo> topSearches = _db.getTopSearches();
+		List<? extends SearchInfo> topSearches = _db.getTopSearches(1, 1);
+
+		assertEquals(2, topSearches.size());
 		
-		assertEquals(Arrays.asList("789", "456", "123"), topSearches.stream().map(i -> i.getPhone()).collect(Collectors.toList()));
+		assertEquals("5", topSearches.get(0).getPhone());
+		assertEquals(1, topSearches.get(0).getCount());
+		assertEquals(1, topSearches.get(0).getTotal());
+		
+		assertEquals("0", topSearches.get(1).getPhone());
+		assertEquals(1, topSearches.get(1).getCount());
+		assertEquals(3, topSearches.get(1).getTotal());
 	}
 	
 	public void testSpamReports() throws UnsupportedEncodingException, SQLException {
