@@ -388,16 +388,16 @@ public class DB {
 			for (DBSearchInfo today : topSearches) {
 				DBSearchInfo yesterday = yesterdayByPhone.remove(today.getPhone());
 				if (yesterday == null) {
-					today.setSearchesTotal(0);
+					today.setTotal(0);
 				} else {
-					today.setSearchesTotal(yesterday.getSearchesTotal());
+					today.setTotal(yesterday.getTotal());
 				}
 			}
 			Comparator<? super SearchInfo> byDate = (s1, s2) -> -Long.compare(s1.getLastSearch(), s2.getLastSearch());
 
 			for (DBSearchInfo yesterday : yesterdayByPhone.values()) {
 				DBSearchInfo today = reports.getSearchesToday(yesterday.getPhone());
-				today.setSearchesTotal(yesterday.getSearchesTotal());
+				today.setTotal(yesterday.getTotal());
 				topSearches.add(today);
 			}
 			topSearches.sort(byDate);
@@ -409,7 +409,7 @@ public class DB {
 			
 			// Sort the rest by total amount of searches (from today and yesterday).
 			ArrayList<DBSearchInfo> tail = new ArrayList<>(topSearches.subList(Math.min(3, topSearches.size()), topSearches.size())); 
-			tail.sort((s1, s2) -> -Integer.compare(s1.getSearchesToday() + s1.getSearchesTotal(), s2.getSearchesToday() + s2.getSearchesTotal()));
+			tail.sort((s1, s2) -> -Integer.compare(s1.getCount() + s1.getTotal(), s2.getCount() + s2.getTotal()));
 			
 			// Top 3
 			result.addAll(tail.subList(0, Math.min(3, tail.size())));

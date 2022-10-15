@@ -67,11 +67,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= report.getSearchesToday() %>
+							<%=report.getCount()%>
 						</td>
 						
 						<td>
-							<%= report.getSearchesTotal() %>
+							<%=report.getTotal()%>
 						</td>
 						
 						<td>

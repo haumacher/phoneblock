@@ -13,6 +13,6 @@ public class DBSearchInfo extends SearchInfo {
 	 * Creates a {@link DBSearchInfo}.
 	 */
 	public DBSearchInfo(int revision, String phone, int searchesToday, int searchesTotal, long lastSearch) {
-		setRevision(revision).setPhone(phone).setSearchesToday(searchesToday).setSearchesTotal(searchesTotal).setLastSearch(lastSearch);
+		setRevision(revision).setPhone(phone).setCount(searchesToday).setTotal(searchesTotal).setLastSearch(lastSearch);
 	}
 }

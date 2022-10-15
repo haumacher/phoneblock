@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.db.model;
 
+/**
+ * Info of how often a certain number was rated in a certain way.
+ */
 public class RatingInfo implements de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -36,6 +39,9 @@ public class RatingInfo implements de.haumacher.msgbuf.observer.Observable {
 		super();
 	}
 
+	/**
+	 * The number being rated.
+	 */
 	public final String getPhone() {
 		return _phone;
 	}
@@ -54,6 +60,9 @@ public class RatingInfo implements de.haumacher.msgbuf.observer.Observable {
 		_phone = value;
 	}
 
+	/**
+	 * The {@link Rating} of the {@link #getPhone() number}.
+	 */
 	public final Rating getRating() {
 		return _rating;
 	}
@@ -73,6 +82,9 @@ public class RatingInfo implements de.haumacher.msgbuf.observer.Observable {
 		_rating = value;
 	}
 
+	/**
+	 * How often the {@link #getPhone() number} was rated in a {@link #getRating() certain way}.
+	 */
 	public final int getVotes() {
 		return _votes;
 	}

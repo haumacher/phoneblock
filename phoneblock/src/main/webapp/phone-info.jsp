@@ -319,8 +319,7 @@
 	        datasets: [{
 	            label: 'Suchanfragen in der letzten Woche',
 	            data: [
-		        	<%
-		        	{
+		        	<%{
 			        	boolean first = true;
 			        	for (SearchInfo r : searches) {
 			        		if (first) {
@@ -328,10 +327,9 @@
 			        		} else {
 			        			out.write(',');
 			        		}
-			        		out.write(Integer.toString(r.getSearchesToday()));
+			        		out.write(Integer.toString(r.getCount()));
 			        	}
-		        	}
-					%>
+		        	}%>
             	],
             	fill: false,
                 borderColor: 'rgb(75, 192, 192)',

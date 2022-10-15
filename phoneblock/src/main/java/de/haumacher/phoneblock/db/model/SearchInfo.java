@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.db.model;
 
+/**
+ * Info about how often a number was searched.
+ */
 public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -18,11 +21,11 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 	/** @see #getPhone() */
 	public static final String PHONE = "phone";
 
-	/** @see #getSearchesToday() */
-	public static final String SEARCHES_TODAY = "searchesToday";
+	/** @see #getCount() */
+	public static final String COUNT = "count";
 
-	/** @see #getSearchesTotal() */
-	public static final String SEARCHES_TOTAL = "searchesTotal";
+	/** @see #getTotal() */
+	public static final String TOTAL = "total";
 
 	/** @see #getLastSearch() */
 	public static final String LAST_SEARCH = "lastSearch";
@@ -31,9 +34,9 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 
 	private String _phone = "";
 
-	private int _searchesToday = 0;
+	private int _count = 0;
 
-	private int _searchesTotal = 0;
+	private int _total = 0;
 
 	private long _lastSearch = 0L;
 
@@ -46,6 +49,9 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 		super();
 	}
 
+	/**
+	 * The time slot, this information is about.
+	 */
 	public final int getRevision() {
 		return _revision;
 	}
@@ -64,6 +70,9 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 		_revision = value;
 	}
 
+	/**
+	 * The phone number
+	 */
 	public final String getPhone() {
 		return _phone;
 	}
@@ -82,42 +91,51 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 		_phone = value;
 	}
 
-	public final int getSearchesToday() {
-		return _searchesToday;
+	/**
+	 * The number of search requests in the {@link #getRevision() time slot}.
+	 */
+	public final int getCount() {
+		return _count;
 	}
 
 	/**
-	 * @see #getSearchesToday()
+	 * @see #getCount()
 	 */
-	public SearchInfo setSearchesToday(int value) {
-		internalSetSearchesToday(value);
+	public SearchInfo setCount(int value) {
+		internalSetCount(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getSearchesToday()} without chain call utility. */
-	protected final void internalSetSearchesToday(int value) {
-		_listener.beforeSet(this, SEARCHES_TODAY, value);
-		_searchesToday = value;
-	}
-
-	public final int getSearchesTotal() {
-		return _searchesTotal;
+	/** Internal setter for {@link #getCount()} without chain call utility. */
+	protected final void internalSetCount(int value) {
+		_listener.beforeSet(this, COUNT, value);
+		_count = value;
 	}
 
 	/**
-	 * @see #getSearchesTotal()
+	 * Some other number of serch requests (context dependent).
 	 */
-	public SearchInfo setSearchesTotal(int value) {
-		internalSetSearchesTotal(value);
+	public final int getTotal() {
+		return _total;
+	}
+
+	/**
+	 * @see #getTotal()
+	 */
+	public SearchInfo setTotal(int value) {
+		internalSetTotal(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getSearchesTotal()} without chain call utility. */
-	protected final void internalSetSearchesTotal(int value) {
-		_listener.beforeSet(this, SEARCHES_TOTAL, value);
-		_searchesTotal = value;
+	/** Internal setter for {@link #getTotal()} without chain call utility. */
+	protected final void internalSetTotal(int value) {
+		_listener.beforeSet(this, TOTAL, value);
+		_total = value;
 	}
 
+	/**
+	 * When the last search request was performed for the {@link #getPhone() number} in the {@link #getRevision() time slot}.
+	 */
 	public final long getLastSearch() {
 		return _lastSearch;
 	}
@@ -167,8 +185,8 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 		java.util.Arrays.asList(
 			REVISION, 
 			PHONE, 
-			SEARCHES_TODAY, 
-			SEARCHES_TOTAL, 
+			COUNT, 
+			TOTAL, 
 			LAST_SEARCH));
 
 	@Override
@@ -181,8 +199,8 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 		switch (field) {
 			case REVISION: return getRevision();
 			case PHONE: return getPhone();
-			case SEARCHES_TODAY: return getSearchesToday();
-			case SEARCHES_TOTAL: return getSearchesTotal();
+			case COUNT: return getCount();
+			case TOTAL: return getTotal();
 			case LAST_SEARCH: return getLastSearch();
 			default: return null;
 		}
@@ -193,8 +211,8 @@ public class SearchInfo implements de.haumacher.msgbuf.observer.Observable {
 		switch (field) {
 			case REVISION: internalSetRevision((int) value); break;
 			case PHONE: internalSetPhone((String) value); break;
-			case SEARCHES_TODAY: internalSetSearchesToday((int) value); break;
-			case SEARCHES_TOTAL: internalSetSearchesTotal((int) value); break;
+			case COUNT: internalSetCount((int) value); break;
+			case TOTAL: internalSetTotal((int) value); break;
 			case LAST_SEARCH: internalSetLastSearch((long) value); break;
 		}
 	}

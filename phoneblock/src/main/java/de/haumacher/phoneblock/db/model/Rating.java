@@ -1,19 +1,43 @@
 package de.haumacher.phoneblock.db.model;
 
+/**
+ * A classification of phone calls.
+ */
 public enum Rating implements de.haumacher.msgbuf.data.ProtocolEnum {
 
+	/**
+	 * A regular non-spam call.
+	 */
 	A_LEGITIMATE("A_LEGITIMATE"),
 
+	/**
+	 * The user has missed the call and cannot decide, whether it was spam.
+	 */
 	B_MISSED("B_MISSED"),
 
+	/**
+	 * The caller immediately cut the connection.
+	 */
 	C_PING("C_PING"),
 
+	/**
+	 * A poll.
+	 */
 	D_POLL("D_POLL"),
 
+	/**
+	 * Some form of advertising, marketing unwanted consulting.
+	 */
 	E_ADVERTISING("E_ADVERTISING"),
 
+	/**
+	 * Some form of gambling or notice of prize notification.
+	 */
 	F_GAMBLE("F_GAMBLE"),
 
+	/**
+	 * Some form of fraud.
+	 */
 	G_FRAUD("G_FRAUD"),
 
 	;

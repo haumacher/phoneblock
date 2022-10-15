@@ -5,26 +5,56 @@ option NoJson;
 option NoBinary;
 option NoReflection;
 
+/** Info about how often a number was searched. */
 message SearchInfo {
+	/** The time slot, this information is about. */
 	int revision;
+	
+	/** The phone number */
 	string phone;
-	int searchesToday;
-	int searchesTotal;
+	
+	/** The number of search requests in the {@link #revision time slot}. */
+	int count;
+	
+	/** Some other number of serch requests (context dependent). */
+	int total;
+	
+	/** When the last search request was performed for the {@link #phone number} in the {@link #revision time slot}. */
 	long lastSearch;
 }
 
+/** A classification of phone calls. */
 enum Rating {
-	A_LEGITIMATE; 
+	/** A regular non-spam call. */
+	A_LEGITIMATE;
+	 
+	/** The user has missed the call and cannot decide, whether it was spam. */
 	B_MISSED; 
-	C_PING; 
+	
+	/** The caller immediately cut the connection. */
+	C_PING;
+
+	/** A poll. */
 	D_POLL; 
+	
+	/** Some form of advertising, marketing unwanted consulting. */
 	E_ADVERTISING; 
+	
+	/** Some form of gambling or notice of prize notification. */
 	F_GAMBLE; 
+	
+	/** Some form of fraud. */
 	G_FRAUD;
 }
 
+/** Info of how often a certain number was rated in a certain way. */
 message RatingInfo {
+	/** The number being rated. */
 	string phone;
+	
+	/** The {@link Rating} of the {@link #phone number}. */
 	Rating rating;
+	
+	/** How often the {@link #phone number} was rated in a {@link #rating certain way}. */
 	int votes;
 }
