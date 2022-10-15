@@ -5,7 +5,7 @@
 <%@page import="de.haumacher.phoneblock.db.model.SearchInfo"%>
 <%@page import="java.util.Map"%>
 <%@page import="de.haumacher.phoneblock.db.model.RatingInfo"%>
-<%@page import="de.haumacher.phoneblock.app.Ratings"%>
+<%@page import="de.haumacher.phoneblock.db.Ratings"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.db.model.Rating"%>
 <%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>

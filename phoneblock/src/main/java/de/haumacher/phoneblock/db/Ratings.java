@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.app;
+package de.haumacher.phoneblock.db;
 
 import de.haumacher.phoneblock.db.model.RatingInfo;
 
