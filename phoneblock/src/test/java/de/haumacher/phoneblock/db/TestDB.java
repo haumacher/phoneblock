@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -17,7 +18,8 @@ import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.h2.jdbcx.JdbcDataSource;
 
-import de.haumacher.phoneblock.app.Rating;
+import de.haumacher.phoneblock.db.model.Rating;
+import de.haumacher.phoneblock.db.model.SearchInfo;
 import junit.framework.TestCase;
 
 /**
@@ -42,6 +44,20 @@ public class TestDB extends TestCase {
 		super.tearDown();
 	}
 
+	public void testTopSearches() throws UnsupportedEncodingException, SQLException {
+		_db.addSearchHit("123", 1);
+		_db.addSearchHit("456", 2);
+		_db.addSearchHit("456", 3);
+		_db.cleanupSearchHistory(30);
+		
+		_db.addSearchHit("456", 4);
+		_db.addSearchHit("789", 5);
+		
+		List<? extends SearchInfo> topSearches = _db.getTopSearches();
+		
+		assertEquals(Arrays.asList("789", "456", "123"), topSearches.stream().map(i -> i.getPhone()).collect(Collectors.toList()));
+	}
+	
 	public void testSpamReports() throws UnsupportedEncodingException, SQLException {
 		assertFalse(_db.hasSpamReportFor("123"));
 

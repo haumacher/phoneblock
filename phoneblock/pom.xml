@@ -124,6 +124,12 @@
 		</dependency>
 
 		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>chartjs</artifactId>
+		    <version>3.9.1</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.shredzone.shariff</groupId>
 			<artifactId>backend</artifactId>
 			<version>1.15</version>

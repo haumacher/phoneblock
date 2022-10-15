@@ -1,0 +1,30 @@
+package de.haumacher.phoneblock.db.model;
+
+option NoInterfaces;
+option NoJson;
+option NoBinary;
+option NoReflection;
+
+message SearchInfo {
+	int revision;
+	string phone;
+	int searchesToday;
+	int searchesTotal;
+	long lastSearch;
+}
+
+enum Rating {
+	A_LEGITIMATE; 
+	B_MISSED; 
+	C_PING; 
+	D_POLL; 
+	E_ADVERTISING; 
+	F_GAMBLE; 
+	G_FRAUD;
+}
+
+message RatingInfo {
+	string phone;
+	Rating rating;
+	int votes;
+}

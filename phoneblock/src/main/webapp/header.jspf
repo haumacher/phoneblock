@@ -5,23 +5,47 @@
   - Copyright Notice: Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
   - Description: JSP fragment that renders the application header. It must be included directly following the body tag.
   --%>
-<nav class="navbar" role="navigation" aria-label="main navigation">
+
+
+<section class="hero is-small is-primary">
+	<div class="hero-body" style="position: relative;">
+		<p class="title">
+			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" style="height: 37px; vertical-align: bottom" height="37">
+			PhoneBlock
+		</p>
+		<p class="subtitle">Der Spam-Filter für's Telefon</p>
+		<a href="https://github.com/haumacher/phoneblock" target="_blank">
+			<img alt="Fork me on GitHub" width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
+				src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" />
+		</a>
+	</div>
+  <div class="hero-foot">
+  <nav class="navbar" role="navigation" aria-label="main navigation">
 	<div class="navbar-brand">
-		<a class="navbar-item" href="https://phoneblock.haumacher.de"><img alt="PhoneBlock Logo"
-			src="<%=request.getContextPath()%>/app-logo.svg" height="28" style="padding-right: 1ex;"> PhoneBlock
-		</a> <a role="button" class="navbar-burger" aria-label="menu"
+		<div class="navbar-item"> 
+		<div class="control has-icons-left has-icons-right">
+		  <input id="pb-seach-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
+		  <span class="icon is-small is-left">
+		    <i class="fas fa-phone"></i>
+		  </span>
+		  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
+		    <i class="fas fa-search"></i>
+		  </span>
+		</div>
+		</div>
+
+		<a role="button" class="navbar-burger" aria-label="menu"
 			aria-expanded="false" data-target="navbarBasicExample"> <span
 			aria-hidden="true"></span> <span aria-hidden="true"></span> <span
 			aria-hidden="true"></span>
 		</a>
 	</div>
-
 	<div id="navbarBasicExample" class="navbar-menu">
 		<div class="navbar-start">
 			<a class="navbar-item" href="<%=request.getContextPath() %>/">Home</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link">Installation</a>
+				<a class="navbar-link" href="#" onclick="return false;">Installation</a>
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Fritz!Box</a>
@@ -33,7 +57,7 @@
 			<a class="navbar-item" href="<%=request.getContextPath() %>/status.jsp">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link">More</a>
+				<a class="navbar-link" href="#" onclick="return false;">More</a>
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="https://github.com/haumacher/phoneblock" target="_blank">GitHub Project</a>
@@ -46,18 +70,6 @@
 		</div>
 
 		<div class="navbar-end">
-			<div class="navbar-item">
-				<div class="control has-icons-left has-icons-right">
-				  <input id="pb-seach-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
-				  <span class="icon is-small is-left">
-				    <i class="fas fa-phone"></i>
-				  </span>
-				  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
-				    <i class="fas fa-search"></i>
-				  </span>
-				</div>
-			</div>
-			
 			<a class="navbar-item" title="Zur Facebook-Seite" href="https://www.facebook.com/PhoneBlock" target="_blank">
 				<span class="icon" style="color: #1877F2;">
 			    	<i class="fa-brands fa-lg fa-facebook"></i>
@@ -100,14 +112,5 @@
 		</div>
 	</div>
 </nav>
-
-<section class="hero is-primary">
-	<div class="hero-body" style="position: relative;">
-		<p class="title">PhoneBlock</p>
-		<p class="subtitle">Der Spam-Filter für Deinen Telefonanschluss</p>
-		<a href="https://github.com/haumacher/phoneblock" target="_blank">
-			<img alt="Fork me on GitHub" width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
-				src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" />
-		</a>
-	</div>
+</div>  
 </section>

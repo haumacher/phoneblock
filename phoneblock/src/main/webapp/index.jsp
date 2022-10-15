@@ -2,14 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <html>
 <head>
-<link rel="canonical" href="https://phoneblock.haumacher.de/phoneblock/" />
 <jsp:include page="head-content.jspf"></jsp:include>
-
-<script type="text/javascript">
-	document.addEventListener('DOMContentLoaded', () => {
-		makeSearchButton("pb-status-search-button", "pb-status-search-input");		
-	});
-</script>
 </head>
 
 <body>
@@ -58,22 +51,6 @@
 		  </div>
 		</div>
 
-		<h2>Telefonnummer untersuchen</h2>
-
-		<p>
-			Du wurdest von einer unbekannten Nummer angerufen? Schau nach, ob sie in der PhoneBlock-Datenbank enthalten ist:
-		</p>
-		
-		<div class="control has-icons-left has-icons-right">
-		  <input id="pb-status-search-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
-		  <span class="icon is-small is-left">
-		    <i class="fas fa-phone"></i>
-		  </span>
-		  <span id="pb-status-search-button" class="icon is-small is-right is-clickable">
-		    <i class="fas fa-search"></i>
-		  </span>
-		</div>
-		
 		<h2>Wie funktioniert PhoneBlock?</h2>
 
 		<p>PhoneBlock ist eine von der PhoneBlock-Community gepflegte

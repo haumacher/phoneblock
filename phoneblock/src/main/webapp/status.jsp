@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.db.model.SearchInfo"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
@@ -16,12 +17,6 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
-
-<script type="text/javascript">
-	document.addEventListener('DOMContentLoaded', () => {
-		makeSearchButton("pb-status-search-button", "pb-status-search-input");		
-	});
-</script>
 </head>
 
 <body>
@@ -42,30 +37,59 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 	und mach dem Telefonterror ein Ende.  
 	</p>
 	
-	<p>
-		Du wurdest von einer unbekannten Nummer angerufen? Schau nach, ob sie in der PhoneBlock-Datenbank enthalten ist:
-	</p>
-	
-	<div class="control has-icons-left has-icons-right">
-	  <input id="pb-status-search-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
-	  <span class="icon is-small is-left">
-	    <i class="fas fa-phone"></i>
-	  </span>
-	  <span id="pb-status-search-button" class="icon is-small is-right is-clickable">
-	    <i class="fas fa-search"></i>
-	  </span>
-	</div>
-	
 <%
 	DateFormat format = SimpleDateFormat.getDateTimeInstance();
-
 	long now = System.currentTimeMillis();
-	List<SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
-	if (reports.isEmpty()) {
 %>
-		<p>Keine aktuellen Spam-Reports.</p>
+
+<%
+	List<? extends SearchInfo> searches = DBService.getInstance().getTopSearches();
+	if (!searches.isEmpty()) {
+%>
+		<h2>Top-Suchanfragen</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Rufnummer</th>
+					<th title="Suchanfragen nach dieser Nummer heute">Heute</th>
+					<th title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Gestern</th>
+					<th>Letzte Anfrage</th>
+				</tr>
+			</thead>
+			<tbody>
 <%			
-	} else {
+				for (SearchInfo report : searches) {
+%>
+					<tr>
+						<td>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
+						</td>
+						
+						<td>
+							<%= report.getSearchesToday() %>
+						</td>
+						
+						<td>
+							<%= report.getSearchesTotal() %>
+						</td>
+						
+						<td>
+							<%= report.getLastSearch() > 0 ? format.format(new Date(report.getLastSearch())) : "-" %>
+						</td>
+					</tr>
+<%	
+				}
+%>
+			</tbody>
+		</table>
+<%
+	}
+%>
+
+<%
+	List<SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
+	if (!reports.isEmpty()) {
 %>
 		<h2>Spam-Reports der letzten Stunde</h2> 
 
@@ -220,7 +244,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 	}
 %>	
 	<%= cnt %> aktive Nummern auf der Blocklist. Insgesamt <%= status.getTotalVotes() %> User-Reports, <%= status.getArchivedReports() %> 
-	inaktive Nummer mit Spam-Verdacht.
+	inaktive Nummern mit Spam-Verdacht.
 	</p>
 
 </div>

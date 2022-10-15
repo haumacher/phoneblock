@@ -4,6 +4,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,6 +22,9 @@ import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReport;
+import de.haumacher.phoneblock.db.model.Rating;
+import de.haumacher.phoneblock.db.model.RatingInfo;
+import de.haumacher.phoneblock.db.model.SearchInfo;
 
 /**
  * Servlet displaying information about a telephone number in the DB.
@@ -70,7 +75,18 @@ public class SearchServlet extends HttpServlet {
 		
 		DB db = DBService.getInstance();
 		SpamReport info = db.getPhoneInfo(phoneId);
-		Rating rating = db.getRating(phone);
+		List<? extends SearchInfo> searches = db.getSearches(phoneId);
+		int votes = info.getVotes();
+		List<? extends RatingInfo> ratingInfos = db.getRatings(phone);
+		Rating rating = ratingInfos.stream().max(Ratings::compare).map(i -> i.getRating()).orElse(Rating.B_MISSED);
+		Map<Rating, Integer> ratings = ratingInfos.stream().collect(Collectors.toMap(i -> i.getRating(), i -> i.getVotes()));
+		
+		int ratingVotes = ratingInfos.stream().mapToInt(i -> Ratings.getVotes(i.getRating()) * i.getVotes()).reduce(0, (a, b) -> a + b);
+		int unknownVotes = votes - ratingVotes;
+		if (unknownVotes > 0) {
+			ratings.put(Rating.B_MISSED, 
+				Integer.valueOf(unknownVotes / Ratings.getVotes(Rating.B_MISSED) + ratings.getOrDefault(Rating.B_MISSED, Integer.valueOf(0)).intValue()));
+		}
 		
 		String userAgent = req.getHeader("User-Agent");
 		if (userAgent != null && !BOT_PATTERN.matcher(userAgent).find()) {
@@ -83,11 +99,16 @@ public class SearchServlet extends HttpServlet {
 		if (getSessionAttribute(req, ratingAttribute) != null) {
 			req.setAttribute("thanks", Boolean.TRUE);
 		}
+		
+		// The canonical path of this page.
+		req.setAttribute("path", req.getServletPath() + '/' + phoneId);
+		
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
 		req.setAttribute("rating", rating);
-		int votes = info.getVotes();
-		req.setAttribute("title", (votes > 0 && rating != null ? rating.label() + " " : "") + status(votes) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
+		req.setAttribute("ratings", ratings);
+		req.setAttribute("searches", searches);
+		req.setAttribute("title", (votes > 0 && rating != Rating.B_MISSED ? Ratings.getLabel(rating) + " " : "") + status(votes) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
 		if (votes > 0) {
 			req.setAttribute("description", votes + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		}

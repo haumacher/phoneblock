@@ -18,15 +18,19 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -41,9 +45,12 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.app.Rating;
+import de.haumacher.phoneblock.app.Ratings;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.db.model.Rating;
+import de.haumacher.phoneblock.db.model.RatingInfo;
+import de.haumacher.phoneblock.db.model.SearchInfo;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 
@@ -274,12 +281,12 @@ public class DB {
 				final int currentVotes = nonNull(reports.getVotes(phone));
 				if (currentVotes > 0) {
 					// The number was already reported, a missed call makes the probability for spam higher.
-					updateRequired = internalProcessVotes(reports, phone, 2, now);
+					updateRequired = internalProcessVotes(reports, phone, Ratings.getVotes(rating), now);
 				} else {
 					updateRequired = false;
 				}
 			} else {
-				updateRequired = internalProcessVotes(reports, phone, rating.getVotes(), now);
+				updateRequired = internalProcessVotes(reports, phone, Ratings.getVotes(rating), now);
 
 				Rating oldRating = reports.getRating(phone);
 				
@@ -312,6 +319,17 @@ public class DB {
 		}
 	}
 
+	/** 
+	 * Retrieve all {@link Rating}s for the given phone number with corresponding vote count.
+	 */
+	public List<? extends RatingInfo> getRatings(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			return reports.getRatings(phone);
+		}
+	}
+	
 	private int classify(int newVotes) {
 		if (newVotes <= 0) {
 			return 0;
@@ -352,6 +370,54 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
+		}
+	}
+	
+	/**
+	 * Looks up the latest searches.
+	 */
+	public List<? extends SearchInfo> getTopSearches() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			int revision = reports.getLastRevision();
+			List<DBSearchInfo> yesterdaySearches = reports.getTopSearches(revision);
+			Map<Object, DBSearchInfo> yesterdayByPhone = yesterdaySearches.stream().collect(Collectors.toMap(i -> i.getPhone(), i -> i));
+			
+			List<DBSearchInfo> topSearches = reports.getLatestSearchesToday();
+			for (DBSearchInfo today : topSearches) {
+				DBSearchInfo yesterday = yesterdayByPhone.remove(today.getPhone());
+				if (yesterday == null) {
+					today.setSearchesTotal(0);
+				} else {
+					today.setSearchesTotal(yesterday.getSearchesTotal());
+				}
+			}
+			Comparator<? super SearchInfo> byDate = (s1, s2) -> -Long.compare(s1.getLastSearch(), s2.getLastSearch());
+
+			for (DBSearchInfo yesterday : yesterdayByPhone.values()) {
+				DBSearchInfo today = reports.getSearchesToday(yesterday.getPhone());
+				today.setSearchesTotal(yesterday.getSearchesTotal());
+				topSearches.add(today);
+			}
+			topSearches.sort(byDate);
+			
+			List<SearchInfo> result = new ArrayList<>();
+
+			// Latest 3 (most likely from today).
+			result.addAll(topSearches.subList(0, Math.min(3, topSearches.size())));
+			
+			// Sort the rest by total amount of searches (from today and yesterday).
+			ArrayList<DBSearchInfo> tail = new ArrayList<>(topSearches.subList(Math.min(3, topSearches.size()), topSearches.size())); 
+			tail.sort((s1, s2) -> -Integer.compare(s1.getSearchesToday() + s1.getSearchesTotal(), s2.getSearchesToday() + s2.getSearchesTotal()));
+			
+			// Top 3
+			result.addAll(tail.subList(0, Math.min(3, tail.size())));
+			
+			// Present all in last search order.
+			result.sort(byDate);
+			
+			return result;
 		}
 	}
 	
@@ -452,10 +518,14 @@ public class DB {
 	 * Records a search hit for the given phone number.
 	 */
 	public void addSearchHit(String phone) {
+		long now = System.currentTimeMillis();
+		addSearchHit(phone, now);
+	}
+
+	void addSearchHit(String phone, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			long now = System.currentTimeMillis();
 			int rows = reports.incSearchCount(phone, now);
 			if (rows == 0) {
 				reports.addSearchEntry(phone, now);
@@ -700,7 +770,7 @@ public class DB {
 	public List<Integer> getSearchHistory(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			List<Integer> data = reports.getSearchHistory(phone);
+			List<Integer> data = reports.getSearchCountHistory(phone);
 			data.add(nonNull(reports.getCurrentSearchHits(phone)));
 			return data;
 		}
@@ -785,4 +855,39 @@ public class DB {
 		}
 	}
 
+	public List<? extends SearchInfo> getSearches(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			int lastRevision = reports.getLastRevision();
+			int startRevision = lastRevision - 6;
+
+			List<DBSearchInfo> dbHistory = reports.getSearchHistory(startRevision, phone);
+			SearchInfo today = reports.getSearchesToday(phone);
+			if (dbHistory.isEmpty() && today == null) {
+				return Collections.emptyList();
+			}
+
+			List<SearchInfo> result = new ArrayList<>();
+			
+			int revision = startRevision;
+			for (DBSearchInfo info : dbHistory) {
+				while (info.getRevision() > revision) {
+					result.add(SearchInfo.create().setRevision(revision++));
+				}
+				result.add(info);
+				revision++;
+			}
+			while (lastRevision > revision) {
+				result.add(SearchInfo.create().setRevision(revision++));
+			}
+			if (today == null) {
+				today = SearchInfo.create();
+			}
+			today.setRevision(lastRevision + 1);
+			result.add(today);
+			return result;
+		}
+	}
+	
 }

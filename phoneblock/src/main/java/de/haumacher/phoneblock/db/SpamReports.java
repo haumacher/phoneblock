@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-import de.haumacher.phoneblock.app.Rating;
+import de.haumacher.phoneblock.db.model.Rating;
 
 /**
  * Interface for the spam report table.
@@ -91,6 +91,21 @@ public interface SpamReports {
 			+ " WHERE VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
 	List<SpamReport> getLatestBlocklistEntries(int minVotes);
 	
+	@Select("SELECT 0, x.PHONE, x.COUNT - x.BACKUP, x.COUNT, x.LASTUPDATE FROM SEARCHES x"
+			+ " where x.COUNT - x.BACKUP > 0 ORDER BY x.LASTUPDATE DESC LIMIT 5")
+	List<DBSearchInfo> getLatestSearchesToday();
+	
+	@Select("SELECT x.CLUSTER, x.PHONE, 0, x.COUNT, x.LASTUPDATE FROM SEARCHHISTORY x"
+			+ " where x.CLUSTER=#{revision} ORDER BY x.COUNT DESC LIMIT 5")
+	List<DBSearchInfo> getTopSearches(int revision);
+	
+	@Select("SELECT x.CLUSTER, x.PHONE, x.COUNT, 0, x.LASTUPDATE FROM SEARCHHISTORY x"
+			+ " where x.CLUSTER >= #{revision} and x.PHONE = #{phone} order by x.CLUSTER")
+	List<DBSearchInfo> getSearchHistory(int revision, String phone);
+
+	@Select("SELECT 0, x.PHONE, x.COUNT - x.BACKUP, x.COUNT, x.LASTUPDATE FROM SEARCHES x where x.PHONE = #{phone}")
+	DBSearchInfo getSearchesToday(String phone);
+	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
 	
@@ -105,6 +120,9 @@ public interface SpamReports {
 	
 	@Select("select s.RATING from RATINGS s where s.PHONE=#{phone} order by s.COUNT desc, s.RATING desc limit 1")
 	Rating getRating(String phone);
+	
+	@Select("select s.PHONE, s.RATING, s.COUNT from RATINGS s where s.PHONE=#{phone} order by s.RATING")
+	List<DBRatingInfo> getRatings(String phone);
 	
 	@Insert("insert into RATINGS (PHONE, RATING, COUNT, LASTUPDATE) values (#{phone}, #{rating}, 1, #{now})")
 	void addRating(String phone, Rating rating, long now);
@@ -133,7 +151,7 @@ public interface SpamReports {
 	@Update("update RATINGS s set s.BACKUP = s.COUNT")
 	void backupRatings();
 	
-	@Insert("insert into SEARCHHISTORY (select #{id}, s.PHONE, s.COUNT - s.BACKUP from SEARCHES s where s.COUNT > s.BACKUP)")
+	@Insert("insert into SEARCHHISTORY (select #{id}, s.PHONE, s.COUNT - s.BACKUP, s.LASTUPDATE from SEARCHES s where s.COUNT > s.BACKUP)")
 	void fillSearchRevision(int id);
 	
 	@Update("update SEARCHES s set s.BACKUP = s.COUNT")
@@ -146,7 +164,7 @@ public interface SpamReports {
 	void removeSearchCluster(int id);
 
 	@Select("select case when s.COUNT is NULL then 0 else s.COUNT end from SEARCHCLUSTER c left outer join SEARCHHISTORY s on s.PHONE=#{phone} and s.CLUSTER = c.ID order by c.ID")
-	List<Integer> getSearchHistory(String phone);
+	List<Integer> getSearchCountHistory(String phone);
 	
 	@Select("select s.COUNT - s.BACKUP from SEARCHES s where s.PHONE=#{phone}")
 	Integer getCurrentSearchHits(String phone);

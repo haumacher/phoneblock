@@ -11,9 +11,13 @@
 		description = "Mit Deiner Fritz!Box und PhoneBlock Werbeanrufe automatisch blockieren. Kostenlos und ohne Zusatzhardware sofort einsatzbereit.";
 	}
 	
-	String path = request.getServletPath();
-	if (path.endsWith("index.jsp")) {
-		path = path.substring(0, path.length() - "index.jsp".length());
+	// A JSP may be used for rendering a servlet response. In that case, the original path must be output.
+	String path = (String) request.getAttribute("path");
+	if (path == null) {
+		path = request.getServletPath();
+		if (path.endsWith("index.jsp")) {
+			path = path.substring(0, path.length() - "index.jsp".length());
+		}
 	}
 %>
 
@@ -36,9 +40,79 @@
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="de_DE" />
 
+<link rel="canonical" href="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
+
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/0.9.4/css/bulma.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/6.1.2/css/all.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/3.2.1/shariff.min.css">
+
+<style type="text/css">
+.navbar-dropdown {
+	background-color:#00d1b2;
+}
+
+.hero.is-primary .navbar-item, .hero.is-primary .navbar-link {
+    color: rgba(255,255,255);
+}
+
+@media screen and (min-width: 1024px) {
+	.navbar-item.has-dropdown.is-active .navbar-link,
+	.navbar-item.has-dropdown:focus .navbar-link,
+	.navbar-item.has-dropdown:hover .navbar-link {
+		background-color:#00b89c;
+	}
+	
+	.navbar-link.is-active, .navbar-link:focus, .navbar-link:focus-within, .navbar-link:hover, a.navbar-item.is-active, a.navbar-item:focus, a.navbar-item:focus-within, a.navbar-item:hover {
+	  background-color: #00b89c;
+	}
+	
+	.navbar-dropdown a.navbar-item:focus, .navbar-dropdown a.navbar-item:hover {
+		background-color: #00b89c;
+	}
+}
+
+.tag:not(body).is-legitimate,
+.button.is-legitimate {
+	background-color: rgba(72, 199, 142, 1);
+	color: #fff;
+}
+
+.tag:not(body).is-missed,
+.button.is-missed {
+	background-color: rgba(170, 172, 170, 1);
+	color: #fff;
+}
+
+.tag:not(body).is-ping,
+.button.is-ping {
+	background-color: rgba(31, 94, 220, 1);
+	color: #fff;
+}
+
+.tag:not(body).is-poll,
+.button.is-poll {
+	background-color: rgba(157, 31, 220, 1);
+	color: #fff;
+}
+
+.tag:not(body).is-advertising,
+.button.is-advertising {
+	background-color: rgba(255, 224, 138, 1);
+	color: rgba(0,0,0,.7);
+}
+
+.tag:not(body).is-gamble,
+.button.is-gamble {
+	background-color: rgba(241, 122, 70, 1);
+	color: #fff;
+}
+
+.tag:not(body).is-fraud,
+.button.is-fraud {
+	background-color: rgba(241, 70, 104, 1);
+	color: #fff;
+}
+</style>
 
 <script type="text/javascript" src="<%=request.getContextPath() %>/webjars/jquery/3.6.0/jquery.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=3"></script>
