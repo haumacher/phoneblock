@@ -53,7 +53,10 @@
 <%
 					  	if (message != null) {
 %>
-							<p class="help is-danger"><%= JspUtil.quote(request.getAttribute("message")) %></p>
+							<p class="help is-danger">
+								<%= JspUtil.quote(request.getAttribute("message")) %>
+								<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+							</p>
 <%
 					  	}
 %>
