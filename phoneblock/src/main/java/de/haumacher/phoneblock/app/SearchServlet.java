@@ -109,7 +109,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("rating", rating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
-		req.setAttribute("title", (votes > 0 && rating != Rating.B_MISSED ? Ratings.getLabel(rating) + " " : "") + status(votes) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
+		req.setAttribute("title", status(votes) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
 		if (votes > 0) {
 			req.setAttribute("description", votes + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		}
