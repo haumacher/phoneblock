@@ -27,6 +27,8 @@ public class ManagementService implements ServletContextListener {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(ManagementService.class);
 	
+	private boolean _started;
+	
 	/** 
 	 * Creates a {@link ManagementService}.
 	 * 
@@ -42,6 +44,7 @@ public class ManagementService implements ServletContextListener {
 		try {
 			ObjectName name = beanName(servletContextEvent);
 			mBeanServer.registerMBean(new AppState(), name);
+			_started = true;
 			LOG.info("Registered management bean: " + name);
 		} catch (NotCompliantMBeanException | MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException ex) {
 			LOG.error("Failed to start management bean.", ex);
@@ -51,10 +54,14 @@ public class ManagementService implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
 		try {
-			MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-			ObjectName name = beanName(servletContextEvent);
-			mBeanServer.unregisterMBean(name);
-			LOG.info("Unregistered management bean: " + name);
+			if (_started) {
+				MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+				ObjectName name = beanName(servletContextEvent);
+				mBeanServer.unregisterMBean(name);
+				LOG.info("Unregistered management bean: " + name);
+			} else {
+				LOG.info("Skipped unregistering management bean, not registered.");
+			}
 		} catch (MBeanRegistrationException | InstanceNotFoundException | MalformedObjectNameException ex) {
 			LOG.error("Failed to unregister management bean.", ex);
 		}
