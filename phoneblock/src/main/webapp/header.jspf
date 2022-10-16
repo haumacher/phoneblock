@@ -13,7 +13,7 @@
 			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" style="height: 37px; vertical-align: bottom" height="37">
 			PhoneBlock
 		</p>
-		<p class="subtitle">Der Spam-Filter für's Telefon</p>
+		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
 		<a href="https://github.com/haumacher/phoneblock" target="_blank">
 			<img alt="Fork me on GitHub" width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
 				src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" />

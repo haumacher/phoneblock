@@ -3,7 +3,7 @@
 <%
 	String title = (String) request.getAttribute("title");
 	if (title == null) {
-		title = "PhoneBlock: Der Werbeblocker für's Telefon";
+		title = "PhoneBlock: Der Werbeblocker fürs Telefon";
 	}
 	
 	String description = (String) request.getAttribute("description");
