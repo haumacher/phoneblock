@@ -89,7 +89,7 @@
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
-		    <version>4.1</version>
+		    <version>5.7.0</version>
 
 			<exclusions>
 				<exclusion>
@@ -97,6 +97,13 @@
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!-- Forced update of opencsv dependency. -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-text</artifactId>
+		    <version>1.10.0</version>
 		</dependency>
 
 		<dependency>

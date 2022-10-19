@@ -15,6 +15,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.ICSVParser;
+import com.opencsv.exceptions.CsvValidationException;
 
 /**
  * Utility for analyzing phone numbers.
@@ -351,9 +352,9 @@ public class NumberAnalyzer {
 		        		node._cityCode = "0" + cityCode;
 		        		node._city = city;
 		        	}
-		        }				
+				}				
 			}
-		} catch (IOException ex) {
+		} catch (CsvValidationException | IOException ex) {
 			LOG.error("Failed to read phone prefix list.", ex);
 		}
 		
