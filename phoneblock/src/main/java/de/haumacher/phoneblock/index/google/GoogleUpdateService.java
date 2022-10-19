@@ -18,16 +18,15 @@ import javax.servlet.ServletContextEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
 
 import de.haumacher.msgbuf.io.StringW;
 import de.haumacher.msgbuf.json.JsonWriter;
@@ -43,8 +42,6 @@ public class GoogleUpdateService implements IndexUpdateService {
 	private static final Logger LOG = LoggerFactory.getLogger(GoogleUpdateService.class);
 
 	private String _contextPath;
-	private HttpTransport _httpTransport;
-	private GoogleCredential _credentials;
 	private boolean _active;
 	private HttpRequestFactory _requestFactory;
 
@@ -57,10 +54,10 @@ public class GoogleUpdateService implements IndexUpdateService {
 			LOG.warn("No google account file found, deactivating google update.");
 		} else {
 			try (InputStream in = new FileInputStream(accountFile)) {
-				_httpTransport = new NetHttpTransport();
-				_requestFactory = _httpTransport.createRequestFactory();
-				_credentials = GoogleCredential.fromStream(in, _httpTransport, new GsonFactory())
+				GoogleCredentials credentials = GoogleCredentials.fromStream(in)
 					.createScoped(Collections.singleton("https://www.googleapis.com/auth/indexing"));
+				NetHttpTransport httpTransport = new NetHttpTransport();
+				_requestFactory = httpTransport.createRequestFactory(new HttpCredentialsAdapter(credentials));
 				_active = true;
 				LOG.info("Activated google update service.");
 			} catch (IOException ex) {
@@ -103,7 +100,6 @@ public class GoogleUpdateService implements IndexUpdateService {
 				toByteArray(UpdateMessage.create().setUrl(url).setType(Type.URL_UPDATED)));
 			HttpRequest request = _requestFactory.buildPostRequest(
 				new GenericUrl("https://indexing.googleapis.com/v3/urlNotifications:publish"), body);
-			_credentials.initialize(request);
 			HttpResponse response = request.execute();
 			
 			int code = response.getStatusCode();
