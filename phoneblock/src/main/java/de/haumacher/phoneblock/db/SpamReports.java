@@ -46,6 +46,9 @@ public interface SpamReports {
 	@Select("SELECT COUNT(1) FROM OLDREPORTS o")
 	Integer getArchivedReportCount();
 	
+	@Select("SELECT COUNT(1) FROM SPAMREPORTS s")
+	Integer getActiveReportCount();
+	
 	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
 	void delete(String phone);
 	

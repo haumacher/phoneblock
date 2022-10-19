@@ -93,6 +93,10 @@ public class GoogleUpdateService implements IndexUpdateService {
 			return;
 		}
 		
+		if (!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		
 		String url = "https://phoneblock.haumacher.de" + _contextPath + path;
 
 		try {

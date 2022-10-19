@@ -45,7 +45,7 @@ public class Application implements ServletContextListener {
 			db = new DBService(indexer),
 			new CrawlerService(),
 			new MailServiceStarter(),
-			new ManagementService(db),
+			new ManagementService(indexer),
 		};
 	}
 

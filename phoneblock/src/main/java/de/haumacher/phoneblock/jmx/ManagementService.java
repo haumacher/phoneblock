@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.index.IndexUpdateService;
 
 /**
  * Service registering an MBean for observing application state.
@@ -28,14 +29,17 @@ public class ManagementService implements ServletContextListener {
 	private static final Logger LOG = LoggerFactory.getLogger(ManagementService.class);
 	
 	private boolean _started;
+
+	private IndexUpdateService _updater;
 	
 	/** 
 	 * Creates a {@link ManagementService}.
 	 * 
-	 * @param dbService The {@link DBService}. 
+	 * @param updater The {@link DBService}. 
 	 */
-	public ManagementService(DBService dbService) {
+	public ManagementService(IndexUpdateService updater) {
 		super();
+		_updater = updater;
 	}
 
 	@Override
@@ -43,7 +47,7 @@ public class ManagementService implements ServletContextListener {
 		MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 		try {
 			ObjectName name = beanName(servletContextEvent);
-			mBeanServer.registerMBean(new AppState(), name);
+			mBeanServer.registerMBean(new AppState(_updater), name);
 			_started = true;
 			LOG.info("Registered management bean: " + name);
 		} catch (NotCompliantMBeanException | MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException ex) {

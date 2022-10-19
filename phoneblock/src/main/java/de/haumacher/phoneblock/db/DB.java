@@ -485,6 +485,26 @@ public class DB {
 		}
 	}
 
+	/**
+	 * The total number of archived reports.
+	 */
+	public int getArchivedReportCount() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return nonNull(reports.getArchivedReportCount());
+		}
+	}
+	
+	/**
+	 * The total number of active reports.
+	 */
+	public int getActiveReportCount() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return nonNull(reports.getActiveReportCount());
+		}
+	}
+	
 	private static int nonNull(Integer n) {
 		return n == null ? 0 : n.intValue();
 	}
