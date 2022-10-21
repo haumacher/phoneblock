@@ -57,7 +57,10 @@ public class LoginServlet extends HttpServlet {
 		resp.sendRedirect(req.getContextPath() + "/settings.jsp");
 	}
 
-	private void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	/**
+	 * Redirects the client to the login page.
+	 */
+	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
 		req.getRequestDispatcher("/login.jsp").forward(req, resp);
 	}
