@@ -164,7 +164,7 @@ public interface SpamReports {
 	void createRevision(long now);
 	
 	@Select("select max(ID) from SEARCHCLUSTER")
-	int getLastRevision();
+	Integer getLastRevision();
 	
 	@Select("select min(ID) from SEARCHCLUSTER")
 	int getOldestRevision();

@@ -385,11 +385,15 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			int revision = reports.getLastRevision();
-			Set<String> yesterdaySearches = reports.getTopSearches(revision);
+			int revision = nonNull(reports.getLastRevision());
+			Set<String> yesterdaySearches = revision > 0 ? reports.getTopSearches(revision) : Collections.emptySet();
 			
 			Set<String> topNumbers = reports.getLatestSearchesToday();
 			topNumbers.addAll(yesterdaySearches);
+			
+			if (topNumbers.isEmpty()) {
+				return Collections.emptyList();
+			}
 
 			List<DBSearchInfo> topSearches = reports.getSearchesTodayAll(topNumbers);
 			Map<String, DBSearchInfo> yesterdayByPhone = reports.getSearchesAtAll(revision, topNumbers).stream().collect(Collectors.toMap(i -> i.getPhone(), i -> i));
@@ -885,9 +889,9 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			int lastRevision = reports.getLastRevision();
-			int startRevision = lastRevision - 6;
-
+			int lastRevision = nonNull(reports.getLastRevision());
+			int startRevision = Math.max(1,  lastRevision - 6);
+			
 			List<DBSearchInfo> dbHistory = reports.getSearchHistory(startRevision, phone);
 			SearchInfo today = reports.getSearchesToday(phone);
 			if (dbHistory.isEmpty() && today == null) {
