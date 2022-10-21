@@ -1,0 +1,35 @@
+#cloud-config
+users:
+  - name: haui
+    groups: users, admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5YtsO37/JlJU49N5y48rPDoNVxhGS1k8YDGfCv3zYawz6dLUfvePpXS36DcUpvlflu8LpHDYWZl5zZGCd5FJZyRpiiamQNHuRnjdI3uXdEFEOneSLPSt3zx9qUJoMYXVjzY22oVFJVUPvRocFPgiZ4U4H2Eg69dsY6G5i+KAtf7PNPzeLM6nRnGEz/DhOzudMGBJ7aS3kv2fWCnX/GEOONFWKkKQeSEbSz4RbrOdF3HZQX2BFwuTUNc3+UbDqVYHPTXcIvIybeiGZvu/2UrKsBx/cpkJHkjQi2nLX7d9y2eRzc3y4t0fSrODy4AuF76hKCwv+/AQdsnXm4C5MeS3Zs8EPB18ceXkRGIVC1+NIYBGyognMvLc5dMjCRMRzRZzSqBR8gESbLKQYNMH6lwjl0nUcvW+tgw0bS7qz50lRKKzWrfhJuV3SYjoKdhmwhm6Wq5By0pT9wXWXiJS6M+1q2WS5mtkyTDT0dY16S7TCsmIS4MMC1rZnDstEA+IQg+eVvcgJniefZRSN/IhVTUEBkG/zB9MlY4+QfrxwwiTMmqSH7afBuEhVguRUHjPqql0b6A7Mr5n1jDTfuC2Voc6m2F2UAGfEvCuJvnTPqt4FSCPYUVr41/R7etCtkh4PmNXc3J5vC+mj6A5Q2SGE3kFuXNqbZsryiC/EUtCuPmc7aQ== bhu@DEFR-LT07-107
+packages:
+  - fail2ban
+  - ufw
+  - tomcat9
+  - tomcat9-admin
+  - apache2
+  - certbot
+  - python3-certbot-apache
+  - prometheus
+  - curl
+package_update: true
+package_upgrade: true
+runcmd:
+  - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
+  - systemctl enable fail2ban
+  - ufw allow OpenSSH
+  - ufw allow http
+  - ufw allow https
+  - ufw enable
+  - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^ServerTokens/s/^.*$/ServerTokens Prod/' /etc/apache2/conf-enabled/security.conf
+  - sed -i -e '/^ServerSignature/s/^.*$/ServerSignature Off/' /etc/apache2/conf-enabled/security.conf
+  - certbot --apache -n --agree-tos --email haui@haumacher.de --domains phoneblock2.haumacher.de
+  - a2enmod proxy
+  - service apache2 reload
+  - reboot
+  

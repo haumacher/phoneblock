@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /phoneblock/verify-email
+Disallow: /phoneblock/contacts/
+
+Sitemap: https://phoneblock.haumacher.de/phoneblock/sitemap.xml

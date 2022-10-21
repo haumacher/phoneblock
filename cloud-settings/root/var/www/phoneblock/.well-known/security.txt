@@ -1,0 +1,3 @@
+Contact: mailto:haui@haumacher.de
+Expires: 2027-12-31T22:59:00.000Z
+Preferred-Languages: de, en

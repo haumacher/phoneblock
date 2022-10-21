@@ -1,0 +1,3 @@
+Redirect 301 /.well-known/carddav https://phoneblock.haumacher.de/phoneblock/contacts/
+Redirect 301 /sitemap.xml https://phoneblock.haumacher.de/phoneblock/sitemap.xml
+
