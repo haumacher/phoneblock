@@ -36,7 +36,9 @@ public class PrincipalResource extends Resource {
 	
 	@Override
 	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<Element> properties) {
-		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis());
+		String userAgent = req.getHeader("User-Agent");
+		
+		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis(), userAgent);
 		
 		super.propfind(req, parent, multistatus, properties);
 	}

@@ -606,12 +606,14 @@ public class DB {
 
 	/** 
 	 * Sets the last access time for the given user to the given timestamp.
+	 * 
+	 * @param userAgent The user agent header string.
 	 */
-	public void updateLastAccess(String userName, long timestamp) {
+	public void updateLastAccess(String userName, long timestamp, String userAgent) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.setLastAccess(userName, timestamp);
+			users.setLastAccess(userName, timestamp, userAgent);
 			session.commit();
 		}
 	}

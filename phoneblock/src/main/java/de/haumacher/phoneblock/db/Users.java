@@ -46,8 +46,8 @@ public interface Users {
 	/**
 	 * Updates the user's last access timestamp.
 	 */
-	@Update("update USERS set LASTACCESS=#{lastAccess} where EMAIL=#{email}")
-	void setLastAccess(String email, long lastAccess);
+	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent} where EMAIL=#{email}")
+	void setLastAccess(String email, long lastAccess, String userAgent);
 	
 	@Select("select TIMESTAMP, LASTID from CALLREPORT where USERID=#{userId}")
 	DBReportInfo getReportInfo(long userId);
