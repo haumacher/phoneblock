@@ -16,6 +16,8 @@ packages:
   - python3-certbot-apache
   - prometheus
   - curl
+  - msmtp
+  - mailutils
 package_update: true
 package_upgrade: true
 runcmd:
@@ -28,8 +30,7 @@ runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
   - sed -i -e '/^ServerTokens/s/^.*$/ServerTokens Prod/' /etc/apache2/conf-enabled/security.conf
   - sed -i -e '/^ServerSignature/s/^.*$/ServerSignature Off/' /etc/apache2/conf-enabled/security.conf
-  - certbot --apache -n --agree-tos --email haui@haumacher.de --domains phoneblock2.haumacher.de
   - a2enmod proxy
+  - a2enmod proxy_http
   - service apache2 reload
   - reboot
-  

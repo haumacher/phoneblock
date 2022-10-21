@@ -1,0 +1,1 @@
+set sendmail="/usr/bin/msmtp -t"
