@@ -3,13 +3,16 @@
  */
 package de.haumacher.phoneblock.analysis;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link NumberAnalyzer}.
  */
-public class TestNumberAnalyzer extends TestCase {
+public class TestNumberAnalyzer {
 	
+	@Test
 	public void testFindInfo() {
 		assertCountry("+1684" + "123456789", "Amerikanisch-Samoa");
 		assertCountry("+49", "Deutschland");

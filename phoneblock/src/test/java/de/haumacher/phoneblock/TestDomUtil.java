@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock;
 
 import static de.haumacher.phoneblock.util.DomUtil.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -13,18 +14,19 @@ import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import de.haumacher.phoneblock.util.DomUtil;
-import junit.framework.TestCase;
 
 /**
  * Test case for {@link DomUtil}.
  */
-public class TestDomUtil extends TestCase {
+public class TestDomUtil {
 
+	@Test
 	public void testNavigate() throws SAXException, IOException {
 		Document doc = doc("<?xml version=\"1.0\" encoding=\"utf-8\"?><d:propfind xmlns:d=\"DAV:\"><d:prop><d:current-user-principal/></d:prop></d:propfind>");
 		Set<QName> names = toList(elements(doc, qname("DAV:", "propfind", ""), qname("DAV:", "prop", ""))).stream().map(DomUtil::qname).collect(Collectors.toSet());

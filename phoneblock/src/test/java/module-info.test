@@ -1,0 +1,12 @@
+/*
+ * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
+ */
+
+/**
+ * The PhoneBlock application.
+ */
+open module phoneblock.test {
+	requires transitive phoneblock;
+
+	requires transitive org.junit.jupiter.api;
+}

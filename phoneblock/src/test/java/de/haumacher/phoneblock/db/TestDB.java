@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
@@ -16,33 +18,32 @@ import javax.sql.DataSource;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.h2.jdbcx.JdbcDataSource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.SearchInfo;
-import junit.framework.TestCase;
 
 /**
  * Test case for {@link DB}.
  */
-public class TestDB extends TestCase {
+public class TestDB {
 	
 	private DB _db;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		
+	@BeforeEach
+	public void setUp() throws Exception {
 		DataSource dataSource = createTestDataSource();
 		_db = new DB(dataSource);
 	}
 	
-	@Override
-	protected void tearDown() throws Exception {
+	@AfterEach
+	public void tearDown() throws Exception {
 		_db.shutdown();
-		
-		super.tearDown();
 	}
 
+	@Test
 	public void testTopSearches() throws UnsupportedEncodingException, SQLException {
 		_db.addSearchHit("5", 0);
 		_db.addSearchHit("0", 0);
@@ -71,6 +72,7 @@ public class TestDB extends TestCase {
 		assertEquals(3, topSearches.get(1).getTotal());
 	}
 	
+	@Test
 	public void testSpamReports() throws UnsupportedEncodingException, SQLException {
 		assertFalse(_db.hasSpamReportFor("123"));
 
@@ -110,6 +112,7 @@ public class TestDB extends TestCase {
 		assertEquals("456", reports.get(0).getPhone());
 	}
 	
+	@Test
 	public void testBlocklist() throws UnsupportedEncodingException, SQLException {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
@@ -147,6 +150,7 @@ public class TestDB extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDuplicateAdd() throws UnsupportedEncodingException, SQLException {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
@@ -161,6 +165,7 @@ public class TestDB extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testUserManagement() throws SQLException, IOException {
 		_db.addUser("foo@bar.com", "123");
 		_db.addUser("baz@bar.com", "123");
@@ -183,6 +188,7 @@ public class TestDB extends TestCase {
 		return "Basic " + Base64.getEncoder().encodeToString((user + ':' + pw).getBytes("utf-8"));
 	}
 	
+	@Test
 	public void testRatings() {
 		long now = 1;
 		
@@ -205,6 +211,7 @@ public class TestDB extends TestCase {
 		assertEquals(Rating.C_PING, _db.getRating("123"));
 	}
 	
+	@Test
 	public void testSearchHistory() {
 		
 		_db.addSearchHit("123");
@@ -230,6 +237,7 @@ public class TestDB extends TestCase {
 		assertEquals(Arrays.asList(0, 1, 0, 1), _db.getSearchHistory("789"));
 	}
 	
+	@Test
 	public void testSearchHistoryCleanup() {
 		for (int n = 0; n < 100; n++) {
 			_db.addSearchHit("123");

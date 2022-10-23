@@ -3,20 +3,23 @@
  */
 package de.haumacher.phoneblock.db;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test case for {@link DBService}.
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
-public class TestDbService extends TestCase {
+public class TestDbService {
 
+	@Test
 	public void testStart() throws UnknownHostException, IOException {
 		DBService service = new DBService() {
 			@Override
@@ -36,6 +39,7 @@ public class TestDbService extends TestCase {
 		
 		try {
 			Socket socket = new Socket("localhost", 12345);
+			assertNotNull(socket);
 			fail("Must have been shut down.");
 		} catch (ConnectException ex) {
 			// expected.
