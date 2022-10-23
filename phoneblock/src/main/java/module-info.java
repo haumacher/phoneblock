@@ -8,6 +8,9 @@
 module phoneblock {
 	exports de.haumacher.phoneblock.app;
 
+	exports de.haumacher.phoneblock.db to org.mybatis;
+	exports de.haumacher.phoneblock.db.model to org.mybatis;
+	
 	requires com.google.api.client;
 	requires com.google.auth;
 	requires com.google.auth.oauth2;
