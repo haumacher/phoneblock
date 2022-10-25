@@ -42,9 +42,9 @@
 
 <link rel="canonical" href="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/0.9.4/css/bulma.min.css">
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/6.1.2/css/all.min.css">
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/3.2.1/shariff.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/${font-awesome.version}/css/all.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.css">
 
 <style type="text/css">
 .navbar-dropdown {
@@ -114,5 +114,5 @@
 }
 </style>
 
-<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/jquery/${jquery.version}/jquery.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=3"></script>

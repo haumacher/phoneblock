@@ -40,6 +40,12 @@
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
 
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+		
+		<font-awesome.version>6.2.0</font-awesome.version>
+		<bulma.version>0.9.4</bulma.version>
+		<chartjs.version>3.9.1</chartjs.version>
+		<shariff.version>3.2.1</shariff.version>
+		<jquery.version>3.6.0</jquery.version>
 	</properties>
 
 	<dependencies>
@@ -52,7 +58,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<version>4.0.1</version>
 		</dependency>
 
 		<dependency>
@@ -77,7 +83,7 @@
 		<dependency>
 		    <groupId>com.google.auth</groupId>
 		    <artifactId>google-auth-library-oauth2-http</artifactId>
-		    <version>1.12.0</version>
+		    <version>1.12.1</version>
 		</dependency>
 	
 		<dependency>
@@ -89,7 +95,7 @@
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
-		    <version>5.7.0</version>
+		    <version>5.7.1</version>
 
 			<exclusions>
 				<exclusion>
@@ -115,7 +121,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>2.1.210</version>
+			<version>2.1.214</version>
 		</dependency>
 
 		<dependency>
@@ -127,19 +133,19 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>font-awesome</artifactId>
-			<version>6.1.2</version>
+			<version>${font-awesome.version}</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.webjars.npm</groupId>
 		    <artifactId>bulma</artifactId>
-		    <version>0.9.4</version>
+		    <version>${bulma.version}</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.webjars</groupId>
 		    <artifactId>chartjs</artifactId>
-		    <version>3.9.1</version>
+		    <version>${chartjs.version}</version>
 		</dependency>
 
 		<dependency>
@@ -151,7 +157,13 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>shariff</artifactId>
-			<version>3.2.1</version>
+			<version>${shariff.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>jquery</artifactId>
+			<version>${jquery.version}</version>
 		</dependency>
 
 		<dependency>
@@ -163,25 +175,25 @@
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
-		    <version>1.7.36</version>
+		    <version>2.0.3</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.36</version>
+		    <version>2.0.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.tinylog</groupId>
 			<artifactId>slf4j-tinylog</artifactId>
-			<version>2.5.0</version>
+			<version>2.6.0-M1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.tinylog</groupId>
 			<artifactId>tinylog-impl</artifactId>
-			<version>2.5.0</version>
+			<version>2.6.0-M1</version>
 		</dependency>
 
 		<dependency>
@@ -299,6 +311,9 @@
 		        </configuration>
 			</plugin>
 			
+			<!-- 
+				To update dependencies to latest releases use: mvn versions:use-latest-releases
+			-->
 		</plugins>
 	</build>
 </project>

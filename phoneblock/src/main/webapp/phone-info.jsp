@@ -43,7 +43,7 @@
 <jsp:include page="head-content.jspf"></jsp:include>
 
 <% if (!ratings.isEmpty() || !searches.isEmpty()) { %>
-<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/chartjs/3.9.1/dist/chart.min.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/chartjs/${chartjs.version}/dist/chart.min.js"></script>
 <% } %>
 
 </head>

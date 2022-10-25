@@ -48,4 +48,4 @@
 	</div>
 </footer>
 
-<script src="<%= request.getContextPath() %>/webjars/shariff/3.2.1/shariff.min.js"></script>
+<script src="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.js"></script>
