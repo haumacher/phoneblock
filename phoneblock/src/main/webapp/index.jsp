@@ -54,19 +54,27 @@
 		<h2>Wie funktioniert PhoneBlock?</h2>
 
 		<p>PhoneBlock ist eine von der PhoneBlock-Community gepflegte
-			Telefonliste mit Telefonnummern von Spam-Anrufern. Diese
+			Liste mit Telefonnummern, die unter Spamverdacht stehen. Diese
 			Telefonliste wird in Deinem Internet-Router "FRITZ!Box" als
-			Sperrliste eingerichtet. Sobald eine Nummer in diese Sperrliste
+			Sperrliste eingerichtet. So kann Deine Fritz!Box automatisch alle Anrufer 
+			blockieren, die als agressive Telefonwerbung, Telefonterror, oder Telefonbetrüger 
+			bekannt sind. Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
+			aktualisiert die Sperrliste jede Nacht automatisch. Sobald eine Nummer in diese Sperrliste
 			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
 			automatisch ab. Das Telefon bleibt stumm.</p>
 
 		<p>Erhälst Du trotzdem noch einen unerwünschten Anruf, weil die
 			Nummer noch nicht in die Sperrliste aufgenommen ist, kannst Du die
-			Nummer ganz einfach in Deiner FRITZ!Box mit auf die Sperrliste
-			setzten. Sobald Du das getan hast, aktualisiert Deine FrizBox die
+			<a href="<%=request.getContextPath()%>/block.jsp">Nummer ganz einfach in Deiner FRITZ!Box sperren</a>. 
+			Hierzu machst Du für den unerwünschten 
+			Anrufer einen Eintrag im PhoneBlock-Adressbuch direkt in Deiner Fritz!Box. 
+			Sobald Du das getan hast, aktualisiert Deine FrizBox die
 			Sperrliste für alle Mitglieder der PhoneBlock-Community und Anrufe
 			von dieser neuen Nummer blitzen bei allen anderen ebenfalls sofort
-			ab.</p>
+			ab. Das ist zwar ein klein wenig aufwendiger, als die Nummer in Deinem Fritz!Phone direkt 
+			zu sperren, aber hat den Vorteil, dass Du damit die ganze PhoneBlock-Community vor 
+			<a href="<%=request.getContextPath()%>/status.jsp">weiteren Spam-Anrufen</a> schützt. 
+		</p>
 
 		<h2>Was sind die Vorausetzungen?</h2>
 
@@ -77,13 +85,9 @@
 		</div>
 		
 		<p>
-			PhoneBlock funktioniert an einem "Festnetzanschluss" in
+			PhoneBlock kann unerwünschte Anrufe entweder am <a href="<%=request.getContextPath()%>/setup.jsp">"Festnetzanschluss"</a> in
 			Zusammenspiel mit einem <a href="https://avm.de/produkte/fritzbox/">"FRITZ!Box"
-				Internetrouter von AVM</a>. Es muss nicht unbedingt das neuste Modell
-			sein, aber Du solltest prüfen, ob das aktuelle FRITZ!OS darauf
-			installiert ist (07.29 oder neuer). Ist dies nicht der Fall, prüfe
-			anhand der Installationsanleitung, ob Deine Version die notwendigen
-			Optionen schon bietet.
+			Internetrouter von AVM</a> blockieren, oder auf Deinem <a href="<%=request.getContextPath()%>/setup-android/">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
 		</p>
 		
 		<div class="columns">

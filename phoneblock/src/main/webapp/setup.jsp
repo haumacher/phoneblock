@@ -26,9 +26,13 @@
 %>
 		<p>
 			Für die Installation benötigst Du einen <a href="https://avm.de/produkte/fritzbox/">"FRITZ!Box"
-				Internetrouter von AVM</a> und einen PhoneBlock-Account. Du hast noch keinen PhoneBlock-Account? Dann erstelle Dir jetzt einen!
-		</p>
-		
+			Internetrouter von AVM</a> und einen PhoneBlock-Account. Es muss nicht unbedingt das neuste Modell
+			sein, aber Du solltest prüfen, ob das aktuelle FRITZ!OS darauf
+			installiert ist (07.29 oder neuer). Ist dies nicht der Fall, prüfe
+			anhand der folgenden Installationsanleitung, ob Deine Version die notwendigen
+			Optionen schon bietet.
+		</p> 
+			
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="<%=request.getContextPath() %>/signup.jsp">
