@@ -348,7 +348,7 @@
 					<ignorePackaging>true</ignorePackaging>
 					<url>${phoneblock.server.deployUrl}</url>
 					<server>${phoneblock.server.id}</server>
-					<path>/phoneblock</path>
+					<path>${phoneblock.contextpath}</path>
 				</configuration>
 			</plugin>
 
