@@ -45,7 +45,7 @@
 		<bulma.version>0.9.4</bulma.version>
 		<chartjs.version>3.9.1</chartjs.version>
 		<shariff.version>3.2.1</shariff.version>
-		<jquery.version>3.6.0</jquery.version>
+		<jquery.version>3.6.1</jquery.version>
 	</properties>
 
 	<dependencies>
@@ -312,7 +312,14 @@
 			</plugin>
 			
 			<!-- 
-				To update dependencies to latest releases use: mvn versions:use-latest-releases
+				To update dependencies to latest releases use: 
+				mvn versions:use-latest-releases -DgenerateBackupPoms=false
+				
+				Check for version property updates:
+				mvn versions:display-property-updates
+				
+				Actually update version properties.
+				mvn versions:update-properties -DgenerateBackupPoms=false
 			-->
 		</plugins>
 	</build>
