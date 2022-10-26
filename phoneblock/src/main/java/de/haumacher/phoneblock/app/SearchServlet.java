@@ -80,6 +80,9 @@ public class SearchServlet extends HttpServlet {
 		int votes = info.getVotes();
 		List<? extends RatingInfo> ratingInfos = db.getRatings(phone);
 		Rating rating = ratingInfos.stream().max(Ratings::compare).map(i -> i.getRating()).orElse(Rating.B_MISSED);
+		if (rating == Rating.A_LEGITIMATE && votes > 0) {
+			rating = Rating.B_MISSED;
+		}
 		Map<Rating, Integer> ratings = ratingInfos.stream().collect(Collectors.toMap(i -> i.getRating(), i -> i.getVotes()));
 		
 		int ratingVotes = ratingInfos.stream().mapToInt(i -> Ratings.getVotes(i.getRating()) * i.getVotes()).reduce(0, (a, b) -> a + b);
