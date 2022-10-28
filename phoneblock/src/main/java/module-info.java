@@ -7,6 +7,7 @@
  */
 module phoneblock {
 	exports de.haumacher.phoneblock.app;
+	exports de.haumacher.phoneblock.app.api;
 
 	exports de.haumacher.phoneblock.db to org.mybatis;
 	exports de.haumacher.phoneblock.db.model to org.mybatis;
