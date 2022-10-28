@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * The login data created during registration.
+ */
 public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -45,6 +48,9 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 		super();
 	}
 
+	/**
+	 * The registration session ID given in {@link RegistrationChallenge#getSession()}.
+	 */
 	public final String getSession() {
 		return _session;
 	}
@@ -63,6 +69,9 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 		_session = value;
 	}
 
+	/**
+	 * The new user name.
+	 */
 	public final String getEmail() {
 		return _email;
 	}
@@ -81,6 +90,9 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 		_email = value;
 	}
 
+	/**
+	 * The user's secure password.
+	 */
 	public final String getPassword() {
 		return _password;
 	}

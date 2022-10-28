@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * The completion of the registration.
+ */
 public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -37,6 +40,9 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 		super();
 	}
 
+	/**
+	 * The registration session ID given in {@link RegistrationChallenge#getSession()}.
+	 */
 	public final String getSession() {
 		return _session;
 	}
@@ -55,6 +61,9 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 		_session = value;
 	}
 
+	/**
+	 * The code that was sent to the user's e-mail address.
+	 */
 	public final String getCode() {
 		return _code;
 	}

@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * Internal data that is kept between registration requests on the server.
+ */
 public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -61,6 +64,9 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		super();
 	}
 
+	/**
+	 * Time when the registration process was started by retrieving the {@link RegistrationChallenge}.
+	 */
 	public final long getCreated() {
 		return _created;
 	}
@@ -79,6 +85,9 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		_created = value;
 	}
 
+	/**
+	 * The registration session ID given in {@link RegistrationChallenge#getSession()}.
+	 */
 	public final String getSession() {
 		return _session;
 	}
@@ -97,6 +106,9 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		_session = value;
 	}
 
+	/**
+	 * The e-mail address of the user to register
+	 */
 	public final String getEmail() {
 		return _email;
 	}
@@ -115,6 +127,9 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		_email = value;
 	}
 
+	/**
+	 * The expected answer to the captcha.
+	 */
 	public final String getAnswer() {
 		return _answer;
 	}
@@ -133,6 +148,9 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		_answer = value;
 	}
 
+	/**
+	 * The code that was sent to the user's e-mail address.
+	 */
 	public final String getCode() {
 		return _code;
 	}

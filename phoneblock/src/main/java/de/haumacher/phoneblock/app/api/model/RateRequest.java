@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * Request to a add a new rating for a phone number.
+ */
 public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -37,6 +40,9 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		super();
 	}
 
+	/**
+	 * The phone number to rate.
+	 */
 	public final String getPhone() {
 		return _phone;
 	}
@@ -55,6 +61,9 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		_phone = value;
 	}
 
+	/**
+	 * The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.db.model.Rating}.
+	 */
 	public final String getRating() {
 		return _rating;
 	}

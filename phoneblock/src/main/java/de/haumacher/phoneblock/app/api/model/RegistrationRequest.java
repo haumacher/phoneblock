@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * Requesting a new user account.
+ */
 public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -45,6 +48,9 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 		super();
 	}
 
+	/**
+	 * The registration session ID given in {@link RegistrationChallenge#getSession()}.
+	 */
 	public final String getSession() {
 		return _session;
 	}
@@ -63,6 +69,9 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 		_session = value;
 	}
 
+	/**
+	 * The decoded captcha text from {@link RegistrationChallenge#getCaptcha()}.
+	 */
 	public final String getAnswer() {
 		return _answer;
 	}
@@ -81,6 +90,9 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 		_answer = value;
 	}
 
+	/**
+	 * The e-mail address of the user to register
+	 */
 	public final String getEmail() {
 		return _email;
 	}

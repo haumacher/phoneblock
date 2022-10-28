@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * Information that must be requested to start a registration process.
+ */
 public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
@@ -37,6 +40,9 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 		super();
 	}
 
+	/**
+	 * The registration session ID, must be provided to following calls.
+	 */
 	public final String getSession() {
 		return _session;
 	}
@@ -55,6 +61,9 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 		_session = value;
 	}
 
+	/**
+	 * A Base64 encoded image hiding some random text. The text must be entered to the {@link RegistrationRequest#getAnswer()} field.
+	 */
 	public final String getCaptcha() {
 		return _captcha;
 	}

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DBService;
 
 /**
@@ -59,6 +60,7 @@ public class ServletUtil {
 		if (authHeader != null && !authHeader.isEmpty()) {
 			String userName = DBService.getInstance().basicAuth(authHeader);
 			if (userName != null) {
+				req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
 				return true;
 			}
 		}
