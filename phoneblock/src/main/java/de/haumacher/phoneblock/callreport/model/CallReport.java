@@ -9,29 +9,29 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 * Creates a {@link CallReport} instance.
 	 */
 	public static CallReport create() {
-		return new CallReport();
+		return new de.haumacher.phoneblock.callreport.model.CallReport();
 	}
 
 	/** Identifier for the {@link CallReport} type in JSON format. */
 	public static final String CALL_REPORT__TYPE = "CallReport";
 
 	/** @see #getTimestamp() */
-	public static final String TIMESTAMP = "timestamp";
+	public static final String TIMESTAMP__PROP = "timestamp";
 
 	/** @see #getLastid() */
-	public static final String LASTID = "lastid";
+	public static final String LASTID__PROP = "lastid";
 
 	/** @see #getCallers() */
-	public static final String CALLERS = "callers";
+	public static final String CALLERS__PROP = "callers";
 
 	/** Identifier for the property {@link #getTimestamp()} in binary format. */
-	public static final int TIMESTAMP__ID = 1;
+	static final int TIMESTAMP__ID = 1;
 
 	/** Identifier for the property {@link #getLastid()} in binary format. */
-	public static final int LASTID__ID = 2;
+	static final int LASTID__ID = 2;
 
 	/** Identifier for the property {@link #getCallers()} in binary format. */
-	public static final int CALLERS__ID = 3;
+	static final int CALLERS__ID = 3;
 
 	private String _timestamp = "";
 
@@ -40,19 +40,19 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	private final java.util.List<String> _callers = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
-			_listener.beforeAdd(de.haumacher.phoneblock.callreport.model.CallReport.this, CALLERS, index, element);
+			_listener.beforeAdd(CallReport.this, CALLERS__PROP, index, element);
 		}
 
 		@Override
 		protected void afterRemove(int index, String element) {
-			_listener.afterRemove(de.haumacher.phoneblock.callreport.model.CallReport.this, CALLERS, index, element);
+			_listener.afterRemove(CallReport.this, CALLERS__PROP, index, element);
 		}
 	};
 
 	/**
 	 * Creates a {@link CallReport} instance.
 	 *
-	 * @see #create()
+	 * @see CallReport#create()
 	 */
 	protected CallReport() {
 		super();
@@ -72,12 +72,12 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetTimestamp(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getTimestamp()} without chain call utility. */
 	protected final void internalSetTimestamp(String value) {
-		_listener.beforeSet(this, TIMESTAMP, value);
+		_listener.beforeSet(this, TIMESTAMP__PROP, value);
 		_timestamp = value;
 	}
-
 
 	/**
 	 * The ID of the last call reported in a Fritz!Box GetCallers result.
@@ -93,12 +93,12 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetLastid(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getLastid()} without chain call utility. */
 	protected final void internalSetLastid(String value) {
-		_listener.beforeSet(this, LASTID, value);
+		_listener.beforeSet(this, LASTID__PROP, value);
 		_lastid = value;
 	}
-
 
 	/**
 	 * The phone number that have been blocked be the Fritz!Box since the last report.
@@ -110,16 +110,16 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCallers()
 	 */
-	public CallReport setCallers(java.util.List<String> value) {
+	public CallReport setCallers(java.util.List<? extends String> value) {
 		internalSetCallers(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getCallers()} without chain call utility. */
-	protected final void internalSetCallers(java.util.List<String> value) {
+	protected final void internalSetCallers(java.util.List<? extends String> value) {
 		_callers.clear();
 		_callers.addAll(value);
 	}
-
 
 	/**
 	 * Adds a value to the {@link #getCallers()} list.
@@ -170,9 +170,9 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			TIMESTAMP, 
-			LASTID, 
-			CALLERS));
+			TIMESTAMP__PROP, 
+			LASTID__PROP, 
+			CALLERS__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -182,28 +182,26 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case TIMESTAMP: return getTimestamp();
-			case LASTID: return getLastid();
-			case CALLERS: return getCallers();
-			default: return de.haumacher.msgbuf.observer.Observable.super.get(field);
+			case TIMESTAMP__PROP: return getTimestamp();
+			case LASTID__PROP: return getLastid();
+			case CALLERS__PROP: return getCallers();
+			default: return null;
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case TIMESTAMP: setTimestamp((String) value); break;
-			case LASTID: setLastid((String) value); break;
-			case CALLERS: setCallers((java.util.List<String>) value); break;
+			case TIMESTAMP__PROP: internalSetTimestamp((String) value); break;
+			case LASTID__PROP: internalSetLastid((String) value); break;
+			case CALLERS__PROP: internalSetCallers(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
 	public static CallReport readCallReport(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		CallReport result = new CallReport();
-		in.beginObject();
-		result.readFields(in);
-		in.endObject();
+		de.haumacher.phoneblock.callreport.model.CallReport result = new de.haumacher.phoneblock.callreport.model.CallReport();
+		result.readContent(in);
 		return result;
 	}
 
@@ -215,11 +213,11 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(TIMESTAMP);
+		out.name(TIMESTAMP__PROP);
 		out.value(getTimestamp());
-		out.name(LASTID);
+		out.name(LASTID__PROP);
 		out.value(getLastid());
-		out.name(CALLERS);
+		out.name(CALLERS__PROP);
 		out.beginArray();
 		for (String x : getCallers()) {
 			out.value(x);
@@ -230,9 +228,9 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case TIMESTAMP: setTimestamp(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case LASTID: setLastid(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case CALLERS: {
+			case TIMESTAMP__PROP: setTimestamp(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LASTID__PROP: setLastid(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CALLERS__PROP: {
 				in.beginArray();
 				while (in.hasNext()) {
 					addCaller(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
@@ -277,13 +275,24 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Reads a new instance from the given reader. */
 	public static CallReport readCallReport(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		CallReport result = new CallReport();
-		while (in.hasNext()) {
-			int field = in.nextName();
-			result.readField(in, field);
-		}
+		CallReport result = de.haumacher.phoneblock.callreport.model.CallReport.readCallReport_Content(in);
 		in.endObject();
 		return result;
+	}
+
+	/** Helper for creating an object of type {@link CallReport} from a polymorphic composition. */
+	public static CallReport readCallReport_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.callreport.model.CallReport result = new CallReport();
+		result.readContent(in);
+		return result;
+	}
+
+	/** Helper for reading all fields of this instance. */
+	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		while (in.hasNext()) {
+			int field = in.nextName();
+			readField(in, field);
+		}
 	}
 
 	/** Consumes the value for the field with the given ID and assigns its value. */

@@ -22,9 +22,20 @@ public class SchedulerService implements ServletContextListener {
 
 	private ScheduledExecutorService _executor;
 
+	private static SchedulerService _instance;
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		_executor = new ScheduledThreadPoolExecutor(2);
+		
+		_instance = this;
+	}
+	
+	/**
+	 * The singleton instance of this service.
+	 */
+	public static SchedulerService getInstance() {
+		return _instance;
 	}
 
 	@Override

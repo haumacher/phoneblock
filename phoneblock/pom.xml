@@ -46,12 +46,14 @@
 		<chartjs.version>3.9.1</chartjs.version>
 		<shariff.version>3.2.1</shariff.version>
 		<jquery.version>3.6.1</jquery.version>
+		
+		<msgbuf.version>1.1.0-SNAPSHOT</msgbuf.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>de.haumacher.msgbuf</groupId>
-			<version>1.0.3</version>
+			<version>${msgbuf.version}</version>
 			<artifactId>msgbuf-api</artifactId>
 		</dependency>
 	
@@ -222,6 +224,22 @@
 		</resources>
 
 		<plugins>
+		
+			<plugin>
+				<groupId>de.haumacher.msgbuf</groupId>
+				<version>${msgbuf.version}</version>
+				<artifactId>msgbuf-generator-maven-plugin</artifactId>
+				
+				<executions>
+					<execution>
+						<id>generate-protocols</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>

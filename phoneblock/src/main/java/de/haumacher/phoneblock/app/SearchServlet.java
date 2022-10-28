@@ -75,10 +75,14 @@ public class SearchServlet extends HttpServlet {
 		String phoneId = getPhoneId(number);
 		
 		DB db = DBService.getInstance();
+		if (!isBot(req) && req.getParameter("link") == null) {
+			db.addSearchHit(phoneId);
+		}
+		
 		SpamReport info = db.getPhoneInfo(phoneId);
 		List<? extends SearchInfo> searches = db.getSearches(phoneId);
 		int votes = info.getVotes();
-		List<? extends RatingInfo> ratingInfos = db.getRatings(phone);
+		List<? extends RatingInfo> ratingInfos = db.getRatings(phoneId);
 		Rating rating = ratingInfos.stream().max(Ratings::compare).map(i -> i.getRating()).orElse(Rating.B_MISSED);
 		if (rating == Rating.A_LEGITIMATE && votes > 0) {
 			rating = Rating.B_MISSED;
@@ -90,13 +94,6 @@ public class SearchServlet extends HttpServlet {
 		if (unknownVotes > 0) {
 			ratings.put(Rating.B_MISSED, 
 				Integer.valueOf(unknownVotes / Ratings.getVotes(Rating.B_MISSED) + ratings.getOrDefault(Rating.B_MISSED, Integer.valueOf(0)).intValue()));
-		}
-		
-		String userAgent = req.getHeader("User-Agent");
-		if (userAgent != null && !BOT_PATTERN.matcher(userAgent).find()) {
-			if (req.getParameter("link") == null) {
-				db.addSearchHit(phoneId);
-			}
 		}
 		
 		String ratingAttribute = RatingServlet.ratingAttribute(phoneId);
@@ -112,12 +109,20 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("rating", rating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
-		req.setAttribute("title", status(votes) + ": Rufnummer ☎ " + phone + " - PhoneBlock");
+		req.setAttribute("title", status(votes) + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
 		if (votes > 0) {
 			req.setAttribute("description", votes + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		}
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
+	}
+
+	/** 
+	 * Whether the request is from a known bot.
+	 */
+	public static boolean isBot(HttpServletRequest req) {
+		String userAgent = req.getHeader("User-Agent");
+		return userAgent == null || BOT_PATTERN.matcher(userAgent).find();
 	}
 
 	private static String or(String... strs) {

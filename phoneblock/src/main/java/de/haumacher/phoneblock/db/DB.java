@@ -47,6 +47,9 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.db.model.BlockListEntry;
+import de.haumacher.phoneblock.db.model.Blocklist;
+import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
@@ -196,14 +199,21 @@ public class DB {
 	 * @return The randomly generated password for the account.
 	 */
 	public String createUser(String userName) throws UnsupportedEncodingException {
-		StringBuilder pwbuffer = new StringBuilder();
-		for (int n = 0; n < 20; n++) {
-			pwbuffer.append(SAVE_CHARS.charAt(_rnd.nextInt(SAVE_CHARS.length())));
-		}
-		
-		String passwd = pwbuffer.toString();
+		String passwd = createPassword(20);
 		addUser(userName, passwd);
 		return passwd;
+	}
+
+	/** 
+	 * Creates a secure password with the given length.
+	 */
+	public String createPassword(int length) {
+		StringBuilder buffer = new StringBuilder();
+		for (int n = 0; n < length; n++) {
+			buffer.append(SAVE_CHARS.charAt(_rnd.nextInt(SAVE_CHARS.length())));
+		}
+		
+		return buffer.toString();
 	}
 
 	/**
@@ -467,6 +477,37 @@ public class DB {
 		}
 	}
 
+	/**
+	 * Looks up the newest entries in the blocklist.
+	 */
+	public Blocklist getBlockListAPI(int minVotes) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			List<PhoneInfo> numbers = reports.getBlocklist(minVotes)
+					.stream()
+					.collect(Collectors.toMap(s -> s.getPhone(), s -> s, DB::withMaxRating))
+					.values()
+					.stream()
+					.map(s -> PhoneInfo.create()
+							.setPhone(s.getPhone())
+							.setVotes(s.getVotes())
+							.setRating(s.getRating()))
+					.sorted((a, b) -> a.getPhone().compareTo(b.getPhone()))
+					.collect(Collectors.toList());
+			return Blocklist.create().setNumbers(numbers);
+		}
+	}
+	
+	private static BlockListEntry withMaxRating(BlockListEntry a, BlockListEntry b) {
+		return compare(a, b) < 0 ? b : a;
+	}
+
+	private static int compare(BlockListEntry a, BlockListEntry b) {
+		int aCount = a.getCount();
+		int bCount = b.getCount();
+		return aCount < bCount ? -1 : aCount > bCount ? 1 : Integer.compare(a.getRating().ordinal(), b.getRating().ordinal());
+	}
+
 	private int getMinVotes(SqlSession session, String userName) {
 		int minVotes = (userName == null) ? MIN_VOTES : getSettings(session, userName).getMinVotes();
 		return minVotes;
@@ -537,6 +578,17 @@ public class DB {
 				} else {
 					result.setArchived(true);
 				}
+			}
+			return result;
+		}
+	}
+	
+	public PhoneInfo getPhoneApiInfo(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			PhoneInfo result = reports.getApiPhoneInfo(phone);
+			if (result == null) {
+				result = PhoneInfo.create().setPhone(phone);
 			}
 			return result;
 		}

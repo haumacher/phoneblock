@@ -19,6 +19,7 @@ import javax.servlet.http.HttpSession;
 import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Filter doing basic authentication.
@@ -62,8 +63,7 @@ public class LoginFilter implements Filter {
 			}
 		}
 
-		resp.setHeader("WWW-Authenticate", "Basic realm=\"PhoneBlock\", charset=\"UTF-8\"");
-		resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		ServletUtil.sendAuthenticationRequest(resp);
 	}
 
 	/** 

@@ -24,7 +24,7 @@ module phoneblock {
 	requires java.sql;
 	requires java.xml;
 	requires javax.servlet.api;
-	requires msgbuf.api;
+	requires de.haumacher.msgbuf;
 	requires org.apache.httpcomponents.httpcore;
 	requires org.jsoup;
 	requires org.mybatis;

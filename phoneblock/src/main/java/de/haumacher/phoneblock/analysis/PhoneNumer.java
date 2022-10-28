@@ -6,53 +6,53 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 * Creates a {@link PhoneNumer} instance.
 	 */
 	public static PhoneNumer create() {
-		return new PhoneNumer();
+		return new de.haumacher.phoneblock.analysis.PhoneNumer();
 	}
 
 	/** Identifier for the {@link PhoneNumer} type in JSON format. */
 	public static final String PHONE_NUMER__TYPE = "PhoneNumer";
 
 	/** @see #getShortcut() */
-	public static final String SHORTCUT = "shortcut";
+	public static final String SHORTCUT__PROP = "shortcut";
 
 	/** @see #getPlus() */
-	public static final String PLUS = "plus";
+	public static final String PLUS__PROP = "plus";
 
 	/** @see #getZeroZero() */
-	public static final String ZERO_ZERO = "zeroZero";
+	public static final String ZERO_ZERO__PROP = "zeroZero";
 
 	/** @see #getCountryCode() */
-	public static final String COUNTRY_CODE = "countryCode";
+	public static final String COUNTRY_CODE__PROP = "countryCode";
 
 	/** @see #getCountry() */
-	public static final String COUNTRY = "country";
+	public static final String COUNTRY__PROP = "country";
 
 	/** @see #getCityCode() */
-	public static final String CITY_CODE = "cityCode";
+	public static final String CITY_CODE__PROP = "cityCode";
 
 	/** @see #getCity() */
-	public static final String CITY = "city";
+	public static final String CITY__PROP = "city";
 
 	/** Identifier for the property {@link #getShortcut()} in binary format. */
-	public static final int SHORTCUT__ID = 1;
+	static final int SHORTCUT__ID = 1;
 
 	/** Identifier for the property {@link #getPlus()} in binary format. */
-	public static final int PLUS__ID = 2;
+	static final int PLUS__ID = 2;
 
 	/** Identifier for the property {@link #getZeroZero()} in binary format. */
-	public static final int ZERO_ZERO__ID = 3;
+	static final int ZERO_ZERO__ID = 3;
 
 	/** Identifier for the property {@link #getCountryCode()} in binary format. */
-	public static final int COUNTRY_CODE__ID = 4;
+	static final int COUNTRY_CODE__ID = 4;
 
 	/** Identifier for the property {@link #getCountry()} in binary format. */
-	public static final int COUNTRY__ID = 5;
+	static final int COUNTRY__ID = 5;
 
 	/** Identifier for the property {@link #getCityCode()} in binary format. */
-	public static final int CITY_CODE__ID = 6;
+	static final int CITY_CODE__ID = 6;
 
 	/** Identifier for the property {@link #getCity()} in binary format. */
-	public static final int CITY__ID = 7;
+	static final int CITY__ID = 7;
 
 	private String _shortcut = null;
 
@@ -71,7 +71,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link PhoneNumer} instance.
 	 *
-	 * @see #create()
+	 * @see PhoneNumer#create()
 	 */
 	protected PhoneNumer() {
 		super();
@@ -88,12 +88,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetShortcut(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getShortcut()} without chain call utility. */
 	protected final void internalSetShortcut(String value) {
-		_listener.beforeSet(this, SHORTCUT, value);
+		_listener.beforeSet(this, SHORTCUT__PROP, value);
 		_shortcut = value;
 	}
-
 
 	/**
 	 * Checks, whether {@link #getShortcut()} has a value.
@@ -113,12 +113,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetPlus(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getPlus()} without chain call utility. */
 	protected final void internalSetPlus(String value) {
-		_listener.beforeSet(this, PLUS, value);
+		_listener.beforeSet(this, PLUS__PROP, value);
 		_plus = value;
 	}
-
 
 	public final String getZeroZero() {
 		return _zeroZero;
@@ -131,12 +131,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetZeroZero(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getZeroZero()} without chain call utility. */
 	protected final void internalSetZeroZero(String value) {
-		_listener.beforeSet(this, ZERO_ZERO, value);
+		_listener.beforeSet(this, ZERO_ZERO__PROP, value);
 		_zeroZero = value;
 	}
-
 
 	public final String getCountryCode() {
 		return _countryCode;
@@ -149,12 +149,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetCountryCode(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getCountryCode()} without chain call utility. */
 	protected final void internalSetCountryCode(String value) {
-		_listener.beforeSet(this, COUNTRY_CODE, value);
+		_listener.beforeSet(this, COUNTRY_CODE__PROP, value);
 		_countryCode = value;
 	}
-
 
 	public final String getCountry() {
 		return _country;
@@ -167,12 +167,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetCountry(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getCountry()} without chain call utility. */
 	protected final void internalSetCountry(String value) {
-		_listener.beforeSet(this, COUNTRY, value);
+		_listener.beforeSet(this, COUNTRY__PROP, value);
 		_country = value;
 	}
-
 
 	public final String getCityCode() {
 		return _cityCode;
@@ -185,12 +185,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetCityCode(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getCityCode()} without chain call utility. */
 	protected final void internalSetCityCode(String value) {
-		_listener.beforeSet(this, CITY_CODE, value);
+		_listener.beforeSet(this, CITY_CODE__PROP, value);
 		_cityCode = value;
 	}
-
 
 	/**
 	 * Checks, whether {@link #getCityCode()} has a value.
@@ -210,12 +210,12 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetCity(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getCity()} without chain call utility. */
 	protected final void internalSetCity(String value) {
-		_listener.beforeSet(this, CITY, value);
+		_listener.beforeSet(this, CITY__PROP, value);
 		_city = value;
 	}
-
 
 	/**
 	 * Checks, whether {@link #getCity()} has a value.
@@ -253,13 +253,13 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			SHORTCUT, 
-			PLUS, 
-			ZERO_ZERO, 
-			COUNTRY_CODE, 
-			COUNTRY, 
-			CITY_CODE, 
-			CITY));
+			SHORTCUT__PROP, 
+			PLUS__PROP, 
+			ZERO_ZERO__PROP, 
+			COUNTRY_CODE__PROP, 
+			COUNTRY__PROP, 
+			CITY_CODE__PROP, 
+			CITY__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -269,36 +269,34 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case SHORTCUT: return getShortcut();
-			case PLUS: return getPlus();
-			case ZERO_ZERO: return getZeroZero();
-			case COUNTRY_CODE: return getCountryCode();
-			case COUNTRY: return getCountry();
-			case CITY_CODE: return getCityCode();
-			case CITY: return getCity();
-			default: return de.haumacher.msgbuf.observer.Observable.super.get(field);
+			case SHORTCUT__PROP: return getShortcut();
+			case PLUS__PROP: return getPlus();
+			case ZERO_ZERO__PROP: return getZeroZero();
+			case COUNTRY_CODE__PROP: return getCountryCode();
+			case COUNTRY__PROP: return getCountry();
+			case CITY_CODE__PROP: return getCityCode();
+			case CITY__PROP: return getCity();
+			default: return null;
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case SHORTCUT: setShortcut((String) value); break;
-			case PLUS: setPlus((String) value); break;
-			case ZERO_ZERO: setZeroZero((String) value); break;
-			case COUNTRY_CODE: setCountryCode((String) value); break;
-			case COUNTRY: setCountry((String) value); break;
-			case CITY_CODE: setCityCode((String) value); break;
-			case CITY: setCity((String) value); break;
+			case SHORTCUT__PROP: internalSetShortcut((String) value); break;
+			case PLUS__PROP: internalSetPlus((String) value); break;
+			case ZERO_ZERO__PROP: internalSetZeroZero((String) value); break;
+			case COUNTRY_CODE__PROP: internalSetCountryCode((String) value); break;
+			case COUNTRY__PROP: internalSetCountry((String) value); break;
+			case CITY_CODE__PROP: internalSetCityCode((String) value); break;
+			case CITY__PROP: internalSetCity((String) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
 	public static PhoneNumer readPhoneNumer(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		PhoneNumer result = new PhoneNumer();
-		in.beginObject();
-		result.readFields(in);
-		in.endObject();
+		de.haumacher.phoneblock.analysis.PhoneNumer result = new de.haumacher.phoneblock.analysis.PhoneNumer();
+		result.readContent(in);
 		return result;
 	}
 
@@ -311,23 +309,23 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
 		if (hasShortcut()) {
-			out.name(SHORTCUT);
+			out.name(SHORTCUT__PROP);
 			out.value(getShortcut());
 		}
-		out.name(PLUS);
+		out.name(PLUS__PROP);
 		out.value(getPlus());
-		out.name(ZERO_ZERO);
+		out.name(ZERO_ZERO__PROP);
 		out.value(getZeroZero());
-		out.name(COUNTRY_CODE);
+		out.name(COUNTRY_CODE__PROP);
 		out.value(getCountryCode());
-		out.name(COUNTRY);
+		out.name(COUNTRY__PROP);
 		out.value(getCountry());
 		if (hasCityCode()) {
-			out.name(CITY_CODE);
+			out.name(CITY_CODE__PROP);
 			out.value(getCityCode());
 		}
 		if (hasCity()) {
-			out.name(CITY);
+			out.name(CITY__PROP);
 			out.value(getCity());
 		}
 	}
@@ -335,13 +333,13 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case SHORTCUT: setShortcut(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case PLUS: setPlus(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case ZERO_ZERO: setZeroZero(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case COUNTRY_CODE: setCountryCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case COUNTRY: setCountry(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case CITY_CODE: setCityCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case CITY: setCity(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case SHORTCUT__PROP: setShortcut(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case PLUS__PROP: setPlus(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ZERO_ZERO__PROP: setZeroZero(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case COUNTRY_CODE__PROP: setCountryCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case COUNTRY__PROP: setCountry(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CITY_CODE__PROP: setCityCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CITY__PROP: setCity(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -386,13 +384,24 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Reads a new instance from the given reader. */
 	public static PhoneNumer readPhoneNumer(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		PhoneNumer result = new PhoneNumer();
-		while (in.hasNext()) {
-			int field = in.nextName();
-			result.readField(in, field);
-		}
+		PhoneNumer result = de.haumacher.phoneblock.analysis.PhoneNumer.readPhoneNumer_Content(in);
 		in.endObject();
 		return result;
+	}
+
+	/** Helper for creating an object of type {@link PhoneNumer} from a polymorphic composition. */
+	public static PhoneNumer readPhoneNumer_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.analysis.PhoneNumer result = new PhoneNumer();
+		result.readContent(in);
+		return result;
+	}
+
+	/** Helper for reading all fields of this instance. */
+	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		while (in.hasNext()) {
+			int field = in.nextName();
+			readField(in, field);
+		}
 	}
 
 	/** Consumes the value for the field with the given ID and assigns its value. */

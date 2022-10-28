@@ -9,23 +9,23 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 * Creates a {@link ReportInfo} instance.
 	 */
 	public static ReportInfo create() {
-		return new ReportInfo();
+		return new de.haumacher.phoneblock.callreport.model.ReportInfo();
 	}
 
 	/** Identifier for the {@link ReportInfo} type in JSON format. */
 	public static final String REPORT_INFO__TYPE = "ReportInfo";
 
 	/** @see #getTimestamp() */
-	public static final String TIMESTAMP = "timestamp";
+	public static final String TIMESTAMP__PROP = "timestamp";
 
 	/** @see #getLastid() */
-	public static final String LASTID = "lastid";
+	public static final String LASTID__PROP = "lastid";
 
 	/** Identifier for the property {@link #getTimestamp()} in binary format. */
-	public static final int TIMESTAMP__ID = 1;
+	static final int TIMESTAMP__ID = 1;
 
 	/** Identifier for the property {@link #getLastid()} in binary format. */
-	public static final int LASTID__ID = 2;
+	static final int LASTID__ID = 2;
 
 	private String _timestamp = null;
 
@@ -34,7 +34,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link ReportInfo} instance.
 	 *
-	 * @see #create()
+	 * @see ReportInfo#create()
 	 */
 	protected ReportInfo() {
 		super();
@@ -54,12 +54,12 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetTimestamp(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getTimestamp()} without chain call utility. */
 	protected final void internalSetTimestamp(String value) {
-		_listener.beforeSet(this, TIMESTAMP, value);
+		_listener.beforeSet(this, TIMESTAMP__PROP, value);
 		_timestamp = value;
 	}
-
 
 	/**
 	 * Checks, whether {@link #getTimestamp()} has a value.
@@ -82,12 +82,12 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		internalSetLastid(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getLastid()} without chain call utility. */
 	protected final void internalSetLastid(String value) {
-		_listener.beforeSet(this, LASTID, value);
+		_listener.beforeSet(this, LASTID__PROP, value);
 		_lastid = value;
 	}
-
 
 	/**
 	 * Checks, whether {@link #getLastid()} has a value.
@@ -125,8 +125,8 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			TIMESTAMP, 
-			LASTID));
+			TIMESTAMP__PROP, 
+			LASTID__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -136,26 +136,24 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case TIMESTAMP: return getTimestamp();
-			case LASTID: return getLastid();
-			default: return de.haumacher.msgbuf.observer.Observable.super.get(field);
+			case TIMESTAMP__PROP: return getTimestamp();
+			case LASTID__PROP: return getLastid();
+			default: return null;
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case TIMESTAMP: setTimestamp((String) value); break;
-			case LASTID: setLastid((String) value); break;
+			case TIMESTAMP__PROP: internalSetTimestamp((String) value); break;
+			case LASTID__PROP: internalSetLastid((String) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
 	public static ReportInfo readReportInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		ReportInfo result = new ReportInfo();
-		in.beginObject();
-		result.readFields(in);
-		in.endObject();
+		de.haumacher.phoneblock.callreport.model.ReportInfo result = new de.haumacher.phoneblock.callreport.model.ReportInfo();
+		result.readContent(in);
 		return result;
 	}
 
@@ -168,11 +166,11 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
 		if (hasTimestamp()) {
-			out.name(TIMESTAMP);
+			out.name(TIMESTAMP__PROP);
 			out.value(getTimestamp());
 		}
 		if (hasLastid()) {
-			out.name(LASTID);
+			out.name(LASTID__PROP);
 			out.value(getLastid());
 		}
 	}
@@ -180,8 +178,8 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case TIMESTAMP: setTimestamp(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case LASTID: setLastid(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case TIMESTAMP__PROP: setTimestamp(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LASTID__PROP: setLastid(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -214,13 +212,24 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Reads a new instance from the given reader. */
 	public static ReportInfo readReportInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		ReportInfo result = new ReportInfo();
-		while (in.hasNext()) {
-			int field = in.nextName();
-			result.readField(in, field);
-		}
+		ReportInfo result = de.haumacher.phoneblock.callreport.model.ReportInfo.readReportInfo_Content(in);
 		in.endObject();
 		return result;
+	}
+
+	/** Helper for creating an object of type {@link ReportInfo} from a polymorphic composition. */
+	public static ReportInfo readReportInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.callreport.model.ReportInfo result = new ReportInfo();
+		result.readContent(in);
+		return result;
+	}
+
+	/** Helper for reading all fields of this instance. */
+	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		while (in.hasNext()) {
+			int field = in.nextName();
+			readField(in, field);
+		}
 	}
 
 	/** Consumes the value for the field with the given ID and assigns its value. */

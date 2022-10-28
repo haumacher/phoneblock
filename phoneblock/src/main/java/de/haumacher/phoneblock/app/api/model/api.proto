@@ -1,0 +1,48 @@
+package de.haumacher.phoneblock.app.api.model;
+
+option NoInterfaces;
+
+message RegistrationChallenge {
+
+	string session;
+	string captcha;
+
+}
+
+message RegistrationRequest {
+
+	string session;
+	string answer;
+	string email;
+
+}
+
+message RegistrationCompletion {
+
+	string session;
+	string code;
+
+}
+
+message RegistrationResult {
+
+	string session;
+	string email;
+	string password;
+
+}
+
+message SessionInfo {
+	long created;
+	string session;
+	string email;
+	string answer;
+	string code;
+}
+
+message RateRequest {
+
+	string phone;
+	string rating;
+
+}

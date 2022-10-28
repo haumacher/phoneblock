@@ -6,24 +6,24 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	 * Creates a {@link AreaCodes} instance.
 	 */
 	public static AreaCodes create() {
-		return new AreaCodes();
+		return new de.haumacher.phoneblock.analysis.AreaCodes();
 	}
 
 	/** Identifier for the {@link AreaCodes} type in JSON format. */
 	public static final String AREA_CODES__TYPE = "AreaCodes";
 
 	/** @see #getCodes() */
-	public static final String CODES = "codes";
+	public static final String CODES__PROP = "codes";
 
 	/** Identifier for the property {@link #getCodes()} in binary format. */
-	public static final int CODES__ID = 1;
+	static final int CODES__ID = 1;
 
 	private final java.util.Map<String, AreaCode> _codes = new java.util.HashMap<>();
 
 	/**
 	 * Creates a {@link AreaCodes} instance.
 	 *
-	 * @see #create()
+	 * @see AreaCodes#create()
 	 */
 	protected AreaCodes() {
 		super();
@@ -40,13 +40,13 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		internalSetCodes(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getCodes()} without chain call utility. */
 	protected final void internalSetCodes(java.util.Map<String, AreaCode> value) {
 		if (value == null) throw new IllegalArgumentException("Property 'codes' cannot be null.");
 		_codes.clear();
 		_codes.putAll(value);
 	}
-
 
 	/**
 	 * Adds a key value pair to the {@link #getCodes()} map.
@@ -100,7 +100,7 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			CODES));
+			CODES__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -110,24 +110,22 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case CODES: return getCodes();
-			default: return de.haumacher.msgbuf.observer.Observable.super.get(field);
+			case CODES__PROP: return getCodes();
+			default: return null;
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case CODES: setCodes((java.util.Map<String, AreaCode>) value); break;
+			case CODES__PROP: internalSetCodes((java.util.Map<String, AreaCode>) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
 	public static AreaCodes readAreaCodes(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		AreaCodes result = new AreaCodes();
-		in.beginObject();
-		result.readFields(in);
-		in.endObject();
+		de.haumacher.phoneblock.analysis.AreaCodes result = new de.haumacher.phoneblock.analysis.AreaCodes();
+		result.readContent(in);
 		return result;
 	}
 
@@ -139,7 +137,7 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(CODES);
+		out.name(CODES__PROP);
 		out.beginObject();
 		for (java.util.Map.Entry<String,AreaCode> entry : getCodes().entrySet()) {
 			out.name(entry.getKey());
@@ -151,7 +149,7 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case CODES: {
+			case CODES__PROP: {
 				in.beginObject();
 				while (in.hasNext()) {
 					putCode(in.nextName(), de.haumacher.phoneblock.analysis.AreaCode.readAreaCode(in));
@@ -184,13 +182,24 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Reads a new instance from the given reader. */
 	public static AreaCodes readAreaCodes(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		AreaCodes result = new AreaCodes();
-		while (in.hasNext()) {
-			int field = in.nextName();
-			result.readField(in, field);
-		}
+		AreaCodes result = de.haumacher.phoneblock.analysis.AreaCodes.readAreaCodes_Content(in);
 		in.endObject();
 		return result;
+	}
+
+	/** Helper for creating an object of type {@link AreaCodes} from a polymorphic composition. */
+	public static AreaCodes readAreaCodes_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.analysis.AreaCodes result = new AreaCodes();
+		result.readContent(in);
+		return result;
+	}
+
+	/** Helper for reading all fields of this instance. */
+	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		while (in.hasNext()) {
+			int field = in.nextName();
+			readField(in, field);
+		}
 	}
 
 	/** Consumes the value for the field with the given ID and assigns its value. */

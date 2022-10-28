@@ -9,35 +9,35 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	 * Creates a {@link DBConfig} instance.
 	 */
 	public static DBConfig create() {
-		return new DBConfig();
+		return new de.haumacher.phoneblock.db.config.DBConfig();
 	}
 
 	/** Identifier for the {@link DBConfig} type in JSON format. */
 	public static final String DBCONFIG__TYPE = "DBConfig";
 
 	/** @see #getUrl() */
-	public static final String URL = "url";
+	public static final String URL__PROP = "url";
 
 	/** @see #getUser() */
-	public static final String USER = "user";
+	public static final String USER__PROP = "user";
 
 	/** @see #getPassword() */
-	public static final String PASSWORD = "password";
+	public static final String PASSWORD__PROP = "password";
 
 	/** @see #getPort() */
-	public static final String PORT = "port";
+	public static final String PORT__PROP = "port";
 
 	/** Identifier for the property {@link #getUrl()} in binary format. */
-	public static final int URL__ID = 1;
+	static final int URL__ID = 1;
 
 	/** Identifier for the property {@link #getUser()} in binary format. */
-	public static final int USER__ID = 2;
+	static final int USER__ID = 2;
 
 	/** Identifier for the property {@link #getPassword()} in binary format. */
-	public static final int PASSWORD__ID = 3;
+	static final int PASSWORD__ID = 3;
 
 	/** Identifier for the property {@link #getPort()} in binary format. */
-	public static final int PORT__ID = 4;
+	static final int PORT__ID = 4;
 
 	private String _url = "";
 
@@ -50,7 +50,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * Creates a {@link DBConfig} instance.
 	 *
-	 * @see #create()
+	 * @see DBConfig#create()
 	 */
 	protected DBConfig() {
 		super();
@@ -70,12 +70,12 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		internalSetUrl(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getUrl()} without chain call utility. */
 	protected final void internalSetUrl(String value) {
-		_listener.beforeSet(this, URL, value);
+		_listener.beforeSet(this, URL__PROP, value);
 		_url = value;
 	}
-
 
 	/**
 	 * The DB user to access the database.
@@ -91,12 +91,12 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		internalSetUser(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getUser()} without chain call utility. */
 	protected final void internalSetUser(String value) {
-		_listener.beforeSet(this, USER, value);
+		_listener.beforeSet(this, USER__PROP, value);
 		_user = value;
 	}
-
 
 	/**
 	 * The DB password to access the database.
@@ -112,12 +112,12 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		internalSetPassword(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getPassword()} without chain call utility. */
 	protected final void internalSetPassword(String value) {
-		_listener.beforeSet(this, PASSWORD, value);
+		_listener.beforeSet(this, PASSWORD__PROP, value);
 		_password = value;
 	}
-
 
 	/**
 	 * The port, where to start a server for external access. <code>0</code> to prevent starting a DB server.
@@ -133,12 +133,12 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		internalSetPort(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getPort()} without chain call utility. */
 	protected final void internalSetPort(int value) {
-		_listener.beforeSet(this, PORT, value);
+		_listener.beforeSet(this, PORT__PROP, value);
 		_port = value;
 	}
-
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
@@ -169,10 +169,10 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			URL, 
-			USER, 
-			PASSWORD, 
-			PORT));
+			URL__PROP, 
+			USER__PROP, 
+			PASSWORD__PROP, 
+			PORT__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -182,30 +182,28 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case URL: return getUrl();
-			case USER: return getUser();
-			case PASSWORD: return getPassword();
-			case PORT: return getPort();
-			default: return de.haumacher.msgbuf.observer.Observable.super.get(field);
+			case URL__PROP: return getUrl();
+			case USER__PROP: return getUser();
+			case PASSWORD__PROP: return getPassword();
+			case PORT__PROP: return getPort();
+			default: return null;
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case URL: setUrl((String) value); break;
-			case USER: setUser((String) value); break;
-			case PASSWORD: setPassword((String) value); break;
-			case PORT: setPort((int) value); break;
+			case URL__PROP: internalSetUrl((String) value); break;
+			case USER__PROP: internalSetUser((String) value); break;
+			case PASSWORD__PROP: internalSetPassword((String) value); break;
+			case PORT__PROP: internalSetPort((int) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
 	public static DBConfig readDBConfig(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		DBConfig result = new DBConfig();
-		in.beginObject();
-		result.readFields(in);
-		in.endObject();
+		de.haumacher.phoneblock.db.config.DBConfig result = new de.haumacher.phoneblock.db.config.DBConfig();
+		result.readContent(in);
 		return result;
 	}
 
@@ -217,23 +215,23 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(URL);
+		out.name(URL__PROP);
 		out.value(getUrl());
-		out.name(USER);
+		out.name(USER__PROP);
 		out.value(getUser());
-		out.name(PASSWORD);
+		out.name(PASSWORD__PROP);
 		out.value(getPassword());
-		out.name(PORT);
+		out.name(PORT__PROP);
 		out.value(getPort());
 	}
 
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case URL: setUrl(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case USER: setUser(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case PASSWORD: setPassword(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case PORT: setPort(in.nextInt()); break;
+			case URL__PROP: setUrl(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case USER__PROP: setUser(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case PASSWORD__PROP: setPassword(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case PORT__PROP: setPort(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -266,13 +264,24 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/** Reads a new instance from the given reader. */
 	public static DBConfig readDBConfig(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		DBConfig result = new DBConfig();
-		while (in.hasNext()) {
-			int field = in.nextName();
-			result.readField(in, field);
-		}
+		DBConfig result = de.haumacher.phoneblock.db.config.DBConfig.readDBConfig_Content(in);
 		in.endObject();
 		return result;
+	}
+
+	/** Helper for creating an object of type {@link DBConfig} from a polymorphic composition. */
+	public static DBConfig readDBConfig_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.db.config.DBConfig result = new DBConfig();
+		result.readContent(in);
+		return result;
+	}
+
+	/** Helper for reading all fields of this instance. */
+	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		while (in.hasNext()) {
+			int field = in.nextName();
+			readField(in, field);
+		}
 	}
 
 	/** Consumes the value for the field with the given ID and assigns its value. */

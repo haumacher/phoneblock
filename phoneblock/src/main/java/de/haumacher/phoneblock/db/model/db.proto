@@ -1,7 +1,6 @@
 package de.haumacher.phoneblock.db.model;
 
 option NoInterfaces;
-option NoJson;
 option NoBinary;
 option NoReflection;
 
@@ -57,4 +56,44 @@ message RatingInfo {
 	
 	/** How often the {@link #phone number} was rated in a {@link #rating certain way}. */
 	int votes;
+}
+
+/** List of blocked numbers for retrieval through the <i>PhoneBlock API</i>. */
+message Blocklist {
+	/** Numbers in the blocklist. */
+	repeated PhoneInfo numbers;
+}
+
+
+/** Information about a phone number that is published to the <i>PhoneBlock API</i>.  */
+message PhoneInfo {
+
+	/** The number being requested. */
+	string phone;
+	
+	/** The rating for the requested phone number. */
+	Rating rating;
+	
+	/** The number of votes that support blocking the requested number. */
+	int votes;
+
+}
+
+message BlockListEntry {
+
+	/** The number being requested. */
+	string phone;
+	
+	/** The rating for the requested phone number. */
+	Rating rating;
+	
+	/** The number of votes that support blocking the requested number. */
+	int votes;
+
+	/** Number of ratings of kind {@link #rating} received. */
+	int count;
+}
+
+message Ratings {
+	repeated Rating values;
 }

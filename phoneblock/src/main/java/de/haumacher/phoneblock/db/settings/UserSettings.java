@@ -9,29 +9,29 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	 * Creates a {@link UserSettings} instance.
 	 */
 	public static UserSettings create() {
-		return new UserSettings();
+		return new de.haumacher.phoneblock.db.settings.UserSettings();
 	}
 
 	/** Identifier for the {@link UserSettings} type in JSON format. */
 	public static final String USER_SETTINGS__TYPE = "UserSettings";
 
 	/** @see #getId() */
-	public static final String ID = "id";
+	public static final String ID__PROP = "id";
 
 	/** @see #getMinVotes() */
-	public static final String MIN_VOTES = "minVotes";
+	public static final String MIN_VOTES__PROP = "minVotes";
 
 	/** @see #getMaxLength() */
-	public static final String MAX_LENGTH = "maxLength";
+	public static final String MAX_LENGTH__PROP = "maxLength";
 
 	/** Identifier for the property {@link #getId()} in binary format. */
-	public static final int ID__ID = 1;
+	static final int ID__ID = 1;
 
 	/** Identifier for the property {@link #getMinVotes()} in binary format. */
-	public static final int MIN_VOTES__ID = 2;
+	static final int MIN_VOTES__ID = 2;
 
 	/** Identifier for the property {@link #getMaxLength()} in binary format. */
-	public static final int MAX_LENGTH__ID = 3;
+	static final int MAX_LENGTH__ID = 3;
 
 	private long _id = 0L;
 
@@ -42,7 +42,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * Creates a {@link UserSettings} instance.
 	 *
-	 * @see #create()
+	 * @see UserSettings#create()
 	 */
 	protected UserSettings() {
 		super();
@@ -62,12 +62,12 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		internalSetId(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(long value) {
-		_listener.beforeSet(this, ID, value);
+		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
 	}
-
 
 	/**
 	 * Minumum number of votes to create a blocklist entry.
@@ -83,12 +83,12 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		internalSetMinVotes(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getMinVotes()} without chain call utility. */
 	protected final void internalSetMinVotes(int value) {
-		_listener.beforeSet(this, MIN_VOTES, value);
+		_listener.beforeSet(this, MIN_VOTES__PROP, value);
 		_minVotes = value;
 	}
-
 
 	/**
 	 * Maximum number of blocklist entries.
@@ -104,12 +104,12 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		internalSetMaxLength(value);
 		return this;
 	}
+
 	/** Internal setter for {@link #getMaxLength()} without chain call utility. */
 	protected final void internalSetMaxLength(int value) {
-		_listener.beforeSet(this, MAX_LENGTH, value);
+		_listener.beforeSet(this, MAX_LENGTH__PROP, value);
 		_maxLength = value;
 	}
-
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
@@ -140,9 +140,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			ID, 
-			MIN_VOTES, 
-			MAX_LENGTH));
+			ID__PROP, 
+			MIN_VOTES__PROP, 
+			MAX_LENGTH__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -152,28 +152,26 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case ID: return getId();
-			case MIN_VOTES: return getMinVotes();
-			case MAX_LENGTH: return getMaxLength();
-			default: return de.haumacher.msgbuf.observer.Observable.super.get(field);
+			case ID__PROP: return getId();
+			case MIN_VOTES__PROP: return getMinVotes();
+			case MAX_LENGTH__PROP: return getMaxLength();
+			default: return null;
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case ID: setId((long) value); break;
-			case MIN_VOTES: setMinVotes((int) value); break;
-			case MAX_LENGTH: setMaxLength((int) value); break;
+			case ID__PROP: internalSetId((long) value); break;
+			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
+			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
 	public static UserSettings readUserSettings(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		UserSettings result = new UserSettings();
-		in.beginObject();
-		result.readFields(in);
-		in.endObject();
+		de.haumacher.phoneblock.db.settings.UserSettings result = new de.haumacher.phoneblock.db.settings.UserSettings();
+		result.readContent(in);
 		return result;
 	}
 
@@ -185,20 +183,20 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(ID);
+		out.name(ID__PROP);
 		out.value(getId());
-		out.name(MIN_VOTES);
+		out.name(MIN_VOTES__PROP);
 		out.value(getMinVotes());
-		out.name(MAX_LENGTH);
+		out.name(MAX_LENGTH__PROP);
 		out.value(getMaxLength());
 	}
 
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case ID: setId(in.nextLong()); break;
-			case MIN_VOTES: setMinVotes(in.nextInt()); break;
-			case MAX_LENGTH: setMaxLength(in.nextInt()); break;
+			case ID__PROP: setId(in.nextLong()); break;
+			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
+			case MAX_LENGTH__PROP: setMaxLength(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -229,13 +227,24 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** Reads a new instance from the given reader. */
 	public static UserSettings readUserSettings(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		UserSettings result = new UserSettings();
-		while (in.hasNext()) {
-			int field = in.nextName();
-			result.readField(in, field);
-		}
+		UserSettings result = de.haumacher.phoneblock.db.settings.UserSettings.readUserSettings_Content(in);
 		in.endObject();
 		return result;
+	}
+
+	/** Helper for creating an object of type {@link UserSettings} from a polymorphic composition. */
+	public static UserSettings readUserSettings_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.db.settings.UserSettings result = new UserSettings();
+		result.readContent(in);
+		return result;
+	}
+
+	/** Helper for reading all fields of this instance. */
+	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+		while (in.hasNext()) {
+			int field = in.nextName();
+			readField(in, field);
+		}
 	}
 
 	/** Consumes the value for the field with the given ID and assigns its value. */

@@ -1,19 +1,19 @@
 package de.haumacher.phoneblock.db.model;
 
 /**
- * Info of how often a certain number was rated in a certain way.
+ * Information about a phone number that is published to the <i>PhoneBlock API</i>.
  */
-public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable {
+public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable {
 
 	/**
-	 * Creates a {@link RatingInfo} instance.
+	 * Creates a {@link PhoneInfo} instance.
 	 */
-	public static RatingInfo create() {
-		return new de.haumacher.phoneblock.db.model.RatingInfo();
+	public static PhoneInfo create() {
+		return new de.haumacher.phoneblock.db.model.PhoneInfo();
 	}
 
-	/** Identifier for the {@link RatingInfo} type in JSON format. */
-	public static final String RATING_INFO__TYPE = "RatingInfo";
+	/** Identifier for the {@link PhoneInfo} type in JSON format. */
+	public static final String PHONE_INFO__TYPE = "PhoneInfo";
 
 	/** @see #getPhone() */
 	public static final String PHONE__PROP = "phone";
@@ -31,16 +31,16 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	private int _votes = 0;
 
 	/**
-	 * Creates a {@link RatingInfo} instance.
+	 * Creates a {@link PhoneInfo} instance.
 	 *
-	 * @see RatingInfo#create()
+	 * @see PhoneInfo#create()
 	 */
-	protected RatingInfo() {
+	protected PhoneInfo() {
 		super();
 	}
 
 	/**
-	 * The number being rated.
+	 * The number being requested.
 	 */
 	public final String getPhone() {
 		return _phone;
@@ -49,7 +49,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getPhone()
 	 */
-	public RatingInfo setPhone(String value) {
+	public PhoneInfo setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -61,7 +61,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/**
-	 * The {@link Rating} of the {@link #getPhone() number}.
+	 * The rating for the requested phone number.
 	 */
 	public final Rating getRating() {
 		return _rating;
@@ -70,7 +70,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getRating()
 	 */
-	public RatingInfo setRating(Rating value) {
+	public PhoneInfo setRating(Rating value) {
 		internalSetRating(value);
 		return this;
 	}
@@ -83,7 +83,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/**
-	 * How often the {@link #getPhone() number} was rated in a {@link #getRating() certain way}.
+	 * The number of votes that support blocking the requested number.
 	 */
 	public final int getVotes() {
 		return _votes;
@@ -92,7 +92,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getVotes()
 	 */
-	public RatingInfo setVotes(int value) {
+	public PhoneInfo setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
@@ -106,7 +106,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public RatingInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public PhoneInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -116,7 +116,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public RatingInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public PhoneInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -127,7 +127,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	@Override
 	public String jsonType() {
-		return RATING_INFO__TYPE;
+		return PHONE_INFO__TYPE;
 	}
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
@@ -161,8 +161,8 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RatingInfo readRatingInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.RatingInfo result = new de.haumacher.phoneblock.db.model.RatingInfo();
+	public static PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.db.model.PhoneInfo result = new de.haumacher.phoneblock.db.model.PhoneInfo();
 		result.readContent(in);
 		return result;
 	}
