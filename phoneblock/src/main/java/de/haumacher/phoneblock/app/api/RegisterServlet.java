@@ -68,6 +68,11 @@ public class RegisterServlet extends HttpServlet {
 			return;
 		}
 		
+		if (!sessionInfo.getEmail().isEmpty()) {
+			ServletUtil.sendError(resp, "Mail was already sent.");
+			return;
+		}
+		
 		String code = DBService.getInstance().generateVerificationCode();
 		
 		// Send verification code to email address.
