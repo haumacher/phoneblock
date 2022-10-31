@@ -52,6 +52,8 @@ public class MailService {
 
 	public void sendActivationMail(String receiver, String code)
 			throws MessagingException, IOException, AddressException {
+		LOG.info("Sending activation mail to '" + receiver + "'.");
+		
 		String image = "https://phoneblock.haumacher.de/phoneblock/app-logo.svg";
 		
 		Message msg = createMessage();
@@ -73,7 +75,12 @@ public class MailService {
 	    }
 		
 		msg.setContent(alternativePart);
-		sendMail(receiver, msg);
+		try {
+			sendMail(receiver, msg);
+		} catch (MessagingException ex) {
+			LOG.error("Sending activation mail to '" + receiver + "' failed.");
+			throw ex;
+		}
 	}
 
 	public Message createMessage() throws MessagingException {
