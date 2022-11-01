@@ -95,11 +95,25 @@ public interface SpamReports {
 			+ " WHERE VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
 	List<SpamReport> getLatestBlocklistEntries(int minVotes);
 	
-	@Select("select s.PHONE, s.VOTES, r.RATING, r.COUNT from SPAMREPORTS s"
+	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end, case when r.COUNT is null then 0 else r.COUNT end from SPAMREPORTS s"
 			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
 			+ " where s.VOTES >= #{minVotes}"
 			+ " order by s.PHONE")
 	List<DBBlockListEntry> getBlocklist(int minVotes);
+	
+	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end rating, case when r.COUNT is null then 0 else r.COUNT end count from SPAMREPORTS s"
+			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
+			+ " where s.PHONE = #{phone}"
+			+ " order by count desc, rating desc"
+			+ " limit 1")
+	DBPhoneInfo getApiPhoneInfo(String phone);
+	
+	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end rating, case when r.COUNT is null then 0 else r.COUNT end count from OLDREPORTS s"
+			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
+			+ " where s.PHONE = #{phone}"
+			+ " order by count desc, rating desc"
+			+ " limit 1")
+	DBPhoneInfo getApiPhoneInfoArchived(String phone);
 	
 	@Select("SELECT x.PHONE FROM SEARCHES x"
 			+ " where x.COUNT - x.BACKUP > 0 ORDER BY x.LASTUPDATE DESC LIMIT 5")
@@ -141,9 +155,6 @@ public interface SpamReports {
 	
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes} order by LASTUPDATE desc limit #{maxLength}")
 	Set<String> getSpamList(int minVotes, int maxLength);
-	
-	@Select("select s.PHONE, s.VOTES, (select r.RATING from RATINGS r where r.PHONE = s.PHONE order by r.COUNT desc, r.RATING desc limit 1) from SPAMREPORTS s where s.PHONE = #{phone}")
-	DBPhoneInfo getApiPhoneInfo(String phone);
 	
 	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
 	List<Statistics> getStatistics(int minVotes);

@@ -588,7 +588,10 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			PhoneInfo result = reports.getApiPhoneInfo(phone);
 			if (result == null) {
-				result = PhoneInfo.create().setPhone(phone);
+				result = reports.getApiPhoneInfoArchived(phone);
+				if (result == null) {
+					result = PhoneInfo.create().setPhone(phone);
+				}
 			}
 			return result;
 		}
@@ -713,9 +716,8 @@ public class DB {
 				String passwd = decoded.substring(sepIndex + 1);
 				return login(userName, passwd);
 			}
-		} else {
-			LOG.warn("Invalid authentication received: " + authHeader);
 		}
+		LOG.warn("Invalid authentication received: " + authHeader);
 		return null;
 	}
 
@@ -736,7 +738,7 @@ public class DB {
 				if (Arrays.equals(pwhash, expectedHash)) {
 					return userName;
 				} else {
-					LOG.warn("Invalid password for user: " + userName);
+					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + userName);
 				}
 			} else {
 				LOG.warn("Invalid user name supplied: " + userName);
