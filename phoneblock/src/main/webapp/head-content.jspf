@@ -47,6 +47,11 @@
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.css">
 
 <style type="text/css">
+
+.swagger-ui pre {
+	background-color: inherit;
+}
+
 .navbar-dropdown {
 	background-color:#00d1b2;
 }

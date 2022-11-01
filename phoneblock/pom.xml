@@ -46,6 +46,7 @@
 		<chartjs.version>3.9.1</chartjs.version>
 		<shariff.version>3.2.1</shariff.version>
 		<jquery.version>3.6.1</jquery.version>
+		<swagger-ui.version>4.15.2</swagger-ui.version>
 		
 		<msgbuf.version>1.1.0-SNAPSHOT</msgbuf.version>
 	</properties>
@@ -132,6 +133,12 @@
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
 			<version>3.5.11</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>swagger-ui-dist</artifactId>
+		    <version>${swagger-ui.version}</version>
 		</dependency>
 
 		<dependency>

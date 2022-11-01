@@ -1,0 +1,357 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "PhoneBlock API",
+		"version": "v1"
+	},
+	"servers": [
+		{
+			"url": "https://phoneblock.haumacher.de/pb-test/api"
+		},
+		{
+			"url": "https://phoneblock.haumacher.de/phoneblock/api"
+		}
+	],
+
+	"paths": {
+		"/num/{num}": {
+			"get": {
+				"summary": "Retrieve information for the given phone number.",
+				"responses": {
+					"200": {
+						"description": "Retrieves information for the given phone number from the PhoneBlock database.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"phone": {
+											"type": "string"
+										},
+										"votes": {
+											"type": "integer"
+										},
+										"rating": {
+											"type": "string",
+											"enum": [
+												"A_LEGITIMATE",
+												"B_MISSED",
+												"C_PING",
+												"D_POLL",
+												"E_ADVERTISING",
+												"F_GAMBLE",
+												"G_FRAUD"
+											]
+										}
+									}
+								},
+								"example": {
+									"phone": "0123456789",
+									"votes": 42,
+									"rating": "C_POLL"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlock": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "num",
+					"in": "path",
+					"description": "Phone number to inspect",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"/blocklist": {
+			"get": {
+				"summary": "Retrieves the current list of blocked phone numbers",
+				"responses": {
+					"200": {
+						"description": "Retrieves all currently blocked phone numbers with corresponding information from the PhoneBlock database.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"numbers": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"phone": {
+														"type": "string"
+													},
+													"rating": {
+														"type": "string",
+														"enum": [
+															"A_LEGITIMATE",
+															"B_MISSED",
+															"C_PING",
+															"D_POLL",
+															"E_ADVERTISING",
+															"F_GAMBLE",
+															"G_FRAUD"
+														]
+													},
+													"votes": {
+														"type": "integer"
+													}
+												}
+											}
+										}
+									}
+								},
+								"example": {
+									"numbers": [
+										{
+											"phone": "0123456789",
+											"rating": "G_FRAUD",
+											"votes": 4
+										},
+										{
+											"phone": "0456789123",
+											"rating": "F_GAMBLE",
+											"votes": 8
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlock": []
+					}
+				]
+			}
+		},
+		"/register": {
+			"get": {
+				"summary": "Retrieve information required to start a user registration",
+				"responses": {
+					"200": {
+						"description": "Starts a new registration session. The session ID must be added to all following requests during the user registration. The captcha data is a Base64 encoded image that hides a text that must be added to the registration information. ",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"session": {
+											"type": "string"
+										},
+										"captcha": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"session": "ehWfZJpRTJ9dQLemiVgY",
+									"captcha": "data:image/png;base64,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"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Register a new user",
+				"description": "During registration, a user provides his e-mail address and an answer to a captcha challenge. The captcha challenge is a Base64 encoded image that must be retrieved with a GET request to the same URI prior to registration.",
+				"requestBody": {
+					"description": "User information to start the registration with.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"session": {
+										"type": "string"
+									},
+									"answer": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									}
+								}
+							},
+							"example": {
+								"session": "ehWfZJpRTJ9dQLemiVgY",
+								"answer": "ABCDEFG123",
+								"email": "whoami@company.de"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "An e-mail was successfully sent to the provided e-mail address. The e-mail contains a registration code, that the user must provide to the final call to the verify request to receive the login credentials.",
+						"content": {
+							"text/plain; charset=utf-8": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/verify": {
+			"post": {
+				"summary": "Verifies a user registration.",
+				"description": "A user registration must be verified by providing the code sent to the user's e-mail address. The login credentials required to access protected PhoneBlock resources is created as response to the verification call.",
+				"requestBody": {
+					"description": "Information that verifies that the user owns the provided e-mail address.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"session": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								}
+							},
+							"example": {
+								"session": "xxxx",
+								"code": "123456"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The user registration has completed successfully. The user may now use the provided credentials to access protected parts of the PhoneBlock API or log in to the web page to customize settings.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"session": {
+											"type": "string"
+										},
+										"email": {
+											"type": "string"
+										},
+										"password": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"session": "ehWfZJpRTJ9dQLemiVgY",
+									"email": "whoami@company.de",
+									"password": "5s4df6s5df"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ratings": {
+			"get": {
+				"summary": "Retrieve all available rating codes",
+				"responses": {
+					"200": {
+						"description": null,
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"values": {
+											"type": "array",
+											"item": {
+												"type": "string"
+											}
+										}
+									}
+								},
+								"example": {
+									"values": [
+										"A_LEGITIMATE",
+										"B_MISSED",
+										"C_PING",
+										"D_POLL",
+										"E_ADVERTISING",
+										"F_GAMBLE",
+										"G_FRAUD"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/rate": {
+			"post": {
+				"summary": "Stores a user rating for a phone number",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"phone": {
+										"type": "string"
+									},
+									"rating": {
+										"type": "string"
+									}
+								}
+							},
+							"example": {
+								"phone": "0123456789",
+								"rating": "C_PING"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The rating has been stored successfully.",
+						"content": {
+							"text/plain; charset=utf-8": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlock": []
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"PhoneBlock": {
+				"type": "http",
+				"scheme": "Basic"
+			}
+		}
+	}
+}

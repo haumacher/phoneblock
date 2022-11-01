@@ -60,6 +60,7 @@
 				<a class="navbar-link" href="#" onclick="return false;">More</a>
 
 				<div class="navbar-dropdown">
+					<a class="navbar-item" href="<%=request.getContextPath() %>/api/">API für Entwickler</a>
 					<a class="navbar-item" href="https://github.com/haumacher/phoneblock" target="_blank">GitHub Project</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/block.jsp">Rufsperre hinzufügen</a>
 					
