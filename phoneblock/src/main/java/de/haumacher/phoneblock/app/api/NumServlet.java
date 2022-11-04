@@ -60,7 +60,7 @@ public class NumServlet extends HttpServlet {
 		
 		PhoneInfo info = db.getPhoneApiInfo(phoneId);
 		
-		ServletUtil.sendResult(resp, info);
+		ServletUtil.sendResult(req, resp, info);
 	}
 
 }

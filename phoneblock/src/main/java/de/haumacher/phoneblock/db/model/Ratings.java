@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.db.model;
 
-public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable {
+public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link Ratings} instance.
@@ -162,6 +162,101 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 			break;
 			default: super.readField(in, field);
 		}
+	}
+
+	/** XML element name representing a {@link Ratings} type. */
+	public static final String RATINGS__XML_ELEMENT = "ratings";
+
+	/** XML attribute or element name of a {@link #getValues} property. */
+	private static final String VALUES__XML_ATTR = "values";
+
+	@Override
+	public String getXmlTagName() {
+		return RATINGS__XML_ELEMENT;
+	}
+
+	@Override
+	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		writeAttributes(out);
+		writeElements(out);
+	}
+
+	/** Serializes all fields that are written as XML attributes. */
+	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		out.writeAttribute(VALUES__XML_ATTR, getValues().stream().map(x -> x.protocolName()).collect(java.util.stream.Collectors.joining(", ")));
+	}
+
+	/** Serializes all fields that are written as XML elements. */
+	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+	}
+
+	/** Creates a new {@link Ratings} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static Ratings readRatings_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		Ratings result = new Ratings();
+		result.readContentXml(in);
+		return result;
+	}
+
+	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
+			String name = in.getAttributeLocalName(n);
+			String value = in.getAttributeValue(n);
+
+			readFieldXmlAttribute(name, value);
+		}
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+			String localName = in.getLocalName();
+			readFieldXmlElement(in, localName);
+		}
+	}
+
+	/** Parses the given attribute value and assigns it to the field with the given name. */
+	protected void readFieldXmlAttribute(String name, String value) {
+		switch (name) {
+			case VALUES__XML_ATTR: {
+				setValues(java.util.Arrays.stream(value.split("\\s*,\\s*")).map(x -> de.haumacher.phoneblock.db.model.Rating.valueOfProtocol(x)).collect(java.util.stream.Collectors.toList()));
+				break;
+			}
+			default: {
+				// Skip unknown attribute.
+			}
+		}
+	}
+
+	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
+		switch (localName) {
+			case VALUES__XML_ATTR: {
+				setValues(java.util.Arrays.stream(in.getElementText().split("\\s*,\\s*")).map(x -> de.haumacher.phoneblock.db.model.Rating.valueOfProtocol(x)).collect(java.util.stream.Collectors.toList()));
+				break;
+			}
+			default: {
+				internalSkipUntilMatchingEndElement(in);
+			}
+		}
+	}
+
+	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		int level = 0;
+		while (true) {
+			switch (in.next()) {
+				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
+				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+			}
+		}
+	}
+
+	/** Creates a new {@link Ratings} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static Ratings readRatings(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		in.nextTag();
+		return de.haumacher.phoneblock.db.model.Ratings.readRatings_XmlContent(in);
 	}
 
 }

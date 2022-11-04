@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.haumacher.de/pb-test/api/ for testing purpose!",
-		"version": "v1"
+		"version": "v1.1"
 	},
 	"servers": [
 		{
@@ -70,6 +70,17 @@
 					"schema": {
 						"type": "string"
 					}
+				},
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
 				}
 			]
 		},
@@ -135,7 +146,20 @@
 						"PhoneBlock": []
 					}
 				]
-			}
+			},
+			"parameters": [
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
+				}
+			]
 		},
 		"/register": {
 			"get": {
@@ -300,7 +324,20 @@
 						}
 					}
 				}
-			}
+			},
+			"parameters": [
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
+				}
+			]
 		},
 		"/rate": {
 			"post": {

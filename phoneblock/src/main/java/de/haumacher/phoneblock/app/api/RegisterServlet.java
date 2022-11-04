@@ -49,7 +49,7 @@ public class RegisterServlet extends HttpServlet {
 		_sessions.put(session, SessionInfo.create().setCreated(System.currentTimeMillis()).setSession(session).setAnswer(captcha.getText()));
 		SchedulerService.getInstance().executor().schedule(() -> _sessions.remove(session), 15, TimeUnit.MINUTES);
 		
-		ServletUtil.sendResult(resp, RegistrationChallenge.create().setSession(session).setCaptcha(captchaImage));
+		ServletUtil.sendResult(req, resp, RegistrationChallenge.create().setSession(session).setCaptcha(captchaImage));
 	}
 	
 	@Override

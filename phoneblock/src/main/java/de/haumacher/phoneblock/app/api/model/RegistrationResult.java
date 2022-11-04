@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * The login data created during registration.
  */
-public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link RegistrationResult} instance.
@@ -255,6 +255,125 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 			case PASSWORD__ID: setPassword(in.nextString()); break;
 			default: in.skipValue(); 
 		}
+	}
+
+	/** XML element name representing a {@link RegistrationResult} type. */
+	public static final String REGISTRATION_RESULT__XML_ELEMENT = "registration-result";
+
+	/** XML attribute or element name of a {@link #getSession} property. */
+	private static final String SESSION__XML_ATTR = "session";
+
+	/** XML attribute or element name of a {@link #getEmail} property. */
+	private static final String EMAIL__XML_ATTR = "email";
+
+	/** XML attribute or element name of a {@link #getPassword} property. */
+	private static final String PASSWORD__XML_ATTR = "password";
+
+	@Override
+	public String getXmlTagName() {
+		return REGISTRATION_RESULT__XML_ELEMENT;
+	}
+
+	@Override
+	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		writeAttributes(out);
+		writeElements(out);
+	}
+
+	/** Serializes all fields that are written as XML attributes. */
+	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		out.writeAttribute(SESSION__XML_ATTR, getSession());
+		out.writeAttribute(EMAIL__XML_ATTR, getEmail());
+		out.writeAttribute(PASSWORD__XML_ATTR, getPassword());
+	}
+
+	/** Serializes all fields that are written as XML elements. */
+	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+	}
+
+	/** Creates a new {@link RegistrationResult} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static RegistrationResult readRegistrationResult_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		RegistrationResult result = new RegistrationResult();
+		result.readContentXml(in);
+		return result;
+	}
+
+	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
+			String name = in.getAttributeLocalName(n);
+			String value = in.getAttributeValue(n);
+
+			readFieldXmlAttribute(name, value);
+		}
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+			String localName = in.getLocalName();
+			readFieldXmlElement(in, localName);
+		}
+	}
+
+	/** Parses the given attribute value and assigns it to the field with the given name. */
+	protected void readFieldXmlAttribute(String name, String value) {
+		switch (name) {
+			case SESSION__XML_ATTR: {
+				setSession(value);
+				break;
+			}
+			case EMAIL__XML_ATTR: {
+				setEmail(value);
+				break;
+			}
+			case PASSWORD__XML_ATTR: {
+				setPassword(value);
+				break;
+			}
+			default: {
+				// Skip unknown attribute.
+			}
+		}
+	}
+
+	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
+		switch (localName) {
+			case SESSION__XML_ATTR: {
+				setSession(in.getElementText());
+				break;
+			}
+			case EMAIL__XML_ATTR: {
+				setEmail(in.getElementText());
+				break;
+			}
+			case PASSWORD__XML_ATTR: {
+				setPassword(in.getElementText());
+				break;
+			}
+			default: {
+				internalSkipUntilMatchingEndElement(in);
+			}
+		}
+	}
+
+	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		int level = 0;
+		while (true) {
+			switch (in.next()) {
+				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
+				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+			}
+		}
+	}
+
+	/** Creates a new {@link RegistrationResult} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static RegistrationResult readRegistrationResult(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		in.nextTag();
+		return de.haumacher.phoneblock.app.api.model.RegistrationResult.readRegistrationResult_XmlContent(in);
 	}
 
 }

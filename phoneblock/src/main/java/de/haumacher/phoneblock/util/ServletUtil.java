@@ -7,10 +7,13 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 
 import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
+import de.haumacher.msgbuf.xml.XmlSerializable;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -32,12 +35,33 @@ public class ServletUtil {
 	/** 
 	 * Marshals the result back to the client.
 	 */
-	public static void sendResult(HttpServletResponse resp, DataObject result)
+	public static <T extends DataObject & XmlSerializable> void sendResult(HttpServletRequest req, HttpServletResponse resp, T result)
 			throws IOException {
-		resp.setContentType("application/json");
-		resp.setCharacterEncoding("utf-8");
+		if (sendXml(req)) {
+			resp.setContentType("text/xml");
+			resp.setCharacterEncoding("utf-8");
+			
+			try {
+				result.writeTo(XMLOutputFactory.newDefaultFactory().createXMLStreamWriter(resp.getWriter()));
+			} catch (XMLStreamException ex) {
+				throw new IOException("Writing XML response failed.", ex);
+			}
+		} else {
+			resp.setContentType("application/json");
+			resp.setCharacterEncoding("utf-8");
+			
+			result.writeTo(new JsonWriter(new WriterAdapter(resp.getWriter())));
+		}
+	}
+
+	private static boolean sendXml(HttpServletRequest req) {
+		String format = req.getParameter("format");
+		if (format != null && format.equals("xml")) {
+			return true;
+		}
 		
-		result.writeTo(new JsonWriter(new WriterAdapter(resp.getWriter())));
+		String accept = req.getHeader("Accept");
+		return accept != null && accept.endsWith("/xml");
 	}
 
 	public static void sendError(HttpServletResponse resp, String message) throws IOException {

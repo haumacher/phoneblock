@@ -41,7 +41,7 @@ public class VerificationServlet extends HttpServlet {
 		
 		String password = DBService.getInstance().createUser(sessionInfo.getEmail());
 		
-		ServletUtil.sendResult(resp, RegistrationResult.create().setSession(sessionInfo.getSession()).setEmail(sessionInfo.getEmail()).setPassword(password));
+		ServletUtil.sendResult(req, resp, RegistrationResult.create().setSession(sessionInfo.getSession()).setEmail(sessionInfo.getEmail()).setPassword(password));
 	}
 	
 }

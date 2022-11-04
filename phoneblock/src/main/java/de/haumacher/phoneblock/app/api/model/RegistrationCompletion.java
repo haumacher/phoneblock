@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * The completion of the registration.
  */
-public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link RegistrationCompletion} instance.
@@ -217,6 +217,113 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 			case CODE__ID: setCode(in.nextString()); break;
 			default: in.skipValue(); 
 		}
+	}
+
+	/** XML element name representing a {@link RegistrationCompletion} type. */
+	public static final String REGISTRATION_COMPLETION__XML_ELEMENT = "registration-completion";
+
+	/** XML attribute or element name of a {@link #getSession} property. */
+	private static final String SESSION__XML_ATTR = "session";
+
+	/** XML attribute or element name of a {@link #getCode} property. */
+	private static final String CODE__XML_ATTR = "code";
+
+	@Override
+	public String getXmlTagName() {
+		return REGISTRATION_COMPLETION__XML_ELEMENT;
+	}
+
+	@Override
+	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		writeAttributes(out);
+		writeElements(out);
+	}
+
+	/** Serializes all fields that are written as XML attributes. */
+	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		out.writeAttribute(SESSION__XML_ATTR, getSession());
+		out.writeAttribute(CODE__XML_ATTR, getCode());
+	}
+
+	/** Serializes all fields that are written as XML elements. */
+	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+	}
+
+	/** Creates a new {@link RegistrationCompletion} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static RegistrationCompletion readRegistrationCompletion_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		RegistrationCompletion result = new RegistrationCompletion();
+		result.readContentXml(in);
+		return result;
+	}
+
+	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
+			String name = in.getAttributeLocalName(n);
+			String value = in.getAttributeValue(n);
+
+			readFieldXmlAttribute(name, value);
+		}
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+			String localName = in.getLocalName();
+			readFieldXmlElement(in, localName);
+		}
+	}
+
+	/** Parses the given attribute value and assigns it to the field with the given name. */
+	protected void readFieldXmlAttribute(String name, String value) {
+		switch (name) {
+			case SESSION__XML_ATTR: {
+				setSession(value);
+				break;
+			}
+			case CODE__XML_ATTR: {
+				setCode(value);
+				break;
+			}
+			default: {
+				// Skip unknown attribute.
+			}
+		}
+	}
+
+	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
+		switch (localName) {
+			case SESSION__XML_ATTR: {
+				setSession(in.getElementText());
+				break;
+			}
+			case CODE__XML_ATTR: {
+				setCode(in.getElementText());
+				break;
+			}
+			default: {
+				internalSkipUntilMatchingEndElement(in);
+			}
+		}
+	}
+
+	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		int level = 0;
+		while (true) {
+			switch (in.next()) {
+				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
+				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+			}
+		}
+	}
+
+	/** Creates a new {@link RegistrationCompletion} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static RegistrationCompletion readRegistrationCompletion(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		in.nextTag();
+		return de.haumacher.phoneblock.app.api.model.RegistrationCompletion.readRegistrationCompletion_XmlContent(in);
 	}
 
 }

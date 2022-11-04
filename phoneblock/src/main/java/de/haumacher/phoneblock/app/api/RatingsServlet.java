@@ -24,7 +24,7 @@ public class RatingsServlet extends HttpServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ServletUtil.sendResult(resp, Ratings.create().setValues(Arrays.asList(Rating.values())));
+		ServletUtil.sendResult(req, resp, Ratings.create().setValues(Arrays.asList(Rating.values())));
 	}
 
 }

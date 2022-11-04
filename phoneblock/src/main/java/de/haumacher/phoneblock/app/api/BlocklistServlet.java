@@ -39,7 +39,7 @@ public class BlocklistServlet extends HttpServlet {
 		}
 		Blocklist result = DBService.getInstance().getBlockListAPI(minVotes);
 		
-		ServletUtil.sendResult(resp, result);
+		ServletUtil.sendResult(req, resp, result);
 	}
 
 }

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.db.model;
 /**
  * Info about how often a number was searched.
  */
-public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable {
+public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link SearchInfo} instance.
@@ -254,6 +254,149 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case LAST_SEARCH__PROP: setLastSearch(in.nextLong()); break;
 			default: super.readField(in, field);
 		}
+	}
+
+	/** XML element name representing a {@link SearchInfo} type. */
+	public static final String SEARCH_INFO__XML_ELEMENT = "search-info";
+
+	/** XML attribute or element name of a {@link #getRevision} property. */
+	private static final String REVISION__XML_ATTR = "revision";
+
+	/** XML attribute or element name of a {@link #getPhone} property. */
+	private static final String PHONE__XML_ATTR = "phone";
+
+	/** XML attribute or element name of a {@link #getCount} property. */
+	private static final String COUNT__XML_ATTR = "count";
+
+	/** XML attribute or element name of a {@link #getTotal} property. */
+	private static final String TOTAL__XML_ATTR = "total";
+
+	/** XML attribute or element name of a {@link #getLastSearch} property. */
+	private static final String LAST_SEARCH__XML_ATTR = "last-search";
+
+	@Override
+	public String getXmlTagName() {
+		return SEARCH_INFO__XML_ELEMENT;
+	}
+
+	@Override
+	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		writeAttributes(out);
+		writeElements(out);
+	}
+
+	/** Serializes all fields that are written as XML attributes. */
+	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		out.writeAttribute(REVISION__XML_ATTR, Integer.toString(getRevision()));
+		out.writeAttribute(PHONE__XML_ATTR, getPhone());
+		out.writeAttribute(COUNT__XML_ATTR, Integer.toString(getCount()));
+		out.writeAttribute(TOTAL__XML_ATTR, Integer.toString(getTotal()));
+		out.writeAttribute(LAST_SEARCH__XML_ATTR, Long.toString(getLastSearch()));
+	}
+
+	/** Serializes all fields that are written as XML elements. */
+	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+	}
+
+	/** Creates a new {@link SearchInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static SearchInfo readSearchInfo_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		SearchInfo result = new SearchInfo();
+		result.readContentXml(in);
+		return result;
+	}
+
+	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
+			String name = in.getAttributeLocalName(n);
+			String value = in.getAttributeValue(n);
+
+			readFieldXmlAttribute(name, value);
+		}
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+			String localName = in.getLocalName();
+			readFieldXmlElement(in, localName);
+		}
+	}
+
+	/** Parses the given attribute value and assigns it to the field with the given name. */
+	protected void readFieldXmlAttribute(String name, String value) {
+		switch (name) {
+			case REVISION__XML_ATTR: {
+				setRevision(Integer.parseInt(value));
+				break;
+			}
+			case PHONE__XML_ATTR: {
+				setPhone(value);
+				break;
+			}
+			case COUNT__XML_ATTR: {
+				setCount(Integer.parseInt(value));
+				break;
+			}
+			case TOTAL__XML_ATTR: {
+				setTotal(Integer.parseInt(value));
+				break;
+			}
+			case LAST_SEARCH__XML_ATTR: {
+				setLastSearch(Long.parseLong(value));
+				break;
+			}
+			default: {
+				// Skip unknown attribute.
+			}
+		}
+	}
+
+	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
+		switch (localName) {
+			case REVISION__XML_ATTR: {
+				setRevision(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case PHONE__XML_ATTR: {
+				setPhone(in.getElementText());
+				break;
+			}
+			case COUNT__XML_ATTR: {
+				setCount(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case TOTAL__XML_ATTR: {
+				setTotal(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case LAST_SEARCH__XML_ATTR: {
+				setLastSearch(Long.parseLong(in.getElementText()));
+				break;
+			}
+			default: {
+				internalSkipUntilMatchingEndElement(in);
+			}
+		}
+	}
+
+	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		int level = 0;
+		while (true) {
+			switch (in.next()) {
+				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
+				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+			}
+		}
+	}
+
+	/** Creates a new {@link SearchInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static SearchInfo readSearchInfo(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		in.nextTag();
+		return de.haumacher.phoneblock.db.model.SearchInfo.readSearchInfo_XmlContent(in);
 	}
 
 }

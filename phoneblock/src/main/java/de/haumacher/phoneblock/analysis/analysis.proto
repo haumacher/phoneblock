@@ -1,6 +1,7 @@
 package de.haumacher.phoneblock.analysis;
 
 option NoInterfaces;
+option NoXml;
 
 message PhoneNumer {
 	@Nullable
