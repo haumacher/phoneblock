@@ -18,8 +18,8 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** @see #getSession() */
 	public static final String SESSION__PROP = "session";
 
-	/** @see #getEmail() */
-	public static final String EMAIL__PROP = "email";
+	/** @see #getLogin() */
+	public static final String LOGIN__PROP = "login";
 
 	/** @see #getPassword() */
 	public static final String PASSWORD__PROP = "password";
@@ -27,15 +27,15 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** Identifier for the property {@link #getSession()} in binary format. */
 	static final int SESSION__ID = 1;
 
-	/** Identifier for the property {@link #getEmail()} in binary format. */
-	static final int EMAIL__ID = 2;
+	/** Identifier for the property {@link #getLogin()} in binary format. */
+	static final int LOGIN__ID = 2;
 
 	/** Identifier for the property {@link #getPassword()} in binary format. */
 	static final int PASSWORD__ID = 3;
 
 	private String _session = "";
 
-	private String _email = "";
+	private String _login = "";
 
 	private String _password = "";
 
@@ -72,22 +72,22 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/**
 	 * The new user name.
 	 */
-	public final String getEmail() {
-		return _email;
+	public final String getLogin() {
+		return _login;
 	}
 
 	/**
-	 * @see #getEmail()
+	 * @see #getLogin()
 	 */
-	public RegistrationResult setEmail(String value) {
-		internalSetEmail(value);
+	public RegistrationResult setLogin(String value) {
+		internalSetLogin(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getEmail()} without chain call utility. */
-	protected final void internalSetEmail(String value) {
-		_listener.beforeSet(this, EMAIL__PROP, value);
-		_email = value;
+	/** Internal setter for {@link #getLogin()} without chain call utility. */
+	protected final void internalSetLogin(String value) {
+		_listener.beforeSet(this, LOGIN__PROP, value);
+		_login = value;
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			SESSION__PROP, 
-			EMAIL__PROP, 
+			LOGIN__PROP, 
 			PASSWORD__PROP));
 
 	@Override
@@ -153,7 +153,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	public Object get(String field) {
 		switch (field) {
 			case SESSION__PROP: return getSession();
-			case EMAIL__PROP: return getEmail();
+			case LOGIN__PROP: return getLogin();
 			case PASSWORD__PROP: return getPassword();
 			default: return null;
 		}
@@ -163,7 +163,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	public void set(String field, Object value) {
 		switch (field) {
 			case SESSION__PROP: internalSetSession((String) value); break;
-			case EMAIL__PROP: internalSetEmail((String) value); break;
+			case LOGIN__PROP: internalSetLogin((String) value); break;
 			case PASSWORD__PROP: internalSetPassword((String) value); break;
 		}
 	}
@@ -185,8 +185,8 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 		super.writeFields(out);
 		out.name(SESSION__PROP);
 		out.value(getSession());
-		out.name(EMAIL__PROP);
-		out.value(getEmail());
+		out.name(LOGIN__PROP);
+		out.value(getLogin());
 		out.name(PASSWORD__PROP);
 		out.value(getPassword());
 	}
@@ -195,7 +195,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case SESSION__PROP: setSession(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LOGIN__PROP: setLogin(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PASSWORD__PROP: setPassword(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
@@ -218,8 +218,8 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
 		out.name(SESSION__ID);
 		out.value(getSession());
-		out.name(EMAIL__ID);
-		out.value(getEmail());
+		out.name(LOGIN__ID);
+		out.value(getLogin());
 		out.name(PASSWORD__ID);
 		out.value(getPassword());
 	}
@@ -251,7 +251,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
 		switch (field) {
 			case SESSION__ID: setSession(in.nextString()); break;
-			case EMAIL__ID: setEmail(in.nextString()); break;
+			case LOGIN__ID: setLogin(in.nextString()); break;
 			case PASSWORD__ID: setPassword(in.nextString()); break;
 			default: in.skipValue(); 
 		}
@@ -263,8 +263,8 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** XML attribute or element name of a {@link #getSession} property. */
 	private static final String SESSION__XML_ATTR = "session";
 
-	/** XML attribute or element name of a {@link #getEmail} property. */
-	private static final String EMAIL__XML_ATTR = "email";
+	/** XML attribute or element name of a {@link #getLogin} property. */
+	private static final String LOGIN__XML_ATTR = "login";
 
 	/** XML attribute or element name of a {@link #getPassword} property. */
 	private static final String PASSWORD__XML_ATTR = "password";
@@ -283,7 +283,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(SESSION__XML_ATTR, getSession());
-		out.writeAttribute(EMAIL__XML_ATTR, getEmail());
+		out.writeAttribute(LOGIN__XML_ATTR, getLogin());
 		out.writeAttribute(PASSWORD__XML_ATTR, getPassword());
 	}
 
@@ -325,8 +325,8 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 				setSession(value);
 				break;
 			}
-			case EMAIL__XML_ATTR: {
-				setEmail(value);
+			case LOGIN__XML_ATTR: {
+				setLogin(value);
 				break;
 			}
 			case PASSWORD__XML_ATTR: {
@@ -346,8 +346,8 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 				setSession(in.getElementText());
 				break;
 			}
-			case EMAIL__XML_ATTR: {
-				setEmail(in.getElementText());
+			case LOGIN__XML_ATTR: {
+				setLogin(in.getElementText());
 				break;
 			}
 			case PASSWORD__XML_ATTR: {

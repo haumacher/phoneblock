@@ -53,7 +53,7 @@ message RegistrationResult {
 	string session;
 
 	/** The new user name. */
-	string email;
+	string login;
 	
 	/** The user's secure password. */
 	string password;

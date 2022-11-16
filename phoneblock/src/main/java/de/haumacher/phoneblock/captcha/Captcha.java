@@ -24,7 +24,7 @@ import javax.imageio.ImageIO;
  */
 public class Captcha {
 
-	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
+	private static final String SAVE_CHARS = "23456789qwertzupasdfghkyxcvbnm";
 
 	private static final int WIDTH = 250;
 	private static final int HEIGHT = 60;
@@ -165,7 +165,7 @@ public class Captcha {
 
 	private String generateText() {
 		StringBuffer textBuffer = new StringBuffer();
-		for (int n = 0; n < 7; n++) {
+		for (int n = 0; n < 6; n++) {
 			char ch = SAVE_CHARS.charAt(_rnd.nextInt(SAVE_CHARS.length()));
 			textBuffer.append(ch);
 		}

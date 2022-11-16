@@ -167,8 +167,8 @@ public class TestDB {
 	
 	@Test
 	public void testUserManagement() throws SQLException, IOException {
-		_db.addUser("foo@bar.com", "123");
-		_db.addUser("baz@bar.com", "123");
+		_db.addUser("none", "1", "foo@bar.com", "Mr. X", "123");
+		_db.addUser("none", "2", "baz@bar.com", "Mr. Y", "123");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "123")));
 		assertEquals(null, _db.basicAuth(header("foo@bar.com", "321")));

@@ -43,6 +43,8 @@
 <link rel="canonical" href="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/github-com-creativebulma-bulma-collapsible/${bulma-collapsible.version}/css/bulma-collapsible.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/${font-awesome.version}/css/all.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.css">
 
@@ -120,4 +122,5 @@
 </style>
 
 <script type="text/javascript" src="<%=request.getContextPath() %>/webjars/jquery/${jquery.version}/jquery.min.js"></script>
-<script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=3"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=4"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/github-com-creativebulma-bulma-collapsible/${bulma-collapsible.version}/js/bulma-collapsible.min.js"></script>

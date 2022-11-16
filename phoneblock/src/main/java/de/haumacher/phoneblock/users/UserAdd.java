@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
 
+import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.db.DB;
 
 /**
@@ -25,14 +26,14 @@ public class UserAdd {
 	public static void main(String[] args) throws SQLException, IOException {
 		DB db = new DB(createDataSource());
 		
-		String userName;
+		String login;
 		if (args.length == 0) {
-			System.out.print("E-Mail: ");
-			userName = new BufferedReader(new InputStreamReader(System.in)).readLine();
+			System.out.print("Login name: ");
+			login = new BufferedReader(new InputStreamReader(System.in)).readLine();
 		} else {
-			userName = args[0];
+			login = args[0];
 		}
-		String passwd = db.createUser(userName);
+		String passwd = db.createUser(RegistrationServlet.IDENTIFIED_BY_EMAIL, login, login, login);
 		
 		System.out.println(passwd);
 	}

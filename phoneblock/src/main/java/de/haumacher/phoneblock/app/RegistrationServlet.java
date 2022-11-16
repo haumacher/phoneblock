@@ -4,16 +4,19 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
 /**
@@ -23,6 +26,13 @@ import de.haumacher.phoneblock.db.DBService;
 @WebServlet(urlPatterns = "/registration-code")
 public class RegistrationServlet extends HttpServlet {
 
+	private static final String PASSWORD_ATTR = "passwd";
+
+	/**
+	 * The authorization scope "email".
+	 */
+	public static final String IDENTIFIED_BY_EMAIL = "email";
+	
 	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Override
@@ -42,9 +52,20 @@ public class RegistrationServlet extends HttpServlet {
 		}
 		
 		String email = (String) req.getSession().getAttribute("email");
+		
+		String login;
 		String passwd;
 		try {
-			passwd = DBService.getInstance().createUser(email);
+			DB db = DBService.getInstance();
+			String extId = email.trim().toLowerCase();
+			login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+			if (login == null) {
+				login = UUID.randomUUID().toString();
+				passwd = db.createUser(IDENTIFIED_BY_EMAIL, extId, login, email);
+				db.setEmail(login, email);
+			} else {
+				passwd = db.resetPassword(login);
+			}
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
@@ -53,10 +74,26 @@ public class RegistrationServlet extends HttpServlet {
 			return;
 		}
 		
-		LoginFilter.setAuthenticatedUser(req, email);
-		
-		req.setAttribute("email", email);
-		req.setAttribute("token", passwd);
-		req.getRequestDispatcher("/setup.jsp").forward(req, resp);
+		startSetup(req, resp, login, passwd);
+	}
+
+	/** 
+	 * Displays the setup page.
+	 */
+	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
+			String login, String passwd) throws ServletException, IOException {
+		LoginFilter.setAuthenticatedUser(req, login);
+		req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+		resp.sendRedirect(req.getContextPath() + "/setup.jsp");
+	}
+	
+	/**
+	 * The password that was newly assigned.
+	 */
+	public static String getPassword(HttpSession session) {
+		if (session == null) {
+			return null;
+		}
+		return (String) session.getAttribute(PASSWORD_ATTR);
 	}
 }

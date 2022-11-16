@@ -49,3 +49,6 @@
 </footer>
 
 <script src="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.js"></script>
+<script type="text/javascript">
+bulmaCollapsible.attach();
+</script>

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <head>
@@ -23,19 +22,19 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Installiere Open Sync" src="05-open-sync-accept.png"/>
+	  			<img class="image" alt="Installiere Open Sync" src="<%=request.getContextPath() %>/setup-android/05-open-sync-accept.png"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="03-open-sync-install.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/03-open-sync-install.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="06-open-sync-accu.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/06-open-sync-accu.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

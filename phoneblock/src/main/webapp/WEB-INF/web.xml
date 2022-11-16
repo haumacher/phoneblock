@@ -1,52 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	xsi:schemaLocation="https://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/web-app_4_0.xsd">
 	<display-name>PhoneBlock</display-name>
 
+	<filter>
+		<filter-name>loginFilter</filter-name>
+		<filter-class>org.pac4j.jee.filter.SecurityFilter</filter-class>
+		<init-param>
+			<param-name>configFactory</param-name>
+			<param-value>de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
+		<filter-name>callbackFilter</filter-name>
+		<filter-class>org.pac4j.jee.filter.CallbackFilter</filter-class>
+		<init-param>
+			<param-name>defaultUrl</param-name>
+			<param-value>${phoneblock.contextpath}/setup.jsp</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
+		<filter-name>logoutFilter</filter-name>
+		<filter-class>org.pac4j.jee.filter.LogoutFilter</filter-class>
+		
+		<init-param>
+			<param-name>destroySession</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		
+		<init-param>
+			<param-name>defaultUrl</param-name>
+			<param-value>${phoneblock.contextpath}/</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>loginFilter</filter-name>
+		<url-pattern>/oauth/login</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>callbackFilter</filter-name>
+		<url-pattern>/oauth/callback</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>logoutFilter</filter-name>
+		<url-pattern>/logout</url-pattern>
+	</filter-mapping>
+
 	<servlet>
-	    <servlet-name>sitemap</servlet-name>
-	    <jsp-file>/sitemap.jsp</jsp-file>
+		<servlet-name>sitemap</servlet-name>
+		<jsp-file>/sitemap.jsp</jsp-file>
 	</servlet>
-	
+
 	<servlet>
-	    <servlet-name>shariff</servlet-name>
-	    <servlet-class>org.shredzone.shariff.ShariffServlet</servlet-class>
-	    
-	    <init-param>
-	        <param-name>host</param-name>
-	        <param-value>^(.*\.)?haumacher\.de$</param-value>
-	    </init-param>
-	        
-	    <init-param>
-	        <param-name>cache.timeToLiveMs</param-name>
-	        <param-value>600000</param-value>
-	    </init-param>
-	    
-	    <init-param>
-	        <param-name>cache.useOnError</param-name>
-	        <param-value>true</param-value>
-	    </init-param>
-	    
-	    <init-param>
-	        <param-name>facebook.id</param-name>
-	        <param-value>${facebook.id}</param-value>
-	    </init-param>
-	    
-	    <init-param>
-	        <param-name>facebook.secret</param-name>
-	        <param-value>${facebook.secret}</param-value>
-	    </init-param>
-   	</servlet>
+		<servlet-name>shariff</servlet-name>
+		<servlet-class>org.shredzone.shariff.ShariffServlet</servlet-class>
+
+		<init-param>
+			<param-name>host</param-name>
+			<param-value>^(.*\.)?haumacher\.de$</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cache.timeToLiveMs</param-name>
+			<param-value>600000</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cache.useOnError</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>facebook.id</param-name>
+			<param-value>${facebook.id}</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>facebook.secret</param-name>
+			<param-value>${facebook.secret}</param-value>
+		</init-param>
+	</servlet>
 
 	<servlet-mapping>
-	    <servlet-name>shariff</servlet-name>
-	    <url-pattern>/shariff/</url-pattern>
+		<servlet-name>shariff</servlet-name>
+		<url-pattern>/shariff/</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet-mapping>
-	    <servlet-name>sitemap</servlet-name>
-	    <url-pattern>/sitemap.xml</url-pattern>
+		<servlet-name>sitemap</servlet-name>
+		<url-pattern>/sitemap.xml</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
@@ -59,12 +107,12 @@
 		<error-code>405</error-code>
 		<location>/error-not-allowed.jsp</location>
 	</error-page>
-	
+
 	<error-page>
 		<error-code>501</error-code>
 		<location>/error-not-allowed.jsp</location>
 	</error-page>
-	
+
 	<error-page>
 		<error-code>404</error-code>
 		<location>/error-not-found.jsp</location>

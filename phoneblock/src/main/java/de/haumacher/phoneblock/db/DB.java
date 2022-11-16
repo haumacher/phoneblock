@@ -194,14 +194,26 @@ public class DB {
 
 	/**
 	 * Creates a new PhoneBlock user account.
-	 *
-	 * @param userName The user name (e-mail address) of the new account.
+	 * @param clientName The authorization scope for the new user.
+	 * @param extId The ID in the given authorization scope.
+	 * @param login The user name (e.g. e-mail address) of the new account.
 	 * @return The randomly generated password for the account.
 	 */
-	public String createUser(String userName) throws UnsupportedEncodingException {
+	public String createUser(String clientName, String extId, String login, String displayName) throws UnsupportedEncodingException {
 		String passwd = createPassword(20);
-		addUser(userName, passwd);
+		addUser(clientName, extId, login, displayName, passwd);
 		return passwd;
+	}
+
+	/** 
+	 * Deletes the user with the given login.
+	 */
+	public void deleteUser(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.deleteUser(login);
+			session.commit();
+		}
 	}
 
 	/** 
@@ -216,6 +228,28 @@ public class DB {
 		return buffer.toString();
 	}
 
+	/** 
+	 * Sets the user's e-mail address.
+	 */
+	public void setEmail(String login, String email) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.setEmail(login, email);
+			session.commit();
+		}
+	}
+	
+	/** 
+	 * Sets the user's external ID in its OAuth authorization scope.
+	 */
+	public void setExtId(String login, String extId) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.setExtId(login, extId);
+			session.commit();
+		}
+	}
+	
 	/**
 	 * Whether ther is an entry for the given phone numner in the database.
 	 */
@@ -468,11 +502,11 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<SpamReport> getLatestBlocklistEntries(String userName) {
+	public List<SpamReport> getLatestBlocklistEntries(String login) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			int minVotes = getMinVotes(session, userName);
+			int minVotes = getMinVotes(session, login);
 			return reports.getLatestBlocklistEntries(minVotes);
 		}
 	}
@@ -508,24 +542,24 @@ public class DB {
 		return aCount < bCount ? -1 : aCount > bCount ? 1 : Integer.compare(a.getRating().ordinal(), b.getRating().ordinal());
 	}
 
-	private int getMinVotes(SqlSession session, String userName) {
-		int minVotes = (userName == null) ? MIN_VOTES : getSettings(session, userName).getMinVotes();
+	private int getMinVotes(SqlSession session, String login) {
+		int minVotes = (login == null) ? MIN_VOTES : getSettings(session, login).getMinVotes();
 		return minVotes;
 	}
 
-	private DBUserSettings getSettings(SqlSession session, String userName) {
+	private DBUserSettings getSettings(SqlSession session, String login) {
 		Users users = session.getMapper(Users.class);
-		DBUserSettings settings = users.getSettings(userName);
+		DBUserSettings settings = users.getSettings(login);
 		return settings;
 	}
 	
 	/**
 	 * The current DB status.
 	 */
-	public Status getStatus(String userName) {
+	public Status getStatus(String login) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			int minVotes = getMinVotes(session, userName);
+			int minVotes = getMinVotes(session, login);
 			return new Status(reports.getStatistics(minVotes), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
 		}
 	}
@@ -649,17 +683,43 @@ public class DB {
 	/** 
 	 * Adds the given user with the given password.
 	 */
-	public void addUser(String userName, String passwd) throws UnsupportedEncodingException {
+	public void addUser(String clientName, String extId, String login, String displayName, String passwd) throws UnsupportedEncodingException {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.addUser(login, clientName, extId, displayName, pwhash(passwd), System.currentTimeMillis());
+			session.commit();
+		}
+	}
+
+	/** 
+	 * Sets a new password for the given user.
+	 * 
+	 * @return The new password, or <code>null</code>, if the given user does not exist.
+	 */
+	public String resetPassword(String login) throws UnsupportedEncodingException {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			Long userId = users.getUserId(userName);
-			if (userId == null) {
-				users.addUser(userName, pwhash(passwd), System.currentTimeMillis());
-			} else {
+			Long userId = users.getUserId(login);
+			if (userId != null) {
+				String passwd = createPassword(20);
+				
 				users.setPassword(userId.longValue(), pwhash(passwd));
+				session.commit();
+				return passwd;
 			}
-			session.commit();
+		}
+		return null;
+	}
+	
+	/** 
+	 * The user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 */
+	public String getLogin(String clientName, String extId) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			return users.getLogin(clientName, extId);
 		}
 	}
 
@@ -668,11 +728,11 @@ public class DB {
 	 * 
 	 * @param userAgent The user agent header string.
 	 */
-	public void updateLastAccess(String userName, long timestamp, String userAgent) {
+	public void updateLastAccess(String login, long timestamp, String userAgent) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.setLastAccess(userName, timestamp, userAgent);
+			users.setLastAccess(login, timestamp, userAgent);
 			session.commit();
 		}
 	}
@@ -680,11 +740,11 @@ public class DB {
 	/** 
 	 * Retrieves the settings for a user.
 	 */
-	public UserSettings getSettings(String userName) {
+	public UserSettings getSettings(String login) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			return users.getSettings(userName);
+			return users.getSettings(login);
 		}
 	}
 	
@@ -712,9 +772,9 @@ public class DB {
 			String decoded = new String(decodedBytes, "utf-8");
 			int sepIndex = decoded.indexOf(':');
 			if (sepIndex >= 0) {
-				String userName = decoded.substring(0, sepIndex);
+				String login = decoded.substring(0, sepIndex);
 				String passwd = decoded.substring(sepIndex + 1);
-				return login(userName, passwd);
+				return login(login, passwd);
 			}
 		}
 		LOG.warn("Invalid authentication received: " + authHeader);
@@ -726,22 +786,22 @@ public class DB {
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String login(String userName, String passwd) throws UnsupportedEncodingException, IOException {
+	public String login(String login, String passwd) throws UnsupportedEncodingException, IOException {
 		byte[] pwhash = pwhash(passwd);
 		
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			InputStream hashIn = users.getHash(userName);
+			InputStream hashIn = users.getHash(login);
 			if (hashIn != null) {
 				byte[] expectedHash = hashIn.readAllBytes();
 				if (Arrays.equals(pwhash, expectedHash)) {
-					return userName;
+					return login;
 				} else {
-					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + userName);
+					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + login);
 				}
 			} else {
-				LOG.warn("Invalid user name supplied: " + userName);
+				LOG.warn("Invalid user name supplied: " + login);
 			}
 		}
 		return null;
@@ -863,11 +923,11 @@ public class DB {
 	/** 
 	 * The call report context for the given user.
 	 */
-	public ReportInfo getCallReportInfo(String userName) {
+	public ReportInfo getCallReportInfo(String login) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			long userId = users.getUserId(userName);
+			long userId = users.getUserId(login);
 			DBReportInfo info = users.getReportInfo(userId);
 			if (info == null) {
 				return ReportInfo.create();
@@ -879,13 +939,13 @@ public class DB {
 	/** 
 	 * Update the call report for the given user.
 	 */
-	public void storeCallReport(String userName, CallReport callReport) {
+	public void storeCallReport(String login, CallReport callReport) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			SpamReports reports = session.getMapper(SpamReports.class);
 			long now = System.currentTimeMillis();
 		
-			long userId = users.getUserId(userName);
+			long userId = users.getUserId(login);
 			int cnt = users.updateReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
 			if (cnt == 0) {
 				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);

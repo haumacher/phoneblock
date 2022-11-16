@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <head>
@@ -10,6 +11,12 @@
 <body>
 <jsp:include page="../header.jspf"></jsp:include>
 
+<%
+		HttpSession session = request.getSession(false);
+  		Object login = LoginFilter.getAuthenticatedUser(session);
+  		Object token = RegistrationServlet.getPassword(session);
+%>
+
 <section class="section">
 	<div class="content">
 		<h1>Android-Installation</h1>
@@ -18,29 +25,28 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Adressbuch hinzufügen" src="08-open-sync-add.png"/>
+	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-open-sync-add.png"/>
 	  		</div>
 			<div class="column">
-	  			<img class="image" alt="Keine Tasks" src="09-open-sync-account.png"/>
+	  			<img class="image" alt="Keine Tasks" src="<%=request.getContextPath() %>/setup-android/09-open-sync-account.png"/>
 	  		</div>
 		</div>
 		
 		<p>
-			Gib hier als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code>https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code>. Bei 
-			"Benutzername" trägst Du die E-Mail-Adresse ein, mit der du dich <a href="../signup.jsp">bei PhoneBlock 
-			registriert</a> hast. Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt. Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
-			<a href="../signup.jsp">erneut registrieren</a>.
+			Gib hier als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a>. Bei 
+			"Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">PhoneBlock</a> erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a>)<%}%>. Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a>)<%}%>. Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
+			<a href="<%=request.getContextPath() %>/signup.jsp">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() %>/settings.jsp">Einstellungen</a> das Passwort zurücksetzen.
 		</p>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="06-open-sync-accu.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/06-open-sync-accu.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="10-open-sync-configure.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/10-open-sync-configure.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

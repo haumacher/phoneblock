@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.haumacher.de/pb-test/api/ for testing purpose!",
-		"version": "v1.1"
+		"version": "v1.2"
 	},
 	"servers": [
 		{
@@ -271,7 +271,7 @@
 										"session": {
 											"type": "string"
 										},
-										"email": {
+										"login": {
 											"type": "string"
 										},
 										"password": {
@@ -281,7 +281,7 @@
 								},
 								"example": {
 									"session": "ehWfZJpRTJ9dQLemiVgY",
-									"email": "whoami@company.de",
+									"login": "6d8f7262-faa6-41bc-adb4-50a6013c2b07",
 									"password": "5s4df6s5df"
 								}
 							}

@@ -13,8 +13,10 @@ public class DBUserSettings extends UserSettings {
 	/** 
 	 * Creates a {@link DBUserSettings}.
 	 */
-	public DBUserSettings(long id, int minVotes, int maxLength) {
+	public DBUserSettings(long id, String displayName, String email, int minVotes, int maxLength) {
 		setId(id);
+		setDisplayName(displayName);
+		setEmail(email);
 		setMinVotes(minVotes);
 		setMaxLength(maxLength);
 	}

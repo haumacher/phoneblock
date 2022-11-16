@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <head>
@@ -23,19 +22,19 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Konto ist eingerichtet" src="17-spam-contacts.png"/>
+	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/17-spam-contacts.png"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="14-open-sync-access-required.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/14-open-sync-access-required.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="../status.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/status.jsp">
 		    <span>Fertig</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

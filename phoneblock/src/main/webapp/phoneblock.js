@@ -106,3 +106,9 @@ function checkFritzBox(contextPath, button) {
 	image.src = "http://fritz.box/favicon.ico";
 	return false;
 }
+
+function copyToClipboard(id) {
+	var element = document.getElementById(id);
+	navigator.clipboard.writeText(element.textContent); 
+	return false;
+}

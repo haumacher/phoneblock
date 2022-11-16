@@ -30,4 +30,8 @@ module phoneblock {
 	requires org.jsoup;
 	requires org.mybatis;
 	requires org.slf4j;
+	requires pac4j.core;
+	requires pac4j.oauth;
+	requires pac4j.javaee;
+	requires javaee.pac4j;
 }

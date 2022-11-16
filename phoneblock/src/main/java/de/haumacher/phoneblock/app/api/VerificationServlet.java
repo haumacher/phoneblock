@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,9 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.api.model.RegistrationCompletion;
 import de.haumacher.phoneblock.app.api.model.RegistrationResult;
 import de.haumacher.phoneblock.app.api.model.SessionInfo;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.util.ServletUtil;
 
@@ -39,9 +42,22 @@ public class VerificationServlet extends HttpServlet {
 			return;
 		}
 		
-		String password = DBService.getInstance().createUser(sessionInfo.getEmail());
+		DB db = DBService.getInstance();
+		String email = sessionInfo.getEmail();
 		
-		ServletUtil.sendResult(req, resp, RegistrationResult.create().setSession(sessionInfo.getSession()).setEmail(sessionInfo.getEmail()).setPassword(password));
+		String extId = email.trim().toLowerCase();
+		String login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+		String password;
+		if (login == null) {
+			login = UUID.randomUUID().toString();
+			password = db.createUser(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId, login, email);
+		} else {
+			password = db.resetPassword(login);
+		}
+		
+		db.setEmail(login, email);
+		
+		ServletUtil.sendResult(req, resp, RegistrationResult.create().setSession(sessionInfo.getSession()).setLogin(login).setPassword(password));
 	}
 	
 }

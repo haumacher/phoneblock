@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <head>
@@ -25,22 +24,22 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Konto ist eingerichtet" src="12-open-sync-account-finished.png"/>
+	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/12-open-sync-account-finished.png"/>
 	  		</div>
 			<div class="column">
-	  			<img class="image" alt="Aboniere die Blocklist" src="13-open-sync-subscribe.png"/>
+	  			<img class="image" alt="Aboniere die Blocklist" src="<%=request.getContextPath() %>/setup-android/13-open-sync-subscribe.png"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="10-open-sync-configure.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/10-open-sync-configure.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="14-open-sync-access-required.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/14-open-sync-access-required.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

@@ -18,6 +18,12 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** @see #getId() */
 	public static final String ID__PROP = "id";
 
+	/** @see #getDisplayName() */
+	public static final String DISPLAY_NAME__PROP = "displayName";
+
+	/** @see #getEmail() */
+	public static final String EMAIL__PROP = "email";
+
 	/** @see #getMinVotes() */
 	public static final String MIN_VOTES__PROP = "minVotes";
 
@@ -27,13 +33,23 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** Identifier for the property {@link #getId()} in binary format. */
 	static final int ID__ID = 1;
 
+	/** Identifier for the property {@link #getDisplayName()} in binary format. */
+	static final int DISPLAY_NAME__ID = 2;
+
+	/** Identifier for the property {@link #getEmail()} in binary format. */
+	static final int EMAIL__ID = 3;
+
 	/** Identifier for the property {@link #getMinVotes()} in binary format. */
-	static final int MIN_VOTES__ID = 2;
+	static final int MIN_VOTES__ID = 4;
 
 	/** Identifier for the property {@link #getMaxLength()} in binary format. */
-	static final int MAX_LENGTH__ID = 3;
+	static final int MAX_LENGTH__ID = 5;
 
 	private long _id = 0L;
+
+	private String _displayName = "";
+
+	private String _email = "";
 
 	private int _minVotes = 0;
 
@@ -67,6 +83,48 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetId(long value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+	}
+
+	/**
+	 * The user's real name.
+	 */
+	public final String getDisplayName() {
+		return _displayName;
+	}
+
+	/**
+	 * @see #getDisplayName()
+	 */
+	public UserSettings setDisplayName(String value) {
+		internalSetDisplayName(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getDisplayName()} without chain call utility. */
+	protected final void internalSetDisplayName(String value) {
+		_listener.beforeSet(this, DISPLAY_NAME__PROP, value);
+		_displayName = value;
+	}
+
+	/**
+	 * The user's e-mail address.
+	 */
+	public final String getEmail() {
+		return _email;
+	}
+
+	/**
+	 * @see #getEmail()
+	 */
+	public UserSettings setEmail(String value) {
+		internalSetEmail(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getEmail()} without chain call utility. */
+	protected final void internalSetEmail(String value) {
+		_listener.beforeSet(this, EMAIL__PROP, value);
+		_email = value;
 	}
 
 	/**
@@ -141,6 +199,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			ID__PROP, 
+			DISPLAY_NAME__PROP, 
+			EMAIL__PROP, 
 			MIN_VOTES__PROP, 
 			MAX_LENGTH__PROP));
 
@@ -153,6 +213,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public Object get(String field) {
 		switch (field) {
 			case ID__PROP: return getId();
+			case DISPLAY_NAME__PROP: return getDisplayName();
+			case EMAIL__PROP: return getEmail();
 			case MIN_VOTES__PROP: return getMinVotes();
 			case MAX_LENGTH__PROP: return getMaxLength();
 			default: return null;
@@ -163,6 +225,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public void set(String field, Object value) {
 		switch (field) {
 			case ID__PROP: internalSetId((long) value); break;
+			case DISPLAY_NAME__PROP: internalSetDisplayName((String) value); break;
+			case EMAIL__PROP: internalSetEmail((String) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
 		}
@@ -185,6 +249,10 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		super.writeFields(out);
 		out.name(ID__PROP);
 		out.value(getId());
+		out.name(DISPLAY_NAME__PROP);
+		out.value(getDisplayName());
+		out.name(EMAIL__PROP);
+		out.value(getEmail());
 		out.name(MIN_VOTES__PROP);
 		out.value(getMinVotes());
 		out.name(MAX_LENGTH__PROP);
@@ -195,6 +263,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case ID__PROP: setId(in.nextLong()); break;
+			case DISPLAY_NAME__PROP: setDisplayName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__PROP: setMaxLength(in.nextInt()); break;
 			default: super.readField(in, field);
@@ -218,6 +288,10 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
 		out.name(ID__ID);
 		out.value(getId());
+		out.name(DISPLAY_NAME__ID);
+		out.value(getDisplayName());
+		out.name(EMAIL__ID);
+		out.value(getEmail());
 		out.name(MIN_VOTES__ID);
 		out.value(getMinVotes());
 		out.name(MAX_LENGTH__ID);
@@ -251,6 +325,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
 		switch (field) {
 			case ID__ID: setId(in.nextLong()); break;
+			case DISPLAY_NAME__ID: setDisplayName(in.nextString()); break;
+			case EMAIL__ID: setEmail(in.nextString()); break;
 			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__ID: setMaxLength(in.nextInt()); break;
 			default: in.skipValue(); 

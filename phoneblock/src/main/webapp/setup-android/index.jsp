@@ -31,11 +31,11 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Öffne Playstore" src="01-home.png"/>
+	  			<img class="image" alt="Öffne Playstore" src="<%=request.getContextPath() %>/setup-android/01-home.png"/>
 	  		</div>
 		
 			<div class="column">
-				<img class="image" alt="Suche nach Open Sync" src="02-playstore.png"/>
+				<img class="image" alt="Suche nach Open Sync" src="<%=request.getContextPath() %>/setup-android/02-playstore.png"/>
 			</div>
 		</div>
 		
@@ -47,7 +47,7 @@
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="03-open-sync-install.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/03-open-sync-install.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

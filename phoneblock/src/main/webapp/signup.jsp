@@ -15,65 +15,76 @@
 <section class="section">
 <div class="content">
 
-<div class="columns">
-  <div class="column">
-	<div class="tile is-ancestor">
-      <div class="tile is-parent">
-      	<article class="tile is-child notification">
-	        <h1 class="title">Erstelle Deinen PhoneBlock-Account</h1>
-	        <p class="subtitle">Erhalte Zugangsdaten für die Einrichtung</p>
-	        <div class="content">
-				<p>
-					Um PhoneBlock in Deinem Internet-Router zu installieren, benötigst Du einen PhoneBlock-Account. 
-					Bitte registriere Dich, um Zugangsdaten für Deine Installation zu erhalten.
-				</p>
-				
-				<form action="<%= request.getContextPath() %>/verify-email" method="post" enctype="application/x-www-form-urlencoded">
-					<div class="field">
-<%
-				  		Object message = request.getAttribute("message");
-%>
-					  
-					  <label class="label">E-Mail</label>
-					  <div class="control has-icons-left has-icons-right">
-					    <input name="email" class="input<%= message != null ? " is-danger" : "" %>" type="email" placeholder="Deine E-Mail-Adresse" value="<%= JspUtil.quote(request.getAttribute("email")) %>">
-					    <span class="icon is-small is-left">
-					      <i class="fas fa-envelope"></i>
-					    </span>
-<%
-						if (message != null) {
-%>
-						    <span class="icon is-small is-right">
-						      <i class="fas fa-exclamation-triangle"></i>
-						    </span>
-<%
-						}
-%>
-					  </div>
-<%
-					  	if (message != null) {
-%>
-							<p class="help is-danger">
-								<%= JspUtil.quote(request.getAttribute("message")) %>
-								<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
-							</p>
-<%
-					  	}
-%>
-					</div>		
-							
-					<div class="buttons is-right">
-				    	<button class="button is-link" type="submit">Registrieren</button>
-					</div>
-				</form>
-	        </div>
-	  	</article>
-	  </div>
-	</div>
-   </div>
-</div>
+<h1>Registrierung</h1>
+
+<p>
+	Um PhoneBlock in Deinem Internet-Router zu installieren, benötigst Du einen Benutzernamen und ein Passwort. Beides 
+	erhälst Du bei der Registrierung. In der <a href="<%= request.getContextPath() %>/setup.jsp">Installationsanleitung</a>
+	erfährst Du, wie Du anschließend die Blocklist abrufen und Anrufer mit diesen Telefonnummern blockieren kannst.  
+</p>
 
 </div>
+
+<nav class="panel">
+	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=Google2Client"><i class="fa-brands fa-google"></i> <span>Mit Google registrieren</span></a></p>
+</nav>
+
+<nav class="panel">
+	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=FacebookClient"><i class="fa-brands fa-facebook-f"></i> <span>Mit Facebook registrieren</span></a></p>
+</nav>
+
+<%
+	Object message = request.getAttribute("message");
+	String active = message != null ? "is-active" : "";
+%>
+<nav class="panel">
+	<p class="panel-heading"><a href="#registerForm" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail registrieren</span></a></p>
+	<div id="registerForm" class="is-collapsible <%=active%>">
+		<form action="<%= request.getContextPath() %>/verify-email" method="post" enctype="application/x-www-form-urlencoded">
+  		<div class="panel-block">
+  		<div class="content">
+			<div class="field">
+			  <label class="label">E-Mail</label>
+			  <div class="control has-icons-left has-icons-right">
+			    <input name="email" class="input<%= message != null ? " is-danger" : "" %>" type="email" placeholder="Deine E-Mail-Adresse" value="<%= JspUtil.quote(request.getAttribute("email")) %>">
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-envelope"></i>
+			    </span>
+<%
+				if (message != null) {
+%>
+				    <span class="icon is-small is-right">
+				      <i class="fas fa-exclamation-triangle"></i>
+				    </span>
+<%
+				}
+%>
+			  </div>
+<%
+			  	if (message != null) {
+%>
+					<p class="help is-danger">
+						<%= JspUtil.quote(request.getAttribute("message")) %>
+						<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+					</p>
+<%
+			  	}
+%>
+			</div>		
+					
+			<div class="buttons is-right">
+		    	<button class="button is-link" type="submit">Registrieren</button>
+			</div>
+			
+			<p>
+				 Wenn Du schon einen PhoneBlock-Account hast, dann <a href="<%=request.getContextPath()%>/login.jsp">melde Dich an</a>! 
+			</p>
+		</div>
+		</div>
+		</form>
+	</div>
+</nav>
+
 </section>
 
 <jsp:include page="footer.jspf"></jsp:include>

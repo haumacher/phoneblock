@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
@@ -17,8 +20,9 @@
 		<h1>Installation</h1>
 		
 <%
-  		Object email = request.getAttribute("email");
-  		Object token = request.getAttribute("token");
+		HttpSession session = request.getSession(false);
+  		Object login = LoginFilter.getAuthenticatedUser(session);
+  		Object token = RegistrationServlet.getPassword(session);
 %>
 
 <%
@@ -54,17 +58,17 @@
 		
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code>https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code></div>
+				  <div class="control"><code id="url">https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code><%= JspUtil.quote(email) %></code></div>
+				  <div class="control"><code id="login"><%= JspUtil.quote(login) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code><%= JspUtil.quote(token) %></code></div>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -109,7 +113,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufliste der Fritz!Box" src="02-navigate-to-addressbooks.png"/>
+			<img class="image" alt="Anrufliste der Fritz!Box" src="<%=request.getContextPath() %>/02-navigate-to-addressbooks.png"/>
 		  </div>
 		</div>
 		
@@ -134,21 +138,20 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<code>https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code>
+			<code>https://phoneblock.haumacher.de<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a>
 		  </div>
 		</div>
 		
 		<p>
-			Trage als Benutzernamen Deine E-Mail-Adresse<%if (email != null) {%> <code><%= JspUtil.quote(email) %></code><%} %>, die Du für die 
-			<a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> verwendet hast, in das Feld 
-			<i>Benutzername</i> ein. Achte auf Groß- und Kleinschreibung: Schreibe die E-Mail-Adresse genauso, wie 
-			Du sie in bei der Registrierung geschrieben hast. Am besten überträgst Du sie mit Cut&amp;Paste.
+			Trage den Benutzernamen <%if (login != null) {%> <code><%= JspUtil.quote(login) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der  
+			<a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten hast, in das Feld 
+			<i>Benutzername</i> ein. Am besten überträgst Du ihn mit Cut&amp;Paste.
 		</p>
 		
 		<p>
 			Das Passwort<%if (token == null) {%>, 
 			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten 
-			hast, <%} else  {%> <code><%= JspUtil.quote(token) %></code>,<%}%> muss Du jetzt noch in das Feld 
+			hast, <%} else  {%> <code><%= JspUtil.quote(token) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld 
 			<i>Passwort</i> in dem Formular in der Fritz!Box eintragen.
 		</p>
 		
@@ -158,7 +161,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Neues Adressbuch anlegen" src="03-add-address-book.svg"/>
+			<img class="image" alt="Neues Adressbuch anlegen" src="<%=request.getContextPath() %>/03-add-address-book.png"/>
 		  </div>
 		</div>
 
@@ -172,7 +175,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Abgerufene Blocklist anzeigen" src="04-check-blocklist.png"/>
+			<img class="image" alt="Abgerufene Blocklist anzeigen" src="<%=request.getContextPath() %>/04-check-blocklist.png"/>
 		  </div>
 		</div>
 
@@ -190,7 +193,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Neue Rufsperre hinzufügen" src="05-add-blocklist.png"/>
+			<img class="image" alt="Neue Rufsperre hinzufügen" src="<%=request.getContextPath() %>/05-add-blocklist.png"/>
 		  </div>
 		</div>
 		
@@ -201,7 +204,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" src="06-create-blocklist.png"/>
+			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" src="<%=request.getContextPath() %>/06-create-blocklist.png"/>
 		  </div>
 		</div>
 		

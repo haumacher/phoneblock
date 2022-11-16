@@ -13,14 +13,20 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface Users {
 
-	@Insert("insert into USERS (EMAIL, PWHASH, REGISTERED) values (#{email}, #{pwhash}, #{registered})")
-	void addUser(String email, byte[] pwhash, long registered);
+	@Insert("insert into USERS (LOGIN, CLIENTNAME, EXTID, DISPLAYNAME, PWHASH, REGISTERED) values (#{login}, #{clientName}, #{extId}, #{displayName}, #{pwhash}, #{registered})")
+	void addUser(String login, String clientName, String extId, String displayName, byte[] pwhash, long registered);
 	
 	@Update("update USERS set PWHASH=#{pwhash} where ID=#{userId}")
 	void setPassword(long userId, byte[] pwhash);
 	
-	@Delete("delete from USERS where EMAIL=#{email}")
-	void deleteUser(String email);
+	@Update("update USERS set EMAIL=#{email} where LOGIN=#{login}")
+	void setEmail(String login, String email);
+	
+	@Update("update USERS set EXTID=#{extId} where LOGIN=#{login}")
+	void setExtId(String login, String extId);
+	
+	@Delete("delete from USERS where LOGIN=#{login}")
+	void deleteUser(String login);
 	
 	@Select("select count(1) from USERS")
 	int getUserCount();
@@ -28,17 +34,23 @@ public interface Users {
 	@Select("select count(1) from USERS where LASTACCESS < #{lastAccessLimit}")
 	int getInactiveUserCount(long lastAccessLimit);
 	
-	@Select("select PWHASH from USERS where EMAIL=#{email}")
-	java.io.InputStream getHash(String email);
+	@Select("select PWHASH from USERS where LOGIN=#{login}")
+	java.io.InputStream getHash(String login);
 
 	/** 
 	 * Retrieves the user ID for the user with the given user name (e-mail).
 	 */
-	@Select("select ID from USERS where EMAIL=#{email}")
-	Long getUserId(String email);
+	@Select("select ID from USERS where LOGIN=#{login}")
+	Long getUserId(String login);
+	
+	/** 
+	 * Retrieves the user ID for the user with the given user name (e-mail).
+	 */
+	@Select("select LOGIN from USERS where CLIENTNAME=#{clientName} and EXTID=#{extId}")
+	String getLogin(String clientName, String extId);
 
-	@Select("select ID, MIN_VOTES, MAX_LENGTH from USERS where EMAIL=#{email}")
-	DBUserSettings getSettings(String email);
+	@Select("select ID, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH from USERS where LOGIN=#{login}")
+	DBUserSettings getSettings(String login);
 	
 	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength} where ID=#{id}")
 	int updateSettings(long id, int minVotes, int maxLength);
@@ -46,8 +58,8 @@ public interface Users {
 	/**
 	 * Updates the user's last access timestamp.
 	 */
-	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent} where EMAIL=#{email}")
-	void setLastAccess(String email, long lastAccess, String userAgent);
+	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent} where LOGIN=#{login}")
+	void setLastAccess(String login, long lastAccess, String userAgent);
 	
 	@Select("select TIMESTAMP, LASTID from CALLREPORT where USERID=#{userId}")
 	DBReportInfo getReportInfo(long userId);
