@@ -247,6 +247,11 @@ public class TestDB {
 		
 		assertEquals(31, _db.getSearchHistory("123").size());
 	}
+	
+	@Test
+	public void testQuote() {
+		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
+	}
 
 	private DataSource createTestDataSource() {
 		JdbcDataSource result = new JdbcDataSource();
