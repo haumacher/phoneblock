@@ -801,10 +801,40 @@ public class DB {
 					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + login);
 				}
 			} else {
-				LOG.warn("Invalid user name supplied: " + login);
+				LOG.warn("Invalid user name supplied: '" + saveChars(login) + "'");
 			}
 		}
 		return null;
+	}
+
+	public static String saveChars(String login) {
+		for (int n = 0, cnt = login.length(); n < cnt; n++) {
+			char ch = login.charAt(n);
+			if (!(ch > 32 && ch < 128)) {
+				return quote(login);
+			}
+		}
+		return login;
+	}
+
+	private static String quote(String login) {
+		StringBuilder result = new StringBuilder();
+		result.append('"');
+		for (int n = 0, cnt = login.length(); n < cnt; n++) {
+			char ch = login.charAt(n);
+			if (!(ch > 32 && ch < 128)) {
+				result.append('"');
+				result.append(' ');
+				result.append("0x");
+				result.append(Integer.toHexString(ch).toUpperCase());
+				result.append(' ');
+				result.append('"');
+			} else {
+				result.append(ch);
+			}
+		}
+		result.append('"');
+		return result.toString();
 	}
 
 	private byte[] pwhash(String passwd) throws UnsupportedEncodingException {
