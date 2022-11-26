@@ -79,14 +79,14 @@
 		<h2>Was sind die Vorausetzungen?</h2>
 
 		<div style="float: right;">
-			<a href="https://avm.de/produkte/fritzbox/"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
+			<a href="<%=request.getContextPath()%>/link/fritzbox"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
 				src="<%=request.getContextPath() %>/fritzbox.png" />
 			</a>
 		</div>
 		
 		<p>
 			PhoneBlock kann unerwünschte Anrufe entweder am <a href="<%=request.getContextPath()%>/setup.jsp">"Festnetzanschluss"</a> in
-			Zusammenspiel mit einem <a href="https://avm.de/produkte/fritzbox/">"FRITZ!Box"
+			Zusammenspiel mit einem <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
 			Internetrouter von AVM</a> blockieren, oder auf Deinem <a href="<%=request.getContextPath()%>/setup-android/">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
 		</p>
 		

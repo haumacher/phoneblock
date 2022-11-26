@@ -24,7 +24,7 @@
 			PhoneBlock-Nutzern erfordern.
 		</p>
 
-		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="https://amzn.eu/d/hc6WGbz">tellows Anrufschutz</a>"?</h2>
+		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="<%=request.getContextPath()%>/link/tellows">tellows Anrufschutz</a>"?</h2>
 		<p>
 			Beide Ansätze funktionieren ähnlich über ein Internet-Telefonbuch, das man in seiner Fritz!Box einrichtet 
 			und die Nummern in diesem Telefonbuch blockiert. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
@@ -37,7 +37,7 @@
 			Nummer auf die Blocklist aufgenommen hat, von der Du aber angerufen werden möchtest. Z.B. kann ganz leicht
 			eine Nummer z.B. von einem Internet-Anbieter auf die Blocklist geraten, wenn sich viele Leute von 
 			Rückrufen von dieser Nummer genervt fühlen, Du aber auf einen Rückruf wartest. Das wird auch ganz schön in 
-			diesem <a target="_blank" href="https://www.youtube.com/watch?v=hNlRczRivGo">YouTube-Video</a> erklärt. Mit PhoneBlock 
+			diesem <a target="_blank" href="<%=request.getContextPath()%>/link/tellows-problems">YouTube-Video</a> erklärt. Mit PhoneBlock 
 			kannst Du Deine Blocklist anpassen, Nummern, die Du selbst darauf gesetzt hast, bleiben gesperrt und 
 			Nummern, die Du von der Liste gelöscht hast, werden sicher nie wieder zu Deiner persönlichen Liste 
 			hinzugefügt. 
@@ -63,7 +63,7 @@
 		</p>
 		
 		<p> 
-			Mit dem IPhone <a href="https://www.reiermann.de/hilfe/carddav-auf-ipad-oder-iphone-einrichten/470/">geht das sogar 
+			Mit dem IPhone <a href="<%=request.getContextPath()%>/link/carddav-install">geht das sogar 
 			ganz ohne Zusatzinstallation</a> - ich habe es allerdings nicht ausprobiert. Wenn Du das testest und
 			es nicht funktionieren sollte, dann melde Dich bitte (siehe unten).
 		</p>
@@ -71,7 +71,7 @@
 		<p>
 			Allerdings habe ich bisher keine Möglichkeit gefunden,
 			alle Anrufe von allen Kontakten einer Gruppe (z.B. "SPAM") zu blockieren. Die App, die diese Funktionalität verspricht 
-			(<a target="_blank" href="http://android.insadco.com/group_blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
+			(<a target="_blank" href="<%=request.getContextPath()%>/link/group-blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
 			zu geben. Außerdem will man eigentlich auch nicht alle Telefonterroristen in seinen Kontakten haben. 
 			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
 			Nummern zu den Kontakten hinzuzufügen. 
@@ -111,14 +111,14 @@
 
 		<h2>Ich habe einen Wunsch, was PhoneBlock unbedingt können sollte, wo kann ich den äußern?</h2>
 		<p>
-			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="https://github.com/haumacher/phoneblock/issues" target="_blank">PhoneBlock Projekt-Seite</a> 
+			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="<%=request.getContextPath()%>/link/issues" target="_blank">PhoneBlock Projekt-Seite</a> 
 			ein Ticket öffnen und den Wunsch beschreiben. Gerne kannst Du den Vorschlag aber auch mit mir per E-Mail 
 			diskutieren: <code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
 		</p>
 
 		<h2>Meine Frage wird hier nicht beantwortet, wer hilft?</h2>
 		<p>
-			Schreib doch einen Kommentar auf auf der <a target="_blank" href="https://www.facebook.com/PhoneBlock" target="_blank">Facebook-Seite von PhoneBlock</a>, 
+			Schreib doch einen Kommentar auf auf der <a target="_blank" href="<%=request.getContextPath()%>/link/facebook" target="_blank">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
 			Gerne kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  

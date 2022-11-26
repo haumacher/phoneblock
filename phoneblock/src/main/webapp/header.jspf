@@ -14,9 +14,9 @@
 			PhoneBlock
 		</p>
 		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
-		<a href="https://github.com/haumacher/phoneblock" target="_blank">
+		<a href="<%=request.getContextPath()%>/link/github" target="_blank">
 			<img alt="Fork me on GitHub" width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
-				src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" />
+				src="<%=request.getContextPath()%>/assets/forkme.png" />
 		</a>
 	</div>
   <div class="hero-foot">
@@ -61,17 +61,17 @@
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="<%=request.getContextPath() %>/api/">API für Entwickler</a>
-					<a class="navbar-item" href="https://github.com/haumacher/phoneblock" target="_blank">GitHub Project</a>
+					<a class="navbar-item" href="<%=request.getContextPath()%>/link/github" target="_blank">GitHub Project</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/block.jsp">Rufsperre hinzufügen</a>
 					
 					<hr class="navbar-divider">
-					<a class="navbar-item" href="https://github.com/haumacher/phoneblock/issues/new" target="_blank">Report an issue</a>
+					<a class="navbar-item" href="<%=request.getContextPath()%>/link/new-issue" target="_blank">Report an issue</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" title="Zur Facebook-Seite" href="https://www.facebook.com/PhoneBlock" target="_blank">
+			<a class="navbar-item" title="Zur Facebook-Seite" href="<%=request.getContextPath()%>/link/facebook" target="_blank">
 				<span class="icon" style="color: #1877F2;">
 			    	<i class="fa-brands fa-lg fa-facebook"></i>
 		        </span>

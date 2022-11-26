@@ -39,7 +39,7 @@
 		
 		<p>
 			<strong>FRITZ!Box</strong> und <strong>FRITZ!OS</strong> sind eingetragene Warenzeichen von 
-			<a href="https://www.avm.de/" target="_blank">AVM</a>. <strong>PhoneBlock</strong> steht hierzu in keiner Beziehung.
+			<a href="<%=request.getContextPath()%>/link/avm" target="_blank">AVM</a>. <strong>PhoneBlock</strong> steht hierzu in keiner Beziehung.
 		</p>
 
 		<p>

@@ -29,7 +29,7 @@
 		if (token == null) {
 %>
 		<p>
-			Für die Installation benötigst Du einen <a href="https://avm.de/produkte/fritzbox/">"FRITZ!Box"
+			Für die Installation benötigst Du einen <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
 			Internetrouter von AVM</a> und einen PhoneBlock-Account. Es muss nicht unbedingt das neuste Modell
 			sein, aber Du solltest prüfen, ob das aktuelle FRITZ!OS darauf
 			installiert ist (07.29 oder neuer). Ist dies nicht der Fall, prüfe
