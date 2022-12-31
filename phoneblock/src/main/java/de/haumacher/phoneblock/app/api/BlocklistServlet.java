@@ -11,6 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.model.Blocklist;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -21,6 +26,8 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebServlet(urlPatterns = "/api/blocklist")
 public class BlocklistServlet extends HttpServlet {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (!ServletUtil.checkAuthentication(req, resp)) {
@@ -37,7 +44,13 @@ public class BlocklistServlet extends HttpServlet {
 				return;
 			}
 		}
-		Blocklist result = DBService.getInstance().getBlockListAPI(minVotes);
+		DB db = DBService.getInstance();
+		Blocklist result = db.getBlockListAPI(minVotes);
+		
+		String userAgent = req.getHeader("User-Agent");
+		String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
+		LOG.info("Sending blocklist to user '" + userName + "' (agent '" + userAgent + "')");
+		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent);
 		
 		ServletUtil.sendResult(req, resp, result);
 	}
