@@ -116,11 +116,21 @@ public interface SpamReports {
 	DBPhoneInfo getApiPhoneInfoArchived(String phone);
 	
 	@Select("SELECT x.PHONE FROM SEARCHES x"
-			+ " where x.COUNT - x.BACKUP > 0 ORDER BY x.LASTUPDATE DESC LIMIT 5")
+			+ " LEFT OUTER JOIN SPAMREPORTS r"
+			+ " ON x.PHONE = r.PHONE"
+			+ " WHERE x.COUNT - x.BACKUP > 0"
+			+ " AND NOT r.PHONE IS NULL"
+			+ " ORDER BY x.LASTUPDATE DESC"
+			+ " LIMIT 5")
 	Set<String> getLatestSearchesToday();
 	
 	@Select("SELECT x.PHONE FROM SEARCHHISTORY x"
-			+ " where x.CLUSTER=#{revision} ORDER BY x.COUNT DESC LIMIT 5")
+			+ " LEFT OUTER JOIN SPAMREPORTS r"
+			+ " ON x.PHONE = r.PHONE"
+			+ " WHERE x.CLUSTER=#{revision}"
+			+ " AND NOT r.PHONE IS NULL"
+			+ " ORDER BY x.COUNT DESC"
+			+ " LIMIT 5")
 	Set<String> getTopSearches(int revision);
 	
 	@Select("SELECT x.CLUSTER, x.PHONE, x.COUNT, 0, x.LASTUPDATE FROM SEARCHHISTORY x"

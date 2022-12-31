@@ -45,6 +45,13 @@ public class TestDB {
 
 	@Test
 	public void testTopSearches() throws UnsupportedEncodingException, SQLException {
+		_db.addRating("0", Rating.C_PING, 0);
+		_db.addRating("1", Rating.C_PING, 0);
+		_db.addRating("2", Rating.C_PING, 0);
+		_db.addRating("3", Rating.C_PING, 0);
+		_db.addRating("4", Rating.C_PING, 0);
+		_db.addRating("5", Rating.C_PING, 0);
+		
 		_db.addSearchHit("5", 0);
 		_db.addSearchHit("0", 0);
 		_db.addSearchHit("0", 0);
