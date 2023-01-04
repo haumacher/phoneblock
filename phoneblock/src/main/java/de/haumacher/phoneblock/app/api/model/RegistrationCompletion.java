@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.app.api.model;
 public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link RegistrationCompletion} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationCompletion} instance.
 	 */
-	public static RegistrationCompletion create() {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationCompletion create() {
 		return new de.haumacher.phoneblock.app.api.model.RegistrationCompletion();
 	}
 
-	/** Identifier for the {@link RegistrationCompletion} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.RegistrationCompletion} type in JSON format. */
 	public static final String REGISTRATION_COMPLETION__TYPE = "RegistrationCompletion";
 
 	/** @see #getSession() */
@@ -34,7 +34,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	/**
 	 * Creates a {@link RegistrationCompletion} instance.
 	 *
-	 * @see RegistrationCompletion#create()
+	 * @see de.haumacher.phoneblock.app.api.model.RegistrationCompletion#create()
 	 */
 	protected RegistrationCompletion() {
 		super();
@@ -50,7 +50,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	/**
 	 * @see #getSession()
 	 */
-	public RegistrationCompletion setSession(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationCompletion setSession(String value) {
 		internalSetSession(value);
 		return this;
 	}
@@ -71,7 +71,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	/**
 	 * @see #getCode()
 	 */
-	public RegistrationCompletion setCode(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationCompletion setCode(String value) {
 		internalSetCode(value);
 		return this;
 	}
@@ -85,7 +85,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public RegistrationCompletion registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationCompletion registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -95,7 +95,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	}
 
 	@Override
-	public RegistrationCompletion unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationCompletion unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -137,7 +137,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationCompletion readRegistrationCompletion(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationCompletion readRegistrationCompletion(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationCompletion result = new de.haumacher.phoneblock.app.api.model.RegistrationCompletion();
 		result.readContent(in);
 		return result;
@@ -188,15 +188,15 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationCompletion readRegistrationCompletion(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationCompletion readRegistrationCompletion(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		RegistrationCompletion result = de.haumacher.phoneblock.app.api.model.RegistrationCompletion.readRegistrationCompletion_Content(in);
+		de.haumacher.phoneblock.app.api.model.RegistrationCompletion result = de.haumacher.phoneblock.app.api.model.RegistrationCompletion.readRegistrationCompletion_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link RegistrationCompletion} from a polymorphic composition. */
-	public static RegistrationCompletion readRegistrationCompletion_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RegistrationCompletion} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.app.api.model.RegistrationCompletion readRegistrationCompletion_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationCompletion result = new RegistrationCompletion();
 		result.readContent(in);
 		return result;
@@ -219,7 +219,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 		}
 	}
 
-	/** XML element name representing a {@link RegistrationCompletion} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.RegistrationCompletion} type. */
 	public static final String REGISTRATION_COMPLETION__XML_ELEMENT = "registration-completion";
 
 	/** XML attribute or element name of a {@link #getSession} property. */
@@ -247,9 +247,10 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link RegistrationCompletion} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.RegistrationCompletion} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static RegistrationCompletion readRegistrationCompletion_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		RegistrationCompletion result = new RegistrationCompletion();
 		result.readContentXml(in);

@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.app.api.model;
 public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link RegistrationResult} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationResult} instance.
 	 */
-	public static RegistrationResult create() {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationResult create() {
 		return new de.haumacher.phoneblock.app.api.model.RegistrationResult();
 	}
 
-	/** Identifier for the {@link RegistrationResult} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.RegistrationResult} type in JSON format. */
 	public static final String REGISTRATION_RESULT__TYPE = "RegistrationResult";
 
 	/** @see #getSession() */
@@ -42,7 +42,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/**
 	 * Creates a {@link RegistrationResult} instance.
 	 *
-	 * @see RegistrationResult#create()
+	 * @see de.haumacher.phoneblock.app.api.model.RegistrationResult#create()
 	 */
 	protected RegistrationResult() {
 		super();
@@ -58,7 +58,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/**
 	 * @see #getSession()
 	 */
-	public RegistrationResult setSession(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationResult setSession(String value) {
 		internalSetSession(value);
 		return this;
 	}
@@ -79,7 +79,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/**
 	 * @see #getLogin()
 	 */
-	public RegistrationResult setLogin(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationResult setLogin(String value) {
 		internalSetLogin(value);
 		return this;
 	}
@@ -100,7 +100,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	/**
 	 * @see #getPassword()
 	 */
-	public RegistrationResult setPassword(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationResult setPassword(String value) {
 		internalSetPassword(value);
 		return this;
 	}
@@ -114,7 +114,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public RegistrationResult registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationResult registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -124,7 +124,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	}
 
 	@Override
-	public RegistrationResult unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationResult unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -169,7 +169,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationResult readRegistrationResult(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationResult readRegistrationResult(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationResult result = new de.haumacher.phoneblock.app.api.model.RegistrationResult();
 		result.readContent(in);
 		return result;
@@ -225,15 +225,15 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationResult readRegistrationResult(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationResult readRegistrationResult(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		RegistrationResult result = de.haumacher.phoneblock.app.api.model.RegistrationResult.readRegistrationResult_Content(in);
+		de.haumacher.phoneblock.app.api.model.RegistrationResult result = de.haumacher.phoneblock.app.api.model.RegistrationResult.readRegistrationResult_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link RegistrationResult} from a polymorphic composition. */
-	public static RegistrationResult readRegistrationResult_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RegistrationResult} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.app.api.model.RegistrationResult readRegistrationResult_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationResult result = new RegistrationResult();
 		result.readContent(in);
 		return result;
@@ -257,7 +257,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 		}
 	}
 
-	/** XML element name representing a {@link RegistrationResult} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.RegistrationResult} type. */
 	public static final String REGISTRATION_RESULT__XML_ELEMENT = "registration-result";
 
 	/** XML attribute or element name of a {@link #getSession} property. */
@@ -289,9 +289,10 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link RegistrationResult} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.RegistrationResult} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static RegistrationResult readRegistrationResult_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		RegistrationResult result = new RegistrationResult();
 		result.readContentXml(in);

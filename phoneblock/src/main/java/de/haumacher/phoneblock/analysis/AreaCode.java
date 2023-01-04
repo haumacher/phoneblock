@@ -3,13 +3,13 @@ package de.haumacher.phoneblock.analysis;
 public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
-	 * Creates a {@link AreaCode} instance.
+	 * Creates a {@link de.haumacher.phoneblock.analysis.AreaCode} instance.
 	 */
-	public static AreaCode create() {
+	public static de.haumacher.phoneblock.analysis.AreaCode create() {
 		return new de.haumacher.phoneblock.analysis.AreaCode();
 	}
 
-	/** Identifier for the {@link AreaCode} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.analysis.AreaCode} type in JSON format. */
 	public static final String AREA_CODE__TYPE = "AreaCode";
 
 	/** @see #getPhoneAreaCode() */
@@ -39,7 +39,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * Creates a {@link AreaCode} instance.
 	 *
-	 * @see AreaCode#create()
+	 * @see de.haumacher.phoneblock.analysis.AreaCode#create()
 	 */
 	protected AreaCode() {
 		super();
@@ -52,7 +52,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #getPhoneAreaCode()
 	 */
-	public AreaCode setPhoneAreaCode(String value) {
+	public de.haumacher.phoneblock.analysis.AreaCode setPhoneAreaCode(String value) {
 		internalSetPhoneAreaCode(value);
 		return this;
 	}
@@ -70,7 +70,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #getCity()
 	 */
-	public AreaCode setCity(String value) {
+	public de.haumacher.phoneblock.analysis.AreaCode setCity(String value) {
 		internalSetCity(value);
 		return this;
 	}
@@ -88,7 +88,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #isActive()
 	 */
-	public AreaCode setActive(boolean value) {
+	public de.haumacher.phoneblock.analysis.AreaCode setActive(boolean value) {
 		internalSetActive(value);
 		return this;
 	}
@@ -102,7 +102,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public AreaCode registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.analysis.AreaCode registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -112,7 +112,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	}
 
 	@Override
-	public AreaCode unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.analysis.AreaCode unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -157,7 +157,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static AreaCode readAreaCode(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.analysis.AreaCode readAreaCode(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.analysis.AreaCode result = new de.haumacher.phoneblock.analysis.AreaCode();
 		result.readContent(in);
 		return result;
@@ -213,15 +213,15 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static AreaCode readAreaCode(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.analysis.AreaCode readAreaCode(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		AreaCode result = de.haumacher.phoneblock.analysis.AreaCode.readAreaCode_Content(in);
+		de.haumacher.phoneblock.analysis.AreaCode result = de.haumacher.phoneblock.analysis.AreaCode.readAreaCode_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link AreaCode} from a polymorphic composition. */
-	public static AreaCode readAreaCode_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.analysis.AreaCode} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.analysis.AreaCode readAreaCode_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.analysis.AreaCode result = new AreaCode();
 		result.readContent(in);
 		return result;

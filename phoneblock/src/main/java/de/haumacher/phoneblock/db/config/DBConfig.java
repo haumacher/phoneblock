@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.db.config;
 public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
-	 * Creates a {@link DBConfig} instance.
+	 * Creates a {@link de.haumacher.phoneblock.db.config.DBConfig} instance.
 	 */
-	public static DBConfig create() {
+	public static de.haumacher.phoneblock.db.config.DBConfig create() {
 		return new de.haumacher.phoneblock.db.config.DBConfig();
 	}
 
-	/** Identifier for the {@link DBConfig} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.db.config.DBConfig} type in JSON format. */
 	public static final String DBCONFIG__TYPE = "DBConfig";
 
 	/** @see #getUrl() */
@@ -50,7 +50,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * Creates a {@link DBConfig} instance.
 	 *
-	 * @see DBConfig#create()
+	 * @see de.haumacher.phoneblock.db.config.DBConfig#create()
 	 */
 	protected DBConfig() {
 		super();
@@ -66,7 +66,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #getUrl()
 	 */
-	public DBConfig setUrl(String value) {
+	public de.haumacher.phoneblock.db.config.DBConfig setUrl(String value) {
 		internalSetUrl(value);
 		return this;
 	}
@@ -87,7 +87,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #getUser()
 	 */
-	public DBConfig setUser(String value) {
+	public de.haumacher.phoneblock.db.config.DBConfig setUser(String value) {
 		internalSetUser(value);
 		return this;
 	}
@@ -108,7 +108,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #getPassword()
 	 */
-	public DBConfig setPassword(String value) {
+	public de.haumacher.phoneblock.db.config.DBConfig setPassword(String value) {
 		internalSetPassword(value);
 		return this;
 	}
@@ -129,7 +129,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/**
 	 * @see #getPort()
 	 */
-	public DBConfig setPort(int value) {
+	public de.haumacher.phoneblock.db.config.DBConfig setPort(int value) {
 		internalSetPort(value);
 		return this;
 	}
@@ -143,7 +143,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public DBConfig registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.config.DBConfig registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -153,7 +153,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	}
 
 	@Override
-	public DBConfig unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.config.DBConfig unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -201,7 +201,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static DBConfig readDBConfig(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.config.DBConfig readDBConfig(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.config.DBConfig result = new de.haumacher.phoneblock.db.config.DBConfig();
 		result.readContent(in);
 		return result;
@@ -262,15 +262,15 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static DBConfig readDBConfig(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.config.DBConfig readDBConfig(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		DBConfig result = de.haumacher.phoneblock.db.config.DBConfig.readDBConfig_Content(in);
+		de.haumacher.phoneblock.db.config.DBConfig result = de.haumacher.phoneblock.db.config.DBConfig.readDBConfig_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link DBConfig} from a polymorphic composition. */
-	public static DBConfig readDBConfig_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.db.config.DBConfig} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.db.config.DBConfig readDBConfig_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.config.DBConfig result = new DBConfig();
 		result.readContent(in);
 		return result;

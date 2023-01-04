@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.db.model;
 public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link PhoneInfo} instance.
+	 * Creates a {@link de.haumacher.phoneblock.db.model.PhoneInfo} instance.
 	 */
-	public static PhoneInfo create() {
+	public static de.haumacher.phoneblock.db.model.PhoneInfo create() {
 		return new de.haumacher.phoneblock.db.model.PhoneInfo();
 	}
 
-	/** Identifier for the {@link PhoneInfo} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.db.model.PhoneInfo} type in JSON format. */
 	public static final String PHONE_INFO__TYPE = "PhoneInfo";
 
 	/** @see #getPhone() */
@@ -26,14 +26,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	private String _phone = "";
 
-	private Rating _rating = de.haumacher.phoneblock.db.model.Rating.A_LEGITIMATE;
+	private de.haumacher.phoneblock.db.model.Rating _rating = de.haumacher.phoneblock.db.model.Rating.A_LEGITIMATE;
 
 	private int _votes = 0;
 
 	/**
 	 * Creates a {@link PhoneInfo} instance.
 	 *
-	 * @see PhoneInfo#create()
+	 * @see de.haumacher.phoneblock.db.model.PhoneInfo#create()
 	 */
 	protected PhoneInfo() {
 		super();
@@ -49,7 +49,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/**
 	 * @see #getPhone()
 	 */
-	public PhoneInfo setPhone(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneInfo setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -63,20 +63,20 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/**
 	 * The rating for the requested phone number.
 	 */
-	public final Rating getRating() {
+	public final de.haumacher.phoneblock.db.model.Rating getRating() {
 		return _rating;
 	}
 
 	/**
 	 * @see #getRating()
 	 */
-	public PhoneInfo setRating(Rating value) {
+	public de.haumacher.phoneblock.db.model.PhoneInfo setRating(de.haumacher.phoneblock.db.model.Rating value) {
 		internalSetRating(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getRating()} without chain call utility. */
-	protected final void internalSetRating(Rating value) {
+	protected final void internalSetRating(de.haumacher.phoneblock.db.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
@@ -92,7 +92,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/**
 	 * @see #getVotes()
 	 */
-	public PhoneInfo setVotes(int value) {
+	public de.haumacher.phoneblock.db.model.PhoneInfo setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
@@ -106,7 +106,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public PhoneInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.PhoneInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -116,7 +116,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	}
 
 	@Override
-	public PhoneInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.PhoneInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -155,13 +155,13 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	public void set(String field, Object value) {
 		switch (field) {
 			case PHONE__PROP: internalSetPhone((String) value); break;
-			case RATING__PROP: internalSetRating((Rating) value); break;
+			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.db.model.Rating) value); break;
 			case VOTES__PROP: internalSetVotes((int) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.model.PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.model.PhoneInfo result = new de.haumacher.phoneblock.db.model.PhoneInfo();
 		result.readContent(in);
 		return result;
@@ -193,7 +193,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		}
 	}
 
-	/** XML element name representing a {@link PhoneInfo} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.PhoneInfo} type. */
 	public static final String PHONE_INFO__XML_ELEMENT = "phone-info";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
@@ -225,9 +225,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link PhoneInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.db.model.PhoneInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static PhoneInfo readPhoneInfo_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		PhoneInfo result = new PhoneInfo();
 		result.readContentXml(in);

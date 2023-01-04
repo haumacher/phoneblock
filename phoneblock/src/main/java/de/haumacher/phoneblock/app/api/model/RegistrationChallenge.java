@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.app.api.model;
 public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link RegistrationChallenge} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} instance.
 	 */
-	public static RegistrationChallenge create() {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationChallenge create() {
 		return new de.haumacher.phoneblock.app.api.model.RegistrationChallenge();
 	}
 
-	/** Identifier for the {@link RegistrationChallenge} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} type in JSON format. */
 	public static final String REGISTRATION_CHALLENGE__TYPE = "RegistrationChallenge";
 
 	/** @see #getSession() */
@@ -34,7 +34,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	/**
 	 * Creates a {@link RegistrationChallenge} instance.
 	 *
-	 * @see RegistrationChallenge#create()
+	 * @see de.haumacher.phoneblock.app.api.model.RegistrationChallenge#create()
 	 */
 	protected RegistrationChallenge() {
 		super();
@@ -50,7 +50,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	/**
 	 * @see #getSession()
 	 */
-	public RegistrationChallenge setSession(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationChallenge setSession(String value) {
 		internalSetSession(value);
 		return this;
 	}
@@ -71,7 +71,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	/**
 	 * @see #getCaptcha()
 	 */
-	public RegistrationChallenge setCaptcha(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationChallenge setCaptcha(String value) {
 		internalSetCaptcha(value);
 		return this;
 	}
@@ -85,7 +85,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public RegistrationChallenge registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationChallenge registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -95,7 +95,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	}
 
 	@Override
-	public RegistrationChallenge unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationChallenge unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -137,7 +137,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationChallenge readRegistrationChallenge(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationChallenge readRegistrationChallenge(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationChallenge result = new de.haumacher.phoneblock.app.api.model.RegistrationChallenge();
 		result.readContent(in);
 		return result;
@@ -188,15 +188,15 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationChallenge readRegistrationChallenge(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationChallenge readRegistrationChallenge(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		RegistrationChallenge result = de.haumacher.phoneblock.app.api.model.RegistrationChallenge.readRegistrationChallenge_Content(in);
+		de.haumacher.phoneblock.app.api.model.RegistrationChallenge result = de.haumacher.phoneblock.app.api.model.RegistrationChallenge.readRegistrationChallenge_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link RegistrationChallenge} from a polymorphic composition. */
-	public static RegistrationChallenge readRegistrationChallenge_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.app.api.model.RegistrationChallenge readRegistrationChallenge_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationChallenge result = new RegistrationChallenge();
 		result.readContent(in);
 		return result;
@@ -219,7 +219,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 		}
 	}
 
-	/** XML element name representing a {@link RegistrationChallenge} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} type. */
 	public static final String REGISTRATION_CHALLENGE__XML_ELEMENT = "registration-challenge";
 
 	/** XML attribute or element name of a {@link #getSession} property. */
@@ -247,9 +247,10 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link RegistrationChallenge} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static RegistrationChallenge readRegistrationChallenge_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		RegistrationChallenge result = new RegistrationChallenge();
 		result.readContentXml(in);

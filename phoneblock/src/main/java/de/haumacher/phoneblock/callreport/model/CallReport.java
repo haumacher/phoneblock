@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.callreport.model;
 public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
-	 * Creates a {@link CallReport} instance.
+	 * Creates a {@link de.haumacher.phoneblock.callreport.model.CallReport} instance.
 	 */
-	public static CallReport create() {
+	public static de.haumacher.phoneblock.callreport.model.CallReport create() {
 		return new de.haumacher.phoneblock.callreport.model.CallReport();
 	}
 
-	/** Identifier for the {@link CallReport} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.callreport.model.CallReport} type in JSON format. */
 	public static final String CALL_REPORT__TYPE = "CallReport";
 
 	/** @see #getTimestamp() */
@@ -52,7 +52,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link CallReport} instance.
 	 *
-	 * @see CallReport#create()
+	 * @see de.haumacher.phoneblock.callreport.model.CallReport#create()
 	 */
 	protected CallReport() {
 		super();
@@ -68,7 +68,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getTimestamp()
 	 */
-	public CallReport setTimestamp(String value) {
+	public de.haumacher.phoneblock.callreport.model.CallReport setTimestamp(String value) {
 		internalSetTimestamp(value);
 		return this;
 	}
@@ -89,7 +89,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getLastid()
 	 */
-	public CallReport setLastid(String value) {
+	public de.haumacher.phoneblock.callreport.model.CallReport setLastid(String value) {
 		internalSetLastid(value);
 		return this;
 	}
@@ -110,7 +110,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCallers()
 	 */
-	public CallReport setCallers(java.util.List<? extends String> value) {
+	public de.haumacher.phoneblock.callreport.model.CallReport setCallers(java.util.List<? extends String> value) {
 		internalSetCallers(value);
 		return this;
 	}
@@ -124,7 +124,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Adds a value to the {@link #getCallers()} list.
 	 */
-	public CallReport addCaller(String value) {
+	public de.haumacher.phoneblock.callreport.model.CallReport addCaller(String value) {
 		internalAddCaller(value);
 		return this;
 	}
@@ -144,7 +144,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public CallReport registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.callreport.model.CallReport registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -154,7 +154,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public CallReport unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.callreport.model.CallReport unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -199,7 +199,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static CallReport readCallReport(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.callreport.model.CallReport readCallReport(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.callreport.model.CallReport result = new de.haumacher.phoneblock.callreport.model.CallReport();
 		result.readContent(in);
 		return result;
@@ -273,15 +273,15 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static CallReport readCallReport(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.callreport.model.CallReport readCallReport(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		CallReport result = de.haumacher.phoneblock.callreport.model.CallReport.readCallReport_Content(in);
+		de.haumacher.phoneblock.callreport.model.CallReport result = de.haumacher.phoneblock.callreport.model.CallReport.readCallReport_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link CallReport} from a polymorphic composition. */
-	public static CallReport readCallReport_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.callreport.model.CallReport} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.callreport.model.CallReport readCallReport_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.callreport.model.CallReport result = new CallReport();
 		result.readContent(in);
 		return result;

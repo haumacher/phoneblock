@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.app.api.model;
 public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link RateRequest} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RateRequest} instance.
 	 */
-	public static RateRequest create() {
+	public static de.haumacher.phoneblock.app.api.model.RateRequest create() {
 		return new de.haumacher.phoneblock.app.api.model.RateRequest();
 	}
 
-	/** Identifier for the {@link RateRequest} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.RateRequest} type in JSON format. */
 	public static final String RATE_REQUEST__TYPE = "RateRequest";
 
 	/** @see #getPhone() */
@@ -34,7 +34,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * Creates a {@link RateRequest} instance.
 	 *
-	 * @see RateRequest#create()
+	 * @see de.haumacher.phoneblock.app.api.model.RateRequest#create()
 	 */
 	protected RateRequest() {
 		super();
@@ -50,7 +50,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getPhone()
 	 */
-	public RateRequest setPhone(String value) {
+	public de.haumacher.phoneblock.app.api.model.RateRequest setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -71,7 +71,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getRating()
 	 */
-	public RateRequest setRating(String value) {
+	public de.haumacher.phoneblock.app.api.model.RateRequest setRating(String value) {
 		internalSetRating(value);
 		return this;
 	}
@@ -85,7 +85,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public RateRequest registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RateRequest registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -95,7 +95,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	@Override
-	public RateRequest unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RateRequest unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -137,7 +137,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RateRequest readRateRequest(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RateRequest readRateRequest(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RateRequest result = new de.haumacher.phoneblock.app.api.model.RateRequest();
 		result.readContent(in);
 		return result;
@@ -188,15 +188,15 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RateRequest readRateRequest(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RateRequest readRateRequest(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		RateRequest result = de.haumacher.phoneblock.app.api.model.RateRequest.readRateRequest_Content(in);
+		de.haumacher.phoneblock.app.api.model.RateRequest result = de.haumacher.phoneblock.app.api.model.RateRequest.readRateRequest_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link RateRequest} from a polymorphic composition. */
-	public static RateRequest readRateRequest_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RateRequest} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.app.api.model.RateRequest readRateRequest_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RateRequest result = new RateRequest();
 		result.readContent(in);
 		return result;
@@ -219,7 +219,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		}
 	}
 
-	/** XML element name representing a {@link RateRequest} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.RateRequest} type. */
 	public static final String RATE_REQUEST__XML_ELEMENT = "rate-request";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
@@ -247,9 +247,10 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link RateRequest} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.RateRequest} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static RateRequest readRateRequest_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		RateRequest result = new RateRequest();
 		result.readContentXml(in);

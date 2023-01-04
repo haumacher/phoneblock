@@ -78,20 +78,20 @@ public interface UpdateMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 	}
 
 	/**
-	 * Creates a {@link UpdateMessage} instance.
+	 * Creates a {@link de.haumacher.phoneblock.index.google.UpdateMessage} instance.
 	 */
-	static UpdateMessage create() {
-		return new de.haumacher.phoneblock.index.google.UpdateMessage_Impl();
+	static de.haumacher.phoneblock.index.google.UpdateMessage create() {
+		return new de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl();
 	}
 
-	/** Identifier for the {@link UpdateMessage} type in JSON format. */
-	static final String UPDATE_MESSAGE__TYPE = "UpdateMessage";
+	/** Identifier for the {@link de.haumacher.phoneblock.index.google.UpdateMessage} type in JSON format. */
+	String UPDATE_MESSAGE__TYPE = "UpdateMessage";
 
 	/** @see #getUrl() */
-	static final String URL__PROP = "url";
+	String URL__PROP = "url";
 
 	/** @see #getType() */
-	static final String TYPE__PROP = "type";
+	String TYPE__PROP = "type";
 
 	/** Identifier for the property {@link #getUrl()} in binary format. */
 	static final int URL__ID = 1;
@@ -107,36 +107,35 @@ public interface UpdateMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 	/**
 	 * @see #getUrl()
 	 */
-	UpdateMessage setUrl(String value);
+	de.haumacher.phoneblock.index.google.UpdateMessage setUrl(String value);
 
 	/**
 	 * The type of update to inform about.
 	 */
-	Type getType();
+	de.haumacher.phoneblock.index.google.UpdateMessage.Type getType();
 
 	/**
 	 * @see #getType()
 	 */
-	UpdateMessage setType(Type value);
+	de.haumacher.phoneblock.index.google.UpdateMessage setType(de.haumacher.phoneblock.index.google.UpdateMessage.Type value);
 
 	@Override
-	public UpdateMessage registerListener(de.haumacher.msgbuf.observer.Listener l);
+	public de.haumacher.phoneblock.index.google.UpdateMessage registerListener(de.haumacher.msgbuf.observer.Listener l);
 
 	@Override
-	public UpdateMessage unregisterListener(de.haumacher.msgbuf.observer.Listener l);
-
+	public de.haumacher.phoneblock.index.google.UpdateMessage unregisterListener(de.haumacher.msgbuf.observer.Listener l);
 
 	/** Reads a new instance from the given reader. */
-	static UpdateMessage readUpdateMessage(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.index.google.UpdateMessage_Impl result = new de.haumacher.phoneblock.index.google.UpdateMessage_Impl();
+	static de.haumacher.phoneblock.index.google.UpdateMessage readUpdateMessage(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl result = new de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl();
 		result.readContent(in);
 		return result;
 	}
 
 	/** Reads a new instance from the given reader. */
-	static UpdateMessage readUpdateMessage(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	static de.haumacher.phoneblock.index.google.UpdateMessage readUpdateMessage(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		UpdateMessage result = de.haumacher.phoneblock.index.google.UpdateMessage_Impl.readUpdateMessage_Content(in);
+		de.haumacher.phoneblock.index.google.UpdateMessage result = de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl.readUpdateMessage_Content(in);
 		in.endObject();
 		return result;
 	}

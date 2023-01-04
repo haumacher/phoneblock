@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.callreport.model;
 public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
-	 * Creates a {@link ReportInfo} instance.
+	 * Creates a {@link de.haumacher.phoneblock.callreport.model.ReportInfo} instance.
 	 */
-	public static ReportInfo create() {
+	public static de.haumacher.phoneblock.callreport.model.ReportInfo create() {
 		return new de.haumacher.phoneblock.callreport.model.ReportInfo();
 	}
 
-	/** Identifier for the {@link ReportInfo} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.callreport.model.ReportInfo} type in JSON format. */
 	public static final String REPORT_INFO__TYPE = "ReportInfo";
 
 	/** @see #getTimestamp() */
@@ -34,7 +34,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link ReportInfo} instance.
 	 *
-	 * @see ReportInfo#create()
+	 * @see de.haumacher.phoneblock.callreport.model.ReportInfo#create()
 	 */
 	protected ReportInfo() {
 		super();
@@ -50,7 +50,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getTimestamp()
 	 */
-	public ReportInfo setTimestamp(String value) {
+	public de.haumacher.phoneblock.callreport.model.ReportInfo setTimestamp(String value) {
 		internalSetTimestamp(value);
 		return this;
 	}
@@ -78,7 +78,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getLastid()
 	 */
-	public ReportInfo setLastid(String value) {
+	public de.haumacher.phoneblock.callreport.model.ReportInfo setLastid(String value) {
 		internalSetLastid(value);
 		return this;
 	}
@@ -99,7 +99,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public ReportInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.callreport.model.ReportInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -109,7 +109,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public ReportInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.callreport.model.ReportInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -151,7 +151,7 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static ReportInfo readReportInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.callreport.model.ReportInfo readReportInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.callreport.model.ReportInfo result = new de.haumacher.phoneblock.callreport.model.ReportInfo();
 		result.readContent(in);
 		return result;
@@ -210,15 +210,15 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static ReportInfo readReportInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.callreport.model.ReportInfo readReportInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		ReportInfo result = de.haumacher.phoneblock.callreport.model.ReportInfo.readReportInfo_Content(in);
+		de.haumacher.phoneblock.callreport.model.ReportInfo result = de.haumacher.phoneblock.callreport.model.ReportInfo.readReportInfo_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link ReportInfo} from a polymorphic composition. */
-	public static ReportInfo readReportInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.callreport.model.ReportInfo} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.callreport.model.ReportInfo readReportInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.callreport.model.ReportInfo result = new ReportInfo();
 		result.readContent(in);
 		return result;

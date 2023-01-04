@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.app.api.model;
 public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link SessionInfo} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SessionInfo} instance.
 	 */
-	public static SessionInfo create() {
+	public static de.haumacher.phoneblock.app.api.model.SessionInfo create() {
 		return new de.haumacher.phoneblock.app.api.model.SessionInfo();
 	}
 
-	/** Identifier for the {@link SessionInfo} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.SessionInfo} type in JSON format. */
 	public static final String SESSION_INFO__TYPE = "SessionInfo";
 
 	/** @see #getCreated() */
@@ -58,7 +58,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * Creates a {@link SessionInfo} instance.
 	 *
-	 * @see SessionInfo#create()
+	 * @see de.haumacher.phoneblock.app.api.model.SessionInfo#create()
 	 */
 	protected SessionInfo() {
 		super();
@@ -74,7 +74,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getCreated()
 	 */
-	public SessionInfo setCreated(long value) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo setCreated(long value) {
 		internalSetCreated(value);
 		return this;
 	}
@@ -95,7 +95,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getSession()
 	 */
-	public SessionInfo setSession(String value) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo setSession(String value) {
 		internalSetSession(value);
 		return this;
 	}
@@ -116,7 +116,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getEmail()
 	 */
-	public SessionInfo setEmail(String value) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo setEmail(String value) {
 		internalSetEmail(value);
 		return this;
 	}
@@ -137,7 +137,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getAnswer()
 	 */
-	public SessionInfo setAnswer(String value) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo setAnswer(String value) {
 		internalSetAnswer(value);
 		return this;
 	}
@@ -158,7 +158,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/**
 	 * @see #getCode()
 	 */
-	public SessionInfo setCode(String value) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo setCode(String value) {
 		internalSetCode(value);
 		return this;
 	}
@@ -172,7 +172,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public SessionInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -182,7 +182,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	@Override
-	public SessionInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.SessionInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -233,7 +233,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static SessionInfo readSessionInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.SessionInfo readSessionInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.SessionInfo result = new de.haumacher.phoneblock.app.api.model.SessionInfo();
 		result.readContent(in);
 		return result;
@@ -299,15 +299,15 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static SessionInfo readSessionInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.SessionInfo readSessionInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		SessionInfo result = de.haumacher.phoneblock.app.api.model.SessionInfo.readSessionInfo_Content(in);
+		de.haumacher.phoneblock.app.api.model.SessionInfo result = de.haumacher.phoneblock.app.api.model.SessionInfo.readSessionInfo_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link SessionInfo} from a polymorphic composition. */
-	public static SessionInfo readSessionInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.SessionInfo} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.app.api.model.SessionInfo readSessionInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.SessionInfo result = new SessionInfo();
 		result.readContent(in);
 		return result;
@@ -333,7 +333,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		}
 	}
 
-	/** XML element name representing a {@link SessionInfo} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.SessionInfo} type. */
 	public static final String SESSION_INFO__XML_ELEMENT = "session-info";
 
 	/** XML attribute or element name of a {@link #getCreated} property. */
@@ -373,9 +373,10 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link SessionInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.SessionInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static SessionInfo readSessionInfo_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		SessionInfo result = new SessionInfo();
 		result.readContentXml(in);

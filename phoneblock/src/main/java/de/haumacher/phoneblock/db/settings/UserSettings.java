@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.db.settings;
 public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
 
 	/**
-	 * Creates a {@link UserSettings} instance.
+	 * Creates a {@link de.haumacher.phoneblock.db.settings.UserSettings} instance.
 	 */
-	public static UserSettings create() {
+	public static de.haumacher.phoneblock.db.settings.UserSettings create() {
 		return new de.haumacher.phoneblock.db.settings.UserSettings();
 	}
 
-	/** Identifier for the {@link UserSettings} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.db.settings.UserSettings} type in JSON format. */
 	public static final String USER_SETTINGS__TYPE = "UserSettings";
 
 	/** @see #getId() */
@@ -58,7 +58,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * Creates a {@link UserSettings} instance.
 	 *
-	 * @see UserSettings#create()
+	 * @see de.haumacher.phoneblock.db.settings.UserSettings#create()
 	 */
 	protected UserSettings() {
 		super();
@@ -74,7 +74,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * @see #getId()
 	 */
-	public UserSettings setId(long value) {
+	public de.haumacher.phoneblock.db.settings.UserSettings setId(long value) {
 		internalSetId(value);
 		return this;
 	}
@@ -95,7 +95,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * @see #getDisplayName()
 	 */
-	public UserSettings setDisplayName(String value) {
+	public de.haumacher.phoneblock.db.settings.UserSettings setDisplayName(String value) {
 		internalSetDisplayName(value);
 		return this;
 	}
@@ -116,7 +116,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * @see #getEmail()
 	 */
-	public UserSettings setEmail(String value) {
+	public de.haumacher.phoneblock.db.settings.UserSettings setEmail(String value) {
 		internalSetEmail(value);
 		return this;
 	}
@@ -137,7 +137,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * @see #getMinVotes()
 	 */
-	public UserSettings setMinVotes(int value) {
+	public de.haumacher.phoneblock.db.settings.UserSettings setMinVotes(int value) {
 		internalSetMinVotes(value);
 		return this;
 	}
@@ -158,7 +158,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * @see #getMaxLength()
 	 */
-	public UserSettings setMaxLength(int value) {
+	public de.haumacher.phoneblock.db.settings.UserSettings setMaxLength(int value) {
 		internalSetMaxLength(value);
 		return this;
 	}
@@ -172,7 +172,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public UserSettings registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.settings.UserSettings registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -182,7 +182,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	@Override
-	public UserSettings unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.settings.UserSettings unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -233,7 +233,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static UserSettings readUserSettings(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.settings.UserSettings readUserSettings(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.settings.UserSettings result = new de.haumacher.phoneblock.db.settings.UserSettings();
 		result.readContent(in);
 		return result;
@@ -299,15 +299,15 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static UserSettings readUserSettings(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.settings.UserSettings readUserSettings(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		UserSettings result = de.haumacher.phoneblock.db.settings.UserSettings.readUserSettings_Content(in);
+		de.haumacher.phoneblock.db.settings.UserSettings result = de.haumacher.phoneblock.db.settings.UserSettings.readUserSettings_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link UserSettings} from a polymorphic composition. */
-	public static UserSettings readUserSettings_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.db.settings.UserSettings} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.db.settings.UserSettings readUserSettings_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.settings.UserSettings result = new UserSettings();
 		result.readContent(in);
 		return result;

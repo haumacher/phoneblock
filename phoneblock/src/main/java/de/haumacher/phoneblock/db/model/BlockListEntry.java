@@ -3,13 +3,13 @@ package de.haumacher.phoneblock.db.model;
 public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link BlockListEntry} instance.
+	 * Creates a {@link de.haumacher.phoneblock.db.model.BlockListEntry} instance.
 	 */
-	public static BlockListEntry create() {
+	public static de.haumacher.phoneblock.db.model.BlockListEntry create() {
 		return new de.haumacher.phoneblock.db.model.BlockListEntry();
 	}
 
-	/** Identifier for the {@link BlockListEntry} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.db.model.BlockListEntry} type in JSON format. */
 	public static final String BLOCK_LIST_ENTRY__TYPE = "BlockListEntry";
 
 	/** @see #getPhone() */
@@ -26,7 +26,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	private String _phone = "";
 
-	private Rating _rating = de.haumacher.phoneblock.db.model.Rating.A_LEGITIMATE;
+	private de.haumacher.phoneblock.db.model.Rating _rating = de.haumacher.phoneblock.db.model.Rating.A_LEGITIMATE;
 
 	private int _votes = 0;
 
@@ -35,7 +35,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * Creates a {@link BlockListEntry} instance.
 	 *
-	 * @see BlockListEntry#create()
+	 * @see de.haumacher.phoneblock.db.model.BlockListEntry#create()
 	 */
 	protected BlockListEntry() {
 		super();
@@ -51,7 +51,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getPhone()
 	 */
-	public BlockListEntry setPhone(String value) {
+	public de.haumacher.phoneblock.db.model.BlockListEntry setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -65,20 +65,20 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * The rating for the requested phone number.
 	 */
-	public final Rating getRating() {
+	public final de.haumacher.phoneblock.db.model.Rating getRating() {
 		return _rating;
 	}
 
 	/**
 	 * @see #getRating()
 	 */
-	public BlockListEntry setRating(Rating value) {
+	public de.haumacher.phoneblock.db.model.BlockListEntry setRating(de.haumacher.phoneblock.db.model.Rating value) {
 		internalSetRating(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getRating()} without chain call utility. */
-	protected final void internalSetRating(Rating value) {
+	protected final void internalSetRating(de.haumacher.phoneblock.db.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
@@ -94,7 +94,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getVotes()
 	 */
-	public BlockListEntry setVotes(int value) {
+	public de.haumacher.phoneblock.db.model.BlockListEntry setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
@@ -115,7 +115,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getCount()
 	 */
-	public BlockListEntry setCount(int value) {
+	public de.haumacher.phoneblock.db.model.BlockListEntry setCount(int value) {
 		internalSetCount(value);
 		return this;
 	}
@@ -129,7 +129,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public BlockListEntry registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.BlockListEntry registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -139,7 +139,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	}
 
 	@Override
-	public BlockListEntry unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.BlockListEntry unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -180,14 +180,14 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	public void set(String field, Object value) {
 		switch (field) {
 			case PHONE__PROP: internalSetPhone((String) value); break;
-			case RATING__PROP: internalSetRating((Rating) value); break;
+			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.db.model.Rating) value); break;
 			case VOTES__PROP: internalSetVotes((int) value); break;
 			case COUNT__PROP: internalSetCount((int) value); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static BlockListEntry readBlockListEntry(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.model.BlockListEntry readBlockListEntry(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.model.BlockListEntry result = new de.haumacher.phoneblock.db.model.BlockListEntry();
 		result.readContent(in);
 		return result;
@@ -222,7 +222,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		}
 	}
 
-	/** XML element name representing a {@link BlockListEntry} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.BlockListEntry} type. */
 	public static final String BLOCK_LIST_ENTRY__XML_ELEMENT = "block-list-entry";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
@@ -258,9 +258,10 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link BlockListEntry} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.db.model.BlockListEntry} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static BlockListEntry readBlockListEntry_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		BlockListEntry result = new BlockListEntry();
 		result.readContentXml(in);

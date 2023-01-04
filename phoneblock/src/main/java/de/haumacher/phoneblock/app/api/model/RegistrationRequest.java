@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.app.api.model;
 public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link RegistrationRequest} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} instance.
 	 */
-	public static RegistrationRequest create() {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationRequest create() {
 		return new de.haumacher.phoneblock.app.api.model.RegistrationRequest();
 	}
 
-	/** Identifier for the {@link RegistrationRequest} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} type in JSON format. */
 	public static final String REGISTRATION_REQUEST__TYPE = "RegistrationRequest";
 
 	/** @see #getSession() */
@@ -42,7 +42,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	/**
 	 * Creates a {@link RegistrationRequest} instance.
 	 *
-	 * @see RegistrationRequest#create()
+	 * @see de.haumacher.phoneblock.app.api.model.RegistrationRequest#create()
 	 */
 	protected RegistrationRequest() {
 		super();
@@ -58,7 +58,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	/**
 	 * @see #getSession()
 	 */
-	public RegistrationRequest setSession(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationRequest setSession(String value) {
 		internalSetSession(value);
 		return this;
 	}
@@ -79,7 +79,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	/**
 	 * @see #getAnswer()
 	 */
-	public RegistrationRequest setAnswer(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationRequest setAnswer(String value) {
 		internalSetAnswer(value);
 		return this;
 	}
@@ -100,7 +100,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	/**
 	 * @see #getEmail()
 	 */
-	public RegistrationRequest setEmail(String value) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationRequest setEmail(String value) {
 		internalSetEmail(value);
 		return this;
 	}
@@ -114,7 +114,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public RegistrationRequest registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationRequest registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -124,7 +124,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	}
 
 	@Override
-	public RegistrationRequest unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.RegistrationRequest unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -169,7 +169,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationRequest readRegistrationRequest(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationRequest readRegistrationRequest(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationRequest result = new de.haumacher.phoneblock.app.api.model.RegistrationRequest();
 		result.readContent(in);
 		return result;
@@ -225,15 +225,15 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static RegistrationRequest readRegistrationRequest(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.app.api.model.RegistrationRequest readRegistrationRequest(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		in.beginObject();
-		RegistrationRequest result = de.haumacher.phoneblock.app.api.model.RegistrationRequest.readRegistrationRequest_Content(in);
+		de.haumacher.phoneblock.app.api.model.RegistrationRequest result = de.haumacher.phoneblock.app.api.model.RegistrationRequest.readRegistrationRequest_Content(in);
 		in.endObject();
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link RegistrationRequest} from a polymorphic composition. */
-	public static RegistrationRequest readRegistrationRequest_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
+	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} from a polymorphic composition. */
+	public static de.haumacher.phoneblock.app.api.model.RegistrationRequest readRegistrationRequest_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.RegistrationRequest result = new RegistrationRequest();
 		result.readContent(in);
 		return result;
@@ -257,7 +257,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 		}
 	}
 
-	/** XML element name representing a {@link RegistrationRequest} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} type. */
 	public static final String REGISTRATION_REQUEST__XML_ELEMENT = "registration-request";
 
 	/** XML attribute or element name of a {@link #getSession} property. */
@@ -289,9 +289,10 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link RegistrationRequest} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static RegistrationRequest readRegistrationRequest_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		RegistrationRequest result = new RegistrationRequest();
 		result.readContentXml(in);

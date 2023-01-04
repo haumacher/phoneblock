@@ -3,26 +3,26 @@ package de.haumacher.phoneblock.db.model;
 public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link Ratings} instance.
+	 * Creates a {@link de.haumacher.phoneblock.db.model.Ratings} instance.
 	 */
-	public static Ratings create() {
+	public static de.haumacher.phoneblock.db.model.Ratings create() {
 		return new de.haumacher.phoneblock.db.model.Ratings();
 	}
 
-	/** Identifier for the {@link Ratings} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.db.model.Ratings} type in JSON format. */
 	public static final String RATINGS__TYPE = "Ratings";
 
 	/** @see #getValues() */
 	public static final String VALUES__PROP = "values";
 
-	private final java.util.List<Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<Rating>() {
+	private final java.util.List<de.haumacher.phoneblock.db.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.db.model.Rating>() {
 		@Override
-		protected void beforeAdd(int index, Rating element) {
+		protected void beforeAdd(int index, de.haumacher.phoneblock.db.model.Rating element) {
 			_listener.beforeAdd(Ratings.this, VALUES__PROP, index, element);
 		}
 
 		@Override
-		protected void afterRemove(int index, Rating element) {
+		protected void afterRemove(int index, de.haumacher.phoneblock.db.model.Rating element) {
 			_listener.afterRemove(Ratings.this, VALUES__PROP, index, element);
 		}
 	};
@@ -30,26 +30,26 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	/**
 	 * Creates a {@link Ratings} instance.
 	 *
-	 * @see Ratings#create()
+	 * @see de.haumacher.phoneblock.db.model.Ratings#create()
 	 */
 	protected Ratings() {
 		super();
 	}
 
-	public final java.util.List<Rating> getValues() {
+	public final java.util.List<de.haumacher.phoneblock.db.model.Rating> getValues() {
 		return _values;
 	}
 
 	/**
 	 * @see #getValues()
 	 */
-	public Ratings setValues(java.util.List<? extends Rating> value) {
+	public de.haumacher.phoneblock.db.model.Ratings setValues(java.util.List<? extends de.haumacher.phoneblock.db.model.Rating> value) {
 		internalSetValues(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getValues()} without chain call utility. */
-	protected final void internalSetValues(java.util.List<? extends Rating> value) {
+	protected final void internalSetValues(java.util.List<? extends de.haumacher.phoneblock.db.model.Rating> value) {
 		if (value == null) throw new IllegalArgumentException("Property 'values' cannot be null.");
 		_values.clear();
 		_values.addAll(value);
@@ -58,27 +58,27 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	/**
 	 * Adds a value to the {@link #getValues()} list.
 	 */
-	public Ratings addValue(Rating value) {
+	public de.haumacher.phoneblock.db.model.Ratings addValue(de.haumacher.phoneblock.db.model.Rating value) {
 		internalAddValue(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addValue(Rating)} without chain call utility. */
-	protected final void internalAddValue(Rating value) {
+	/** Implementation of {@link #addValue(de.haumacher.phoneblock.db.model.Rating)} without chain call utility. */
+	protected final void internalAddValue(de.haumacher.phoneblock.db.model.Rating value) {
 		_values.add(value);
 	}
 
 	/**
 	 * Removes a value from the {@link #getValues()} list.
 	 */
-	public final void removeValue(Rating value) {
+	public final void removeValue(de.haumacher.phoneblock.db.model.Rating value) {
 		_values.remove(value);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public Ratings registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.Ratings registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -88,7 +88,7 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	}
 
 	@Override
-	public Ratings unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.Ratings unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -122,12 +122,12 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case VALUES__PROP: internalSetValues(de.haumacher.msgbuf.util.Conversions.asList(Rating.class, value)); break;
+			case VALUES__PROP: internalSetValues(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.db.model.Rating.class, value)); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static Ratings readRatings(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+	public static de.haumacher.phoneblock.db.model.Ratings readRatings(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.db.model.Ratings result = new de.haumacher.phoneblock.db.model.Ratings();
 		result.readContent(in);
 		return result;
@@ -143,7 +143,7 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 		super.writeFields(out);
 		out.name(VALUES__PROP);
 		out.beginArray();
-		for (Rating x : getValues()) {
+		for (de.haumacher.phoneblock.db.model.Rating x : getValues()) {
 			x.writeTo(out);
 		}
 		out.endArray();
@@ -164,7 +164,7 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 		}
 	}
 
-	/** XML element name representing a {@link Ratings} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.Ratings} type. */
 	public static final String RATINGS__XML_ELEMENT = "ratings";
 
 	/** XML attribute or element name of a {@link #getValues} property. */
@@ -188,9 +188,10 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
 	}
 
-	/** Creates a new {@link Ratings} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.db.model.Ratings} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static Ratings readRatings_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		Ratings result = new Ratings();
 		result.readContentXml(in);
