@@ -1,7 +1,14 @@
 <img align="right" src="phoneblock/src/main/webapp/app-logo.svg"/>
 
 # PhoneBlock
-Der Spam-Filter für deine Fritz!Box - English version see below.
+Der Spam-Filter für deine Fritz!Box - keine Kosten, keine Zusatzhardware
+
+* [PhoneBlock-Homepage](https://phoneblock.haumacher.de/)
+* [Installation von PhoneBlock in der Fritz!Box](https://phoneblock.haumacher.de/phoneblock/setup.jsp)
+* [Installation von PhoneBlock auf dem Mobiltelefon](https://phoneblock.haumacher.de/phoneblock/setup-android/)
+* [Berichte über aktuelle Werbeanrufer](https://phoneblock.haumacher.de/phoneblock/status.jsp)
+* [Fragen und Antworten zu PhoneBlock](https://phoneblock.haumacher.de/phoneblock/faq.jsp)
+* [API für Entwickler](https://phoneblock.haumacher.de/phoneblock/api/)
 
 ## Wie funktioniert PhoneBlock?
 
