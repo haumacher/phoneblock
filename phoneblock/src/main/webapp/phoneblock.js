@@ -109,6 +109,6 @@ function checkFritzBox(contextPath, button) {
 
 function copyToClipboard(id) {
 	var element = document.getElementById(id);
-	navigator.clipboard.writeText(element.textContent); 
+	window.navigator.clipboard.writeText(element.textContent); 
 	return false;
 }
