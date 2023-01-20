@@ -1,6 +1,6 @@
 #cloud-config
 users:
-  - name: haui
+  - name: admin
     groups: users, admin
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
@@ -28,9 +28,19 @@ runcmd:
   - ufw allow https
   - ufw enable
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i '$a AllowUsers admin' /etc/ssh/sshd_config
   - sed -i -e '/^ServerTokens/s/^.*$/ServerTokens Prod/' /etc/apache2/conf-enabled/security.conf
   - sed -i -e '/^ServerSignature/s/^.*$/ServerSignature Off/' /etc/apache2/conf-enabled/security.conf
   - a2enmod proxy
   - a2enmod proxy_http
   - service apache2 reload
   - reboot
+
+
+#  - sed -i -e '/^#MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
+#  - sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+#  - sed -i -e '/^X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
+#  - sed -i -e '/^#AllowTcpForwarding/s/^.*$/AllowTcpForwarding no/' /etc/ssh/sshd_config
+#  - sed -i -e '/^#AllowAgentForwarding/s/^.*$/AllowAgentForwarding no/' /etc/ssh/sshd_config
+#  - sed -i -e '/^#AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile .ssh\/authorized_keys/' /etc/ssh/sshd_config
+
