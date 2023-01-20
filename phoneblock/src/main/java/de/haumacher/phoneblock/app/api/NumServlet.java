@@ -39,8 +39,8 @@ public class NumServlet extends HttpServlet {
 			return;
 		}
 		
-		String phone = pathInfo.substring(1).replaceAll("[^\\+0-9]", "");
-		if (phone.isEmpty()) {
+		String phone = NumberAnalyzer.normalizeNumber(pathInfo.substring(1));
+		if (phone.isEmpty() || phone.contains("*")) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
 		}
@@ -51,9 +51,9 @@ public class NumServlet extends HttpServlet {
 			return;
 		}
 		
-		DB db = DBService.getInstance();
-		String phoneId = SearchServlet.getPhoneId(number);
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
+		DB db = DBService.getInstance();
 		if (!SearchServlet.isBot(req)) {
 			db.addSearchHit(phoneId);
 		}

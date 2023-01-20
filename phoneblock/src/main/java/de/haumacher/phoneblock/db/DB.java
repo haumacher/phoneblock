@@ -45,6 +45,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.db.model.BlockListEntry;
@@ -845,9 +846,14 @@ public class DB {
 	 * Explicitly allows a certain number by storing an exclude to the global blocklist.
 	 *
 	 * @param principal The current user.
-	 * @param phoneNumber The phone number to explicitly allow.
+	 * @param phoneText The phone number to explicitly allow.
 	 */
-	public void deleteEntry(String principal, String phoneNumber) {
+	public void deleteEntry(String principal, String phoneText) {
+		String phoneId = NumberAnalyzer.toId(phoneText);
+		if (phoneId == null) {
+			return;
+		}
+		
 		try (SqlSession session = openSession()) {
 			SpamReports spamreport = session.getMapper(SpamReports.class);
 			BlockList blockList = session.getMapper(BlockList.class);
@@ -855,16 +861,16 @@ public class DB {
 			
 			long currentUser = users.getUserId(principal);
 			
-			boolean wasAddedBefore = blockList.removePersonalization(currentUser, phoneNumber);
+			boolean wasAddedBefore = blockList.removePersonalization(currentUser, phoneId);
 
 			// For safety reasons, to prevent primary key constraint violation.
-			blockList.removeExclude(currentUser, phoneNumber);
+			blockList.removeExclude(currentUser, phoneId);
 			
-			blockList.addExclude(currentUser, phoneNumber);
+			blockList.addExclude(currentUser, phoneId);
 			
 			if (wasAddedBefore) {
 				// Note: Only a spam reporter may revoke his vote. This prevents vandals from deleting the whole list.
-				processVotes(spamreport, phoneNumber, -2, System.currentTimeMillis());
+				processVotes(spamreport, phoneId, -2, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -981,13 +987,18 @@ public class DB {
 				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
 			}
 			
-			for (String phone : callReport.getCallers()) {
-				int ok = users.addCall(userId, phone, now);
-				if (ok == 0) {
-					users.insertCaller(userId, phone, now);
+			for (String phoneText : callReport.getCallers()) {
+				String phoneId = NumberAnalyzer.toId(phoneText);
+				if (phoneId == null) {
+					continue;
 				}
 				
-				processVotes(reports, phone, 2, now);
+				int ok = users.addCall(userId, phoneId, now);
+				if (ok == 0) {
+					users.insertCaller(userId, phoneId, now);
+				}
+				
+				processVotes(reports, phoneId, 2, now);
 			}
 			
 			session.commit();

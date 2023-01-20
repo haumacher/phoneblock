@@ -14,8 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.analysis.PhoneNumer;
-import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.RateRequest;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.model.Rating;
@@ -35,20 +33,14 @@ public class RateServlet extends HttpServlet {
 
 		RateRequest rateRequest = RateRequest.readRateRequest(new JsonReader(new ReaderAdapter(req.getReader())));
 
-		String phone = rateRequest.getPhone().replaceAll("[^\\+0-9]", "");
-		if (phone.isEmpty()) {
+		String phoneText = rateRequest.getPhone();
+		
+		String phoneId = NumberAnalyzer.toId(phoneText);
+		if (phoneId == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
 		}
-		
-		PhoneNumer number = NumberAnalyzer.analyze(phone);
-		if (number == null) {
-			ServletUtil.sendError(resp, "Invalid phone number.");
-			return;
-		}
-		
-		String phoneId = SearchServlet.getPhoneId(number);
-		
+
 		Rating rating;
 		try {
 			rating = Rating.valueOf(rateRequest.getRating());

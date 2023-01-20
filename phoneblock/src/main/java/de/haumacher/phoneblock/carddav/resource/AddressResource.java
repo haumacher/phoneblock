@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -107,17 +108,22 @@ public class AddressResource extends Resource {
 			long currentUser = users.getUserId(_principal);
 			
 			for (Telephone phone : card.getTelephoneNumbers()) {
-				String phoneNumber = normalizeNumber(phone.getText());
+				String phoneText = phone.getText();
 				
-				LOG.info("Adding to block list: " + phoneNumber);
+				String phoneId = NumberAnalyzer.toId(phoneText);
+				if (phoneId == null) {
+					continue;
+				}
 				
-				blockList.removeExclude(currentUser, phoneNumber);
+				LOG.info("Adding to block list: " + phoneId);
+				
+				blockList.removeExclude(currentUser, phoneId);
 				
 				// Safety, prevent duplicate key constraint violation.
-				blockList.removePersonalization(currentUser, phoneNumber);
+				blockList.removePersonalization(currentUser, phoneId);
 				
-				blockList.addPersonalization(currentUser, phoneNumber);
-				db.processVotes(spamreport, phoneNumber, 2, System.currentTimeMillis());
+				blockList.addPersonalization(currentUser, phoneId);
+				db.processVotes(spamreport, phoneId, 2, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -126,13 +132,6 @@ public class AddressResource extends Resource {
 		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 	}
 
-	/** 
-	 * Removes grouping characters from the given phone number.
-	 */
-	public static String normalizeNumber(String phoneNumber) {
-		return phoneNumber.replaceAll("[- ]", "");
-	}
-	
 	@Override
 	public void delete(HttpServletResponse resp) {
 		String phoneNumber = getDisplayName();

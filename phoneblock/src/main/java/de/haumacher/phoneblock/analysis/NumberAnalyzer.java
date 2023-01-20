@@ -280,8 +280,35 @@ public class NumberAnalyzer {
 
 	private static Node PREFIX_TREE = buildTree();
 
+	/** 
+	 * Creates a database ID for the given phone number, or <code>null</code> if the number is invalid. 
+	 */
+	public static String toId(String phoneText) {
+		String phoneNumber = NumberAnalyzer.normalizeNumber(phoneText);
+		if (phoneNumber.contains("*")) {
+			LOG.warn("Ignoring number with wildcard: " + phoneText);
+			return null;
+		}
+		
+		PhoneNumer number = NumberAnalyzer.analyze(phoneNumber);
+		if (number == null) {
+			LOG.warn("Ignoring invalid phone number: " + phoneText);
+			return null;
+		}
+		
+		String phoneId = NumberAnalyzer.getPhoneId(number);
+		return phoneId;
+	}
+
+	/** 
+	 * Removes grouping characters from the given phone number.
+	 */
+	public static String normalizeNumber(String phoneNumber) {
+		return phoneNumber.replaceAll("[^\\+\\*0-9]", "");
+	}
+
 	/**
-	 * Analyzes the given phone number.
+	 * Analyzes the given (normalized) phone number.
 	 */
 	public static PhoneNumer analyze(String phone) {
 		PhoneNumer result = PhoneNumer.create();
@@ -313,6 +340,14 @@ public class NumberAnalyzer {
 		return result;
 	}
 	
+	/**
+	 * Creates an database ID for the given analyzed {@link PhoneNumer}.
+	 */
+	public static String getPhoneId(PhoneNumer number) {
+		String shortcut = number.getShortcut();
+		return shortcut == null ? number.getZeroZero() : shortcut;
+	}
+
 	private static Node buildTree() {
 		Node root = new Node('+');
 		root._country = "Unbekannt";

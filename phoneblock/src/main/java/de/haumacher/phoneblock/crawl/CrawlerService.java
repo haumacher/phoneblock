@@ -14,7 +14,7 @@ import javax.servlet.ServletContextListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.carddav.resource.AddressResource;
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -45,10 +45,15 @@ public class CrawlerService implements ServletContextListener {
 			
 			SpamReporter reporter = new SpamReporter() {
 				@Override
-				public void reportCaller(String caller, int rating, long time) {
-					LOG.info(fmt(20, caller) + " " + "x*****".substring(rating));
+				public void reportCaller(String phoneText, int rating, long time) {
+					LOG.info(fmt(20, phoneText) + " " + "x*****".substring(rating));
 					
-					db.processVotes(AddressResource.normalizeNumber(caller), -(rating - 3), time);
+					String phoneId = NumberAnalyzer.toId(phoneText);
+					if (phoneId == null) {
+						return;
+					}
+
+					db.processVotes(phoneId, -(rating - 3), time);
 				}
 				
 				private String fmt(int cols, String str) {

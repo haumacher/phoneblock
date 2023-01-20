@@ -61,8 +61,8 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		
-		String phone = pathInfo.substring(1).replaceAll("[^\\+0-9]", "");
-		if (phone.isEmpty()) {
+		String phone = NumberAnalyzer.normalizeNumber(pathInfo.substring(1));
+		if (phone.isEmpty() || phone.contains("*")) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
@@ -72,7 +72,7 @@ public class SearchServlet extends HttpServlet {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		String phoneId = getPhoneId(number);
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		DB db = DBService.getInstance();
 		if (!isBot(req) && req.getParameter("link") == null) {
@@ -137,11 +137,6 @@ public class SearchServlet extends HttpServlet {
 		return session.getAttribute(attribute);
 	}
 
-	public static String getPhoneId(PhoneNumer number) {
-		String shortcut = number.getShortcut();
-		return shortcut == null ? number.getZeroZero() : shortcut;
-	}
-	
 	private String status(int votes) {
 		if (votes == 0) {
 			return "Keine Beschwerden";

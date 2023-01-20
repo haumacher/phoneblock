@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.model.Rating;
@@ -31,14 +30,13 @@ public class RatingServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String phoneParam = req.getParameter("phone");
-		PhoneNumer phoneNumer = NumberAnalyzer.analyze(phoneParam);
-		if (phoneNumer == null) {
+		String phoneText = req.getParameter("phone");
+		
+		String phoneId = NumberAnalyzer.toId(phoneText);
+		if (phoneId == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		
-		String phoneId = SearchServlet.getPhoneId(phoneNumer);
 		
 		String ratingName = req.getParameter("rating");
 		
