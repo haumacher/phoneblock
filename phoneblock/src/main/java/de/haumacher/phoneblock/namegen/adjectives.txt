@@ -19,7 +19,6 @@ adventurous
 affluent
 affordable
 afraid
-aggresive
 aggressive
 agile
 agreeable
@@ -132,7 +131,6 @@ cluttered
 coarse
 cold
 colorful
-colourful
 combative
 comfortable
 comical
@@ -863,9 +861,6 @@ zenithal
 zestful
 zesty
 zigzag
-zingy
-zionist
-zippy
 zoological
 zootrophic
 zymotic
