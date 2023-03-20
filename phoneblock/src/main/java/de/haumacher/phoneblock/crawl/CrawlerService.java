@@ -28,6 +28,15 @@ public class CrawlerService implements ServletContextListener {
 	private Thread _crawlerThread;
 	private WebCrawler _crawler;
 
+	private FetchService _fetcher;
+
+	/** 
+	 * Creates a {@link CrawlerService}.
+	 */
+	public CrawlerService(FetchService fetcher) {
+		_fetcher = fetcher;
+	}
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		LOG.info("Starting crawler service.");
@@ -66,7 +75,7 @@ public class CrawlerService implements ServletContextListener {
 
 			};
 			
-			_crawler = new WebCrawler(url, notBefore == null ? System.currentTimeMillis() : notBefore.longValue(), reporter);
+			_crawler = new WebCrawler(_fetcher, url, notBefore == null ? System.currentTimeMillis() : notBefore.longValue(), reporter);
 			_crawlerThread = new Thread(_crawler);
 			_crawlerThread.start();
 		} catch (IOException ex) {

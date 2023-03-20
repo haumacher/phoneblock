@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.crawl.CrawlerService;
+import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
@@ -37,13 +38,15 @@ public class Application implements ServletContextListener {
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
 		DBService db;
+		FetchService fetcher;
 		_services = new ServletContextListener[] {
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
 				new IndexNowUpdateService(),
 				new GoogleUpdateService())),
 			db = new DBService(indexer),
-			new CrawlerService(),
+			fetcher = new FetchService(),
+			new CrawlerService(fetcher),
 			new MailServiceStarter(),
 			new ManagementService(indexer),
 		};

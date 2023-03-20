@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +29,8 @@ public class WebCrawler extends AbstractWebCrawler {
 	SimpleDateFormat _dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 	
 	private long _notBefore;
+	
+	private Random _rnd = new Random();
 
 	/**
 	 * Creates a {@link WebCrawler}.
@@ -37,9 +40,8 @@ public class WebCrawler extends AbstractWebCrawler {
 	 * @param notBefore
 	 *        The time of the latest spam report that has already been processed.
 	 */
-	public WebCrawler(String url, long notBefore, SpamReporter reporter) throws MalformedURLException {
-		super(url, reporter);
-		
+	public WebCrawler(FetchService fetcher, String url, long notBefore, SpamReporter reporter) throws MalformedURLException {
+		super(fetcher, url, reporter);
 		_notBefore = notBefore;
 	}
 
