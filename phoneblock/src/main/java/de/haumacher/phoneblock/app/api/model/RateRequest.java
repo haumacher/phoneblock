@@ -21,15 +21,23 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** @see #getRating() */
 	public static final String RATING__PROP = "rating";
 
+	/** @see #getComment() */
+	public static final String COMMENT__PROP = "comment";
+
 	/** Identifier for the property {@link #getPhone()} in binary format. */
 	static final int PHONE__ID = 1;
 
 	/** Identifier for the property {@link #getRating()} in binary format. */
 	static final int RATING__ID = 2;
 
+	/** Identifier for the property {@link #getComment()} in binary format. */
+	static final int COMMENT__ID = 3;
+
 	private String _phone = "";
 
 	private String _rating = "";
+
+	private String _comment = "";
 
 	/**
 	 * Creates a {@link RateRequest} instance.
@@ -82,6 +90,27 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		_rating = value;
 	}
 
+	/**
+	 * A user comment describing the call or owner of the phone number.
+	 */
+	public final String getComment() {
+		return _comment;
+	}
+
+	/**
+	 * @see #getComment()
+	 */
+	public de.haumacher.phoneblock.app.api.model.RateRequest setComment(String value) {
+		internalSetComment(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getComment()} without chain call utility. */
+	protected final void internalSetComment(String value) {
+		_listener.beforeSet(this, COMMENT__PROP, value);
+		_comment = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -112,7 +141,8 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			PHONE__PROP, 
-			RATING__PROP));
+			RATING__PROP, 
+			COMMENT__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -124,6 +154,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case PHONE__PROP: return getPhone();
 			case RATING__PROP: return getRating();
+			case COMMENT__PROP: return getComment();
 			default: return null;
 		}
 	}
@@ -133,6 +164,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case PHONE__PROP: internalSetPhone((String) value); break;
 			case RATING__PROP: internalSetRating((String) value); break;
+			case COMMENT__PROP: internalSetComment((String) value); break;
 		}
 	}
 
@@ -155,6 +187,8 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		out.value(getPhone());
 		out.name(RATING__PROP);
 		out.value(getRating());
+		out.name(COMMENT__PROP);
+		out.value(getComment());
 	}
 
 	@Override
@@ -162,6 +196,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case RATING__PROP: setRating(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -185,6 +220,8 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		out.value(getPhone());
 		out.name(RATING__ID);
 		out.value(getRating());
+		out.name(COMMENT__ID);
+		out.value(getComment());
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -215,6 +252,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case PHONE__ID: setPhone(in.nextString()); break;
 			case RATING__ID: setRating(in.nextString()); break;
+			case COMMENT__ID: setComment(in.nextString()); break;
 			default: in.skipValue(); 
 		}
 	}
@@ -227,6 +265,9 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** XML attribute or element name of a {@link #getRating} property. */
 	private static final String RATING__XML_ATTR = "rating";
+
+	/** XML attribute or element name of a {@link #getComment} property. */
+	private static final String COMMENT__XML_ATTR = "comment";
 
 	@Override
 	public String getXmlTagName() {
@@ -243,6 +284,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
 		out.writeAttribute(RATING__XML_ATTR, getRating());
+		out.writeAttribute(COMMENT__XML_ATTR, getComment());
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -288,6 +330,10 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				setRating(value);
 				break;
 			}
+			case COMMENT__XML_ATTR: {
+				setComment(value);
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -303,6 +349,10 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 			}
 			case RATING__XML_ATTR: {
 				setRating(in.getElementText());
+				break;
+			}
+			case COMMENT__XML_ATTR: {
+				setComment(in.getElementText());
 				break;
 			}
 			default: {

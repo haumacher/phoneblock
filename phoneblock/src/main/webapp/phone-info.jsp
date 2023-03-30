@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.api.CommentVoteServlet"%>
+<%@page import="de.haumacher.phoneblock.app.ExternalLinkServlet"%>
+<%@page import="de.haumacher.phoneblock.db.model.UserComment"%>
 <%@page import="java.util.GregorianCalendar"%>
 <%@page import="java.util.Calendar"%>
 <%@page import="java.util.ArrayList"%>
@@ -37,6 +40,8 @@
 	int complaints = (info.getVotes() + 1) / 2;
 	
 	boolean thanks = request.getAttribute("thanks") != null;
+	
+	List<UserComment> comments = (List<UserComment>) request.getAttribute("comments");
 %>
 
 <head>
@@ -46,6 +51,31 @@
 <script type="text/javascript" src="<%=request.getContextPath() %>/webjars/chartjs/${chartjs.version}/dist/chart.min.js"></script>
 <% } %>
 
+<style type="text/css">
+	.fa-star {
+		color: green;
+	}
+	
+	.fa-triangle-exclamation {
+		color: red;
+	}
+	
+	.image.is-64x64 i {
+		font-size: 64px;
+	}
+	
+	.level-item.thumbs-up {
+		color: green;
+	}
+	
+	.level-item.thumbs-down {
+		color: red;
+	}
+	
+	.level-item {
+		padding-right: 1rem;
+	}
+</style>
 </head>
 
 <body>
@@ -105,20 +135,81 @@
 	}
 %>
 
-<% if (!android) { %>
-	<p>
-		Wenn Du Dich von Anrufen von dieser Rufnummer belästigt fühlst, <a href="<%= request.getContextPath()%>/setup.jsp">installiere PhoneBlock</a> 
-		und trage  die Nummer in Deiner Fritz!Box in die Blocklist ein oder gibt unten eine Bewertung für diese Nummer ab. So schützt Du Dich und andere
-		vor weiterem Telefonterror von dieser Nummer.
-	</p>
-<% } else {%>
-	<p>
-		Wenn Du Dich von dieser Rufnummer belästigt fühlst, <a href="<%= request.getContextPath()%>/setup-android/">installiere PhoneBlock</a> 
-		und gibt unten eine Bewertung für diese Nummer ab.
-	</p>
-<% } %>
+<%
+	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
+	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);
+%>			
 
-	<h2>Bewertung</h2>
+<% if (!comments.isEmpty()) { %>
+	<h2>Meinungen von anderen</h2>
+	
+	<% 
+	int commentId = 1;
+	String votePath = request.getContextPath() + CommentVoteServlet.PATH; 
+	%>
+	<% for (UserComment comment : comments.subList(0, Math.min(10, comments.size()))) { %>
+
+<div class="box">
+  <article class="media">
+    <div class="media-left">
+      <figure class="image is-64x64">
+		<% if (comment.getRating() == Rating.A_LEGITIMATE) { %>
+			<i class="fa-solid fa-star"></i>
+		<% } else { %>
+			<i class="fa-solid fa-triangle-exclamation"></i>
+		<% } %>
+      </figure>
+    </div>
+    <div class="media-content">
+      <div class="content">
+        <p class="commentHeader">
+		  <strong>☎ <%= info.getPhone()%></strong>
+          <small>
+          <% if (comment.getService() != null) { %>
+          <a target="_blank" href="<%= request.getContextPath()%><%= ExternalLinkServlet.LINK_PREFIX%><%= comment.getService()%>/<%=  comment.getPhone()%>"><%= comment.getService()%></a>
+		  <% } else { %>
+		  <span>PhoneBlock</span>
+		  <% } %>
+		  </small>
+		  <small><%= dateFormat.format(new Date(comment.getCreated())) %></small>
+        </p>
+        <p class="commentText">
+          <% if (comment.getService() != null && comment.getComment().length() > 280) { %>
+	          <%= JspUtil.quote(comment.getComment().substring(0, 277) + "...") %>
+          <% } else { %>
+	          <%= JspUtil.quote(comment.getComment()) %>
+          <% } %>
+        </p>
+      </div>
+            
+      <%
+      	String upId = "id" + commentId++;
+      	String downId = "id" + commentId++;
+      	int up = Math.max(0, comment.getUp() - comment.getDown());
+      	int down = Math.max(0, comment.getDown() - comment.getUp());
+      %>
+      <nav class="level is-mobile">
+        <div class="level-left">
+          <a class="level-item thumbs-up" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" onclick="return commentVote('<%=votePath %>', '<%=comment.getId()%>', 1, '<%=upId%>', '<%=downId%>');">
+            <span class="icon is-small">
+              <i class="fa-solid fa-thumbs-up"></i>&nbsp;<span id="<%=upId%>"><%=up%></span>
+            </span>
+          </a>
+          <a class="level-item thumbs-down" aria-label="Unsinn" title="Unsinn!" href="#" onclick="return commentVote('<%=votePath %>', '<%=comment.getId()%>', -1, '<%=upId%>', '<%=downId%>');">
+            <span class="icon is-small">
+              <i class="fa-solid fa-thumbs-down"></i>&nbsp;<span id="<%=downId%>"><%=down%></span>
+            </span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </article>
+</div>
+	
+	<%} %>	
+<% } %>
+	
+	<h2>Deine Bewertung</h2>
 	
 <% if (thanks) { %>
 	<div id="thanks" class="notification is-info">
@@ -126,54 +217,79 @@
 	</div>
 <% } else {%>
 	<p>
-	Du wurdest von ☎ <code><%= info.getPhone()%></code> angerufen? Sag anderen, was sie von dieser Nummer zu erwarten haben:
+		Du wurdest von ☎ <code><%= analysis.getShortcut()%></code> angerufen? Sag anderen, was sie von ☎ <code><%= analysis.getPlus()%></code> zu erwarten haben.
+		Wenn Du Dich von Anrufen von ☎ <code><%= analysis.getShortcut()%></code> belästigt fühlst, <a href="<%= request.getContextPath()%>/setup.jsp">installiere PhoneBlock</a> 
+		und gibt eine Bewertung für ☎ <code><%= analysis.getZeroZero()%></code> ab:
 	</p>
-	
+
 	<p>
 	<form action="<%=request.getContextPath()%>/rating" method="post">
 		<input type="hidden" name="phone" value="<%= info.getPhone() %>"/>
+		
 		<div class="buttons">
-		  	<button name="rating" value="<%=Rating.A_LEGITIMATE%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.A_LEGITIMATE)%>">
+		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.A_LEGITIMATE)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.A_LEGITIMATE%>">
 			    <span class="icon">
 					<i class="fa-solid fa-check"></i>
 			    </span>
 				<span>Seriös</span>			
-	  		</button>
-		  	<button name="rating" value="<%=Rating.B_MISSED%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.B_MISSED)%>">
+	  		</label>
+	  		
+		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.B_MISSED)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.B_MISSED%>" checked="checked">
 			    <span class="icon">
 					<i class="fa-solid fa-circle-question"></i>
 			    </span>
 		  		<span>Anruf verpasst</span>
-	  		</button>
-		  	<button name="rating" value="<%=Rating.C_PING%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.C_PING)%>">
+	  		</label>
+	  		
+		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.C_PING)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.C_PING%>">
 			    <span class="icon">
 					<i class="fa-solid fa-table-tennis-paddle-ball"></i>
 			    </span>
 		  		<span>Direkt aufgelegt</span>
-	  		</button>
-			<button name="rating" value="<%=Rating.D_POLL%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.D_POLL)%>">
+	  		</label>
+			<label class="button is-rounded <%=Ratings.getCssClass(Rating.D_POLL)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.D_POLL%>">
 			    <span class="icon">
 					<i class="fa-solid fa-person-chalkboard"></i>
 			    </span>
 				<span>Umfrage</span>
-			</button>
-			<button name="rating" value="<%=Rating.E_ADVERTISING%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.E_ADVERTISING)%>">
+			</label>
+			<label class="button is-rounded <%=Ratings.getCssClass(Rating.E_ADVERTISING)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.E_ADVERTISING%>">
 			    <span class="icon">
 					<i class="fa-solid fa-ban"></i>
 			    </span>
 				<span>Werbung</span>
-			</button>
-			<button name="rating" value="<%=Rating.F_GAMBLE%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.F_GAMBLE)%>">
+			</label>
+			<label class="button is-rounded <%=Ratings.getCssClass(Rating.F_GAMBLE)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.F_GAMBLE%>">
 			    <span class="icon">
 					<i class="fa-solid fa-dice"></i>
 			    </span>
 				<span>Gewinnspiel</span>
-			</button>
-			<button name="rating" value="<%=Rating.G_FRAUD%>" type="submit" class="button is-rounded <%=Ratings.getCssClass(Rating.G_FRAUD)%>">
+			</label>
+			<label class="button is-rounded <%=Ratings.getCssClass(Rating.G_FRAUD)%>">
+		  		<input type="radio" name="rating" value="<%=Rating.G_FRAUD%>">
 			    <span class="icon">
 					<i class="fa-solid fa-bomb"></i>
 			    </span>
 				<span>Betrug/Inkasso</span>
+			</label>
+		</div>
+
+		<p>			
+		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht"></textarea>
+		</p>
+		
+		<div class="buttons">
+			<button name="send" type="submit" class="button is-rounded is-primary">
+			    <span class="icon">
+					<i class="fas fa-paper-plane"></i>
+			    </span>
+				<span>Abschicken</span>
 			</button>
 		</div>
 	</form>
@@ -361,9 +477,6 @@
 <% } %>
 
 	<h2>Details</h2>
-<%
-	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
-%>			
 	<ul>
 		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
 		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>

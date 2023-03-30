@@ -87,4 +87,7 @@ message RateRequest {
 	/** The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.db.model.Rating}. */
 	string rating;
 
+	/** A user comment describing the call or owner of the phone number. */
+	string comment;
+
 }

@@ -40,26 +40,33 @@ public class RatingServlet extends HttpServlet {
 		
 		String ratingName = req.getParameter("rating");
 		
+		String comment = req.getParameter("comment");
+		if (comment != null) {
+			comment = comment.trim();
+		}
+		
 		HttpSession session = req.getSession();
 		String ratingAttr = ratingAttribute(phoneId);
-		if (ratingName != null && session.getAttribute(ratingAttr) == null) {
-			Integer ratingCnt = (Integer) session.getAttribute("ratingCnt");
-			int ratings = ratingCnt == null ? 0 : ratingCnt.intValue();
-			if (ratings < 5) {
-				session.setAttribute("ratingCnt", Integer.valueOf(ratings + 1));
+		if (session.getAttribute(ratingAttr) == null) {
+			if (ratingName != null || comment != null) {
+				Integer ratingCnt = (Integer) session.getAttribute("ratingCnt");
+				int ratings = ratingCnt == null ? 0 : ratingCnt.intValue();
+				if (ratings < 5) {
+					session.setAttribute("ratingCnt", Integer.valueOf(ratings + 1));
+					
+					Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
+					DB db = DBService.getInstance();
+					db.addRating(phoneId, rating, comment, System.currentTimeMillis());
+					
+					LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
+				} else {
+					LOG.warn("Ignored rating, exceeded max rating count: " + phoneId + " (" + ratingName + ")");
+				}
 				
-				Rating rating = Rating.valueOf(ratingName);
-				DB db = DBService.getInstance();
-				db.addRating(phoneId, rating, System.currentTimeMillis());
-				
-				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
-			} else {
-				LOG.warn("Ignored rating, exceeded max rating count: " + phoneId + " (" + ratingName + ")");
+				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}
-			
-			session.setAttribute(ratingAttr, Boolean.TRUE);
 		} else {
-			LOG.warn("Ignored rating for the same number: " + phoneId + " (" + ratingName + ")");
+			LOG.warn("Ignored rating for the same number: " + phoneId + " (" + ratingName + "): " + comment);
 		}
 		
 		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "?link=true");

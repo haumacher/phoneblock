@@ -49,7 +49,7 @@ public class RateServlet extends HttpServlet {
 			return;
 		}
 
-		DBService.getInstance().addRating(phoneId, rating, System.currentTimeMillis());
+		DBService.getInstance().addRating(phoneId, rating, rateRequest.getComment(), System.currentTimeMillis());
 		
 		ServletUtil.sendMessage(resp, HttpServletResponse.SC_OK, "Rating recorded.");
 	}

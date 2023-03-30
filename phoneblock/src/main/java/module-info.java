@@ -8,7 +8,19 @@
 module phoneblock {
 	exports de.haumacher.phoneblock.app;
 	exports de.haumacher.phoneblock.app.api;
-
+	exports de.haumacher.phoneblock.crawl;
+	exports de.haumacher.phoneblock.meta;
+	exports de.haumacher.phoneblock.meta.plugins;
+	
+	uses de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
+	
+	provides de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch with 
+		de.haumacher.phoneblock.meta.plugins.MetaAnruferBewertung, 
+		de.haumacher.phoneblock.meta.plugins.MetaCleverdialer,
+		de.haumacher.phoneblock.meta.plugins.MetaTellows,
+		de.haumacher.phoneblock.meta.plugins.MetaWemgehoert,
+		de.haumacher.phoneblock.meta.plugins.MetaWerruft;
+	
 	exports de.haumacher.phoneblock.db to org.mybatis;
 	exports de.haumacher.phoneblock.db.model to org.mybatis;
 	

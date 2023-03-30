@@ -25,7 +25,7 @@ public interface SpamReports {
 	@Insert("insert into SPAMREPORTS (PHONE, VOTES, LASTUPDATE, DATEADDED) values (#{phone}, #{votes}, #{now}, #{now})")
 	void addReport(String phone, int votes, long now);
 	
-	@Update("update SPAMREPORTS set VOTES = VOTES + #{delta}, LASTUPDATE = #{now} where PHONE = #{phone}")
+	@Update("update SPAMREPORTS set VOTES = VOTES + #{delta}, LASTUPDATE = CASEWHEN(#{now} > LASTUPDATE, #{now}, LASTUPDATE) where PHONE = #{phone}")
 	int addVote(String phone, int delta, long now);
 
 	@Select("select count(1) from SPAMREPORTS where PHONE = #{phone}")
@@ -177,7 +177,7 @@ public interface SpamReports {
 	
 	@Select("select s.PHONE, s.RATING, s.COUNT from RATINGS s where s.PHONE=#{phone} order by s.RATING")
 	List<DBRatingInfo> getRatings(String phone);
-	
+
 	@Insert("insert into RATINGS (PHONE, RATING, COUNT, LASTUPDATE) values (#{phone}, #{rating}, 1, #{now})")
 	void addRating(String phone, Rating rating, long now);
 	
@@ -186,6 +186,24 @@ public interface SpamReports {
 	
 	@Update("update SEARCHES s set s.COUNT = s.COUNT + 1, LASTUPDATE=#{now} where s.PHONE=#{phone}")
 	int incSearchCount(String phone, long now);
+
+	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN from COMMENTS s where s.PHONE=#{phone}")
+	List<DBUserComment> getComments(String phone);
+	
+	@Insert("insert into COMMENTS (ID, PHONE, RATING, COMMENT, SERVICE, CREATED) values (#{id}, #{phone}, #{rating}, #{comment}, #{service}, #{created})")
+	void addComment(String id, String phone, Rating rating, String comment, String service, long created);
+	
+	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
+	int updateCommentVotes(String id, int up, int down);
+	
+	@Select("select s.LASTUPDATE from META_UPDATE s where s.PHONE=#{phone}")
+	Long getLastMetaSearch(String phone);
+	
+	@Update("update META_UPDATE s set s.LASTUPDATE=#{lastUpdate} where s.PHONE=#{phone}")
+	int setLastMetaSearch(String phone, long lastUpdate);
+	
+	@Insert("insert into META_UPDATE (PHONE, LASTUPDATE) values (#{phone}, #{lastUpdate})")
+	void insertLastMetaSearch(String phone, long lastUpdate);
 	
 	@Insert("insert into SEARCHES (PHONE, LASTUPDATE) values (#{phone}, #{now})")
 	void addSearchEntry(String phone, long now);

@@ -112,3 +112,45 @@ function copyToClipboard(id) {
 	window.navigator.clipboard.writeText(element.textContent); 
 	return false;
 }
+
+function commentVote(path, commentId, vote, upId, downId) {
+	var up = document.getElementById(upId);	
+	var down = document.getElementById(downId);
+	
+	var old = up.getAttribute("data-vote");
+	var oldVote = 0;
+	if (old) {
+		var oldVote = parseInt(old);
+		
+		if (oldVote == vote) {
+			// Vote only once.
+			return false;
+		}
+		
+		doVote(up, down, oldVote, -1);	
+	}
+
+	doVote(up, down, vote, 1);
+	
+	up.setAttribute("data-vote", "" + vote);
+	
+	var url = window.location.protocol + "//" + window.location.host + ":" + window.location.port + path;
+	fetch(path + "?id=" + commentId + "&vote=" + vote + "&oldVote=" + oldVote, {
+		method: "POST",
+		credentials: "same-origin"
+	});
+	
+	return false;
+}
+
+function doVote(up, down, direction, inc) {
+	var element;
+	if (direction > 0) {
+		element = up;
+	} else {
+		element = down;
+	}
+
+	var value = parseInt(element.textContent) + inc;
+	element.textContent = "" + value;
+}

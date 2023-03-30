@@ -18,6 +18,7 @@ import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
 import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -39,6 +40,7 @@ public class Application implements ServletContextListener {
 		SchedulerService scheduler;
 		DBService db;
 		FetchService fetcher;
+		MetaSearchService metaSearch;
 		_services = new ServletContextListener[] {
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
@@ -46,7 +48,8 @@ public class Application implements ServletContextListener {
 				new GoogleUpdateService())),
 			db = new DBService(indexer),
 			fetcher = new FetchService(),
-			new CrawlerService(fetcher),
+			metaSearch = new MetaSearchService(scheduler, fetcher),
+			new CrawlerService(fetcher, metaSearch),
 			new MailServiceStarter(),
 			new ManagementService(indexer),
 		};

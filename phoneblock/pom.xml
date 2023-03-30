@@ -359,6 +359,8 @@
 						</goals>
 						
 						<configuration>
+							<archiveClasses>true</archiveClasses>
+							
 							<filters>
 								<filter>.phoneblock</filter>
 								<filter>${project.build.outputDirectory}/phoneblock.properties</filter>

@@ -8,8 +8,10 @@
 	
 	String description = (String) request.getAttribute("description");
 	if (description == null) {
-		description = "Mit Deiner Fritz!Box und PhoneBlock Werbeanrufe automatisch blockieren. Kostenlos und ohne Zusatzhardware sofort einsatzbereit.";
+		description = "Werbeanrufe mit Deiner Fritz!Box automatisch blockieren. PhoneBlock jetzt kostenlos installieren.";
 	}
+	
+	String keywords = (String) request.getAttribute("keywords");
 	
 	// A JSP may be used for rendering a servlet response. In that case, the original path must be output.
 	String path = (String) request.getAttribute("path");
@@ -27,24 +29,31 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="<%=description %>">
-
+<%
+	if (keywords != null) {
+%>
+<meta name="keywords" content="<%=keywords %>">
+<%
+	}
+%>
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:site" content="@bhaumacher" />
 <meta name="twitter:creator" content="@bhaumacher" />
 <meta name="twitter:image" content="<%=request.getContextPath() %>/app-preview.png" />
 
-<meta property="og:title" content="<%=title %>" />
+<meta name="og:title" content="<%=title %>" />
 <%if ("/".equals(path)) { %>
-<meta property="og:url" content="https://phoneblock.haumacher.de/" />
+<meta name="og:url" content="https://phoneblock.haumacher.de/" />
 <link rel="canonical" href="https://phoneblock.haumacher.de/" />
 <%} else { %>
-<meta property="og:url" content="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
+<meta name="og:url" content="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 <link rel="canonical" href="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 <%} %>
-<meta property="og:description" content="<%=description %>" />
-<meta property="og:image" content="<%=request.getContextPath() %>/app-preview.png" />
-<meta property="og:type" content="website" />
-<meta property="og:locale" content="de_DE" />
+<meta name="og:description" content="<%=description %>" />
+<meta name="og:image" content="<%=request.getContextPath() %>/app-preview.png" />
+<meta name="og:type" content="website" />
+<meta name="og:locale" content="de_DE" />
+<meta name="og:site_name" content="PhoneBlock">
 
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/github-com-creativebulma-bulma-collapsible/${bulma-collapsible.version}/css/bulma-collapsible.min.css">

@@ -97,3 +97,30 @@ message BlockListEntry {
 message Ratings {
 	repeated Rating values;
 }
+
+/** A comment posted for a phone number */
+message UserComment {
+	/** Technical identifier of this comment. */
+	string id;
+	
+	/** The phone number this comment belongs to. */
+	string phone;
+	
+	/** The rating of the comment (1 for positive, 5 for negative). */
+	Rating rating;
+	
+	/** The comment text */
+	string comment;
+	
+	/** The source of the comment, <code>phoneblock</code> for comments entered on the web site. */
+	string service;
+	
+	/** The creation date of the comment in milliseconds since epoch. */
+	long created;
+	
+	/** Number of "thumbs up" ratings for this comment. */
+	int up;
+	
+	/** Number of "thumbs down" ratings for this comment. */
+	int down;
+}

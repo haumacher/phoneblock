@@ -19,9 +19,14 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link HttpServlet} that redirects to external pages.
  */
-@WebServlet(urlPatterns = "/link/*")
+@WebServlet(urlPatterns = ExternalLinkServlet.LINK_PREFIX + "*")
 public class ExternalLinkServlet extends HttpServlet {
 	
+	/**
+	 * Path prefix served by the {@link ExternalLinkServlet}.
+	 */
+	public static final String LINK_PREFIX = "/link/";
+
 	private static final Logger LOG = LoggerFactory.getLogger(ExternalLinkServlet.class);
 
 	private Properties _properties;
@@ -46,7 +51,17 @@ public class ExternalLinkServlet extends HttpServlet {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		String linkName = pathInfo.substring(1);
+		
+		int nameEnd = pathInfo.indexOf('/', 1);
+		String suffix;
+		if (nameEnd < 0) {
+			nameEnd = pathInfo.length();
+			suffix = "";
+		} else {
+			suffix = pathInfo.substring(nameEnd + 1);
+		}
+		
+		String linkName = pathInfo.substring(1, nameEnd);
 		String link = _properties.getProperty(linkName);
 		if (link == null) {
 			LOG.warn("Unknown link requested: " + linkName);
@@ -54,7 +69,7 @@ public class ExternalLinkServlet extends HttpServlet {
 			return;
 		}
 		
-		resp.sendRedirect(link);
+		resp.sendRedirect(link.replace("{0}", suffix));
 	}
 
 }

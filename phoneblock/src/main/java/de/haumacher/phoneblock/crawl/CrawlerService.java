@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.meta.MetaSearchService;
 
 /**
  * Thread running the {@link WebCrawler}.
@@ -30,11 +31,14 @@ public class CrawlerService implements ServletContextListener {
 
 	private FetchService _fetcher;
 
+	private MetaSearchService _metaSearch;
+
 	/** 
 	 * Creates a {@link CrawlerService}.
 	 */
-	public CrawlerService(FetchService fetcher) {
+	public CrawlerService(FetchService fetcher, MetaSearchService metaSearch) {
 		_fetcher = fetcher;
+		_metaSearch = metaSearch;
 	}
 
 	@Override
@@ -62,7 +66,8 @@ public class CrawlerService implements ServletContextListener {
 						return;
 					}
 
-					db.processVotes(phoneId, -(rating - 3), time);
+					int votes = -(rating - 3);
+					_metaSearch.scheduleMetaSearch(votes, time, phoneId);
 				}
 				
 				private String fmt(int cols, String str) {

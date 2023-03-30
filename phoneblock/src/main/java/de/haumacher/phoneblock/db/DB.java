@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -314,12 +315,17 @@ public class DB {
 	 *
 	 * @param phone The phone number to rate.
 	 * @param rating The user rating.
+	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
 	 */
-	public void addRating(String phone, Rating rating, long now) {
+	public void addRating(String phone, Rating rating, String comment, long now) {
 		boolean updateRequired;
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			if (comment != null && !comment.isBlank()) {
+				reports.addComment(UUID.randomUUID().toString(), phone, rating, comment, null, now);
+			}
 
 			if (rating == Rating.B_MISSED) {
 				final int currentVotes = nonNull(reports.getVotes(phone));

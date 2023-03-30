@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -26,6 +27,8 @@ import de.haumacher.phoneblock.db.SpamReport;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.db.model.UserComment;
+import de.haumacher.phoneblock.meta.MetaSearchService;
 
 /**
  * Servlet displaying information about a telephone number in the DB.
@@ -33,6 +36,16 @@ import de.haumacher.phoneblock.db.model.SearchInfo;
 @WebServlet(urlPatterns = SearchServlet.NUMS_PREFIX + "/*")
 public class SearchServlet extends HttpServlet {
 	
+	private static final int ONE_SECOND = 1000;
+
+	private static final int ONE_MINUTE = ONE_SECOND * 60;
+
+	private static final int ONE_HOUR = ONE_MINUTE * 60;
+
+	private static final long ONE_DAY = ONE_HOUR * 24;
+	
+	public static final long ONE_MONTH = ONE_DAY * 30;
+
 	static final String NUMS_PREFIX = "/nums";
 	
 	private static final Pattern BOT_PATTERN = Pattern.compile(
@@ -52,6 +65,50 @@ public class SearchServlet extends HttpServlet {
 			, "DuckDuckGo-Favicons-Bot"
 			, "LinkedInBot"
 			, "python"));
+
+	private static final Comparator<? super UserComment> COMMENT_ORDER = new Comparator<>() {
+		@Override
+		public int compare(UserComment c1, UserComment c2) {
+			int v = votes(c2) - votes(c1);
+			if (v != 0) {
+				return v;
+			}
+			
+			int r = rating(c2) - rating(c1);
+			if (r != 0) {
+				return r;
+			}
+			
+			int l = length(c2) - length(c1);
+			if (l != 0) {
+				return l;
+			}
+			
+			return Long.compare(c2.getCreated(), c1.getCreated());
+		}
+
+		private int length(UserComment c1) {
+			int length = c1.getComment().length();
+			if (length < 20) {
+				return 0;
+			}
+			if (length < 40) {
+				return 1;
+			}
+			if (length < 80) {
+				return 2;
+			}
+			return 3;
+		}
+
+		private int rating(UserComment c1) {
+			return c1.getRating() == Rating.A_LEGITIMATE ? 1 : 0;
+		}
+
+		private int votes(UserComment c1) {
+			return c1.getUp() - c1.getDown();
+		}
+	};
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -79,6 +136,10 @@ public class SearchServlet extends HttpServlet {
 			db.addSearchHit(phoneId);
 		}
 		
+		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
+		comments.sort(COMMENT_ORDER);
+		req.setAttribute("comments", comments);
+		
 		SpamReport info = db.getPhoneInfo(phoneId);
 		List<? extends SearchInfo> searches = db.getSearches(phoneId);
 		int votes = info.getVotes();
@@ -101,6 +162,8 @@ public class SearchServlet extends HttpServlet {
 			req.setAttribute("thanks", Boolean.TRUE);
 		}
 		
+		String status = status(votes);
+		
 		// The canonical path of this page.
 		req.setAttribute("path", req.getServletPath() + '/' + phoneId);
 		
@@ -109,10 +172,26 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("rating", rating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
-		req.setAttribute("title", status(votes) + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
+		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
 		if (votes > 0) {
 			req.setAttribute("description", votes + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		}
+		
+		StringBuilder keywords = new StringBuilder();
+		keywords.append("Anrufe, ");
+		keywords.append(number.getShortcut());
+		keywords.append(", ");
+		keywords.append(number.getZeroZero());
+		keywords.append(", ");
+		keywords.append(number.getPlus());
+		if (number.getCity() != null) {
+			keywords.append(", ");
+			keywords.append(number.getCity());
+		}
+		keywords.append(", ");
+		keywords.append(status);
+		
+		req.setAttribute("keywords", keywords.toString());
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
 	}

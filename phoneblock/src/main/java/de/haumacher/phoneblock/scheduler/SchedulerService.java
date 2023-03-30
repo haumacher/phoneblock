@@ -26,7 +26,8 @@ public class SchedulerService implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		_executor = new ScheduledThreadPoolExecutor(2);
+		LOG.info("Starting scheduler.");
+		_executor = new ScheduledThreadPoolExecutor(10);
 		
 		_instance = this;
 	}

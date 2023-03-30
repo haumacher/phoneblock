@@ -45,12 +45,12 @@ public class TestDB {
 
 	@Test
 	public void testTopSearches() throws UnsupportedEncodingException, SQLException {
-		_db.addRating("0", Rating.C_PING, 0);
-		_db.addRating("1", Rating.C_PING, 0);
-		_db.addRating("2", Rating.C_PING, 0);
-		_db.addRating("3", Rating.C_PING, 0);
-		_db.addRating("4", Rating.C_PING, 0);
-		_db.addRating("5", Rating.C_PING, 0);
+		_db.addRating("0", Rating.C_PING, null, 0);
+		_db.addRating("1", Rating.C_PING, null, 0);
+		_db.addRating("2", Rating.C_PING, null, 0);
+		_db.addRating("3", Rating.C_PING, null, 0);
+		_db.addRating("4", Rating.C_PING, null, 0);
+		_db.addRating("5", Rating.C_PING, null, 0);
 		
 		_db.addSearchHit("5", 0);
 		_db.addSearchHit("0", 0);
@@ -199,13 +199,13 @@ public class TestDB {
 	public void testRatings() {
 		long now = 1;
 		
-		_db.addRating("123", Rating.G_FRAUD, now++);
-		_db.addRating("123", Rating.B_MISSED, now++);
-		_db.addRating("123", Rating.B_MISSED, now++);
-		_db.addRating("123", Rating.C_PING, now++);
-		_db.addRating("123", Rating.D_POLL, now++);
-		_db.addRating("123", Rating.E_ADVERTISING, now++);
-		_db.addRating("123", Rating.F_GAMBLE, now++);
+		_db.addRating("123", Rating.G_FRAUD, null, now++);
+		_db.addRating("123", Rating.B_MISSED, null, now++);
+		_db.addRating("123", Rating.B_MISSED, null, now++);
+		_db.addRating("123", Rating.C_PING, null, now++);
+		_db.addRating("123", Rating.D_POLL, null, now++);
+		_db.addRating("123", Rating.E_ADVERTISING, null, now++);
+		_db.addRating("123", Rating.F_GAMBLE, null, now++);
 
 		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
 		
@@ -213,7 +213,7 @@ public class TestDB {
 		
 		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
 		
-		_db.addRating("123", Rating.C_PING, now++);
+		_db.addRating("123", Rating.C_PING, null, now++);
 		
 		assertEquals(Rating.C_PING, _db.getRating("123"));
 	}
