@@ -4,11 +4,12 @@
 package de.haumacher.phoneblock.meta.plugins;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
 
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.model.UserComment;
@@ -35,13 +36,22 @@ public abstract class AbstractMetaSearch {
 		return this;
 	}
 	
-	protected final Document load(String url) throws MalformedURLException, IOException {
+	protected final Document load(String url) throws IOException {
 		return _fetcher.fetch(new URL(url));
 	}
 
 	/** 
 	 * Retrieves user comments for the given phone number.
 	 */
-	public abstract List<UserComment> fetchComments(String phone) throws Throwable;
+	public abstract List<UserComment> fetchComments(String phone);
+	
+
+	/** 
+	 * Utility to log the problem and return an empty list.
+	 */
+	protected final List<UserComment> notFound(Logger log, String phone, IOException ex) {
+		log.info("Not found: " + phone + ": " + ex.getClass().getName() + ": " + ex.getMessage());
+		return Collections.emptyList();
+	}
 
 }

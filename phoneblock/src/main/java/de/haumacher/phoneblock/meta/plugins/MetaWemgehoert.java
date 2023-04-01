@@ -3,7 +3,9 @@
  */
 package de.haumacher.phoneblock.meta.plugins;
 
+import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,6 +14,8 @@ import java.util.List;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.model.Rating;
@@ -21,12 +25,20 @@ import de.haumacher.phoneblock.db.model.UserComment;
  * Retrieves user comments.
  */
 public class MetaWemgehoert extends AbstractMetaSearch {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(MetaWemgehoert.class);
 
 	private static final String SOURCE = "wemgehoert.de";
 
 	@Override
-	public List<UserComment> fetchComments(String phone) throws Throwable {
-		Document document = load("https://www.wemgehoert.de/nummer/" + phone);
+	public List<UserComment> fetchComments(String phone) {
+		Document document;
+		try {
+			document = load("https://www.wemgehoert.de/nummer/" + phone);
+		} catch (IOException ex) {
+			return notFound(LOG, phone, ex);
+		}
+		
 		DateFormat dateFormat = new SimpleDateFormat("dd. MM. yyyy");
 		List<UserComment> result = new ArrayList<>();
 		for (Element element : document.select("div.comment-item")) {
@@ -50,7 +62,19 @@ public class MetaWemgehoert extends AbstractMetaSearch {
 				continue;
 			}
 			
-			Date date = dateFormat.parse(element.select("span.date").text());
+			String dateString = element.select("span.date").text();
+			if (dateString.isEmpty()) {
+				LOG.warn("No date: " + phone);
+				continue;
+			}
+			
+			Date date;
+			try {
+				date = dateFormat.parse(dateString);
+			} catch (ParseException ex) {
+				LOG.warn("Invalid date for " + phone + ": " + dateString);
+				continue;
+			}
 			
 			boolean negative;
 			if (rating.indexOf("r1") >= 0 || rating.indexOf("r2") >= 0) {
@@ -73,7 +97,7 @@ public class MetaWemgehoert extends AbstractMetaSearch {
 	/**
 	 * Main for debugging only.
 	 */
-	public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) {
 		System.out.println(new MetaWemgehoert().setFetcher(new FetchService()).fetchComments("01805266900"));
 	}
 

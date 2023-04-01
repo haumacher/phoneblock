@@ -3,7 +3,9 @@
  */
 package de.haumacher.phoneblock.meta.plugins;
 
+import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,8 +29,14 @@ public class MetaWerruft extends AbstractMetaSearch {
 	private static final String SOURCE = "werruft.info";
 
 	@Override
-	public List<UserComment> fetchComments(String phone) throws Throwable {
-		Document document = load("https://www.werruft.info/telefonnummer/" + phone + "/");
+	public List<UserComment> fetchComments(String phone) {
+		Document document;
+		try {
+			document = load("https://www.werruft.info/telefonnummer/" + phone + "/");
+		} catch (IOException ex) {
+			return notFound(LOG, phone, ex);
+		}
+		
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Element commentsList = document.select("ul.commentslist").first();
 		List<UserComment> result = new ArrayList<>();
@@ -53,10 +61,16 @@ public class MetaWerruft extends AbstractMetaSearch {
 				
 				String dateString = element.select("div.postdate").text().trim();
 				if (dateString.isEmpty()) {
-					LOG.warn("No date: " + ratingText);
+					LOG.warn("No date: " + phone);
 					continue;
 				}
-				Date date = dateFormat.parse(dateString);
+				Date date;
+				try {
+					date = dateFormat.parse(dateString);
+				} catch (ParseException ex) {
+					LOG.warn("Invalid date for " + phone + ": " + dateString);
+					continue;
+				}
 				
 				boolean negative;
 				if (rating.equals("cl1") || rating.equals("cl2")) {
@@ -80,7 +94,7 @@ public class MetaWerruft extends AbstractMetaSearch {
 	/**
 	 * Main for debugging only.
 	 */
-	public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) {
 		System.out.println(new MetaWerruft().setFetcher(new FetchService()).fetchComments("01805266900"));
 	}
 

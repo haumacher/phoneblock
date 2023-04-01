@@ -3,7 +3,9 @@
  */
 package de.haumacher.phoneblock.meta.plugins;
 
+import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,8 +31,14 @@ public class MetaCleverdialer extends AbstractMetaSearch {
 	private static final String SOURCE = "cleverdialer.de";
 	
 	@Override
-	public List<UserComment> fetchComments(String phone) throws Throwable {
-		Document document = load("https://www.cleverdialer.de/telefonnummer/" + phone);
+	public List<UserComment> fetchComments(String phone) {
+		Document document;
+		try {
+			document = load("https://www.cleverdialer.de/telefonnummer/" + phone);
+		} catch (IOException ex) {
+			return notFound(LOG, phone, ex);
+		}
+		
 		DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 		List<UserComment> result = new ArrayList<>();
 		Element commentsList = document.select("table.recent-comments").first();
@@ -60,10 +68,17 @@ public class MetaCleverdialer extends AbstractMetaSearch {
 				
 				String dateString = element.select("td.date-time").text().trim();
 				if (dateString.isEmpty()) {
-					LOG.warn("No date: " + ratingText);
+					LOG.warn("No date: " + phone);
 					continue;
 				}
-				Date date = dateFormat.parse(dateString);
+
+				Date date;
+				try {
+					date = dateFormat.parse(dateString);
+				} catch (ParseException ex) {
+					LOG.warn("Invalid date for " + phone + ": " + dateString);
+					continue;
+				}
 				
 				boolean negative;
 				if (rating.equals("stars-1") || rating.equals("stars-2")) {
@@ -87,7 +102,7 @@ public class MetaCleverdialer extends AbstractMetaSearch {
 	/**
 	 * Main for debugging only.
 	 */
-	public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) {
 		System.out.println(new MetaCleverdialer().setFetcher(new FetchService()).fetchComments("015212000519"));
 	}
 
