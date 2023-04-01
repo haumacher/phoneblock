@@ -217,8 +217,8 @@
 	</div>
 <% } else {%>
 	<p>
-		Du wurdest von ☎ <code><%= analysis.getShortcut()%></code> angerufen? Sag anderen, was sie von ☎ <code><%= analysis.getPlus()%></code> zu erwarten haben.
-		Wenn Du Dich von Anrufen von ☎ <code><%= analysis.getShortcut()%></code> belästigt fühlst, <a href="<%= request.getContextPath()%>/setup.jsp">installiere PhoneBlock</a> 
+		Du wurdest von ☎ <code><%= info.getPhone()%></code> angerufen? Sag anderen, was sie von ☎ <code><%= analysis.getPlus()%></code> zu erwarten haben.
+		Wenn Du Dich von Anrufen von ☎ <code><%= info.getPhone()%></code> belästigt fühlst, <a href="<%= request.getContextPath()%>/setup.jsp">installiere PhoneBlock</a> 
 		und gibt eine Bewertung für ☎ <code><%= analysis.getZeroZero()%></code> ab:
 	</p>
 
