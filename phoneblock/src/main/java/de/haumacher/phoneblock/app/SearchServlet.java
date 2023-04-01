@@ -188,7 +188,7 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		StringBuilder keywords = new StringBuilder();
-		keywords.append("Anrufe, Bewertung, ");
+		keywords.append("Anrufe, Bewertung");
 		if (number.getShortcut() != null) {
 			keywords.append(", ");
 			keywords.append(number.getShortcut());
