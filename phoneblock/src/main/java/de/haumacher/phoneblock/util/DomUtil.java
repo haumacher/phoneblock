@@ -23,23 +23,22 @@ import org.w3c.dom.Node;
  */
 public class DomUtil {
 
-	static final DocumentBuilder documentBuilder;
+	static final DocumentBuilderFactory factory;
 	
 	static {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
-		try {
-			documentBuilder = factory.newDocumentBuilder();
-		} catch (ParserConfigurationException ex) {
-			throw new RuntimeException(ex);
-		}
 	}
 
 	/**
 	 * The global {@link DocumentBuilder} for parsing and creating {@link Document}s.
 	 */
-	public static DocumentBuilder getBuilder() {
-		return documentBuilder;
+	public static DocumentBuilder createDocumentBuilder() {
+		try {
+			return factory.newDocumentBuilder();
+		} catch (ParserConfigurationException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	public static void appendTextElement(Element response, QName qname, String text) {

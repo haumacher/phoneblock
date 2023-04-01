@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.slf4j.Logger;
@@ -143,7 +144,8 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 
-		Document requestDoc = getBuilder().parse(req.getInputStream());
+		DocumentBuilder builder = createDocumentBuilder();
+		Document requestDoc = builder.parse(req.getInputStream());
 		Depth depth = Depth.fromHeader(req.getHeader("depth"));
 		List<Element> properties = toList(elements(requestDoc, DavSchema.DAV_PROPFIND, DavSchema.DAV_PROP));
 
@@ -155,7 +157,7 @@ public class CardDavServlet extends HttpServlet {
 			LOG.debug(out.toString());
 		}
 
-		Document responseDoc = getBuilder().newDocument();
+		Document responseDoc = builder.newDocument();
 		Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
 		multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, DavSchema.DAV_NS);
 		multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE + ':' + CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
@@ -197,7 +199,8 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 		
-		Document requestDoc = getBuilder().parse(req.getInputStream());
+		DocumentBuilder builder = createDocumentBuilder();
+		Document requestDoc = builder.parse(req.getInputStream());
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
 			List<Element> properties = toList(elements(requestDoc, CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET, DavSchema.DAV_PROP));
 			
@@ -210,7 +213,7 @@ public class CardDavServlet extends HttpServlet {
 				LOG.debug(out.toString());
 			}
 			
-			Document responseDoc = getBuilder().newDocument();
+			Document responseDoc = builder.newDocument();
 			Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
 			multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, DavSchema.DAV_NS);
 			multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE + ':' + CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);

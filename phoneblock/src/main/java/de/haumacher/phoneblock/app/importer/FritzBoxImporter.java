@@ -27,7 +27,7 @@ import de.haumacher.phoneblock.util.DomUtil;
 public class FritzBoxImporter {
 	
 	public static void main(String[] args) throws SAXException, IOException, XPathExpressionException {
-		Document document = DomUtil.getBuilder().parse(new File(args[0]));
+		Document document = DomUtil.createDocumentBuilder().parse(new File(args[0]));
 		NodeList list = (NodeList) XPathFactory.newInstance().newXPath().evaluate("//number/text()", document, XPathConstants.NODESET);
 		
 		Set<String> numbers = new HashSet<>();

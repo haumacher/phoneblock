@@ -123,7 +123,7 @@ public class AddressResource extends Resource {
 				blockList.removePersonalization(currentUser, phoneId);
 				
 				blockList.addPersonalization(currentUser, phoneId);
-				db.processVotes(spamreport, phoneId, 2, System.currentTimeMillis());
+				db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
 			}
 			
 			session.commit();

@@ -34,7 +34,7 @@ public class TestDomUtil {
 	}
 
 	private Document doc(String xml) throws SAXException, IOException {
-		return DomUtil.getBuilder().parse(new InputSource(new StringReader(xml)));
+		return DomUtil.createDocumentBuilder().parse(new InputSource(new StringReader(xml)));
 	}
 	
 }
