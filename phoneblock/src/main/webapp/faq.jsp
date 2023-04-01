@@ -18,10 +18,10 @@
 		<h2>Ist PhoneBlock kostenlos?</h2>
 		<p>
 			Ja, aktuell ist PhoneBlock kostenlos. Der Server ist ein Raspberry PI 4 auf meinem Schreibtisch 
-			und verursacht keine zusätzlichen Kosten. Ab einer bestimmten Nutzerzahl wird diese Lösung aber sicher zu
-			einem Engpass. Ich bin gespannt, ab wann diese Grenze erreicht ist. Ein professionelles Hosting ist 
-			aber nicht zum Nulltarif zu haben und könnte in Zukunft einen gewissen Unkostenbeitrag von den 
-			PhoneBlock-Nutzern erfordern.
+			und verursacht keine zusätzlichen Kosten. Aufgrund der aktuellen Nutzerzahlen und der leider nur sehr moderaten 
+			Steigerungsrate gehe ich aktuell davon aus, dass der Raspberry PI auf unabsehbare Zeit genug Power hat, 
+			um das Projekt zu betreiben. Erst wenn ein professionelles Hosting notwendig wird, könnte dies in Zukunft 
+			einen gewissen Unkostenbeitrag von den PhoneBlock-Nutzern erfordern.
 		</p>
 
 		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="<%=request.getContextPath()%>/link/tellows">tellows Anrufschutz</a>"?</h2>
@@ -108,6 +108,21 @@
 			Du kannst dann entscheiden, ob Du ran gehst, weil Du gerade auf einen Rückruf wartest, oder ob Du den 
 			Anrufer wegdrückst.</li>
 		</ol>
+
+		<h2>Ich finde PhoneBlock toll, kann ich eine Spende machen?</h2>
+		<p>
+			PhoneBlock verfolgt aktuell<sup>(*)</sup> keinerlei kommerzielle Interessen. Spenden sind aktuell keine
+			notwendig, da keine Kosten entstehen und ich nicht das Finanzamt auf den Plan rufen möchte. Wenn Du 
+			PhoneBlock gut findest, dann kannst Du aber trotzdem etwas tun: Poste Links zur PhoneBlock-Seite in 
+			Foren, auf FaceBook, in Kommentaren zu Zeitschriftenartikeln, in Deinem Blog oder wo Du das
+			sonst für angebracht hälst. Nur wenn die Verbreitung von PhoneBlock schneller wächst, hat das Projekt einen
+			Effekt gegen den unerhörten Telefonterror, der im deutschen Telefonnetz tobt.
+		</p>
+		<p>
+			(*) Aufgrund der aktuellen Nutzerzahlen und der leider äußerst moderaten Steigerungsrate gehen ich davon aus, 
+			dass mein RasperryPI auf unabsehbare Zeit genug Rechenleistung bietet, um PhoneBlock kostenneutral zu 
+			betreiben. Ab 100.000 Nutzern wäre es natürlich verlockend, wenn jeder 0.50 Ct pro Jahr bezahlen würde :-)
+		</p>
 
 		<h2>Ich habe einen Wunsch, was PhoneBlock unbedingt können sollte, wo kann ich den äußern?</h2>
 		<p>
