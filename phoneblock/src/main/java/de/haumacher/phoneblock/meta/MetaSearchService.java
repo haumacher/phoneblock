@@ -257,12 +257,12 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 				doSearch = false;
 			}
 			
+			int commentCnt = 0;
 			if (doSearch) {
 				LOG.info("Performing meta search for: " + phoneId);
 
 				Map<String, UserComment> indexedComments = comments.stream().collect(Collectors.toMap(c -> c.getComment(), c -> c));
 
-				int cnt = 0;
 				List<UserComment> newComments = search(phoneId);
 				for (UserComment comment : newComments) {
 					if (!indexedComments.containsKey(comment.getComment())) {
@@ -270,7 +270,7 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 						mapper.addComment(comment.getId(), comment.getPhone(), comment.getRating(), comment.getComment(), comment.getService(), comment.getCreated());
 						comments.add(comment);
 						
-						cnt++;
+						commentCnt++;
 						
 						if (comment.getRating() == Rating.A_LEGITIMATE) {
 							votes -= 5;
@@ -282,18 +282,23 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 						commit = true;
 					}
 				}
-				LOG.info("Found " + cnt + " new comments: " + phoneId);
+				LOG.info("Found " + commentCnt + " new comments: " + phoneId);
 			} else {
 				LOG.info("Skipping search, still up-to-date: " + phoneId);
 			}
 			
+			boolean ratingUpdated = false;
 			if (votes != 0) {
-				db.processVotes(mapper, phoneId, votes, lastVote);
+				ratingUpdated = db.processVotes(mapper, phoneId, votes, lastVote);
 				commit = true;
 			}
 			
 			if (commit) {
 				session.commit();
+			}
+			
+			if (ratingUpdated || commentCnt > 0) {
+				db.publishUpdate(phoneId);
 			}
 		}
 		return comments;

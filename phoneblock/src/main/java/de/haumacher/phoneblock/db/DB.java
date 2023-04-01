@@ -276,7 +276,7 @@ public class DB {
 		
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			processVotes(reports, phone, votes, time);
+			processVotesAndPublish(reports, phone, votes, time);
 			session.commit();
 		}
 	}
@@ -286,15 +286,18 @@ public class DB {
 	 * 
 	 * @return Whether an index update should be performed.
 	 */
-	public boolean processVotes(SpamReports reports, String phone, int votes, long time) {
-		boolean updateRequired = internalProcessVotes(reports, phone, votes, time);
+	public boolean processVotesAndPublish(SpamReports reports, String phone, int votes, long time) {
+		boolean updateRequired = processVotes(reports, phone, votes, time);
 		if (updateRequired) {
 			publishUpdate(phone);
 		}
 		return updateRequired;
 	}
 
-	private boolean internalProcessVotes(SpamReports reports, String phone, int votes, long time) {
+	/**
+	 * Updates the votes for a certain number.
+	 */
+	public boolean processVotes(SpamReports reports, String phone, int votes, long time) {
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
 		
@@ -331,12 +334,12 @@ public class DB {
 				final int currentVotes = nonNull(reports.getVotes(phone));
 				if (currentVotes > 0) {
 					// The number was already reported, a missed call makes the probability for spam higher.
-					updateRequired = internalProcessVotes(reports, phone, Ratings.getVotes(rating), now);
+					updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), now);
 				} else {
 					updateRequired = false;
 				}
 			} else {
-				updateRequired = internalProcessVotes(reports, phone, Ratings.getVotes(rating), now);
+				updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), now);
 
 				Rating oldRating = reports.getRating(phone);
 				
@@ -392,7 +395,10 @@ public class DB {
 		}
 	}
 
-	private void publishUpdate(String phone) {
+	/**
+	 * Sends the given phone number to the indexer service.
+	 */
+	public void publishUpdate(String phone) {
 		_indexer.publishUpdate("/nums/" + phone);
 	}
 
@@ -876,7 +882,7 @@ public class DB {
 			
 			if (wasAddedBefore) {
 				// Note: Only a spam reporter may revoke his vote. This prevents vandals from deleting the whole list.
-				processVotes(spamreport, phoneId, -2, System.currentTimeMillis());
+				processVotesAndPublish(spamreport, phoneId, -2, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -1004,7 +1010,7 @@ public class DB {
 					users.insertCaller(userId, phoneId, now);
 				}
 				
-				processVotes(reports, phoneId, 2, now);
+				processVotesAndPublish(reports, phoneId, 2, now);
 			}
 			
 			session.commit();
