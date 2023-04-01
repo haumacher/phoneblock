@@ -229,8 +229,6 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	 * @return All user comments that exist for the given phone number.
 	 */
 	private List<UserComment> doMetaSearch(int votes, long lastVote, String phoneId) {
-		LOG.info("Performing meta search for: " + phoneId);
-		
 		List<UserComment> comments;
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
@@ -255,6 +253,8 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 			}
 			
 			if (doSearch) {
+				LOG.info("Performing meta search for: " + phoneId);
+
 				Map<String, UserComment> indexedComments = comments.stream().collect(Collectors.toMap(c -> c.getComment(), c -> c));
 
 				int cnt = 0;
