@@ -49,19 +49,11 @@ public class RatingServlet extends HttpServlet {
 		String ratingAttr = ratingAttribute(phoneId);
 		if (session.getAttribute(ratingAttr) == null) {
 			if (ratingName != null || comment != null) {
-				Integer ratingCnt = (Integer) session.getAttribute("ratingCnt");
-				int ratings = ratingCnt == null ? 0 : ratingCnt.intValue();
-				if (ratings < 5) {
-					session.setAttribute("ratingCnt", Integer.valueOf(ratings + 1));
-					
-					Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
-					DB db = DBService.getInstance();
-					db.addRating(phoneId, rating, comment, System.currentTimeMillis());
-					
-					LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
-				} else {
-					LOG.warn("Ignored rating, exceeded max rating count: " + phoneId + " (" + ratingName + ")");
-				}
+				Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
+				DB db = DBService.getInstance();
+				db.addRating(phoneId, rating, comment, System.currentTimeMillis());
+				
+				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
 				
 				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}
@@ -72,6 +64,9 @@ public class RatingServlet extends HttpServlet {
 		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "?link=true");
 	}
 
+	/**
+	 * The session attribute that stores whether a rating for a certain phone number has been recorded.
+	 */
 	public static String ratingAttribute(String phone) {
 		return "rating/" + phone;
 	}
