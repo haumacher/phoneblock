@@ -46,4 +46,5 @@ module phoneblock {
 	requires pac4j.oauth;
 	requires pac4j.javaee;
 	requires javaee.pac4j;
+	requires org.apache.commons.lang3;
 }

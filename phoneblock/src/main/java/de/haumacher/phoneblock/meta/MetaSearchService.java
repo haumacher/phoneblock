@@ -17,12 +17,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +83,7 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 		de.haumacher.phoneblock.meta.plugins.MetaTellows.class,
 		de.haumacher.phoneblock.meta.plugins.MetaWemgehoert.class,
 		de.haumacher.phoneblock.meta.plugins.MetaWerruft.class,
+		de.haumacher.phoneblock.meta.plugins.MetaWerruftAn.class,
 	};
 
 	private ScheduledFuture<?> _task;
@@ -125,20 +128,22 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	 * Main for debugging only.
 	 */
 	public List<UserComment> search(String phone) {
-		Stream<Future<List<UserComment>>> s1 = _plugins.stream().map(query -> _scheduler.executor().submit(() -> {
+		Stream<Pair<AbstractMetaSearch, Future<List<UserComment>>>> s1 = _plugins.stream().map(query -> Pair.of(query, _scheduler.executor().submit(() -> {
 			try {
 				return query.fetchComments(phone);
 			} catch (Throwable ex) {
-				ex.printStackTrace();
 				return Collections.emptyList();
 			}
-		}));
+		})));
 		
 		List<UserComment> comments = s1.flatMap(f -> {
 			try {
-				return f.get().stream();
+				return f.getRight().get(5, TimeUnit.SECONDS).stream();
 			} catch (InterruptedException | ExecutionException ex) {
 				ex.printStackTrace();
+				return Collections.<UserComment>emptyList().stream();
+			} catch (TimeoutException ex) {
+				LOG.info("Timeout waiting for meta search: " + f.getLeft().getClass().getName());
 				return Collections.<UserComment>emptyList().stream();
 			}
 		})

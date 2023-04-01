@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -98,7 +99,9 @@ public class MetaWemgehoert extends AbstractMetaSearch {
 	 * Main for debugging only.
 	 */
 	public static void main(String[] args) {
+		long before = System.currentTimeMillis();
 		System.out.println(new MetaWemgehoert().setFetcher(new FetchService()).fetchComments("01805266900"));
+		System.out.println("Took " + Duration.ofMillis(System.currentTimeMillis() - before).toSeconds() + " seconds.");
 	}
 
 }

@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,54 +26,52 @@ import de.haumacher.phoneblock.db.model.UserComment;
 /**
  * Retrieves user comments.
  */
-public class MetaCleverdialer extends AbstractMetaSearch {
+public class MetaWerruftAn extends AbstractMetaSearch {
 
-	private static final Logger LOG = LoggerFactory.getLogger(MetaCleverdialer.class);
-	
-	private static final String SOURCE = "cleverdialer.de";
-	
+	private static final Logger LOG = LoggerFactory.getLogger(MetaWerruftAn.class);
+	private static final String SOURCE = "wer-ruftan.de";
+
 	@Override
 	public List<UserComment> fetchComments(String phone) {
 		Document document;
 		try {
-			document = load("https://www.cleverdialer.de/telefonnummer/" + phone);
+			document = load("https://wer-ruftan.de/Nummer/" + phone);
 		} catch (IOException ex) {
 			return notFound(LOG, phone, ex);
 		}
 		
-		DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+		DateFormat dateFormat = new SimpleDateFormat("ss/MM/yyyy");
 		List<UserComment> result = new ArrayList<>();
-		Element commentsList = document.select("table.recent-comments").first();
-		if (commentsList != null) {
-			for (Element element : commentsList.select("tbody > tr")) {
-				List<Element> ratingText = element.select("td.comment");
-				if (ratingText.isEmpty()) {
-					LOG.warn("No rating text.");
+		{
+			for (Element element : document.getElementsByClass("numberTable")) {
+				Elements tds = element.select("tbody > tr > td");
+				if (tds.size() < 3) {
 					continue;
 				}
-				String text = ratingText.get(0).text();
 				
-				Elements ratingElements = element.select("td.stars > span");
+				List<Element> commentElements = element.select("p.numberDescShort");
+				if (commentElements.isEmpty()) {
+					LOG.warn("No comment text: " + phone);
+					continue;
+				}
+				String text = commentElements.get(0).text();
+				
+				List<Element> ratingElements = tds.get(1).select("span.numberSign");
 				if (ratingElements.isEmpty()) {
 					continue;
 				}
 				
-				String rating = ratingElements.first().attr("class");
+				String rating = ratingElements.get(0).attr("class");
 				if (rating.isEmpty()) {
-					LOG.warn("No rating class: " + ratingText);
+					LOG.warn("No rating class: " + phone);
 					continue;
 				}
 				
-				if (rating.equals("stars-3")) {
-					continue;
-				}
-				
-				String dateString = element.select("td.date-time").text().trim();
+				String dateString = tds.get(0).select("span").text().trim();
 				if (dateString.isEmpty()) {
 					LOG.warn("No date: " + phone);
 					continue;
 				}
-
 				Date date;
 				try {
 					date = dateFormat.parse(dateString);
@@ -82,10 +81,12 @@ public class MetaCleverdialer extends AbstractMetaSearch {
 				}
 				
 				boolean negative;
-				if (rating.equals("stars-1") || rating.equals("stars-2")) {
+				if (rating.contains("redButton") || rating.contains("orangeButton")) {
 					negative = true;
-				} else {
+				} else if (rating.contains("greenButton")) {
 					negative = false;
+				} else {
+					continue;
 				}
 				
 				result.add(UserComment.create()
@@ -105,7 +106,7 @@ public class MetaCleverdialer extends AbstractMetaSearch {
 	 */
 	public static void main(String[] args) {
 		long before = System.currentTimeMillis();
-		System.out.println(new MetaCleverdialer().setFetcher(new FetchService()).fetchComments("015212000519"));
+		System.out.println(new MetaWerruftAn().setFetcher(new FetchService()).fetchComments("01805266900").stream().map(x -> x.toString()).collect(Collectors.joining("\n")));
 		System.out.println("Took " + Duration.ofMillis(System.currentTimeMillis() - before).toSeconds() + " seconds.");
 	}
 
