@@ -17,6 +17,7 @@ import org.h2.jdbcx.JdbcDataSource;
 
 import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
  * Tool entering a new user to the PhoneBlock DB.
@@ -24,7 +25,9 @@ import de.haumacher.phoneblock.db.DB;
 public class UserAdd {
 	
 	public static void main(String[] args) throws SQLException, IOException {
-		DB db = new DB(createDataSource());
+		SchedulerService scheduler = new SchedulerService();
+		scheduler.contextInitialized(null);
+		DB db = new DB(createDataSource(), scheduler);
 		
 		String login;
 		if (args.length == 0) {
@@ -36,6 +39,8 @@ public class UserAdd {
 		String passwd = db.createUser(RegistrationServlet.IDENTIFIED_BY_EMAIL, login, login, login);
 		
 		System.out.println(passwd);
+		
+		scheduler.contextDestroyed(null);
 	}
 
 	private static DataSource createDataSource() throws IOException {

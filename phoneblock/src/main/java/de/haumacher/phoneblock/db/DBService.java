@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
  * {@link ServletContextListener} starting the database.
@@ -32,16 +33,19 @@ public class DBService implements ServletContextListener {
 	private Server _server;
 
 	private final IndexUpdateService _indexer;
+
+	private SchedulerService _scheduler;
 	
-	public DBService() {
-		this(IndexUpdateService.NONE);
+	public DBService(SchedulerService scheduler) {
+		this(IndexUpdateService.NONE, scheduler);
 	}
 	
 	/** 
 	 * Creates a {@link DBService}.
 	 */
-	public DBService(IndexUpdateService indexer) {
+	public DBService(IndexUpdateService indexer, SchedulerService scheduler) {
 		_indexer = indexer;
+		_scheduler = scheduler;
 	}
 
 	@Override
@@ -119,7 +123,7 @@ public class DBService implements ServletContextListener {
 			LOG.error("Failed to start DB server. ", ex);
 		}
 		
-		INSTANCE = new DB(dataSource, _indexer);
+		INSTANCE = new DB(dataSource, _indexer, _scheduler);
 	}
 
 	protected int defaultDbPort() {

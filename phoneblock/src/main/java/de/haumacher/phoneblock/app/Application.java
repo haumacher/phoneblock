@@ -46,7 +46,7 @@ public class Application implements ServletContextListener {
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
 				new IndexNowUpdateService(),
 				new GoogleUpdateService())),
-			db = new DBService(indexer),
+			db = new DBService(indexer, scheduler),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher),
 			new CrawlerService(fetcher, metaSearch),

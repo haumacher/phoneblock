@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
  * Test case for {@link DB}.
@@ -31,16 +32,24 @@ import de.haumacher.phoneblock.db.model.SearchInfo;
 public class TestDB {
 	
 	private DB _db;
+	private SchedulerService _scheduler;
 
 	@BeforeEach
 	public void setUp() throws Exception {
+		_scheduler = new SchedulerService();
+		_scheduler.contextInitialized(null);
+		
 		DataSource dataSource = createTestDataSource();
-		_db = new DB(dataSource);
+		_db = new DB(dataSource, _scheduler);
 	}
 	
 	@AfterEach
 	public void tearDown() throws Exception {
 		_db.shutdown();
+		_db = null;
+		
+		_scheduler.contextDestroyed(null);
+		_scheduler = null;
 	}
 
 	@Test

@@ -27,9 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -57,6 +55,7 @@ import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
  * The database abstraction layer.
@@ -101,14 +100,14 @@ public class DB {
 
 	private SecureRandom _rnd = new SecureRandom();
 	
-	private ScheduledExecutorService _scheduler;
-
+	private SchedulerService _scheduler;
+	
 	private IndexUpdateService _indexer;
 
 	private List<ScheduledFuture<?>> _tasks = new ArrayList<>();
-	
-	public DB(DataSource dataSource) throws SQLException, UnsupportedEncodingException {
-		this(dataSource, IndexUpdateService.NONE);
+
+	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException, UnsupportedEncodingException {
+		this(dataSource, IndexUpdateService.NONE, scheduler);
 	}
 	
 	/** 
@@ -116,9 +115,10 @@ public class DB {
 	 *
 	 * @param dataSource
 	 */
-	public DB(DataSource dataSource, IndexUpdateService indexer) throws SQLException, UnsupportedEncodingException {
+	public DB(DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler) throws SQLException, UnsupportedEncodingException {
 		_dataSource = dataSource;
 		_indexer = indexer;
+		_scheduler = scheduler;
 		
 		TransactionFactory transactionFactory = new JdbcTransactionFactory();
 		Environment environment = new Environment("phoneblock", transactionFactory, _dataSource);
@@ -153,8 +153,6 @@ public class DB {
 			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
 		
-		 _scheduler = new ScheduledThreadPoolExecutor(1);
-		 
 		 cleanup();
 
 		 Date timeCleanup = schedule(20, this::cleanup);
@@ -178,7 +176,7 @@ public class DB {
 		 long millisFirst = cal.getTimeInMillis();
 		 long initialDelay = millisFirst - millisNow;
 		 
-		_tasks.add(_scheduler.scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
+		_tasks.add(_scheduler.executor().scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
 		return cal.getTime();
 	}
 	
@@ -679,17 +677,6 @@ public class DB {
 		
 		for (ScheduledFuture<?> task : _tasks) {
 			task.cancel(false);
-		}
-		
-		_scheduler.shutdown();
-		
-		try {
-			boolean finished = _scheduler.awaitTermination(10, TimeUnit.SECONDS);
-			if (!finished) {
-				LOG.warn("DB scheduler did not terminate in time.");
-			}
-		} catch (InterruptedException ex) {
-			LOG.error("Failed to shut down scheduler.", ex);
 		}
 	}
 

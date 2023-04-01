@@ -12,6 +12,8 @@ import java.net.UnknownHostException;
 
 import org.junit.jupiter.api.Test;
 
+import de.haumacher.phoneblock.scheduler.SchedulerService;
+
 /**
  * Test case for {@link DBService}.
  *
@@ -21,7 +23,8 @@ public class TestDbService {
 
 	@Test
 	public void testStart() throws UnknownHostException, IOException {
-		DBService service = new DBService() {
+		SchedulerService scheduler = new SchedulerService();
+		DBService service = new DBService(scheduler) {
 			@Override
 			protected String defaultDbUrl(String appName) {
 				return "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
@@ -33,9 +36,11 @@ public class TestDbService {
 			}
 		};
 		
+		scheduler.contextInitialized(null);
 		service.contextInitialized(null);
 		
 		service.contextDestroyed(null);
+		scheduler.contextDestroyed(null);
 		
 		try {
 			Socket socket = new Socket("localhost", 12345);
