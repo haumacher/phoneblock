@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.meta;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -209,6 +211,9 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 		if (delay > 0) {
 			delay += _rnd.nextInt(JITTER);
 		}
+		
+		LOG.info("Scheduling next meta search in " + Duration.of(delay, ChronoUnit.MILLIS) + ", queue size is: " + _jobs.size());
+		
 		_task = _scheduler.executor().schedule(this, delay, TimeUnit.MILLISECONDS);
 	}
 
