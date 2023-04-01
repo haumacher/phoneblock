@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -144,11 +145,20 @@ public class SearchServlet extends HttpServlet {
 		List<? extends SearchInfo> searches = db.getSearches(phoneId);
 		int votes = info.getVotes();
 		List<? extends RatingInfo> ratingInfos = db.getRatings(phoneId);
-		Rating rating = ratingInfos.stream().max(Ratings::compare).map(i -> i.getRating()).orElse(Rating.B_MISSED);
-		if (rating == Rating.A_LEGITIMATE && votes > 0) {
-			rating = Rating.B_MISSED;
+		
+		Rating topRating = Rating.B_MISSED;
+		int maxVotes = 0;
+		Map<Rating, Integer> ratings = new HashMap<>();
+		for (RatingInfo ratingInfo : ratingInfos) {
+			Rating currentRating = ratingInfo.getRating();
+			int ratingVotes = ratingInfo.getVotes();
+			
+			ratings.put(currentRating, ratingVotes);
+			
+			if (currentRating != Rating.B_MISSED && ratingVotes > maxVotes) {
+				topRating = currentRating;
+			}
 		}
-		Map<Rating, Integer> ratings = ratingInfos.stream().collect(Collectors.toMap(i -> i.getRating(), i -> i.getVotes()));
 		
 		int ratingVotes = ratingInfos.stream().mapToInt(i -> Ratings.getVotes(i.getRating()) * i.getVotes()).reduce(0, (a, b) -> a + b);
 		int unknownVotes = votes - ratingVotes;
@@ -169,7 +179,7 @@ public class SearchServlet extends HttpServlet {
 		
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
-		req.setAttribute("rating", rating);
+		req.setAttribute("rating", topRating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
 		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
@@ -178,18 +188,29 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		StringBuilder keywords = new StringBuilder();
-		keywords.append("Anrufe, ");
-		keywords.append(number.getShortcut());
+		keywords.append("Anrufe, Bewertung, ");
+		if (number.getShortcut() != null) {
+			keywords.append(", ");
+			keywords.append(number.getShortcut());
+		}
 		keywords.append(", ");
 		keywords.append(number.getZeroZero());
+
 		keywords.append(", ");
 		keywords.append(number.getPlus());
+		
+		if (topRating != Rating.B_MISSED) {
+			keywords.append(", ");
+			keywords.append(Ratings.getLabel(topRating));
+		}
+		
+		keywords.append(", ");
+		keywords.append(status);
+
 		if (number.getCity() != null) {
 			keywords.append(", ");
 			keywords.append(number.getCity());
 		}
-		keywords.append(", ");
-		keywords.append(status);
 		
 		req.setAttribute("keywords", keywords.toString());
 		

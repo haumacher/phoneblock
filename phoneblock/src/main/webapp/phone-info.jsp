@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.api.CommentVoteServlet"%>
 <%@page import="de.haumacher.phoneblock.app.ExternalLinkServlet"%>
 <%@page import="de.haumacher.phoneblock.db.model.UserComment"%>
@@ -9,7 +10,6 @@
 <%@page import="java.util.Map"%>
 <%@page import="de.haumacher.phoneblock.db.model.RatingInfo"%>
 <%@page import="de.haumacher.phoneblock.db.Ratings"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.db.model.Rating"%>
 <%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>
 <%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
@@ -25,7 +25,6 @@
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
-
 <%
 	String userAgent = request.getHeader("User-Agent");
 	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
@@ -43,7 +42,6 @@
 	
 	List<UserComment> comments = (List<UserComment>) request.getAttribute("comments");
 %>
-
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
 
@@ -83,7 +81,7 @@
 
 <section class="section">
 <div class="content">
-	<h1>☎ <%= info.getPhone()%></h1>
+	<h1>Bewertung von ☎ <%= info.getPhone()%></h1>
 
 <%
 	if (info.getVotes() == 0) {
