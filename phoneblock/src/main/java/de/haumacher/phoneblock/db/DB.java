@@ -53,6 +53,7 @@ import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -324,32 +325,14 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			if (comment != null && !comment.isBlank()) {
-				reports.addComment(UUID.randomUUID().toString(), phone, rating, comment, null, now);
-			}
-
-			if (rating == Rating.B_MISSED) {
-				final int currentVotes = nonNull(reports.getVotes(phone));
-				if (currentVotes > 0) {
-					// The number was already reported, a missed call makes the probability for spam higher.
-					updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), now);
-				} else {
-					updateRequired = false;
-				}
-			} else {
-				updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), now);
-
-				Rating oldRating = reports.getRating(phone);
-				
-				// Record rating.
-				int rows = reports.incRating(phone, rating, now);
-				if (rows == 0) {
-					reports.addRating(phone, rating, now);
-				}
-				
-				Rating newRating = reports.getRating(phone);
-				updateRequired = updateRequired || oldRating != newRating;
-			}
+			UserComment userComment = UserComment.create()
+				.setId(UUID.randomUUID().toString())
+				.setPhone(phone)
+				.setRating(rating)
+				.setComment(comment)
+				.setCreated(now);
+			
+			updateRequired = addRating(reports, userComment);
 			
 			session.commit();
 		}
@@ -357,6 +340,39 @@ public class DB {
 		if (updateRequired) {
 			publishUpdate(phone);
 		}
+	}
+
+	/** 
+	 * Adds a rating for a phone number without DB commit.
+	 * 
+	 * @return Whether an index update is required.
+	 */
+	public boolean addRating(SpamReports reports, UserComment comment) {
+		boolean updateRequired;
+		
+		String phone = comment.getPhone();
+		Rating rating = comment.getRating();
+		String commentText = comment.getComment();
+		long created = comment.getCreated();
+		if (commentText != null && !commentText.isBlank()) {
+			reports.addComment(comment.getId(), phone, rating, commentText, comment.getService(), created);
+			updateRequired = true;
+		}
+
+		updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), created);
+		if (rating != Rating.B_MISSED) {
+			Rating oldRating = reports.getRating(phone);
+			
+			// Record rating.
+			int rows = reports.incRating(phone, rating, created);
+			if (rows == 0) {
+				reports.addRating(phone, rating, created);
+			}
+			
+			Rating newRating = reports.getRating(phone);
+			updateRequired = updateRequired || oldRating != newRating;
+		}
+		return updateRequired;
 	}
 
 	/** 

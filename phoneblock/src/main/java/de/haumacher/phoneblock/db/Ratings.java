@@ -15,13 +15,13 @@ public class Ratings {
 	 */
 	public static int getVotes(de.haumacher.phoneblock.db.model.Rating rating) {
 		switch (rating) {
-			case A_LEGITIMATE: return -2; 
+			case A_LEGITIMATE: return -10;
 			case B_MISSED: return 2; 
 			case C_PING: return 2; 
 			case D_POLL: return 2; 
 			case E_ADVERTISING: return 2; 
 			case F_GAMBLE: return 2; 
-			case G_FRAUD: return 4;
+			case G_FRAUD: return 2;
 		}
 		throw new IllegalArgumentException("No such rating: " + rating);
 	}

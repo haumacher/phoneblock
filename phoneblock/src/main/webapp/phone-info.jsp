@@ -33,9 +33,6 @@
 	Rating rating = (Rating) request.getAttribute("rating");
 	Map<Rating, Integer> ratings = (Map<Rating, Integer>) request.getAttribute("ratings");
 	List<? extends SearchInfo> searches = (List<? extends SearchInfo>) request.getAttribute("searches");
-	if (android) {
-		ratings.remove(Rating.B_MISSED);
-	}
 	int complaints = (info.getVotes() + 1) / 2;
 	
 	boolean thanks = request.getAttribute("thanks") != null;
@@ -163,7 +160,7 @@
         <p class="commentHeader">
 		  <strong>☎ <%= info.getPhone()%></strong>
           <small>
-          <% if (comment.getService() != null) { %>
+          <% if (comment.getService() != null && !comment.getService().isEmpty()) { %>
           <a target="_blank" href="<%= request.getContextPath()%><%= ExternalLinkServlet.LINK_PREFIX%><%= comment.getService()%>/<%=  comment.getPhone()%>"><%= comment.getService()%></a>
 		  <% } else { %>
 		  <span>PhoneBlock</span>
@@ -222,7 +219,7 @@
 	</p>
 
 	<p>
-	<form action="<%=request.getContextPath()%>/rating" method="post">
+	<form action="<%=request.getContextPath()%>/rating" method="post" enctype="application/x-www-form-urlencoded" accept-charset="utf-8" spellcheck="true">
 		<input type="hidden" name="phone" value="<%= info.getPhone() %>"/>
 		
 		<div class="buttons">
@@ -239,7 +236,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-circle-question"></i>
 			    </span>
-		  		<span>Anruf verpasst</span>
+		  		<span>Sonstiges</span>
 	  		</label>
 	  		
 		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.C_PING)%>">
@@ -280,7 +277,7 @@
 		</div>
 
 		<p>			
-		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht"></textarea>
+		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"></textarea>
 		</p>
 		
 		<div class="buttons">
@@ -298,7 +295,7 @@
 <div class="columns">
 	<div class="column is-half">
 <% if (!ratings.isEmpty()) { %>
-	<canvas id="ratings" width="400" height="100" aria-label="Anzahl Bewertungen" role="img"></canvas>
+	<canvas id="ratings" width="400" height="200" aria-label="Anzahl Bewertungen" role="img"></canvas>
 	<script type="text/javascript">
 	new Chart(document.getElementById('ratings').getContext('2d'), {
 	    type: 'bar',
@@ -308,7 +305,7 @@
 	        	{
 		        	boolean first = true;
 		        	for (Rating r : Rating.values()) {
-		        		if (android && ratings.getOrDefault(r, Integer.valueOf(0)) == 0) {
+		        		if (r == Rating.B_MISSED) {
 							continue;
 		        		}
 		        		if (first) {
@@ -330,7 +327,7 @@
 		        	{
 			        	boolean first = true;
 			        	for (Rating r : Rating.values()) {
-			        		if (android && ratings.getOrDefault(r, Integer.valueOf(0)) == 0) {
+			        		if (r == Rating.B_MISSED) {
 								continue;
 			        		}
 			        		if (first) {
@@ -348,7 +345,7 @@
 		        	{
 			        	boolean first = true;
 			        	for (Rating r : Rating.values()) {
-			        		if (android && ratings.getOrDefault(r, Integer.valueOf(0)) == 0) {
+			        		if (r == Rating.B_MISSED) {
 								continue;
 			        		}
 			        		if (first) {
@@ -368,7 +365,7 @@
 		        	{
 			        	boolean first = true;
 			        	for (Rating r : Rating.values()) {
-			        		if (android && ratings.getOrDefault(r, Integer.valueOf(0)) == 0) {
+			        		if (r == Rating.B_MISSED) {
 								continue;
 			        		}
 			        		if (first) {
@@ -404,7 +401,7 @@
 
 	<div class="column is-half">
 <% if (!searches.isEmpty()) { %>
-	<canvas id="searches" width="400" height="100" aria-label="Suchanfragen in der letzten Woche" role="img"></canvas>
+	<canvas id="searches" width="400" height="200" aria-label="Suchanfragen in der letzten Woche" role="img"></canvas>
 	<script type="text/javascript">
 	new Chart(document.getElementById('searches').getContext('2d'), {
 		type: 'line',

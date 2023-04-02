@@ -11,7 +11,7 @@ public enum Rating implements de.haumacher.msgbuf.data.ProtocolEnum {
 	A_LEGITIMATE("A_LEGITIMATE"),
 
 	/**
-	 * The user has missed the call and cannot decide, whether it was spam.
+	 * The call is negatively rated without determining the call type. For legacy reasons, this constant is named "missed".
 	 */
 	B_MISSED("B_MISSED"),
 

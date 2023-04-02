@@ -155,16 +155,9 @@ public class SearchServlet extends HttpServlet {
 			
 			ratings.put(currentRating, ratingVotes);
 			
-			if (currentRating != Rating.B_MISSED && ratingVotes > maxVotes) {
+			if (ratingVotes > maxVotes) {
 				topRating = currentRating;
 			}
-		}
-		
-		int ratingVotes = ratingInfos.stream().mapToInt(i -> Ratings.getVotes(i.getRating()) * i.getVotes()).reduce(0, (a, b) -> a + b);
-		int unknownVotes = votes - ratingVotes;
-		if (unknownVotes > 0) {
-			ratings.put(Rating.B_MISSED, 
-				Integer.valueOf(unknownVotes / Ratings.getVotes(Rating.B_MISSED) + ratings.getOrDefault(Rating.B_MISSED, Integer.valueOf(0)).intValue()));
 		}
 		
 		String ratingAttribute = RatingServlet.ratingAttribute(phoneId);
@@ -184,7 +177,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("searches", searches);
 		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
 		if (votes > 0) {
-			req.setAttribute("description", votes + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
+			req.setAttribute("description", (votes + 1) / 2 + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		}
 		
 		StringBuilder keywords = new StringBuilder();
