@@ -30,6 +30,8 @@ public class RatingServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("utf-8");
+        
 		String phoneText = req.getParameter("phone");
 		
 		String phoneId = NumberAnalyzer.toId(phoneText);
@@ -43,6 +45,9 @@ public class RatingServlet extends HttpServlet {
 		String comment = req.getParameter("comment");
 		if (comment != null) {
 			comment = comment.trim();
+			if (comment.isEmpty()) {
+				comment = null;
+			}
 		}
 		
 		HttpSession session = req.getSession();
