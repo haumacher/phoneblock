@@ -34,7 +34,6 @@ import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -84,6 +83,7 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 		de.haumacher.phoneblock.meta.plugins.MetaWemgehoert.class,
 		de.haumacher.phoneblock.meta.plugins.MetaWerruft.class,
 		de.haumacher.phoneblock.meta.plugins.MetaWerruftAn.class,
+		de.haumacher.phoneblock.meta.plugins.MetaRueckwaertssuche.class,
 	};
 
 	private ScheduledFuture<?> _task;
@@ -257,27 +257,21 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 				doSearch = false;
 			}
 			
-			int commentCnt = 0;
+			boolean updatedRequired = false;
 			if (doSearch) {
 				LOG.info("Performing meta search for: " + phoneId);
 
 				Map<String, UserComment> indexedComments = comments.stream().collect(Collectors.toMap(c -> c.getComment(), c -> c));
 
+				int commentCnt = 0;
 				List<UserComment> newComments = search(phoneId);
 				for (UserComment comment : newComments) {
 					if (!indexedComments.containsKey(comment.getComment())) {
 						comment.setId(UUID.randomUUID().toString());
-						mapper.addComment(comment.getId(), comment.getPhone(), comment.getRating(), comment.getComment(), comment.getService(), comment.getCreated());
 						comments.add(comment);
 						
+						updatedRequired |= db.addRating(mapper, comment);
 						commentCnt++;
-						
-						if (comment.getRating() == Rating.A_LEGITIMATE) {
-							votes -= 5;
-						} else {
-							votes++;
-						}
-						lastVote = Math.max(lastVote, comment.getCreated());
 						
 						commit = true;
 					}
@@ -287,9 +281,8 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 				LOG.info("Skipping search, still up-to-date: " + phoneId);
 			}
 			
-			boolean ratingUpdated = false;
 			if (votes != 0) {
-				ratingUpdated = db.processVotes(mapper, phoneId, votes, lastVote);
+				updatedRequired |= db.processVotes(mapper, phoneId, votes, lastVote);
 				commit = true;
 			}
 			
@@ -297,7 +290,7 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 				session.commit();
 			}
 			
-			if (ratingUpdated || commentCnt > 0) {
+			if (updatedRequired) {
 				db.publishUpdate(phoneId);
 			}
 		}
