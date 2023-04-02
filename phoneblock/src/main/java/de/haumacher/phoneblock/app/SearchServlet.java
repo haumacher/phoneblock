@@ -51,21 +51,26 @@ public class SearchServlet extends HttpServlet {
 	
 	private static final Pattern BOT_PATTERN = Pattern.compile(
 			or("Googlebot"
-			, "YandexBot"
-			, "bingbot"
-			, "SemrushBot"
-			, "facebookexternalhit"
-			, "CFNetwork"
-			, "Googlebot-Image"
-			, "BingPreview"
-			, "custo"
 			, "AdsBot-Google"
-			, "libwww-perl"
+			, "AhrefsBot"
+			, "bingbot"
+			, "BingPreview"
+			, "CFNetwork"
 			, "Curl"
-			, "YandexImages"
+			, "custo"
 			, "DuckDuckGo-Favicons-Bot"
+			, "facebookexternalhit"
+			, "Googlebot-Image"
+			, "libwww-perl"
 			, "LinkedInBot"
-			, "python"));
+			, "PetalBot"
+			, "python"
+			, "SemrushBot"
+			, "SeznamBot"
+			, "TelegramBot"
+			, "YandexBot"
+			, "YandexImages"
+			));
 
 	private static final Comparator<? super UserComment> COMMENT_ORDER = new Comparator<>() {
 		@Override
