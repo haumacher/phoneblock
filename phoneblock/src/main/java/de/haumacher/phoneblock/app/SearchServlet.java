@@ -152,12 +152,16 @@ public class SearchServlet extends HttpServlet {
 		for (RatingInfo ratingInfo : ratingInfos) {
 			Rating currentRating = ratingInfo.getRating();
 			int ratingVotes = ratingInfo.getVotes();
-			
 			ratings.put(currentRating, ratingVotes);
 			
-			if (ratingVotes > maxVotes) {
+			if (ratingVotes > maxVotes && currentRating != Rating.A_LEGITIMATE) {
 				topRating = currentRating;
+				maxVotes = ratingVotes;
 			}
+		}
+		
+		if (votes == 0) {
+			topRating = Rating.A_LEGITIMATE;
 		}
 		
 		String ratingAttribute = RatingServlet.ratingAttribute(phoneId);
