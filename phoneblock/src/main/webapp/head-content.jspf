@@ -57,7 +57,6 @@
 
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/github-com-creativebulma-bulma-collapsible/${bulma-collapsible.version}/css/bulma-collapsible.min.css">
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/${font-awesome.version}/css/all.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.css">
 
@@ -73,6 +72,12 @@
 
 .hero.is-primary .navbar-item, .hero.is-primary .navbar-link {
     color: rgba(255,255,255);
+}
+
+/* Reduce spacing around rating images */
+.content figure {
+	margin-left: 0px;
+	margin-right: 0px;
 }
 
 @media screen and (min-width: 1024px) {

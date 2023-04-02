@@ -189,14 +189,15 @@
       <nav class="level is-mobile">
         <div class="level-left">
           <a class="level-item thumbs-up" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" onclick="return commentVote('<%=votePath %>', '<%=comment.getId()%>', 1, '<%=upId%>', '<%=downId%>');">
-            <span class="icon is-small">
-              <i class="fa-solid fa-thumbs-up"></i>&nbsp;<span id="<%=upId%>"><%=up%></span>
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-up"></i>
             </span>
+            &nbsp;<span id="<%=upId%>"><%=up%></span>
           </a>
           <a class="level-item thumbs-down" aria-label="Unsinn" title="Unsinn!" href="#" onclick="return commentVote('<%=votePath %>', '<%=comment.getId()%>', -1, '<%=upId%>', '<%=downId%>');">
-            <span class="icon is-small">
-              <i class="fa-solid fa-thumbs-down"></i>&nbsp;<span id="<%=downId%>"><%=down%></span>
-            </span>
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-down"></i>
+            </span>&nbsp;<span id="<%=downId%>"><%=down%></span>
           </a>
         </div>
       </nav>
