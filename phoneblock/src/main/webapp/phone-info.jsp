@@ -33,11 +33,11 @@
 	Rating rating = (Rating) request.getAttribute("rating");
 	Map<Rating, Integer> ratings = (Map<Rating, Integer>) request.getAttribute("ratings");
 	List<? extends SearchInfo> searches = (List<? extends SearchInfo>) request.getAttribute("searches");
-	int complaints = (info.getVotes() + 1) / 2;
 	
 	boolean thanks = request.getAttribute("thanks") != null;
 	
 	List<UserComment> comments = (List<UserComment>) request.getAttribute("comments");
+	String summary = (String) request.getAttribute("summary");
 %>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
@@ -86,16 +86,8 @@
 	<p>
 		<span class="tag is-info is-success">Keine Beschwerden</span>
 	</p>
-
-	<p>
-		Die Telefonnummer ist nicht in der <a href="<%=request.getContextPath() %>/">PhoneBlock</a>-Datenbank vorhanden. 
-		Es gibt bisher keine Beschwerden über unerwünschte Anrufe von ☎ <code><%= info.getPhone() %></code>.
-	</p>
-
 <%
 	} else {
-%>		
-<% 
 		if (info.getVotes() < DB.MIN_VOTES || info.isArchived()) {
 %>
 	<p>
@@ -104,12 +96,6 @@
 		<span class="tag is-info <%= Ratings.getCssClass(rating)%>"><%= Ratings.getLabel(rating)%></span>
 <% } %>		
 	</p>
-
-	<p>
-		Es gibt bereits <% if (complaints == 1) { %>eine Beschwerde<%} else {%><%= complaints %> Beschwerden<%}%> über unerwünschte Anrufe von 
-		☎ <code><%= info.getPhone() %></code>. Die Nummer wird aber noch nicht blockiert. 
-	</p>
-
 <%
 		} else {
 %>			
@@ -119,16 +105,16 @@
 		<span class="tag is-info <%= Ratings.getCssClass(rating)%>"><%= Ratings.getLabel(rating)%></span>
 <% } %>		
 	</p>
-
-	<p>
-		Die Telefonnummer ☎ <code><%= info.getPhone() %></code> is eine mehrfach berichtete Quelle von <a href="<%=request.getContextPath() %>/status.jsp">unerwünschten 
-		Telefonanrufen</a>.
-	</p>
-
 <%
 		}
 	}
 %>
+
+	<p><%= summary %></p>
+	
+	<p>
+		Unerwünschte Telefonanrufe kannst Du <em>automatisch blockieren</em>, wenn Du <a href="<%=request.getContextPath() %>/setup.jsp">PhoneBlock installierst</a>. 
+	</p>
 
 <%
 	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
@@ -482,9 +468,9 @@
 		<%}%>
 
 <%
-		if (complaints > 0) {
+		if (info.getVotes() > 0) {
 %>	
-		<li>Anzahl Beschwerden: <%= complaints %></li>
+		<li>Stimmen für Sperrung: <%= info.getVotes() %></li>
 		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
 
 <%

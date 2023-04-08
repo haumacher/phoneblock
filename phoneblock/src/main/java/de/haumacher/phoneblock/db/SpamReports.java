@@ -205,6 +205,38 @@ public interface SpamReports {
 	@Insert("insert into META_UPDATE (PHONE, LASTUPDATE) values (#{phone}, #{lastUpdate})")
 	void insertLastMetaSearch(String phone, long lastUpdate);
 	
+	@Select("SELECT PHONE FROM SUMMARY_REQUEST sr ORDER BY sr.PRIORITY LIMIT 1")
+	String topSummaryRequest();
+	
+	@Delete("DELETE FROM SUMMARY_REQUEST WHERE PHONE = #{phone}")
+	int dropSummaryRequest(String phone);
+	
+	@Select("SELECT c.COMMENT FROM COMMENTS c WHERE c.PHONE = '03092702890' ORDER BY c.UP - c.DOWN DESC, c.CREATED DESC")
+	List<String> getCommentTextsOrdered(String phone);
+	
+	@Insert("INSERT INTO SUMMARY_REQUEST (PHONE) \n"
+			+ "SELECT PHONE FROM (\n"
+			+ "	SELECT c.PHONE PHONE, COUNT(1) cnt FROM COMMENTS c\n"
+			+ "	LEFT OUTER JOIN SUMMARY s \n"
+			+ "	ON s.PHONE = c.PHONE \n"
+			+ "	LEFT OUTER JOIN SUMMARY_REQUEST sr \n"
+			+ "	ON sr.PHONE = c.PHONE\n"
+			+ "	WHERE s.PHONE IS NULL AND sr.PHONE IS NULL \n"
+			+ "	GROUP BY c.PHONE\n"
+			+ ")\n"
+			+ "WHERE cnt > 20\n"
+			+ "ORDER BY cnt DESC")
+	int scheduleSummaryRequests();
+	
+	@Insert("select COMMENT from SUMMARY s where s.PHONE = #{phone}")
+	String getSummary(String phone);
+	
+	@Insert("INSERT INTO SUMMARY (PHONE, COMMENT, CREATED) VALUES (#{phone}, #{comment}, #{created})")
+	void insertSummary(String phone, String comment, Long created);
+	
+	@Update("UPDATE SUMMARY SET COMMENT = #{comment}, CREATED = #{created} WHERE PHONE = #{phone}")
+	int updateSummary(String phone, String comment, Long created);
+	
 	@Insert("insert into SEARCHES (PHONE, LASTUPDATE) values (#{phone}, #{now})")
 	void addSearchEntry(String phone, long now);
 	

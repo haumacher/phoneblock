@@ -152,15 +152,22 @@ public class DBService implements ServletContextListener {
 		return INSTANCE;
 	}
 
+	/** 
+	 * Access to the database.
+	 */
+	public DB db() {
+		return INSTANCE;
+	}
+
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
 		LOG.info("Stopping DB service.");
 
         try {
         	try {
-        		if (INSTANCE  != null) {
+        		if (db()  != null) {
         			LOG.info("Stopping database.");
-        			INSTANCE.shutdown();
+        			db().shutdown();
         			INSTANCE = null;
         		}
         	} finally {

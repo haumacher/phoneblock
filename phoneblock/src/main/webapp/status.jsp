@@ -31,10 +31,9 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 	<h1>Aktuelle Berichte über unerwünschte Anrufer</h1>
 	
 	<p>
-	<a href="<%= request.getContextPath()%>/">PhoneBlock</a> weist Anrufe von Nummern 
-	bekannter Werbeanrufer und Telefonbetrüger automatisch ab. Täglich kommen mehrere Nummern dazu. 
-	<a href="<%= request.getContextPath()%>/setup.jsp">Installiere PhoneBlock</a> 
-	und mach dem Telefonterror ein Ende.  
+		Unerwünschte Telefonanrufe kannst Du <em>automatisch blockieren</em>, wenn Du <a href="setup.jsp">PhoneBlock installierst</a>.
+		Bei solchen Anrufen bleibt Dein Telefon dann stumm. Täglich kommen mehrere Nummern dazu. Poste Links auf die <a href="<%= request.getContextPath()%>/">PhoneBlock-Seite</a>, 
+		damit möglichst viele mitmachen und so der Telefonterror endet.  
 	</p>
 	
 <%

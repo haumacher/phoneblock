@@ -48,10 +48,10 @@ final class IndexUpdateMultiplexer implements IndexUpdateService {
 	}
 
 	@Override
-	public void publishUpdate(String path) {
+	public void publishPathUpdate(String path) {
 		for (IndexUpdateService service : _services) {
 			try {
-				service.publishUpdate(path);
+				service.publishPathUpdate(path);
 			} catch (Exception ex) {
 				LOG.error("Sending update '" + path + "' failed: " + service, ex);
 			}

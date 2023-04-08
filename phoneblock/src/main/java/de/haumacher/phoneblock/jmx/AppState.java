@@ -57,7 +57,7 @@ public class AppState implements AppStateMBean {
 	
 	@Override
 	public void triggerIndexUpdate(String path) {
-		_updater.publishUpdate(path);
+		_updater.publishPathUpdate(path);
 	}
 
 }

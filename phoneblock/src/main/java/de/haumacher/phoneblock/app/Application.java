@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.DBService;
@@ -48,10 +49,11 @@ public class Application implements ServletContextListener {
 				new GoogleUpdateService())),
 			db = new DBService(indexer, scheduler),
 			fetcher = new FetchService(),
-			metaSearch = new MetaSearchService(scheduler, fetcher),
+			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
 			new MailServiceStarter(),
 			new ManagementService(indexer),
+			new ChatGPTService(db, scheduler, indexer),
 		};
 	}
 

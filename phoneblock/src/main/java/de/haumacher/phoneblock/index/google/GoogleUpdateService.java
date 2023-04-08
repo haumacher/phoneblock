@@ -88,7 +88,7 @@ public class GoogleUpdateService implements IndexUpdateService {
 	}
 	
 	@Override
-	public void publishUpdate(String path) {
+	public void publishPathUpdate(String path) {
 		if (!_active) {
 			return;
 		}

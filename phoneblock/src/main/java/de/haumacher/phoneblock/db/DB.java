@@ -51,7 +51,6 @@ import de.haumacher.phoneblock.db.model.BlockListEntry;
 import de.haumacher.phoneblock.db.model.Blocklist;
 import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -288,7 +287,7 @@ public class DB {
 	public boolean processVotesAndPublish(SpamReports reports, String phone, int votes, long time) {
 		boolean updateRequired = processVotes(reports, phone, votes, time);
 		if (updateRequired) {
-			publishUpdate(phone);
+			_indexer.publishUpdate(phone);
 		}
 		return updateRequired;
 	}
@@ -338,7 +337,7 @@ public class DB {
 		}
 		
 		if (updateRequired) {
-			publishUpdate(phone);
+			_indexer.publishUpdate(phone);
 		}
 	}
 
@@ -386,17 +385,6 @@ public class DB {
 		}
 	}
 
-	/** 
-	 * Retrieve all {@link Rating}s for the given phone number with corresponding vote count.
-	 */
-	public List<? extends RatingInfo> getRatings(String phone) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			
-			return reports.getRatings(phone);
-		}
-	}
-	
 	private int classify(int newVotes) {
 		if (newVotes <= 0) {
 			return 0;
@@ -407,13 +395,6 @@ public class DB {
 		else {
 			return 2;
 		}
-	}
-
-	/**
-	 * Sends the given phone number to the indexer service.
-	 */
-	public void publishUpdate(String phone) {
-		_indexer.publishUpdate("/nums/" + phone);
 	}
 
 	/**
@@ -628,20 +609,17 @@ public class DB {
 	/**
 	 * Info about the given phone number, or <code>null</code>, if the given number is not a known source of spam.
 	 */
-	public SpamReport getPhoneInfo(String phone) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			SpamReport result = reports.getPhoneInfo(phone);
+	public SpamReport getPhoneInfo(SpamReports reports, String phone) {
+		SpamReport result = reports.getPhoneInfo(phone);
+		if (result == null) {
+			result = reports.getPhoneInfoArchived(phone);
 			if (result == null) {
-				result = reports.getPhoneInfoArchived(phone);
-				if (result == null) {
-					result = new SpamReport(phone, 0, 0, 0);
-				} else {
-					result.setArchived(true);
-				}
+				result = new SpamReport(phone, 0, 0, 0);
+			} else {
+				result.setArchived(true);
 			}
-			return result;
 		}
+		return result;
 	}
 	
 	public PhoneInfo getPhoneApiInfo(String phone) {
@@ -670,12 +648,19 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			int rows = reports.incSearchCount(phone, now);
-			if (rows == 0) {
-				reports.addSearchEntry(phone, now);
-			}
+			addSearchHit(reports, phone, now);
 			
 			session.commit();
+		}
+	}
+
+	/**
+	 * Records a search hit for the given phone number.
+	 */
+	public void addSearchHit(SpamReports reports, String phone, long now) {
+		int rows = reports.incSearchCount(phone, now);
+		if (rows == 0) {
+			reports.addSearchEntry(phone, now);
 		}
 	}
 	
@@ -1059,35 +1044,39 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			int lastRevision = nonNull(reports.getLastRevision());
-			int startRevision = Math.max(1,  lastRevision - 6);
-			
-			List<DBSearchInfo> dbHistory = reports.getSearchHistory(startRevision, phone);
-			SearchInfo today = reports.getSearchesToday(phone);
-			if (dbHistory.isEmpty() && today == null) {
-				return Collections.emptyList();
-			}
+			return getSearches(reports, phone);
+		}
+	}
 
-			List<SearchInfo> result = new ArrayList<>();
-			
-			int revision = startRevision;
-			for (DBSearchInfo info : dbHistory) {
-				while (info.getRevision() > revision) {
-					result.add(SearchInfo.create().setRevision(revision++));
-				}
-				result.add(info);
-				revision++;
-			}
-			while (lastRevision > revision) {
+	public List<? extends SearchInfo> getSearches(SpamReports reports, String phone) {
+		int lastRevision = nonNull(reports.getLastRevision());
+		int startRevision = Math.max(1,  lastRevision - 6);
+		
+		List<DBSearchInfo> dbHistory = reports.getSearchHistory(startRevision, phone);
+		SearchInfo today = reports.getSearchesToday(phone);
+		if (dbHistory.isEmpty() && today == null) {
+			return Collections.emptyList();
+		}
+
+		List<SearchInfo> result = new ArrayList<>();
+		
+		int revision = startRevision;
+		for (DBSearchInfo info : dbHistory) {
+			while (info.getRevision() > revision) {
 				result.add(SearchInfo.create().setRevision(revision++));
 			}
-			if (today == null) {
-				today = SearchInfo.create();
-			}
-			today.setRevision(lastRevision + 1);
-			result.add(today);
-			return result;
+			result.add(info);
+			revision++;
 		}
+		while (lastRevision > revision) {
+			result.add(SearchInfo.create().setRevision(revision++));
+		}
+		if (today == null) {
+			today = SearchInfo.create();
+		}
+		today.setRevision(lastRevision + 1);
+		result.add(today);
+		return result;
 	}
 	
 }

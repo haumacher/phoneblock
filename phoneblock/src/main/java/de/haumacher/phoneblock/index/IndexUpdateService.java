@@ -18,7 +18,7 @@ public interface IndexUpdateService extends ServletContextListener {
 	 */
 	IndexUpdateService NONE = new IndexUpdateService() {
 		@Override
-		public void publishUpdate(String path) {
+		public void publishPathUpdate(String path) {
 			// Ignore.
 		}
 
@@ -36,8 +36,15 @@ public interface IndexUpdateService extends ServletContextListener {
 	/** 
 	 * Adds the given application path to the index.
 	 */
-	void publishUpdate(String path);
+	void publishPathUpdate(String path);
 	
+	/**
+	 * Sends the given phone number to the indexer service.
+	 */
+	default void publishUpdate(String phone) {
+		publishPathUpdate("/nums/" + phone);
+	}
+
 	/**
 	 * Process index updates asynchronously.
 	 */
@@ -54,8 +61,8 @@ public interface IndexUpdateService extends ServletContextListener {
 			}
 			
 			@Override
-			public void publishUpdate(String path) {
-				scheduler.executor().submit(() -> service.publishUpdate(path));
+			public void publishPathUpdate(String path) {
+				scheduler.executor().submit(() -> service.publishPathUpdate(path));
 			}
 		};
 	}

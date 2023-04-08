@@ -19,12 +19,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.ibatis.session.SqlSession;
+
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReport;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
@@ -137,19 +140,33 @@ public class SearchServlet extends HttpServlet {
 		}
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
+		SpamReport info;
+		List<? extends SearchInfo> searches;
+		List<? extends RatingInfo> ratingInfos;
+		String summary;
+		
 		DB db = DBService.getInstance();
-		if (!isBot(req) && req.getParameter("link") == null) {
-			db.addSearchHit(phoneId);
+		try (SqlSession session = db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			boolean commit = false;
+			
+			long now = System.currentTimeMillis();
+			
+			if (!isBot(req) && req.getParameter("link") == null) {
+				db.addSearchHit(reports, phoneId, now);
+				commit = true;
+			}
+			
+			
+			info = db.getPhoneInfo(reports, phone);
+			searches = db.getSearches(reports, phoneId);
+			ratingInfos = reports.getRatings(phoneId);
+			summary = reports.getSummary(phoneId);
+			
+			if (commit) {
+				session.commit();
+			}
 		}
-		
-		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
-		comments.sort(COMMENT_ORDER);
-		req.setAttribute("comments", comments);
-		
-		SpamReport info = db.getPhoneInfo(phoneId);
-		List<? extends SearchInfo> searches = db.getSearches(phoneId);
-		int votes = info.getVotes();
-		List<? extends RatingInfo> ratingInfos = db.getRatings(phoneId);
 		
 		Rating topRating = Rating.B_MISSED;
 		int maxVotes = 0;
@@ -165,6 +182,7 @@ public class SearchServlet extends HttpServlet {
 			}
 		}
 		
+		int votes = info.getVotes();
 		if (votes == 0) {
 			topRating = Rating.A_LEGITIMATE;
 		}
@@ -176,6 +194,14 @@ public class SearchServlet extends HttpServlet {
 		
 		String status = status(votes);
 		
+		if (summary == null || summary.isBlank()) {
+			summary = defaultSummary(req, info, votes);
+		}
+		
+		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
+		comments.sort(COMMENT_ORDER);
+		req.setAttribute("comments", comments);
+
 		// The canonical path of this page.
 		req.setAttribute("path", req.getServletPath() + '/' + phoneId);
 		
@@ -186,7 +212,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("searches", searches);
 		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
 		if (votes > 0) {
-			req.setAttribute("description", (votes + 1) / 2 + " Beschwerden über unerwünschte Anrufe von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
+			req.setAttribute("description", votes + " Stimmen sprechen für eine Sperrung von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		}
 		
 		StringBuilder keywords = new StringBuilder();
@@ -217,6 +243,20 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("keywords", keywords.toString());
 		
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
+	}
+
+	private String defaultSummary(HttpServletRequest req, SpamReport info, int votes) {
+		if (info.getVotes() == 0) {
+			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
+					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
+					info.getPhone() + "</code> sprechen.";
+		} else if (info.getVotes() < DB.MIN_VOTES || info.isArchived()) {
+			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
+		} else {
+			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> is eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
+					+ "/status.jsp\">unerwünschten Telefonanrufen</a>. " + votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
+		}
 	}
 
 	/** 

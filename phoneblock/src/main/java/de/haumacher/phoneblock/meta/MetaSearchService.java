@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.model.UserComment;
+import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
@@ -38,6 +39,8 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 
 	private static MetaSearchService _instance;
 	
+	private IndexUpdateService _indexer;
+
 	private SchedulerService _scheduler;
 	private List<AbstractMetaSearch> _plugins;
 	private FetchService _fetcher;
@@ -48,11 +51,11 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 
 	/** 
 	 * Creates a {@link MetaSearchService}.
-	 * @param fetcher 
 	 */
-	public MetaSearchService(SchedulerService scheduler, FetchService fetcher) {
+	public MetaSearchService(SchedulerService scheduler, FetchService fetcher, IndexUpdateService indexer) {
 		_scheduler = scheduler;
 		_fetcher = fetcher;
+		_indexer = indexer;
 	}
 	
 	@Override
@@ -185,7 +188,7 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	 * Creates a search for the given phone number.
 	 */
 	private SearchOperation createSearch(String phoneId) {
-		return new SearchOperation(_scheduler, _plugins, phoneId);
+		return new SearchOperation(_scheduler, _indexer, _plugins, phoneId);
 	}
 
 	/** 
@@ -200,7 +203,7 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	 */
 	public static void main(String[] args) {
 		SchedulerService scheduler = new SchedulerService();
-		MetaSearchService searchService = new MetaSearchService(scheduler, new FetchService());
+		MetaSearchService searchService = new MetaSearchService(scheduler, new FetchService(), IndexUpdateService.NONE);
 		scheduler.contextInitialized(null);
 		searchService.contextInitialized(null);
 		List<UserComment> comments = searchService.createSearch(args[0]).search().getComments();

@@ -25,6 +25,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.model.UserComment;
+import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
@@ -42,6 +43,8 @@ public class SearchOperation {
 	private List<AbstractMetaSearch> _plugins;
 
 	private SchedulerService _scheduler;
+	
+	private IndexUpdateService _indexer;
 
 	private List<UserComment> _comments;
 
@@ -49,9 +52,11 @@ public class SearchOperation {
 
 	/** 
 	 * Creates a {@link SearchOperation}.
+	 * @param indexer 
 	 */
-	public SearchOperation(SchedulerService scheduler, List<AbstractMetaSearch> plugins, String phoneId) {
+	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, String phoneId) {
 		_scheduler = scheduler;
+		_indexer = indexer;
 		_plugins = plugins;
 		_phoneId = phoneId;
 	}
@@ -103,7 +108,7 @@ public class SearchOperation {
 			}
 			
 			if (indexUpdated) {
-				db.publishUpdate(_phoneId);
+				_indexer.publishUpdate(_phoneId);
 			}
 		}
 		return this;
