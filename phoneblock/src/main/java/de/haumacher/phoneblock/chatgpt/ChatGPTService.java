@@ -154,7 +154,7 @@ public class ChatGPTService implements ServletContextListener {
 			session.commit();
 		}
 			
-		List<ChatCompletionChoice> answers = createSummary(comments);
+		List<ChatCompletionChoice> answers = createSummary(phone, comments);
 		if (answers.isEmpty()) {
 			LOG.warn("No summary received for: " + phone);
 		} else {
@@ -166,8 +166,8 @@ public class ChatGPTService implements ServletContextListener {
 		reschedule();
 	}
 
-	private List<ChatCompletionChoice> createSummary(List<String> comments) {
-		StringBuilder question = createQuestion();
+	private List<ChatCompletionChoice> createSummary(String phone, List<String> comments) {
+		StringBuilder question = createQuestion(phone);
 		for (String comment : comments) {
 			comment = comment.trim() + "\n";
 			
@@ -185,10 +185,10 @@ public class ChatGPTService implements ServletContextListener {
 		return answers;
 	}
 
-	private static StringBuilder createQuestion() {
+	private static StringBuilder createQuestion(String phone) {
 		StringBuilder question = new StringBuilder();
 		
-		question.append("Hi ChatGPT, Ich habe eine Liste von Kommentaren zu einer Telefonnummer. Könntest Du eine kurze Zusammenfassung von höchstens 40 Wörtern machen, die sagt, was das für eine Nummer ist und ob man ans Telefon gehen sollte? Die Kommentare lauten:\n");
+		question.append("Ich habe eine Liste von Kommentaren zur Telefonnummer " + phone + ". Könntest Du eine Zusammenfassung von höchstens 40 Wörtern machen, die sagt, was was man von einem Anruf mit der Nummer " + phone + " zu erwarten hat? Die Kommentare lauten:\n");
 		return question;
 	}
 
