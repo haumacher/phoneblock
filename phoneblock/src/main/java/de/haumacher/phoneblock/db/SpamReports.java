@@ -215,16 +215,16 @@ public interface SpamReports {
 	List<String> getCommentTextsOrdered(String phone);
 	
 	@Insert("INSERT INTO SUMMARY_REQUEST (PHONE) \n"
-			+ "SELECT PHONE FROM (\n"
-			+ "	SELECT c.PHONE PHONE, COUNT(1) cnt FROM COMMENTS c\n"
+			+ "SELECT * FROM (\n"
+			+ "	SELECT c.PHONE PHONE, COUNT(1) cnt, MAX(c.CREATED) lastComment, MAX(s.CREATED) lastSummary FROM COMMENTS c\n"
 			+ "	LEFT OUTER JOIN SUMMARY s \n"
 			+ "	ON s.PHONE = c.PHONE \n"
 			+ "	LEFT OUTER JOIN SUMMARY_REQUEST sr \n"
 			+ "	ON sr.PHONE = c.PHONE\n"
-			+ "	WHERE s.PHONE IS NULL AND sr.PHONE IS NULL \n"
+			+ "	WHERE sr.PHONE IS NULL \n"
 			+ "	GROUP BY c.PHONE\n"
 			+ ")\n"
-			+ "WHERE cnt > 20\n"
+			+ "WHERE cnt > 5 AND (lastSummary IS NULL OR lastSummary + 7 * 24 * 60 * 60 * 1000 < lastComment)\n"
 			+ "ORDER BY cnt DESC")
 	int scheduleSummaryRequests();
 	
