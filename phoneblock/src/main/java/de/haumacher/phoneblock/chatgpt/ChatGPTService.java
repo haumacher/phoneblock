@@ -201,7 +201,7 @@ public class ChatGPTService implements ServletContextListener {
 			
 			session.commit();
 	
-			LOG.error("Created summary for: " + phone);
+			LOG.info("Created summary for: " + phone);
 			
 			_indexer.publishUpdate(phone);
 		}
