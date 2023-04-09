@@ -215,7 +215,7 @@ public interface SpamReports {
 	List<String> getCommentTextsOrdered(String phone);
 	
 	@Insert("INSERT INTO SUMMARY_REQUEST (PHONE) \n"
-			+ "SELECT * FROM (\n"
+			+ "SELECT PHONE FROM (\n"
 			+ "	SELECT c.PHONE PHONE, COUNT(1) cnt, MAX(c.CREATED) lastComment, MAX(s.CREATED) lastSummary FROM COMMENTS c\n"
 			+ "	LEFT OUTER JOIN SUMMARY s \n"
 			+ "	ON s.PHONE = c.PHONE \n"
