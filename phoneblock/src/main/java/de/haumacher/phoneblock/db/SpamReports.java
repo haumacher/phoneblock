@@ -228,7 +228,7 @@ public interface SpamReports {
 			+ "ORDER BY cnt DESC")
 	int scheduleSummaryRequests();
 	
-	@Insert("select COMMENT from SUMMARY s where s.PHONE = #{phone}")
+	@Select("select COMMENT from SUMMARY s where s.PHONE = #{phone}")
 	String getSummary(String phone);
 	
 	@Insert("INSERT INTO SUMMARY (PHONE, COMMENT, CREATED) VALUES (#{phone}, #{comment}, #{created})")
