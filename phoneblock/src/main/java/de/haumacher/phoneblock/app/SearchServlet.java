@@ -139,11 +139,15 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		String phoneId = NumberAnalyzer.getPhoneId(number);
+
+		// Note: Search for comments first, since new comments may change the state of the number.
+		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
+		comments.sort(COMMENT_ORDER);
 		
 		SpamReport info;
 		List<? extends SearchInfo> searches;
 		List<? extends RatingInfo> ratingInfos;
-		String summary;
+		String simpleSummary;
 		List<String> relatedNumbers;
 		
 		DB db = DBService.getInstance();
@@ -162,7 +166,7 @@ public class SearchServlet extends HttpServlet {
 			info = db.getPhoneInfo(reports, phone);
 			searches = db.getSearches(reports, phoneId);
 			ratingInfos = reports.getRatings(phoneId);
-			summary = reports.getSummary(phoneId);
+			simpleSummary = reports.getSummary(phoneId);
 			
 			relatedNumbers = reports.getRelatedNumbers(phoneId);
 			
@@ -197,12 +201,15 @@ public class SearchServlet extends HttpServlet {
 		
 		String status = status(votes);
 		
-		if (summary == null || summary.isBlank()) {
-			summary = defaultSummary(req, info, votes);
+		String defaultSummary = defaultSummary(req, info, votes);
+		
+		String pageSummary;
+		if (simpleSummary == null || simpleSummary.isBlank()) {
+			pageSummary = simpleSummary = defaultSummary;
+		} else {
+			pageSummary = simpleSummary + " " + defaultSummary;
 		}
 		
-		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
-		comments.sort(COMMENT_ORDER);
 		req.setAttribute("comments", comments);
 
 		// The canonical path of this page.
@@ -210,15 +217,13 @@ public class SearchServlet extends HttpServlet {
 		
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
-		req.setAttribute("summary", summary);
+		req.setAttribute("summary", pageSummary);
 		req.setAttribute("rating", topRating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
 		req.setAttribute("relatedNumbers", relatedNumbers);
 		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
-		if (votes > 0) {
-			req.setAttribute("description", votes + " Stimmen sprechen für eine Sperrung von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
-		}
+		req.setAttribute("description", simpleSummary + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
