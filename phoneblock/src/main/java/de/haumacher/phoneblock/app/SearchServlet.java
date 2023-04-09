@@ -267,7 +267,7 @@ public class SearchServlet extends HttpServlet {
 			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
 					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
 		} else {
-			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> is eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
+			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> ist eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
 					+ "/status.jsp\">unerwünschten Telefonanrufen</a>. " + votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
 		}
 	}
@@ -280,7 +280,7 @@ public class SearchServlet extends HttpServlet {
 			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
 					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber noch nicht blockiert.";
 		} else {
-			return "Die Telefonnummer ☎ " + info.getPhone() + " is eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
+			return "Die Telefonnummer ☎ " + info.getPhone() + " ist eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
 					votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
 		}
 	}
