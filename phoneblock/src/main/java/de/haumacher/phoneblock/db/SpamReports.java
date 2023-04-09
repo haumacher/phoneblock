@@ -211,7 +211,7 @@ public interface SpamReports {
 	@Delete("DELETE FROM SUMMARY_REQUEST WHERE PHONE = #{phone}")
 	int dropSummaryRequest(String phone);
 	
-	@Select("SELECT c.COMMENT FROM COMMENTS c WHERE c.PHONE = '03092702890' ORDER BY c.UP - c.DOWN DESC, c.CREATED DESC")
+	@Select("SELECT c.COMMENT FROM COMMENTS c WHERE c.PHONE = #{phone} ORDER BY c.UP - c.DOWN DESC, c.CREATED DESC")
 	List<String> getCommentTextsOrdered(String phone);
 	
 	@Insert("INSERT INTO SUMMARY_REQUEST (PHONE) \n"
