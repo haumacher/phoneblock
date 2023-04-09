@@ -39,6 +39,9 @@
 	
 	List<UserComment> comments = (List<UserComment>) request.getAttribute("comments");
 	String summary = (String) request.getAttribute("summary");
+	
+	String prev = (String) request.getAttribute("prev");
+	String next = (String) request.getAttribute("next");
 %>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
@@ -495,10 +498,17 @@
 		} 
 %>
 	</ul>
-
+	
+	<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+	<% if (prev != null) { %>
+		<a class="pagination-previous" href="<%= request.getContextPath()%>/nums/<%= prev%>" onclick="return showNumber('<%= prev%>');">Vorherige Nummer</a>
+	<% } %>
+	<% if (next != null) { %>
+		<a class="pagination-next" href="<%= request.getContextPath()%>/nums/<%= next%>" onclick="return showNumber('<%= next%>');">Nächste Nummer</a>
+	<% } %>
+	</nav>
 </div>
 </section>
-
 
 <section class="section">
 

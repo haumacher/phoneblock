@@ -83,6 +83,18 @@ public interface SpamReports {
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where PHONE = #{phone}")
 	SpamReport getPhoneInfo(String phone);
 	
+	@Select("SELECT * FROM SPAMREPORTS s \n"
+			+ "	WHERE s.PHONE > #{phone}\n"
+			+ "	ORDER BY s.PHONE \n"
+			+ "	LIMIT 1")
+	String getNextPhone(String phone);
+
+	@Select("SELECT * FROM SPAMREPORTS s \n"
+			+ "	WHERE s.PHONE < #{phone}\n"
+			+ "	ORDER BY s.PHONE DESC \n"
+			+ "	LIMIT 1")
+	String getPrevPhone(String phone);
+	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from OLDREPORTS where PHONE = #{phone}")
 	SpamReport getPhoneInfoArchived(String phone);
 	

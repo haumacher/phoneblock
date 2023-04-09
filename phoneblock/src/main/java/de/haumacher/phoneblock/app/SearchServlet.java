@@ -150,6 +150,8 @@ public class SearchServlet extends HttpServlet {
 		String simpleSummary;
 		List<String> relatedNumbers;
 		
+		String prev, next;
+		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -169,6 +171,9 @@ public class SearchServlet extends HttpServlet {
 			simpleSummary = reports.getSummary(phoneId);
 			
 			relatedNumbers = reports.getRelatedNumbers(phoneId);
+			
+			prev = reports.getPrevPhone(phoneId);
+			next = reports.getNextPhone(phoneId);
 			
 			if (commit) {
 				session.commit();
@@ -219,6 +224,8 @@ public class SearchServlet extends HttpServlet {
 		
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
+		req.setAttribute("prev", prev);
+		req.setAttribute("next", next);
 		req.setAttribute("summary", pageSummary);
 		req.setAttribute("rating", topRating);
 		req.setAttribute("ratings", ratings);
