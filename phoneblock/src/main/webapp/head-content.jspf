@@ -1,3 +1,4 @@
+<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 
 <%
@@ -29,16 +30,16 @@
 <meta http-equiv='content-language' content='de-DE'>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="<%=description %>">
+<meta name="description" content="<%= JspUtil.quote(description) %>">
 <% if (keywords != null) { %>
-<meta name="keywords" content="<%=keywords %>">
+<meta name="keywords" content="<%= JspUtil.quote(keywords) %>">
 <% } %>
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:site" content="@bhaumacher" />
 <meta name="twitter:creator" content="@bhaumacher" />
 <meta name="twitter:image" content="<%=request.getContextPath() %>/app-preview.png" />
 
-<meta name="og:title" content="<%=title %>" />
+<meta name="og:title" content="<%= JspUtil.quote(title) %>" />
 <%if ("/".equals(path)) { %>
 <meta name="og:url" content="https://phoneblock.haumacher.de/" />
 <link rel="canonical" href="https://phoneblock.haumacher.de/" />
@@ -46,7 +47,7 @@
 <meta name="og:url" content="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 <link rel="canonical" href="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
 <%} %>
-<meta name="og:description" content="<%=description %>" />
+<meta name="og:description" content="<%= JspUtil.quote(description) %>" />
 <meta name="og:image" content="<%=request.getContextPath() %>/app-preview.png" />
 <meta name="og:type" content="website" />
 <meta name="og:locale" content="de_DE" />
