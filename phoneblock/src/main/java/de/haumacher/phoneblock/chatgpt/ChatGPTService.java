@@ -79,7 +79,7 @@ public class ChatGPTService implements ServletContextListener {
 		
 		LOG.info("Starting ChatGPTService.");
 		
-		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heardBeat, 20, 3600, TimeUnit.SECONDS);
+		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heardBeat, 15, 3600, TimeUnit.SECONDS);
 		reschedule();
 	}
 
@@ -139,7 +139,7 @@ public class ChatGPTService implements ServletContextListener {
 			
 			phone = reports.topSummaryRequest();
 			if (phone == null) {
-				LOG.error("No summary requests, sleeping.");
+				LOG.info("No summary requests, sleeping.");
 				
 				exponentialBackoff();
 				return;
