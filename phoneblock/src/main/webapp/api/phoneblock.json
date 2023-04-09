@@ -54,12 +54,7 @@
 							}
 						}
 					}
-				},
-				"security": [
-					{
-						"PhoneBlock": []
-					}
-				]
+				}
 			},
 			"parameters": [
 				{

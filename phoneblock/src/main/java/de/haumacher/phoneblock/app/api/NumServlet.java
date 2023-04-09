@@ -17,6 +17,7 @@ import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.model.PhoneInfo;
+import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
@@ -29,10 +30,6 @@ public class NumServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!ServletUtil.checkAuthentication(req, resp)) {
-			return;
-		}
-
 		String pathInfo = req.getPathInfo();
 		if (pathInfo == null || pathInfo.length() < 1) {
 			ServletUtil.sendError(resp, "Missing phone number.");
@@ -57,6 +54,8 @@ public class NumServlet extends HttpServlet {
 		if (!SearchServlet.isBot(req)) {
 			db.addSearchHit(phoneId);
 		}
+		
+		MetaSearchService.getInstance().scheduleMetaSearch(phoneId);
 		
 		PhoneInfo info = db.getPhoneApiInfo(phoneId);
 		
