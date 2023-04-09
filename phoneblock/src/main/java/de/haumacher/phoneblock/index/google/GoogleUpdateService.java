@@ -116,7 +116,7 @@ public class GoogleUpdateService implements IndexUpdateService {
 				}
 			}
 		} catch (IOException ex) {
-			LOG.error("Failed to add URL to Goolge index: " +  url + ".", ex);
+			LOG.error("Failed to add URL to Goolge index: " +  url + ": " + ex.getMessage());
 		}
 	}
 

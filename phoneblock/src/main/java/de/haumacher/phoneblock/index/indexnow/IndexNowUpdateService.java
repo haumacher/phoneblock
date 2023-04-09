@@ -86,7 +86,7 @@ public class IndexNowUpdateService implements IndexUpdateService {
 				LOG.info("Updated URL in indexnow: " + url);
 			}
 		} catch (IOException ex) {
-			LOG.error("Failed to send URL update of '" + url + "'.", ex);
+			LOG.error("Failed to send update of '" + url + "': " + ex.getMessage());
 		}
 	}
 
