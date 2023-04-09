@@ -29,7 +29,7 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
 /**
  * Command line tool to start a meta search.
  */
-public class MetaSearchService implements ServletContextListener, Runnable {
+public class MetaSearchService implements ServletContextListener {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(MetaSearchService.class);
 
@@ -49,6 +49,8 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	
 	private final ConcurrentLinkedQueue<Supplier<Boolean>> _jobs = new ConcurrentLinkedQueue<>();
 
+	private ScheduledFuture<?> _heartBeat;
+
 	/** 
 	 * Creates a {@link MetaSearchService}.
 	 */
@@ -64,6 +66,18 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 		_plugins = loadPlugins();
 		
 		_instance = this;
+		
+		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heartBeat, 1, 10, TimeUnit.MINUTES);
+	}
+	
+	private void heartBeat() {
+		LOG.info("MetaSearchService alive.");
+		
+		synchronized (this) {
+			if (_task == null || _task.isDone()) {
+				reSchedule(System.currentTimeMillis());
+			}
+		}
 	}
 
 	Class<?>[] PLUGINS = {
@@ -108,6 +122,12 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
 		LOG.info("Stopping meta search service.");
+		
+		if (_heartBeat != null) {
+			_heartBeat.cancel(false);
+			_heartBeat = null;
+		}
+		
 		_plugins = null;
 		if (_instance == this) {
 			_instance = null;
@@ -119,6 +139,13 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	 */
 	public List<UserComment> fetchComments(String phoneId) {
 		return createSearch(phoneId).search().getComments();
+	}
+
+	/**
+	 * Schedules a meta search for a given phone number.
+	 */
+	public void scheduleMetaSearch(String phoneId) {
+		_jobs.add(() -> createSearch(phoneId).search().searchPerformed());
 	}
 	
 	/**
@@ -134,20 +161,20 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 	 */
 	public void scheduleMetaSearch(int votes, long lastVote, String phoneId) {
 		_jobs.add(() -> createSearch(phoneId).addVotes(votes, lastVote).search().searchPerformed());
-
-		synchronized (this) {
-			reSchedule();
-		}
 	}
 
-	private void reSchedule() {
-		if (_task == null || _task.isDone()) {
-			reSchedule(System.currentTimeMillis());
+	private void reSchedule(long now) {
+		long delay = Math.max(0, _lastSearch + MIN_DELAY - now);
+		if (delay > 0) {
+			delay += _rnd.nextInt(JITTER);
 		}
+		
+		LOG.info("Scheduling next meta search in " + Duration.of(delay, ChronoUnit.MILLIS) + ", queue size is: " + _jobs.size());
+		
+		_task = _scheduler.executor().schedule(this::performSearch, delay, TimeUnit.MILLISECONDS);
 	}
 
-	@Override
-	public void run() {
+	private void performSearch() {
 		Supplier<Boolean> job;
 		long now;
 
@@ -171,17 +198,6 @@ public class MetaSearchService implements ServletContextListener, Runnable {
 				reSchedule(now);
 			}
 		}
-	}
-
-	private void reSchedule(long now) {
-		long delay = Math.max(0, _lastSearch + MIN_DELAY - now);
-		if (delay > 0) {
-			delay += _rnd.nextInt(JITTER);
-		}
-		
-		LOG.info("Scheduling next meta search in " + Duration.of(delay, ChronoUnit.MILLIS) + ", queue size is: " + _jobs.size());
-		
-		_task = _scheduler.executor().schedule(this, delay, TimeUnit.MILLISECONDS);
 	}
 
 	/** 
