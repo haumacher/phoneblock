@@ -210,6 +210,7 @@ public class SearchServlet extends HttpServlet {
 		
 		req.setAttribute("info", info);
 		req.setAttribute("number", number);
+		req.setAttribute("summary", summary);
 		req.setAttribute("rating", topRating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
