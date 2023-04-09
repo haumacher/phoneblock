@@ -42,7 +42,7 @@ public class SchedulerService implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
 		LOG.info("Shutting down scheduler.");
-		_executor.shutdown();
+		_executor.shutdownNow();
 		
 		try {
 			boolean finished = _executor.awaitTermination(10, TimeUnit.SECONDS);
