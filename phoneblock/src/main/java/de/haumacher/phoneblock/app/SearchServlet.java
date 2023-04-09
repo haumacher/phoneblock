@@ -201,11 +201,13 @@ public class SearchServlet extends HttpServlet {
 		
 		String status = status(votes);
 		
-		String defaultSummary = defaultSummary(req, info, votes);
+		String defaultSummary = defaultSummary(req, info);
 		
 		String pageSummary;
 		if (simpleSummary == null || simpleSummary.isBlank()) {
-			pageSummary = simpleSummary = defaultSummary;
+			pageSummary = defaultSummary;
+			
+			simpleSummary = defaultSimpleSummary(info);
 		} else {
 			pageSummary = simpleSummary + " " + defaultSummary;
 		}
@@ -255,12 +257,13 @@ public class SearchServlet extends HttpServlet {
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
 	}
 
-	private String defaultSummary(HttpServletRequest req, SpamReport info, int votes) {
-		if (info.getVotes() == 0) {
+	private String defaultSummary(HttpServletRequest req, SpamReport info) {
+		int votes = info.getVotes();
+		if (votes == 0) {
 			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
 					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
 					info.getPhone() + "</code> sprechen.";
-		} else if (info.getVotes() < DB.MIN_VOTES || info.isArchived()) {
+		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
 			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
 					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
 		} else {
@@ -269,6 +272,19 @@ public class SearchServlet extends HttpServlet {
 		}
 	}
 
+	private String defaultSimpleSummary(SpamReport info) {
+		int votes = info.getVotes();
+		if (votes == 0) {
+			return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
+		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
+			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber noch nicht blockiert.";
+		} else {
+			return "Die Telefonnummer ☎ " + info.getPhone() + " is eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
+					votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
+		}
+	}
+	
 	/** 
 	 * Whether the request is from a known bot.
 	 */
