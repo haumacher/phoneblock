@@ -18,6 +18,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.theokanning.openai.OpenAiHttpException;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -117,9 +118,11 @@ public class ChatGPTService implements ServletContextListener {
 	private void process() {
 		try {
 			doProcess();
+		} catch (OpenAiHttpException ex) {
+			LOG.error("ChatGPT reported error, statusCode: " + ex.statusCode + ", code: " + ex.code + ", param: " + ex.param + ": " + ex.getMessage());
+			exponentialBackoff();
 		} catch (Throwable ex) {
 			LOG.error("Processing summary request faild: " + ex.getMessage(), ex);
-			
 			exponentialBackoff();
 		}
 	}
