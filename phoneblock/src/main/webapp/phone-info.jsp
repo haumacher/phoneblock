@@ -31,6 +31,7 @@
 	PhoneNumer analysis = (PhoneNumer) request.getAttribute("number");
 	SpamReport info = (SpamReport) request.getAttribute("info");
 	Rating rating = (Rating) request.getAttribute("rating");
+	List<String> relatedNumbers = (List<String>) request.getAttribute("relatedNumbers");
 	Map<Rating, Integer> ratings = (Map<Rating, Integer>) request.getAttribute("ratings");
 	List<? extends SearchInfo> searches = (List<? extends SearchInfo>) request.getAttribute("searches");
 	
@@ -111,6 +112,17 @@
 %>
 
 	<p><%= summary %></p>
+	
+<% if (relatedNumbers.size() > 1) { %>
+
+	<p>Die Nummer ☎ <%= info.getPhone()%> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
+	<ul>
+<% for (String related : relatedNumbers) { %>
+		<li><a href="<%= request.getContextPath()%>/nums/<%= related%>" onclick="return showNumber('<%= related%>');">☎ <%= JspUtil.quote(related) %></a></li>
+<% } %>	
+	</ul>
+
+<% } %>	
 	
 	<p>
 		Unerwünschte Telefonanrufe kannst Du <em>automatisch blockieren</em>, wenn Du <a href="<%=request.getContextPath() %>/setup.jsp">PhoneBlock installierst</a>. 

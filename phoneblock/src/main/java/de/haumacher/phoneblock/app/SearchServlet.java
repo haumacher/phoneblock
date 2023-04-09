@@ -144,6 +144,7 @@ public class SearchServlet extends HttpServlet {
 		List<? extends SearchInfo> searches;
 		List<? extends RatingInfo> ratingInfos;
 		String summary;
+		List<String> relatedNumbers;
 		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
@@ -162,6 +163,8 @@ public class SearchServlet extends HttpServlet {
 			searches = db.getSearches(reports, phoneId);
 			ratingInfos = reports.getRatings(phoneId);
 			summary = reports.getSummary(phoneId);
+			
+			relatedNumbers = reports.getRelatedNumbers(phoneId);
 			
 			if (commit) {
 				session.commit();
@@ -210,6 +213,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("rating", topRating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
+		req.setAttribute("relatedNumbers", relatedNumbers);
 		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
 		if (votes > 0) {
 			req.setAttribute("description", votes + " Stimmen sprechen für eine Sperrung von " + number.getPlus() + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");

@@ -890,6 +890,10 @@ public class DB {
 		
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			int cnt = reports.updatePrefixes();
+			LOG.info("Added " + cnt + " new numbers to the prefix table.");
+			
 			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
 			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
 			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);

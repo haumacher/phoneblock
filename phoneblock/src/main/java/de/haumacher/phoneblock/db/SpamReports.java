@@ -273,4 +273,18 @@ public interface SpamReports {
 	@Select("select s.COUNT - s.BACKUP from SEARCHES s where s.PHONE=#{phone}")
 	Integer getCurrentSearchHits(String phone);
 
+	@Insert("INSERT INTO PREFIX (PHONE, PREFIX) (\n"
+			+ "    SELECT s.PHONE, SUBSTRING(s.PHONE, 0, LENGTH(s.PHONE) - 2) PREFIX \n"
+			+ "    FROM SPAMREPORTS s\n"
+			+ "    LEFT OUTER JOIN PREFIX p \n"
+			+ "    ON p.PHONE = s.PHONE \n"
+			+ "    WHERE s.VOTES > 0 AND p.PHONE IS NULL \n"
+			+ ")")
+	int updatePrefixes();
+	
+	@Select("SELECT p.PHONE FROM PREFIX p \n"
+			+ "WHERE NOT p.PHONE = #{phone} \n"
+			+ "AND p.PREFIX = SUBSTRING(#{phone}, 0, LENGTH(#{phone}) - 2)")
+	List<String> getRelatedNumbers(String phone);
+	
 }
