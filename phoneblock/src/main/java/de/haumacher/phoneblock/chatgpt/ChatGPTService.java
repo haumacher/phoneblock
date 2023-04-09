@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.chatgpt;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -119,7 +120,10 @@ public class ChatGPTService implements ServletContextListener {
 		try {
 			doProcess();
 		} catch (OpenAiHttpException ex) {
-			LOG.error("ChatGPT reported error, statusCode: " + ex.statusCode + ", code: " + ex.code + ", param: " + ex.param + ": " + ex.getMessage());
+			LOG.warn("ChatGPT reported error, statusCode: " + ex.statusCode + ", code: " + ex.code + ", param: " + ex.param + ": " + ex.getMessage());
+			exponentialBackoff();
+		} catch (SocketTimeoutException ex) {
+			LOG.warn("ChatGPT request timed out: " + ex.getMessage());
 			exponentialBackoff();
 		} catch (Throwable ex) {
 			LOG.error("Processing summary request faild: " + ex.getMessage(), ex);
@@ -142,8 +146,7 @@ public class ChatGPTService implements ServletContextListener {
 			
 			phone = reports.topSummaryRequest();
 			if (phone == null) {
-				LOG.info("No summary requests, sleeping.");
-				
+				LOG.info("No summary requests.");
 				exponentialBackoff();
 				return;
 			}
@@ -188,7 +191,7 @@ public class ChatGPTService implements ServletContextListener {
 	private static StringBuilder createQuestion(String phone) {
 		StringBuilder question = new StringBuilder();
 		
-		question.append("Ich habe eine Liste von Kommentaren zur Telefonnummer " + phone + ". Könntest Du eine Zusammenfassung von höchstens 40 Wörtern machen, die sagt, was was man von einem Anruf mit der Nummer " + phone + " zu erwarten hat? Die Kommentare lauten:\n");
+		question.append("Könntest Du eine Zusammenfassung von Kommentaren zur Telefonnummer " + phone + " machen? Die Zusammenfassung soll höchstens 40 Wörtern enthalten, auf Deutsch sein und sagen wer anruft. Die Kommentare lauten:\n");
 		return question;
 	}
 
@@ -226,6 +229,7 @@ public class ChatGPTService implements ServletContextListener {
 			_delayMinutes = 60;
 		}
 		
+		LOG.info("Rescheduling with " + _delayMinutes + " minutes delay.");
 		_process = _scheduler.executor().schedule(this::process, _delayMinutes, TimeUnit.MINUTES);
 	}
 
