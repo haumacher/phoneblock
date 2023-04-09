@@ -38,9 +38,13 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
  */
 public class ChatGPTService implements ServletContextListener {
 
+	private static final int INITIAL_DELAY_SECONDS = 20;
+
 	private static final int MAX_QUESTION_LENGTH = 12000;
 
 	private static final Logger LOG = LoggerFactory.getLogger(MetaSearchService.class);
+
+	private static final long TEN_MINUTE_SECONDS = Duration.ofMinutes(10).toSeconds();
 
 	private DBService _db;
 	private SchedulerService _scheduler;
@@ -55,7 +59,7 @@ public class ChatGPTService implements ServletContextListener {
 	/**
 	 * Delay upon error.
 	 */
-	private int _delayMinutes = 1;
+	private long _delaySeconds = INITIAL_DELAY_SECONDS;
 
 	/** 
 	 * Creates a {@link ChatGPTService}.
@@ -215,22 +219,22 @@ public class ChatGPTService implements ServletContextListener {
 
 	private void reschedule() {
 		// Reset exponential back-off.
-		_delayMinutes = 1;
+		_delaySeconds = INITIAL_DELAY_SECONDS;
 		
-		_process = _scheduler.executor().schedule(this::process, 20, TimeUnit.SECONDS);
+		_process = _scheduler.executor().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
 	}
 
 	/** 
 	 * Reschedules with an exponential back-off strategy.
 	 */
 	private void exponentialBackoff() {
-		_delayMinutes *= 2;
-		if (_delayMinutes > 60) {
-			_delayMinutes = 60;
+		_delaySeconds = _delaySeconds * 3 / 2;
+		if (_delaySeconds > TEN_MINUTE_SECONDS) {
+			_delaySeconds = TEN_MINUTE_SECONDS;
 		}
 		
-		LOG.info("Rescheduling with " + _delayMinutes + " minutes delay.");
-		_process = _scheduler.executor().schedule(this::process, _delayMinutes, TimeUnit.MINUTES);
+		LOG.info("Rescheduling with " + _delaySeconds + " seconds delay.");
+		_process = _scheduler.executor().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
 	}
 
 }
