@@ -111,7 +111,7 @@ public class GoogleUpdateService implements IndexUpdateService {
 				LOG.info("Added URL to Goolge index: " + url);
 			} else {
 				try (InputStream in = response.getContent()) {
-					LOG.error("Failed to add URL to Goolge index (" + code + "): " + url + ": " +
+					LOG.warn("Failed to add URL to Goolge index (" + code + "): " + url + ": " +
 						ConnectionUtil.readText(in, response.getContentEncoding()));
 				}
 			}

@@ -81,7 +81,7 @@ public class IndexNowUpdateService implements IndexUpdateService {
 			connection.connect();
 			int code = connection.getResponseCode();
 			if (code != HttpURLConnection.HTTP_OK) {
-				LOG.error("Failed to send URL update of '" + url + "' (status " + code + "): " + ConnectionUtil.readText(connection));
+				LOG.warn("Failed to send URL update of '" + url + "' (status " + code + "): " + ConnectionUtil.readText(connection));
 			} else {
 				LOG.info("Updated URL in indexnow: " + url);
 			}
