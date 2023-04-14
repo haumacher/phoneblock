@@ -69,13 +69,13 @@ public class AddressResource extends Resource {
 	}
 	
 	@Override
-	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
+	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
 			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESS_DATA);
 			appendText(container, vCardContent());
 			return HttpServletResponse.SC_OK;
 		}
-		return super.fillProperty(req, propElement, propertyElement, property);
+		return super.fillProperty(req, propElement, property);
 	}
 
 	private String vCardContent() {

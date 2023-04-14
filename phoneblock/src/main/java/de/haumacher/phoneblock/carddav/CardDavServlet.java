@@ -171,11 +171,11 @@ public class CardDavServlet extends HttpServlet {
 		DocumentBuilder builder = createDocumentBuilder();
 		Document requestDoc = builder.parse(req.getInputStream());
 		Depth depth = Depth.fromHeader(req.getHeader("depth"));
-		List<Element> properties = toList(elements(requestDoc, DavSchema.DAV_PROPFIND, DavSchema.DAV_PROP));
+		List<QName> properties = qnames(toList(elements(requestDoc, DavSchema.DAV_PROPFIND, DavSchema.DAV_PROP)));
 
 		if (LOG.isDebugEnabled()) {
 			StringWriter out = new StringWriter();
-			out.write(req.getMethod() + " " + req.getPathInfo() + " " + depth + ": " + toList(qnames(properties)));
+			out.write(req.getMethod() + " " + req.getPathInfo() + " " + depth + ": " + properties);
 			out.write('\n');
 			DebugUtil.dumpHeaders(out, req);
 			LOG.debug(out.toString());
@@ -267,7 +267,7 @@ public class CardDavServlet extends HttpServlet {
 							continue;
 						}
 						
-						content.fillProperty(req, propElement, property, qname);
+						content.fillProperty(req, propElement, qname);
 					}
 					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
 				} else {

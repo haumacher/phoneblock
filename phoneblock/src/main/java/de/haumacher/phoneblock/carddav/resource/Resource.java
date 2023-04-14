@@ -76,10 +76,10 @@ public abstract class Resource {
 	 * @param properties
 	 *        The {@link Element}s describing the properties to retrieve.
 	 */
-	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<Element> properties) {
+	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<QName> properties) {
 		Element response = appendElement(multistatus, DavSchema.DAV_RESPONSE);
 		appendTextElement(response, DavSchema.DAV_HREF, url(parent));
-		for (Element property : properties) {
+		for (QName property : properties) {
 			Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
 			Element prop = appendElement(propstat, DavSchema.DAV_PROP);
 			int status = fillProperty(req, prop, property);
@@ -93,27 +93,11 @@ public abstract class Resource {
 	 *        The current request.
 	 * @param propElement
 	 *        The {@link Element} to fill with property information.
-	 * @param propertyElement
-	 *        The qualified name of the property to read.
-	 * @return The status code for the request.
-	 */
-	public final int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement) {
-		return fillProperty(req, propElement, propertyElement, qname(propertyElement));
-	}
-
-	/**
-	 * Fills the given property container element with property information.
-	 * @param req
-	 *        The current request.
-	 * @param propElement
-	 *        The {@link Element} to fill with property information.
-	 * @param propertyElement
-	 *        The qualified name of the property to read.
 	 * @param property
 	 *        The qualified name of the property to retrieve.
 	 * @return The status code for the request.
 	 */
-	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
+	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
 		if (DavSchema.DAV_CURRENT_USER_PRINCIPAL.equals(property)) {
 			String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
 			if (userName != null) {

@@ -35,7 +35,7 @@ public class PrincipalResource extends Resource {
 	}
 	
 	@Override
-	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<Element> properties) {
+	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<QName> properties) {
 		String userAgent = req.getHeader("User-Agent");
 		
 		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis(), userAgent);
@@ -44,13 +44,13 @@ public class PrincipalResource extends Resource {
 	}
 	
 	@Override
-	public int fillProperty(HttpServletRequest req, Element propElement, Element propertyElement, QName property) {
+	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET.equals(property)) {
 			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET);
 			DomUtil.appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.ADDRESSES_PATH + _principal + "/"));
 			return HttpServletResponse.SC_OK;
 		}
-		return super.fillProperty(req, propElement, propertyElement, property);
+		return super.fillProperty(req, propElement, property);
 	}
 
 }
