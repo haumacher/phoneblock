@@ -5,7 +5,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock</artifactId>
-	<version>1.4.2</version>
+	<version>1.4.3-SNAPSHOT</version>
 	
 	<name>PhoneBlock</name>
 	<description>Ad blocker for your Fritz!Box</description>
