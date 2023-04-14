@@ -47,23 +47,26 @@ public class Application implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
-			InitialContext initCtx = new InitialContext();
-			Context envCtx = (Context) initCtx.lookup("java:comp/env");
-			String fileName = (String) envCtx.lookup("log/configfile");
-			
-			Properties properties = new Properties();
-			File file = new File(fileName);
-			try (FileInputStream in = new FileInputStream(file)) {
-				properties.load(in);
+			File configFile;
+			try {
+				InitialContext initCtx = new InitialContext();
+				Context envCtx = (Context) initCtx.lookup("java:comp/env");
+				String fileName = (String) envCtx.lookup("log/configfile");
+				
+				Properties properties = new Properties();
+				configFile = new File(fileName);
+				try (FileInputStream in = new FileInputStream(configFile)) {
+					properties.load(in);
+				}
+				Map<String, String> settings = new HashMap<>();
+				for (String property : properties.stringPropertyNames()) {
+					settings.put(property, properties.getProperty(property));
+				}
+				Configuration.replace(settings);
+			} finally {
+				LOG = LoggerFactory.getLogger(Application.class);
 			}
-			Map<String, String> settings = new HashMap<>();
-			for (String property : properties.stringPropertyNames()) {
-				settings.put(property, properties.getProperty(property));
-			}
-			Configuration.replace(settings);
-			
-			LOG = LoggerFactory.getLogger(Application.class);
-			LOG.info("Loaded log configuration from: " + file.getAbsolutePath());
+			LOG.info("Loaded log configuration from: " + configFile.getAbsolutePath());
 		} catch (NamingException ex) {
 			LOG.info(ex.getMessage() + ", using default log configuration.");
 		} catch (IOException ex) {
