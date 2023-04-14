@@ -31,9 +31,14 @@ import de.haumacher.phoneblock.db.DBService;
 /**
  * Servlet receiving user profile information after a successful OAuth login.
  */
-@WebServlet(urlPatterns = "/oauth/login")
+@WebServlet(urlPatterns = OAuthLoginServlet.OAUTH_LOGIN_PATH)
 public class OAuthLoginServlet extends HttpServlet {
 
+	/**
+	 * The path to which an OAuth server redirects after login.
+	 */
+	public static final String OAUTH_LOGIN_PATH = "/oauth/login";
+	
 	private static final Logger LOG = LoggerFactory.getLogger(OAuthLoginServlet.class);
 
 	@Override
