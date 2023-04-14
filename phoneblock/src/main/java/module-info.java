@@ -49,4 +49,5 @@ module phoneblock {
 	requires org.apache.commons.lang3;
 	requires api;
 	requires service;
+	requires org.tinylog.api;
 }

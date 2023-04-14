@@ -3,12 +3,23 @@
  */
 package de.haumacher.phoneblock.app;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tinylog.configuration.Configuration;
 
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
@@ -28,15 +39,39 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
 @WebListener
 public class Application implements ServletContextListener {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(Application.class);
+	// Lately initialized, since configuration must be applied before.
+	private static Logger LOG;
 	
 	private ServletContextListener[] _services;
 	
-	/** 
-	 * Creates a {@link Application}.
-	 *
-	 */
-	public Application() {
+	@Override
+	public void contextInitialized(ServletContextEvent sce) {
+		try {
+			InitialContext initCtx = new InitialContext();
+			Context envCtx = (Context) initCtx.lookup("java:comp/env");
+			String fileName = (String) envCtx.lookup("log/configfile");
+			
+			Properties properties = new Properties();
+			File file = new File(fileName);
+			try (FileInputStream in = new FileInputStream(file)) {
+				properties.load(in);
+			}
+			Map<String, String> settings = new HashMap<>();
+			for (String property : properties.stringPropertyNames()) {
+				settings.put(property, properties.getProperty(property));
+			}
+			Configuration.replace(settings);
+			
+			LOG = LoggerFactory.getLogger(Application.class);
+			LOG.info("Loaded log configuration from: " + file.getAbsolutePath());
+		} catch (NamingException ex) {
+			LOG.info(ex.getMessage() + ", using default log configuration.");
+		} catch (IOException ex) {
+			LOG.error("Failed to load log configuration, using default.", ex);
+		}
+		
+		LOG.info("Starting phoneblock application.");
+		
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
 		DBService db;
@@ -55,11 +90,7 @@ public class Application implements ServletContextListener {
 			new ManagementService(indexer),
 			new ChatGPTService(db, scheduler, indexer),
 		};
-	}
-
-	@Override
-	public void contextInitialized(ServletContextEvent sce) {
-		LOG.info("Starting phoneblock application.");
+		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
 			_services[n].contextInitialized(sce);
 		}
