@@ -47,7 +47,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
     	
     	List<Client> clientList = new ArrayList<>();
         addGoogleClient(clientList, properties);
-        addFacebookClient(properties, clientList);
+        addFacebookClient(clientList, properties);
         
         String clientNames = clientList.stream().map(client -> client.getName()).collect(Collectors.joining(","));
 		
@@ -72,7 +72,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
 		}
 	}
 
-	private void addFacebookClient(Properties properties, List<Client> clientList) {
+	private void addFacebookClient(List<Client> clientList, Properties properties) {
 		String facebookClientId = properties.getProperty("facebook.id");
 		String facebookClientSecret = properties.getProperty("facebook.secret");
 		if (facebookClientId == null || facebookClientSecret == null) {
