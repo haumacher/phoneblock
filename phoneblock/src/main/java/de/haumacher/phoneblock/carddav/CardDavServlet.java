@@ -112,6 +112,14 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 		
+		if (LOG.isDebugEnabled()) {
+			StringWriter out = new StringWriter();
+			out.write(req.getMethod() + " " + req.getPathInfo() + ": " + resource);
+			out.write('\n');
+			DebugUtil.dumpHeaders(out, req);
+			LOG.debug(out.toString());
+		}
+
 		resource.get(req, resp);
 	}
 	
@@ -121,6 +129,14 @@ public class CardDavServlet extends HttpServlet {
 		if (resource == null) {
 			handleNotFound(req, resp);
 			return;
+		}
+
+		if (LOG.isDebugEnabled()) {
+			StringWriter out = new StringWriter();
+			out.write(req.getMethod() + " " + req.getPathInfo() + ": " + resource);
+			out.write('\n');
+			DebugUtil.dumpHeaders(out, req);
+			LOG.debug(out.toString());
 		}
 		
 		resource.put(req, resp);
@@ -132,6 +148,14 @@ public class CardDavServlet extends HttpServlet {
 		if (resource == null) {
 			handleNotFound(req, resp);
 			return;
+		}
+
+		if (LOG.isDebugEnabled()) {
+			StringWriter out = new StringWriter();
+			out.write(req.getMethod() + " " + req.getPathInfo() + ": " + resource);
+			out.write('\n');
+			DebugUtil.dumpHeaders(out, req);
+			LOG.debug(out.toString());
 		}
 
 		resource.delete(resp);
