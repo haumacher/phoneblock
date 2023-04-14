@@ -228,11 +228,15 @@ public abstract class Resource {
 	 *        an absolute URL.
 	 */
 	public String url(Resource parent) {
-		if (parent == null) {
-			return _rootUrl + _resourcePath;
-		} else {
-			return _resourcePath.substring(parent.getResourcePath().length());
-		}
+		// Note: Using short relative URLs prevents the Fritz!Box from issuing "DELETE" commands
+		// when a user removes a number from his block list. The effect is that the number is re-added
+		// to his block list upon the next synchronization. It is currently unclear what's the
+		// problem, since loading and adding new numbers works fine. 
+		//
+		// if (parent != null) {
+		// 	return _resourcePath.substring(parent.getResourcePath().length());
+		// }
+		return _rootUrl + _resourcePath;
 	}
 
 	/** 
