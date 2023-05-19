@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.meta;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,7 +78,7 @@ public class SearchOperation {
 			if (_searchPerformed) {
 				LOG.info("Performing meta search for: " + _phoneId);
 
-				Map<String, UserComment> indexedComments = _comments.stream().collect(Collectors.toMap(c -> c.getComment(), c -> c));
+				Map<String, UserComment> indexedComments = index();
 
 				int commentCnt = 0;
 				List<UserComment> newComments = doSearch();
@@ -112,6 +113,14 @@ public class SearchOperation {
 			}
 		}
 		return this;
+	}
+
+	private Map<String, UserComment> index() {
+		HashMap<String, UserComment> result = new HashMap<>();
+		for (UserComment c : _comments) {
+			result.put(c.getComment(), c);
+		}
+		return result;
 	}
 
 	/**
