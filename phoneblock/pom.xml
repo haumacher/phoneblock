@@ -45,13 +45,13 @@
 
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 		
-		<font-awesome.version>6.2.0</font-awesome.version>
+		<font-awesome.version>6.4.0</font-awesome.version>
 		<bulma.version>0.9.4</bulma.version>
 		<bulma-collapsible.version>1.0.3</bulma-collapsible.version>
-		<chartjs.version>3.9.1</chartjs.version>
+		<chartjs.version>4.1.2</chartjs.version>
 		<shariff.version>3.2.1</shariff.version>
-		<jquery.version>3.6.1</jquery.version>
-		<swagger-ui.version>4.15.2</swagger-ui.version>
+		<jquery.version>3.6.4</jquery.version>
+		<swagger-ui.version>4.18.3</swagger-ui.version>
 		
 		<msgbuf.version>1.1.2</msgbuf.version>
 		
@@ -82,7 +82,7 @@
 		<dependency>
 			<groupId>org.pac4j</groupId>
 			<artifactId>pac4j-oauth</artifactId>
-			<version>5.6.0</version>
+			<version>5.7.1</version>
 		</dependency>
 	
 		<dependency>
@@ -100,7 +100,7 @@
    		<dependency>
 			<groupId>com.google.api-client</groupId>
 			<artifactId>google-api-client</artifactId>
-			<version>2.0.0</version>
+			<version>2.2.0</version>
 			
 			<!-- Exclude logging implementation, replaced by jcl-over-slf4j -->
 			<exclusions>
@@ -114,13 +114,13 @@
 		<dependency>
 		    <groupId>com.google.auth</groupId>
 		    <artifactId>google-auth-library-oauth2-http</artifactId>
-		    <version>1.12.1</version>
+		    <version>1.16.1</version>
 		</dependency>
 	
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.15</version>
+			<version>4.4.16</version>
 		</dependency>
 
 		<dependency>
@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.15.3</version>
+			<version>1.16.1</version>
 		</dependency>
 
 		<dependency>
@@ -159,7 +159,7 @@
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.5.11</version>
+			<version>3.5.13</version>
 		</dependency>
 
 		<dependency>
@@ -195,7 +195,7 @@
 		<dependency>
 			<groupId>org.shredzone.shariff</groupId>
 			<artifactId>backend</artifactId>
-			<version>1.23</version>
+			<version>1.24</version>
 		</dependency>
 
 		<dependency>
@@ -219,31 +219,31 @@
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
-		    <version>2.0.3</version>
+		    <version>2.0.7</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>2.0.3</version>
+		    <version>2.0.7</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.tinylog</groupId>
 			<artifactId>slf4j-tinylog</artifactId>
-			<version>2.6.0-M1</version>
+			<version>2.6.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.tinylog</groupId>
 			<artifactId>tinylog-impl</artifactId>
-			<version>2.6.0-M1</version>
+			<version>2.6.2</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.junit.jupiter</groupId>
 		    <artifactId>junit-jupiter-api</artifactId>
-		    <version>5.9.1</version>
+		    <version>5.9.3</version>
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -426,17 +426,39 @@
 			
 			<!-- 
 				To update dependencies to latest releases use: 
-				mvn versions:use-latest-releases -DgenerateBackupPoms=false
-				
-				Check for version property updates:
-				mvn versions:display-property-updates
-				
-				Actually update version properties.
-				mvn versions:update-properties -DgenerateBackupPoms=false
+				mvn versions:use-latest-releases versions:update-properties -DgenerateBackupPoms=false
 				
 				Show updates of plugins:
 				mvn versions:display-plugin-updates
 			-->
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+			    <version>2.15.0</version>
+				
+				<executions>
+					<execution>
+						<goals>
+							<goal>use-latest-releases</goal>
+							<goal>update-properties</goal>
+						</goals>
+					</execution>
+				</executions>
+				
+				<configuration>
+          			<ruleSet>
+						<ignoreVersions>
+							<!-- Exclude alpha and milestone builds. -->
+							<ignoreVersion>
+								<type>regex</type>
+								<version>(.+-alpha.*|.+-M.*|.+-RC.*|26962ce.*)</version>
+							</ignoreVersion>								
+						</ignoreVersions>
+					</ruleSet>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
