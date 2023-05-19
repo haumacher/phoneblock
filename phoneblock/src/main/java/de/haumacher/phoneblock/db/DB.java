@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
@@ -908,6 +909,8 @@ public class DB {
 			}
 			
 			session.commit();
+		} catch (PersistenceException ex) {
+			LOG.error("Failed to cleanup DB.", ex);
 		}
 		
 		LOG.info("Finished DB cleanup.");
