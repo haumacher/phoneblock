@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -669,14 +668,6 @@ public class DB {
 	 * Shuts down the database layer.
 	 */
 	public void shutdown() {
-		try (SqlSession session = openSession()) {
-			try (Statement statement = session.getConnection().createStatement()) {
-				statement.execute("SHUTDOWN");
-			}
-		} catch (Exception ex) {
-			LOG.error("Database shutdown failed.", ex);
-		}
-		
 		for (ScheduledFuture<?> task : _tasks) {
 			task.cancel(false);
 		}

@@ -7,7 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
@@ -33,20 +35,27 @@ public class TestDB {
 	
 	private DB _db;
 	private SchedulerService _scheduler;
+	private DataSource _dataSource;
 
 	@BeforeEach
 	public void setUp() throws Exception {
 		_scheduler = new SchedulerService();
 		_scheduler.contextInitialized(null);
 		
-		DataSource dataSource = createTestDataSource();
-		_db = new DB(dataSource, _scheduler);
+		_dataSource = createTestDataSource();
+		_db = new DB(_dataSource, _scheduler);
 	}
 	
 	@AfterEach
 	public void tearDown() throws Exception {
 		_db.shutdown();
 		_db = null;
+		
+		try (Connection connection = _dataSource.getConnection()) {
+			try (Statement statement = connection.createStatement()) {
+				statement.execute("SHUTDOWN");
+			}
+		}
 		
 		_scheduler.contextDestroyed(null);
 		_scheduler = null;

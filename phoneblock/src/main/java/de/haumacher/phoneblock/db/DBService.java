@@ -4,7 +4,9 @@
 package de.haumacher.phoneblock.db;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -12,6 +14,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
@@ -35,6 +38,8 @@ public class DBService implements ServletContextListener {
 	private final IndexUpdateService _indexer;
 
 	private SchedulerService _scheduler;
+
+	private JdbcConnectionPool _pool;
 	
 	public DBService(SchedulerService scheduler) {
 		this(IndexUpdateService.NONE, scheduler);
@@ -123,7 +128,8 @@ public class DBService implements ServletContextListener {
 			LOG.error("Failed to start DB server. ", ex);
 		}
 		
-		INSTANCE = new DB(dataSource, _indexer, _scheduler);
+		_pool = JdbcConnectionPool.create(dataSource);
+		INSTANCE = new DB(_pool, _indexer, _scheduler);
 	}
 
 	protected int defaultDbPort() {
@@ -178,6 +184,23 @@ public class DBService implements ServletContextListener {
         		}
         	}
 		} finally {
+			if (_pool != null) {
+				try (Connection connection = _pool.getConnection()) {
+					try (Statement statement = connection.createStatement()) {
+						statement.execute("SHUTDOWN");
+					}
+				} catch (Exception ex) {
+					LOG.error("Database shutdown failed.", ex);
+				}
+
+				try {
+					_pool.dispose();
+					_pool = null;
+				} catch (Exception ex) {
+					LOG.error("Connection pool shutdown failed.", ex);
+				}
+			}
+			
 			LOG.info("Unloading DB driver.");
 			org.h2.Driver.unload();
 		}
