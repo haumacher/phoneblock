@@ -303,14 +303,17 @@ public class CardDavServlet extends HttpServlet {
 			return new RootResource(rootUrl, resourcePath);
 		}
 		
-		if (resourcePath.startsWith(PRINCIPALS_PATH)) {
+		else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
 			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
 			if (isAuthenticated(req, principal)) {
 				return new PrincipalResource(rootUrl, resourcePath, principal);
+			} else {
+				LOG.warn("Wrong authentication for resource: " + resourcePath);
+				return null;
 			}
 		}
 		
-		if (resourcePath.startsWith(ADDRESSES_PATH)) {
+		else if (resourcePath.startsWith(ADDRESSES_PATH)) {
 			int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
 			if (endIdx < 0) {
 				LOG.warn("No principal found in address path: " + resourcePath);
@@ -324,11 +327,14 @@ public class CardDavServlet extends HttpServlet {
 				} else {
 					return new AddressBookResource(rootUrl, serverRoot, resourcePath, principal);
 				}
+			} else {
+				LOG.warn("Wrong authentication for resource: " + resourcePath);
+				return null;
 			}
+		} else {
+			LOG.warn("Addressbook resource not found: " + resourcePath);
+			return null;
 		}
-		
-		LOG.warn("Addressbook resource not found: " + resourcePath);
-		return null;
 	}
 
 	private boolean isAuthenticated(HttpServletRequest req, String principal) {
