@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.blocklist.Bucket;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -38,18 +37,14 @@ public class AddressResource extends Resource {
 
 	private String _principal;
 
-	private Bucket _bucket;
-
 	/** 
 	 * Creates a {@link AddressResource}.
 	 * 
 	 * @param principal The user name of the address books owner.
-	 * @param bucket The phone numbers of this contact.
 	 */
-	public AddressResource(String rootUrl, String resourcePath, String principal, Bucket bucket) {
+	public AddressResource(String rootUrl, String resourcePath, String principal) {
 		super(rootUrl, resourcePath);
 		_principal = principal;
-		_bucket = bucket;
 	}
 	
 	@Override
@@ -59,7 +54,8 @@ public class AddressResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		return Integer.toHexString(_bucket.hashCode());
+		// Address entries never change. The consist only of the bare phone number. 
+		return "2";
 	}
 	
 	@Override
@@ -85,23 +81,13 @@ public class AddressResource extends Resource {
 	private String vCardContent() {
 		String displayName = getDisplayName();
 		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("BEGIN:VCARD\n"
+		return "BEGIN:VCARD\n"
 			+ "VERSION:3.0\n"
 			+ "UID:" + displayName + "\n"
 			+ "FN:SPAM: " + displayName + "\n"
-			+ "CATEGORIES:SPAM" + "\n");
-		for (String phone : _bucket) {
-			buffer.append("TEL;TYPE=WORK:" + phone + "\n");
-		}
-		buffer.append("END:VCARD");
-
-		return buffer.toString();
-	}
-	
-	@Override
-	protected String getDisplayName() {
-		return "SPAM" + _bucket.getIndex();
+			+ "CATEGORIES:SPAM" + "\n"
+			+ "TEL;TYPE=WORK:" + displayName + "\n"
+			+ "END:VCARD";
 	}
 	
 	@Override
