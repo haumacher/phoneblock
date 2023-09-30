@@ -3,6 +3,10 @@
  */
 package de.haumacher.phoneblock.analysis;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,6 +56,43 @@ public class TestNumberTree {
 		List<String> entries = tree.createBlockEntries();
 		
 		Assertions.assertEquals(Arrays.asList("0301230*"), entries);
+	}
+	
+	@Test
+	public void testRealData() throws IOException {
+		NumberTree tree = new NumberTree();
+
+		int cnt = 0;
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("SPAMREPORTS_202309301715.csv"), StandardCharsets.UTF_8))) {
+			in.readLine();
+			
+			String line;
+			while ((line = in.readLine()) != null) {
+				if (line.isBlank()) {
+					continue;
+				}
+				
+				if (line.startsWith("\"") && line.endsWith("\"")) {
+					String phone = line.substring(1, line.length() - 1);
+					
+					cnt ++;
+					tree.insert(phone);
+				}
+			}
+		}
+		
+		tree.markWildcards();
+		int[] numbers = {0};
+		int[] wildcard = {0};
+		tree.createBlockEntries((number, weight) -> {
+			numbers[0]++;
+			wildcard[0]+=number.endsWith("*") ? 1 : 0;
+			System.out.println(number + " (" + weight + ")");
+		});
+		
+		System.out.println("Input numbers: " + cnt);
+		System.out.println("Output numbers: " + numbers[0]);
+		System.out.println("Wildcards: " + wildcard[0]);
 	}
 	
 }

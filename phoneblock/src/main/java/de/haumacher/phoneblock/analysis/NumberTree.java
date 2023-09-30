@@ -4,8 +4,11 @@
 package de.haumacher.phoneblock.analysis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * Utility to remove prefixes from a list of phone numbers and group multiple numbers with the same
@@ -19,12 +22,15 @@ public class NumberTree {
 	private static class Node {
 		private Node[] _next;
 		private boolean _wildcard;
+		private int _weight;
 
 		/** 
 		 * Appends a next digit to the number represented by this node.
+		 * @param weight 
 		 */
-		public Node append(String phone, int index) {
+		public Node append(String phone, int index, int weight) {
 			if (index == phone.length()) {
+				_weight += weight;
 				return this;
 			}
 			
@@ -41,7 +47,7 @@ public class NumberTree {
 				_next[digit] = next;
 			}
 			
-			return next.append(phone, index + 1);
+			return next.append(phone, index + 1, weight);
 		}
 		
 		/**
@@ -156,16 +162,16 @@ public class NumberTree {
 		/** 
 		 * Creates all number patterns represented by the subtree rooted at this node to the given numbers list.
 		 */
-		public void createBlockEntries(Consumer<String> numbers, StringBuilder prefix) {
+		public void createBlockEntries(BiConsumer<String, Integer> numbers, StringBuilder prefix) {
 			int length = prefix.length();
 			if (_wildcard) {
 				prefix.append('*');
-				numbers.accept(prefix.toString());
+				numbers.accept(prefix.toString(), sumWeight());
 				prefix.setLength(length);
 				return;
 			}
 			if (_next == null) {
-				numbers.accept(prefix.toString());
+				numbers.accept(prefix.toString(), _weight);
 				return;
 			}
 			for (Node child : _next) {
@@ -173,6 +179,14 @@ public class NumberTree {
 					child.createBlockEntries(numbers, prefix);
 					prefix.setLength(length);
 				}
+			}
+		}
+
+		private int sumWeight() {
+			if (_next == null || _next.length == 0) {
+				return _weight;
+			} else {
+				return Arrays.stream(_next).filter(Objects::nonNull).collect(Collectors.summingInt(Node::sumWeight));
 			}
 		}
 	}
@@ -189,7 +203,7 @@ public class NumberTree {
 		}
 		
 		@Override
-		public void createBlockEntries(Consumer<String> numbers, StringBuilder prefix) {
+		public void createBlockEntries(BiConsumer<String, Integer> numbers, StringBuilder prefix) {
 			int length = prefix.length();
 			prefix.append(_digit);
 			super.createBlockEntries(numbers, prefix);
@@ -198,7 +212,11 @@ public class NumberTree {
 	}
 	
 	public void insert(String phone) {
-		_root.append(phone, 0);
+		insert(phone, 1);
+	}
+
+	public void insert(String phone, int weight) {
+		_root.append(phone, 0, weight);
 	}
 	
 	public void markWildcards() {
@@ -207,7 +225,7 @@ public class NumberTree {
 	
 	public List<String> createBlockEntries() {
 		ArrayList<String> result = new ArrayList<>();
-		Consumer<String> sink = x -> result.add(x);
+		BiConsumer<String, Integer> sink = (x, weight) -> result.add(x);
 		createBlockEntries(sink);
 		return result;
 	}
@@ -215,7 +233,7 @@ public class NumberTree {
 	/** 
 	 * Pushes all numbers to the given sink.
 	 */
-	public void createBlockEntries(Consumer<String> sink) {
+	public void createBlockEntries(BiConsumer<String, Integer> sink) {
 		_root.createBlockEntries(sink, new StringBuilder());
 	}
 
