@@ -76,6 +76,22 @@
 			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
 			Nummern zu den Kontakten hinzuzufügen. 
 		</p>
+		
+		<h2 id="Error26">Meine FritzBox! meldet "Fehler 26" bei der Einrichtung</h2>
+		
+		<p>
+			Es ist unklar, wo dieser Fehler herkommt und was er bedeutet. Nutzer berichten allerdings dass die 
+			folgenden Schritte helfen, um PhoneBlock trotzdem einrichten zu können:
+		</p>
+		
+		<ol>
+			<li>Entferne das Telefonbuch nocheinmal vollständig</li>
+			<li>Führe einen Reboot der Box durch und prüfe, ob das Telefonbuch danach wirklich entfernt ist. 
+				Wenn nicht wiederhole die Entfernung.</li>
+			<li>Erstelle das Telefonbuch neu. Stelle dabei sicher, dass Du wirklich die Adresse des Servers richtig 
+				kopiert hast. Stelle sicher, dass sich keine Leerzeichen um Anfang oder am Ende von Nutzernamen 
+				und Passwort befinden.</li>
+		</ol>
 
 		<h2>Ab wann wird eine Nummer von PhoneBlock blockiert?</h2>
 		<p>
