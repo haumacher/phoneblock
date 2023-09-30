@@ -82,17 +82,31 @@ public class TestNumberTree {
 		}
 		
 		tree.markWildcards();
-		int[] numbers = {0};
-		int[] wildcard = {0};
-		tree.createBlockEntries((number, weight) -> {
-			numbers[0]++;
-			wildcard[0]+=number.endsWith("*") ? 1 : 0;
-			System.out.println(number + " (" + weight + ")");
-		});
+		
+		List<NumberBlock> blocks = tree.createNumberBlocks();
+		int numbers = 0;
+		int wildcard = 0;
+		int weight = 0;
+		
+		for (NumberBlock block : blocks) {
+			for (String number : block.getNumbers()) {
+				System.out.println(number);
+				
+				numbers++;
+				if (number.endsWith("*")) {
+					wildcard++;
+				}
+			}
+			
+			weight+=block.getWeight();
+			System.out.println();
+		}
 		
 		System.out.println("Input numbers: " + cnt);
-		System.out.println("Output numbers: " + numbers[0]);
-		System.out.println("Wildcards: " + wildcard[0]);
+		System.out.println("Output numbers: " + numbers);
+		System.out.println("Wildcards: " + wildcard);
+		System.out.println("Blocks: " + blocks.size());
+		System.out.println("Skipped prefixes: " + (cnt - weight));
 	}
 	
 }
