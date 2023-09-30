@@ -3,9 +3,10 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
@@ -13,12 +14,12 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.analysis.NumberTree;
-import de.haumacher.phoneblock.blocklist.BlockList;
-import de.haumacher.phoneblock.blocklist.Bucket;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 
 /**
  * {@link Resource} representing a collection of {@link AddressBookResource}s.
@@ -54,26 +55,30 @@ public class AddressBookResource extends Resource {
 	
 	@Override
 	public Collection<Resource> list() {
-		ArrayList<Resource> result = new ArrayList<>();
-		for (Bucket bucket : getBlockList()) {
-			result.add(new AddressResource(getRootUrl(), getResourcePath() + bucket.getIndex(), _principal, bucket));
-		}
-		return result;
+		return allPhoneNumbers()
+			.stream()
+			.sorted()
+			.map(r -> new AddressResource(getRootUrl(), getResourcePath() + r, _principal))
+			.collect(Collectors.toList());
 	}
 
-	private BlockList getBlockList() {
-		BlockList blockList = new BlockList(100);
+	private Set<String> allPhoneNumbers() {
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			BlockList blocklist = session.getMapper(BlockList.class);
+			Users users = session.getMapper(Users.class);
+			UserSettings settings = users.getSettings(_principal);
 			
-			List<String> numbers = reports.getBlockList(4);
-			NumberTree tree = new NumberTree();
-			for (String phone : numbers) {
-				tree.insert(phone);
-			}
-			tree.createBlockEntries(blockList);
+			long currentUser = users.getUserId(_principal);
+			
+			List<String> personalizations = blocklist.getPersonalizations(currentUser);
+			
+			Set<String> result = reports.getSpamList(settings.getMinVotes(), settings.getMaxLength() - personalizations.size());
+			result.removeAll(blocklist.getExcluded(currentUser));
+			result.addAll(personalizations);
+			
+			return result;
 		}
-		return blockList;
 	}
 	
 	@Override
@@ -116,6 +121,6 @@ public class AddressBookResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		return Integer.toString(getBlockList().stream().map(r -> r.hashCode()).reduce(0, (x, y) -> x + y));
+		return Integer.toString(allPhoneNumbers().stream().map(r -> r.hashCode()).reduce(0, (x, y) -> x + y));
 	}
 }
