@@ -89,6 +89,7 @@ public class TestNumberTree {
 		int weight = 0;
 		
 		for (NumberBlock block : blocks) {
+			System.out.println("## " + block.getBlockTitle());
 			for (String number : block.getNumbers()) {
 				System.out.println(number);
 				

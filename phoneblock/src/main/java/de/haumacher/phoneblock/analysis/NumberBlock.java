@@ -16,6 +16,9 @@ public class NumberBlock {
 	private final String _name;
 	private int _weight;
 	private List<String> _numbers = new ArrayList<>();
+	
+	StringBuilder _prefixBuffer;
+	private String _title;
 
 	/** 
 	 * Creates a {@link NumberBlock}.
@@ -32,6 +35,45 @@ public class NumberBlock {
 	public void add(String number, Integer weight) {
 		_weight += weight;
 		_numbers.add(number);
+		if (_prefixBuffer == null) {
+			_prefixBuffer = new StringBuilder();
+			_prefixBuffer.append(number);
+		} else {
+			for (int n = 0, cnt = Math.min(_prefixBuffer.length(), number.length()); n < cnt; n++) {
+				if (_prefixBuffer.charAt(n) != number.charAt(n)) {
+					_prefixBuffer.setLength(n);
+					break;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Description of the range of numbers in this block.
+	 */
+	public String getBlockTitle() {
+		if (_title == null) {
+			_title = computeTitle();
+		}
+		return _title;
+	}
+
+	private String computeTitle() {
+		if (_prefixBuffer == null) {
+			return "";
+		} else {
+			String prefix = _prefixBuffer.toString();
+
+			int size = _numbers.size();
+			if (size > 1) {
+				String first = _numbers.get(0);
+				String last = _numbers.get(size - 1);
+				int prefixLength = prefix.length();
+				return prefix + "(" + first.substring(prefixLength) + ".." + last.substring(prefixLength) + ")";
+			}
+			
+			return prefix;
+		}
 	}
 	
 	/**
