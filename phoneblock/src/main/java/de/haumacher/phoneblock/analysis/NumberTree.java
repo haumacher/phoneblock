@@ -237,13 +237,17 @@ public class NumberTree {
 		_root.createBlockEntries(sink, new StringBuilder());
 	}
 
-	public List<NumberBlock> createNumberBlocks() {
+	public List<NumberBlock> createNumberBlocks(int minVotes) {
 		class BlockCreator implements BiConsumer<String, Integer> {
 			NumberBlock _block;
 			List<NumberBlock> _blocks = new ArrayList<>();
 			
 			@Override
 			public void accept(String number, Integer weight) {
+				if (weight < minVotes) {
+					return;
+				}
+				
 				if (_block == null || _block.size() >= 9 || !number.startsWith(_block.getName())) {
 					String blockName = number.substring(0, Math.min(number.length(), 4));
 					_block = new NumberBlock(blockName);
