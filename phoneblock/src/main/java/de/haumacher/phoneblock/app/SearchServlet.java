@@ -209,12 +209,16 @@ public class SearchServlet extends HttpServlet {
 		String defaultSummary = defaultSummary(req, info);
 		
 		String pageSummary;
-		if (simpleSummary == null || simpleSummary.isBlank()) {
-			pageSummary = defaultSummary;
-			
-			simpleSummary = defaultSimpleSummary(info);
+		if (info.isWhiteListed()) {
+			pageSummary = simpleSummary;
 		} else {
-			pageSummary = simpleSummary + " " + defaultSummary;
+			if (simpleSummary == null || simpleSummary.isBlank()) {
+				pageSummary = defaultSummary;
+				
+				simpleSummary = defaultSimpleSummary(info);
+			} else {
+				pageSummary = simpleSummary + " " + defaultSummary;
+			}
 		}
 		
 		req.setAttribute("comments", comments);

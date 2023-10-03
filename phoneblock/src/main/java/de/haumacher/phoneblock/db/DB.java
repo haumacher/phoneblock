@@ -525,11 +525,13 @@ public class DB {
 	public Blocklist getBlockListAPI(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			Set<String> whiteList = reports.getWhiteList();
 			List<PhoneInfo> numbers = reports.getBlocklist(minVotes)
 					.stream()
 					.collect(Collectors.toMap(s -> s.getPhone(), s -> s, DB::withMaxRating))
 					.values()
 					.stream()
+					.filter(s -> !whiteList.contains(s.getPhone()))
 					.map(s -> PhoneInfo.create()
 							.setPhone(s.getPhone())
 							.setVotes(s.getVotes())
@@ -610,6 +612,10 @@ public class DB {
 	 * Info about the given phone number, or <code>null</code>, if the given number is not a known source of spam.
 	 */
 	public SpamReport getPhoneInfo(SpamReports reports, String phone) {
+		if (reports.isWhiteListed(phone)) {
+			return new SpamReport(phone, 0, 0, 0).setWhiteListed(true);
+		}
+
 		SpamReport result = reports.getPhoneInfo(phone);
 		if (result == null) {
 			result = reports.getPhoneInfoArchived(phone);
@@ -625,6 +631,11 @@ public class DB {
 	public PhoneInfo getPhoneApiInfo(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			if (reports.isWhiteListed(phone)) {
+				return PhoneInfo.create().setPhone(phone);
+			}
+			
 			PhoneInfo result = reports.getApiPhoneInfo(phone);
 			if (result == null) {
 				result = reports.getApiPhoneInfoArchived(phone);

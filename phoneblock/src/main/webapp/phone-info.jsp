@@ -51,7 +51,7 @@
 <% } %>
 
 <style type="text/css">
-	.fa-star {
+	.box .fa-star {
 		color: green;
 	}
 	
@@ -88,7 +88,17 @@
 	if (info.getVotes() == 0) {
 %>
 	<p>
-		<span class="tag is-info is-success">Keine Beschwerden</span>
+<%
+		if (info.isWhiteListed()) {
+%>
+			<span class="tag is-info is-success"><i class="fa-solid fa-star"></i>&nbsp;Auf der weißen Liste</span>
+<%
+		} else {
+%>
+			<span class="tag is-info is-success">Keine Beschwerden</span>
+<%
+		}
+%>
 	</p>
 <%
 	} else {

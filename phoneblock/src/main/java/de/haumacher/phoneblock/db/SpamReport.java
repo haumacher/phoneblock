@@ -13,6 +13,7 @@ public class SpamReport {
 	private final long _lastUpdate;
 	private final long _dateAdded;
 	private boolean _archived;
+	private boolean _whiteListed;
 	
 	/** 
 	 * Creates a {@link SpamReport}.
@@ -22,6 +23,21 @@ public class SpamReport {
 		_votes = votes;
 		_lastUpdate = lastUpdate;
 		_dateAdded = dateAdded;
+	}
+	
+	/**
+	 * Whether the number is on the white list and can not get spam reports.
+	 */
+	public boolean isWhiteListed() {
+		return _whiteListed;
+	}
+	
+	/**
+	 * @see #isWhiteListed()
+	 */
+	public SpamReport setWhiteListed(boolean whiteListed) {
+		_whiteListed = whiteListed;
+		return this;
 	}
 	
 	/**

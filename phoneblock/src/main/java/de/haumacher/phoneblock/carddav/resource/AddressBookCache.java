@@ -114,10 +114,14 @@ public class AddressBookCache implements ServletContextListener {
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
 			int minVotes) {
 		List<SpamReport> result = reports.getReports();
+		Set<String> whitelist = reports.getWhiteList();
 		
 		NumberTree numberTree = new NumberTree();
 		for (SpamReport report : result) {
 			String phone = report.getPhone();
+			if (whitelist.contains(phone)) {
+				continue;
+			}
 			if (exclusions.contains(phone)) {
 				continue;
 			}

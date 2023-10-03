@@ -175,6 +175,12 @@ public interface SpamReports {
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS")
 	List<SpamReport> getReports();
 	
+	@Select("select PHONE from WHITELIST")
+	Set<String> getWhiteList();
+	
+	@Select("select count(1) from WHITELIST where PHONE = #{phone}")
+	boolean isWhiteListed(String phone);
+	
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
 	List<String> getBlockList(int minVotes);
 	
