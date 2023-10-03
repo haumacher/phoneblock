@@ -172,8 +172,8 @@ public interface SpamReports {
 		"</script>"})
 	List<DBSearchInfo> getSearchesAtAll(int revision, Collection<String> numbers);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
-	List<SpamReport> getReports(int minVotes);
+	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS")
+	List<SpamReport> getReports();
 	
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
 	List<String> getBlockList(int minVotes);

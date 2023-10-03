@@ -14,6 +14,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
@@ -31,11 +33,11 @@ import de.haumacher.phoneblock.db.settings.UserSettings;
  */
 public class AddressBookCache implements ServletContextListener {
 	
-	private static final long FLUSH_INTERVAL_NANOS = 1_000_000_000 * 60 * 1;
-	
-	private final Cache<String, AddressBookResource> _userCache = new Cache<>();
+	private static final Logger LOG = LoggerFactory.getLogger(AddressBookCache.class);
 
-	private final Cache<Integer, List<NumberBlock>> _numberCache = new Cache<>();
+	private final Cache<String, AddressBookResource> _userCache = new Cache<>("user");
+
+	private final Cache<Integer, List<NumberBlock>> _numberCache = new Cache<>("common");
 
 	private static AddressBookCache _instance;
 	
@@ -111,7 +113,7 @@ public class AddressBookCache implements ServletContextListener {
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
 			int minVotes) {
-		List<SpamReport> result = reports.getReports(minVotes);
+		List<SpamReport> result = reports.getReports();
 		
 		NumberTree numberTree = new NumberTree();
 		for (SpamReport report : result) {
@@ -123,49 +125,70 @@ public class AddressBookCache implements ServletContextListener {
 			numberTree.insert(phone, report.getVotes());
 		}
 		for (String personalization : personalizations) {
-			numberTree.insert(personalization, 1000000);
+			numberTree.insert(personalization, 1_000_000);
 		}
 		numberTree.markWildcards();
 		
-		return numberTree.createNumberBlocks();
+		return numberTree.createNumberBlocks(minVotes);
 	}
 	
 	private static final class Cache<K, V> {
 		
+		private static final long FLUSH_INTERVAL_NANOS = 1_000_000_000L * 60 * 1;
+
 		private final ConcurrentMap<K, CacheEntry<K, V>> _index = new ConcurrentHashMap<>();
 		
 		private transient long _lastFlush;
 
+		private String _name;
+
 		/** 
 		 * Creates a {@link AddressBookCache.Cache}.
 		 */
-		public Cache() {
-			_lastFlush = System.nanoTime();
+		public Cache(String name) {
+			_name = name;
+			_lastFlush = nanoTime();
 		}
 		
 		public V put(K key, V value) {
-			flushCache();
-			_index.put(key, CacheEntry.create(key, value));
+			long now = nanoTime();
+			flushCache(now);
+			_index.put(key, CacheEntry.create(now, key, value));
 			return value;
 		}
 
 		public V lookup(K key) {
 			CacheEntry<K, V> entry = _index.get(key);
-			if (entry != null && !entry.isExpired()) {
-				entry.cacheHit();
-				return entry.get();
+			if (entry != null) {
+				long now = nanoTime();
+				if (!entry.isStale(now)) {
+					entry.cacheHit(now);
+					return entry.get();
+				}
 			}
 			return null;
 		}
 
-		private void flushCache() {
-			long now = System.nanoTime();
+		/** 
+		 * The current time in nanoseconds since system boot.
+		 */
+		private long nanoTime() {
+			return System.nanoTime();
+		}
+
+		private void flushCache(long now) {
 			if (now - _lastFlush < FLUSH_INTERVAL_NANOS) {
 				return;
 			}
 			_lastFlush = now;
 			
-			List<CacheEntry<K, ?>> expiredEntries = _index.values().stream().filter(CacheEntry::isExpired).collect(Collectors.toList());
+			int cacheSize = _index.size();
+			
+			List<CacheEntry<K, ?>> expiredEntries = _index.values().stream().filter(e -> e.isExpired(now)).collect(Collectors.toList());
+			int expiredSize = expiredEntries.size();
+			
+			LOG.info("Dropping {} expired out of {} entries from {} cache.", expiredSize, cacheSize, _name);
+			
 			for (CacheEntry<K, ?> expiredEntry : expiredEntries) {
 				_index.remove(expiredEntry.getKey(), expiredEntry);
 			}
@@ -175,41 +198,53 @@ public class AddressBookCache implements ServletContextListener {
 
 	private static final class CacheEntry<K, V> {
 
-		private static final long MAX_CACHE_NANOS = 1000_000_000L * 60 * 5;
+		/**
+		 * Time a cache entry survives, even it is not used.
+		 */
+		private static final long UNUSED_CACHE_NANOS = 1_000_000_000L * 60 * 5;
+		
+		/**
+		 * Maximum time, a cache entry is kept, even if it is regularly used.
+		 */
+		private static final long MAX_CACHE_NANOS = 1_000_000_000L * 60 * 15;
 		
 		private final K _key;
 		private final V _value;
 		
+		private final long _created;
 		private transient long _lastAccess;
 
 		/** 
 		 * Creates a {@link CacheEntry}.
 		 */
-		public CacheEntry(K key, V value) {
+		public CacheEntry(long now, K key, V value) {
 			_key = key;
 			_value = value;
-			_lastAccess = System.nanoTime();
+			_lastAccess = _created = now;
 		}
 		
 		public K getKey() {
 			return _key;
 		}
 
-		public static <K,V> CacheEntry<K,V> create(K key, V value) {
-			return new CacheEntry<>(key, value);
+		public static <K,V> CacheEntry<K,V> create(long now, K key, V value) {
+			return new CacheEntry<>(now, key, value);
 		}
 
-		public void cacheHit() {
-			_lastAccess = System.nanoTime();
+		public void cacheHit(long now) {
+			_lastAccess = now;
 		}
 
 		public V get() {
 			return _value;
 		}
 
-		public boolean isExpired() {
-			long now = System.nanoTime();
-			return (now - _lastAccess) > MAX_CACHE_NANOS;
+		private boolean isExpired(long now) {
+			return (now - _lastAccess) > UNUSED_CACHE_NANOS || isStale(now);
+		}
+
+		private boolean isStale(long now) {
+			return (now - _created) > MAX_CACHE_NANOS;
 		}
 		
 	}
