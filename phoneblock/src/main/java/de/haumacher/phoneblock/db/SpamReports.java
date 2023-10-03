@@ -175,9 +175,6 @@ public interface SpamReports {
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where VOTES >= #{minVotes} order by PHONE")
 	List<SpamReport> getReports(int minVotes);
 	
-	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes} order by LASTUPDATE desc limit #{maxLength}")
-	Set<String> getSpamList(int minVotes, int maxLength);
-	
 	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
 	List<String> getBlockList(int minVotes);
 	

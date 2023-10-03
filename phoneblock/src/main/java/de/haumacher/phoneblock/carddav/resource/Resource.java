@@ -200,7 +200,7 @@ public abstract class Resource {
 	 * 
 	 * @see #isCollection()
 	 */
-	public Collection<Resource> list() {
+	public Collection<? extends Resource> list() {
 		return Collections.emptyList();
 	}
 

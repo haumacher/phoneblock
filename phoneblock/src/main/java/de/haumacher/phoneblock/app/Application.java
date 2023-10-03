@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinylog.configuration.Configuration;
 
+import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
@@ -92,6 +93,7 @@ public class Application implements ServletContextListener {
 			new MailServiceStarter(),
 			new ManagementService(indexer),
 			new ChatGPTService(db, scheduler, indexer),
+			new AddressBookCache()
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
