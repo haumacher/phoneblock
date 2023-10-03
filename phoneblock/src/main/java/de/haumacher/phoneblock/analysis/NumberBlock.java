@@ -103,4 +103,11 @@ public class NumberBlock {
 	public List<String> getNumbers() {
 		return _numbers;
 	}
+
+	/** 
+	 * An identifier for this block.
+	 */
+	public String getBlockId() {
+		return _numbers.get(0);
+	}
 }

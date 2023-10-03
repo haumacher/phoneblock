@@ -29,8 +29,8 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
-import de.haumacher.phoneblock.carddav.resource.AddressResource;
 import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
 import de.haumacher.phoneblock.carddav.resource.Resource;
 import de.haumacher.phoneblock.carddav.resource.RootResource;
@@ -322,10 +322,13 @@ public class CardDavServlet extends HttpServlet {
 			
 			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
 			if (isAuthenticated(req, principal)) {
+				AddressBookResource addressBook = 
+						AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal);
+				
 				if (endIdx < resourcePath.length() - 1) {
-					return new AddressResource(rootUrl, resourcePath, principal);
+					return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
 				} else {
-					return new AddressBookResource(rootUrl, serverRoot, resourcePath, principal);
+					return addressBook;
 				}
 			} else {
 				LOG.warn("Wrong authentication for resource: " + resourcePath);

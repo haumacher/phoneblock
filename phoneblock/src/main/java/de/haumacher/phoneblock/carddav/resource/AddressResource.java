@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -37,14 +38,22 @@ public class AddressResource extends Resource {
 
 	private String _principal;
 
+	private NumberBlock _block;
+
 	/** 
 	 * Creates a {@link AddressResource}.
 	 * 
+	 * @param block The block of numbers represented by this resource.
 	 * @param principal The user name of the address books owner.
 	 */
-	public AddressResource(String rootUrl, String resourcePath, String principal) {
+	public AddressResource(NumberBlock block, String rootUrl, String resourcePath, String principal) {
 		super(rootUrl, resourcePath);
+		_block = block;
 		_principal = principal;
+	}
+	
+	public String getId() {
+		return _block.getBlockId();
 	}
 	
 	@Override
@@ -54,8 +63,7 @@ public class AddressResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		// Address entries never change. The consist only of the bare phone number. 
-		return "2";
+		return Integer.toHexString(_block.getBlockTitle().hashCode());
 	}
 	
 	@Override
@@ -79,15 +87,23 @@ public class AddressResource extends Resource {
 	}
 
 	private String vCardContent() {
-		String displayName = getDisplayName();
-		
-		return "BEGIN:VCARD\n"
-			+ "VERSION:3.0\n"
-			+ "UID:" + displayName + "\n"
-			+ "FN:SPAM: " + displayName + "\n"
-			+ "CATEGORIES:SPAM" + "\n"
-			+ "TEL;TYPE=WORK:" + displayName + "\n"
-			+ "END:VCARD";
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("BEGIN:VCARD\n");
+		buffer.append("VERSION:3.0\n");
+		buffer.append("UID:");
+		buffer.append(_block.getBlockId());
+		buffer.append("\n");
+		buffer.append("FN:SPAM: ");
+		buffer.append(_block.getBlockTitle());
+		buffer.append("\n");
+		buffer.append("CATEGORIES:SPAM\n");
+		for (String number : _block.getNumbers()) {
+			buffer.append("TEL;TYPE=WORK:");
+			buffer.append(number);
+			buffer.append("\n");
+		}
+		buffer.append("END:VCARD");
+		return buffer.toString();
 	}
 	
 	@Override
