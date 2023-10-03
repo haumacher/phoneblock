@@ -83,7 +83,7 @@ public class TestNumberTree {
 		
 		tree.markWildcards();
 		
-		List<NumberBlock> blocks = tree.createNumberBlocks();
+		List<NumberBlock> blocks = tree.createNumberBlocks(1);
 		int numbers = 0;
 		int wildcard = 0;
 		int weight = 0;
