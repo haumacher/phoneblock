@@ -6,9 +6,12 @@ package de.haumacher.phoneblock.carddav.resource;
 import static de.haumacher.phoneblock.util.DomUtil.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +37,26 @@ public abstract class Resource {
 	private final String _rootUrl;
 	
 	private final String _resourcePath;
+
+	private static final Set<QName> UNSUPPORTED_KNOWN = new HashSet<>(Arrays.asList(
+		new QName("DAV:", "add-member"), 
+		new QName("DAV:", "current-user-privilege-set"), 
+		new QName("DAV:", "getcontenttype"),
+		new QName("DAV:", "owner"),
+		new QName("DAV:", "quota-available-bytes"), 
+		new QName("DAV:", "quota-used-bytes"),
+		new QName("DAV:", "resource-id"),
+		new QName("DAV:", "supported-report-set"), 
+		new QName("DAV:", "sync-token"),
+		new QName("http://calendarserver.org/ns/", "me-card"), 
+		new QName("http://calendarserver.org/ns/", "pushkey"),
+		new QName("http://calendarserver.org/ns/", "push-transports"), 
+		new QName("http://me.com/_namespace/", "bulk-requests"),
+		new QName("http://me.com/_namespace/", "guardian-restricted"), 
+		new QName("urn:ietf:params:xml:ns:carddav", "max-image-size"),
+		new QName("urn:ietf:params:xml:ns:carddav", "max-resource-size"), 
+		new QName("urn:ietf:params:xml:ns:carddav", "supported-address-data") 
+	));
 	
 	/** 
 	 * Creates a {@link Resource}.
@@ -142,7 +165,9 @@ public abstract class Resource {
 			}
 		}
 		
-		LOG.warn("Property '" + property + "' not found: " + _resourcePath);
+		if (!UNSUPPORTED_KNOWN.contains(property)) {
+			LOG.warn("Property '" + property + "' not found: " + _resourcePath);
+		}
 		return HttpServletResponse.SC_NOT_FOUND;
 	}
 
