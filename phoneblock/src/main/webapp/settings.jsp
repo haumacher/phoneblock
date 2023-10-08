@@ -57,20 +57,48 @@
 			<div class="field">
 			  <label class="label">Maximale Blocklist-Größe</label>
 			  <div class="control has-icons-left">
-			    <input class="input" type="number" value="<%= settings.getMaxLength()%>" name="maxLength">
+				<div class="select">			  
+			    <select class="input" name="maxLength">
+			    	<option value="1000" <% if (settings.getMaxLength() == 1000){%>selected="selected"<%}%>>1000 (klein für ganz alte Fritz!Boxen)</option>
+			    	<option value="2000" <% if (settings.getMaxLength() == 2000){%>selected="selected"<%}%>>2000 (empfohlen für die meisten Fritz!Boxen)</option>
+			    	<option value="3000" <% if (settings.getMaxLength() == 3000){%>selected="selected"<%}%>>3000 (funktioniert z.B. noch auf FRITZ!Box 7590)</option>
+			    	<option value="4000" <% if (settings.getMaxLength() == 4000){%>selected="selected"<%}%>>4000 (beachte die Hinweise unten)</option>
+			    	<option value="5000" <% if (settings.getMaxLength() == 5000){%>selected="selected"<%}%>>5000 (riesig, beachte die Hinweise unten)</option>
+			    	<option value="6000" <% if (settings.getMaxLength() == 6000){%>selected="selected"<%}%>>6000 (extrem, Vorsicht, Deine Fritz!Box kann abstürzen)</option>
+			    </select>
+			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-ruler-vertical"></i>
 			    </span>
 			  </div>
-			  <p class="help">Wenn Du Probleme beim Update der Blocklist hast, kannst Du hier die Größe Deiner Blocklist beschränken. 
-			  AVM empfiehlt Telefonbücher mit höchstens 1000 Einträgen zu befüllen. Aktuelle Fritz!Box-en verkraften aber bis zu
-			  2000 Einträgen in einem Telefonbuch. </p>
+			  <p class="help">Wenn Du Probleme beim Update der Blocklist hast, kannst Du hier die Größe Deiner Blocklist reduzieren. 
+			  AVM empfiehlt Telefonbücher mit höchstens 1000 Einträgen zu befüllen. Die FRITZ!Box 7590 verkraftest z.B. bis zu
+			  3000 Einträge in einem Telefonbuch.</p>
+			  
+			  <p>
+			  <b>Achtung:</b> Wenn Du ausprobieren willst, wie viele Einträge Deine Box in einem Telefonbuch speichern kann, dann gehe folgendermaßen vor: 
+			  Beginne mit der Standardeinstellung von 2000 Einträgen. Synchronisiere die Blocklist und lass Dir das Blocklist-Telefonbuch anzeigen. 
+			  Scrolle ganz ans Ende und lass Dir die Druckvorschau der Blocklist anzeigen und merke Dir die Anzahl der Seiten, die ausgedruckt würden.
+			  Erhöhe jetzt die Blocklist-Größe um einen Schritt, synchronisiere die Blocklist neu und lass Dir wieder die Druckvorschau der Blocklist 
+			  anzeigen. Wenn sich die Seitenanzahl entsprechend erhöht hat, dann kann Deine Box mit dieser Größe umgehen, probiere die nächste Größe. 
+			  Wenn sich die Seitenanzahl der Druckvorschau nicht oder nicht entsprechend erhöht hat, dann nimm die letzt kleinere Größe der Blocklist. 
+			  Interessanterweise meldet die Fritz!Box keinen Fehler, wenn ein Telefonbuch zu groß wird, sondern synchronisiert entweder einfach nicht
+			  oder lässt irgendwelche Nummern einfach weg. Bei einer zu großen Telefonbuchgröße habe ich Boxen schon einfach abstürzen sehen - sei
+			  also vorsichtig.
+			  </p>
 			</div>
 			
 			<div class="field">
 			  <label class="label">Mindest-Konfidenz</label>
 			  <div class="control has-icons-left">
-			    <input class="input" type="number" value="<%= settings.getMinVotes()%>" name="minVotes">
+				<div class="select">			  
+			    <select class="input" name="minVotes">
+			    <option value="4" <%if (settings.getMinVotes() == 4) {%>selected="selected"<%}%>>4 (sofort sperren)</option>	
+			    <option value="8" <%if (settings.getMinVotes() == 8) {%>selected="selected"<%}%>>8</option>	
+			    <option value="20" <%if (settings.getMinVotes() == 20) {%>selected="selected"<%}%>>20</option>	
+			    <option value="100" <%if (settings.getMinVotes() == 100) {%>selected="selected"<%}%>>100 (nur sperren wenn ganz sicher)</option>	
+			    </select>
+			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-phone-volume"></i>
 			    </span>
@@ -101,7 +129,7 @@
 <section class="section">
 	<div class="content">
 	<h2>Gefahrenzone</h2>
-	<p>Nutze diese Funktionalität mit Bedacht. Du kannst Deine PhonBlock-Installation damit kaputt machen!</p>
+	<p>Nutze diese Funktionalität mit Bedacht. Du kannst Deine PhoneBlock-Installation damit kaputt machen!</p>
 	</div>
 		
 <nav class="panel is-warning">

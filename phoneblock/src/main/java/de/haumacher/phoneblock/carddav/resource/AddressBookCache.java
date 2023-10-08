@@ -63,35 +63,41 @@ public class AddressBookCache implements ServletContextListener {
 	
 	public AddressBookResource lookupAddressBook(String rootUrl, String serverRoot, String resourcePath,
 			String principal) {
-		AddressBookResource cachedResult = _userCache.lookup(principal);
-		if (cachedResult != null) {
-			return cachedResult;
-		}
-		
-		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers(principal));
-		return _userCache.put(principal, addressBook);
-	}
-
-	private List<NumberBlock> phoneNumbers(String principal) {
 		try (SqlSession session = DBService.getInstance().openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			BlockList blocklist = session.getMapper(BlockList.class);
 			Users users = session.getMapper(Users.class);
 			UserSettings settings = users.getSettings(principal);
 			
-			long userId = users.getUserId(principal);
-			
-			List<String> personalizations = blocklist.getPersonalizations(userId);
-			Set<String> exclusions = blocklist.getExcluded(userId);
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();
-			
-			if (!personalizations.isEmpty() || !exclusions.isEmpty()) {
-				return getCommonNumbers(reports, minVotes, maxLength);
+
+			AddressBookResource cachedResult = _userCache.lookup(principal);
+			if (cachedResult != null && cachedResult.matchesSettings(minVotes, maxLength)) {
+				return cachedResult;
 			}
 			
-			return loadNumbers(reports, personalizations, exclusions, minVotes, maxLength);
+			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, minVotes, maxLength);
+			
+			AddressBookResource addressBook = new AddressBookResource(
+					rootUrl, serverRoot, resourcePath, principal, minVotes, maxLength, phoneNumbers);
+			return _userCache.put(principal, addressBook);
 		}
+	}
+
+	private List<NumberBlock> loadNumbers(SqlSession session, Users users, String principal, int minVotes,
+			int maxLength) {
+		SpamReports reports = session.getMapper(SpamReports.class);
+		BlockList blocklist = session.getMapper(BlockList.class);
+		
+		long userId = users.getUserId(principal);
+		
+		List<String> personalizations = blocklist.getPersonalizations(userId);
+		Set<String> exclusions = blocklist.getExcluded(userId);
+		
+		if (!personalizations.isEmpty() || !exclusions.isEmpty()) {
+			return getCommonNumbers(reports, minVotes, maxLength);
+		}
+		
+		return loadNumbers(reports, personalizations, exclusions, minVotes, maxLength);
 	}
 
 	public List<NumberBlock> lookupBlockList(int minVotes, int maxLength) {

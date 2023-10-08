@@ -37,15 +37,36 @@ public class SettingsServlet extends HttpServlet {
 		int minVotes = Integer.parseInt(req.getParameter("minVotes"));
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
 		
-		if (minVotes < 1) {
-			minVotes = 1;
+		if (minVotes <= 4) {
+			minVotes = 4;
+		}
+		else if (minVotes <= 8) {
+			minVotes = 8;
+		}
+		else if (minVotes <= 20) {
+			minVotes = 20;
+		}
+		else {
+			minVotes = 100;
 		}
 		
-		if (maxLength < 10) {
-			maxLength = 10;
-		}
-		else if (maxLength > 2000) {
+		if (maxLength <= 1000) {
+			maxLength = 1000;
+		} 
+		else if (maxLength <= 2000) {
 			maxLength = 2000;
+		} 
+		else if (maxLength <= 3000) {
+			maxLength = 3000;
+		}
+		else if (maxLength <= 4000) {
+			maxLength = 4000;
+		} 
+		else if (maxLength <= 5000) {
+			maxLength = 5000;
+		} 
+		else {
+			maxLength = 6000;
 		}
 		
 		DB db = DBService.getInstance();

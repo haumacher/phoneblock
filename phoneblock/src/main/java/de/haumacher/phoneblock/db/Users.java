@@ -13,7 +13,8 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface Users {
 
-	@Insert("insert into USERS (LOGIN, CLIENTNAME, EXTID, DISPLAYNAME, PWHASH, REGISTERED) values (#{login}, #{clientName}, #{extId}, #{displayName}, #{pwhash}, #{registered})")
+	@Insert("insert into USERS (LOGIN, CLIENTNAME, EXTID, DISPLAYNAME, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH) " + 
+			"values (#{login}, #{clientName}, #{extId}, #{displayName}, #{pwhash}, #{registered}, 4, 2000)")
 	void addUser(String login, String clientName, String extId, String displayName, byte[] pwhash, long registered);
 	
 	@Update("update USERS set PWHASH=#{pwhash} where ID=#{userId}")
