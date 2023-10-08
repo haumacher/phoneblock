@@ -1,3 +1,4 @@
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%-- 
@@ -94,7 +95,7 @@
 						<strong>Log in</strong>
 					</a>
 					<% } else { %>
-					<a class="button is-primary" href="<%=request.getContextPath() %>/settings.jsp">
+					<a class="button is-primary" href="<%=request.getContextPath() + SettingsServlet.PATH %>">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>

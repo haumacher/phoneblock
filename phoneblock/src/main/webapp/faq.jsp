@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <html>
 <%
@@ -105,11 +106,10 @@
 
 		<h2>Eine Nummer wird fälschlicherweise blockiert, was tun?</h2>
 		<p>
-			Kein Problem, öffne das Telefonbuch "Blocklist" in Deiner Fritz!Box, suche die Nummer und lösche sie aus
-			der Blocklist. Damit wird diese Nummer aus Deiner persönlichen Blocklist entfernt und wird auch nie wieder
-			darin aufgenommen, auch wenn sich ganz viele andere von Anrufen dieser Nummer genervt fühlen und sie 
-			blockieren. Mit dem Entfernen einer Nummer aus Deiner Blocklist erzeugst Du für diese Nummer eine 
-			Ausnahmeregel, die verhindert, dass diese Nummer je wieder in Deine Blocklist aufgenommen wird. 
+			Kein Problem, öffne <a href="<%= request.getContextPath() + SettingsServlet.PATH %>">Deine Einstellungen</a> 
+			und füge die Nummer zu Deiner White-List hinzu. Deine White-List ist eine Liste von Telefonnummern, die Du 
+			von der Sperrung ausgenommen hast. Sie landen nie auf Deiner Blocklist, auch wenn sich ganz viele andere 
+			von Anrufen dieser Nummer genervt fühlen und sie blockieren. 
 		</p>
 
 		<h2>Ich habe Angst, dass PhoneBlock Nummern blockiert, die ich benötige, was tun?</h2>

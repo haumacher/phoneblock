@@ -44,7 +44,7 @@ public class DeleteAccountServlet extends HttpServlet {
 	}
 
 	private void showSettings(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		resp.sendRedirect(req.getContextPath() + "/settings.jsp");
+		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 	
 }
