@@ -123,26 +123,30 @@ public class AddressResource extends Resource {
 			
 			long currentUser = users.getUserId(_principal);
 			
-			for (Telephone phone : card.getTelephoneNumbers()) {
-				String phoneText = phone.getText();
-				
-				String phoneId = NumberAnalyzer.toId(phoneText);
-				if (phoneId == null) {
-					continue;
+			if (card.getTelephoneNumbers().size() > 1) {
+				LOG.warn("Prevent putting card with multiple numbers: " + card);
+			} else {
+				for (Telephone phone : card.getTelephoneNumbers()) {
+					String phoneText = phone.getText();
+					
+					String phoneId = NumberAnalyzer.toId(phoneText);
+					if (phoneId == null) {
+						continue;
+					}
+					
+					LOG.info("Adding to block list: " + phoneId);
+					
+					blockList.removeExclude(currentUser, phoneId);
+					
+					// Safety, prevent duplicate key constraint violation.
+					blockList.removePersonalization(currentUser, phoneId);
+					
+					blockList.addPersonalization(currentUser, phoneId);
+					db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
 				}
 				
-				LOG.info("Adding to block list: " + phoneId);
-				
-				blockList.removeExclude(currentUser, phoneId);
-				
-				// Safety, prevent duplicate key constraint violation.
-				blockList.removePersonalization(currentUser, phoneId);
-				
-				blockList.addPersonalization(currentUser, phoneId);
-				db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
+				session.commit();
 			}
-			
-			session.commit();
 		}
 		
 		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -150,9 +154,8 @@ public class AddressResource extends Resource {
 
 	@Override
 	public void delete(HttpServletResponse resp) {
-		String phoneNumber = getDisplayName();
-		
-		DBService.getInstance().deleteEntry(_principal, phoneNumber);
+		// Cannot allow to delete a potential block of numbers.
+		LOG.warn("Prevent deleting card: " + _block.getBlockTitle());
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
