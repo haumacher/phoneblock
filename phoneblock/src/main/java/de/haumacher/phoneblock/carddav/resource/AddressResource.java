@@ -146,6 +146,9 @@ public class AddressResource extends Resource {
 				}
 				
 				session.commit();
+				
+				// Ensure that the new number is added to the user's address book immediately.
+				AddressBookCache.getInstance().flushUserCache(_principal);
 			}
 		}
 		
