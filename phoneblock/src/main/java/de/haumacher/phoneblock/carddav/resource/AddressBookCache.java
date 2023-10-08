@@ -73,6 +73,11 @@ public class AddressBookCache implements ServletContextListener {
 	 */
 	public AddressBookResource lookupAddressBook(String rootUrl, String serverRoot, String resourcePath,
 			String principal) {
+		AddressBookResource cachedResult = _userCache.lookup(principal);
+		if (cachedResult != null) {
+			return cachedResult;
+		}
+
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			Users users = session.getMapper(Users.class);
 			UserSettings settings = users.getSettings(principal);
@@ -80,15 +85,10 @@ public class AddressBookCache implements ServletContextListener {
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();
 
-			AddressBookResource cachedResult = _userCache.lookup(principal);
-			if (cachedResult != null && cachedResult.matchesSettings(minVotes, maxLength)) {
-				return cachedResult;
-			}
-			
 			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, minVotes, maxLength);
 			
-			AddressBookResource addressBook = new AddressBookResource(
-					rootUrl, serverRoot, resourcePath, principal, minVotes, maxLength, phoneNumbers);
+			AddressBookResource addressBook = 
+				new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers);
 			return _userCache.put(principal, addressBook);
 		}
 	}
@@ -103,7 +103,7 @@ public class AddressBookCache implements ServletContextListener {
 		List<String> personalizations = blocklist.getPersonalizations(userId);
 		Set<String> exclusions = blocklist.getExcluded(userId);
 		
-		if (!personalizations.isEmpty() || !exclusions.isEmpty()) {
+		if (personalizations.isEmpty() && exclusions.isEmpty()) {
 			return getCommonNumbers(reports, minVotes, maxLength);
 		}
 		
