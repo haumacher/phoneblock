@@ -291,6 +291,10 @@
 		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"></textarea>
 		</p>
 		
+		<p>
+		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a href="<%= request.getContextPath() %>/login.jsp">melde Dich vorher an</a>!
+		</p>
+		
 		<div class="buttons">
 			<button name="send" type="submit" class="button is-rounded is-primary">
 			    <span class="icon">

@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
+<%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="true"%>
 <%@page import="de.haumacher.phoneblock.app.DeleteAccountServlet"%>
 <%@page import="de.haumacher.phoneblock.app.ResetPasswordServlet"%>
@@ -110,19 +112,110 @@
 			  </p>
 			</div>
 			
-			<div class="field is-grouped is-grouped-right">
+			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">
 			      Speichern
 			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " href="<%= request.getContextPath() %>/settings.jsp">
+			    <a class="button " href="<%= request.getContextPath() + SettingsServlet.PATH %>">
 			      Verwerfen
 			    </a>
 			  </p>
 			</div>
 			</form>
+	</div>
+</section>
+
+<section class="section">
+<%
+List<String> blacklist = (List<String>) request.getAttribute("blacklist");
+%>
+	<div class="content">
+	<h2>Deine Blacklist</h2>
+	
+	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
+
+<% if (blacklist.isEmpty()) { %>
+	<p>Du hast keine Nummern explizit gesperrt. Um eine Nummer zu sperren, suche die Nummer über das Suchfeld oben und schreibe einen negativen Kommentar, oder mach in Deiner Fritz!Box einen Telefonbucheintrag für die Nummer in der Blocklist.</p>
+<% } else { %>
+	<p>Diese Nummern hast Du explizit gesperrt. Eine versehentlich eingetragene Sperre kannst Du hier aufheben:</p>
+	<% for (String number : blacklist) { %>
+	<div class="field">
+		<label class="checkbox">
+			<input type="checkbox" name="bl-<%=number %>" /> <%=number %>
+		</label>
+	</div>
+	<% } %>
+
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" type="submit">
+	      Löschen
+	    </button>
+	  </p>
+	</div>
+<% } %>
+	
+	</form>
+	
+	</div>
+</section>
+
+<section class="section">
+<%
+List<String> whitelist = (List<String>) request.getAttribute("whitelist");
+%>
+	<div class="content">
+	<h2>Deine Whitelist</h2>
+	
+	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
+
+<% if (whitelist.isEmpty()) { %>
+	<p>Du hast keine Nummern von der Sperrung ausgenommen.</p>
+<% } else { %>
+	<p>Diese Nummern hast Du explizit von der Sperrung ausgenommen:</p>
+
+<% for (String number : whitelist) { %>
+	<div class="field">
+		<label class="checkbox">
+			<input type="checkbox" name="wl-<%=number %>" /> <%=number %>
+		</label>
+	</div>
+<% } %>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" type="submit">
+	      Löschen
+	    </button>
+	  </p>
+	</div>
+<% } %>
+	
+	</form>
+	</div>
+	
+	<div class="content">
+	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
+
+	<div class="field">
+	  <p class="control has-icons-left">
+	    <input class="input" type="tel" placeholder="Neue Ausnahme" name="add-wl">
+	    <span class="icon is-small is-left">☎</span>
+	  </p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" type="submit">
+	      Hinzufügen
+	    </button>
+	  </p>
+	</div>
+	
+	</form>
 	</div>
 </section>
 

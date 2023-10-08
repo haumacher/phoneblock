@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.RegistrationServlet;
+import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -95,7 +96,7 @@ public class OAuthLoginServlet extends HttpServlet {
 			RegistrationServlet.startSetup(req, resp, login, passwd);
 		} else {
 			LoginFilter.setAuthenticatedUser(req, login);
-			resp.sendRedirect(req.getContextPath() + "/settings.jsp");
+			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 		}
 	}
 

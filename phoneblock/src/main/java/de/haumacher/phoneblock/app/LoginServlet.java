@@ -54,7 +54,7 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
-		resp.sendRedirect(req.getContextPath() + "/settings.jsp");
+		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 
 	/**

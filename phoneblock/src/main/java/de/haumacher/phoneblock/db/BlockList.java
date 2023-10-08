@@ -31,6 +31,12 @@ public interface BlockList {
 	 */
 	@Select("select PHONE from EXCLUDES where OWNER = #{owner}")
 	Set<String> getExcluded(long owner);
+	
+	/**
+	 * List of all numbers that the user with the given user ID has explicitly allowed.
+	 */
+	@Select("select PHONE from EXCLUDES where OWNER = #{owner} order by PHONE")
+	List<String> getWhiteList(long owner);
 
 	/**
 	 * Adds a blocklist entry for the user with the given user ID.

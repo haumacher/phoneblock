@@ -12,12 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.model.Rating;
 
 /**
@@ -59,6 +62,27 @@ public class RatingServlet extends HttpServlet {
 				db.addRating(phoneId, rating, comment, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
+				
+				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
+				if (userName != null) {
+					try (SqlSession tx = db.openSession()) {
+						Users users = tx.getMapper(Users.class);
+						Long userId = users.getUserId(userName);
+						if (userId != null) {
+							BlockList blocklist = tx.getMapper(BlockList.class);
+							long owner = userId.longValue();
+							if (rating == Rating.A_LEGITIMATE) {
+								blocklist.addExclude(owner, phoneId);
+								blocklist.removePersonalization(owner, phoneId);
+							} else {
+								blocklist.addPersonalization(owner, phoneId);
+								blocklist.removeExclude(owner, phoneId);
+							}
+							
+							tx.commit();
+						}
+					}
+				}
 				
 				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}
