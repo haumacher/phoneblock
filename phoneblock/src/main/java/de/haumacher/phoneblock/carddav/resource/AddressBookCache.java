@@ -61,6 +61,16 @@ public class AddressBookCache implements ServletContextListener {
 		}
 	}
 	
+	/**
+	 * Drops a cache entry for the given user.
+	 */
+	public void flushUserCache(String principal) {
+		_userCache.flush(principal);
+	}
+	
+	/**
+	 * Looks up the block list resource for the given user.
+	 */
 	public AddressBookResource lookupAddressBook(String rootUrl, String serverRoot, String resourcePath,
 			String principal) {
 		try (SqlSession session = DBService.getInstance().openSession()) {
@@ -205,6 +215,13 @@ public class AddressBookCache implements ServletContextListener {
 			return value;
 		}
 
+		/**
+		 * Removes an entry with the given key.
+		 */
+		public void flush(K key) {
+			_index.remove(key);
+		}
+		
 		public V lookup(K key) {
 			CacheEntry<K, V> entry = _index.get(key);
 			if (entry != null) {

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -74,6 +75,9 @@ public class SettingsServlet extends HttpServlet {
 		settings.setMinVotes(minVotes);
 		settings.setMaxLength(maxLength);
 		db.updateSettings(settings);
+		
+		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
+		AddressBookCache.getInstance().flushUserCache(userName);
 		
 		resp.sendRedirect(req.getContextPath() + "/settings.jsp");
 	}
