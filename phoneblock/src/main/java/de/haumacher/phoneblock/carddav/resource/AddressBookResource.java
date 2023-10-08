@@ -28,34 +28,25 @@ public class AddressBookResource extends Resource {
 
 	private final Map<String, AddressResource> _addressById;
 
-	private int _minVotes;
-
-	private int _maxLength;
-
 	/** 
 	 * Creates a {@link AddressBookResource}.
 	 * 
 	 * @param rootUrl The full URl (including protocol) of the CardDAV servlet.
 	 * @param serverRoot The absolute path of the CardDAV servlet relative to the server.
 	 */
-	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal, int minVotes, int maxLength, List<NumberBlock> numbers) {
+	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal, List<NumberBlock> numbers) {
 		super(rootUrl, resourcePath);
 		_serverRoot = serverRoot;
 		_principal = principal;
-		_minVotes = minVotes;
-		_maxLength = maxLength;
 		
 		_addressById = numbers
 			.stream()
-			.map(r -> new AddressResource(r, getRootUrl(), getResourcePath() + r.getBlockId(), _principal))
+			.map(r -> newAddressResource(r, r.getBlockId()))
 			.collect(Collectors.toMap(AddressResource::getId, r -> r));
 	}
 
-	/** 
-	 * Whether this resource was created with the given settings.
-	 */
-	public boolean matchesSettings(int minVotes, int maxLength) {
-		return _minVotes == minVotes && _maxLength == maxLength;
+	private AddressResource newAddressResource(NumberBlock block, String id) {
+		return new AddressResource(block, getRootUrl(), getResourcePath() + id, _principal);
 	}
 
 	@Override
@@ -114,7 +105,8 @@ public class AddressBookResource extends Resource {
 		// Relative URL.
 		AddressResource result = _addressById.get(id);
 		if (result == null) {
-			LOG.warn("Received non-existing contact URL '" + getRootUrl() + "': " + id);
+			// Maybe this is a put operation, create an empty entry.
+			return newAddressResource(null, id);
 		}
 		return result;
 	}
