@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.carddav.resource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,7 +38,7 @@ public class AddressBookCache implements ServletContextListener {
 
 	private final Cache<String, AddressBookResource> _userCache = new Cache<>("user");
 
-	private final Cache<Integer, List<NumberBlock>> _numberCache = new Cache<>("common");
+	private final Cache<ListType, List<NumberBlock>> _numberCache = new Cache<>("common");
 
 	private static AddressBookCache _instance;
 	
@@ -83,39 +84,73 @@ public class AddressBookCache implements ServletContextListener {
 			List<String> personalizations = blocklist.getPersonalizations(userId);
 			Set<String> exclusions = blocklist.getExcluded(userId);
 			int minVotes = settings.getMinVotes();
+			int maxLength = settings.getMaxLength();
 			
 			if (!personalizations.isEmpty() || !exclusions.isEmpty()) {
-				return getCommonNumbers(reports, minVotes);
+				return getCommonNumbers(reports, minVotes, maxLength);
 			}
 			
-			return loadNumbers(reports, personalizations, exclusions, minVotes);
+			return loadNumbers(reports, personalizations, exclusions, minVotes, maxLength);
 		}
 	}
 
-	public List<NumberBlock> lookupBlockList(int minVotes) {
+	public List<NumberBlock> lookupBlockList(int minVotes, int maxLength) {
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			return getCommonNumbers(reports, minVotes);
+			return getCommonNumbers(reports, minVotes, maxLength);
 		}
 	}
+	
+	static final class ListType {
 
-	private List<NumberBlock> getCommonNumbers(SpamReports reports, int minVotes) {
-		Integer key = Integer.valueOf(minVotes);
+		private int _minVotes;
+		private int _maxLength;
+
+		public ListType(int minVotes, int maxLength) {
+			_minVotes = minVotes;
+			_maxLength = maxLength;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(_maxLength, _minVotes);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ListType other = (ListType) obj;
+			return _maxLength == other._maxLength && _minVotes == other._minVotes;
+		}
+
+		public static ListType valueOf(int minVotes, int maxLength) {
+			return new ListType(minVotes, maxLength);
+		}
+		
+	}
+
+	private List<NumberBlock> getCommonNumbers(SpamReports reports, int minVotes, int maxLength) {
+		ListType key = ListType.valueOf(minVotes, maxLength);
 		List<NumberBlock> cachedNumbers = _numberCache.lookup(key);
 		if (cachedNumbers != null) {
 			return cachedNumbers;
 		}
 		
-		List<NumberBlock> numbers = loadNumbers(reports, Collections.emptyList(), Collections.emptySet(), minVotes);
+		List<NumberBlock> numbers = loadNumbers(reports, Collections.emptyList(), Collections.emptySet(), minVotes, maxLength);
 		return _numberCache.put(key, numbers);
 	}
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
-			int minVotes) {
+			int minVotes, int maxLength) {
 		List<SpamReport> result = reports.getReports();
 		Set<String> whitelist = reports.getWhiteList();
-		
+		long now = System.currentTimeMillis();
 		NumberTree numberTree = new NumberTree();
 		for (SpamReport report : result) {
 			String phone = report.getPhone();
@@ -126,14 +161,17 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 			
-			numberTree.insert(phone, report.getVotes());
+			int votes = report.getVotes();
+			int ageInDays = (int) ((now - report.getLastUpdate()) / 1000 / 60 / 60 / 24);
+			
+			numberTree.insert(phone, votes, ageInDays);
 		}
 		for (String personalization : personalizations) {
-			numberTree.insert(personalization, 1_000_000);
+			numberTree.insert(personalization, 1_000_000, 0);
 		}
 		numberTree.markWildcards();
 		
-		return numberTree.createNumberBlocks(minVotes);
+		return numberTree.createNumberBlocks(minVotes, maxLength);
 	}
 	
 	private static final class Cache<K, V> {

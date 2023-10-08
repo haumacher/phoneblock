@@ -14,7 +14,6 @@ import java.util.List;
 public class NumberBlock {
 	
 	private final String _name;
-	private int _weight;
 	private List<String> _numbers = new ArrayList<>();
 	
 	StringBuilder _prefixBuffer;
@@ -29,11 +28,8 @@ public class NumberBlock {
 
 	/** 
 	 * Adds a new number to this block.
-	 * 
-	 * @param weight The weight of the given number.
 	 */
-	public void add(String number, Integer weight) {
-		_weight += weight;
+	public void add(String number) {
 		_numbers.add(number);
 		if (_prefixBuffer == null) {
 			_prefixBuffer = new StringBuilder();
@@ -74,13 +70,6 @@ public class NumberBlock {
 			
 			return prefix;
 		}
-	}
-	
-	/**
-	 * The total weight of all numbers in this block.
-	 */
-	public int getWeight() {
-		return _weight;
 	}
 
 	/** 

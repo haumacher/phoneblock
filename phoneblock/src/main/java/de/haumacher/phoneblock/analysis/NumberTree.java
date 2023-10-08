@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -23,14 +22,16 @@ public class NumberTree {
 		private Node[] _next;
 		private boolean _wildcard;
 		private int _weight;
+		private int _age = Integer.MAX_VALUE;
 
 		/** 
 		 * Appends a next digit to the number represented by this node.
 		 * @param weight 
 		 */
-		public Node append(String phone, int index, int weight) {
+		public Node append(String phone, int index, int weight, int age) {
 			if (index == phone.length()) {
 				_weight += weight;
+				_age = Math.min(_age, age);
 				return this;
 			}
 			
@@ -47,7 +48,7 @@ public class NumberTree {
 				_next[digit] = next;
 			}
 			
-			return next.append(phone, index + 1, weight);
+			return next.append(phone, index + 1, weight, age);
 		}
 		
 		/**
@@ -127,7 +128,7 @@ public class NumberTree {
 					
 					depth = Math.max(depth, info.getDepth() + 1);
 					count += info.getCount();
-					wildcards += child.isWidlcard() ? 1 : 0;
+					wildcards += child.isWildcard() ? 1 : 0;
 				}
 			}
 			
@@ -155,23 +156,23 @@ public class NumberTree {
 		/** 
 		 * Whether this is a wildcard node.
 		 */
-		private boolean isWidlcard() {
+		private boolean isWildcard() {
 			return _wildcard;
 		}
 
 		/** 
 		 * Creates all number patterns represented by the subtree rooted at this node to the given numbers list.
 		 */
-		public void createBlockEntries(BiConsumer<String, Integer> numbers, StringBuilder prefix) {
+		public void createBlockEntries(NumberIterator numbers, StringBuilder prefix) {
 			int length = prefix.length();
 			if (_wildcard) {
 				prefix.append('*');
-				numbers.accept(prefix.toString(), sumWeight());
+				numbers.accept(prefix.toString(), sumWeight(), minAge());
 				prefix.setLength(length);
 				return;
 			}
 			if (_next == null) {
-				numbers.accept(prefix.toString(), _weight);
+				numbers.accept(prefix.toString(), _weight, _age);
 				return;
 			}
 			for (Node child : _next) {
@@ -189,6 +190,26 @@ public class NumberTree {
 				return Arrays.stream(_next).filter(Objects::nonNull).collect(Collectors.summingInt(Node::sumWeight));
 			}
 		}
+		
+		private int minAge() {
+			if (_next == null || _next.length == 0) {
+				return _age;
+			} else {
+				int age = Integer.MAX_VALUE;
+				for (Node child : _next) {
+					if (child == null) {
+						continue;
+					}
+					
+					age = Math.min(age, child.minAge());
+				}
+				return age;
+			}
+		}
+	}
+	
+	interface NumberIterator {
+		void accept(String number, int weight, int age);
 	}
 	
 	private static class DigitNode extends Node {
@@ -203,7 +224,7 @@ public class NumberTree {
 		}
 		
 		@Override
-		public void createBlockEntries(BiConsumer<String, Integer> numbers, StringBuilder prefix) {
+		public void createBlockEntries(NumberIterator numbers, StringBuilder prefix) {
 			int length = prefix.length();
 			prefix.append(_digit);
 			super.createBlockEntries(numbers, prefix);
@@ -212,11 +233,11 @@ public class NumberTree {
 	}
 	
 	public void insert(String phone) {
-		insert(phone, 1);
+		insert(phone, 1, 0);
 	}
 
-	public void insert(String phone, int weight) {
-		_root.append(phone, 0, weight);
+	public void insert(String phone, int weight, int age) {
+		_root.append(phone, 0, weight, age);
 	}
 	
 	public void markWildcards() {
@@ -225,7 +246,7 @@ public class NumberTree {
 	
 	public List<String> createBlockEntries() {
 		ArrayList<String> result = new ArrayList<>();
-		BiConsumer<String, Integer> sink = (x, weight) -> result.add(x);
+		NumberIterator sink = (x, weight, age) -> result.add(x);
 		createBlockEntries(sink);
 		return result;
 	}
@@ -233,33 +254,77 @@ public class NumberTree {
 	/** 
 	 * Pushes all numbers to the given sink.
 	 */
-	public void createBlockEntries(BiConsumer<String, Integer> sink) {
+	public void createBlockEntries(NumberIterator sink) {
 		_root.createBlockEntries(sink, new StringBuilder());
 	}
 
-	public List<NumberBlock> createNumberBlocks(int minVotes) {
-		class BlockCreator implements BiConsumer<String, Integer> {
-			NumberBlock _block;
-			List<NumberBlock> _blocks = new ArrayList<>();
+	private static final class WeightedNumber {
+
+		private String _number;
+		private int _weight;
+
+		/** 
+		 * Creates a {@link WeightedNumber}.
+		 */
+		public WeightedNumber(String number, int weight) {
+			_number = number;
+			_weight = weight;
+		}
+		
+	}
+	
+	public List<NumberBlock> createNumberBlocks(int minVotes, int maxEntries) {
+		class BlockCreator implements NumberIterator {
+			List<WeightedNumber> _numbers = new ArrayList<>();
 			
 			@Override
-			public void accept(String number, Integer weight) {
+			public void accept(String number, int votes, int age) {
+				int weight = votes - weight(age);
+				
 				if (weight < minVotes) {
 					return;
 				}
 				
-				if (_block == null || _block.size() >= 9 || !number.startsWith(_block.getName())) {
-					String blockName = number.substring(0, Math.min(number.length(), 4));
-					_block = new NumberBlock(blockName);
-					_blocks.add(_block);
+				_numbers.add(new WeightedNumber(number, weight));
+			}
+
+			private int weight(int age) {
+				if (age < 14) {
+					return 0;
 				}
-				
-				_block.add(number, weight);
+				if (age < 30) {
+					// One month.
+					return 2;
+				}
+				return (age / 7) * 2;
 			}
 
 			public List<NumberBlock> createBlocks() {
 				createBlockEntries(this);
-				return _blocks;
+				
+				// Sort by weight decreasing.
+				_numbers.sort((n1, n2) -> -Integer.compare(n1._weight, n2._weight));
+				
+				// Sort prefix of max entries by number.
+				List<WeightedNumber> prefix = new ArrayList<>(_numbers.subList(0, Math.min(maxEntries, _numbers.size())));
+				prefix.sort((n1, n2) -> n1._number.compareTo(n2._number));
+				
+				// Create blocks of filtered numbers.
+				NumberBlock block = null;
+				List<NumberBlock> blocks = new ArrayList<>();
+
+				for (WeightedNumber weightedNumber : prefix) {
+					String number = weightedNumber._number;
+					if (block == null || block.size() >= 9 || !number.startsWith(block.getName())) {
+						String blockName = number.substring(0, Math.min(number.length(), 4));
+						block = new NumberBlock(blockName);
+						blocks.add(block);
+					}
+					
+					block.add(number);
+				}
+				
+				return blocks;
 			}
 		}
 		
