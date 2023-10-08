@@ -306,6 +306,7 @@ public class CardDavServlet extends HttpServlet {
 		else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
 			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
 			if (isAuthenticated(req, principal)) {
+				LOG.info("Starting synchronization for: " + principal);
 				return new PrincipalResource(rootUrl, resourcePath, principal);
 			} else {
 				LOG.warn("Wrong authentication for resource: " + resourcePath);
