@@ -304,6 +304,11 @@ public class CardDavServlet extends HttpServlet {
 		}
 		
 		else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
+			if (resourcePath.endsWith("/")) {
+				// Note: dataaccessd/1.0 on iOS adds a slash to the principal resource.
+				resourcePath = resourcePath.substring(0, resourcePath.length() - 1);
+			}
+			
 			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
 			if (!isAuthenticated(req, principal, resourcePath)) {
 				return null;
@@ -347,7 +352,7 @@ public class CardDavServlet extends HttpServlet {
 		}
 		
 		if (!principal.equals(currentUser)) {
-			LOG.warn("Wrong user '" + currentUser + "' accessing: " + resourcePath);
+			LOG.warn("Wrong user '" + principal + "' (expecting '" + currentUser + "') accessing: " + resourcePath);
 			return false;
 		}
 		
