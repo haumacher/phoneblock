@@ -305,13 +305,12 @@ public class CardDavServlet extends HttpServlet {
 		
 		else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
 			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
-			if (isAuthenticated(req, principal)) {
-				LOG.info("Starting synchronization for: " + principal);
-				return new PrincipalResource(rootUrl, resourcePath, principal);
-			} else {
-				LOG.warn("Wrong authentication for resource: " + resourcePath);
+			if (!isAuthenticated(req, principal, resourcePath)) {
 				return null;
 			}
+			
+			LOG.info("Starting synchronization for: " + principal);
+			return new PrincipalResource(rootUrl, resourcePath, principal);
 		}
 		
 		else if (resourcePath.startsWith(ADDRESSES_PATH)) {
@@ -322,18 +321,17 @@ public class CardDavServlet extends HttpServlet {
 			}
 			
 			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
-			if (isAuthenticated(req, principal)) {
-				AddressBookResource addressBook = 
-						AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal);
-				
-				if (endIdx < resourcePath.length() - 1) {
-					return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
-				} else {
-					return addressBook;
-				}
-			} else {
-				LOG.warn("Wrong authentication for resource: " + resourcePath);
+			if (!isAuthenticated(req, principal, resourcePath)) {
 				return null;
+			}
+			
+			AddressBookResource addressBook = 
+					AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal);
+			
+			if (endIdx < resourcePath.length() - 1) {
+				return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
+			} else {
+				return addressBook;
 			}
 		} else {
 			LOG.warn("Addressbook resource not found: " + resourcePath);
@@ -341,8 +339,19 @@ public class CardDavServlet extends HttpServlet {
 		}
 	}
 
-	private boolean isAuthenticated(HttpServletRequest req, String principal) {
-		return principal.equals(req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR));
+	private boolean isAuthenticated(HttpServletRequest req, String principal, String resourcePath) {
+		Object currentUser = req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
+		if (currentUser == null) {
+			LOG.warn("No authentication accessing: " + resourcePath);
+			return false;
+		}
+		
+		if (!principal.equals(currentUser)) {
+			LOG.warn("Wrong user '" + currentUser + "' accessing: " + resourcePath);
+			return false;
+		}
+		
+		return true;
 	}
 
 }
