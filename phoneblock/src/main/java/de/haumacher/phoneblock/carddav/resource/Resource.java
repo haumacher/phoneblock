@@ -48,14 +48,18 @@ public abstract class Resource {
 		new QName("DAV:", "resource-id"),
 		new QName("DAV:", "supported-report-set"), 
 		new QName("DAV:", "sync-token"),
+		new QName("http://apple.com/ns/ical/", "calendar-color"),
 		new QName("http://calendarserver.org/ns/", "me-card"), 
 		new QName("http://calendarserver.org/ns/", "pushkey"),
 		new QName("http://calendarserver.org/ns/", "push-transports"), 
 		new QName("http://me.com/_namespace/", "bulk-requests"),
 		new QName("http://me.com/_namespace/", "guardian-restricted"), 
+		new QName("urn:ietf:params:xml:ns:carddav", "addressbook-description"),
 		new QName("urn:ietf:params:xml:ns:carddav", "max-image-size"),
 		new QName("urn:ietf:params:xml:ns:carddav", "max-resource-size"), 
-		new QName("urn:ietf:params:xml:ns:carddav", "supported-address-data") 
+		new QName("urn:ietf:params:xml:ns:carddav", "supported-address-data"), 
+		new QName("urn:ietf:params:xml:ns:caldav", "calendar-description"),
+		new QName("urn:ietf:params:xml:ns:caldav", "supported-calendar-component-set")
 	));
 	
 	/** 
