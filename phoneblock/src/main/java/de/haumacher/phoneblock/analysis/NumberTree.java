@@ -72,13 +72,16 @@ public class NumberTree {
 		static class Info {
 			private int _depth;
 			private int _count;
+			private boolean _allowWildcard;
 
 			/** 
 			 * Fills info.
+			 * @param weight 
 			 */
-			public void set(int depth, int count) {
+			public void set(int depth, int count, boolean allowWildcard) {
 				setDepth(depth);
 				setCount(count);
+				_allowWildcard = allowWildcard;
 			}
 
 			/**
@@ -106,6 +109,17 @@ public class NumberTree {
 			void setCount(int count) {
 				_count = count;
 			}
+
+			/**
+			 * Whether the visited subtree can be covered with a wildcard.
+			 */
+			public boolean allowWildcard() {
+				return _allowWildcard;
+			}
+			
+			public void setAllowWildcard(boolean allowWildcard) {
+				_allowWildcard = allowWildcard;
+			}
 		}
 		
 		/** 
@@ -115,13 +129,14 @@ public class NumberTree {
 		 */
 		public void markWildcards(Info info) {
 			if (_next == null) {
-				info.set(0, 1);
+				info.set(0, 1, _weight > 0);
 				return;
 			}
 			
 			int count = 0;
 			int depth = 0;
 			int wildcards = 0;
+			boolean allowWildcard = true;
 			for (Node child : _next) {
 				if (child != null) {
 					child.markWildcards(info);
@@ -129,6 +144,10 @@ public class NumberTree {
 					depth = Math.max(depth, info.getDepth() + 1);
 					count += info.getCount();
 					wildcards += child.isWildcard() ? 1 : 0;
+					
+					if (!info.allowWildcard()) {
+						allowWildcard = false;
+					}
 				}
 			}
 			
@@ -136,21 +155,21 @@ public class NumberTree {
 				case 0:
 					// Should not happen, because _next is only initialized if a suffix is added.
 					_next = null;
-					info.set(0, 1);
+					info.set(0, 1, _weight > 0);
 					return;
 				case 1:
-					if (count >= 3) {
+					if (allowWildcard && count >= 3) {
 						_wildcard = true;
 					}
 					break;
 				case 2:
-					if (wildcards >= 3) {
+					if (allowWildcard && wildcards >= 3) {
 						_wildcard = true;
 					}
 					break;
 			}
 			
-			info.set(depth, count);
+			info.set(depth, count, allowWildcard);
 		}
 
 		/** 
@@ -246,7 +265,9 @@ public class NumberTree {
 	
 	public List<String> createBlockEntries() {
 		ArrayList<String> result = new ArrayList<>();
-		NumberIterator sink = (x, weight, age) -> result.add(x);
+		NumberIterator sink = (x, weight, age) -> {
+			if (weight > 0) result.add(x);
+		};
 		createBlockEntries(sink);
 		return result;
 	}

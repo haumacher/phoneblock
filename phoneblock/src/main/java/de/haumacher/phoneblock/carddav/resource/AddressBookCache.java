@@ -178,25 +178,29 @@ public class AddressBookCache implements ServletContextListener {
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
 			ListType listType) {
 		List<SpamReport> result = reports.getReports();
-		Set<String> whitelist = reports.getWhiteList();
 		long now = System.currentTimeMillis();
 		NumberTree numberTree = new NumberTree();
 		for (SpamReport report : result) {
 			String phone = report.getPhone();
-			if (whitelist.contains(phone)) {
-				continue;
-			}
-			if (exclusions.contains(phone)) {
-				continue;
-			}
 			
 			int votes = report.getVotes();
 			int ageInDays = (int) ((now - report.getLastUpdate()) / 1000 / 60 / 60 / 24);
 			
 			numberTree.insert(phone, votes, ageInDays);
 		}
-		for (String personalization : personalizations) {
-			numberTree.insert(personalization, 1_000_000, 0);
+
+		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 
+		Set<String> whitelist = reports.getWhiteList();
+		for (String phone : whitelist) {
+			numberTree.insert(phone, -1_000_000, 0);
+		}
+		for (String phone : exclusions) {
+			numberTree.insert(phone, -1_000_000, 0);
+		}
+		
+		// Make sure to override whitelist entries with personal blacklist entries.
+		for (String phone : personalizations) {
+			numberTree.insert(phone, 10_000_000, 0);
 		}
 		
 		if (listType.useWildcards()) {
