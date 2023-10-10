@@ -302,7 +302,7 @@ public interface SpamReports {
 	
 	@Select("SELECT p.PHONE FROM PREFIX p \n"
 			+ "WHERE NOT p.PHONE = #{phone} \n"
-			+ "AND p.PREFIX = SUBSTRING(#{phone}, 0, LENGTH(#{phone}) - 2)")
+			+ "AND p.PREFIX = SUBSTRING(#{phone}, 0, LENGTH(#{phone}) - 2) order by p.PHONE")
 	List<String> getRelatedNumbers(String phone);
 	
 }
