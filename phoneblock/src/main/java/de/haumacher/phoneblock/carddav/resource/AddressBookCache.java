@@ -85,7 +85,8 @@ public class AddressBookCache implements ServletContextListener {
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();
 
-			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, minVotes, maxLength);
+			ListType listType = ListType.valueOf(minVotes, maxLength);
+			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, listType);
 			
 			AddressBookResource addressBook = 
 				new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers);
@@ -93,8 +94,7 @@ public class AddressBookCache implements ServletContextListener {
 		}
 	}
 
-	private List<NumberBlock> loadNumbers(SqlSession session, Users users, String principal, int minVotes,
-			int maxLength) {
+	private List<NumberBlock> loadNumbers(SqlSession session, Users users, String principal, ListType listType) {
 		SpamReports reports = session.getMapper(SpamReports.class);
 		BlockList blocklist = session.getMapper(BlockList.class);
 		
@@ -104,24 +104,24 @@ public class AddressBookCache implements ServletContextListener {
 		Set<String> exclusions = blocklist.getExcluded(userId);
 		
 		if (personalizations.isEmpty() && exclusions.isEmpty()) {
-			return getCommonNumbers(reports, minVotes, maxLength);
+			return getCommonNumbers(reports, listType);
 		}
 		
-		return loadNumbers(reports, personalizations, exclusions, minVotes, maxLength);
+		return loadNumbers(reports, personalizations, exclusions, listType);
 	}
 
-	public List<NumberBlock> lookupBlockList(int minVotes, int maxLength) {
+	public List<NumberBlock> lookupBlockList(ListType listType) {
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			return getCommonNumbers(reports, minVotes, maxLength);
+			return getCommonNumbers(reports, listType);
 		}
 	}
 	
 	static final class ListType {
 
-		private int _minVotes;
-		private int _maxLength;
+		private final int _minVotes;
+		private final int _maxLength;
 
 		public ListType(int minVotes, int maxLength) {
 			_minVotes = minVotes;
@@ -130,7 +130,7 @@ public class AddressBookCache implements ServletContextListener {
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(_maxLength, _minVotes);
+			return Objects.hash(getMaxLength(), getMinVotes());
 		}
 
 		@Override
@@ -142,28 +142,35 @@ public class AddressBookCache implements ServletContextListener {
 			if (getClass() != obj.getClass())
 				return false;
 			ListType other = (ListType) obj;
-			return _maxLength == other._maxLength && _minVotes == other._minVotes;
+			return getMaxLength() == other.getMaxLength() && getMinVotes() == other.getMinVotes();
 		}
 
 		public static ListType valueOf(int minVotes, int maxLength) {
 			return new ListType(minVotes, maxLength);
 		}
+
+		public int getMinVotes() {
+			return _minVotes;
+		}
+
+		public int getMaxLength() {
+			return _maxLength;
+		}
 		
 	}
 
-	private List<NumberBlock> getCommonNumbers(SpamReports reports, int minVotes, int maxLength) {
-		ListType key = ListType.valueOf(minVotes, maxLength);
-		List<NumberBlock> cachedNumbers = _numberCache.lookup(key);
+	private List<NumberBlock> getCommonNumbers(SpamReports reports, ListType listType) {
+		List<NumberBlock> cachedNumbers = _numberCache.lookup(listType);
 		if (cachedNumbers != null) {
 			return cachedNumbers;
 		}
 		
-		List<NumberBlock> numbers = loadNumbers(reports, Collections.emptyList(), Collections.emptySet(), minVotes, maxLength);
-		return _numberCache.put(key, numbers);
+		List<NumberBlock> numbers = loadNumbers(reports, Collections.emptyList(), Collections.emptySet(), listType);
+		return _numberCache.put(listType, numbers);
 	}
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
-			int minVotes, int maxLength) {
+			ListType listType) {
 		List<SpamReport> result = reports.getReports();
 		Set<String> whitelist = reports.getWhiteList();
 		long now = System.currentTimeMillis();
@@ -187,7 +194,7 @@ public class AddressBookCache implements ServletContextListener {
 		}
 		numberTree.markWildcards();
 		
-		return numberTree.createNumberBlocks(minVotes, maxLength);
+		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength());
 	}
 	
 	private static final class Cache<K, V> {
