@@ -150,6 +150,7 @@ public class SettingsServlet extends HttpServlet {
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
 		int minVotes = Integer.parseInt(req.getParameter("minVotes"));
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
+		boolean wildcards = req.getParameter("wildcards") != null;
 		
 		if (minVotes <= 4) {
 			minVotes = 4;
@@ -187,6 +188,7 @@ public class SettingsServlet extends HttpServlet {
 		UserSettings settings = db.getSettings(userName);
 		settings.setMinVotes(minVotes);
 		settings.setMaxLength(maxLength);
+		settings.setWildcards(wildcards);
 		db.updateSettings(settings);
 		
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.

@@ -759,7 +759,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength());
+			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength(), settings.isWildcards());
 			session.commit();
 		}
 	}

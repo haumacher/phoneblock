@@ -112,6 +112,19 @@
 			  </p>
 			</div>
 			
+			<div class="field">
+			  <label class="checkbox">
+			    <input type="checkbox" <%if (settings.isWildcards()) {%>checked="checked"<%}%> name="wildcards">
+				Nummern mit "*" zusammenfassen
+			  </label>
+			  <p class="help">Wenn Du dies Option auswählst, werden in Deiner Blocklist nebeneinander liegende Nummern 
+			  zu einer Nummer mit Wildcard ("*") zusammengefasst. Viele Profi-Spammer haben einen Mehrgeräteanschluss 
+			  und nutzen einen ganzen Nummernblock als Absender. Mit dieser Option werden automatisch alle diese Nummern 
+			  blockiert und deine Blocklist kann mehr Spam-Nummern aufnehmen. Die Fritz!Box unterstützt Telefonbücher mit 
+			  Wildcard-Nummern und blockiert dann den ganzen angegebenen Nummernbereich. Auf anderen Geräten kannst Du
+			  aber Wildcard-Nummer möglicherweise nicht verwenden.</p>
+			</div>
+			
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

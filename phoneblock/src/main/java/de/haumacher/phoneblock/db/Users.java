@@ -50,11 +50,11 @@ public interface Users {
 	@Select("select LOGIN from USERS where CLIENTNAME=#{clientName} and EXTID=#{extId}")
 	String getLogin(String clientName, String extId);
 
-	@Select("select ID, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH from USERS where LOGIN=#{login}")
+	@Select("select ID, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
 	
-	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength} where ID=#{id}")
-	int updateSettings(long id, int minVotes, int maxLength);
+	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength}, WILDCARDS=#{wildcards} where ID=#{id}")
+	int updateSettings(long id, int minVotes, int maxLength, boolean wildcards);
 	
 	/**
 	 * Updates the user's last access timestamp.
