@@ -41,6 +41,45 @@ public class TestNumberTree {
 	}
 
 	@Test
+	public void testWhitelistBreaksWildcard() {
+		NumberTree tree = new NumberTree();
+		tree.insert("0100001");
+		tree.insert("0100002");
+		tree.insert("0100003");
+		tree.insert("0100004", -10, 0);
+		tree.insert("0100005");
+		
+		tree.insert("0200001");
+		tree.insert("0200002");
+		tree.insert("0200003");
+		tree.insert("0200005");
+		tree.markWildcards();
+		List<String> entries = tree.createBlockEntries();
+		
+		Assertions.assertEquals(Arrays.asList("0100001", "0100002", "0100003", "0100005", "020000*"), entries);
+	}
+	
+	@Test
+	public void testWhitelistBreaksWildcardLevel2() {
+		NumberTree tree = new NumberTree();
+		tree.insert("01000015");
+		tree.insert("01000016");
+		tree.insert("01000017");
+		tree.insert("01000027");
+		tree.insert("01000028");
+		tree.insert("01000029");
+		tree.insert("0100003");
+		tree.insert("01000041", -10, 0);
+		tree.insert("01000057");
+		tree.insert("01000058");
+		tree.insert("01000059");
+		tree.markWildcards();
+		List<String> entries = tree.createBlockEntries();
+		
+		Assertions.assertEquals(Arrays.asList("0100001*", "0100002*", "0100003", "0100005*"), entries);
+	}
+	
+	@Test
 	public void testLeve2Wildcard() {
 		NumberTree tree = new NumberTree();
 		tree.insert("030123010");
