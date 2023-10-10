@@ -84,8 +84,9 @@ public class AddressBookCache implements ServletContextListener {
 			
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();
+			boolean wildcards = settings.isWildcards();
 
-			ListType listType = ListType.valueOf(minVotes, maxLength);
+			ListType listType = ListType.valueOf(minVotes, maxLength, wildcards);
 			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, listType);
 			
 			AddressBookResource addressBook = 
@@ -122,15 +123,33 @@ public class AddressBookCache implements ServletContextListener {
 
 		private final int _minVotes;
 		private final int _maxLength;
+		private final boolean _wildcards;
 
-		public ListType(int minVotes, int maxLength) {
+		public ListType(int minVotes, int maxLength, boolean wildcards) {
 			_minVotes = minVotes;
 			_maxLength = maxLength;
+			_wildcards = wildcards;
 		}
 		
+		public static ListType valueOf(int minVotes, int maxLength, boolean wildcards) {
+			return new ListType(minVotes, maxLength, wildcards);
+		}
+
+		public int getMinVotes() {
+			return _minVotes;
+		}
+
+		public int getMaxLength() {
+			return _maxLength;
+		}
+		
+		public boolean useWildcards() {
+			return _wildcards;
+		}
+
 		@Override
 		public int hashCode() {
-			return Objects.hash(getMaxLength(), getMinVotes());
+			return Objects.hash(_maxLength, _minVotes, _wildcards);
 		}
 
 		@Override
@@ -142,21 +161,8 @@ public class AddressBookCache implements ServletContextListener {
 			if (getClass() != obj.getClass())
 				return false;
 			ListType other = (ListType) obj;
-			return getMaxLength() == other.getMaxLength() && getMinVotes() == other.getMinVotes();
+			return _maxLength == other._maxLength && _minVotes == other._minVotes && _wildcards == other._wildcards;
 		}
-
-		public static ListType valueOf(int minVotes, int maxLength) {
-			return new ListType(minVotes, maxLength);
-		}
-
-		public int getMinVotes() {
-			return _minVotes;
-		}
-
-		public int getMaxLength() {
-			return _maxLength;
-		}
-		
 	}
 
 	private List<NumberBlock> getCommonNumbers(SpamReports reports, ListType listType) {
@@ -192,7 +198,10 @@ public class AddressBookCache implements ServletContextListener {
 		for (String personalization : personalizations) {
 			numberTree.insert(personalization, 1_000_000, 0);
 		}
-		numberTree.markWildcards();
+		
+		if (listType.useWildcards()) {
+			numberTree.markWildcards();
+		}
 		
 		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength());
 	}

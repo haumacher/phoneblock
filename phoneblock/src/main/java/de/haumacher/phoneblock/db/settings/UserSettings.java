@@ -30,6 +30,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** @see #getMaxLength() */
 	public static final String MAX_LENGTH__PROP = "maxLength";
 
+	/** @see #isWildcards() */
+	public static final String WILDCARDS__PROP = "wildcards";
+
 	/** Identifier for the property {@link #getId()} in binary format. */
 	static final int ID__ID = 1;
 
@@ -45,6 +48,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** Identifier for the property {@link #getMaxLength()} in binary format. */
 	static final int MAX_LENGTH__ID = 5;
 
+	/** Identifier for the property {@link #isWildcards()} in binary format. */
+	static final int WILDCARDS__ID = 6;
+
 	private long _id = 0L;
 
 	private String _displayName = "";
@@ -54,6 +60,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	private int _minVotes = 0;
 
 	private int _maxLength = 0;
+
+	private boolean _wildcards = false;
 
 	/**
 	 * Creates a {@link UserSettings} instance.
@@ -169,6 +177,27 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		_maxLength = value;
 	}
 
+	/**
+	 * Whether multiple adjacent numbers should be joined to a wildcard number.
+	 */
+	public final boolean isWildcards() {
+		return _wildcards;
+	}
+
+	/**
+	 * @see #isWildcards()
+	 */
+	public de.haumacher.phoneblock.db.settings.UserSettings setWildcards(boolean value) {
+		internalSetWildcards(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isWildcards()} without chain call utility. */
+	protected final void internalSetWildcards(boolean value) {
+		_listener.beforeSet(this, WILDCARDS__PROP, value);
+		_wildcards = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -202,7 +231,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			DISPLAY_NAME__PROP, 
 			EMAIL__PROP, 
 			MIN_VOTES__PROP, 
-			MAX_LENGTH__PROP));
+			MAX_LENGTH__PROP, 
+			WILDCARDS__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -217,6 +247,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case EMAIL__PROP: return getEmail();
 			case MIN_VOTES__PROP: return getMinVotes();
 			case MAX_LENGTH__PROP: return getMaxLength();
+			case WILDCARDS__PROP: return isWildcards();
 			default: return null;
 		}
 	}
@@ -229,6 +260,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case EMAIL__PROP: internalSetEmail((String) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
+			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 		}
 	}
 
@@ -257,6 +289,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getMinVotes());
 		out.name(MAX_LENGTH__PROP);
 		out.value(getMaxLength());
+		out.name(WILDCARDS__PROP);
+		out.value(isWildcards());
 	}
 
 	@Override
@@ -267,6 +301,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__PROP: setMaxLength(in.nextInt()); break;
+			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -296,6 +331,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getMinVotes());
 		out.name(MAX_LENGTH__ID);
 		out.value(getMaxLength());
+		out.name(WILDCARDS__ID);
+		out.value(isWildcards());
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -329,6 +366,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case EMAIL__ID: setEmail(in.nextString()); break;
 			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__ID: setMaxLength(in.nextInt()); break;
+			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
 			default: in.skipValue(); 
 		}
 	}

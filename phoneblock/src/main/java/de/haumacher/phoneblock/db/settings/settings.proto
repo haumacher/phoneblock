@@ -19,4 +19,7 @@ message UserSettings {
 	
 	/** Maximum number of blocklist entries. */
 	int maxLength;
+	
+	/** Whether multiple adjacent numbers should be joined to a wildcard number. */
+	bool wildcards;
 }
