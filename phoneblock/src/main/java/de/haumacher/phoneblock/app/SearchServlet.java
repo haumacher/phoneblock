@@ -71,6 +71,7 @@ public class SearchServlet extends HttpServlet {
 			, "libwww-perl"
 			, "LinkedInBot"
 			, "MJ12bot"
+			, "Monit"
 			, "PetalBot"
 			, "python"
 			, "SemrushBot"

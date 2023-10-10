@@ -77,7 +77,7 @@
 			  AVM empfiehlt Telefonbücher mit höchstens 1000 Einträgen zu befüllen. Die FRITZ!Box 7590 verkraftest z.B. bis zu
 			  3000 Einträge in einem Telefonbuch.</p>
 			  
-			  <p>
+			  <p class="help">
 			  <b>Achtung:</b> Wenn Du ausprobieren willst, wie viele Einträge Deine Box in einem Telefonbuch speichern kann, dann gehe folgendermaßen vor: 
 			  Beginne mit der Standardeinstellung von 2000 Einträgen. Synchronisiere die Blocklist und lass Dir das Blocklist-Telefonbuch anzeigen. 
 			  Scrolle ganz ans Ende und lass Dir die Druckvorschau der Blocklist anzeigen und merke Dir die Anzahl der Seiten, die ausgedruckt würden.
@@ -201,9 +201,13 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
 
 	<div class="field">
+	  <label class="label">Ausnahme hinzufügen</label>
 	  <p class="control has-icons-left">
 	    <input class="input" type="tel" placeholder="Neue Ausnahme" name="add-wl">
 	    <span class="icon is-small is-left">☎</span>
+	  </p>
+	  <p class="help">
+	  Du kannst hier eine oder mehrere Telefonnummern mit Komma getrennt in beliebigem Format eingeben: 07041-123456789, +49171123456789, 0034 123456789 
 	  </p>
 	</div>
 	

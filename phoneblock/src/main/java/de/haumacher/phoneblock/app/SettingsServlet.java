@@ -94,13 +94,17 @@ public class SettingsServlet extends HttpServlet {
 				for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
 					String key = entry.getKey();
 					if (key.equals("add-wl")) {
-						String phone = normalize(entry.getValue()[0]);
-						if (phone == null) {
-							continue;
+						String addValues = entry.getValue()[0];
+						for (String value : addValues.split("[,;]")) {
+							String phone = normalize(value);
+							if (phone == null) {
+								continue;
+							}
+							
+							blocklist.removePersonalization(owner, phone);
+							blocklist.removeExclude(owner, phone);
+							blocklist.addExclude(owner, phone);
 						}
-						
-						blocklist.removePersonalization(owner, phone);
-						blocklist.addExclude(owner, phone);
 					}
 					else if (key.startsWith("bl-")) {
 						String phone = normalize(key.substring("bl-".length()));
