@@ -146,7 +146,7 @@
 List<String> blacklist = (List<String>) request.getAttribute("blacklist");
 %>
 	<div class="content">
-	<h2>Deine Blacklist</h2>
+	<h2 id="blacklist">Deine Blacklist</h2>
 	
 	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
 
@@ -181,7 +181,7 @@ List<String> blacklist = (List<String>) request.getAttribute("blacklist");
 List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 %>
 	<div class="content">
-	<h2>Deine Whitelist</h2>
+	<h2 id="whitelist">Deine Whitelist</h2>
 	
 	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
 

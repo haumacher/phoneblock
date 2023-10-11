@@ -33,15 +33,14 @@
 		</p>
 		<p> 
 			In Deine personalisierte Blocklist kannst Du selbst Nummern hinzufügen und, was 
-			noch wichtiger ist, auch Nummern aus dem Telefonbuch löschen (siehe auch "Eine Nummer wird 
+			noch wichtiger ist, auch Nummern von der Sperrung ausnehmen (siehe auch "Eine Nummer wird 
 			fälschlicherweise blockiert, was tun?" weiter unten). Interessant ist das, wenn PhoneBlock eine 
 			Nummer auf die Blocklist aufgenommen hat, von der Du aber angerufen werden möchtest. Z.B. kann ganz leicht
 			eine Nummer z.B. von einem Internet-Anbieter auf die Blocklist geraten, wenn sich viele Leute von 
 			Rückrufen von dieser Nummer genervt fühlen, Du aber auf einen Rückruf wartest. Das wird auch ganz schön in 
-			diesem <a target="_blank" href="<%=request.getContextPath()%>/link/tellows-problems">YouTube-Video</a> erklärt. Mit PhoneBlock 
-			kannst Du Deine Blocklist anpassen, Nummern, die Du selbst darauf gesetzt hast, bleiben gesperrt und 
-			Nummern, die Du von der Liste gelöscht hast, werden sicher nie wieder zu Deiner persönlichen Liste 
-			hinzugefügt. 
+			diesem <a target="_blank" href="<%=request.getContextPath()%>/link/tellows-problems">YouTube-Video</a> erklärt. 
+			Mit PhoneBlock kannst Du Deine Blocklist anpassen, Nummern, die Du selbst darauf gesetzt hast, bleiben 
+			gesperrt und Nummern, die Du zu Deiner Whitelist hinzugefügt hast, werden sicher bei Dir nicht blockiert.
 		</p>
 
 		<h2>Ich habe keine Fritz!Box, kann ich PhoneBlock trotzdem nutzen?</h2>
@@ -103,10 +102,18 @@
 			und wann sie wieder aus ihr entfernt wird, werden aber noch angepasst. Sicher ist aber, eine Nummer die
 			Du selbst zur Blocklist hinzugefügt hast, bleibt für Dich auf alle Fälle gesperrt.
 		</p>
+		
+		<h2>Ich erhalte trotz PhoneBlock immer noch Spam-Anrufe, was tun?</h2>
+		<p>
+			Es gibt ständig neue Spam-Nummern, daher kann PhoneBlock keinen 100%igen Schutz bieten. 
+			<a href="<%=request.getContextPath()%>/block.jsp">Trage  den
+			neuen unerwünschten Anrufer in die Blocklist ein</a> und hilf damit auch anderen, den Quälgeist 
+			schnell los zu werden!  
+		</p>
 
 		<h2>Eine Nummer wird fälschlicherweise blockiert, was tun?</h2>
 		<p>
-			Kein Problem, öffne <a href="<%= request.getContextPath() + SettingsServlet.PATH %>">Deine Einstellungen</a> 
+			Kein Problem, öffne <a href="<%= request.getContextPath() + SettingsServlet.PATH %>#whitelist">Deine Einstellungen</a> 
 			und füge die Nummer zu Deiner White-List hinzu. Deine White-List ist eine Liste von Telefonnummern, die Du 
 			von der Sperrung ausgenommen hast. Sie landen nie auf Deiner Blocklist, auch wenn sich ganz viele andere 
 			von Anrufen dieser Nummer genervt fühlen und sie blockieren. 

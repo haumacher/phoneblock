@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <html>
 <%
@@ -116,6 +117,20 @@
 		Auf der Folgemaske gib noch einen beliebigen Namen ein und klicke "OK". Der Name wird nach der Synchronisation 
 		mit dem PhoneBlock-Server ersetzt durch "SPAM: Rufnummer", du musst Dir als keine Mühe geben, hier etwas 
 		hübsches einzugeben:
+	</p>
+	
+	<p>
+		<b>Wichtig:</b> Du darfst bei einem neuen Eintrag in die Blocklist immer nur <b>eine Nummer</b> pro Telefonbucheintrag 
+		vornehmen. PhoneBlock sortiert die Telefonnummer dann in den richtigen Block ein. Eine von Dir eingetragene Nummer darf
+		<b>keinen Wildcard ("*")</b> enthalten. Wildcard-Nummern werden nur von PhoneBlock selbst erzeugt, wenn es viele
+		 Beschwerden über eng nebeneinanderliegende Telefonnummern gibt.
+	</p>
+	
+	<p>
+		<b>Wichtig:</b> Du darfst existierende Einträge der Blocklist <b>nicht bearbeiten</b> (keine Nummern hinzufügen, keine 
+		Nummern löschen), PhoneBlock verwirft sonst Deine Änderungen bei der nächsten Synchronisierung. Wenn Du eine 
+		Nummer aus der Blocklist löschen möchtest, dann füge stattdessen einen Eintrag zu Deiner 
+		<a href="<%=request.getContextPath() + SettingsServlet.PATH%>#whitelist">Whitelist in den Einstellungen</a> hinzu.  
 	</p>
 
 	<div class="columns">
