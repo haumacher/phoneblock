@@ -62,6 +62,8 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
  */
 public class DB {
 
+	private static final int MAX_COMMENT_LENGTH = 8192;
+
 	private static final Logger LOG = LoggerFactory.getLogger(DB.class);
 
 	/**
@@ -354,6 +356,10 @@ public class DB {
 		String commentText = comment.getComment();
 		long created = comment.getCreated();
 		if (commentText != null && !commentText.isBlank()) {
+			if (commentText.length() > MAX_COMMENT_LENGTH) {
+				// Limit to DB constraint.
+				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
+			}
 			reports.addComment(comment.getId(), phone, rating, commentText, comment.getService(), created);
 			updateRequired = true;
 		}
