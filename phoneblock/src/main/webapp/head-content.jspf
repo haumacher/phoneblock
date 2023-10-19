@@ -40,7 +40,7 @@
 <meta name="twitter:image" content="<%=request.getContextPath() %>/app-preview.png" />
 
 <meta name="og:title" content="<%= JspUtil.quote(title) %>" />
-<%if ("/".equals(path)) { %>
+<%if ("/".equals(path) || path.isEmpty()) { %>
 <meta name="og:url" content="https://phoneblock.haumacher.de/" />
 <link rel="canonical" href="https://phoneblock.haumacher.de/" />
 <%} else { %>
