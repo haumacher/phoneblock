@@ -55,6 +55,7 @@ public abstract class Resource {
 		new QName("http://calendarserver.org/ns/", "me-card"), 
 		new QName("http://calendarserver.org/ns/", "pushkey"),
 		new QName("http://calendarserver.org/ns/", "push-transports"), 
+		new QName("http://calendarserver.org/ns/", "xmpp-uri"),
 		new QName("http://me.com/_namespace/", "bulk-requests"),
 		new QName("http://me.com/_namespace/", "guardian-restricted"), 
 		new QName("urn:ietf:params:xml:ns:carddav", "addressbook-description"),
