@@ -106,7 +106,7 @@ public class AddressBookResource extends Resource {
 		AddressResource result = _addressById.get(id);
 		if (result == null) {
 			// Maybe this is a put operation, create an empty entry.
-			return newAddressResource(null, id);
+			return newAddressResource(new NumberBlock(id), id);
 		}
 		return result;
 	}
