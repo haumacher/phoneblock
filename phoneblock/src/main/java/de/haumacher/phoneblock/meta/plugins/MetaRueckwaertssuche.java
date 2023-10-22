@@ -106,6 +106,7 @@ public class MetaRueckwaertssuche extends AbstractMetaSearch {
 					break;
 					
 				case "Aggressive Werbung":
+				case "Telemarketing":
 					rating = Rating.E_ADVERTISING;
 					break;
 					
