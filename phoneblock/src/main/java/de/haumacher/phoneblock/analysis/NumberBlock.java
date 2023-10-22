@@ -26,6 +26,21 @@ public class NumberBlock {
 		_name = name;
 	}
 
+	/**
+	 * Initializes this block containing exactly one number.
+	 * 
+	 * <p>
+	 * Such a block is only created in a CardDAV lookup when the requested ID is not found in the
+	 * current address book. In that case, the request normally could only be a PUT request that
+	 * tries to create a new entry in the blocklist.
+	 * </p>
+	 */
+	public NumberBlock initSingleton(String id) {
+		_title = id;
+		_numbers.add(id);
+		return this;
+	}
+
 	/** 
 	 * Adds a new number to this block.
 	 */
