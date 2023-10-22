@@ -8,6 +8,8 @@ import static de.haumacher.phoneblock.util.DomUtil.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -72,6 +74,8 @@ public class CardDavServlet extends HttpServlet {
 	public static final String ADDRESSES_PATH = "/addresses/";
 
 	public static final String SERVER_LOC = "https://phoneblock.haumacher.de";
+	
+	private static final Pattern WHITE_SPACE_PREFIX = Pattern.compile("/\\s*/");
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -299,48 +303,63 @@ public class CardDavServlet extends HttpServlet {
 		String rootUrl = CardDavServlet.SERVER_LOC + serverRoot;
 		String resourcePath = req.getPathInfo();
 
-		if ("/".equals(resourcePath)) {
-			return new RootResource(rootUrl, resourcePath);
-		}
-		
-		else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
-			if (resourcePath.endsWith("/")) {
-				// Note: dataaccessd/1.0 on iOS adds a slash to the principal resource.
-				resourcePath = resourcePath.substring(0, resourcePath.length() - 1);
+		boolean whiteSpaceAppended = false;
+		while (true) {
+			if ("/".equals(resourcePath)) {
+				return new RootResource(rootUrl, resourcePath);
 			}
 			
-			String principal = resourcePath.substring(PRINCIPALS_PATH.length());
-			if (!isAuthenticated(req, principal, resourcePath)) {
-				return null;
+			else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
+				if (resourcePath.endsWith("/")) {
+					// Note: dataaccessd/1.0 on iOS adds a slash to the principal resource.
+					resourcePath = resourcePath.substring(0, resourcePath.length() - 1);
+				}
+				
+				String principal = resourcePath.substring(PRINCIPALS_PATH.length());
+				if (!isAuthenticated(req, principal, resourcePath)) {
+					return null;
+				}
+				
+				LOG.info("Starting synchronization for: " + principal);
+				return new PrincipalResource(rootUrl, resourcePath, principal);
 			}
 			
-			LOG.info("Starting synchronization for: " + principal);
-			return new PrincipalResource(rootUrl, resourcePath, principal);
-		}
-		
-		else if (resourcePath.startsWith(ADDRESSES_PATH)) {
-			int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
-			if (endIdx < 0) {
-				LOG.warn("No principal found in address path: " + resourcePath);
-				return null;
-			}
-			
-			String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
-			if (!isAuthenticated(req, principal, resourcePath)) {
-				return null;
-			}
-			
-			AddressBookResource addressBook = 
-					AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal);
-			
-			if (endIdx < resourcePath.length() - 1) {
-				return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
+			else if (resourcePath.startsWith(ADDRESSES_PATH)) {
+				int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
+				if (endIdx < 0) {
+					LOG.warn("No principal found in address path: " + resourcePath);
+					return null;
+				}
+				
+				String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
+				if (!isAuthenticated(req, principal, resourcePath)) {
+					return null;
+				}
+				
+				AddressBookResource addressBook = 
+						AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal);
+				
+				if (endIdx < resourcePath.length() - 1) {
+					return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
+				} else {
+					if (whiteSpaceAppended) {
+						// Only log once for the address book, not for each card.
+						LOG.warn("CardDAV URL with whitespace suffix for '" + principal + "': " + req.getPathInfo());
+					}
+					return addressBook;
+				}
 			} else {
-				return addressBook;
+				// This detects a common mistake when additional white space is appended to the CardDAV URL:
+				Matcher matcher = WHITE_SPACE_PREFIX.matcher(resourcePath);
+				if (matcher.lookingAt()) {
+					whiteSpaceAppended = true;
+					resourcePath = resourcePath.substring(matcher.end() - 1);
+					continue;
+				}
+				
+				LOG.warn("Addressbook resource not found: " + resourcePath);
+				return null;
 			}
-		} else {
-			LOG.warn("Addressbook resource not found: " + resourcePath);
-			return null;
 		}
 	}
 
