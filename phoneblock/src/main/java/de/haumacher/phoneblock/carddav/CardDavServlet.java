@@ -303,7 +303,6 @@ public class CardDavServlet extends HttpServlet {
 		String rootUrl = CardDavServlet.SERVER_LOC + serverRoot;
 		String resourcePath = req.getPathInfo();
 
-		boolean whiteSpaceAppended = false;
 		while (true) {
 			if ("/".equals(resourcePath)) {
 				return new RootResource(rootUrl, resourcePath);
@@ -342,17 +341,12 @@ public class CardDavServlet extends HttpServlet {
 				if (endIdx < resourcePath.length() - 1) {
 					return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
 				} else {
-					if (whiteSpaceAppended) {
-						// Only log once for the address book, not for each card.
-						LOG.warn("CardDAV URL with whitespace suffix for '" + principal + "': " + req.getPathInfo());
-					}
 					return addressBook;
 				}
 			} else {
 				// This detects a common mistake when additional white space is appended to the CardDAV URL:
 				Matcher matcher = WHITE_SPACE_PREFIX.matcher(resourcePath);
 				if (matcher.lookingAt()) {
-					whiteSpaceAppended = true;
 					resourcePath = resourcePath.substring(matcher.end() - 1);
 					continue;
 				}
