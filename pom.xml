@@ -1,0 +1,237 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>de.haumacher</groupId>
+	<artifactId>phoneblock-parent</artifactId>
+	<version>1.4.6-SNAPSHOT</version>
+	
+	<name>PhoneBlock Aggregator</name>
+	<description>Maven aggregator building all parts of PhoneBlock</description>
+	<inceptionYear>2023</inceptionYear>
+	
+	<packaging>pom</packaging>
+	
+	<licenses>
+		<license>
+			<name>GPL-3.0-only</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Bernhard Haumacher</name>
+			<organizationUrl>https://haumacher.de</organizationUrl>
+		</developer>
+	</developers>
+
+	<organization>
+		<url>https://phoneblock.haumacher.de</url>
+	</organization>
+
+	<scm>
+		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+	
+	<modules>
+		<module>phoneblock-ab</module>
+	</modules>
+
+	<properties>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+
+		<!-- Note: The mybatis SQL framework requires Java method parameter names 
+			to allow using the method parameter names as SQL variables. -->
+		<maven.compiler.parameters>true</maven.compiler.parameters>
+		
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
+
+		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+		
+		<msgbuf.version>1.1.2</msgbuf.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>2.0.7</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>jcl-over-slf4j</artifactId>
+		    <version>2.0.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.tinylog</groupId>
+			<artifactId>slf4j-tinylog</artifactId>
+			<version>2.6.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.tinylog</groupId>
+			<artifactId>tinylog-impl</artifactId>
+			<version>2.6.2</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.junit.jupiter</groupId>
+		    <artifactId>junit-jupiter-api</artifactId>
+		    <version>5.9.3</version>
+		    <scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>${project.build.sourceDirectory}</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>de.haumacher.msgbuf</groupId>
+				<version>${msgbuf.version}</version>
+				<artifactId>msgbuf-generator-maven-plugin</artifactId>
+				
+				<executions>
+					<execution>
+						<id>generate-protocols</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>3.2.5</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+      
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-resources-plugin</artifactId>
+			  <version>3.3.0</version>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<fork>true</fork>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M7</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.2.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>3.0.1</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.3.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>4.0.0-M3</version>
+			</plugin>
+
+			<!-- Check for well-known vulnerabilities. -->
+			<!-- Execute explicitly with `mvn dependency-check:check`. -->
+			<plugin>
+			    <groupId>org.owasp</groupId>
+			    <artifactId>dependency-check-maven</artifactId>
+			    <version>7.3.0</version>
+		        <configuration>
+	                <format>ALL</format>
+	                <skipProvidedScope>true</skipProvidedScope>
+		        </configuration>
+			</plugin>
+			
+			<!-- 
+				To update dependencies to latest releases use: 
+				mvn versions:use-latest-releases versions:update-properties -DgenerateBackupPoms=false
+				
+				Show updates of plugins:
+				mvn versions:display-plugin-updates
+			-->
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+			    <version>2.15.0</version>
+				
+				<executions>
+					<execution>
+						<goals>
+							<goal>use-latest-releases</goal>
+							<goal>update-properties</goal>
+						</goals>
+					</execution>
+				</executions>
+				
+				<configuration>
+          			<ruleSet>
+						<ignoreVersions>
+							<!-- Exclude alpha and milestone builds. -->
+							<ignoreVersion>
+								<type>regex</type>
+								<version>(.+-alpha.*|.+-M.*|.+-RC.*|26962ce.*)</version>
+							</ignoreVersion>								
+						</ignoreVersions>
+					</ruleSet>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>
