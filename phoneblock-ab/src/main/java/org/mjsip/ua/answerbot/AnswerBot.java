@@ -18,10 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-
 package org.mjsip.ua.answerbot;
-
-
 
 import java.io.File;
 import java.io.IOError;
@@ -35,7 +32,6 @@ import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import org.mjsip.media.AudioFile;
 import org.mjsip.media.AudioStreamer;
 import org.mjsip.media.FlowSpec;
 import org.mjsip.media.MediaDesc;
@@ -57,21 +53,26 @@ import org.mjsip.media.tx.RtpSenderOptions;
 import org.mjsip.rtp.RtpControl;
 import org.mjsip.rtp.RtpPayloadFormat;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.sip.provider.SipStack;
+import org.mjsip.sound.AudioFile;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
+import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
-import org.mjsip.ua.PortConfig;
-import org.mjsip.ua.PortPool;
 import org.mjsip.ua.ServiceConfig;
+import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
+import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
+import org.mjsip.ua.pool.PortConfig;
+import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.sound.AlawSilenceTrimmer;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
@@ -80,8 +81,6 @@ import org.zoolu.sound.CodecType;
 import org.zoolu.sound.SimpleAudioSystem;
 import org.zoolu.util.Encoder;
 import org.zoolu.util.Flags;
-
-
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -96,33 +95,25 @@ public class AnswerBot extends MultipleUAS {
 
 	private MediaConfig _mediaConfig;
 
-	private PortPool _portPool;
+	private final StreamerFactory _streamerFactory;
 
 	/** 
 	 * Creates an {@link AnswerBot}. 
 	 */
-	public AnswerBot(SipProvider sip_provider, StreamerFactory streamerFactory, UAConfig uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceConfig serviceConfig) {
-		super(sip_provider,streamerFactory, uaConfig, serviceConfig);
+	public AnswerBot(SipProvider sip_provider, StreamerFactory streamerFactory, RegistrationOptions regOptions,
+			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig) {
+		super(sip_provider,portPool, regOptions, uaConfig, serviceConfig);
+		_streamerFactory = streamerFactory;
 		_mediaConfig = mediaConfig;
-		_portPool = portPool;
 	}
 	
 	@Override
 	protected UserAgentListener createCallHandler(SipMessage msg) {
-		MediaConfig callMedia = MediaConfig.from(_mediaConfig.mediaDescs);
-		callMedia.allocateMediaPorts(_portPool);
-		
 		return new UserAgentListenerAdapter() {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 				LOG.info("Incomming call from: " + callee.getAddress());
-				ua.accept(callMedia.mediaDescs);
-			}
-			
-			@Override
-			public void onUaCallClosed(UserAgent ua) {
-				LOG.info("Call closed.");
-				callMedia.releaseMediaPorts(_portPool);
+				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), _streamerFactory));
 			}
 		};
 	}
@@ -139,9 +130,9 @@ public class AnswerBot extends MultipleUAS {
 		SipConfig sipConfig = SipConfig.init(config_file, flags);
 		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
 		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags, uaConfig);
+		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
 		PortConfig portConfig = PortConfig.init(config_file, flags);
-		ServiceConfig serviceConfig=ServiceConfig.init(config_file, flags);         
+		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
 		flags.close();
 
 		Map<String, List<File>> audioFragments = new HashMap<>();
@@ -157,7 +148,6 @@ public class AnswerBot extends MultipleUAS {
 			}
 		}
 		
-		PortPool portPool = new PortPool(portConfig.mediaPort, portConfig.portCount);
 		StreamerFactory streamerFactory = new StreamerFactory() {
 			@Override
 			public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
@@ -217,7 +207,7 @@ public class AnswerBot extends MultipleUAS {
 		};
 		
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnswerBot(sipProvider, streamerFactory, uaConfig, mediaConfig, portPool, serviceConfig);
+		new AnswerBot(sipProvider, streamerFactory, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), serviceConfig);
 	}    
 
 }
