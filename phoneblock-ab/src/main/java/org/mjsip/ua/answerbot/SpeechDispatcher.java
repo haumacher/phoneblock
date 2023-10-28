@@ -13,7 +13,7 @@ import java.util.Random;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import org.mjsip.media.AudioFile;
+import org.mjsip.sound.AudioFile;
 import org.mjsip.ua.sound.SilenceListener;
 import org.slf4j.LoggerFactory;
 
@@ -142,7 +142,6 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	private InputStream openAudio() {
 		try {
 			String type = _state.audioType();
-			LOG.info("Choosing audio: " + type);
 			List<File> list = _audioFragments.get(type);
 			File file = list.get(_rnd.nextInt(list.size()));
 			LOG.info("Playing: " + file.getPath());
