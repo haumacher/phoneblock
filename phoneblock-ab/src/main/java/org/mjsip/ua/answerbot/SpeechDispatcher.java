@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -106,14 +107,20 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	
 	/** 
 	 * Creates a {@link SpeechDispatcher}.
-	 *
-	 * @param audioFragments
 	 */
 	public SpeechDispatcher(Map<String, List<File>> audioFragments) {
 		_audioFragments = audioFragments;
 		_rnd = new Random();
-		
 		_current = openAudio();
+		checkFragments();
+	}
+
+	private void checkFragments() {
+		for (State state : State.values()) {
+			if (_audioFragments.getOrDefault(state.audioType(), Collections.emptyList()).isEmpty()) {
+				LOG.error("No media for dialogue state '" + state.audioType() + "' found.");
+			}
+		}
 	}
 
 	@Override
@@ -142,7 +149,10 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	private InputStream openAudio() {
 		try {
 			String type = _state.audioType();
-			List<File> list = _audioFragments.get(type);
+			List<File> list = _audioFragments.getOrDefault(type, Collections.emptyList());
+			if (list.isEmpty()) {
+				throw new IllegalStateException("No media for dialogue state: " + type);
+			}
 			File file = list.get(_rnd.nextInt(list.size()));
 			LOG.info("Playing: " + file.getPath());
 			return AudioFile.getAudioFileInputStream(file.getAbsolutePath());
