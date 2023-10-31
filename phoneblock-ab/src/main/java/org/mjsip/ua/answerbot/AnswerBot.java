@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.call.RegistrationOptions;
@@ -51,7 +52,6 @@ import org.mjsip.ua.pool.PortConfig;
 import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
-import org.zoolu.util.Flags;
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -108,15 +108,18 @@ public class AnswerBot extends MultipleUAS {
 		String program = AnswerBot.class.getSimpleName();
 		LOG.info(program + " " + SipStack.version);
 
-		Flags flags=new Flags(program, args);
-		String config_file=flags.getString("-f","<file>", System.getProperty("user.home") + "/.mjsip-answerbot" ,"loads configuration from the given file");
-		SipConfig sipConfig = SipConfig.init(config_file, flags);
-		UAConfig uaConfig = UAConfig.init(config_file, flags, sipConfig);
-		SchedulerConfig schedulerConfig = SchedulerConfig.init(config_file);
-		MediaConfig mediaConfig = MediaConfig.init(config_file, flags);
-		PortConfig portConfig = PortConfig.init(config_file, flags);
-		ServiceOptions serviceConfig=ServiceConfig.init(config_file, flags);         
-		flags.close();
+		SipConfig sipConfig = new SipConfig();
+		UAConfig uaConfig = new UAConfig();
+		SchedulerConfig schedulerConfig = new SchedulerConfig();
+		MediaConfig mediaConfig = new MediaConfig();
+		PortConfig portConfig = new PortConfig();
+		ServiceConfig serviceConfig = new ServiceConfig();
+
+		OptionParser.parseOptions(args, ".mjsip-answerbot", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, serviceConfig);
+		
+		sipConfig.normalize();
+		uaConfig.normalize(sipConfig);
+		mediaConfig.normalize();
 
 		Map<String, List<File>> audioFragments = new HashMap<>();
 		File conversation = new File("./conversation");
