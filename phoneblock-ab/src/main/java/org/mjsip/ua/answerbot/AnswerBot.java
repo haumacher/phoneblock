@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.address.NameAddress;
@@ -61,18 +62,22 @@ public class AnswerBot extends MultipleUAS {
 	
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AnswerBot.class);
 
-	private MediaConfig _mediaConfig;
+	private final MediaConfig _mediaConfig;
 
-	private Map<String, List<File>> _audioFragments;
+	private final Map<String, List<File>> _audioFragments;
+
+	private final String _recordingDir;
 
 	/** 
 	 * Creates an {@link AnswerBot}. 
+	 * @param recordingDir 
 	 */
 	public AnswerBot(SipProvider sip_provider, Map<String, List<File>> audioFragments, RegistrationOptions regOptions,
-			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig) {
+			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig, String recordingDir) {
 		super(sip_provider,portPool, regOptions, uaConfig, serviceConfig);
 		_audioFragments = audioFragments;
 		_mediaConfig = mediaConfig;
+		_recordingDir = recordingDir;
 	}
 	
 	@Override
@@ -80,8 +85,14 @@ public class AnswerBot extends MultipleUAS {
 		return new UserAgentListenerAdapter() {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
-				String callId = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss-SSS").format(new Date()) + " " + name(caller);
-				StreamerFactory streamerFactory = new DialogueFactory(_audioFragments, callId);
+				String recordingFile;
+				if (_recordingDir != null) {
+					String callId = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss-SSS").format(new Date()) + " " + name(caller);
+					recordingFile = _recordingDir +  "/" + callId + ".wav";
+				} else {
+					recordingFile = null;
+				}
+				StreamerFactory streamerFactory = new DialogueFactory(_audioFragments, recordingFile);
 				
 				LOG.info("Incomming call from: " + callee.getAddress());
 				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), streamerFactory));
@@ -100,6 +111,21 @@ public class AnswerBot extends MultipleUAS {
 			}
 		};
 	}
+	
+	public static class Config {
+		@Option(name = "--conversation", usage = "Directory with WAV files used for streaming during automatic conversation.")
+		String conversationDir = "./conversation";
+		
+		@Option(name = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording. ")
+		String recordingDir = ".";
+		
+		/**
+		 * The configured recoding directory.
+		 */
+		public String getRecordingDir() {
+			return recordingDir == null || recordingDir.isBlank() || "none".equals(recordingDir) ? null : recordingDir;
+		}
+	}
 
 	/** 
 	 * The main entry point. 
@@ -114,15 +140,17 @@ public class AnswerBot extends MultipleUAS {
 		MediaConfig mediaConfig = new MediaConfig();
 		PortConfig portConfig = new PortConfig();
 		ServiceConfig serviceConfig = new ServiceConfig();
+		
+		Config config = new Config();
 
-		OptionParser.parseOptions(args, ".mjsip-answerbot", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, serviceConfig);
+		OptionParser.parseOptions(args, ".mjsip-answerbot", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, serviceConfig, config);
 		
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
 		mediaConfig.normalize();
 
 		Map<String, List<File>> audioFragments = new HashMap<>();
-		File conversation = new File("./conversation");
+		File conversation = new File(config.conversationDir);
 		for (File type : conversation.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
 			ArrayList<File> files = new ArrayList<>();
 			String typeName = type.getName();
@@ -135,7 +163,7 @@ public class AnswerBot extends MultipleUAS {
 		}
 		
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnswerBot(sipProvider, audioFragments, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), serviceConfig);
+		new AnswerBot(sipProvider, audioFragments, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), serviceConfig, config.recordingDir);
 	}    
 
 }
