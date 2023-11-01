@@ -46,6 +46,18 @@ public interface Users {
 	@Select("select ID from USERS where LOGIN=#{login}")
 	Long getUserId(String login);
 	
+	/**
+	 * Updates the user's dynamic IP address.
+	 * 
+	 * @param id
+	 *        The user ID.
+	 * @param ip
+	 *        The new IP address.
+	 * @return <code>1</code> if the update was successful.
+	 */
+	@Insert("update USERS set IP=#{ip} where ID=#{id}")
+	int setIP(long id, String ip);
+	
 	/** 
 	 * Retrieves the user ID for the user with the given user name (e-mail).
 	 */
