@@ -45,14 +45,14 @@ import org.zoolu.util.Encoder;
  */
 public final class DialogueFactory implements StreamerFactory {
 	private final Map<String, List<File>> _audioFragments;
-	private String _callId;
+	private final String _recordingFile;
 
 	/** 
 	 * Creates a {@link DialogueFactory}.
 	 */
-	public DialogueFactory(Map<String, List<File>> audioFragments, String callId) {
+	public DialogueFactory(Map<String, List<File>> audioFragments, String recordingFile) {
 		_audioFragments = audioFragments;
-		_callId = callId;
+		_recordingFile = recordingFile;
 	}
 
 	@Override
@@ -61,14 +61,6 @@ public final class DialogueFactory implements StreamerFactory {
 
 		int sampleRate = flow_spec.getMediaSpec().getSampleRate();
 		try {
-			OutputStream recording = AudioFile.getAudioFileOutputStream(_callId + ".wav", SimpleAudioSystem.getAudioFormat(flow_spec.getMediaSpec().getCodecType(), sampleRate));
-					
-			int bufferTime = 20;
-			int minSilenceTime = 500;
-			int paddingTime = 100;
-			double silenceDb = -30;
-			AlawSilenceTrimmer silenceTrimmer = new AlawSilenceTrimmer(sampleRate, bufferTime, minSilenceTime, paddingTime, silenceDb, recording, speechDispatcher);
-			
 			AudioTransmitter tx = new AudioTransmitter() {
 				@Override
 				public AudioTXHandle createSender(RtpSenderOptions options, UdpSocket udp_socket, AudioFormat audio_format,
@@ -82,28 +74,41 @@ public final class DialogueFactory implements StreamerFactory {
 				}
 			};
 			
-			AudioReceiver rx = new AudioReceiver() {
-				@Override
-				public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket socket,
-						AudioFormat audio_format, CodecType codec, int payload_type, RtpPayloadFormat payloadFormat,
-						int sample_rate, int channels, Encoder additional_decoder,
-						RtpStreamReceiverListener listener) throws IOException, UnsupportedAudioFileException {
-					
-					RtpStreamReceiverListener onTerminate = new RtpStreamReceiverListenerAdapter() {
-						@Override
-						public void onRtpStreamReceiverTerminated(RtpStreamReceiver rr, Exception error) {
-							try {
-								silenceTrimmer.close();
-								recording.close();
-							} catch (IOException ex) {
-								AnswerBot.LOG.error("Failed to close recording.", ex);
+			AudioReceiver rx;
+			if (_recordingFile != null) {
+				OutputStream recording = AudioFile.getAudioFileOutputStream(_recordingFile, SimpleAudioSystem.getAudioFormat(flow_spec.getMediaSpec().getCodecType(), sampleRate));
+				
+				int bufferTime = 20;
+				int minSilenceTime = 500;
+				int paddingTime = 100;
+				double silenceDb = -30;
+				AlawSilenceTrimmer silenceTrimmer = new AlawSilenceTrimmer(sampleRate, bufferTime, minSilenceTime, paddingTime, silenceDb, recording, speechDispatcher);
+				
+				rx = new AudioReceiver() {
+					@Override
+					public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket socket,
+							AudioFormat audio_format, CodecType codec, int payload_type, RtpPayloadFormat payloadFormat,
+							int sample_rate, int channels, Encoder additional_decoder,
+							RtpStreamReceiverListener listener) throws IOException, UnsupportedAudioFileException {
+						
+						RtpStreamReceiverListener onTerminate = new RtpStreamReceiverListenerAdapter() {
+							@Override
+							public void onRtpStreamReceiverTerminated(RtpStreamReceiver rr, Exception error) {
+								try {
+									silenceTrimmer.close();
+									recording.close();
+								} catch (IOException ex) {
+									AnswerBot.LOG.error("Failed to close recording.", ex);
+								}
 							}
-						}
-					}.andThen(listener);
-					
-					return new RtpAudioRxHandler(new RtpStreamReceiver(options, silenceTrimmer, additional_decoder, payloadFormat, socket, onTerminate));
-				}
-			};
+						}.andThen(listener);
+						
+						return new RtpAudioRxHandler(new RtpStreamReceiver(options, silenceTrimmer, additional_decoder, payloadFormat, socket, onTerminate));
+					}
+				};
+			} else {
+				rx = null;
+			}
 			StreamerOptions options = StreamerOptions.builder().build();
 			return new AudioStreamer(flow_spec, tx, rx, options);
 		} catch (IOException | UnsupportedAudioFileException ex) {
