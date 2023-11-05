@@ -31,6 +31,8 @@ import java.util.Map;
 import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
+import org.mjsip.pool.PortConfig;
+import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
@@ -49,8 +51,6 @@ import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
-import org.mjsip.ua.pool.PortConfig;
-import org.mjsip.ua.pool.PortPool;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 
@@ -151,6 +151,9 @@ public class AnswerBot extends MultipleUAS {
 
 		Map<String, List<File>> audioFragments = new HashMap<>();
 		File conversation = new File(config.conversationDir);
+		if (!conversation.isDirectory()) {
+			LOG.error("Conversation directory does not exist: " + conversation.getAbsolutePath());
+		}
 		for (File type : conversation.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
 			ArrayList<File> files = new ArrayList<>();
 			String typeName = type.getName();
