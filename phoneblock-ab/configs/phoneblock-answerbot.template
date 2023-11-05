@@ -1,0 +1,33 @@
+#
+# Answerbot configuration for registering to a Fritz!Box in a local network.
+#
+
+###################################################################################################
+# This file is a configuration template. Copy the contents to a file named "mjsip-answerbot" 
+# and fill out the missing options below. Afterwards, you can start the launch configuration 
+# AnswerBot (Fritz!Box).launch in the /bin folder.
+###################################################################################################
+
+registrar=fritz.box
+auth_realm=fritz.box
+
+# The user name for registering the IP phone device configured in your Fritz!Box
+user=phoneblock
+auth_user=phoneblock
+
+# The password for registering the IP phone device configured in your Fritz!Box
+auth_passwd=<fill-out-here>
+
+# The local ports used by the answerbot 
+host_port=55060
+media_port=50061
+port-count=20
+
+# The directory where the WAV files for the bot conversation are located.
+conversation=./conversation
+
+# The format of the conversation media stord in the directories in ./conversation/*
+media=audio 4080 RTP/AVP { 120 PCMA 16000 160 }
+
+# Enable SIP message debugging.
+log-all-packets=no
