@@ -46,11 +46,13 @@ import org.zoolu.util.Encoder;
 public final class DialogueFactory implements StreamerFactory {
 	private final Map<String, List<File>> _audioFragments;
 	private final String _recordingFile;
+	private DialogOptions _config;
 
 	/** 
 	 * Creates a {@link DialogueFactory}.
 	 */
-	public DialogueFactory(Map<String, List<File>> audioFragments, String recordingFile) {
+	public DialogueFactory(DialogOptions config, Map<String, List<File>> audioFragments, String recordingFile) {
+		_config = config;
 		_audioFragments = audioFragments;
 		_recordingFile = recordingFile;
 	}
@@ -78,11 +80,8 @@ public final class DialogueFactory implements StreamerFactory {
 			if (_recordingFile != null) {
 				OutputStream recording = AudioFile.getAudioFileOutputStream(_recordingFile, SimpleAudioSystem.getAudioFormat(flow_spec.getMediaSpec().getCodecType(), sampleRate));
 				
-				int bufferTime = 20;
-				int minSilenceTime = 500;
-				int paddingTime = 100;
-				double silenceDb = -30;
-				AlawSilenceTrimmer silenceTrimmer = new AlawSilenceTrimmer(sampleRate, bufferTime, minSilenceTime, paddingTime, silenceDb, recording, speechDispatcher);
+				AlawSilenceTrimmer silenceTrimmer = 
+					new AlawSilenceTrimmer(sampleRate, _config.bufferTime(), _config.minSilenceTime(), _config.paddingTime(), _config.silenceDb(), recording, speechDispatcher);
 				
 				rx = new AudioReceiver() {
 					@Override
