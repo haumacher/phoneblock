@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.kohsuke.args4j.Option;
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.pool.PortConfig;
@@ -44,8 +43,6 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
-import org.mjsip.ua.ServiceConfig;
-import org.mjsip.ua.ServiceOptions;
 import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UserAgent;
@@ -66,18 +63,30 @@ public class AnswerBot extends MultipleUAS {
 
 	private final Map<String, List<File>> _audioFragments;
 
-	private final String _recordingDir;
+	private AnswerbotOptions _config;
 
 	/** 
 	 * Creates an {@link AnswerBot}. 
-	 * @param recordingDir 
 	 */
-	public AnswerBot(SipProvider sip_provider, Map<String, List<File>> audioFragments, RegistrationOptions regOptions,
-			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, ServiceOptions serviceConfig, String recordingDir) {
-		super(sip_provider,portPool, regOptions, uaConfig, serviceConfig);
+	public AnswerBot(SipProvider sip_provider, RegistrationOptions regOptions,
+			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, AnswerbotOptions botOptions) {
+		super(sip_provider,portPool, regOptions, uaConfig, botOptions);
+		
+		Map<String, List<File>> audioFragments = new HashMap<>();
+		File conversationDir = botOptions.conversationDir();
+		for (File type : conversationDir.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
+			ArrayList<File> files = new ArrayList<>();
+			String typeName = type.getName();
+			audioFragments.put(typeName, files);
+			for (File wav : type.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
+				files.add(wav);
+				
+				LOG.info("Found audio fragment for " + typeName + ": " + wav.getPath());
+			}
+		}
 		_audioFragments = audioFragments;
 		_mediaConfig = mediaConfig;
-		_recordingDir = recordingDir;
+		_config = botOptions;
 	}
 	
 	@Override
@@ -86,13 +95,14 @@ public class AnswerBot extends MultipleUAS {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 				String recordingFile;
-				if (_recordingDir != null) {
+				String recordingDir = _config.recordingDir();
+				if (recordingDir != null) {
 					String callId = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss-SSS").format(new Date()) + " " + name(caller);
-					recordingFile = _recordingDir +  "/" + callId + ".wav";
+					recordingFile = recordingDir +  "/" + callId + ".wav";
 				} else {
 					recordingFile = null;
 				}
-				StreamerFactory streamerFactory = new DialogueFactory(_audioFragments, recordingFile);
+				StreamerFactory streamerFactory = new DialogueFactory(_config, _audioFragments, recordingFile);
 				
 				LOG.info("Incomming call from: " + callee.getAddress());
 				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), streamerFactory));
@@ -112,21 +122,6 @@ public class AnswerBot extends MultipleUAS {
 		};
 	}
 	
-	public static class Config {
-		@Option(name = "--conversation", usage = "Directory with WAV files used for streaming during automatic conversation.")
-		String conversationDir = "./conversation";
-		
-		@Option(name = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording. ")
-		String recordingDir = ".";
-		
-		/**
-		 * The configured recoding directory.
-		 */
-		public String getRecordingDir() {
-			return recordingDir == null || recordingDir.isBlank() || "none".equals(recordingDir) ? null : recordingDir;
-		}
-	}
-
 	/** 
 	 * The main entry point. 
 	 */
@@ -139,34 +134,16 @@ public class AnswerBot extends MultipleUAS {
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
 		MediaConfig mediaConfig = new MediaConfig();
 		PortConfig portConfig = new PortConfig();
-		ServiceConfig serviceConfig = new ServiceConfig();
+		AnswerbotConfig botConfig = new AnswerbotConfig();
 		
-		Config config = new Config();
-
-		OptionParser.parseOptions(args, ".mjsip-answerbot", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, serviceConfig, config);
+		OptionParser.parseOptions(args, ".mjsip-answerbot", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, botConfig);
 		
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);
-		mediaConfig.normalize();
+		botConfig.normalize();
 
-		Map<String, List<File>> audioFragments = new HashMap<>();
-		File conversation = new File(config.conversationDir);
-		if (!conversation.isDirectory()) {
-			LOG.error("Conversation directory does not exist: " + conversation.getAbsolutePath());
-		}
-		for (File type : conversation.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
-			ArrayList<File> files = new ArrayList<>();
-			String typeName = type.getName();
-			audioFragments.put(typeName, files);
-			for (File wav : type.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
-				files.add(wav);
-				
-				LOG.info("Found audio fragment for " + typeName + ": " + wav.getPath());
-			}
-		}
-		
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnswerBot(sipProvider, audioFragments, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), serviceConfig, config.recordingDir);
+		new AnswerBot(sipProvider, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), botConfig);
 	}    
 
 }
