@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
@@ -67,6 +68,22 @@ import de.haumacher.phoneblock.app.api.model.NumberInfo;
 public class AnswerBot extends MultipleUAS {
 	
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AnswerBot.class);
+
+	private static final String VERSION;
+	
+	static {
+		String version;
+		try (InputStream in = AnswerBot.class.getResourceAsStream("/META-INF/maven/de.haumacher/phoneblock-ab/pom.properties")) {
+			Properties properties = new Properties();
+			properties.load(in);
+			version = properties.getProperty("version");
+		} catch (IOException ex) {
+			LOG.error("Faild to read version.", ex);
+			version = null;
+		}
+		
+		VERSION = version == null ? "unknown" : version;
+	}
 
 	private final MediaConfig _mediaConfig;
 
@@ -119,6 +136,7 @@ public class AnswerBot extends MultipleUAS {
 				URL url = new URL("https://phoneblock.haumacher.de/phoneblock/api/num/" + from + "?format=json");
 				URLConnection connection = url.openConnection();
 				connection.addRequestProperty("accept", "application/json");
+				connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);
 				try (InputStream in = connection.getInputStream()) {
 					info = NumberInfo.readNumberInfo(new JsonReader(new ReaderAdapter(new InputStreamReader(in))));
 				}
