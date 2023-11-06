@@ -18,7 +18,7 @@
  * Author(s):
  * Luca Veltri (luca.veltri@unipr.it)
  */
-package org.mjsip.ua.answerbot;
+package de.haumacher.phoneblock.answerbot;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,6 @@ import org.mjsip.sip.call.RegistrationOptions;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.sip.provider.SipStack;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
@@ -206,7 +205,7 @@ public class AnswerBot extends MultipleUAS {
 	 */
 	public static void main(String[] args) {
 		String program = AnswerBot.class.getSimpleName();
-		LOG.info(program + " " + SipStack.version);
+		LOG.info(program + " " + VERSION);
 
 		SipConfig sipConfig = new SipConfig();
 		UAConfig uaConfig = new UAConfig();
