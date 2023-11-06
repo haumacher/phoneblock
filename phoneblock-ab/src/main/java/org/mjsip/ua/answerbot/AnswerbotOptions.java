@@ -22,4 +22,14 @@ public interface AnswerbotOptions extends DialogOptions, ServiceOptions {
 	 */
 	File conversationDir();
 
+	/** 
+	 * Whether to accept anonymous calls.
+	 */
+	boolean getAcceptAnonymous();
+
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int getMinVotes();
+
 }

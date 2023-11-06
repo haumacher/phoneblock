@@ -91,3 +91,15 @@ message RateRequest {
 	string comment;
 
 }
+
+message NumberInfo {
+	/** The number being rated. */
+	string phone;
+	
+	/** The {@link Rating} of the {@link #phone number}. */
+	string rating;
+	
+	/** How often the {@link #phone number} was rated in a {@link #rating certain way}. */
+	int votes;
+}
+
