@@ -3,7 +3,7 @@
 #
 
 ###################################################################################################
-# This file is a configuration template. Copy the contents to a file named "mjsip-answerbot" 
+# This file is a configuration template. Copy the contents to a file named "phoneblock-answerbot"  
 # and fill out the missing options below. Afterwards, you can start the launch configuration 
 # AnswerBot (Fritz!Box).launch in the /bin folder.
 ###################################################################################################
@@ -43,3 +43,10 @@ padding-time = 500
 	
 # The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 silence-db = -30
+
+# The minimum number of PhoneBlock votes for a number to be consideres SPAM.
+min-votes = 4
+
+# Whether to let PhoneBlock accept anonymous calls. It is not recommended to enable this option. Better configure a 
+# separate answering machine in you router to gracefully handle anonymous calls.
+accept-anonymous = no
