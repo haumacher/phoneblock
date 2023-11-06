@@ -68,7 +68,7 @@
 			            <configuration>
 			                <archive>
 				                <manifest>
-				                    <mainClass>org.mjsip.ua.answerbot.AnswerBot</mainClass>
+				                    <mainClass>de.haumacher.phoneblock.answerbot.AnswerBot</mainClass>
 				                </manifest>
 			                </archive>
 			                <descriptorRefs>
