@@ -21,6 +21,11 @@
 package org.mjsip.ua.answerbot;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,6 +55,10 @@ import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
+
+import de.haumacher.msgbuf.json.JsonReader;
+import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -91,6 +100,47 @@ public class AnswerBot extends MultipleUAS {
 	
 	@Override
 	protected UserAgentListener createCallHandler(SipMessage msg) {
+		String from = msg.getFromUser();
+		LOG.info("Incomming call from: " + from);
+		
+		if (from == null) {
+			// An anonymous call, accept.
+			if (_config.getAcceptAnonymous()) {
+				return spamHandler();
+			} else {
+				return rejectHandler();
+			}
+		} else if (from.startsWith("**")) {
+			// A local test call, accept.
+			return spamHandler();
+		} else {
+			NumberInfo info;
+			try {
+				URL url = new URL("https://phoneblock.haumacher.de/phoneblock/api/num/" + from + "?format=json");
+				URLConnection connection = url.openConnection();
+				connection.addRequestProperty("accept", "application/json");
+				try (InputStream in = connection.getInputStream()) {
+					info = NumberInfo.readNumberInfo(new JsonReader(new ReaderAdapter(new InputStreamReader(in))));
+				}
+			} catch (IOException ex) {
+				LOG.warn("Contacting PhoneBlock failed: " + ex.getMessage());
+				return rejectHandler();
+			}
+			
+			if (info.getVotes() < _config.getMinVotes()) {
+				// Not considered SPAM.
+				LOG.info("Not spam: " + from + " (" + info.getVotes() + " votes)");
+				return rejectHandler();
+			}
+			
+			return spamHandler();
+		}
+	}
+
+	/**
+	 * A {@link UserAgentListener} that accepts the call and starts a nonsense conversation with the counterpart.
+	 */
+	private UserAgentListener spamHandler() {
 		return new UserAgentListenerAdapter() {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
@@ -104,7 +154,6 @@ public class AnswerBot extends MultipleUAS {
 				}
 				StreamerFactory streamerFactory = new DialogueFactory(_config, _audioFragments, recordingFile);
 				
-				LOG.info("Incomming call from: " + callee.getAddress());
 				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), streamerFactory));
 			}
 
@@ -118,6 +167,18 @@ public class AnswerBot extends MultipleUAS {
 					return specificPart;
 				}
 				return specificPart.substring(0, atIndex);
+			}
+		};
+	}
+
+	/**
+	 * A {@link UserAgentListener} that rejects the call.
+	 */
+	private UserAgentListener rejectHandler() {
+		return new UserAgentListenerAdapter() {
+			@Override
+			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
+				ua.hangup();
 			}
 		};
 	}
@@ -136,7 +197,7 @@ public class AnswerBot extends MultipleUAS {
 		PortConfig portConfig = new PortConfig();
 		AnswerbotConfig botConfig = new AnswerbotConfig();
 		
-		OptionParser.parseOptions(args, ".mjsip-answerbot", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, botConfig);
+		OptionParser.parseOptions(args, ".phoneblock", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, botConfig);
 		
 		sipConfig.normalize();
 		uaConfig.normalize(sipConfig);

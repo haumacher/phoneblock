@@ -41,9 +41,44 @@
 
 	<dependencies>
 		<dependency>	
+		    <groupId>de.haumacher</groupId>
+			<artifactId>phoneblock-shared</artifactId>
+		    <version>${project.version}</version>
+		</dependency>
+		
+		<dependency>	
 		    <groupId>org.mjsip</groupId>
 			<artifactId>mjsip-ua</artifactId>
 		    <version>1.9.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-assembly-plugin</artifactId>
+			    <executions>
+			        <execution>
+			            <phase>package</phase>
+			            <goals>
+			                <goal>single</goal>
+			            </goals>
+			            <configuration>
+			                <archive>
+				                <manifest>
+				                    <mainClass>org.mjsip.ua.answerbot.AnswerBot</mainClass>
+				                </manifest>
+			                </archive>
+			                <descriptorRefs>
+			                    <descriptorRef>jar-with-dependencies</descriptorRef>
+			                </descriptorRefs>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>		
+		
+		</plugins>
+	</build>
 </project>

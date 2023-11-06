@@ -37,6 +37,12 @@ public class AnswerbotConfig extends ServiceConfig implements AnswerbotOptions {
 	
 	@Option(name = "--silence-db", usage = "The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 	private double silenceDb = -30;
+
+	@Option(name = "--accept-anonymous", usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
+	private boolean _acceptAnonymous = false;
+
+	@Option(name = "--min-votes", usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
+	private int _minVotes = 4;
 	
 	@Override
 	public int bufferTime() {
@@ -63,6 +69,16 @@ public class AnswerbotConfig extends ServiceConfig implements AnswerbotOptions {
 	@Override
 	public File conversationDir() {
 		return _conversationDir;
+	}
+	
+	@Override
+	public boolean getAcceptAnonymous() {
+		return _acceptAnonymous;
+	}
+	
+	@Override
+	public int getMinVotes() {
+		return _minVotes;
 	}
 
 	/**
