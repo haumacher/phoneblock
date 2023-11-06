@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Bernhard Haumacher et al. All Rights Reserved.
  */
-package org.mjsip.ua.answerbot;
+package de.haumacher.phoneblock.answerbot;
 
 import java.io.File;
 
