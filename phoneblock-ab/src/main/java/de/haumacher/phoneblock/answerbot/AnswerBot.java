@@ -33,12 +33,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.pool.PortConfig;
 import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
@@ -88,14 +90,14 @@ public class AnswerBot extends MultipleUAS {
 
 	private AnswerbotOptions _botConfig;
 
-	private UserOptions _userConfig;
+	private Function<String, UserOptions> _configForUser;
 
 	/** 
 	 * Creates an {@link AnswerBot}. 
 	 */
-	public AnswerBot(SipProvider sip_provider, AnswerbotOptions botOptions, UserOptions userConfig, PortPool portPool) {
+	public AnswerBot(SipProvider sip_provider, AnswerbotOptions botOptions, Function<String, UserOptions> configForUser, PortPool portPool) {
 		super(sip_provider, portPool, botOptions);
-		_userConfig = userConfig;
+		_configForUser = configForUser;
 		_botConfig = botOptions;
 
 		Map<String, List<File>> audioFragments = new HashMap<>();
@@ -118,8 +120,12 @@ public class AnswerBot extends MultipleUAS {
 		String from = msg.getFromUser();
 		LOG.info("Incomming call from: " + from);
 		
-		// TODO: Lookup depending on caller.
-		UserOptions user = _userConfig;
+		String userName = SipURI.parseSipURI(msg.getToHeader().getValue()).getUserName();
+		UserOptions user = _configForUser.apply(userName);
+		if (user == null) {
+			// Ignore.
+			return;
+		}
 		
 		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(from));
 		
@@ -228,7 +234,7 @@ public class AnswerBot extends MultipleUAS {
 		botConfig.normalize();
 
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnswerBot(sipProvider, botConfig, userConfig, portConfig.createPool());
+		new AnswerBot(sipProvider, botConfig, (id) -> userConfig, portConfig.createPool());
 		
 		RegistrationClient rc = new RegistrationClient(sipProvider, userConfig, new RegistrationLogger());
 		rc.loopRegister(userConfig);
