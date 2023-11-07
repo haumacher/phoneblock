@@ -9,18 +9,17 @@
 ###################################################################################################
 
 registrar=fritz.box
-auth_realm=fritz.box
+realm=fritz.box
 
 # The user name for registering the IP phone device configured in your Fritz!Box
 user=phoneblock
-auth_user=phoneblock
 
 # The password for registering the IP phone device configured in your Fritz!Box
-auth_passwd=<fill-out-here>
+passwd=<fill-out-here>
 
 # The local ports used by the answerbot 
-host_port=55060
-media_port=50061
+host-port=55060
+media-port=50061
 port-count=20
 
 # Enable SIP message debugging.

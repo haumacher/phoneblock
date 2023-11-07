@@ -46,10 +46,7 @@ import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
-import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
-import org.mjsip.ua.StaticOptions;
-import org.mjsip.ua.UAConfig;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
@@ -87,8 +84,6 @@ public class AnswerBot extends MultipleUAS {
 		VERSION = version == null ? "unknown" : version;
 	}
 
-	private final MediaConfig _mediaConfig;
-
 	private final Map<String, List<File>> _audioFragments;
 
 	private AnswerbotOptions _botConfig;
@@ -98,12 +93,9 @@ public class AnswerBot extends MultipleUAS {
 	/** 
 	 * Creates an {@link AnswerBot}. 
 	 */
-	public AnswerBot(SipProvider sip_provider, StaticOptions config, UserOptions userConfig, 
-			MediaConfig mediaConfig, PortPool portPool, AnswerbotOptions botOptions) {
-		super(sip_provider, portPool, config);
+	public AnswerBot(SipProvider sip_provider, AnswerbotOptions botOptions, UserOptions userConfig, PortPool portPool) {
+		super(sip_provider, portPool, botOptions);
 		_userConfig = userConfig;
-
-		_mediaConfig = mediaConfig;
 		_botConfig = botOptions;
 
 		Map<String, List<File>> audioFragments = new HashMap<>();
@@ -188,7 +180,7 @@ public class AnswerBot extends MultipleUAS {
 				}
 				StreamerFactory streamerFactory = new DialogueFactory(_botConfig, _audioFragments, recordingFile);
 				
-				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), streamerFactory));
+				ua.accept(new MediaAgent(_botConfig.getMediaDescs(), streamerFactory));
 			}
 
 			private String name(NameAddress caller) {
@@ -225,23 +217,21 @@ public class AnswerBot extends MultipleUAS {
 		LOG.info(program + " " + VERSION);
 
 		SipConfig sipConfig = new SipConfig();
-		UAConfig uaConfig = new UAConfig();
+		CustomerConfig userConfig = new CustomerConfig();
 		SchedulerConfig schedulerConfig = new SchedulerConfig();
-		MediaConfig mediaConfig = new MediaConfig();
 		PortConfig portConfig = new PortConfig();
 		AnswerbotConfig botConfig = new AnswerbotConfig();
 		
-		OptionParser.parseOptions(args, ".phoneblock", sipConfig, uaConfig, schedulerConfig, mediaConfig, portConfig, botConfig);
+		OptionParser.parseOptions(args, ".phoneblock", sipConfig, botConfig, userConfig, schedulerConfig, portConfig);
 		
 		sipConfig.normalize();
-		uaConfig.normalize(sipConfig);
 		botConfig.normalize();
 
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
-		new AnswerBot(sipProvider, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), botConfig);
+		new AnswerBot(sipProvider, botConfig, userConfig, portConfig.createPool());
 		
-		RegistrationClient rc = new RegistrationClient(sipProvider, uaConfig, new RegistrationLogger());
-		rc.loopRegister(uaConfig);
+		RegistrationClient rc = new RegistrationClient(sipProvider, userConfig, new RegistrationLogger());
+		rc.loopRegister(userConfig);
 	}
 
 }
