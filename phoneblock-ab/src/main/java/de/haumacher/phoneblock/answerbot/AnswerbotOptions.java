@@ -5,12 +5,13 @@ package de.haumacher.phoneblock.answerbot;
 
 import java.io.File;
 
-import org.mjsip.ua.ServiceOptions;
+import org.mjsip.media.MediaDesc;
+import org.mjsip.ua.StaticOptions;
 
 /**
  * Configuration options of the {@link AnswerBot}.
  */
-public interface AnswerbotOptions extends DialogOptions, ServiceOptions {
+public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 
 	/** 
 	 * The directory where to store recordings, <code>null</code> if recording is diabled.
@@ -31,5 +32,10 @@ public interface AnswerbotOptions extends DialogOptions, ServiceOptions {
 	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
 	 */
 	int getMinVotes();
+
+	/** 
+	 * Media format configuration.
+	 */
+	MediaDesc[] getMediaDescs();
 
 }

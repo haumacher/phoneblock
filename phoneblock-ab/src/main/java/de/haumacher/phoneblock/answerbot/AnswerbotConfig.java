@@ -6,13 +6,18 @@ package de.haumacher.phoneblock.answerbot;
 import java.io.File;
 
 import org.kohsuke.args4j.Option;
-import org.mjsip.ua.ServiceConfig;
+import org.mjsip.media.FlowSpec.Direction;
+import org.mjsip.media.MediaDesc;
+import org.mjsip.sip.config.MediaDescHandler;
 
 /**
  * Configuration options for the {@link AnswerBot}.
  */
-public class AnswerbotConfig extends ServiceConfig implements AnswerbotOptions {
+public class AnswerbotConfig implements AnswerbotOptions {
 
+	@Option(name = "--media", handler = MediaDescHandler.class)
+	private MediaDesc[] _mediaDescs=new MediaDesc[]{};
+	
 	@Option(name = "--conversation", usage = "Directory with WAV files used for streaming during automatic conversation.")
 	private File _conversationDir = new File("./conversation");
 	
@@ -93,6 +98,28 @@ public class AnswerbotConfig extends ServiceConfig implements AnswerbotOptions {
 			System.err.println("Conversation directory does not exist: " + conversationDir().getAbsolutePath());
 			System.exit(1);
 		}
+	}
+	
+	@Override
+	public MediaDesc[] getMediaDescs() {
+		return _mediaDescs;
+	}
+	
+	@Override
+	public String getMediaAddr() {
+		return null;
+	}
+	@Override
+	public boolean getNoOffer() {
+		return false;
+	}
+	@Override
+	public int getRefuseTime() {
+		return 0;
+	}
+	@Override
+	public Direction getDirection() {
+		return Direction.FULL_DUPLEX;
 	}
 	
 }
