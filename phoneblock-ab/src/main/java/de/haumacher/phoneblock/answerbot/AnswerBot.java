@@ -39,7 +39,7 @@ import org.mjsip.media.MediaDesc;
 import org.mjsip.pool.PortConfig;
 import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
-import org.mjsip.sip.call.RegistrationOptions;
+import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
@@ -48,11 +48,14 @@ import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MediaConfig;
 import org.mjsip.ua.MultipleUAS;
+import org.mjsip.ua.StaticOptions;
 import org.mjsip.ua.UAConfig;
-import org.mjsip.ua.UAOptions;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
+import org.mjsip.ua.UserOptions;
+import org.mjsip.ua.registration.RegistrationClient;
+import org.mjsip.ua.registration.RegistrationLogger;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 
@@ -88,15 +91,21 @@ public class AnswerBot extends MultipleUAS {
 
 	private final Map<String, List<File>> _audioFragments;
 
-	private AnswerbotOptions _config;
+	private AnswerbotOptions _botConfig;
+
+	private UserOptions _userConfig;
 
 	/** 
 	 * Creates an {@link AnswerBot}. 
 	 */
-	public AnswerBot(SipProvider sip_provider, RegistrationOptions regOptions,
-			UAOptions uaConfig, MediaConfig mediaConfig, PortPool portPool, AnswerbotOptions botOptions) {
-		super(sip_provider,portPool, regOptions, uaConfig, botOptions);
-		
+	public AnswerBot(SipProvider sip_provider, StaticOptions config, UserOptions userConfig, 
+			MediaConfig mediaConfig, PortPool portPool, AnswerbotOptions botOptions) {
+		super(sip_provider, portPool, config);
+		_userConfig = userConfig;
+
+		_mediaConfig = mediaConfig;
+		_botConfig = botOptions;
+
 		Map<String, List<File>> audioFragments = new HashMap<>();
 		File conversationDir = botOptions.conversationDir();
 		for (File type : conversationDir.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
@@ -110,18 +119,26 @@ public class AnswerBot extends MultipleUAS {
 			}
 		}
 		_audioFragments = audioFragments;
-		_mediaConfig = mediaConfig;
-		_config = botOptions;
 	}
 	
 	@Override
-	protected UserAgentListener createCallHandler(SipMessage msg) {
+	protected void onInviteReceived(SipMessage msg) {
 		String from = msg.getFromUser();
 		LOG.info("Incomming call from: " + from);
 		
+		// TODO: Lookup depending on caller.
+		UserOptions user = _userConfig;
+		
+		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(from));
+		
+		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
+		new ExtendedCall(sip_provider,msg,ua);
+	}
+	
+	protected UserAgentListener createCallHandler(String from) {
 		if (from == null) {
 			// An anonymous call, accept.
-			if (_config.getAcceptAnonymous()) {
+			if (_botConfig.getAcceptAnonymous()) {
 				return spamHandler();
 			} else {
 				return rejectHandler();
@@ -144,7 +161,7 @@ public class AnswerBot extends MultipleUAS {
 				return rejectHandler();
 			}
 			
-			if (info.getVotes() < _config.getMinVotes()) {
+			if (info.getVotes() < _botConfig.getMinVotes()) {
 				// Not considered SPAM.
 				LOG.info("Not spam: " + from + " (" + info.getVotes() + " votes)");
 				return rejectHandler();
@@ -162,14 +179,14 @@ public class AnswerBot extends MultipleUAS {
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 				String recordingFile;
-				String recordingDir = _config.recordingDir();
+				String recordingDir = _botConfig.recordingDir();
 				if (recordingDir != null) {
 					String callId = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss-SSS").format(new Date()) + " " + name(caller);
 					recordingFile = recordingDir +  "/" + callId + ".wav";
 				} else {
 					recordingFile = null;
 				}
-				StreamerFactory streamerFactory = new DialogueFactory(_config, _audioFragments, recordingFile);
+				StreamerFactory streamerFactory = new DialogueFactory(_botConfig, _audioFragments, recordingFile);
 				
 				ua.accept(new MediaAgent(_mediaConfig.getMediaDescs(), streamerFactory));
 			}
@@ -222,6 +239,9 @@ public class AnswerBot extends MultipleUAS {
 
 		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
 		new AnswerBot(sipProvider, uaConfig, uaConfig, mediaConfig, portConfig.createPool(), botConfig);
-	}    
+		
+		RegistrationClient rc = new RegistrationClient(sipProvider, uaConfig, new RegistrationLogger());
+		rc.loopRegister(uaConfig);
+	}
 
 }
