@@ -103,7 +103,7 @@ public class DB {
 
 	private MessageDigest _sha256;
 
-	private SecureRandom _rnd = new SecureRandom();
+	private final SecureRandom _rnd;
 	
 	private SchedulerService _scheduler;
 	
@@ -116,7 +116,7 @@ public class DB {
 	private boolean _sendHelpMails;
 
 	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException {
-		this(false, dataSource, IndexUpdateService.NONE, scheduler, null);
+		this(new SecureRandom(), false, dataSource, IndexUpdateService.NONE, scheduler, null);
 	}
 	
 	/** 
@@ -125,7 +125,8 @@ public class DB {
 	 *
 	 * @param dataSource
 	 */
-	public DB(boolean sendHelpMails, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
+	public DB(SecureRandom rnd, boolean sendHelpMails, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
+		_rnd = rnd;
 		_sendHelpMails = sendHelpMails;
 		_dataSource = dataSource;
 		_indexer = indexer;
