@@ -115,7 +115,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	}
 	@Override
 	public int getRefuseTime() {
-		return 0;
+		return -1;
 	}
 	@Override
 	public Direction getDirection() {
