@@ -44,6 +44,7 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
+import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
 import org.mjsip.time.SchedulerConfig;
@@ -120,7 +121,7 @@ public class AnswerBot extends MultipleUAS {
 		String from = msg.getFromUser();
 		LOG.info("Incomming call from: " + from);
 		
-		String userName = SipURI.parseSipURI(msg.getToHeader().getValue()).getUserName();
+		String userName = SipURI.parseSipURI(new SipParser(msg.getToHeader().getValue()).getURISource()).getUserName();
 		UserOptions user = _configForUser.apply(userName);
 		if (user == null) {
 			// Ignore.
