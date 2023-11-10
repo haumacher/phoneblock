@@ -33,6 +33,7 @@ import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -84,13 +85,15 @@ public class Application implements ServletContextListener {
 		MetaSearchService metaSearch;
 		MailServiceStarter mail;
 		ChatGPTService gpt;
+		SecureRandomService rnd;
 		_services = new ServletContextListener[] {
+			rnd = new SecureRandomService(),
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
 				new IndexNowUpdateService(),
 				new GoogleUpdateService())),
 			mail = new MailServiceStarter(),
-			db = new DBService(indexer, scheduler, mail),
+			db = new DBService(rnd, indexer, scheduler, mail),
 			new EMailCheckService(db),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
