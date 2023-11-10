@@ -42,6 +42,7 @@ import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
+import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipParser;
@@ -121,10 +122,24 @@ public class AnswerBot extends MultipleUAS {
 		String from = msg.getFromUser();
 		LOG.info("Incomming call from: " + from);
 		
-		String userName = SipURI.parseSipURI(new SipParser(msg.getToHeader().getValue()).getURISource()).getUserName();
+		ToHeader toHeader = msg.getToHeader();
+		if (toHeader == null) {
+			LOG.warn("Missing To: header, ignoring.");
+			return;
+		}
+		String toHeaderValue = toHeader.getValue();
+		if (toHeaderValue == null || toHeaderValue.isBlank()) {
+			LOG.warn("Empty To: header, ignoring.");
+			return;
+		}
+		String userName = SipURI.parseSipURI(new SipParser(toHeaderValue).getURISource()).getUserName();
+		if (userName == null) {
+			LOG.warn("No user name in To: header, ignoring.");
+			return;
+		}
 		UserOptions user = _configForUser.apply(userName);
 		if (user == null) {
-			// Ignore.
+			LOG.warn("No configuration for user '" + userName + "', ignoring.");
 			return;
 		}
 		
