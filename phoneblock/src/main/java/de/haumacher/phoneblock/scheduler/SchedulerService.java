@@ -56,6 +56,10 @@ public class SchedulerService implements ServletContextListener {
 		}
 
 		LOG.info("Scheduler stopped.");
+		
+		if (_instance == this) {
+			_instance = null;
+		}
 	}
 
 	/** 
