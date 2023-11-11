@@ -74,7 +74,7 @@ public class IndexNowUpdateService implements IndexUpdateService {
 		if (!path.startsWith("/")) {
 			path = "/" + path;
 		}
-		String url = "https://phoneblock.haumacher.de" + _contextPath + path;
+		String url = "https://phoneblock.net" + _contextPath + path;
 		try {
 			URL indexnowUrl = new URL("https://www.bing.com/indexnow?url=" + URLEncoder.encode(url, "utf-8") + "&key=" + _apiKey);
 			HttpURLConnection connection = (HttpURLConnection) indexnowUrl.openConnection();

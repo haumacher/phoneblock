@@ -73,7 +73,7 @@ public class CardDavServlet extends HttpServlet {
 	 */
 	public static final String ADDRESSES_PATH = "/addresses/";
 
-	public static final String SERVER_LOC = "https://phoneblock.haumacher.de";
+	public static final String SERVER_LOC = "https://phoneblock.net";
 	
 	private static final Pattern WHITE_SPACE_PREFIX = Pattern.compile("/\\s*/");
 

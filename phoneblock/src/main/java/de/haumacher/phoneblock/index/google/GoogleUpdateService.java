@@ -97,7 +97,7 @@ public class GoogleUpdateService implements IndexUpdateService {
 			path = "/" + path;
 		}
 		
-		String url = "https://phoneblock.haumacher.de" + _contextPath + path;
+		String url = "https://phoneblock.net" + _contextPath + path;
 
 		try {
 			AbstractInputStreamContent body = new ByteArrayContent("application/json; charset=UTF-8", 

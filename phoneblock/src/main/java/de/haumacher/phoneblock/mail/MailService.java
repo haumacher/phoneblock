@@ -54,7 +54,7 @@ public class MailService {
 			throws MessagingException, IOException, AddressException {
 		LOG.info("Sending activation mail to '" + receiver + "'.");
 		
-		String image = "https://phoneblock.haumacher.de/phoneblock/app-logo.svg";
+		String image = "https://phoneblock.net/phoneblock/app-logo.svg";
 		
 		Message msg = createMessage();
 		msg.setSubject("PhoneBlock E-Mail Bestätigung");

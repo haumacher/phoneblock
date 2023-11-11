@@ -5,7 +5,7 @@
 	request.setAttribute("title", "PhoneBlock Anmeldung");
 %>
 <head>
-<link rel="canonical" href="https://phoneblock.haumacher.de/phoneblock/" />
+<link rel="canonical" href="https://phoneblock.net/phoneblock/" />
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>
 

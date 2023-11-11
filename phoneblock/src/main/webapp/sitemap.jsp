@@ -12,7 +12,7 @@
 %>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/</loc>
+      <loc>https://phoneblock.net/phoneblock/</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>1.0</priority>
@@ -23,7 +23,7 @@
 	Long lastUpdate = db.getLastSpamReport();
 %>
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/status.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/status.jsp</loc>
 <%
 	if (lastUpdate != null) {
 %>
@@ -36,42 +36,42 @@
    </url>
 
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/setup.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/setup.jsp</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
    </url>
 
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/setup-android/</loc>
+      <loc>https://phoneblock.net/phoneblock/setup-android/</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
    </url>
 
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/faq.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/faq.jsp</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>
    </url>
 
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/datenschutz.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/datenschutz.jsp</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
    </url>
 
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/block.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/block.jsp</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
    </url>
 
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/signup.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/signup.jsp</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>
@@ -84,7 +84,7 @@
 	for (SpamReport report : reports) {
 %>
    <url>
-      <loc>https://phoneblock.haumacher.de/phoneblock/nums/<%=report.getPhone() %></loc>
+      <loc>https://phoneblock.net/phoneblock/nums/<%=report.getPhone() %></loc>
       <lastmod><%= format.format(new Date(report.getLastUpdate())) %></lastmod>
       <changefreq><%= report.getLastUpdate() < oneWeekBefore ? "weekly" : "daily" %></changefreq>
       <priority>0.3</priority>

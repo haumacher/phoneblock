@@ -2,7 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <html>
 <head>
-<link rel="canonical" href="https://phoneblock.haumacher.de/phoneblock/" />
+<link rel="canonical" href="https://phoneblock.net/phoneblock/" />
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>
 

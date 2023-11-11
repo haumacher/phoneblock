@@ -51,7 +51,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
         
         String clientNames = clientList.stream().map(client -> client.getName()).collect(Collectors.joining(","));
 		
-		String callbackUrl = "https://phoneblock.haumacher.de" + contextPath + "/oauth/callback";
+		String callbackUrl = "https://phoneblock.net" + contextPath + "/oauth/callback";
 		LOG.info("Using oauth callback URL: " + callbackUrl);
 		Clients clients = new Clients(callbackUrl, clientList);
 		clients.setDefaultSecurityClients(clientNames);
