@@ -67,6 +67,12 @@
 		</dependency>
 	
 		<dependency>
+			<groupId>de.haumacher</groupId>
+			<artifactId>phoneblock-ab</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
+		<dependency>
 			<groupId>de.haumacher.msgbuf</groupId>
 			<version>${msgbuf.version}</version>
 			<artifactId>msgbuf-api</artifactId>
