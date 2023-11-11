@@ -29,25 +29,45 @@ public class CustomerConfig implements CustomerOptions {
 	public String getRegistrar() {
 		return registrar;
 	}
+	
+	public void setRegistrar(String registrar) {
+		this.registrar = registrar;
+	}
 
 	@Override
 	public String getRoute() {
 		return route;
+	}
+	
+	public void setRoute(String route) {
+		this.route = route;
 	}
 
 	@Override
 	public String getUser() {
 		return user;
 	}
+	
+	public void setUser(String user) {
+		this.user = user;
+	}
 
 	@Override
 	public String getAuthPasswd() {
 		return passwd;
 	}
+	
+	public void setPasswd(String passwd) {
+		this.passwd = passwd;
+	}
 
 	@Override
 	public String getAuthRealm() {
 		return realm;
+	}
+	
+	public void setRealm(String realm) {
+		this.realm = realm;
 	}
 
 }
