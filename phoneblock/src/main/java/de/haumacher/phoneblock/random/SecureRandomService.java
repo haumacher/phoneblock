@@ -14,7 +14,7 @@ import javax.servlet.ServletContextListener;
 public class SecureRandomService implements ServletContextListener {
 	
 	private SecureRandom _rnd = new SecureRandom();
-	private static SecureRandomService INSTANCE;
+	private static SecureRandomService _instance;
 	
 	/**
 	 * The secure random number generator.
@@ -25,18 +25,20 @@ public class SecureRandomService implements ServletContextListener {
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		INSTANCE = this;
+		_instance = this;
 	}
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		INSTANCE = null;
+		if (_instance == this) {
+			_instance = null;
+		}
 	}
 
 	/**
 	 * The {@link SecureRandomService} singleton.
 	 */
 	public static SecureRandomService getInstance() {
-		return INSTANCE;
+		return _instance;
 	}
 }
