@@ -25,12 +25,17 @@ module phoneblock {
 	exports de.haumacher.phoneblock.db.model to org.mybatis;
 	
 	requires phoneblock.shared;
+	requires phoneblock.ab;
+	requires mjsip.sip;
+	requires mjsip.util;
+	requires mjsip.ua;
 	requires com.google.api.client;
 	requires com.google.auth;
 	requires com.google.auth.oauth2;
 	requires com.h2database;
 	requires com.opencsv;
 	requires ez.vcard;
+	requires java.base;
 	requires java.desktop;
 	requires java.mail;
 	requires java.management;
