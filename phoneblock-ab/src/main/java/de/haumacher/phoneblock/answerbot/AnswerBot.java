@@ -47,7 +47,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
-import org.mjsip.time.Scheduler;
+import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
 import org.mjsip.ua.MultipleUAS;
@@ -249,7 +249,7 @@ public class AnswerBot extends MultipleUAS {
 		sipConfig.normalize();
 		botConfig.normalize();
 
-		SipProvider sipProvider = new SipProvider(sipConfig, new Scheduler(schedulerConfig));
+		SipProvider sipProvider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		new AnswerBot(sipProvider, botConfig, (id) -> userConfig, portConfig.createPool());
 		
 		RegistrationClient rc = new RegistrationClient(sipProvider, userConfig, new RegistrationLogger());
