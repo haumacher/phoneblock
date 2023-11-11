@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock;
+package de.haumacher.phoneblock.util;
 
 import static de.haumacher.phoneblock.util.DomUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
