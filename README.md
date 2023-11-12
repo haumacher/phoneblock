@@ -3,12 +3,12 @@
 # PhoneBlock
 Der Spam-Filter für deine Fritz!Box - keine Kosten, keine Zusatzhardware
 
-* [PhoneBlock-Homepage](https://phoneblock.haumacher.de/)
-* [Installation von PhoneBlock in der Fritz!Box](https://phoneblock.haumacher.de/phoneblock/setup.jsp)
-* [Installation von PhoneBlock auf dem Mobiltelefon](https://phoneblock.haumacher.de/phoneblock/setup-android/)
-* [Berichte über aktuelle Werbeanrufer](https://phoneblock.haumacher.de/phoneblock/status.jsp)
-* [Fragen und Antworten zu PhoneBlock](https://phoneblock.haumacher.de/phoneblock/faq.jsp)
-* [API für Entwickler](https://phoneblock.haumacher.de/phoneblock/api/)
+* [PhoneBlock-Homepage](https://phoneblock.net/)
+* [Installation von PhoneBlock in der Fritz!Box](https://phoneblock.net/phoneblock/setup.jsp)
+* [Installation von PhoneBlock auf dem Mobiltelefon](https://phoneblock.net/phoneblock/setup-android/)
+* [Berichte über aktuelle Werbeanrufer](https://phoneblock.net/phoneblock/status.jsp)
+* [Fragen und Antworten zu PhoneBlock](https://phoneblock.net/phoneblock/faq.jsp)
+* [API für Entwickler](https://phoneblock.net/phoneblock/api/)
 
 ## Wie funktioniert PhoneBlock?
 
@@ -18,13 +18,13 @@ Solltest du trotzdem einen unerwünschten Anruf erhalten, weil die Nummer noch n
 
 ## Was sind die Voraussetzungen?
 
-PhoneBlock funktioniert mit einem "Festnetzanschluss" in Kombination mit einem Internet-Router "FRITZ!Box" von AVM. Es muss nicht das neueste Modell sein, aber du solltest überprüfen, ob das neueste FRITZ!OS darauf installiert ist (07.29 oder neuer). Sollte dies nicht der Fall sein, schau in der [Installationsanleitung](https://phoneblock.haumacher.de/phoneblock/setup.jsp) nach, ob deine Version bereits die notwendigen Optionen bietet.
+PhoneBlock funktioniert mit einem "Festnetzanschluss" in Kombination mit einem Internet-Router "FRITZ!Box" von AVM. Es muss nicht das neueste Modell sein, aber du solltest überprüfen, ob das neueste FRITZ!OS darauf installiert ist (07.29 oder neuer). Sollte dies nicht der Fall sein, schau in der [Installationsanleitung](https://phoneblock.net/phoneblock/setup.jsp) nach, ob deine Version bereits die notwendigen Optionen bietet.
 
 Das Einzige, was du noch brauchst, ist ein PhoneBlock-Konto, mit dem du die Telefonsperrliste in deiner FRITZ!Box einrichten kannst.
 
 ## Bist du bereit, loszulegen?
 
-Nutze PhoneBlock live unter: https://phoneblock.haumacher.de/ - keine Kosten, keine Zusatzhardware notwendig.
+Nutze PhoneBlock live unter: https://phoneblock.net/ - keine Kosten, keine Zusatzhardware notwendig.
 
 
 
@@ -39,10 +39,10 @@ If you still receive an unwanted call because the number is not yet in the block
 
 ## What are the requirements?
 
-PhoneBlock works on a "landline" in combination with a "FRITZ!Box" internet router from AVM. It doesn't have to be the latest model, but you should check if the latest FRITZ!OS is installed on it (07.29 or newer). If this is not the case, check the [installation guide](https://phoneblock.haumacher.de/phoneblock/setup.jsp) to see if your version already offers the necessary options.
+PhoneBlock works on a "landline" in combination with a "FRITZ!Box" internet router from AVM. It doesn't have to be the latest model, but you should check if the latest FRITZ!OS is installed on it (07.29 or newer). If this is not the case, check the [installation guide](https://phoneblock.net/phoneblock/setup.jsp) to see if your version already offers the necessary options.
 
 The only other thing you need is a PhoneBlock account, with which you can set up the phone block list in your FRITZ!Box.
 
 ## Ready to get started?
 
-Start using PhoneBlock live at: https://phoneblock.haumacher.de/ - no cost, no additional hardware required.
+Start using PhoneBlock live at: https://phoneblock.net/ - no cost, no additional hardware required.
