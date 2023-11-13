@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.answerbot;
 import java.io.File;
 
 import org.kohsuke.args4j.Option;
+import org.mjsip.config.YesNoHandler;
 import org.mjsip.media.FlowSpec.Direction;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.sip.config.MediaDescHandler;
@@ -43,7 +44,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--silence-db", usage = "The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 	private double silenceDb = -30;
 
-	@Option(name = "--accept-anonymous", usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
+	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
 	private boolean _acceptAnonymous = false;
 
 	@Option(name = "--min-votes", usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
