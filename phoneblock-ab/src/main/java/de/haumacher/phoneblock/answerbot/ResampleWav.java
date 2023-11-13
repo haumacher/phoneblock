@@ -17,6 +17,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import org.mjsip.sound.AudioFile;
 
 import com.laszlosystems.libresample4j.Resampler;
+import com.laszlosystems.libresample4j.SampleBuffers;
 
 /**
  * Tool for producing versions of WAV files of different sample rate from a master file.
@@ -25,16 +26,17 @@ public class ResampleWav {
 	
 	public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
 		AudioInputStream in = AudioFile.getAudioFileInputStream(args[0]);
-		AudioInputStream signed = encode(in, Encoding.PCM_SIGNED);
-		AudioInputStream mono = mono(signed);
-		AudioInputStream scaled = scale(mono, 16);
-		AudioInputStream resampled = resample(scaled, 16000);
-		AudioInputStream encoded = encode(resampled, Encoding.ALAW);
 		
-		try (OutputStream out = AudioFile.getAudioFileOutputStream(args[0] + "-16000.wav", encoded.getFormat())) {
+		in = encode(in, Encoding.PCM_SIGNED);
+		in = mono(in);
+		in = resample2(in, 16000);
+		in = scale(in, 16);
+		in = encode(in, Encoding.ALAW);
+		
+		try (OutputStream out = AudioFile.getAudioFileOutputStream(args[0] + "-16000.wav", in.getFormat())) {
 			byte buffer[] = new byte[4096];
 			int direct;
-			while ((direct = encoded.read(buffer)) > 0) {
+			while ((direct = in.read(buffer)) > 0) {
 				out.write(buffer, 0, direct);
 			}
 		}
@@ -86,6 +88,28 @@ public class ResampleWav {
 		
 		FloatBuffer inputBuffer = FloatBuffer.allocate(1024);
 		FloatBuffer outputBuffer = FloatBuffer.allocate(1024);
+
+        SampleBuffers buffers = new SampleBuffers() {
+            @Override
+			public int getInputBufferLength() {
+                return inputBuffer.remaining();
+            }
+
+            @Override
+			public int getOutputBufferLength() {
+                return outputBuffer.remaining();
+            }
+
+            @Override
+			public void produceInput(float[] array, int offset, int length) {
+                inputBuffer.get(array, offset, length);
+            }
+
+            @Override
+			public void consumeOutput(float[] array, int offset, int length) {
+                outputBuffer.put(array, offset, length);
+            }
+        };
 		
 		int sampleSizeInBits = inputFormat.getSampleSizeInBits();
 		int fullScale = (1 << (sampleSizeInBits - 1)) - 1;
@@ -117,7 +141,7 @@ public class ResampleWav {
 					
 					int direct = in.read(inBuffer, inSize, inBuffer.length - inSize);
 					if (direct < 0) {
-						boolean complete = resampler.process(factor, inputBuffer, true, outputBuffer);
+						boolean complete = resampler.process(factor, buffers, true);
 						inputBuffer.flip();
 						if (complete) {
 							return -1;
@@ -129,7 +153,7 @@ public class ResampleWav {
 					
 					inSize += direct;
 					
-					int max = inSize - (inSize % frameSize);
+					int max = Math.min(inSize - (inSize % frameSize), inputBuffer.remaining() * frameSize);
 					for (int n = 0; n < max;) {
 						int sample;
 						
@@ -159,13 +183,15 @@ public class ResampleWav {
 						inSize = 0;
 					}
 					
-					resampler.process(factor, inputBuffer, false, outputBuffer);
+					inputBuffer.flip();
+					resampler.process(factor, buffers, false);
 					inputBuffer.flip();
 					encode();
 				}
 			}
 
 			private void encode() {
+				outputBuffer.flip();
 				while (outputBuffer.hasRemaining()) {
 					int outSample = (int) (outputBuffer.get() * fullScale);
 					
@@ -179,7 +205,7 @@ public class ResampleWav {
 						}
 					}
 				}
-				outputBuffer.flip();
+				outputBuffer.clear();
 			}
 		}, outputFormat, targetLength);
 	}
