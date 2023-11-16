@@ -10,7 +10,7 @@ import org.kohsuke.args4j.Option;
  */
 public class CustomerConfig implements CustomerOptions {
 
-	@Option(name = "--registrar")
+	@Option(name = "--registrar", required = true)
 	private String registrar;
 	
 	@Option(name = "--route")
