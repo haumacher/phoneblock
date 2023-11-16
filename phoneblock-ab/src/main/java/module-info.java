@@ -22,6 +22,8 @@ module phoneblock.ab {
 	requires org.slf4j;
 	requires org.tinylog.api;
 	
+	opens de.haumacher.phoneblock.answerbot to args4j;
+	
 	exports de.haumacher.phoneblock.answerbot;
 	exports de.haumacher.phoneblock.answerbot.tools;
 	
