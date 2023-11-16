@@ -15,6 +15,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.mjsip.media.AudioStreamer;
 import org.mjsip.media.FlowSpec;
+import org.mjsip.media.MediaSpec;
 import org.mjsip.media.MediaStreamer;
 import org.mjsip.media.RtpStreamReceiver;
 import org.mjsip.media.RtpStreamReceiverListener;
@@ -35,6 +36,7 @@ import org.mjsip.rtp.RtpPayloadFormat;
 import org.mjsip.sound.AudioFile;
 import org.mjsip.ua.sound.AlawSilenceTrimmer;
 import org.mjsip.ua.streamer.StreamerFactory;
+import org.slf4j.LoggerFactory;
 import org.zoolu.net.UdpSocket;
 import org.zoolu.sound.CodecType;
 import org.zoolu.sound.SimpleAudioSystem;
@@ -44,22 +46,49 @@ import org.zoolu.util.Encoder;
  * {@link StreamerFactory} creating a bot correspondence.
  */
 public final class DialogueFactory implements StreamerFactory {
-	private final Map<SpeechType, List<File>> _audioFragments;
+	
+	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DialogueFactory.class);
+	
+	private final Map<AudioType, Map<SpeechType, List<File>>> _audioFragmentsByType;
 	private final String _recordingFile;
 	private DialogOptions _config;
 
 	/** 
 	 * Creates a {@link DialogueFactory}.
 	 */
-	public DialogueFactory(DialogOptions config, Map<SpeechType, List<File>> audioFragments, String recordingFile) {
+	public DialogueFactory(DialogOptions config, Map<AudioType, Map<SpeechType, List<File>>> audioFragmentsByType, String recordingFile) {
 		_config = config;
-		_audioFragments = audioFragments;
+		_audioFragmentsByType = audioFragmentsByType;
 		_recordingFile = recordingFile;
 	}
 
 	@Override
 	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
-		SpeechDispatcher speechDispatcher = new SpeechDispatcher(_audioFragments);
+		AudioType matchedType = null;
+		int maxSampleRate = 0;
+		MediaSpec spec = flow_spec.getMediaSpec();
+		for (AudioType type : _audioFragmentsByType.keySet()) {
+			if (type.matches(spec)) {
+				int sampleRate = type.sampleRate();
+				if (sampleRate > maxSampleRate) {
+					matchedType = type;
+					maxSampleRate = sampleRate;
+				}
+			}
+		}
+		
+		if (matchedType == null) {
+			LOG.warn("No compatible audio found.");
+			return null;
+		}
+		
+		Map<SpeechType, List<File>> dialogue = _audioFragmentsByType.get(matchedType);
+		if (dialogue == null) {
+			LOG.warn("No audio data found for audio format: " + matchedType);
+			return null;
+		}
+		
+		SpeechDispatcher speechDispatcher = new SpeechDispatcher(dialogue);
 
 		int sampleRate = flow_spec.getMediaSpec().getSampleRate();
 		try {
