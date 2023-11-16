@@ -13,6 +13,8 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.mjsip.ua.sound.WavFileSplitter;
 
+import de.haumacher.phoneblock.answerbot.SpeechType;
+
 /**
  * Tool to set-up a conversation directory with appropriate WAV files.
  */
@@ -48,25 +50,38 @@ public class ConversationInitializer {
 		Options options = new Options();
 		new CmdLineParser(options).parseArgument(args);
 		
-		for (File dir : new File(options.conversationDir).listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
-			for (File input : dir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
+		for (SpeechType state : SpeechType.values()) {
+			File stateDir  = new File(options.conversationDir, state.getDirName());
+			stateDir.mkdirs();
+			
+			for (File input : stateDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
 				for (Variant variant : VARIANTS) {
-					String baseName = WavResampler.baseName(input.getName());
-					File tmp = File.createTempFile(baseName, ".wav", dir);
-					WavResampler.convertToALaw(input.getAbsolutePath(), tmp.getAbsolutePath(), variant.sampleRate);
-					
-					WavFileSplitter splitter = new WavFileSplitter(tmp) {
-						@Override
-						protected String getOutputFileName(int partId) {
-							return baseName + "-" + partId + ".wav";
-						}						
-					};
-					File outputDir = new File(dir, variant.formatName);
-					outputDir.mkdir();
-					splitter.setOutputDir(outputDir);
-					splitter.run();
-					
-					tmp.delete();
+					String formatName = variant.formatName;
+					File outputDir = new File(stateDir, formatName);
+
+					if (state.isSilent()) {
+						WavResampler.convertToALaw(input.getAbsolutePath(), new File(outputDir, input.getName()).getAbsolutePath(), variant.sampleRate);
+					} else {
+						String baseName = WavResampler.baseName(input.getName());
+						File tmp = File.createTempFile(baseName, ".wav", stateDir);
+						WavResampler.convertToALaw(input.getAbsolutePath(), tmp.getAbsolutePath(), variant.sampleRate);
+						
+						WavFileSplitter splitter = new WavFileSplitter(tmp) {
+							@Override
+							protected String getOutputFileName(int partId) {
+								return baseName + "-" + partId + ".wav";
+							}						
+						};
+						outputDir.mkdir();
+						splitter.setOutputDir(outputDir);
+						splitter.run();
+						
+						tmp.delete();
+						
+						if (splitter.getPartCntCreated() == 0) {
+							System.err.println("WARNING: No speech files produced for input: " + input.getAbsolutePath());
+						}
+					}
 				}
 			}
 		}

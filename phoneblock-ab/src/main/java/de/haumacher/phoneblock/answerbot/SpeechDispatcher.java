@@ -25,90 +25,18 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpeechDispatcher.class);
 	
-	/**
-	 * The state of the conversation.
-	 */
-	private enum State {
-		/**
-		 * Say hello after accepting the call.
-		 */
-		HELLO,
-		
-		/**
-		 * Waiting for the counterpart to introduce himself.
-		 */
-		WAITING_FOR_INTRO,
-		
-		/**
-		 * Ask the counterpart who is calling.
-		 */
-		WHO_IS_CALLING,
-		
-		/**
-		 * Waiting for a response from the counterpart.
-		 */
-		WAITING_FOR_ANSWER,
-		
-		/**
-		 * The counterpart did not say anything, ask if he is still there.
-		 */
-		NO_ANSWER,
-		
-		/**
-		 * Listening to some answer from the counterpart;
-		 */
-		LISTENING,
-		
-		/**
-		 * Asking a silly question in response to something the counterpart said.
-		 */
-		ASKING;
-		
-		/**
-		 * If no event happened, what to say next?
-		 */
-		SpeechDispatcher.State next() {
-			switch (this) {
-			case HELLO: return WAITING_FOR_INTRO;
-			case WAITING_FOR_INTRO: return WHO_IS_CALLING;
-			case WHO_IS_CALLING: return WAITING_FOR_INTRO;
-			case WAITING_FOR_ANSWER: return NO_ANSWER;
-			case NO_ANSWER: return WAITING_FOR_ANSWER;
-			case LISTENING: return LISTENING;
-			case ASKING: return WAITING_FOR_ANSWER;
-			}
-			throw new AssertionError("No such state.");
-		}
-
-		/**
-		 * What audio to play in the this state?
-		 */
-		String audioType() {
-			switch (this) {
-			case HELLO: return "hello";
-			case WAITING_FOR_INTRO: return "waiting";
-			case WHO_IS_CALLING: return "who-is-calling";
-			case WAITING_FOR_ANSWER: return "waiting";
-			case NO_ANSWER: return "still-there";
-			case LISTENING: return "waiting";
-			case ASKING: return "question";
-			}
-			throw new AssertionError("No such state.");
-		}
-	}
-	
-	private SpeechDispatcher.State _state = State.HELLO;
+	private DialogState _state = DialogState.HELLO;
 
 	private volatile InputStream _current;
 
-	private final Map<String, List<File>> _audioFragments;
+	private final Map<SpeechType, List<File>> _audioFragments;
 
 	private Random _rnd;
 	
 	/** 
 	 * Creates a {@link SpeechDispatcher}.
 	 */
-	public SpeechDispatcher(Map<String, List<File>> audioFragments) {
+	public SpeechDispatcher(Map<SpeechType, List<File>> audioFragments) {
 		_audioFragments = audioFragments;
 		_rnd = new Random();
 		_current = openAudio();
@@ -116,9 +44,9 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	}
 
 	private void checkFragments() {
-		for (State state : State.values()) {
-			if (_audioFragments.getOrDefault(state.audioType(), Collections.emptyList()).isEmpty()) {
-				LOG.error("No media for dialogue state '" + state.audioType() + "' found.");
+		for (SpeechType type : SpeechType.values()) {
+			if (_audioFragments.getOrDefault(type, Collections.emptyList()).isEmpty()) {
+				LOG.error("No media for dialogue state '" + type + "' found.");
 			}
 		}
 	}
@@ -134,7 +62,7 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 		return _current.read();
 	}
 
-	private void switchState(SpeechDispatcher.State next) {
+	private void switchState(DialogState next) {
 		_state  = next;
 		
 		InputStream old = _current;
@@ -148,10 +76,9 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 
 	private InputStream openAudio() {
 		try {
-			String type = _state.audioType();
-			List<File> list = _audioFragments.getOrDefault(type, Collections.emptyList());
+			List<File> list = _audioFragments.getOrDefault(_state, Collections.emptyList());
 			if (list.isEmpty()) {
-				throw new IllegalStateException("No media for dialogue state: " + type);
+				throw new IllegalStateException("No media for dialogue state: " + _state);
 			}
 			File file = list.get(_rnd.nextInt(list.size()));
 			LOG.info("Playing: " + file.getPath());
@@ -164,7 +91,7 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	@Override
 	public void onSilenceStarted(long clock) {
 		switch (_state) {
-		case LISTENING: switchState(State.ASKING); break;
+		case LISTENING: switchState(DialogState.ASKING); break;
 		default: // Ignore.
 		}
 	}
@@ -174,7 +101,7 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 		switch (_state) {
 		case WAITING_FOR_INTRO: 
 		case WAITING_FOR_ANSWER: 
-			switchState(State.LISTENING); break;
+			switchState(DialogState.LISTENING); break;
 		default: // Ignore.
 		}
 	}
