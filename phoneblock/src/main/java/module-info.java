@@ -26,9 +26,12 @@ module phoneblock {
 	
 	requires phoneblock.shared;
 	requires phoneblock.ab;
-	requires mjsip.sip;
-	requires mjsip.util;
-	requires mjsip.ua;
+
+	requires org.mjsip.sound;
+	requires org.mjsip.sip;
+	requires org.mjsip.ua;
+	requires org.mjsip.util; 
+
 	requires com.google.api.client;
 	requires com.google.auth;
 	requires com.google.auth.oauth2;
