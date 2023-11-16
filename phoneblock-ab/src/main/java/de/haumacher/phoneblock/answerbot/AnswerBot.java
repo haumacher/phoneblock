@@ -88,7 +88,7 @@ public class AnswerBot extends MultipleUAS {
 		VERSION = version == null ? "unknown" : version;
 	}
 
-	private final Map<String, List<File>> _audioFragments;
+	private final Map<SpeechType, List<File>> _audioFragments;
 
 	private AnswerbotOptions _botConfig;
 
@@ -102,16 +102,21 @@ public class AnswerBot extends MultipleUAS {
 		_configForUser = configForUser;
 		_botConfig = botOptions;
 
-		Map<String, List<File>> audioFragments = new HashMap<>();
+		Map<SpeechType, List<File>> audioFragments = new HashMap<>();
 		File conversationDir = botOptions.conversationDir();
-		for (File type : conversationDir.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."))) {
+		for (SpeechType state : SpeechType.values()) {
 			ArrayList<File> files = new ArrayList<>();
-			String typeName = type.getName();
-			audioFragments.put(typeName, files);
+			
+			File type = new File(conversationDir, state.getDirName());
+			audioFragments.put(state, files);
 			for (File wav : type.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
 				files.add(wav);
-				
-				LOG.info("Found audio fragment for " + typeName + ": " + wav.getPath());
+			}
+			int cnt = files.size();
+			if (cnt == 0) {
+				LOG.warn("Found no audio fragment for dialogue state " + state + ".");
+			} else {
+				LOG.info("Found " + cnt + " audio fragment for dialogue state " + state + ".");
 			}
 		}
 		_audioFragments = audioFragments;
