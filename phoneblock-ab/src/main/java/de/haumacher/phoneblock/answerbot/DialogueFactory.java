@@ -44,14 +44,14 @@ import org.zoolu.util.Encoder;
  * {@link StreamerFactory} creating a bot correspondence.
  */
 public final class DialogueFactory implements StreamerFactory {
-	private final Map<String, List<File>> _audioFragments;
+	private final Map<SpeechType, List<File>> _audioFragments;
 	private final String _recordingFile;
 	private DialogOptions _config;
 
 	/** 
 	 * Creates a {@link DialogueFactory}.
 	 */
-	public DialogueFactory(DialogOptions config, Map<String, List<File>> audioFragments, String recordingFile) {
+	public DialogueFactory(DialogOptions config, Map<SpeechType, List<File>> audioFragments, String recordingFile) {
 		_config = config;
 		_audioFragments = audioFragments;
 		_recordingFile = recordingFile;
@@ -110,7 +110,7 @@ public final class DialogueFactory implements StreamerFactory {
 			}
 			StreamerOptions options = StreamerOptions.builder().build();
 			return new AudioStreamer(flow_spec, tx, rx, options);
-		} catch (IOException | UnsupportedAudioFileException ex) {
+		} catch (IOException ex) {
 			throw new IOError(ex);
 		}
 	}
