@@ -29,7 +29,7 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -88,7 +88,7 @@ public class AnswerBot extends MultipleUAS {
 		VERSION = version == null ? "unknown" : version;
 	}
 
-	private final Map<SpeechType, List<File>> _audioFragments;
+	private final Map<AudioType, Map<SpeechType, List<File>>> _audioFragmentsByType;
 
 	private AnswerbotOptions _botConfig;
 
@@ -102,24 +102,30 @@ public class AnswerBot extends MultipleUAS {
 		_configForUser = configForUser;
 		_botConfig = botOptions;
 
-		Map<SpeechType, List<File>> audioFragments = new HashMap<>();
+		Map<AudioType, Map<SpeechType, List<File>>> audioFragmentsByType = new EnumMap<>(AudioType.class);
 		File conversationDir = botOptions.conversationDir();
 		for (SpeechType state : SpeechType.values()) {
-			ArrayList<File> files = new ArrayList<>();
-			
-			File type = new File(conversationDir, state.getDirName());
-			audioFragments.put(state, files);
-			for (File wav : type.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
-				files.add(wav);
-			}
-			int cnt = files.size();
-			if (cnt == 0) {
-				LOG.warn("Found no audio fragment for dialogue state " + state + ".");
-			} else {
-				LOG.info("Found " + cnt + " audio fragment for dialogue state " + state + ".");
+			File stateDir = new File(conversationDir, state.getDirName());
+
+			for (AudioType formatType : AudioType.values()) {
+				File typeDir = new File(stateDir, formatType.dirName());
+				
+				Map<SpeechType, List<File>> audioFragments = audioFragmentsByType.computeIfAbsent(formatType, k -> new EnumMap<>(SpeechType.class));
+				
+				ArrayList<File> files = new ArrayList<>();
+				audioFragments.put(state, files);
+				for (File wav : typeDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
+					files.add(wav);
+				}
+				int cnt = files.size();
+				if (cnt == 0) {
+					LOG.warn("Found no audio fragment for dialogue state " + state + " and format '" + formatType + "'.");
+				} else {
+					LOG.info("Found " + cnt + " audio fragment for dialogue state " + state + " and format '" + formatType + "'.");
+				}
 			}
 		}
-		_audioFragments = audioFragments;
+		_audioFragmentsByType = audioFragmentsByType;
 	}
 	
 	@Override
@@ -158,11 +164,13 @@ public class AnswerBot extends MultipleUAS {
 		if (from == null) {
 			// An anonymous call, accept.
 			if (_botConfig.getAcceptAnonymous()) {
+				LOG.info("Accepting anonymous call.");
 				return spamHandler();
 			} else {
+				LOG.info("Not accepting anonymous call.");
 				return rejectHandler();
 			}
-		} else if (from.startsWith("**")) {
+		} else if (from.startsWith("*")) {
 			// A local test call, accept.
 			return spamHandler();
 		} else {
@@ -205,7 +213,7 @@ public class AnswerBot extends MultipleUAS {
 				} else {
 					recordingFile = null;
 				}
-				StreamerFactory streamerFactory = new DialogueFactory(_botConfig, _audioFragments, recordingFile);
+				StreamerFactory streamerFactory = new DialogueFactory(_botConfig, _audioFragmentsByType, recordingFile);
 				
 				ua.accept(new MediaAgent(_botConfig.getMediaDescs(), streamerFactory));
 			}

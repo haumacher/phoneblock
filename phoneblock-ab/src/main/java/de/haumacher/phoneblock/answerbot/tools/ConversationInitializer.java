@@ -13,6 +13,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.mjsip.ua.sound.WavFileSplitter;
 
+import de.haumacher.phoneblock.answerbot.AudioType;
 import de.haumacher.phoneblock.answerbot.SpeechType;
 
 /**
@@ -24,24 +25,6 @@ public class ConversationInitializer {
 		@Option(name = "-c")
 		String conversationDir = "./conversation";
 	}
-	
-	static class Variant {
-		int sampleRate;
-		String formatName;
-
-		/** 
-		 * Creates a {@link Variant}.
-		 */
-		public Variant(String format, int sampleRate) {
-			this.formatName = format;
-			this.sampleRate = sampleRate;
-		}
-	}
-	
-	static final Variant[] VARIANTS = {
-		new Variant("PCMA-WB", 16000),
-		new Variant("PCMA", 8000),
-	};
 
 	/**
 	 * Main entry point form the command line.
@@ -55,16 +38,16 @@ public class ConversationInitializer {
 			stateDir.mkdirs();
 			
 			for (File input : stateDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
-				for (Variant variant : VARIANTS) {
-					String formatName = variant.formatName;
+				for (AudioType formatType : AudioType.values()) {
+					String formatName = formatType.dirName();
 					File outputDir = new File(stateDir, formatName);
 
 					if (state.isSilent()) {
-						WavResampler.convertToALaw(input.getAbsolutePath(), new File(outputDir, input.getName()).getAbsolutePath(), variant.sampleRate);
+						WavResampler.convertToALaw(input.getAbsolutePath(), new File(outputDir, input.getName()).getAbsolutePath(), formatType.sampleRate());
 					} else {
 						String baseName = WavResampler.baseName(input.getName());
 						File tmp = File.createTempFile(baseName, ".wav", stateDir);
-						WavResampler.convertToALaw(input.getAbsolutePath(), tmp.getAbsolutePath(), variant.sampleRate);
+						WavResampler.convertToALaw(input.getAbsolutePath(), tmp.getAbsolutePath(), formatType.sampleRate());
 						
 						WavFileSplitter splitter = new WavFileSplitter(tmp) {
 							@Override
