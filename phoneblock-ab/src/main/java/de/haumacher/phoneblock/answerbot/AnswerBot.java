@@ -176,7 +176,7 @@ public class AnswerBot extends MultipleUAS {
 		} else {
 			NumberInfo info;
 			try {
-				URL url = new URL("https://phoneblock.haumacher.de/phoneblock/api/num/" + from + "?format=json");
+				URL url = new URL("https://phoneblock.net/phoneblock/api/num/" + from + "?format=json");
 				URLConnection connection = url.openConnection();
 				connection.addRequestProperty("accept", "application/json");
 				connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);
