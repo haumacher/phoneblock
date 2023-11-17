@@ -10,6 +10,8 @@
 
 registrar=fritz.box
 realm=fritz.box
+#route=fritz.box
+#force-rport=yes
 
 # The user name for registering the IP phone device configured in your Fritz!Box
 user=phoneblock
