@@ -76,9 +76,10 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 
 	private InputStream openAudio() {
 		try {
-			List<File> list = _audioFragments.getOrDefault(_state, Collections.emptyList());
+			SpeechType speechType = _state.getSpeechType();
+			List<File> list = _audioFragments.getOrDefault(speechType, Collections.emptyList());
 			if (list.isEmpty()) {
-				throw new IllegalStateException("No media for dialogue state: " + _state);
+				throw new IllegalStateException("No media for speech: " + speechType);
 			}
 			File file = list.get(_rnd.nextInt(list.size()));
 			LOG.info("Playing: " + file.getPath());
