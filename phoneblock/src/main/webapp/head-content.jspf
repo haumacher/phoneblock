@@ -41,11 +41,11 @@
 
 <meta name="og:title" content="<%= JspUtil.quote(title) %>" />
 <%if ("/".equals(path) || path.isEmpty()) { %>
-<meta name="og:url" content="https://phoneblock.haumacher.de/" />
-<link rel="canonical" href="https://phoneblock.haumacher.de/" />
+<meta name="og:url" content="https://phoneblock.net/" />
+<link rel="canonical" href="https://phoneblock.net/" />
 <%} else { %>
-<meta name="og:url" content="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
-<link rel="canonical" href="https://phoneblock.haumacher.de<%= request.getContextPath() %><%= path %>" />
+<meta name="og:url" content="https://phoneblock.net<%= request.getContextPath() %><%= path %>" />
+<link rel="canonical" href="https://phoneblock.net<%= request.getContextPath() %><%= path %>" />
 <%} %>
 <meta name="og:description" content="<%= JspUtil.quote(description) %>" />
 <meta name="og:image" content="<%=request.getContextPath() %>/app-preview.png" />
