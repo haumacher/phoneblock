@@ -38,4 +38,20 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	 */
 	MediaDesc[] getMediaDescs();
 
+	/** 
+	 * Whether a {@link #getTestNumber()} has been configured.
+	 */
+	default boolean hasTestNumber() {
+		return getTestNumber() != null;
+	}
+
+	/** 
+	 * A phone number that certainly trigger the answer bot without checking the SPAM database. 
+	 * 
+	 * <p>
+	 * Use this for testing only.
+	 * </p>
+	 */
+	String getTestNumber();
+
 }
