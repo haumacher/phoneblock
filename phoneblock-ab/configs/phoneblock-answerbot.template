@@ -51,3 +51,8 @@ min-votes = 4
 # Whether to let PhoneBlock accept anonymous calls. It is not recommended to enable this option. Better configure a 
 # separate answering machine in you router to gracefully handle anonymous calls.
 accept-anonymous = no
+
+# Prefix of a number that triggers PhoneBlock to respond to the call (for testing). A local number typically starts
+# with a '*' character. Using this prefix allows to call PhoneBlock locally to verify it is working. 
+test-prefix=*
+
