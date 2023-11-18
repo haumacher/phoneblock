@@ -22,8 +22,12 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--conversation", usage = "Directory with WAV files used for streaming during automatic conversation.")
 	private File _conversationDir = new File("./conversation");
 	
-	@Option(name = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording. ")
+	@Option(name = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording.")
 	private String _recordingDir = ".";
+	
+	@Option(name = "--test-prefix", usage = "Phone number prefix that triggers the answer bot to respond (for testing). " + 
+			"A local number typically starts with '*', therefore this is prefix can be used to allow calling the answer bot locally.")
+	private String _testPrefix = "*";
 	
 	/**
 	 * The configured recoding directory.
@@ -86,6 +90,11 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	public int getMinVotes() {
 		return _minVotes;
 	}
+	
+	@Override
+	public String getTestNumber() {
+		return _testPrefix;
+	}
 
 	/**
 	 * Normalizes options, must be called after option parsing.
@@ -98,6 +107,9 @@ public class AnswerbotConfig implements AnswerbotOptions {
 		if (!_conversationDir.isDirectory()) {
 			System.err.println("Conversation directory does not exist: " + conversationDir().getAbsolutePath());
 			System.exit(1);
+		}
+		if (_testPrefix != null && _testPrefix.isBlank()) {
+			_testPrefix = null;
 		}
 	}
 	
