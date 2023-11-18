@@ -87,6 +87,7 @@ public final class DialogueFactory implements StreamerFactory {
 			LOG.warn("No audio data found for audio format: " + matchedType);
 			return null;
 		}
+		LOG.info("Starting dialogue with audio type: " + matchedType);
 		
 		SpeechDispatcher speechDispatcher = new SpeechDispatcher(dialogue);
 
