@@ -9,7 +9,7 @@ module phoneblock.ab {
 	requires phoneblock.shared;
 
 	requires transitive org.mjsip.sound;
-	requires org.mjsip.sip;
+	requires transitive org.mjsip.sip;
 	requires org.mjsip.ua;
 	requires org.mjsip.util; 
 	requires org.mjsip.net; 
