@@ -58,17 +58,48 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	public int bufferTime() {
 		return _bufferTime;
 	}
+	
+	/**
+	 * @see #bufferTime()
+	 */
+	public void setBufferTime(int bufferTime) {
+		_bufferTime = bufferTime;
+	}
+	
 	@Override
 	public int minSilenceTime() {
 		return _minSilenceTime;
 	}
+	
+	/**
+	 * @see #minSilenceTime()
+	 */
+	public void setMinSilenceTime(int minSilenceTime) {
+		_minSilenceTime = minSilenceTime;
+	}
+	
 	@Override
 	public int paddingTime() {
 		return _paddingTime;
 	}
+	
+	/**
+	 * @see #paddingTime()
+	 */
+	public void setPaddingTime(int paddingTime) {
+		_paddingTime = paddingTime;
+	}
+	
 	@Override
 	public double silenceDb() {
 		return silenceDb;
+	}
+	
+	/**
+	 * @see #silenceDb()
+	 */
+	public void setSilenceDb(double silenceDb) {
+		this.silenceDb = silenceDb;
 	}
 
 	@Override
@@ -76,9 +107,23 @@ public class AnswerbotConfig implements AnswerbotOptions {
 		return _recordingDir;
 	}
 	
+	/**
+	 * @see #recordingDir()
+	 */
+	public void setRecordingDir(String recordingDir) {
+		_recordingDir = recordingDir;
+	}
+	
 	@Override
 	public File conversationDir() {
 		return _conversationDir;
+	}
+	
+	/**
+	 * @see #conversationDir()
+	 */
+	public void setConversationDir(File conversationDir) {
+		_conversationDir = conversationDir;
 	}
 	
 	@Override
@@ -86,14 +131,67 @@ public class AnswerbotConfig implements AnswerbotOptions {
 		return _acceptAnonymous;
 	}
 	
+	/**
+	 * @see #getAcceptAnonymous()
+	 */
+	public void setAcceptAnonymous(boolean acceptAnonymous) {
+		_acceptAnonymous = acceptAnonymous;
+	}
+	
 	@Override
 	public int getMinVotes() {
 		return _minVotes;
 	}
 	
+	/**
+	 * @see #getMinVotes()
+	 */
+	public void setMinVotes(int minVotes) {
+		_minVotes = minVotes;
+	}
+	
 	@Override
 	public String getTestNumber() {
 		return _testPrefix;
+	}
+	
+	/**
+	 * @see #getTestNumber()
+	 */
+	public void setTestPrefix(String testPrefix) {
+		_testPrefix = testPrefix;
+	}
+
+	@Override
+	public MediaDesc[] getMediaDescs() {
+		return _mediaDescs;
+	}
+	
+	/**
+	 * @see #getMediaDescs()
+	 */
+	public void setMediaDescs(MediaDesc[] mediaDescs) {
+		_mediaDescs = mediaDescs;
+	}
+	
+	@Override
+	public String getMediaAddr() {
+		return null;
+	}
+	
+	@Override
+	public boolean getNoOffer() {
+		return false;
+	}
+	
+	@Override
+	public int getRefuseTime() {
+		return -1;
+	}
+	
+	@Override
+	public Direction getDirection() {
+		return Direction.FULL_DUPLEX;
 	}
 
 	/**
@@ -111,28 +209,6 @@ public class AnswerbotConfig implements AnswerbotOptions {
 		if (_testPrefix != null && _testPrefix.isBlank()) {
 			_testPrefix = null;
 		}
-	}
-	
-	@Override
-	public MediaDesc[] getMediaDescs() {
-		return _mediaDescs;
-	}
-	
-	@Override
-	public String getMediaAddr() {
-		return null;
-	}
-	@Override
-	public boolean getNoOffer() {
-		return false;
-	}
-	@Override
-	public int getRefuseTime() {
-		return -1;
-	}
-	@Override
-	public Direction getDirection() {
-		return Direction.FULL_DUPLEX;
 	}
 	
 }
