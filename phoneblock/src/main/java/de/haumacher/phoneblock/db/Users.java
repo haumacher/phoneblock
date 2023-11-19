@@ -46,18 +46,6 @@ public interface Users {
 	@Select("select ID from USERS where LOGIN=#{login}")
 	Long getUserId(String login);
 	
-	/**
-	 * Updates the user's dynamic IP address.
-	 * 
-	 * @param id
-	 *        The user ID.
-	 * @param ip
-	 *        The new IP address.
-	 * @return <code>1</code> if the update was successful.
-	 */
-	@Insert("update USERS set IP=#{ip} where ID=#{id}")
-	int setIP(long id, String ip);
-	
 	/** 
 	 * Retrieves the user ID for the user with the given user name (e-mail).
 	 */
@@ -121,5 +109,14 @@ public interface Users {
 	
 	@Update("update CALLERS set CALLS=CALLS + 1, LASTUPDATE=#{now} where USERID=#{userId} and PHONE=#{phone}")
 	int addCall(long userId, String phone, long now);
+
+	@Select("select USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where DYNDNS_USER=#{user}")
+	DBAnswerBotDynDns getDynDns(String user);
+	
+	/**
+	 * Updates the user's dynamic IP address.
+	 */
+	@Insert("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where USERID=#{userId}")
+	void updateDynDny(long userId, String ip4, String ip6, long updated);
 
 }
