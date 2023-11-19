@@ -8,8 +8,6 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -37,6 +35,15 @@ public class DynIpServlet extends HttpServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		try {
+			tryGet(req, resp);
+		} catch (Throwable ex) {
+			LOG.error("Faild to process request.", ex);
+			throw ex;
+		}
+	}
+	
+	protected void tryGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String user = req.getParameter("user");
 		if (user == null) {
 			resp.sendError(HttpServletResponse.SC_FORBIDDEN, "No user name provided.");
@@ -95,7 +102,7 @@ public class DynIpServlet extends HttpServlet {
 		return ! a.equals(b);
 	}
 
-	private void processAddress(AnswerBotDynDns update, String ip) throws UnknownHostException {
+	private void processAddress(AnswerBotDynDns update, String ip) {
 		if (ip == null) {
 			return;
 		}
@@ -106,12 +113,17 @@ public class DynIpServlet extends HttpServlet {
 			return;
 		}
 		
-		InetAddress address = InetAddress.getByName(ip);
+		InetAddress address;
+		try {
+			address = InetAddress.getByName(ip);
+		} catch (UnknownHostException ex) {
+			LOG.warn("Cannot resolve host: (" + ip + ") for user '" + update.getDyndnsUser() + "': " + ex.getMessage());
+			return;
+		}
 		if (address.isAnyLocalAddress() || address.isLinkLocalAddress() || address.isLoopbackAddress()
 				|| address.isSiteLocalAddress() || address.isMulticastAddress()) {
 			
-			String message = "Provided invalid address (" + ip + "): " + update.getDyndnsUser();
-			LOG.warn(message);
+			LOG.warn("Provided invalid address (" + ip + "): " + update.getDyndnsUser());
 		} else {
 			if (address instanceof Inet4Address) {
 				update.setIpv4(ip);
