@@ -109,6 +109,10 @@ public class AnswerBot extends MultipleUAS {
 
 			for (AudioType formatType : AudioType.values()) {
 				File typeDir = new File(stateDir, formatType.dirName());
+				if (!typeDir.isDirectory()) {
+					LOG.warn("Missing conversation directory: " + typeDir.getAbsolutePath());
+					continue;
+				}
 				
 				Map<SpeechType, List<File>> audioFragments = audioFragmentsByType.computeIfAbsent(formatType, k -> new EnumMap<>(SpeechType.class));
 				
