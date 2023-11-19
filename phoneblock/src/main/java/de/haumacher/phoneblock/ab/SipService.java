@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -33,7 +32,6 @@ import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
-import org.mjsip.ua.UserOptions;
 import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
 import org.slf4j.Logger;
@@ -43,6 +41,7 @@ import org.zoolu.util.ConfigFile;
 import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
+import de.haumacher.phoneblock.answerbot.CustomerOptions;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBService;
@@ -64,7 +63,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	private PortPool _portPool;
 	private AnswerBot _answerBot;
 	
-	private final ConcurrentHashMap<String, RegistrationClient> _clients = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Registration> _clients = new ConcurrentHashMap<>();
 	
 	private static SipService _instance;
 
@@ -127,8 +126,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		Scheduler scheduler = Scheduler.of(SchedulerService.getInstance().executor());
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
-		Function<String, UserOptions> configForUser = (username) -> null;
-		_answerBot = new AnswerBot(_sipProvider, botOptions, configForUser, _portPool);
+		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool);
 		
 		_instance = this;
 		
@@ -160,7 +158,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					}
 				}
 				
-				register(bot);
+				CustomerConfig regConfig = toCustomerConfig(bot);
+				register(regConfig);
 			}
 		}
 	}
@@ -250,36 +249,64 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	}
 
 	/** 
-	 * TODO
+	 * Dynamically registers a new answer bot.
 	 */
 	public void register(AnswerBotSip bot) {
+		register(toCustomerConfig(bot));
+	}
+
+	private CustomerConfig toCustomerConfig(AnswerBotSip bot) {
 		CustomerConfig regConfig = new CustomerConfig();
 		regConfig.setUser(bot.getUserName());
 		regConfig.setPasswd(bot.getPasswd());
 		regConfig.setRealm(bot.getRealm());
 		regConfig.setRegistrar(new SipURI(bot.getRegistrar()));
 		regConfig.setRoute(new SipURI(bot.getHost()).addLr());
-		
-		RegistrationClient client = new RegistrationClient(_sipProvider, regConfig, this);
-		RegistrationClient clash = _clients.put(bot.getUserName(), client);
+		return regConfig;
+	}
+
+	private void register(CustomerOptions customerConfig) {
+		Registration client = new Registration(_sipProvider, customerConfig, this);
+		Registration clash = _clients.put(customerConfig.getUser(), client);
 		
 		if (clash != null) {
 			clash.halt();
 		}
 		
-		client.loopRegister(regConfig);
+		client.loopRegister(customerConfig);
 	}
 
 	@Override
 	public void onRegistrationSuccess(RegistrationClient registration, NameAddress target, NameAddress contact, int expires,
 			String result) {
-		LOG.info("Sucessfully registered: " + registration.getUsername());
+		String userName = registration.getUsername();
+		updateRegistration(userName, true, result);
+		LOG.info("Sucessfully registered " + userName + ": " + result);
 	}
 
 	@Override
 	public void onRegistrationFailure(RegistrationClient registration, NameAddress target, NameAddress contact,
 			String result) {
-		LOG.warn("Failed to register user '" + registration.getUsername() + "': " + result);
+		String userName = registration.getUsername();
+		updateRegistration(userName, false, result);
+		LOG.warn("Failed to register '" + userName + "': " + result);
+	}
+
+	private void updateRegistration(String username, boolean registered, String result) {
+		try (SqlSession session = _dbService.db().openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			users.updateSipRegistration(username, registered, System.currentTimeMillis(), result);
+			session.commit();
+		}
+	}
+
+	private CustomerOptions getCustomer(String userName) {
+		Registration registration = _clients.get(userName);
+		if (registration == null) {
+			return null;
+		}
+		return registration.getCustomer();
 	}
 
 }

@@ -28,7 +28,8 @@ public class CreateABServlet extends HttpServlet {
 		String hostname = req.getParameter("hostname");
 		
 		AnswerBotSip bot = AnswerBotSip.create().setUserName(username).setPasswd(passwd).setHost(hostname);
+		SipService r = SipService.getInstance();
 		
-		SipService.getInstance().register(bot);
+		r.register(bot);
 	}
 }
