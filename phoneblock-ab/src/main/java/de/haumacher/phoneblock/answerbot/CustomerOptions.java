@@ -15,7 +15,7 @@ public interface CustomerOptions extends RegistrationOptions, UserOptions {
 
 	@Override
 	default String getProxy() {
-		return getRegistrar();
+		return getRegistrar().getHost();
 	}
 	
 	@Override
