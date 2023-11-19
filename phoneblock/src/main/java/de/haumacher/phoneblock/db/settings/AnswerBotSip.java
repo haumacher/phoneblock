@@ -15,17 +15,17 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #getHost() */
 	public static final String HOST__PROP = "host";
 
-	/** @see #getSipRegistrar() */
-	public static final String SIP_REGISTRAR__PROP = "sipRegistrar";
+	/** @see #getRegistrar() */
+	public static final String REGISTRAR__PROP = "registrar";
 
-	/** @see #getSipDomain() */
-	public static final String SIP_DOMAIN__PROP = "sipDomain";
+	/** @see #getRealm() */
+	public static final String REALM__PROP = "realm";
 
-	/** @see #getSipUser() */
-	public static final String SIP_USER__PROP = "sipUser";
+	/** @see #getUserName() */
+	public static final String USER_NAME__PROP = "userName";
 
-	/** @see #getSipPasswd() */
-	public static final String SIP_PASSWD__PROP = "sipPasswd";
+	/** @see #getPasswd() */
+	public static final String PASSWD__PROP = "passwd";
 
 	/** @see #isRegistered() */
 	public static final String REGISTERED__PROP = "registered";
@@ -45,17 +45,17 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #getHost()} in binary format. */
 	static final int HOST__ID = 4;
 
-	/** Identifier for the property {@link #getSipRegistrar()} in binary format. */
-	static final int SIP_REGISTRAR__ID = 5;
+	/** Identifier for the property {@link #getRegistrar()} in binary format. */
+	static final int REGISTRAR__ID = 5;
 
-	/** Identifier for the property {@link #getSipDomain()} in binary format. */
-	static final int SIP_DOMAIN__ID = 6;
+	/** Identifier for the property {@link #getRealm()} in binary format. */
+	static final int REALM__ID = 6;
 
-	/** Identifier for the property {@link #getSipUser()} in binary format. */
-	static final int SIP_USER__ID = 7;
+	/** Identifier for the property {@link #getUserName()} in binary format. */
+	static final int USER_NAME__ID = 7;
 
-	/** Identifier for the property {@link #getSipPasswd()} in binary format. */
-	static final int SIP_PASSWD__ID = 8;
+	/** Identifier for the property {@link #getPasswd()} in binary format. */
+	static final int PASSWD__ID = 8;
 
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
 	static final int REGISTERED__ID = 9;
@@ -71,13 +71,13 @@ public class AnswerBotSip extends AnswerBotSetting {
 
 	private String _host = "";
 
-	private String _sipRegistrar = "";
+	private String _registrar = "";
 
-	private String _sipDomain = "";
+	private String _realm = "";
 
-	private String _sipUser = "";
+	private String _userName = "";
 
-	private String _sipPasswd = "";
+	private String _passwd = "";
 
 	private boolean _registered = false;
 
@@ -125,85 +125,85 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/**
 	 * The SIP name of the user's box.
 	 */
-	public final String getSipRegistrar() {
-		return _sipRegistrar;
+	public final String getRegistrar() {
+		return _registrar;
 	}
 
 	/**
-	 * @see #getSipRegistrar()
+	 * @see #getRegistrar()
 	 */
-	public de.haumacher.phoneblock.db.settings.AnswerBotSip setSipRegistrar(String value) {
-		internalSetSipRegistrar(value);
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setRegistrar(String value) {
+		internalSetRegistrar(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getSipRegistrar()} without chain call utility. */
-	protected final void internalSetSipRegistrar(String value) {
-		_listener.beforeSet(this, SIP_REGISTRAR__PROP, value);
-		_sipRegistrar = value;
+	/** Internal setter for {@link #getRegistrar()} without chain call utility. */
+	protected final void internalSetRegistrar(String value) {
+		_listener.beforeSet(this, REGISTRAR__PROP, value);
+		_registrar = value;
 	}
 
 	/**
 	 * The SIP domain for authentication at the user's box.
 	 */
-	public final String getSipDomain() {
-		return _sipDomain;
+	public final String getRealm() {
+		return _realm;
 	}
 
 	/**
-	 * @see #getSipDomain()
+	 * @see #getRealm()
 	 */
-	public de.haumacher.phoneblock.db.settings.AnswerBotSip setSipDomain(String value) {
-		internalSetSipDomain(value);
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setRealm(String value) {
+		internalSetRealm(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getSipDomain()} without chain call utility. */
-	protected final void internalSetSipDomain(String value) {
-		_listener.beforeSet(this, SIP_DOMAIN__PROP, value);
-		_sipDomain = value;
+	/** Internal setter for {@link #getRealm()} without chain call utility. */
+	protected final void internalSetRealm(String value) {
+		_listener.beforeSet(this, REALM__PROP, value);
+		_realm = value;
 	}
 
 	/**
 	 * The user name for SIP registration at the user's box.
 	 */
-	public final String getSipUser() {
-		return _sipUser;
+	public final String getUserName() {
+		return _userName;
 	}
 
 	/**
-	 * @see #getSipUser()
+	 * @see #getUserName()
 	 */
-	public de.haumacher.phoneblock.db.settings.AnswerBotSip setSipUser(String value) {
-		internalSetSipUser(value);
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setUserName(String value) {
+		internalSetUserName(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getSipUser()} without chain call utility. */
-	protected final void internalSetSipUser(String value) {
-		_listener.beforeSet(this, SIP_USER__PROP, value);
-		_sipUser = value;
+	/** Internal setter for {@link #getUserName()} without chain call utility. */
+	protected final void internalSetUserName(String value) {
+		_listener.beforeSet(this, USER_NAME__PROP, value);
+		_userName = value;
 	}
 
 	/**
 	 * The password used for SIP registration at the user's box.
 	 */
-	public final String getSipPasswd() {
-		return _sipPasswd;
+	public final String getPasswd() {
+		return _passwd;
 	}
 
 	/**
-	 * @see #getSipPasswd()
+	 * @see #getPasswd()
 	 */
-	public de.haumacher.phoneblock.db.settings.AnswerBotSip setSipPasswd(String value) {
-		internalSetSipPasswd(value);
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setPasswd(String value) {
+		internalSetPasswd(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getSipPasswd()} without chain call utility. */
-	protected final void internalSetSipPasswd(String value) {
-		_listener.beforeSet(this, SIP_PASSWD__PROP, value);
-		_sipPasswd = value;
+	/** Internal setter for {@link #getPasswd()} without chain call utility. */
+	protected final void internalSetPasswd(String value) {
+		_listener.beforeSet(this, PASSWD__PROP, value);
+		_passwd = value;
 	}
 
 	/**
@@ -316,10 +316,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			HOST__PROP, 
-			SIP_REGISTRAR__PROP, 
-			SIP_DOMAIN__PROP, 
-			SIP_USER__PROP, 
-			SIP_PASSWD__PROP, 
+			REGISTRAR__PROP, 
+			REALM__PROP, 
+			USER_NAME__PROP, 
+			PASSWD__PROP, 
 			REGISTERED__PROP, 
 			LAST_REGISTER__PROP, 
 			REGISTER_ERROR__PROP, 
@@ -334,10 +334,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 	public Object get(String field) {
 		switch (field) {
 			case HOST__PROP: return getHost();
-			case SIP_REGISTRAR__PROP: return getSipRegistrar();
-			case SIP_DOMAIN__PROP: return getSipDomain();
-			case SIP_USER__PROP: return getSipUser();
-			case SIP_PASSWD__PROP: return getSipPasswd();
+			case REGISTRAR__PROP: return getRegistrar();
+			case REALM__PROP: return getRealm();
+			case USER_NAME__PROP: return getUserName();
+			case PASSWD__PROP: return getPasswd();
 			case REGISTERED__PROP: return isRegistered();
 			case LAST_REGISTER__PROP: return getLastRegister();
 			case REGISTER_ERROR__PROP: return getRegisterError();
@@ -350,10 +350,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 	public void set(String field, Object value) {
 		switch (field) {
 			case HOST__PROP: internalSetHost((String) value); break;
-			case SIP_REGISTRAR__PROP: internalSetSipRegistrar((String) value); break;
-			case SIP_DOMAIN__PROP: internalSetSipDomain((String) value); break;
-			case SIP_USER__PROP: internalSetSipUser((String) value); break;
-			case SIP_PASSWD__PROP: internalSetSipPasswd((String) value); break;
+			case REGISTRAR__PROP: internalSetRegistrar((String) value); break;
+			case REALM__PROP: internalSetRealm((String) value); break;
+			case USER_NAME__PROP: internalSetUserName((String) value); break;
+			case PASSWD__PROP: internalSetPasswd((String) value); break;
 			case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 			case LAST_REGISTER__PROP: internalSetLastRegister((long) value); break;
 			case REGISTER_ERROR__PROP: internalSetRegisterError((String) value); break;
@@ -374,14 +374,14 @@ public class AnswerBotSip extends AnswerBotSetting {
 		super.writeFields(out);
 		out.name(HOST__PROP);
 		out.value(getHost());
-		out.name(SIP_REGISTRAR__PROP);
-		out.value(getSipRegistrar());
-		out.name(SIP_DOMAIN__PROP);
-		out.value(getSipDomain());
-		out.name(SIP_USER__PROP);
-		out.value(getSipUser());
-		out.name(SIP_PASSWD__PROP);
-		out.value(getSipPasswd());
+		out.name(REGISTRAR__PROP);
+		out.value(getRegistrar());
+		out.name(REALM__PROP);
+		out.value(getRealm());
+		out.name(USER_NAME__PROP);
+		out.value(getUserName());
+		out.name(PASSWD__PROP);
+		out.value(getPasswd());
 		out.name(REGISTERED__PROP);
 		out.value(isRegistered());
 		out.name(LAST_REGISTER__PROP);
@@ -396,10 +396,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case HOST__PROP: setHost(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case SIP_REGISTRAR__PROP: setSipRegistrar(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case SIP_DOMAIN__PROP: setSipDomain(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case SIP_USER__PROP: setSipUser(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case SIP_PASSWD__PROP: setSipPasswd(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case REGISTRAR__PROP: setRegistrar(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case REALM__PROP: setRealm(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case USER_NAME__PROP: setUserName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case PASSWD__PROP: setPasswd(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 			case LAST_REGISTER__PROP: setLastRegister(in.nextLong()); break;
 			case REGISTER_ERROR__PROP: setRegisterError(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -418,14 +418,14 @@ public class AnswerBotSip extends AnswerBotSetting {
 		super.writeFields(out);
 		out.name(HOST__ID);
 		out.value(getHost());
-		out.name(SIP_REGISTRAR__ID);
-		out.value(getSipRegistrar());
-		out.name(SIP_DOMAIN__ID);
-		out.value(getSipDomain());
-		out.name(SIP_USER__ID);
-		out.value(getSipUser());
-		out.name(SIP_PASSWD__ID);
-		out.value(getSipPasswd());
+		out.name(REGISTRAR__ID);
+		out.value(getRegistrar());
+		out.name(REALM__ID);
+		out.value(getRealm());
+		out.name(USER_NAME__ID);
+		out.value(getUserName());
+		out.name(PASSWD__ID);
+		out.value(getPasswd());
 		out.name(REGISTERED__ID);
 		out.value(isRegistered());
 		out.name(LAST_REGISTER__ID);
@@ -455,10 +455,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
 		switch (field) {
 			case HOST__ID: setHost(in.nextString()); break;
-			case SIP_REGISTRAR__ID: setSipRegistrar(in.nextString()); break;
-			case SIP_DOMAIN__ID: setSipDomain(in.nextString()); break;
-			case SIP_USER__ID: setSipUser(in.nextString()); break;
-			case SIP_PASSWD__ID: setSipPasswd(in.nextString()); break;
+			case REGISTRAR__ID: setRegistrar(in.nextString()); break;
+			case REALM__ID: setRealm(in.nextString()); break;
+			case USER_NAME__ID: setUserName(in.nextString()); break;
+			case PASSWD__ID: setPasswd(in.nextString()); break;
 			case REGISTERED__ID: setRegistered(in.nextBoolean()); break;
 			case LAST_REGISTER__ID: setLastRegister(in.nextLong()); break;
 			case REGISTER_ERROR__ID: setRegisterError(in.nextString()); break;

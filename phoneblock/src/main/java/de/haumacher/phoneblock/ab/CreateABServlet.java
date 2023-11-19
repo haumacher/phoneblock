@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.haumacher.phoneblock.db.settings.AnswerBotSip;
+
 /**
  * Servlet creating an answerbot.
  */
@@ -25,7 +27,8 @@ public class CreateABServlet extends HttpServlet {
 		String passwd = (String) req.getSession().getAttribute("ab-passwd");
 		String hostname = req.getParameter("hostname");
 		
-		SipService.getInstance().register(username, passwd, hostname);
+		AnswerBotSip bot = AnswerBotSip.create().setUserName(username).setPasswd(passwd).setHost(hostname);
 		
+		SipService.getInstance().register(bot);
 	}
 }

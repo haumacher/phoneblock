@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinylog.configuration.Configuration;
 
+import de.haumacher.phoneblock.ab.SipService;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
@@ -101,11 +102,15 @@ public class Application implements ServletContextListener {
 			gpt = new ChatGPTService(db, scheduler, indexer),
 			new ManagementService(indexer, db, gpt),
 			new AddressBookCache(),
-//			new SipService(scheduler)
+			new SipService(scheduler, db)
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
-			_services[n].contextInitialized(sce);
+			try {
+				_services[n].contextInitialized(sce);
+			} catch (Exception ex) {
+				LOG.error("Failed to initialize service '" + _services[n].getClass().getName() + "'.", ex);
+			}
 		}
 	}
 
