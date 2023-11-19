@@ -39,10 +39,10 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	MediaDesc[] getMediaDescs();
 
 	/** 
-	 * Whether a {@link #getTestNumber()} has been configured.
+	 * Whether a {@link #getTestPrefix()} has been configured.
 	 */
 	default boolean hasTestNumber() {
-		return getTestNumber() != null;
+		return getTestPrefix() != null;
 	}
 
 	/** 
@@ -52,6 +52,6 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	 * Use this for testing only.
 	 * </p>
 	 */
-	String getTestNumber();
+	String getTestPrefix();
 
 }

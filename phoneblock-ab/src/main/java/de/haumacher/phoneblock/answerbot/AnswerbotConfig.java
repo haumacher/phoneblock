@@ -151,12 +151,12 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	}
 	
 	@Override
-	public String getTestNumber() {
+	public String getTestPrefix() {
 		return _testPrefix;
 	}
 	
 	/**
-	 * @see #getTestNumber()
+	 * @see #getTestPrefix()
 	 */
 	public void setTestPrefix(String testPrefix) {
 		_testPrefix = testPrefix;

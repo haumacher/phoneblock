@@ -174,7 +174,7 @@ public class AnswerBot extends MultipleUAS {
 				LOG.info("Not accepting anonymous call.");
 				return rejectHandler();
 			}
-		} else if (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestNumber())) {
+		} else if (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix())) {
 			// A local test call, accept.
 			return spamHandler();
 		} else {

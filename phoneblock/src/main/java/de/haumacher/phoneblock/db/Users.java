@@ -128,4 +128,7 @@ public interface Users {
 	@Update("update ANSWERBOT_SIP set ENABLED=false where USERID=#{userId}")
 	void disableAnswerBot(long userId);
 
+	@Update("update ANSWERBOT_SIP set REGISTERED=#{registered}, LAST_REGISTER=#{lastRegister}, REGISTER_ERROR=#{message} where USERNAME=#{userName}")
+	void updateSipRegistration(String userName, boolean registered, long lastRegister, String message);
+
 }
