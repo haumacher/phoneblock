@@ -113,10 +113,19 @@ public interface Users {
 	@Select("select USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where DYNDNS_USER=#{user}")
 	DBAnswerBotDynDns getDynDns(String user);
 	
+	@Select("select USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where USERID=#{userId}")
+	DBAnswerBotDynDns getDynDnsByUserId(long userId);
+	
 	/**
 	 * Updates the user's dynamic IP address.
 	 */
 	@Insert("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where USERID=#{userId}")
 	void updateDynDny(long userId, String ip4, String ip6, long updated);
+
+	@Select("select USERID, HOST, REGISTRAR, REALM, USERNAME, PASSWD from ANSWERBOT_SIP where ENABLED = true")
+	List<DBAnswerBotSip> getEnabledAnswerBots();
+
+	@Update("update ANSWERBOT_SIP set ENABLED=false where USERID=#{userId}")
+	void disableAnswerBot(long userId);
 
 }

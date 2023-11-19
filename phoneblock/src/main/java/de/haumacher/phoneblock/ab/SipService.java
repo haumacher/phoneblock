@@ -3,52 +3,223 @@
  */
 package de.haumacher.phoneblock.ab;
 
+import java.io.File;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.ibatis.session.SqlSession;
+import org.kohsuke.args4j.ClassParser;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.mjsip.pool.PortConfig;
 import org.mjsip.pool.PortPool;
+import org.mjsip.sip.address.NameAddress;
+import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.time.Scheduler;
+import org.mjsip.ua.UserOptions;
 import org.mjsip.ua.registration.RegistrationClient;
+import org.mjsip.ua.registration.RegistrationClientListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zoolu.util.ConfigFile;
 
 import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
  * Service managing a SIP stack.
  */
-public class SipService implements ServletContextListener {
+public class SipService implements ServletContextListener, RegistrationClientListener {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(SipService.class);
+
 	private SchedulerService _scheduler;
+	private DBService _dbService;
+	
 	private SipProvider _sipProvider;
 	private PortPool _portPool;
 	private AnswerBot _answerBot;
+	
+	private final ConcurrentHashMap<String, RegistrationClient> _clients = new ConcurrentHashMap<>();
 	
 	private static SipService _instance;
 
 	/** 
 	 * Creates a {@link SipService}.
 	 */
-	public SipService(SchedulerService scheduler) {
+	public SipService(SchedulerService scheduler, DBService dbService) {
 		_scheduler = scheduler;
+		_dbService = dbService;
 	}
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		SipConfig sipConfig = new SipConfig();
-		sipConfig.setHostPort(50060);
-		sipConfig.setViaAddr("phoneblock.haumacher.de");
-		_sipProvider = new SipProvider(sipConfig, Scheduler.of(_scheduler.getInstance().executor()));
-
-		_portPool = new PortPool(50061, 50080);
+		
+		String hostname = "phoneblock.net";
+		String ip4 = null;
+		String ip6 = null;
+		try {
+			InetAddress[] addresses = InetAddress.getAllByName(hostname);
+			for (InetAddress address : addresses) {
+				if (address.isAnyLocalAddress()) {
+					continue;
+				}
+				if (address.isLinkLocalAddress()) {
+					continue;
+				}
+				if (address.isLoopbackAddress()) {
+					continue;
+				}
+				if (address.isMulticastAddress()) {
+					continue;
+				}
+				if (address.isSiteLocalAddress()) {
+					continue;
+				}
+				
+				if (address instanceof Inet6Address) {
+					ip6 = address.getHostAddress();
+					LOG.info("Found IPv6 address: " + ip6);
+				} else {
+					ip4 = address.getHostAddress();
+					LOG.info("Found IPv4 address: " + ip4);
+				}
+			}
+		} catch (UnknownHostException ex) {
+			LOG.error("Cannot resolve own address.", ex);
+		}
+		
+		sipConfig.setViaAddr(ip6 != null ? ip6 : ip4 != null ? ip4 : hostname);
+		
+		PortConfig portConfig = new PortConfig();
+		portConfig.setMediaPort(50061);
+		portConfig.setPortCount(20);
 		
 		AnswerbotConfig botOptions = new AnswerbotConfig();
+		
+		loadConfig(sipConfig, portConfig, botOptions);
+		
+		Scheduler scheduler = Scheduler.of(SchedulerService.getInstance().executor());
+		_sipProvider = new SipProvider(sipConfig, scheduler);
+		_portPool = portConfig.createPool();
+		Function<String, UserOptions> configForUser = (username) -> null;
 		_answerBot = new AnswerBot(_sipProvider, botOptions, configForUser, _portPool);
 		
 		_instance = this;
+		
+		DB db = _dbService.db();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			List<? extends AnswerBotSip> bots = users.getEnabledAnswerBots();
+			for (AnswerBotSip bot : bots) {
+				String host = bot.getHost();
+				if (host == null || host.isEmpty()) {
+					DBAnswerBotDynDns dynDns = users.getDynDnsByUserId(bot.getUserId());
+					if (dynDns != null) {
+						String ipv6 = dynDns.getIpv6();
+						if (ipv6 != null && !ipv6.isEmpty()) {
+							bot.setHost(ipv6);
+						} else {
+							String ipv4 = dynDns.getIpv4();
+							if (ipv4 != null && !ipv4.isEmpty()) {
+								bot.setHost(ipv4);
+							} else {
+								// Cannot enable.
+								LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
+								users.disableAnswerBot(bot.getUserId());
+								session.commit();
+								continue;
+							}
+						}
+					}
+				}
+				
+				register(bot);
+			}
+		}
+	}
+	
+	private void loadConfig(Object...beans) {
+		try {
+			CmdLineParser parser = new CmdLineParser(null);
+			for (Object bean : beans) {
+				new ClassParser().parse(bean, parser);
+			}
+			
+			InitialContext initCtx = new InitialContext();
+			Context envCtx = (Context) initCtx.lookup("java:comp/env");
+			
+			try {
+				String fileName = null;
+				Collection<String> jndiOptions = new ArrayList<>();
+				
+				NamingEnumeration<NameClassPair> options = envCtx.list("answerbot");
+				for (; options.hasMore(); ) {
+					NameClassPair pair = options.next();
+					String name = pair.getName();
+					Object lookup = envCtx.lookup("answerbot/" + name);
+					
+					if ("configfile".equals(name)) {
+						fileName = lookup.toString();
+					} else {
+						jndiOptions.add(name);
+						if (lookup != null) {
+							jndiOptions.add(lookup.toString());
+						}
+					}
+				}
+
+				Collection<String> fileOptions;
+				if (fileName != null) {
+					File file = new File(fileName);
+					if (!file.exists()) {
+						LOG.error("Answerbot configuration file does not exits: " + file.getAbsolutePath());
+					}
+					
+					ConfigFile configFile = new ConfigFile(file);
+					fileOptions = configFile.toArguments();
+				} else {
+					fileOptions = Collections.emptyList();
+				}
+				
+				Collection<String> arguments = new ArrayList<>(fileOptions);
+				arguments.addAll(jndiOptions);
+				
+				parser.parseArgument(arguments);
+			} catch (NamingException ex) {
+				LOG.error("Error loading JDNI configuration: " + ex.getMessage());
+			} catch (CmdLineException ex) {
+				LOG.error("Invalid answer bot configuration: " + ex.getMessage());
+			}
+		} catch (NamingException ex) {
+			LOG.info("Not using JNDI configuration: " + ex.getMessage());
+		}
 	}
 	
 	@Override
@@ -56,8 +227,15 @@ public class SipService implements ServletContextListener {
 		_answerBot = null;
 		_portPool = null;
 		
-		_sipProvider.halt();
-		_sipProvider = null;
+		for (RegistrationClient client : _clients.values()) {
+			client.halt();
+		}
+		_clients.clear();
+		
+		if (_sipProvider != null) {
+			_sipProvider.halt();
+			_sipProvider = null;
+		}
 		
 		if (_instance == this) {
 			_instance = null;
@@ -73,19 +251,35 @@ public class SipService implements ServletContextListener {
 
 	/** 
 	 * TODO
-	 *
-	 * @param username
-	 * @param passwd
-	 * @param hostname
 	 */
-	public void register(String username, String passwd, String hostname) {
+	public void register(AnswerBotSip bot) {
 		CustomerConfig regConfig = new CustomerConfig();
-		regConfig.setUser(username);
-		regConfig.setUser(passwd);
-		regConfig.setRealm("fritz.box");
-		regConfig.setRegistrar(hostname);
-		RegistrationClient client = new RegistrationClient(_sipProvider, regConfig, null);
+		regConfig.setUser(bot.getUserName());
+		regConfig.setPasswd(bot.getPasswd());
+		regConfig.setRealm(bot.getRealm());
+		regConfig.setRegistrar(new SipURI(bot.getRegistrar()));
+		regConfig.setRoute(new SipURI(bot.getHost()).addLr());
+		
+		RegistrationClient client = new RegistrationClient(_sipProvider, regConfig, this);
+		RegistrationClient clash = _clients.put(bot.getUserName(), client);
+		
+		if (clash != null) {
+			clash.halt();
+		}
+		
 		client.loopRegister(regConfig);
+	}
+
+	@Override
+	public void onRegistrationSuccess(RegistrationClient registration, NameAddress target, NameAddress contact, int expires,
+			String result) {
+		LOG.info("Sucessfully registered: " + registration.getUsername());
+	}
+
+	@Override
+	public void onRegistrationFailure(RegistrationClient registration, NameAddress target, NameAddress contact,
+			String result) {
+		LOG.warn("Failed to register user '" + registration.getUsername() + "': " + result);
 	}
 
 }
