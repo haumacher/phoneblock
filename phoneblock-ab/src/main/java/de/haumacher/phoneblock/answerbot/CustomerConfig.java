@@ -4,17 +4,19 @@
 package de.haumacher.phoneblock.answerbot;
 
 import org.kohsuke.args4j.Option;
+import org.mjsip.sip.address.SipURI;
+import org.mjsip.sip.config.SipURIHandler;
 
 /**
  * Command line options to specify a {@link CustomerConfig}.
  */
 public class CustomerConfig implements CustomerOptions {
 
-	@Option(name = "--registrar", required = true)
-	private String registrar;
+	@Option(name = "--registrar", required = true, handler = SipURIHandler.class)
+	private SipURI registrar;
 	
-	@Option(name = "--route")
-	private String route;
+	@Option(name = "--route", handler = SipURIHandler.class)
+	private SipURI route;
 	
 	@Option(name = "--user")
 	private String user;
@@ -26,20 +28,20 @@ public class CustomerConfig implements CustomerOptions {
 	private String realm;
 
 	@Override
-	public String getRegistrar() {
+	public SipURI getRegistrar() {
 		return registrar;
 	}
 	
-	public void setRegistrar(String registrar) {
+	public void setRegistrar(SipURI registrar) {
 		this.registrar = registrar;
 	}
 
 	@Override
-	public String getRoute() {
+	public SipURI getRoute() {
 		return route;
 	}
 	
-	public void setRoute(String route) {
+	public void setRoute(SipURI route) {
 		this.route = route;
 	}
 
