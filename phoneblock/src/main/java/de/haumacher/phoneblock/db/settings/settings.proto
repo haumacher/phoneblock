@@ -62,16 +62,16 @@ message AnswerBotSip extends AnswerBotSetting {
 	string host;
 	
     /** The SIP name of the user's box. */	
-	string sipRegistrar;
+	string registrar;
 	
     /** The SIP domain for authentication at the user's box. */	
-	string sipDomain;
+	string realm;
 	
     /** The user name for SIP registration at the user's box. */	
-	string sipUser;
+	string userName;
 
     /** The password used for SIP registration at the user's box. */	
-	string sipPasswd;
+	string passwd;
 
 	/** Whether this answer bot is currently registered sucessfully. */
 	bool registered;

@@ -32,6 +32,7 @@ module phoneblock {
 	requires org.mjsip.ua;
 	requires org.mjsip.util; 
 
+	requires args4j;
 	requires com.google.api.client;
 	requires com.google.auth;
 	requires com.google.auth.oauth2;
