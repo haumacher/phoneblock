@@ -18,7 +18,7 @@ import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DBService;
 
 /**
- * TODO
+ * Utility methods for servlet implementations.
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
