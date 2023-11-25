@@ -41,6 +41,7 @@ public class ConversationInitializer {
 				for (AudioType formatType : AudioType.values()) {
 					String formatName = formatType.dirName();
 					File outputDir = new File(stateDir, formatName);
+					outputDir.mkdirs();
 
 					if (state.isSilent()) {
 						WavResampler.convertToALaw(input.getAbsolutePath(), new File(outputDir, input.getName()).getAbsolutePath(), formatType.sampleRate());
