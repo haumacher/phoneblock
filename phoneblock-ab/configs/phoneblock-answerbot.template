@@ -34,23 +34,23 @@ recodings = .
 conversation=./conversation
 
 # The format of the conversation media stord in the directories in ./conversation/*
-media=audio 4080 RTP/AVP { 120 PCMA 16000 160 }
+media=audio 4080 RTP/AVP { 8 PCMA 8000 160 ; 120 PCMA 16000 320 }
 
 # Number of milliseconds silence must be detected before responding.
-min-silence-time = 1000
+min-silence-time = 800
 	
 # When recording, the number of milliseconds of silence to record before and after the conterpart's speach.")
 padding-time = 500
 	
 # The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
-silence-db = -30
+silence-db = -35
 
 # The minimum number of PhoneBlock votes for a number to be consideres SPAM.
 min-votes = 4
 
 # Whether to let PhoneBlock accept anonymous calls. It is not recommended to enable this option. Better configure a 
 # separate answering machine in you router to gracefully handle anonymous calls.
-accept-anonymous = no
+accept-anonymous=no
 
 # Prefix of a number that triggers PhoneBlock to respond to the call (for testing). A local number typically starts
 # with a '*' character. Using this prefix allows to call PhoneBlock locally to verify it is working. 
