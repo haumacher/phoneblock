@@ -98,6 +98,7 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 		case LISTENING: switchState(DialogState.ASKING); break;
 		default: // Ignore.
 		}
+		_nextState = null;
 	}
 
 	@Override
