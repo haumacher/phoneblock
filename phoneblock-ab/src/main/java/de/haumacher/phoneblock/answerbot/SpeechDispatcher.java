@@ -26,6 +26,7 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpeechDispatcher.class);
 	
 	private DialogState _state = DialogState.HELLO;
+	private DialogState _nextState = null;
 
 	private volatile InputStream _current;
 
@@ -58,7 +59,9 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 			return result;
 		}
 		
-		switchState(_state.next());
+		switchState(_nextState == null ? _state.next() : _nextState);
+		_nextState = null;
+		
 		return _current.read();
 	}
 
@@ -102,8 +105,10 @@ final class SpeechDispatcher extends InputStream implements SilenceListener {
 		switch (_state) {
 		case WAITING_FOR_INTRO: 
 		case WAITING_FOR_ANSWER: 
-			switchState(DialogState.LISTENING); break;
-		default: // Ignore.
+			switchState(DialogState.LISTENING);
+			break;
+		default: 
+			_nextState = DialogState.LISTENING;
 		}
 	}
 }
