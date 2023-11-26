@@ -23,7 +23,9 @@ Kommunikation benötigt werden (je nachdem was für ein Audioformat mit der Gege
  * Guten Tag, wie kann ich Ihnen behilflich sein?
  * Guten Tag, was kann ich für Sie tun?
  * Hallo, wie kann ich Ihnen weiterhelfen?
- * Einen schönen guten Tag, wie kann ich Ihnen helfen?
+ * Einen schönen guten Tag, mit wem spreche ich?
+ * Einen schönen guten Tag, wer ist da bitte?
+ * Einen schönen guten Tag, was wünschen Sie?
 
 ## Nach der Ansage meldet sich das Call-Center nicht sofort, PhoneBlock fragt nach, wer anruft ("who-is-calling")
 
@@ -40,7 +42,7 @@ Kommunikation benötigt werden (je nachdem was für ein Audioformat mit der Gege
  * Gibt es ein Problem mit der Verbindung? Haben Sie etwas gesagt?             
  * Ist die Verbindung unterbrochen? Hören Sie mich?            
  * Ich habe Sie nicht verstanden, können Sie das nocheinmal wiederholen?                    
- * Es scheint, als ob es Kommunikationsprobleme gibt. Könnten Sie noch einmal anzurufen?                      
+ * Es scheint, als ob es Kommunikationsprobleme gibt. Könnten Sie noch einmal anrufen?                      
  * Tut mir leid, aber ich kann nichts hören. Können Sie bitte wiederholen, was Sie gesagt haben?  
  * Gibt ein technisches Problem mit der Verbindung? Ich höre Sie nicht!
  * Es sieht so aus, als hätten wir ein Verbindungsproblem. Haben Sie etwas gesagt?                            
