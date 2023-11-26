@@ -65,15 +65,11 @@ public final class DialogueFactory implements StreamerFactory {
 	@Override
 	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
 		AudioType matchedType = null;
-		int maxSampleRate = 0;
 		MediaSpec spec = flow_spec.getMediaSpec();
 		for (AudioType type : _audioFragmentsByType.keySet()) {
 			if (type.matches(spec)) {
-				int sampleRate = type.sampleRate();
-				if (sampleRate > maxSampleRate) {
-					matchedType = type;
-					maxSampleRate = sampleRate;
-				}
+				matchedType = type;
+				break;
 			}
 		}
 		
