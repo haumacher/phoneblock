@@ -42,6 +42,7 @@ import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
+import org.mjsip.sip.header.Analyzer;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
@@ -134,9 +135,6 @@ public class AnswerBot extends MultipleUAS {
 	
 	@Override
 	protected void onInviteReceived(SipMessage msg) {
-		String from = msg.getFromUser();
-		LOG.info("Incomming call from: " + from);
-		
 		ToHeader toHeader = msg.getToHeader();
 		if (toHeader == null) {
 			LOG.warn("Missing To: header, ignoring.");
@@ -158,13 +156,14 @@ public class AnswerBot extends MultipleUAS {
 			return;
 		}
 		
-		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(from));
+		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(msg));
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);
 	}
 	
-	protected UserAgentListener createCallHandler(String from) {
+	protected UserAgentListener createCallHandler(SipMessage msg) {
+		String from = msg.getFromUser();
 		if (from == null) {
 			// An anonymous call, accept.
 			if (_botConfig.getAcceptAnonymous()) {
@@ -174,10 +173,31 @@ public class AnswerBot extends MultipleUAS {
 				LOG.info("Not accepting anonymous call.");
 				return rejectHandler();
 			}
-		} else if (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix())) {
+		}
+		
+		LOG.info("Incomming call from: " + from);
+
+		if (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix())) {
 			// A local test call, accept.
 			return spamHandler();
 		} else {
+			String fromLabel;
+			{
+				Analyzer in = new Analyzer(msg.getFromHeader().getValue()).findChar('<').limit();
+				in.skipWSPCRLF();
+				if (in.lookingAt('"')) {
+					in.skip();
+					in.findChar('"');
+					fromLabel = in.stringBefore().trim();
+				} else {
+					fromLabel = in.remaining().trim();
+				}
+			}
+			
+			if (!fromLabel.isEmpty() && !fromLabel.equals(from)) {
+				LOG.info("Incomming labeled call: " + fromLabel);
+			}
+			
 			NumberInfo info;
 			try {
 				URL url = new URL("https://phoneblock.net/phoneblock/api/num/" + from + "?format=json");
