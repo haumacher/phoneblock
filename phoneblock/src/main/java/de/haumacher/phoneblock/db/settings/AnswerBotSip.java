@@ -15,6 +15,12 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #getHost() */
 	public static final String HOST__PROP = "host";
 
+	/** @see #getIpv4() */
+	public static final String IPV_4__PROP = "ipv4";
+
+	/** @see #getIpv6() */
+	public static final String IPV_6__PROP = "ipv6";
+
 	/** @see #getRegistrar() */
 	public static final String REGISTRAR__PROP = "registrar";
 
@@ -45,31 +51,41 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #getHost()} in binary format. */
 	static final int HOST__ID = 4;
 
+	/** Identifier for the property {@link #getIpv4()} in binary format. */
+	static final int IPV_4__ID = 5;
+
+	/** Identifier for the property {@link #getIpv6()} in binary format. */
+	static final int IPV_6__ID = 6;
+
 	/** Identifier for the property {@link #getRegistrar()} in binary format. */
-	static final int REGISTRAR__ID = 5;
+	static final int REGISTRAR__ID = 7;
 
 	/** Identifier for the property {@link #getRealm()} in binary format. */
-	static final int REALM__ID = 6;
+	static final int REALM__ID = 8;
 
 	/** Identifier for the property {@link #getUserName()} in binary format. */
-	static final int USER_NAME__ID = 7;
+	static final int USER_NAME__ID = 9;
 
 	/** Identifier for the property {@link #getPasswd()} in binary format. */
-	static final int PASSWD__ID = 8;
+	static final int PASSWD__ID = 10;
 
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
-	static final int REGISTERED__ID = 9;
+	static final int REGISTERED__ID = 11;
 
 	/** Identifier for the property {@link #getLastRegister()} in binary format. */
-	static final int LAST_REGISTER__ID = 10;
+	static final int LAST_REGISTER__ID = 12;
 
 	/** Identifier for the property {@link #getRegisterError()} in binary format. */
-	static final int REGISTER_ERROR__ID = 11;
+	static final int REGISTER_ERROR__ID = 13;
 
 	/** Identifier for the property {@link #getCallsAccepted()} in binary format. */
-	static final int CALLS_ACCEPTED__ID = 12;
+	static final int CALLS_ACCEPTED__ID = 14;
 
 	private String _host = "";
+
+	private String _ipv4 = "";
+
+	private String _ipv6 = "";
 
 	private String _registrar = "";
 
@@ -120,6 +136,48 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetHost(String value) {
 		_listener.beforeSet(this, HOST__PROP, value);
 		_host = value;
+	}
+
+	/**
+	 * IPv4 address transmitted during the last DynDNS update.
+	 */
+	public final String getIpv4() {
+		return _ipv4;
+	}
+
+	/**
+	 * @see #getIpv4()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setIpv4(String value) {
+		internalSetIpv4(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getIpv4()} without chain call utility. */
+	protected final void internalSetIpv4(String value) {
+		_listener.beforeSet(this, IPV_4__PROP, value);
+		_ipv4 = value;
+	}
+
+	/**
+	 * IPv6 address transmitted during the last DynDNS update.
+	 */
+	public final String getIpv6() {
+		return _ipv6;
+	}
+
+	/**
+	 * @see #getIpv6()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setIpv6(String value) {
+		internalSetIpv6(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getIpv6()} without chain call utility. */
+	protected final void internalSetIpv6(String value) {
+		_listener.beforeSet(this, IPV_6__PROP, value);
+		_ipv6 = value;
 	}
 
 	/**
@@ -316,6 +374,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			HOST__PROP, 
+			IPV_4__PROP, 
+			IPV_6__PROP, 
 			REGISTRAR__PROP, 
 			REALM__PROP, 
 			USER_NAME__PROP, 
@@ -334,6 +394,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	public Object get(String field) {
 		switch (field) {
 			case HOST__PROP: return getHost();
+			case IPV_4__PROP: return getIpv4();
+			case IPV_6__PROP: return getIpv6();
 			case REGISTRAR__PROP: return getRegistrar();
 			case REALM__PROP: return getRealm();
 			case USER_NAME__PROP: return getUserName();
@@ -350,6 +412,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	public void set(String field, Object value) {
 		switch (field) {
 			case HOST__PROP: internalSetHost((String) value); break;
+			case IPV_4__PROP: internalSetIpv4((String) value); break;
+			case IPV_6__PROP: internalSetIpv6((String) value); break;
 			case REGISTRAR__PROP: internalSetRegistrar((String) value); break;
 			case REALM__PROP: internalSetRealm((String) value); break;
 			case USER_NAME__PROP: internalSetUserName((String) value); break;
@@ -374,6 +438,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 		super.writeFields(out);
 		out.name(HOST__PROP);
 		out.value(getHost());
+		out.name(IPV_4__PROP);
+		out.value(getIpv4());
+		out.name(IPV_6__PROP);
+		out.value(getIpv6());
 		out.name(REGISTRAR__PROP);
 		out.value(getRegistrar());
 		out.name(REALM__PROP);
@@ -396,6 +464,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case HOST__PROP: setHost(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case IPV_4__PROP: setIpv4(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case IPV_6__PROP: setIpv6(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case REGISTRAR__PROP: setRegistrar(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case REALM__PROP: setRealm(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case USER_NAME__PROP: setUserName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -418,6 +488,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 		super.writeFields(out);
 		out.name(HOST__ID);
 		out.value(getHost());
+		out.name(IPV_4__ID);
+		out.value(getIpv4());
+		out.name(IPV_6__ID);
+		out.value(getIpv6());
 		out.name(REGISTRAR__ID);
 		out.value(getRegistrar());
 		out.name(REALM__ID);
@@ -455,6 +529,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
 		switch (field) {
 			case HOST__ID: setHost(in.nextString()); break;
+			case IPV_4__ID: setIpv4(in.nextString()); break;
+			case IPV_6__ID: setIpv6(in.nextString()); break;
 			case REGISTRAR__ID: setRegistrar(in.nextString()); break;
 			case REALM__ID: setRealm(in.nextString()); break;
 			case USER_NAME__ID: setUserName(in.nextString()); break;
