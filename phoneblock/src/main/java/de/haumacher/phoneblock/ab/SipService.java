@@ -278,7 +278,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 	@Override
 	public void onRegistrationSuccess(RegistrationClient registration, NameAddress target, NameAddress contact, int expires,
-			String result) {
+			int renewTime, String result) {
 		String userName = registration.getUsername();
 		updateRegistration(userName, true, result);
 		LOG.info("Sucessfully registered " + userName + ": " + result);
