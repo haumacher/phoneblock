@@ -61,6 +61,12 @@ message AnswerBotSip extends AnswerBotSetting {
 	/** Static host name configured for the user's box. */
 	string host;
 	
+	/** IPv4 address transmitted during the last DynDNS update. */
+	string ipv4;
+	
+	/** IPv6 address transmitted during the last DynDNS update. */
+	string ipv6;
+
     /** The SIP name of the user's box. */	
 	string registrar;
 	

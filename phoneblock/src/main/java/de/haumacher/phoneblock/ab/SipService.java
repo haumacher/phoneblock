@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -43,7 +44,6 @@ import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
 import de.haumacher.phoneblock.answerbot.CustomerOptions;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
@@ -64,6 +64,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	private AnswerBot _answerBot;
 	
 	private final ConcurrentHashMap<String, Registration> _clients = new ConcurrentHashMap<>();
+
+	private long _lastRegister;
 	
 	private static SipService _instance;
 
@@ -123,43 +125,59 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		loadConfig(sipConfig, portConfig, botOptions);
 		
-		Scheduler scheduler = Scheduler.of(SchedulerService.getInstance().executor());
+		Scheduler scheduler = Scheduler.of(_scheduler.executor());
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
 		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool);
 		
 		_instance = this;
 		
+		_scheduler.executor().scheduleAtFixedRate(this::registerBots, 10, 5 * 60, TimeUnit.SECONDS);
+	}
+	
+	/**
+	 * Registers all answer bots that have been updated since the last run.
+	 */
+	private void registerBots() {
+		long since = _lastRegister;
+		_lastRegister = System.currentTimeMillis();
+		
 		DB db = _dbService.db();
+		
+		List<? extends AnswerBotSip> bots;
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			List<? extends AnswerBotSip> bots = users.getEnabledAnswerBots();
-			for (AnswerBotSip bot : bots) {
-				String host = bot.getHost();
+			bots = users.getEnabledAnswerBots(since);
+		}
+		
+		List<AnswerBotSip> failed = new ArrayList<>();
+		for (AnswerBotSip bot : bots) {
+			String host = bot.getHost();
+			if (host == null || host.isEmpty()) {
+				host = bot.getIpv6();
 				if (host == null || host.isEmpty()) {
-					DBAnswerBotDynDns dynDns = users.getDynDnsByUserId(bot.getUserId());
-					if (dynDns != null) {
-						String ipv6 = dynDns.getIpv6();
-						if (ipv6 != null && !ipv6.isEmpty()) {
-							bot.setHost(ipv6);
-						} else {
-							String ipv4 = dynDns.getIpv4();
-							if (ipv4 != null && !ipv4.isEmpty()) {
-								bot.setHost(ipv4);
-							} else {
-								// Cannot enable.
-								LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
-								users.disableAnswerBot(bot.getUserId());
-								session.commit();
-								continue;
-							}
-						}
+					host = bot.getIpv4();
+					if (host == null || host.isEmpty()) {
+						failed.add(bot);
 					}
 				}
-				
-				CustomerConfig regConfig = toCustomerConfig(bot);
-				register(regConfig);
+			}
+
+			CustomerConfig regConfig = toCustomerConfig(bot);
+			register(bot.getUserId(), regConfig);
+		}
+
+		if (!failed.isEmpty()) {
+			try (SqlSession session = db.openSession()) {
+				Users users = session.getMapper(Users.class);
+			
+				for (AnswerBotSip bot : failed) {
+					LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
+					users.disableAnswerBot(bot.getUserId());
+				}
+
+				session.commit();
 			}
 		}
 	}
@@ -223,13 +241,16 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		_answerBot = null;
-		_portPool = null;
-		
 		for (RegistrationClient client : _clients.values()) {
 			client.halt();
 		}
 		_clients.clear();
+
+		if (_answerBot != null) {
+			_answerBot.halt();
+		}
+		_answerBot = null;
+		_portPool = null;
 		
 		if (_sipProvider != null) {
 			_sipProvider.halt();
@@ -252,7 +273,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	 * Dynamically registers a new answer bot.
 	 */
 	public void register(AnswerBotSip bot) {
-		register(toCustomerConfig(bot));
+		register(bot.getUserId(), toCustomerConfig(bot));
 	}
 
 	private CustomerConfig toCustomerConfig(AnswerBotSip bot) {
@@ -265,39 +286,42 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		return regConfig;
 	}
 
-	private void register(CustomerOptions customerConfig) {
-		Registration client = new Registration(_sipProvider, customerConfig, this);
+	private void register(long userId, CustomerOptions customerConfig) {
+		Registration client = new Registration(_sipProvider, userId, customerConfig, this);
 		Registration clash = _clients.put(customerConfig.getUser(), client);
 		
 		if (clash != null) {
 			clash.halt();
 		}
 		
+		LOG.info("Started registration for " + customerConfig.getUser() + ".");
 		client.loopRegister(customerConfig);
 	}
 
 	@Override
 	public void onRegistrationSuccess(RegistrationClient registration, NameAddress target, NameAddress contact, int expires,
 			int renewTime, String result) {
-		String userName = registration.getUsername();
-		updateRegistration(userName, true, result);
-		LOG.info("Sucessfully registered " + userName + ": " + result);
+		long userId = ((Registration) registration).getUserId();
+		updateRegistration(userId, result);
+		LOG.info("Sucessfully registered " + registration.getUsername() + ": " + result);
 	}
 
 	@Override
 	public void onRegistrationFailure(RegistrationClient registration, NameAddress target, NameAddress contact,
 			String result) {
-		String userName = registration.getUsername();
-		updateRegistration(userName, false, result);
-		LOG.warn("Failed to register '" + userName + "': " + result);
+		long userId = ((Registration) registration).getUserId();
+		updateRegistration(userId, result);
+		LOG.warn("Failed to register '" + registration.getUsername() + "': " + result);
 	}
 
-	private void updateRegistration(String username, boolean registered, String result) {
+	private void updateRegistration(long userId, String result) {
 		try (SqlSession session = _dbService.db().openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.updateSipRegistration(username, registered, System.currentTimeMillis(), result);
-			session.commit();
+			int cnt = users.updateSipRegistration(userId, result);
+			if (cnt > 0) {
+				session.commit();
+			}
 		}
 	}
 
