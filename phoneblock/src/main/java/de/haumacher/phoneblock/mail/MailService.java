@@ -7,7 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
@@ -27,12 +32,26 @@ import javax.mail.internet.MimeMultipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.db.DBUserSettings;
+
 /**
  * Service for sending e-mail messages.
  */
 public class MailService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
+	
+	private static final String HOME_PAGE = "https://phoneblock.net/";
+	
+	private static final String APP_LOGO_SVG = "https://phoneblock.net/phoneblock/app-logo.svg";
+
+	private static final String FACE_BOOK = "https://www.facebook.com/PhoneBlock";
+	
+	private static final String HELP_VIDEO = "https://www.youtube.com/watch?v=iV3aWhU1cMU&t=3s";
+
+	private static final String SETTINGS = "https://phoneblock.net/phoneblock/settings";
+	
+	private static final String MAIL = "phoneblock@haumacher.de";
 
 	private Session _session;
 	private String _user;
@@ -53,23 +72,89 @@ public class MailService {
 	public void sendActivationMail(String receiver, String code)
 			throws MessagingException, IOException, AddressException {
 		LOG.info("Sending activation mail to '" + receiver + "'.");
+
+		Map<String, String> variables = new HashMap<>();
+    	variables.put("{code}", code);
+    	variables.put("{image}", APP_LOGO_SVG);
+    	
+    	sendMail("PhoneBlock E-Mail Bestätigung", receiver, "mail-template", variables);
+	}
+
+	public boolean sendHelpMail(DBUserSettings userSettings) {
+		String receiver = userSettings.getEmail();
+		if (receiver == null || receiver.isBlank()) {
+			LOG.warn("Cannot send help message to '" + userSettings.getId() + "', no e-mail provided.");
+			return true;
+		}
 		
-		String image = "https://phoneblock.net/phoneblock/app-logo.svg";
+		LOG.info("Sending help mail to '" + receiver + "'.");
 		
+		try {
+			sendMail("PhoneBlock: Deine Installation", receiver, "help-mail", buildVariables(userSettings));
+			return true;
+		} catch (MessagingException | IOException ex) {
+			LOG.error("Failed to send help mail to: " + receiver, ex);
+			return false;
+		}
+	}
+	
+	/** 
+	 * Sends a welcome message to the given user.
+	 */
+	public void sendWelcomeMail(DBUserSettings userSettings) {
+		String receiver = userSettings.getEmail();
+		if (receiver == null || receiver.isBlank()) {
+			LOG.warn("Cannot send welcome message to '" + userSettings.getId() + "', no e-mail provided.");
+			return;
+		}
+		
+		LOG.info("Sending welcome mail to '" + receiver + "'.");
+		
+		try {
+			sendMail("Willkommen bei PhoneBlock", receiver, "welcome-mail", buildVariables(userSettings));
+		} catch (MessagingException | IOException ex) {
+			LOG.error("Failed to send welcome mail to: " + receiver, ex);
+		}
+	}
+
+	private Map<String, String> buildVariables(DBUserSettings userSettings) {
+		String name = userSettings.getDisplayName();
+		int atIndex = name.indexOf('@');
+		if (atIndex > 0) {
+			name = name.substring(0, atIndex);
+		}
+		name = Arrays.stream(name.replace('.', ' ').replace('_', ' ').split("\\s+"))
+			.filter(p -> p.length() > 0)
+			.map(p -> Character.toUpperCase(p.charAt(0)) + p.substring(1))
+			.collect(Collectors.joining(" "));
+		
+		Map<String, String> variables = new HashMap<>();
+		variables.put("{name}", name);
+		variables.put("{image}", APP_LOGO_SVG);
+		variables.put("{home}", HOME_PAGE);
+		variables.put("{facebook}", FACE_BOOK);
+		variables.put("{help}", HELP_VIDEO);
+		variables.put("{mail}", MAIL);
+		variables.put("{settings}", SETTINGS);
+		return variables;
+	}
+	
+	private void sendMail(String subject, String receiver, String template, Map<String, String> variables)
+			throws MessagingException, IOException {
 		Message msg = createMessage();
-		msg.setSubject("PhoneBlock E-Mail Bestätigung");
+		msg.setSubject(subject);
 		
 	    MimeMultipart alternativePart = new MimeMultipart("alternative");
 	    {
-	    	{
+			{
     			MimeBodyPart sourcePart = new MimeBodyPart();
-    			sourcePart.setText(read("mail-template.html", code, image), "utf-8", "html");
+    			sourcePart.setText(read(template + ".html", variables), "utf-8", "html");
 	    		alternativePart.addBodyPart(sourcePart);
 	    	}
 
 	    	{
 	    		MimeBodyPart text = new MimeBodyPart();
-	    		text.setText(read("mail-template.txt", code, image), "utf-8");
+	    		text.setText(read(template + ".txt", variables), "utf-8");
 	    		alternativePart.addBodyPart(text);
 	    	}
 	    }
@@ -91,8 +176,9 @@ public class MailService {
 
 	public void sendMail(String receiver, Message msg) throws AddressException, MessagingException {
 		InternetAddress address = new InternetAddress(receiver);
+		msg.setRecipient(RecipientType.BCC, _from);
 		msg.setRecipient(RecipientType.TO, address);
-		Address[] addresses = {address};
+		Address[] addresses = {address, _from};
 		
 		try {
 			getTransport().sendMessage(msg, addresses);
@@ -155,7 +241,7 @@ public class MailService {
 		_transport = null;
 	}
 
-	private String read(String resource, String code, String image) throws IOException {
+	private String read(String resource, Map<String, String> variables) throws IOException {
 		StringBuilder result = new StringBuilder();
 		char[] buffer = new char[4096];
 		try (InputStream in = getClass().getResourceAsStream(resource)) {
@@ -169,7 +255,14 @@ public class MailService {
 				}
 			}
 		}
-		return result.toString().replace("{code}", code).replace("{image}", image);
+		return expandVariables(result.toString(), variables);
+	}
+
+	private String expandVariables(String text, Map<String, String> variables) {
+		for (Entry<String, String> var : variables.entrySet()) {
+			text = text.replace(var.getKey(), var.getValue());
+		}
+		return text;
 	}
 
 	private Session getSession() throws AddressException {

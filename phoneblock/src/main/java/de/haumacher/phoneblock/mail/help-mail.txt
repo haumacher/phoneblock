@@ -1,0 +1,23 @@
+Hallo {name},
+
+Du bist bei PhoneBlock ({home}) angemeldet. Allerdings scheint der Abruf der Blocklist 
+von Deiner Fritz!Box nicht richtig zu funktionieren. Kann ich Dir bei der Einrichtung helfen, oder hast Du beschlossen 
+den Dienst nicht weiter in Anspruch zu nehmen? Dein Feedback ist willkommen!
+
+Ich erkläre die Installation auch in diesem YouTube-Video {help} - vielleicht 
+hilft Dir das, die Einrichtung erfolgreich abzuschließen. Wichtig ist, dass Du in Deiner Fritz!Box nicht Deine 
+E-Mail-Adresse als Benutzernamen verwendest, sondern den PhoneBlock-Benutzernamen, der Dir nach der Anmeldung angezeigt 
+wird. Wenn Du Diese Anmeldedaten nicht mehr zur Hand hast, kannst Du die Registrierung einfach noch einmal für dieselbe 
+E-Mail-Adresse durchführen.
+
+
+Viele Grüße
+
+Bernhard Haumacher 
+
+--
+Kontakt: {mail}
+Homepage: {home}
+Einstellungen: {settings}
+Videoanleitung: {help}
+Facebook: {facebook}

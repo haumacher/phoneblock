@@ -3,7 +3,7 @@
  */
 package de.haumacher.phoneblock.jmx;
 
-import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 
 /**
@@ -12,52 +12,64 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
 public class AppState implements AppStateMBean {
 
 	private IndexUpdateService _updater;
+	private DB _db;
 
 	/** 
 	 * Creates a {@link AppState}.
 	 */
-	public AppState(IndexUpdateService updater) {
+	public AppState(IndexUpdateService updater, DB db) {
 		_updater = updater;
+		_db = db;
 	}
 
 	@Override
 	public int getUsers() {
-		return DBService.getInstance().getUsers();
+		return _db.getUsers();
 	}
 
 	@Override
 	public int getInactiveUsers() {
-		return DBService.getInstance().getInactiveUsers();
+		return _db.getInactiveUsers();
 	}
 
 	@Override
 	public int getVotes() {
-		return DBService.getInstance().getVotes();
+		return _db.getVotes();
 	}
 
 	@Override
 	public int getRatings() {
-		return DBService.getInstance().getRatings();
+		return _db.getRatings();
 	}
 
 	@Override
 	public int getSearches() {
-		return DBService.getInstance().getSearches();
+		return _db.getSearches();
 	}
 	
 	@Override
 	public int getActiveNumbers() {
-		return DBService.getInstance().getActiveReportCount();
+		return _db.getActiveReportCount();
 	}
 	
 	@Override
 	public int getArchivedNumbers() {
-		return DBService.getInstance().getArchivedReportCount();
+		return _db.getArchivedReportCount();
 	}
 	
 	@Override
 	public void triggerIndexUpdate(String path) {
 		_updater.publishPathUpdate(path);
 	}
+	
+	@Override
+	public void triggerWelcomeMails() {
+		_db.sendWelcomeMails();
+	}
 
+	@Override
+	public void triggerServiceMails() {
+		_db.sendSupportMails();
+	}
+	
 }

@@ -81,17 +81,18 @@ public class Application implements ServletContextListener {
 		DBService db;
 		FetchService fetcher;
 		MetaSearchService metaSearch;
+		MailServiceStarter mail;
 		_services = new ServletContextListener[] {
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
 				new IndexNowUpdateService(),
 				new GoogleUpdateService())),
-			db = new DBService(indexer, scheduler),
+			mail = new MailServiceStarter(),
+			db = new DBService(indexer, scheduler, mail),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
-			new MailServiceStarter(),
-			new ManagementService(indexer),
+			new ManagementService(indexer, db),
 			new ChatGPTService(db, scheduler, indexer),
 			new AddressBookCache()
 		};

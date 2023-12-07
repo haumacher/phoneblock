@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -40,17 +41,20 @@ public class DBService implements ServletContextListener {
 	private SchedulerService _scheduler;
 
 	private JdbcConnectionPool _pool;
+
+	private MailServiceStarter _mail;
 	
 	public DBService(SchedulerService scheduler) {
-		this(IndexUpdateService.NONE, scheduler);
+		this(IndexUpdateService.NONE, scheduler, null);
 	}
 	
 	/** 
 	 * Creates a {@link DBService}.
 	 */
-	public DBService(IndexUpdateService indexer, SchedulerService scheduler) {
+	public DBService(IndexUpdateService indexer, SchedulerService scheduler, MailServiceStarter mail) {
 		_indexer = indexer;
 		_scheduler = scheduler;
+		_mail = mail;
 	}
 
 	@Override
@@ -66,41 +70,24 @@ public class DBService implements ServletContextListener {
 	}
 
 	private DBConfig lookupConfig(ServletContextEvent servletContextEvent) {
-		DBConfig config = DBConfig.create();
-		config.setUrl(defaultDbUrl(appName(servletContextEvent))).setUser("phone").setPassword("block").setPort(defaultDbPort());
+		DBConfig config = DBConfig.create()
+			.setUrl(defaultDbUrl(appName(servletContextEvent)))
+			.setUser("phone")
+			.setPassword("block")
+			.setPort(defaultDbPort());
 		
 		try {
 			InitialContext initCtx = new InitialContext();
 			Context envCtx = (Context) initCtx.lookup("java:comp/env");
 			
-			try {
-				String url = (String) envCtx.lookup("db/url");
-				config.setUrl(url);
-			} catch (NamingException ex) {
-				LOG.info(ex.getMessage() + ", using default DB url: " + config.getUrl());
-			}
-			
-			try {
-				String user = (String) envCtx.lookup("db/user");
-				config.setUser(user);
-			} catch (NamingException ex) {
-				LOG.info(ex.getMessage() + ", using default DB user: " + config.getUser());
-			}
-			
-			try {
-				String password = (String) envCtx.lookup("db/password");
-				config.setPassword(password);
-			} catch (NamingException ex) {
-				LOG.info(ex.getMessage() + ", using default DB password.");
-			}
-
-			try {
-				Integer port = (Integer) envCtx.lookup("db/port");
-				if (port != null) {
-					config.setPort(port.intValue());
+			for (String property : config.properties()) {
+				try {
+					Object value = envCtx.lookup("db/" + property);
+					config.set(property, value);
+					LOG.info("Set property '" + property + "': " + config.get(property));
+				} catch (NamingException ex) {
+					LOG.info(ex.getMessage() + ", using default for property '" + property + "': " + config.get(property));
 				}
-			} catch (NamingException ex) {
-				LOG.info(ex.getMessage() + ", using default DB port: " + config.getPort());
 			}
 		} catch (NamingException ex) {
 			LOG.info("Not using JNDI configuration: " + ex.getMessage());
@@ -129,7 +116,7 @@ public class DBService implements ServletContextListener {
 		}
 		
 		_pool = JdbcConnectionPool.create(dataSource);
-		INSTANCE = new DB(_pool, _indexer, _scheduler);
+		INSTANCE = new DB(config.isSendHelpMails(), _pool, _indexer, _scheduler, _mail == null ? null : _mail.getMailService());
 	}
 
 	protected int defaultDbPort() {

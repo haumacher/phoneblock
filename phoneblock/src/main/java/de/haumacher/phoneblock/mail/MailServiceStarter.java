@@ -24,6 +24,8 @@ public class MailServiceStarter implements ServletContextListener {
 	private static final Logger LOG = LoggerFactory.getLogger(MailServiceStarter.class);
 
 	private static MailService INSTANCE;
+
+	private MailService _mailService;
 	
 	/**
 	 * The {@link MailService} instance.
@@ -31,9 +33,17 @@ public class MailServiceStarter implements ServletContextListener {
 	public static MailService getInstance() {
 		return INSTANCE;
 	}
+	
+	/**
+	 * The {@link MailService} instance.
+	 */
+	public MailService getMailService() {
+		return _mailService;
+	}
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		LOG.info("Starting mail service.");
 		try {
 			InitialContext initCtx = new InitialContext();
 			Context envCtx = (Context) initCtx.lookup("java:comp/env");
@@ -41,7 +51,7 @@ public class MailServiceStarter implements ServletContextListener {
 			String user = (String) envCtx.lookup("smtp/user");        
 			String password = (String) envCtx.lookup("smtp/password");
 			if (user == null && password == null) {
-				LOG.warn("No mail configuration found.");
+				LOG.warn("No mail configuration found, mail service not available.");
 			} else {
 				Properties properties = new Properties();
 				Context propertyContext = (Context) envCtx.lookup("smtp/properties");
@@ -58,10 +68,10 @@ public class MailServiceStarter implements ServletContextListener {
 					}
 				}
 				
-				MailService mailService = new MailService(user, password, properties);
-				mailService.startUp();
+				_mailService = new MailService(user, password, properties);
+				_mailService.startUp();
 				
-				INSTANCE = mailService;
+				INSTANCE = _mailService;
 			}
 		} catch (NamingException ex) {
 			LOG.error("Starting mail service failed.", ex);
@@ -70,10 +80,12 @@ public class MailServiceStarter implements ServletContextListener {
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		if (INSTANCE != null) {
+		if (_mailService != null) {
 			LOG.info("Shutting down mail server.");
-			INSTANCE.shutdown();
-			INSTANCE = null;
+			if (INSTANCE == _mailService) {
+				INSTANCE = null;
+			}
+			_mailService.shutdown();
 		} else {
 			LOG.info("Skipping mail server shutdown, not started.");
 		}

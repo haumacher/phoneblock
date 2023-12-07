@@ -50,5 +50,15 @@ public interface AppStateMBean {
 	 *        The path starting with a `/` character relative to the context path of the application.
 	 */
 	void triggerIndexUpdate(String path);
+
+	/**
+	 * Sends welcome mails to new users.
+	 */
+	void triggerWelcomeMails();
+	
+	/**
+	 * Checks for inactive users and sends help mails to them.
+	 */
+	void triggerServiceMails();
 	
 }

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +56,7 @@ import de.haumacher.phoneblock.db.model.SearchInfo;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -108,19 +110,26 @@ public class DB {
 
 	private List<ScheduledFuture<?>> _tasks = new ArrayList<>();
 
+	private MailService _mailService;
+
+	private boolean _sendHelpMails;
+
 	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException, UnsupportedEncodingException {
-		this(dataSource, IndexUpdateService.NONE, scheduler);
+		this(false, dataSource, IndexUpdateService.NONE, scheduler, null);
 	}
 	
 	/** 
 	 * Creates a {@link DB}.
+	 * @param sendHelpMails 
 	 *
 	 * @param dataSource
 	 */
-	public DB(DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler) throws SQLException, UnsupportedEncodingException {
+	public DB(boolean sendHelpMails, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException, UnsupportedEncodingException {
+		_sendHelpMails = sendHelpMails;
 		_dataSource = dataSource;
 		_indexer = indexer;
 		_scheduler = scheduler;
+		_mailService = mailService;
 		
 		TransactionFactory transactionFactory = new JdbcTransactionFactory();
 		Environment environment = new Environment("phoneblock", transactionFactory, _dataSource);
@@ -162,6 +171,13 @@ public class DB {
 		 
 		 Date timeHistory = schedule(0, this::runCleanupSearchHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
+		 
+		 if (sendHelpMails && _mailService != null) {
+			 Date supportMails = schedule(18, this::sendSupportMails);
+			 LOG.info("Scheduled support mails: " + supportMails);
+		 } else {
+			 LOG.info("Support mails are disabled.");
+		 }
 	}
 
 	private Date schedule(int atHour, Runnable command) {
@@ -742,8 +758,20 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
+			Long before = users.getLastAccess(login);
 			users.setLastAccess(login, timestamp, userAgent);
 			session.commit();
+			
+			if (before == null || before.longValue() == 0) {
+				// This was the first access, send welcome message;
+				MailService mailService = _mailService;
+				if (mailService != null) {
+					DBUserSettings userSettings = users.getSettings(login);
+					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(userSettings));
+				} else {
+					LOG.info("Cannot send welcome mail to '" + login + "', since there is no mail service.");
+				}
+			}
 		}
 	}
 	
@@ -924,6 +952,92 @@ public class DB {
 		LOG.info("Finished DB cleanup.");
 	}
 
+	/**
+	 * Checks for inactive users and sends support mail to them.
+	 */
+	public void sendWelcomeMails() {
+		try {
+			trySendWelcomeMails();
+		} catch (Exception ex) {
+			LOG.error("Failed to send welcome mails.", ex);
+		}
+	}
+	
+	private void trySendWelcomeMails() {
+		LOG.info("Processing welcome mails.");
+
+		GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.HOUR, 0);
+		calendar.add(Calendar.HOUR, -1);
+		calendar.add(Calendar.DAY_OF_MONTH, -2);
+		
+		long accessAfter = calendar.getTimeInMillis();
+
+		calendar.add(Calendar.DAY_OF_MONTH, -30);
+		long registeredAfter = calendar.getTimeInMillis();
+		
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			// Users that did not update the address book for three days.
+			List<DBUserSettings> inactiveUsers = users.getUsersWithoutWelcome(registeredAfter, accessAfter);
+			for (DBUserSettings user : inactiveUsers) {
+				// Mark mail as send to prevent mail-bombing a user under all circumstances. Sending
+				// a support mail is not tried again, if the first attempt fails.
+				users.markWelcome(user.getId());
+				session.commit();
+				
+				_mailService.sendWelcomeMail(user);
+			}
+		}
+	}
+
+	/**
+	 * Checks for inactive users and sends support mail to them.
+	 */
+	public void sendSupportMails() {
+		try {
+			trySendSupportMails();
+		} catch (Exception ex) {
+			LOG.error("Failed to send support mails.", ex);
+		}
+	}
+	
+	private void trySendSupportMails() {
+		LOG.info("Processing support mails.");
+
+		GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.HOUR, 0);
+		calendar.add(Calendar.HOUR, -1);
+		calendar.add(Calendar.DAY_OF_MONTH, -2);
+		
+		long lastAccessBefore = calendar.getTimeInMillis();
+
+		calendar.add(Calendar.DAY_OF_MONTH, -30);
+		long accessAfter = calendar.getTimeInMillis();
+		
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			// Users that did not update the address book for three days.
+			List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(lastAccessBefore, accessAfter, lastAccessBefore);
+			for (DBUserSettings user : inactiveUsers) {
+				// Mark mail as send to prevent mail-bombing a user under all circumstances. Sending
+				// a support mail is not tried again, if the first attempt fails.
+				users.markNotified(user.getId());
+				session.commit();
+				
+				_mailService.sendHelpMail(user);
+			}
+		}
+	}
+	
 	private void runCleanupSearchHistory() {
 		LOG.info("Processing search history.");
 		cleanupSearchHistory(365);

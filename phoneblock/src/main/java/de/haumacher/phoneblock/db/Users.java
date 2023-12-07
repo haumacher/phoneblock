@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -53,13 +55,44 @@ public interface Users {
 	@Select("select ID, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
 	
+	@Select("select u.ID, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS from USERS u "
+			+ "where u.LASTACCESS < #{lastAccessBefore} "
+			+ "and (u.LASTACCESS > #{accessAfter} "
+			+ "or (u.REGISTERED > #{accessAfter} "
+			+ "and u.REGISTERED < #{registeredBefore})) "
+			+ "and NOTIFIED = false "
+			+ "and (u.USERAGENT = 'FRITZOS_CardDAV_Client/1.0' or u.USERAGENT is null) "
+			+ "order by u.REGISTERED asc")
+	List<DBUserSettings> getNewInactiveUsers(long lastAccessBefore, long accessAfter, long registeredBefore);
+	
+	@Select("select u.ID, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS from USERS u "
+			+ "where not u.WELCOME "
+			+ "and u.LASTACCESS > #{accessAfter} "
+			+ "and u.REGISTERED > #{registeredAfter} "
+			+ "order by u.REGISTERED asc")
+	List<DBUserSettings> getUsersWithoutWelcome(long registeredAfter, long accessAfter);
+	
+	@Update("update USERS set NOTIFIED=true where ID=#{id}")
+	int markNotified(long id);
+	
+	@Update("update USERS set WELCOME=true where ID=#{id}")
+	int markWelcome(long id);
+	
 	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength}, WILDCARDS=#{wildcards} where ID=#{id}")
 	int updateSettings(long id, int minVotes, int maxLength, boolean wildcards);
 	
 	/**
+	 * Reads the user's last access timestamp (pretend it is a new user that has never accessed the
+	 * blocklist, if he was notified before that access does not work. This ensures the user get a
+	 * feedback, when the error condition is resolved.
+	 */
+	@Select("select case when NOTIFIED then 0 else LASTACCESS end from USERS where LOGIN=#{login}")
+	Long getLastAccess(String login);
+	
+	/**
 	 * Updates the user's last access timestamp.
 	 */
-	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent} where LOGIN=#{login}")
+	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent}, NOTIFIED=false, WELCOME=true where LOGIN=#{login}")
 	void setLastAccess(String login, long lastAccess, String userAgent);
 	
 	@Select("select TIMESTAMP, LASTID from CALLREPORT where USERID=#{userId}")

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.db.config;
 option NoInterfaces;
 option NoXml;
 
-/** Configuration settings for the embedded H2 database */
+/** JNDI configuration settings for the embedded H2 database */
 message DBConfig {
 	/** The DB url, where the file is located. */
 	string url;
@@ -16,4 +16,7 @@ message DBConfig {
 	
 	/** The port, where to start a server for external access. <code>0</code> to prevent starting a DB server. */
 	int port;
+	
+	/** Whether to automatically send help mails when a period of inactivity is detected. */
+	boolean sendHelpMails;
 }
