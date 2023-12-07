@@ -2,15 +2,15 @@
 	"openapi": "3.0.3",
 	"info": {
 		"title": "PhoneBlock API",
-		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.haumacher.de/pb-test/api/ for testing purpose!",
+		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
 		"version": "v1.3.1"
 	},
 	"servers": [
 		{
-			"url": "https://phoneblock.haumacher.de/pb-test/api"
+			"url": "https://phoneblock.net/pb-test/api"
 		},
 		{
-			"url": "https://phoneblock.haumacher.de/phoneblock/api"
+			"url": "https://phoneblock.net/phoneblock/api"
 		}
 	],
 
