@@ -40,7 +40,7 @@ public class ChatGPTService implements ServletContextListener {
 
 	private static final int INITIAL_DELAY_SECONDS = 20;
 
-	private static final int MAX_QUESTION_LENGTH = 12000;
+	private static final int MAX_QUESTION_LENGTH = 8400;
 
 	private static final Logger LOG = LoggerFactory.getLogger(MetaSearchService.class);
 
@@ -195,7 +195,7 @@ public class ChatGPTService implements ServletContextListener {
 	private static StringBuilder createQuestion(String phone) {
 		StringBuilder question = new StringBuilder();
 		
-		question.append("Könntest Du eine Zusammenfassung von Kommentaren zur Telefonnummer " + phone + " machen? Die Zusammenfassung soll höchstens 40 Wörtern enthalten, auf Deutsch sein und sagen wer anruft. Die Kommentare lauten:\n");
+		question.append("Erstelle eine Zusammenfassung von Kommentaren zur Telefonnummer " + phone + ". Die Zusammenfassung soll höchstens 40 Wörter enthalten, auf Deutsch sein und sagen wer anruft. Die Kommentare lauten:\n");
 		return question;
 	}
 
