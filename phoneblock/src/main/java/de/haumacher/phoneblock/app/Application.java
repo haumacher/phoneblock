@@ -82,6 +82,7 @@ public class Application implements ServletContextListener {
 		FetchService fetcher;
 		MetaSearchService metaSearch;
 		MailServiceStarter mail;
+		ChatGPTService gpt;
 		_services = new ServletContextListener[] {
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
@@ -92,8 +93,8 @@ public class Application implements ServletContextListener {
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
-			new ManagementService(indexer, db),
-			new ChatGPTService(db, scheduler, indexer),
+			gpt = new ChatGPTService(db, scheduler, indexer),
+			new ManagementService(indexer, db, gpt),
 			new AddressBookCache()
 		};
 		

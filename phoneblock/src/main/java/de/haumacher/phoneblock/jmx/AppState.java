@@ -3,6 +3,7 @@
  */
 package de.haumacher.phoneblock.jmx;
 
+import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 
@@ -13,13 +14,15 @@ public class AppState implements AppStateMBean {
 
 	private IndexUpdateService _updater;
 	private DB _db;
+	private ChatGPTService _gpt;
 
 	/** 
 	 * Creates a {@link AppState}.
 	 */
-	public AppState(IndexUpdateService updater, DB db) {
+	public AppState(IndexUpdateService updater, DB db, ChatGPTService gpt) {
 		_updater = updater;
 		_db = db;
+		_gpt = gpt;
 	}
 
 	@Override
@@ -70,6 +73,12 @@ public class AppState implements AppStateMBean {
 	@Override
 	public void triggerServiceMails() {
 		_db.sendSupportMails();
+	}
+	
+	@Override
+	public void triggerSummaryCreation(String phone) {
+		_gpt.createSummary(phone);
+		
 	}
 	
 }

@@ -229,9 +229,6 @@ public interface SpamReports {
 	@Delete("DELETE FROM SUMMARY_REQUEST WHERE PHONE = #{phone}")
 	int dropSummaryRequest(String phone);
 	
-	@Select("SELECT c.COMMENT FROM COMMENTS c WHERE c.PHONE = #{phone} ORDER BY c.UP - c.DOWN DESC, c.CREATED DESC")
-	List<String> getCommentTextsOrdered(String phone);
-	
 	@Insert("INSERT INTO SUMMARY_REQUEST (PHONE) \n"
 			+ "SELECT PHONE FROM (\n"
 			+ "	SELECT c.PHONE PHONE, COUNT(1) cnt, MAX(c.CREATED) lastComment, MAX(s.CREATED) lastSummary FROM COMMENTS c\n"

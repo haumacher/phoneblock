@@ -6,11 +6,15 @@ package de.haumacher.phoneblock.chatgpt;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -26,9 +30,13 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
+import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserComment;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.model.Rating;
+import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -141,27 +149,35 @@ public class ChatGPTService implements ServletContextListener {
 	 * @throws Throwable If communication or anything else fails.
 	 */
 	private void doProcess() throws Throwable {
-		String phone;
-		List<String> comments;
+		String phone = nextSummaryRequest();
+		if (phone == null) {
+			LOG.info("No summary requests.");
+			exponentialBackoff();
+			return;
+		}
+		
+		createSummary(phone);
+		reschedule();
+	}
+
+	/** 
+	 * Creates a new summary for the given number.
+	 */
+	public void createSummary(String phone) {
+		boolean isWhiteListed;
+		List<DBUserComment> comments;
 		
 		DB db = _db.db();
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			
-			phone = reports.topSummaryRequest();
-			if (phone == null) {
-				LOG.info("No summary requests.");
-				exponentialBackoff();
-				return;
-			}
-			
 			reports.dropSummaryRequest(phone);
-			comments = reports.getCommentTextsOrdered(phone);
-			
 			session.commit();
+
+			isWhiteListed = reports.isWhiteListed(phone);
+			comments = new ArrayList<>(reports.getComments(phone));
 		}
 			
-		List<ChatCompletionChoice> answers = createSummary(phone, comments);
+		List<ChatCompletionChoice> answers = createSummary(phone, comments, isWhiteListed);
 		if (answers.isEmpty()) {
 			LOG.warn("No summary received for: " + phone);
 		} else {
@@ -169,18 +185,53 @@ public class ChatGPTService implements ServletContextListener {
 			
 			storeSummary(db, phone, summary);
 		}
-				
-		reschedule();
 	}
 
-	private List<ChatCompletionChoice> createSummary(String phone, List<String> comments) {
-		StringBuilder question = createQuestion(phone);
-		for (String comment : comments) {
-			comment = comment.trim() + "\n";
+	private String nextSummaryRequest() {
+		DB db = _db.db();
+		try (SqlSession session = db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			if (question.length() + comment.length() <= MAX_QUESTION_LENGTH) {
-				question.append(comment);
+			return reports.topSummaryRequest();
+		}
+	}
+
+	private List<ChatCompletionChoice> createSummary(String phone, List<DBUserComment> comments, boolean isWhiteListed) {
+		List<UserComment> positive = comments.stream().filter(c -> c.getRating() == Rating.A_LEGITIMATE).sorted(SearchServlet.COMMENT_ORDER).collect(Collectors.toList());
+		List<UserComment> negative;
+		if (isWhiteListed) {
+			negative = Collections.emptyList();
+		} else {
+			negative = comments.stream().filter(c -> c.getRating() != Rating.A_LEGITIMATE).sorted(SearchServlet.COMMENT_ORDER).collect(Collectors.toList());
+		}
+		
+		boolean pos = false;
+		Iterator<UserComment> it1 = positive.iterator();
+		Iterator<UserComment> it2 = negative.iterator();
+		
+		StringBuilder question = createQuestion(phone);
+		while (it1.hasNext() || it2.hasNext()) {
+			pos = !pos;
+			String comment;
+			if (pos) {
+				if (it1.hasNext()) {
+					comment = it1.next().getComment();
+				} else {
+					continue;
+				}
+			} else {
+				if (it2.hasNext()) {
+					comment = it2.next().getComment();
+				} else {
+					continue;
+				}
 			}
+			
+			if (question.length() + comment.length() > MAX_QUESTION_LENGTH) {
+				break;
+			}
+			
+			question.append(comment);
 		}
 		
 		ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()

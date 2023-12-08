@@ -61,4 +61,9 @@ public interface AppStateMBean {
 	 */
 	void triggerServiceMails();
 	
+	/**
+	 * Requests creating a new summary for the given phone number.
+	 */
+	void triggerSummaryCreation(String phone);
+	
 }

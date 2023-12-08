@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -83,7 +84,7 @@ public class SearchServlet extends HttpServlet {
 			, "YandexRenderResourcesBot"
 			));
 
-	private static final Comparator<? super UserComment> COMMENT_ORDER = new Comparator<>() {
+	public static final Comparator<? super UserComment> COMMENT_ORDER = new Comparator<>() {
 		@Override
 		public int compare(UserComment c1, UserComment c2) {
 			int v = votes(c2) - votes(c1);
@@ -150,7 +151,6 @@ public class SearchServlet extends HttpServlet {
 
 		// Note: Search for comments first, since new comments may change the state of the number.
 		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
-		comments.sort(COMMENT_ORDER);
 		
 		SpamReport info;
 		List<? extends SearchInfo> searches;
@@ -187,6 +187,25 @@ public class SearchServlet extends HttpServlet {
 				session.commit();
 			}
 		}
+		
+		// Ensure that equal number of positive and negative comments are shown (white-listed numbers are an exception).
+		List<UserComment> positive = comments.stream().filter(c -> c.getRating() == Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
+		List<UserComment> negative = comments.stream().filter(c -> c.getRating() != Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
+		
+		int positiveCnt = positive.size();
+		int negativeCnt = negative.size();
+		if (info.isWhiteListed()) {
+			positiveCnt = Math.min(10, positiveCnt);
+			negativeCnt = 0;
+		} else {
+			if (positiveCnt > 5) {
+				positiveCnt = Math.min(10, Math.max(5, positiveCnt - negativeCnt));
+			}
+			negativeCnt = Math.min(10 - positiveCnt, negativeCnt);
+		}
+		comments = new ArrayList<>(positive.subList(0, positiveCnt));
+		comments.addAll(negative.subList(0, negativeCnt));
+		comments.sort(COMMENT_ORDER);
 		
 		Rating topRating = Rating.B_MISSED;
 		int maxVotes = 0;
