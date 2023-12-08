@@ -33,6 +33,7 @@ import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.meta.MetaSearchService;
+import de.haumacher.phoneblock.util.JspUtil;
 
 /**
  * Servlet displaying information about a telephone number in the DB.
@@ -154,7 +155,7 @@ public class SearchServlet extends HttpServlet {
 		SpamReport info;
 		List<? extends SearchInfo> searches;
 		List<? extends RatingInfo> ratingInfos;
-		String simpleSummary;
+		String aiSummary;
 		List<String> relatedNumbers;
 		
 		String prev, next;
@@ -175,7 +176,7 @@ public class SearchServlet extends HttpServlet {
 			info = db.getPhoneInfo(reports, phone);
 			searches = db.getSearches(reports, phoneId);
 			ratingInfos = reports.getRatings(phoneId);
-			simpleSummary = reports.getSummary(phoneId);
+			aiSummary = reports.getSummary(phoneId);
 			
 			relatedNumbers = reports.getRelatedNumbers(phoneId);
 			
@@ -215,17 +216,13 @@ public class SearchServlet extends HttpServlet {
 		
 		String defaultSummary = defaultSummary(req, info);
 		
-		String pageSummary;
-		if (info.isWhiteListed()) {
-			pageSummary = simpleSummary;
+		String summary;
+		String description;
+		if (isEmpty(aiSummary)) {
+			summary = null;
+			description = defaultSimpleSummary(info);
 		} else {
-			if (simpleSummary == null || simpleSummary.isBlank()) {
-				pageSummary = defaultSummary;
-				
-				simpleSummary = defaultSimpleSummary(info);
-			} else {
-				pageSummary = simpleSummary + " " + defaultSummary;
-			}
+			description = summary = JspUtil.quote(aiSummary);
 		}
 		
 		req.setAttribute("comments", comments);
@@ -237,13 +234,14 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("number", number);
 		req.setAttribute("prev", prev);
 		req.setAttribute("next", next);
-		req.setAttribute("summary", pageSummary);
+		req.setAttribute("summary", summary);
+		req.setAttribute("defaultSummary", defaultSummary);
 		req.setAttribute("rating", topRating);
 		req.setAttribute("ratings", ratings);
 		req.setAttribute("searches", searches);
 		req.setAttribute("relatedNumbers", relatedNumbers);
 		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
-		req.setAttribute("description", simpleSummary + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
+		req.setAttribute("description", description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
@@ -275,8 +273,15 @@ public class SearchServlet extends HttpServlet {
 		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
 	}
 
+	private static boolean isEmpty(String aiSummary) {
+		return aiSummary == null || aiSummary.isBlank();
+	}
+
 	private String defaultSummary(HttpServletRequest req, SpamReport info) {
 		int votes = info.getVotes();
+		if (info.isWhiteListed()) {
+			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. ";
+		}
 		if (votes == 0) {
 			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
 					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 

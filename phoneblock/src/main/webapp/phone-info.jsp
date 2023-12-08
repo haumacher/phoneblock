@@ -39,6 +39,7 @@
 	
 	List<UserComment> comments = (List<UserComment>) request.getAttribute("comments");
 	String summary = (String) request.getAttribute("summary");
+	String defaultSummary = (String) request.getAttribute("defaultSummary");
 	
 	String prev = (String) request.getAttribute("prev");
 	String next = (String) request.getAttribute("next");
@@ -85,17 +86,19 @@
 	<h1>Bewertung von ☎ <%= info.getPhone()%></h1>
 
 <%
+	String categoryClass;
 	if (info.getVotes() == 0) {
+		categoryClass = "is-success";
 %>
 	<p>
 <%
 		if (info.isWhiteListed()) {
 %>
-			<span class="tag is-info is-success"><i class="fa-solid fa-star"></i>&nbsp;Auf der weißen Liste</span>
+			<span class="tag is-info <%= categoryClass%>"><i class="fa-solid fa-star"></i>&nbsp;Auf der weißen Liste</span>
 <%
 		} else {
 %>
-			<span class="tag is-info is-success">Keine Beschwerden</span>
+			<span class="tag is-info <%= categoryClass%>">Keine Beschwerden</span>
 <%
 		}
 %>
@@ -103,18 +106,20 @@
 <%
 	} else {
 		if (info.getVotes() < DB.MIN_VOTES || info.isArchived()) {
+			categoryClass = "is-warning";
 %>
 	<p>
-		<span class="tag is-info is-warning">Beschwerde liegt vor</span>
+		<span class="tag is-info <%= categoryClass%>">Beschwerde liegt vor</span>
 <% if (rating != Rating.B_MISSED) { %>
 		<span class="tag is-info <%= Ratings.getCssClass(rating)%>"><%= Ratings.getLabel(rating)%></span>
 <% } %>		
 	</p>
 <%
 		} else {
+			categoryClass = "is-danger";
 %>			
 	<p>
-		<span class="tag is-info is-danger">Blockiert</span>
+		<span class="tag is-info <%= categoryClass%>">Blockiert</span>
 <% if (rating != Rating.B_MISSED) { %>
 		<span class="tag is-info <%= Ratings.getCssClass(rating)%>"><%= Ratings.getLabel(rating)%></span>
 <% } %>		
@@ -124,16 +129,31 @@
 	}
 %>
 
+<article class="message <%= categoryClass%>">
+  <div class="message-header">
+    <p>Information zum Anrufer</p>
+  </div>
+  <div class="message-body">
+
+<% if (summary != null) { %>
+	<%-- Note: No additional quoting, is already quoted. --%>
 	<p><%= summary %></p>
+<% } %>
+
+	<%-- Note: No additional quoting, is already quoted. --%>
+	<p><%= defaultSummary %></p>
+  
+  </div>
+</article>
 	
 <% if (relatedNumbers.size() > 1) { %>
 
 	<p>Die Nummer ☎ <%= info.getPhone()%> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
-	<ul>
+	<blockquote style="display: flex; flex-wrap: wrap; column-gap: 64px; row-gap: 0px;">
 <% for (String related : relatedNumbers) { %>
-		<li><a href="<%= request.getContextPath()%>/nums/<%= related%>" onclick="return showNumber('<%= related%>');">☎ <%= JspUtil.quote(related) %></a></li>
+		<span><a href="<%= request.getContextPath()%>/nums/<%= related%>" onclick="return showNumber('<%= related%>');">☎ <%= related %></a></span>
 <% } %>	
-	</ul>
+	</blockquote>
 
 <% } %>	
 	
