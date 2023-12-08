@@ -149,8 +149,10 @@ public class SearchServlet extends HttpServlet {
 		}
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 
+		boolean bot = isBot(req);
+
 		// Note: Search for comments first, since new comments may change the state of the number.
-		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId);
+		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId, bot);
 		
 		SpamReport info;
 		List<? extends SearchInfo> searches;
@@ -167,7 +169,7 @@ public class SearchServlet extends HttpServlet {
 			
 			long now = System.currentTimeMillis();
 			
-			if (!isBot(req) && req.getParameter("link") == null) {
+			if (!bot && req.getParameter("link") == null) {
 				db.addSearchHit(reports, phoneId, now);
 				commit = true;
 			}

@@ -134,11 +134,14 @@ public class MetaSearchService implements ServletContextListener {
 		}
 	}
 
-	/** 
+	/**
 	 * Look up user comments for the given phone number.
+	 * 
+	 * @param bot
+	 *        Whether a bot requested the info.
 	 */
-	public List<UserComment> fetchComments(String phoneId) {
-		return createSearch(phoneId).search().getComments();
+	public List<UserComment> fetchComments(String phoneId, boolean bot) {
+		return createSearch(phoneId, bot).search().getComments();
 	}
 
 	/**
@@ -204,7 +207,17 @@ public class MetaSearchService implements ServletContextListener {
 	 * Creates a search for the given phone number.
 	 */
 	private SearchOperation createSearch(String phoneId) {
-		return new SearchOperation(_scheduler, _indexer, _plugins, phoneId);
+		return createSearch(phoneId, false);
+	}
+	
+	/**
+	 * Creates a search for the given phone number.
+	 * 
+	 * @param bot
+	 *        Whether the search is done for a bot.
+	 */
+	private SearchOperation createSearch(String phoneId, boolean bot) {
+		return new SearchOperation(_scheduler, _indexer, _plugins, phoneId, bot);
 	}
 
 	/** 

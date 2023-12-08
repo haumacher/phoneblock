@@ -51,15 +51,17 @@ public class SearchOperation {
 
 	private boolean _searchPerformed;
 
+	private boolean _bot;
+
 	/** 
 	 * Creates a {@link SearchOperation}.
-	 * @param indexer 
 	 */
-	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, String phoneId) {
+	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, String phoneId, boolean bot) {
 		_scheduler = scheduler;
 		_indexer = indexer;
 		_plugins = plugins;
 		_phoneId = phoneId;
+		_bot = bot;
 	}
 
 	/** 
@@ -71,45 +73,48 @@ public class SearchOperation {
 			SpamReports mapper = session.getMapper(SpamReports.class);
 
 			_comments = new ArrayList<>(mapper.getComments(_phoneId));
-
-			_searchPerformed = shouldSearch(mapper, _phoneId);
 			
-			boolean indexUpdated = false;
-			if (_searchPerformed) {
-				LOG.info("Performing meta search for: " + _phoneId);
-
-				Map<String, UserComment> indexedComments = index();
-
-				int commentCnt = 0;
-				List<UserComment> newComments = doSearch();
-				for (UserComment comment : newComments) {
-					if (!indexedComments.containsKey(comment.getComment())) {
-						comment.setId(UUID.randomUUID().toString());
-						_comments.add(comment);
-						
-						db.addRating(mapper, comment);
-						commentCnt++;
-						indexUpdated = true;
+			// Do not perform a meta-search for a number without comments for a request from a bot.
+			if (!_bot || !_comments.isEmpty()) {
+				_searchPerformed = shouldSearch(mapper, _phoneId);
+				
+				boolean indexUpdated = false;
+				if (_searchPerformed) {
+					LOG.info("Performing meta search for: " + _phoneId);
+	
+					Map<String, UserComment> indexedComments = index();
+	
+					int commentCnt = 0;
+					List<UserComment> newComments = doSearch();
+					for (UserComment comment : newComments) {
+						if (!indexedComments.containsKey(comment.getComment())) {
+							comment.setId(UUID.randomUUID().toString());
+							_comments.add(comment);
+							
+							db.addRating(mapper, comment);
+							commentCnt++;
+							indexUpdated = true;
+						}
 					}
+					LOG.info("Found " + commentCnt + " new comments: " + _phoneId);
+				} else {
+					LOG.info("Skipping search, still up-to-date: " + _phoneId);
 				}
-				LOG.info("Found " + commentCnt + " new comments: " + _phoneId);
-			} else {
-				LOG.info("Skipping search, still up-to-date: " + _phoneId);
-			}
-			
-			boolean commit = _searchPerformed;
-			
-			if (_votes != 0) {
-				indexUpdated |= db.processVotes(mapper, _phoneId, _votes, _lastVote);
-				commit = true;
-			}
-			
-			if (commit) {
-				session.commit();
-			}
-			
-			if (indexUpdated) {
-				_indexer.publishUpdate(_phoneId);
+				
+				boolean commit = _searchPerformed;
+				
+				if (_votes != 0) {
+					indexUpdated |= db.processVotes(mapper, _phoneId, _votes, _lastVote);
+					commit = true;
+				}
+				
+				if (commit) {
+					session.commit();
+				}
+				
+				if (indexUpdated) {
+					_indexer.publishUpdate(_phoneId);
+				}
 			}
 		}
 		return this;
