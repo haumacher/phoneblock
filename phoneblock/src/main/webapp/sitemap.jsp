@@ -78,8 +78,10 @@
    </url>
 
 <%
+	String count = request.getParameter("count");
+	int pages = count == null ? 2000 : Integer.parseInt(count);
 	long now = System.currentTimeMillis();
-	List<SpamReport> reports = db.getAll(2000);
+	List<SpamReport> reports = db.getAll(pages);
 	long oneWeekBefore = now - 1000L*60*60*24*7;
 	for (SpamReport report : reports) {
 %>
