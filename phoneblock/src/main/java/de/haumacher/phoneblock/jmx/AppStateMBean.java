@@ -62,7 +62,11 @@ public interface AppStateMBean {
 	void triggerServiceMails();
 	
 	/**
-	 * Requests creating a new summary for the given phone number.
+	 * Requests creating a new summary for the given phone number(s).
+	 * 
+	 * <p>
+	 * To request multiple summaries, separate numbers with comma.
+	 * </p>
 	 */
 	void triggerSummaryCreation(String phone);
 	

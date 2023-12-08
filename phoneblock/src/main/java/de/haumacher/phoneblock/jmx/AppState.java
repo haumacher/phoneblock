@@ -77,8 +77,9 @@ public class AppState implements AppStateMBean {
 	
 	@Override
 	public void triggerSummaryCreation(String phone) {
-		_gpt.createSummary(phone);
-		
+		for (String number : phone.split(",")) {
+			_gpt.createSummary(number.trim());
+		}
 	}
 	
 }
