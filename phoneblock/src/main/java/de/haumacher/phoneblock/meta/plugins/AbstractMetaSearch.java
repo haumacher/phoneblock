@@ -57,7 +57,8 @@ public abstract class AbstractMetaSearch {
 		
 		if (notBefore > 0) {
 			if (System.currentTimeMillis() < notBefore) {
-				LOG.info("Skipping search for " + phone + " from " + getService() + " due to overload until " + new Date(_notBefore) + ".");
+				LOG.info("Skipping search for " + phone + " from " + getService() + 
+						" due to overload until " + new Date(_notBefore) + ".");
 				return Collections.emptyList();
 			}
 		}
@@ -73,7 +74,8 @@ public abstract class AbstractMetaSearch {
 			}
 			_notBefore = System.currentTimeMillis() + _nextPause;
 			
-			LOG.warn("Fetch from " + getService() + " was blocked, pausing for " + (_nextPause / 1000 / 60) + " minutes until " + new Date(_notBefore) + ".");
+			LOG.warn("Fetch from " + getService() + " was blocked, pausing for " + (_nextPause / 1000 / 60) + 
+					" minutes until " + new Date(_notBefore) + ": " + ex.getCause().getMessage());
 			
 			return Collections.emptyList();
 		}

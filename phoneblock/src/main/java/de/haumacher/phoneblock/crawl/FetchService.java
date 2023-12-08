@@ -75,12 +75,15 @@ public class FetchService implements ServletContextListener {
 		try {
 			connection.setRequestProperty("User-Agent", chooseAgent());
 			
-			int responseCode = connection.getResponseCode();
-			if (responseCode == 403 || responseCode == 429) {
-				throw new FetchBlockedException();
-			}
 			try (InputStream in = url.openStream()) {
 				document = Jsoup.parse(in, connection.getContentEncoding(), url.toExternalForm());
+			} catch (IOException ex) {
+				int responseCode = connection.getResponseCode();
+				if (responseCode == 403 || responseCode == 429) {
+					throw new FetchBlockedException(ex);
+				} else {
+					throw ex;
+				}
 			}
 		} finally {
 			connection.disconnect();
