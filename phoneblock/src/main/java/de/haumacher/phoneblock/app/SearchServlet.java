@@ -299,7 +299,7 @@ public class SearchServlet extends HttpServlet {
 	private String defaultSummary(HttpServletRequest req, SpamReport info) {
 		int votes = info.getVotes();
 		if (info.isWhiteListed()) {
-			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. ";
+			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.";
 		}
 		if (votes == 0) {
 			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
