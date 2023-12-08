@@ -92,7 +92,7 @@ public interface Users {
 	/**
 	 * Updates the user's last access timestamp.
 	 */
-	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent}, NOTIFIED=false, WELCOME=true where LOGIN=#{login}")
+	@Update("update USERS set LASTACCESS=#{lastAccess}, USERAGENT=#{userAgent}, NOTIFIED=false where LOGIN=#{login}")
 	void setLastAccess(String login, long lastAccess, String userAgent);
 	
 	@Select("select TIMESTAMP, LASTID from CALLREPORT where USERID=#{userId}")

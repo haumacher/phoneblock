@@ -767,6 +767,9 @@ public class DB {
 				MailService mailService = _mailService;
 				if (mailService != null) {
 					DBUserSettings userSettings = users.getSettings(login);
+					users.markWelcome(userSettings.getId());
+					session.commit();
+					
 					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(userSettings));
 				} else {
 					LOG.info("Cannot send welcome mail to '" + login + "', since there is no mail service.");
