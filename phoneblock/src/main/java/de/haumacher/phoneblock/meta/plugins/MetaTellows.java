@@ -20,6 +20,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.crawl.FetchBlockedException;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.UserComment;
@@ -34,7 +35,7 @@ public class MetaTellows extends AbstractMetaSearch {
 	private static final String SOURCE = "tellows.de";
 
 	@Override
-	public List<UserComment> fetchComments(String phone) {
+	public List<UserComment> doFetchComments(String phone) throws FetchBlockedException {
 		Document document;
 		try {
 			document = load("https://www.tellows.de/num/" + phone);
@@ -109,13 +110,18 @@ public class MetaTellows extends AbstractMetaSearch {
 					.setRating(negative ? Rating.B_MISSED : Rating.A_LEGITIMATE)
 					.setComment(text)
 					.setCreated(date.getTime())
-					.setService(SOURCE));
+					.setService(getService()));
 			}
 		}
 
 		return result;
 	}
 	
+	@Override
+	protected String getService() {
+		return SOURCE;
+	}
+
 	/**
 	 * Main for debugging only.
 	 */

@@ -69,12 +69,16 @@ public class FetchService implements ServletContextListener {
 	/**
 	 * Loads and parses the given URL.
 	 */
-	public Document fetch(URL url) throws IOException {
+	public Document fetch(URL url) throws IOException, FetchBlockedException {
 		Document document ;
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		try {
 			connection.setRequestProperty("User-Agent", chooseAgent());
 			
+			int responseCode = connection.getResponseCode();
+			if (responseCode == 403 || responseCode == 429) {
+				throw new FetchBlockedException();
+			}
 			try (InputStream in = url.openStream()) {
 				document = Jsoup.parse(in, connection.getContentEncoding(), url.toExternalForm());
 			}

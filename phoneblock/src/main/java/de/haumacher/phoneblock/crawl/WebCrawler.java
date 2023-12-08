@@ -46,7 +46,7 @@ public class WebCrawler extends AbstractWebCrawler {
 	}
 
 	@Override
-	protected long tryProcess() throws IOException, ParseException {
+	protected long tryProcess() throws IOException, ParseException, FetchBlockedException {
 		long now = System.currentTimeMillis();
 		
 		Document document = fetch();

@@ -83,7 +83,7 @@ public abstract class AbstractWebCrawler implements Runnable {
 	/** 
 	 * Fetches contents from the configured URL.
 	 */
-	protected Document fetch() throws IOException {
+	protected Document fetch() throws IOException, FetchBlockedException {
 		return _fetcher.fetch(_url);
 	}
 
