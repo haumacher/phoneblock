@@ -176,9 +176,8 @@ public class MailService {
 
 	public void sendMail(String receiver, Message msg) throws AddressException, MessagingException {
 		InternetAddress address = new InternetAddress(receiver);
-		msg.setRecipient(RecipientType.BCC, _from);
 		msg.setRecipient(RecipientType.TO, address);
-		Address[] addresses = {address, _from};
+		Address[] addresses = {address};
 		
 		try {
 			getTransport().sendMessage(msg, addresses);
