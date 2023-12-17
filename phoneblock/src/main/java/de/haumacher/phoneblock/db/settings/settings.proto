@@ -8,6 +8,9 @@ message UserSettings {
 	/** The internal user ID. */
 	long id;
 	
+	/** The user's login name */
+	string login;
+	
 	/** The user's real name. */
 	string displayName;
 	
@@ -22,4 +25,7 @@ message UserSettings {
 	
 	/** Whether multiple adjacent numbers should be joined to a wildcard number. */
 	bool wildcards;
+	
+	/** Timestamp when the user requested the blocklist last time */
+	long lastAccess;
 }

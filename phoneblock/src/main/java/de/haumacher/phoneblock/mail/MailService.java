@@ -7,12 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Arrays;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
@@ -123,13 +124,16 @@ public class MailService {
 		if (atIndex > 0) {
 			name = name.substring(0, atIndex);
 		}
-		name = Arrays.stream(name.replace('.', ' ').replace('_', ' ').split("\\s+"))
-			.filter(p -> p.length() > 0)
-			.map(p -> Character.toUpperCase(p.charAt(0)) + p.substring(1))
-			.collect(Collectors.joining(" "));
+		name = toUpperCaseStart(name);
+		
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.GERMAN);
+		long lastAccessTime = userSettings.getLastAccess();
+		String lastAccess = lastAccessTime == 0 ? "Bisher kein Blocklist-Abruf." : dateFormat.format(new Date(lastAccessTime));
 		
 		Map<String, String> variables = new HashMap<>();
 		variables.put("{name}", name);
+		variables.put("{userName}", userSettings.getLogin());
+		variables.put("{lastAccess}", lastAccess);
 		variables.put("{image}", APP_LOGO_SVG);
 		variables.put("{home}", HOME_PAGE);
 		variables.put("{facebook}", FACE_BOOK);
@@ -269,6 +273,39 @@ public class MailService {
 			_session = startSession();
 		}
 		return _session;
+	}
+
+	private static String toUpperCaseStart(String name) {
+		StringBuilder result = new StringBuilder();
+		boolean first = true;
+		for (String part : name.replace('.', ' ').replace('_', ' ').split("\\s+")) {
+			if (part.length() == 0) {
+				continue;
+			}
+			
+			if (first) {
+				first = false;
+			} else {
+				result.append(' ');
+			}
+			
+			boolean firstPart = true;
+			for (String subPart : part.split("-")) {
+				if (subPart.length() == 0) {
+					continue;
+				}
+
+				if (firstPart) {
+					firstPart = false;
+				} else {
+					result.append('-');
+				}
+				result.append(Character.toUpperCase(subPart.charAt(0)));
+				result.append(subPart.substring(1));
+			}
+		}
+
+		return result.toString();
 	}
 
 }

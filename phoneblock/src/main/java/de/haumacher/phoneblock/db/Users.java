@@ -52,10 +52,10 @@ public interface Users {
 	@Select("select LOGIN from USERS where CLIENTNAME=#{clientName} and EXTID=#{extId}")
 	String getLogin(String clientName, String extId);
 
-	@Select("select ID, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS from USERS where LOGIN=#{login}")
+	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
 	
-	@Select("select u.ID, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS from USERS u "
+	@Select("select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS from USERS u "
 			+ "where u.LASTACCESS < #{lastAccessBefore} "
 			+ "and (u.LASTACCESS > #{accessAfter} "
 			+ "or (u.REGISTERED > #{accessAfter} "
@@ -65,7 +65,7 @@ public interface Users {
 			+ "order by u.REGISTERED asc")
 	List<DBUserSettings> getNewInactiveUsers(long lastAccessBefore, long accessAfter, long registeredBefore);
 	
-	@Select("select u.ID, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS from USERS u "
+	@Select("select u.ID, u.LOGIN u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS from USERS u "
 			+ "where not u.WELCOME "
 			+ "and u.LASTACCESS > #{accessAfter} "
 			+ "and u.REGISTERED > #{registeredAfter} "

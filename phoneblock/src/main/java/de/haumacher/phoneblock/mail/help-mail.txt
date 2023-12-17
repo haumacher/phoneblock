@@ -4,6 +4,9 @@ Du bist bei PhoneBlock ({home}) angemeldet. Allerdings scheint der Abruf der Blo
 von Deiner Fritz!Box nicht richtig zu funktionieren. Kann ich Dir bei der Einrichtung helfen, oder hast Du beschlossen 
 den Dienst nicht weiter in Anspruch zu nehmen? Dein Feedback ist willkommen!
 
+Dein PhoneBlock Nutzer-Name: {userName}
+Der letzte Abruf der Block-List war am: {lastAccess}
+
 Ich erkläre die Installation auch in diesem YouTube-Video {help} - vielleicht 
 hilft Dir das, die Einrichtung erfolgreich abzuschließen. Wichtig ist, dass Du in Deiner Fritz!Box nicht Deine 
 E-Mail-Adresse als Benutzernamen verwendest, sondern den PhoneBlock-Benutzernamen, der Dir nach der Anmeldung angezeigt 

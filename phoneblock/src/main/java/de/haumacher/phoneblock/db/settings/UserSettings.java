@@ -18,6 +18,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** @see #getId() */
 	public static final String ID__PROP = "id";
 
+	/** @see #getLogin() */
+	public static final String LOGIN__PROP = "login";
+
 	/** @see #getDisplayName() */
 	public static final String DISPLAY_NAME__PROP = "displayName";
 
@@ -33,25 +36,36 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** @see #isWildcards() */
 	public static final String WILDCARDS__PROP = "wildcards";
 
+	/** @see #getLastAccess() */
+	public static final String LAST_ACCESS__PROP = "lastAccess";
+
 	/** Identifier for the property {@link #getId()} in binary format. */
 	static final int ID__ID = 1;
 
+	/** Identifier for the property {@link #getLogin()} in binary format. */
+	static final int LOGIN__ID = 2;
+
 	/** Identifier for the property {@link #getDisplayName()} in binary format. */
-	static final int DISPLAY_NAME__ID = 2;
+	static final int DISPLAY_NAME__ID = 3;
 
 	/** Identifier for the property {@link #getEmail()} in binary format. */
-	static final int EMAIL__ID = 3;
+	static final int EMAIL__ID = 4;
 
 	/** Identifier for the property {@link #getMinVotes()} in binary format. */
-	static final int MIN_VOTES__ID = 4;
+	static final int MIN_VOTES__ID = 5;
 
 	/** Identifier for the property {@link #getMaxLength()} in binary format. */
-	static final int MAX_LENGTH__ID = 5;
+	static final int MAX_LENGTH__ID = 6;
 
 	/** Identifier for the property {@link #isWildcards()} in binary format. */
-	static final int WILDCARDS__ID = 6;
+	static final int WILDCARDS__ID = 7;
+
+	/** Identifier for the property {@link #getLastAccess()} in binary format. */
+	static final int LAST_ACCESS__ID = 8;
 
 	private long _id = 0L;
+
+	private String _login = "";
 
 	private String _displayName = "";
 
@@ -62,6 +76,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	private int _maxLength = 0;
 
 	private boolean _wildcards = false;
+
+	private long _lastAccess = 0L;
 
 	/**
 	 * Creates a {@link UserSettings} instance.
@@ -91,6 +107,27 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetId(long value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+	}
+
+	/**
+	 * The user's login name
+	 */
+	public final String getLogin() {
+		return _login;
+	}
+
+	/**
+	 * @see #getLogin()
+	 */
+	public de.haumacher.phoneblock.db.settings.UserSettings setLogin(String value) {
+		internalSetLogin(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLogin()} without chain call utility. */
+	protected final void internalSetLogin(String value) {
+		_listener.beforeSet(this, LOGIN__PROP, value);
+		_login = value;
 	}
 
 	/**
@@ -198,6 +235,27 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		_wildcards = value;
 	}
 
+	/**
+	 * Timestamp when the user requested the blocklist last time
+	 */
+	public final long getLastAccess() {
+		return _lastAccess;
+	}
+
+	/**
+	 * @see #getLastAccess()
+	 */
+	public de.haumacher.phoneblock.db.settings.UserSettings setLastAccess(long value) {
+		internalSetLastAccess(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLastAccess()} without chain call utility. */
+	protected final void internalSetLastAccess(long value) {
+		_listener.beforeSet(this, LAST_ACCESS__PROP, value);
+		_lastAccess = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -228,11 +286,13 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			ID__PROP, 
+			LOGIN__PROP, 
 			DISPLAY_NAME__PROP, 
 			EMAIL__PROP, 
 			MIN_VOTES__PROP, 
 			MAX_LENGTH__PROP, 
-			WILDCARDS__PROP));
+			WILDCARDS__PROP, 
+			LAST_ACCESS__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -243,11 +303,13 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public Object get(String field) {
 		switch (field) {
 			case ID__PROP: return getId();
+			case LOGIN__PROP: return getLogin();
 			case DISPLAY_NAME__PROP: return getDisplayName();
 			case EMAIL__PROP: return getEmail();
 			case MIN_VOTES__PROP: return getMinVotes();
 			case MAX_LENGTH__PROP: return getMaxLength();
 			case WILDCARDS__PROP: return isWildcards();
+			case LAST_ACCESS__PROP: return getLastAccess();
 			default: return null;
 		}
 	}
@@ -256,11 +318,13 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public void set(String field, Object value) {
 		switch (field) {
 			case ID__PROP: internalSetId((long) value); break;
+			case LOGIN__PROP: internalSetLogin((String) value); break;
 			case DISPLAY_NAME__PROP: internalSetDisplayName((String) value); break;
 			case EMAIL__PROP: internalSetEmail((String) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
 			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
+			case LAST_ACCESS__PROP: internalSetLastAccess((long) value); break;
 		}
 	}
 
@@ -281,6 +345,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		super.writeFields(out);
 		out.name(ID__PROP);
 		out.value(getId());
+		out.name(LOGIN__PROP);
+		out.value(getLogin());
 		out.name(DISPLAY_NAME__PROP);
 		out.value(getDisplayName());
 		out.name(EMAIL__PROP);
@@ -291,17 +357,21 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getMaxLength());
 		out.name(WILDCARDS__PROP);
 		out.value(isWildcards());
+		out.name(LAST_ACCESS__PROP);
+		out.value(getLastAccess());
 	}
 
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case ID__PROP: setId(in.nextLong()); break;
+			case LOGIN__PROP: setLogin(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case DISPLAY_NAME__PROP: setDisplayName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__PROP: setMaxLength(in.nextInt()); break;
 			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
+			case LAST_ACCESS__PROP: setLastAccess(in.nextLong()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -323,6 +393,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
 		out.name(ID__ID);
 		out.value(getId());
+		out.name(LOGIN__ID);
+		out.value(getLogin());
 		out.name(DISPLAY_NAME__ID);
 		out.value(getDisplayName());
 		out.name(EMAIL__ID);
@@ -333,6 +405,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getMaxLength());
 		out.name(WILDCARDS__ID);
 		out.value(isWildcards());
+		out.name(LAST_ACCESS__ID);
+		out.value(getLastAccess());
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -362,11 +436,13 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
 		switch (field) {
 			case ID__ID: setId(in.nextLong()); break;
+			case LOGIN__ID: setLogin(in.nextString()); break;
 			case DISPLAY_NAME__ID: setDisplayName(in.nextString()); break;
 			case EMAIL__ID: setEmail(in.nextString()); break;
 			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__ID: setMaxLength(in.nextInt()); break;
 			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
+			case LAST_ACCESS__ID: setLastAccess(in.nextLong()); break;
 			default: in.skipValue(); 
 		}
 	}
