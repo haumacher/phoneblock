@@ -3,7 +3,7 @@
     "tr-064-async": "^1.0.0",
     "btoa": "^1.2.1",
     "node-fetch": "^3.2.10",
-    "xml2js": "^0.4.23",
+    "xml2js": "^0.5.0",
     
     "assert-browserify": "^2.0.0",
     "crypto-browserify": "^3.12.0",
