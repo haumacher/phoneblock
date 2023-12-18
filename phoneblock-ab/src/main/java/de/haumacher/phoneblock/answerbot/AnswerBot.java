@@ -177,7 +177,7 @@ public class AnswerBot extends MultipleUAS {
 		
 		LOG.info("Incomming call from: " + from);
 
-		if (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix())) {
+		if (from.startsWith("*") || (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix()))) {
 			// A local test call, accept.
 			return spamHandler();
 		} else {
