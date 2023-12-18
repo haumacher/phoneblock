@@ -70,4 +70,8 @@ public interface AppStateMBean {
 	 */
 	void triggerSummaryCreation(String phone);
 	
+	/**
+	 * Enables or disables a registered answer bot.
+	 */
+	void triggerAnswerBotRegistration(String userName, boolean enabled);
 }

@@ -44,6 +44,7 @@ import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
 import de.haumacher.phoneblock.answerbot.CustomerOptions;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
@@ -153,19 +154,12 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		List<AnswerBotSip> failed = new ArrayList<>();
 		for (AnswerBotSip bot : bots) {
-			String host = bot.getHost();
+			String host = getHost(bot);
 			if (host == null || host.isEmpty()) {
-				host = bot.getIpv6();
-				if (host == null || host.isEmpty()) {
-					host = bot.getIpv4();
-					if (host == null || host.isEmpty()) {
-						failed.add(bot);
-					}
-				}
+				failed.add(bot);
+			} else {
+				register(bot);
 			}
-
-			CustomerConfig regConfig = toCustomerConfig(bot);
-			register(bot.getUserId(), regConfig);
 		}
 
 		if (!failed.isEmpty()) {
@@ -174,12 +168,23 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			
 				for (AnswerBotSip bot : failed) {
 					LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
-					users.disableAnswerBot(bot.getUserId());
+					users.enableAnswerBot(bot.getUserId(), false, _lastRegister);
 				}
 
 				session.commit();
 			}
 		}
+	}
+
+	private String getHost(AnswerBotSip bot) {
+		String host = bot.getHost();
+		if (host == null || host.isEmpty()) {
+			host = bot.getIpv6();
+			if (host == null || host.isEmpty()) {
+				host = bot.getIpv4();
+			}
+		}
+		return host;
 	}
 	
 	private void loadConfig(Object...beans) {
@@ -268,6 +273,34 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	public static SipService getInstance() {
 		return _instance;
 	}
+	
+	public void enableAnwserBot(String userName, boolean enable) {
+		try (SqlSession tx = _dbService.db().openSession()) {
+			Users users = tx.getMapper(Users.class);
+			
+			DBAnswerBotSip bot = users.getAnswerBot(userName);
+			if (bot == null) {
+				LOG.warn("User with ID '" + userName + "' not found.");
+				return;
+			}
+			
+			users.enableAnswerBot(bot.getUserId(), enable, System.currentTimeMillis());
+			tx.commit();
+			
+			if (enable) {
+				register(bot);
+			} else {
+				Registration registration = _clients.remove(bot.getUserName());
+				if (registration == null) {
+					LOG.info("No active registration for user '" + userName + "'.");
+					return;
+				}
+
+				LOG.info("Stopping answer bot '" + userName + "'.");
+				registration.halt();
+			}
+		}
+	}
 
 	/** 
 	 * Dynamically registers a new answer bot.
@@ -282,20 +315,24 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		regConfig.setPasswd(bot.getPasswd());
 		regConfig.setRealm(bot.getRealm());
 		regConfig.setRegistrar(new SipURI(bot.getRegistrar()));
-		regConfig.setRoute(new SipURI(bot.getHost()).addLr());
+		regConfig.setRoute(new SipURI(getHost(bot)).addLr());
 		return regConfig;
 	}
 
 	private void register(long userId, CustomerOptions customerConfig) {
-		Registration client = new Registration(_sipProvider, userId, customerConfig, this);
-		Registration clash = _clients.put(customerConfig.getUser(), client);
-		
-		if (clash != null) {
-			clash.halt();
+		try {
+			Registration client = new Registration(_sipProvider, userId, customerConfig, this);
+			Registration clash = _clients.put(customerConfig.getUser(), client);
+			
+			if (clash != null) {
+				clash.halt();
+			}
+			
+			LOG.info("Started registration for " + customerConfig.getUser() + ".");
+			client.loopRegister(customerConfig);
+		} catch (Exception ex) {
+			LOG.error("Registration for " + customerConfig.getUser() + " failed.", ex);
 		}
-		
-		LOG.info("Started registration for " + customerConfig.getUser() + ".");
-		client.loopRegister(customerConfig);
 	}
 
 	@Override

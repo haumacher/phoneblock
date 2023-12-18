@@ -18,6 +18,7 @@ import javax.servlet.ServletContextListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.ab.SipService;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
@@ -39,15 +40,18 @@ public class ManagementService implements ServletContextListener {
 	private DBService _db;
 
 	private ChatGPTService _gpt;
+
+	private SipService _sip;
 	
 	/** 
 	 * Creates a {@link ManagementService}.
 	 */
-	public ManagementService(IndexUpdateService updater, DBService db, ChatGPTService gpt) {
+	public ManagementService(IndexUpdateService updater, DBService db, ChatGPTService gpt, SipService sip) {
 		super();
 		_updater = updater;
 		_db = db;
 		_gpt = gpt;
+		_sip = sip;
 	}
 
 	@Override
@@ -55,7 +59,7 @@ public class ManagementService implements ServletContextListener {
 		MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 		try {
 			ObjectName name = beanName(servletContextEvent);
-			mBeanServer.registerMBean(new AppState(_updater, _db.db(), _gpt), name);
+			mBeanServer.registerMBean(new AppState(_updater, _db.db(), _gpt, _sip), name);
 			_started = true;
 			LOG.info("Registered management bean: " + name);
 		} catch (NotCompliantMBeanException | MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException ex) {
