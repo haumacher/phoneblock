@@ -3,6 +3,10 @@
  */
 package de.haumacher.phoneblock.jmx;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.ab.SipService;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.index.IndexUpdateService;
@@ -11,18 +15,22 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
  * {@link AppStateMBean} implementation.
  */
 public class AppState implements AppStateMBean {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(SipService.class);
 
 	private IndexUpdateService _updater;
 	private DB _db;
 	private ChatGPTService _gpt;
+	private SipService _sip;
 
 	/** 
 	 * Creates a {@link AppState}.
 	 */
-	public AppState(IndexUpdateService updater, DB db, ChatGPTService gpt) {
+	public AppState(IndexUpdateService updater, DB db, ChatGPTService gpt, SipService sip) {
 		_updater = updater;
 		_db = db;
 		_gpt = gpt;
+		_sip = sip;
 	}
 
 	@Override
@@ -79,6 +87,16 @@ public class AppState implements AppStateMBean {
 	public void triggerSummaryCreation(String phone) {
 		for (String number : phone.split(",")) {
 			_gpt.createSummary(number.trim());
+		}
+	}
+	
+	@Override
+	public void triggerAnswerBotRegistration(String userName, boolean enabled) {
+		try {
+			_sip.enableAnwserBot(userName, enabled);
+		} catch (Exception ex) {
+			LOG.error("Failed to change answer bot state for user '" + userName + "'.", ex);
+			throw new RuntimeException("Failed to change answer bot state for user '" + userName + "': " + ex.getMessage());
 		}
 	}
 	

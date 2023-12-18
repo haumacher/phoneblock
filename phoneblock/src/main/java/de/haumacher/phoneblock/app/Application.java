@@ -86,6 +86,7 @@ public class Application implements ServletContextListener {
 		MailServiceStarter mail;
 		ChatGPTService gpt;
 		SecureRandomService rnd;
+		SipService sip;
 		_services = new ServletContextListener[] {
 			rnd = new SecureRandomService(),
 			scheduler = new SchedulerService(),
@@ -98,9 +99,9 @@ public class Application implements ServletContextListener {
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
 			gpt = new ChatGPTService(db, scheduler, indexer),
-			new ManagementService(indexer, db, gpt),
+			sip = new SipService(scheduler, db),
+			new ManagementService(indexer, db, gpt, sip),
 			new AddressBookCache(),
-			new SipService(scheduler, db)
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
