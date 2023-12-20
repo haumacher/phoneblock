@@ -339,7 +339,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	public void onRegistrationSuccess(RegistrationClient registration, NameAddress target, NameAddress contact, int expires,
 			int renewTime, String result) {
 		long userId = ((Registration) registration).getUserId();
-		updateRegistration(userId, result);
+		updateRegistration(userId, true, result);
 		LOG.info("Sucessfully registered " + registration.getUsername() + ": " + result);
 	}
 
@@ -347,15 +347,15 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	public void onRegistrationFailure(RegistrationClient registration, NameAddress target, NameAddress contact,
 			String result) {
 		long userId = ((Registration) registration).getUserId();
-		updateRegistration(userId, result);
+		updateRegistration(userId, false, result);
 		LOG.warn("Failed to register '" + registration.getUsername() + "': " + result);
 	}
 
-	private void updateRegistration(long userId, String result) {
+	private void updateRegistration(long userId, boolean registered, String result) {
 		try (SqlSession session = _dbService.db().openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			int cnt = users.updateSipRegistration(userId, result);
+			int cnt = users.updateSipRegistration(userId, registered, result);
 			if (cnt > 0) {
 				session.commit();
 			}
