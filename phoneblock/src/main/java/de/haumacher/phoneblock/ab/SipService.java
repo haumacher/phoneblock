@@ -70,6 +70,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	
 	private static SipService _instance;
 
+	private String _fileName;
+
+	private Collection<String> _jndiOptions;
+
 	/** 
 	 * Creates a {@link SipService}.
 	 */
@@ -80,6 +84,45 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		loadJndiOptions();
+		
+		start();
+	}
+	
+	private void loadJndiOptions() {
+		_fileName = null;
+		_jndiOptions = new ArrayList<>();
+		try {
+			InitialContext initCtx = new InitialContext();
+			Context envCtx = (Context) initCtx.lookup("java:comp/env");
+
+			NamingEnumeration<NameClassPair> options = envCtx.list("answerbot");
+			for (; options.hasMore(); ) {
+				NameClassPair pair = options.next();
+				String name = pair.getName();
+				Object lookup = envCtx.lookup("answerbot/" + name);
+				
+				if ("configfile".equals(name)) {
+					_fileName = lookup.toString();
+				} else {
+					_jndiOptions.add(name);
+					if (lookup != null) {
+						_jndiOptions.add(lookup.toString());
+					}
+				}
+			}
+		} catch (NamingException ex) {
+			LOG.error("Error loading JDNI configuration: " + ex.getMessage());
+		}
+	}
+	
+	public void start() {
+		if (_answerBot != null) {
+			LOG.warn("SIP service already active.");
+			return;
+		}
+		LOG.info("Starting SIP service.");
+		
 		SipConfig sipConfig = new SipConfig();
 		
 		String hostname = "phoneblock.net";
@@ -188,64 +231,42 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	}
 	
 	private void loadConfig(Object...beans) {
+		CmdLineParser parser = new CmdLineParser(null);
+		for (Object bean : beans) {
+			new ClassParser().parse(bean, parser);
+		}
+		
 		try {
-			CmdLineParser parser = new CmdLineParser(null);
-			for (Object bean : beans) {
-				new ClassParser().parse(bean, parser);
-			}
-			
-			InitialContext initCtx = new InitialContext();
-			Context envCtx = (Context) initCtx.lookup("java:comp/env");
-			
-			try {
-				String fileName = null;
-				Collection<String> jndiOptions = new ArrayList<>();
-				
-				NamingEnumeration<NameClassPair> options = envCtx.list("answerbot");
-				for (; options.hasMore(); ) {
-					NameClassPair pair = options.next();
-					String name = pair.getName();
-					Object lookup = envCtx.lookup("answerbot/" + name);
-					
-					if ("configfile".equals(name)) {
-						fileName = lookup.toString();
-					} else {
-						jndiOptions.add(name);
-						if (lookup != null) {
-							jndiOptions.add(lookup.toString());
-						}
-					}
-				}
-
-				Collection<String> fileOptions;
-				if (fileName != null) {
-					File file = new File(fileName);
-					if (!file.exists()) {
-						LOG.error("Answerbot configuration file does not exits: " + file.getAbsolutePath());
-					}
-					
-					ConfigFile configFile = new ConfigFile(file);
-					fileOptions = configFile.toArguments();
-				} else {
-					fileOptions = Collections.emptyList();
+			Collection<String> fileOptions;
+			if (_fileName != null) {
+				File file = new File(_fileName);
+				if (!file.exists()) {
+					LOG.error("Answerbot configuration file does not exits: " + file.getAbsolutePath());
 				}
 				
-				Collection<String> arguments = new ArrayList<>(fileOptions);
-				arguments.addAll(jndiOptions);
-				
-				parser.parseArgument(arguments);
-			} catch (NamingException ex) {
-				LOG.error("Error loading JDNI configuration: " + ex.getMessage());
-			} catch (CmdLineException ex) {
-				LOG.error("Invalid answer bot configuration: " + ex.getMessage());
+				LOG.info("Loading configuration from: " + _fileName);
+				ConfigFile configFile = new ConfigFile(file);
+				fileOptions = configFile.toArguments();
+			} else {
+				fileOptions = Collections.emptyList();
 			}
-		} catch (NamingException ex) {
-			LOG.info("Not using JNDI configuration: " + ex.getMessage());
+			
+			Collection<String> arguments = new ArrayList<>(fileOptions);
+			arguments.addAll(_jndiOptions);
+			
+			parser.parseArgument(arguments);
+		} catch (CmdLineException ex) {
+			LOG.error("Invalid answer bot configuration: " + ex.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
+		stop();
+	}
+	
+	public void stop() {
+		LOG.info("Stopping SIP service.");
 		for (RegistrationClient client : _clients.values()) {
 			client.halt();
 		}
