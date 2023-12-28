@@ -69,7 +69,17 @@ public interface AppStateMBean {
 	 * </p>
 	 */
 	void triggerSummaryCreation(String phone);
+
+	/**
+	 * Starts the SIP service.
+	 */
+	void startSipService();
 	
+	/**
+	 * Stops the SIP service.
+	 */
+	void stopSipService();
+
 	/**
 	 * Enables or disables a registered answer bot.
 	 */
