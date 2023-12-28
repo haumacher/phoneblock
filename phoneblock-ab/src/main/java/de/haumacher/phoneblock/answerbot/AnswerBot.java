@@ -77,11 +77,11 @@ public class AnswerBot extends MultipleUAS {
 	
 	static {
 		String version;
-		try (InputStream in = AnswerBot.class.getResourceAsStream("/META-INF/maven/de.haumacher/phoneblock-ab/pom.properties")) {
+		try (InputStream in = AnswerBot.class.getResourceAsStream("/META-INF/maven/de.haumacher/phoneblock-shared/pom.properties")) {
 			Properties properties = new Properties();
 			properties.load(in);
 			version = properties.getProperty("version");
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			LOG.error("Faild to read version.", ex);
 			version = null;
 		}
