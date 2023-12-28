@@ -91,6 +91,16 @@ public class AppState implements AppStateMBean {
 	}
 	
 	@Override
+	public void startSipService() {
+		_sip.start();
+	}
+	
+	@Override
+	public void stopSipService() {
+		_sip.stop();
+	}
+	
+	@Override
 	public void triggerAnswerBotRegistration(String userName, boolean enabled) {
 		try {
 			_sip.enableAnwserBot(userName, enabled);
