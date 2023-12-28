@@ -37,6 +37,7 @@ import java.util.function.Function;
 
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
+import org.mjsip.media.MediaSpec;
 import org.mjsip.pool.PortConfig;
 import org.mjsip.pool.PortPool;
 import org.mjsip.sip.address.NameAddress;
@@ -103,12 +104,20 @@ public class AnswerBot extends MultipleUAS {
 		_configForUser = configForUser;
 		_botConfig = botOptions;
 
+		for (MediaDesc descr : _botConfig.getMediaDescs()) {
+			LOG.info("Supported media: " + descr);
+		}
+		
 		Map<AudioType, Map<SpeechType, List<File>>> audioFragmentsByType = new EnumMap<>(AudioType.class);
 		File conversationDir = botOptions.conversationDir();
-		for (SpeechType state : SpeechType.values()) {
-			File stateDir = new File(conversationDir, state.getDirName());
+		for (SpeechType type : SpeechType.values()) {
+			File stateDir = new File(conversationDir, type.getDirName());
 
 			for (AudioType formatType : AudioType.values()) {
+				if (!isSupported(formatType)) {
+					continue;
+				}
+				
 				File typeDir = new File(stateDir, formatType.dirName());
 				if (!typeDir.isDirectory()) {
 					LOG.warn("Missing conversation directory: " + typeDir.getAbsolutePath());
@@ -118,19 +127,30 @@ public class AnswerBot extends MultipleUAS {
 				Map<SpeechType, List<File>> audioFragments = audioFragmentsByType.computeIfAbsent(formatType, k -> new EnumMap<>(SpeechType.class));
 				
 				ArrayList<File> files = new ArrayList<>();
-				audioFragments.put(state, files);
+				audioFragments.put(type, files);
 				for (File wav : typeDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
 					files.add(wav);
 				}
 				int cnt = files.size();
 				if (cnt == 0) {
-					LOG.warn("Found no audio fragment for dialogue state " + state + " and format '" + formatType + "'.");
+					LOG.warn("Found no audio fragment for dialogue state " + type + " and format '" + formatType + "'.");
 				} else {
-					LOG.info("Found " + cnt + " audio fragment for dialogue state " + state + " and format '" + formatType + "'.");
+					LOG.info("Found " + cnt + " audio fragment for dialogue state " + type + " and format '" + formatType + "'.");
 				}
 			}
 		}
 		_audioFragmentsByType = audioFragmentsByType;
+	}
+
+	private boolean isSupported(AudioType formatType) {
+		for (MediaDesc descr : _botConfig.getMediaDescs()) {
+			for (MediaSpec spec : descr.getMediaSpecs()) {
+				if (formatType.matches(spec)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	@Override
