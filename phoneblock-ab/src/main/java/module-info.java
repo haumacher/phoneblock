@@ -5,8 +5,8 @@
 /**
  * The PhoneBlock answer bot.
  */
-module phoneblock.ab {
-	requires phoneblock.shared;
+module de.haumacher.phoneblock.ab {
+	requires de.haumacher.phoneblock.shared;
 
 	requires transitive org.mjsip.sound;
 	requires transitive org.mjsip.sip;
