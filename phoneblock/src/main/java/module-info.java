@@ -5,7 +5,7 @@
 /**
  * The PhoneBlock application.
  */
-module phoneblock {
+module de.haumacher.phoneblock {
 	exports de.haumacher.phoneblock.app;
 	exports de.haumacher.phoneblock.app.api;
 	exports de.haumacher.phoneblock.crawl;
@@ -24,8 +24,8 @@ module phoneblock {
 	exports de.haumacher.phoneblock.db to org.mybatis;
 	exports de.haumacher.phoneblock.db.model to org.mybatis;
 	
-	requires phoneblock.shared;
-	requires phoneblock.ab;
+	requires de.haumacher.phoneblock.shared;
+	requires de.haumacher.phoneblock.ab;
 
 	requires org.mjsip.sound;
 	requires org.mjsip.sip;

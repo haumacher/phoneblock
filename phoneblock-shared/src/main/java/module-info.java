@@ -5,7 +5,7 @@
 /**
  * The PhoneBlock application.
  */
-module phoneblock.shared {
+module de.haumacher.phoneblock.shared {
 	exports de.haumacher.phoneblock.app.api.model;
 
 	requires de.haumacher.msgbuf;
