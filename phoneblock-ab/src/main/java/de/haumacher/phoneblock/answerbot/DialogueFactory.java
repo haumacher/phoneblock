@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -63,7 +64,7 @@ public final class DialogueFactory implements StreamerFactory {
 	}
 
 	@Override
-	public MediaStreamer createMediaStreamer(FlowSpec flow_spec) {
+	public MediaStreamer createMediaStreamer(Executor executor, FlowSpec flow_spec) {
 		AudioType matchedType = null;
 		MediaSpec spec = flow_spec.getMediaSpec();
 		for (AudioType type : _audioFragmentsByType.keySet()) {
@@ -135,7 +136,7 @@ public final class DialogueFactory implements StreamerFactory {
 				rx = null;
 			}
 			StreamerOptions options = StreamerOptions.builder().build();
-			return new AudioStreamer(flow_spec, tx, rx, options);
+			return new AudioStreamer(executor, flow_spec, tx, rx, options);
 		} catch (IOException ex) {
 			throw new IOError(ex);
 		}
