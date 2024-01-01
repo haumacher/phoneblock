@@ -394,6 +394,10 @@
 					                <directory>src/main/webapp</directory>
 					                <filtering>true</filtering>
 					            </resource>
+					            <resource>
+					                <directory>../phoneblock_answerbot_ui/build/web</directory>
+					                <targetPath>ab</targetPath>
+					            </resource>
 					        </webResources>							
 						</configuration>
 					</execution>

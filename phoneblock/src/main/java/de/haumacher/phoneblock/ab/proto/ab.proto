@@ -1,0 +1,11 @@
+package de.haumacher.phoneblock.ab.proto;
+
+option NoXml;
+option NoInterfaces;
+option NoListener;
+option NoBinary;
+option DartLib = "../../../../phoneblock_answerbot_ui/lib/proto.dart";
+
+message CreateAnswerbotResponse {
+	string userName;
+}
