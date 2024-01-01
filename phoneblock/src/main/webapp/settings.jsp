@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.ab.DBAnswerbotInfo"%>
 <%@page import="de.haumacher.phoneblock.ab.CreateABServlet"%>
 <%@page import="de.haumacher.phoneblock.db.DBAnswerBotSip"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
@@ -245,7 +246,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	<p>Der PhoneBlock-Anrufbeantworter prüft, ob ein Anrufer unter Spam-Verdacht steht und nimmt genau dann den Anruf an. Mit dem 
 	PhoneBlock-Anrufbeantworter kannst Du die volle Blocklist nutzen ohne die Einschränkung der maximalen Telefonbuchgröße.</p>
 	
-<% List<DBAnswerBotSip> answerBots = (List<DBAnswerBotSip>) request.getAttribute("answerBots"); %>	
+<% List<DBAnswerbotInfo> answerBots = (List<DBAnswerbotInfo>) request.getAttribute("answerBots"); %>	
 <% if (answerBots.isEmpty()) { %>
 	<p>Du hast noch keinen PhoneBlock-Anrufbeantworter.</p>
 
@@ -259,7 +260,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	</div>
 	</form>
 <% } else {%>
-	<% for (DBAnswerBotSip answerBot : answerBots) {%>
+	<% for (DBAnswerbotInfo answerBot : answerBots) {%>
 	<div class="card">
 	  <div class="card-content">
 	    <p class="title">Answerbot</p>
