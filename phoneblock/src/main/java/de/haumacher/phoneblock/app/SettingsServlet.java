@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.ibatis.session.SqlSession;
 
+import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
@@ -44,7 +45,7 @@ public class SettingsServlet extends HttpServlet {
 			Long userIdOpt = users.getUserId(userName);
 			List<String> blacklist;
 			List<String> whitelist;
-			List<DBAnswerBotSip> answerBots;
+			List<DBAnswerbotInfo> answerBots;
 			if (userIdOpt == null) {
 				blacklist = Collections.emptyList();
 				whitelist = Collections.emptyList();

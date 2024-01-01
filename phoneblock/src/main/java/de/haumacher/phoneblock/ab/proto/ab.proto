@@ -9,3 +9,62 @@ option DartLib = "../../../../phoneblock_answerbot_ui/lib/proto.dart";
 message CreateAnswerbotResponse {
 	string userName;
 }
+
+/** Information of a single answer bot. */
+message AnswerbotInfo {
+	/** The primary key identifier of this bot. */
+	long id;
+
+	/** Whether the bot is enabled (registration is active). */
+	bool enabled;
+
+	/** Whether the bot has sucessfully registered (can accept calls). */
+	bool registered;
+	
+	/** The message received during the last registration attempt. */
+	@Nullable
+	string registerMsg;
+	
+	/** The total number of calls accepted by this bot so far. */
+	int callsAccepted;
+
+	/** The name of the box to register at. */
+	string registrar;
+	
+	/** The authentication realm expected for registration. */
+	string realm;
+	
+	/** The user name used for SIP registration. */
+	string userName;
+
+	/** The password for SIP registration. */
+	string password;
+	
+	/** The host name of the box to register at (only set, if a third-party DynDNS service is used. */
+	@Nullable
+	string host;
+	
+	/** The IPv4 address of the box to register at (only filled, if internal DynDNS is set up and succeeded). */
+	@Nullable
+	string ip4;
+	
+	/** The IPv6 address of the box to register at (only filled, if internal DynDNS is set up and succeeded). */
+	@Nullable
+	string ip6;
+	
+	/** The user name for DynDNS registration of the box (only filled, if internal DynDNS is set up). */
+	@Nullable
+	string dyndnsUser;
+	
+	/** The password for DynDNS registration of the box. */
+	@Nullable
+	string dyndnsPassword;
+}
+
+/** Result of the {@link de.haumacher.phoneblock.ab.ListABServlet}. */
+message ListAnswerbotResponse {
+
+	/** Infos for all answer bots of the current user. */
+	repeated AnswerbotInfo bots;
+	
+}

@@ -10,6 +10,9 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
+import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
+
 /**
  * Operations for user management.
  */
@@ -138,11 +141,10 @@ public interface Users {
 			"where s.USERNAME = #{userName}")
 	DBAnswerBotSip getAnswerBot(String userName);
 
-	@Select("select s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
+	@Select("select s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.CALLS_ACCEPTED, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.USERID=s.USERID " + 
 			"where s.USERID= #{userId}")
-	List<DBAnswerBotSip> getAnswerBots(long userId);
-	
+	List<DBAnswerbotInfo> getAnswerBots(long userId);
 	
 	@Update("update ANSWERBOT_SIP set REGISTERED=#{registered}, REGISTER_MSG=#{message} where USERID=#{userId} and (REGISTER_MSG is null or not REGISTER_MSG=#{message} or not REGISTERED=#{registered})")
 	int updateSipRegistration(long userId, boolean registered, String message);
