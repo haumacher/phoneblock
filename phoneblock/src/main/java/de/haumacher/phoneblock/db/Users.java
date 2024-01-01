@@ -130,11 +130,19 @@ public interface Users {
 	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, REGISTERED=false, REGISTER_MSG=NULL where USERID=#{userId}")
 	void enableAnswerBot(long userId, boolean enabled, long updated);
 
+	@Insert("insert into ANSWERBOT_SIP (USERID, USERNAME, PASSWD, CREATED, UPDATED) values (#{userId}, #{userName}, #{password}, #{now}, #{now})")
+	int createAnswerBot(long userId, String userName, String password, long now);
+
 	@Select("select s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.USERID=s.USERID " + 
 			"where s.USERNAME = #{userName}")
 	DBAnswerBotSip getAnswerBot(String userName);
 
+	@Select("select s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
+			"left outer join ANSWERBOT_DYNDNS d on d.USERID=s.USERID " + 
+			"where s.USERID= #{userId}")
+	List<DBAnswerBotSip> getAnswerBots(long userId);
+	
 	
 	@Update("update ANSWERBOT_SIP set REGISTERED=#{registered}, REGISTER_MSG=#{message} where USERID=#{userId} and (REGISTER_MSG is null or not REGISTER_MSG=#{message} or not REGISTERED=#{registered})")
 	int updateSipRegistration(long userId, boolean registered, String message);

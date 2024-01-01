@@ -27,6 +27,7 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebFilter(urlPatterns = {
 	CardDavServlet.URL_PATTERN,
 	CallReportServlet.URL_PATTERN,
+	"/ab/*",
 })
 public class LoginFilter implements Filter {
 

@@ -248,6 +248,18 @@ public class DB {
 	}
 
 	/** 
+	 * Creates a unique random (numeric) ID with the given length.
+	 */
+	public String createId(int length) {
+		StringBuilder buffer = new StringBuilder();
+		for (int n = 0; n < length; n++) {
+			char ch = (char) ('0' + _rnd.nextInt(10));
+			buffer.append(ch);
+		}
+		return buffer.toString();
+	}
+	
+	/** 
 	 * Sets the user's e-mail address.
 	 */
 	public void setEmail(String login, String email) {
