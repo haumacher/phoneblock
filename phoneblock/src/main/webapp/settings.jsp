@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.ab.CreateABServlet"%>
+<%@page import="de.haumacher.phoneblock.db.DBAnswerBotSip"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="true"%>
@@ -234,6 +236,59 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	
 	</form>
 	</div>
+</section>
+
+<section class="section">
+<div class="content">
+	<h2 id="answerBots">Dein PhoneBlock-Anrufbeantworter</h2>
+	
+	<p>Der PhoneBlock-Anrufbeantworter prüft, ob ein Anrufer unter Spam-Verdacht steht und nimmt genau dann den Anruf an. Mit dem 
+	PhoneBlock-Anrufbeantworter kannst Du die volle Blocklist nutzen ohne die Einschränkung der maximalen Telefonbuchgröße.</p>
+	
+<% List<DBAnswerBotSip> answerBots = (List<DBAnswerBotSip>) request.getAttribute("answerBots"); %>	
+<% if (answerBots.isEmpty()) { %>
+	<p>Du hast noch keinen PhoneBlock-Anrufbeantworter.</p>
+
+	<form action="<%= request.getContextPath() + CreateABServlet.PATH %>" method="post">
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" type="submit">
+	      Anrufbeantworter erstellen
+	    </button>
+	  </p>
+	</div>
+	</form>
+<% } else {%>
+	<% for (DBAnswerBotSip answerBot : answerBots) {%>
+	<div class="card">
+	  <div class="card-content">
+	    <p class="title">Answerbot</p>
+	    <p class="subtitle"><%= JspUtil.quote(answerBot.getUserName())%></p>
+	  </div>
+	  <footer class="card-footer">
+	    <p class="card-footer-item">
+	      <span></span>
+	    </p>
+	    <p class="card-footer-item">
+	      <span></span>
+	    </p>
+	  </footer>
+	</div>
+	<% } %>
+
+	<% if (answerBots.size() < 3) {%>
+	<form action="<%= request.getContextPath() + CreateABServlet.PATH %>" method="post">
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" type="submit">
+	      Weiteren Anrufbeantworter erstellen
+	    </button>
+	  </p>
+	</div>
+	</form>
+	<% } %>
+<% } %>	
+</div>
 </section>
 
 <section class="section">
