@@ -124,47 +124,9 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		LOG.info("Starting SIP service.");
 		
 		SipConfig sipConfig = new SipConfig();
-		
-		String hostname = "phoneblock.net";
-		String ip4 = null;
-		String ip6 = null;
-		try {
-			InetAddress[] addresses = InetAddress.getAllByName(hostname);
-			for (InetAddress address : addresses) {
-				if (address.isAnyLocalAddress()) {
-					continue;
-				}
-				if (address.isLinkLocalAddress()) {
-					continue;
-				}
-				if (address.isLoopbackAddress()) {
-					continue;
-				}
-				if (address.isMulticastAddress()) {
-					continue;
-				}
-				if (address.isSiteLocalAddress()) {
-					continue;
-				}
-				
-				if (address instanceof Inet6Address) {
-					ip6 = address.getHostAddress();
-					LOG.info("Found IPv6 address: " + ip6);
-				} else {
-					ip4 = address.getHostAddress();
-					LOG.info("Found IPv4 address: " + ip4);
-				}
-			}
-		} catch (UnknownHostException ex) {
-			LOG.error("Cannot resolve own address.", ex);
-		}
-		
-		sipConfig.setViaAddr(ip6 != null ? ip6 : ip4 != null ? ip4 : hostname);
-		
 		PortConfig portConfig = new PortConfig();
 		portConfig.setMediaPort(50061);
 		portConfig.setPortCount(20);
-		
 		AnswerbotConfig botOptions = new AnswerbotConfig();
 		
 		loadConfig(sipConfig, portConfig, botOptions);
