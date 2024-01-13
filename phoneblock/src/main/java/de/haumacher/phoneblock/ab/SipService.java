@@ -37,6 +37,7 @@ import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zoolu.net.AddressType;
 import org.zoolu.util.ConfigFile;
 
 import de.haumacher.phoneblock.answerbot.AnswerBot;
@@ -130,8 +131,11 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		AnswerbotConfig botOptions = new AnswerbotConfig();
 		
 		loadConfig(sipConfig, portConfig, botOptions);
+		sipConfig.normalize();
+		resolveViaAddress(sipConfig);
 		
 		Scheduler scheduler = Scheduler.of(_scheduler.executor());
+		
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
 		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool);
@@ -140,11 +144,34 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		_scheduler.executor().scheduleAtFixedRate(this::registerBots, 10, 5 * 60, TimeUnit.SECONDS);
 	}
+
+	private void resolveViaAddress(SipConfig sipConfig) {
+		sipConfig.setViaAddrIPv4(resolve(AddressType.IP4, sipConfig.getViaAddrIPv4()));
+		sipConfig.setViaAddrIPv6(resolve(AddressType.IP6, sipConfig.getViaAddrIPv6()));
+	}
+
+	private String resolve(AddressType type, String hostName) {
+		boolean resolveV6 = type == AddressType.IP6;
+		
+		try {
+			for (InetAddress address : InetAddress.getAllByName(hostName)) {
+				boolean ipv6 = address instanceof Inet6Address;
+				if (resolveV6 == ipv6) {
+					return address.getHostAddress();
+				}
+			}
+		} catch (UnknownHostException e) {
+			// Ignore.
+		}
+		return hostName;
+	}
 	
 	/**
 	 * Registers all answer bots that have been updated since the last run.
 	 */
 	private void registerBots() {
+		resolveViaAddress((SipConfig) _sipProvider.sipConfig());
+		
 		long since = _lastRegister;
 		_lastRegister = System.currentTimeMillis();
 		
