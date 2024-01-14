@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Deine PhoneBlock Anrufbeantworter"),
+        title: const Text("Deine PhoneBlock Anrufbeantworter"),
       ),
       body: const AnswerBotList(),
       floatingActionButton: FloatingActionButton(
@@ -115,7 +115,7 @@ class HomeScreen extends StatelessWidget {
   Widget _setupAnswerBot(BuildContext context, CreateAnswerbotResponse creation) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Anrufbeantworter einrichten"),
+        title: const Text("Anrufbeantworter einrichten"),
       ),
       body: Center(
         child: Column(
@@ -206,7 +206,7 @@ class AnswerBotListState extends State<AnswerBotList> {
                 ],
               ),
               IconButton(
-                icon: Icon(Icons.arrow_right),
+                icon: const Icon(Icons.arrow_right),
                 iconSize: 32,
                 onPressed: () => showAnswerBot(context, bots[index]),
               )
@@ -264,14 +264,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
             children: <Widget>[
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
-                    Expanded(child: Text("PhoneBlock-DynDNS benutzen")),
+                    const Expanded(child: Text("PhoneBlock-DynDNS benutzen")),
                     Switch(
                       thumbIcon: switchIcon,
                       value: internalDynDns,
@@ -301,11 +301,11 @@ class AnswerBotViewState extends State<AnswerBotView> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.help),
         tooltip: "Hilfe anzeigen",
         onPressed: () async {
           await launchUrl(Uri.parse("https://phoneblock.net/"));
         },
+        child: const Icon(Icons.help),
       ),
     );
   }
@@ -336,9 +336,9 @@ class InfoField extends StatelessWidget {
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: value ?? ""));
               if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Copied to clipboard.")));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied to clipboard.")));
             },
-            icon: Icon(Icons.copy)
+            icon: const Icon(Icons.copy)
         ),
       ],
     );
