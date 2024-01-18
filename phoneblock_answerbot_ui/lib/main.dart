@@ -73,46 +73,11 @@ class MyApp extends StatelessWidget {
 }
 
 class HomeScreen extends StatelessWidget {
-
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Deine PhoneBlock Anrufbeantworter"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // TODO
-            },
-            icon: const Icon(Icons.refresh),
-          )
-        ],
-      ),
-      body: const AnswerBotList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _createAnswerBot(context),
-        tooltip: 'Anrufbeantworter anlegen',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  void _createAnswerBot(BuildContext context) async {
-    http.Response response = await sendRequest(CreateAnswerBot());
-    if (!context.mounted) return;
-
-    if (response.statusCode != 200) {
-      return showErrorDialog(context, response, 'Anlage fehlgeschlagen', "Der Anrufbeantworter konnte nicht angelegt werden");
-    }
-
-    var creation = CreateAnswerbotResponse.read(JsonReader.fromString(response.body));
-    Navigator.push(context, MaterialPageRoute(builder: (context) => _setupAnswerBot(context, creation)));
-  }
-
-  Widget _setupAnswerBot(BuildContext context, CreateAnswerbotResponse creation) {
-    return BotSetupForm(creation);
+    return const AnswerBotList();
   }
 }
 
@@ -528,7 +493,10 @@ class AnswerBotListState extends State<AnswerBotList> {
   @override
   void initState() {
     super.initState();
+    requestBotList();
+  }
 
+  void requestBotList() {
     http.get(Uri.parse('$basePath/ab/list'),
       headers: {
         if (kDebugMode) 'Authorization': authHeader,
@@ -554,6 +522,44 @@ class AnswerBotListState extends State<AnswerBotList> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Deine PhoneBlock Anrufbeantworter"),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(refreshBotList);
+            },
+            icon: const Icon(Icons.refresh),
+          )
+        ],
+      ),
+      body: _botList(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _createAnswerBot(context),
+        tooltip: 'Anrufbeantworter anlegen',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _createAnswerBot(BuildContext context) async {
+    http.Response response = await sendRequest(CreateAnswerBot());
+    if (!context.mounted) return;
+
+    if (response.statusCode != 200) {
+      return showErrorDialog(context, response, 'Anlage fehlgeschlagen', "Der Anrufbeantworter konnte nicht angelegt werden");
+    }
+
+    var creation = CreateAnswerbotResponse.read(JsonReader.fromString(response.body));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => _setupAnswerBot(context, creation))).then((value) => refreshBotList());
+  }
+
+  Widget _setupAnswerBot(BuildContext context, CreateAnswerbotResponse creation) {
+    return BotSetupForm(creation);
+  }
+  
+  Widget _botList(BuildContext context) {
     var bots = this.bots;
 
     if (bots == null || bots.isEmpty) {
@@ -603,6 +609,11 @@ class AnswerBotListState extends State<AnswerBotList> {
 
   showAnswerBot(BuildContext context, AnswerbotInfo bot) {
     Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(bot)));
+  }
+
+  refreshBotList() {
+      msg = 'Refreshing data...';
+      requestBotList();
   }
 }
 
