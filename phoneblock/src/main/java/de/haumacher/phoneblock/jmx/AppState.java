@@ -103,7 +103,7 @@ public class AppState implements AppStateMBean {
 	@Override
 	public void triggerAnswerBotRegistration(String userName, boolean enabled) {
 		try {
-			_sip.enableAnwserBot(userName, enabled);
+			_sip.enableAnwserBot(userName);
 		} catch (Exception ex) {
 			LOG.error("Failed to change answer bot state for user '" + userName + "'.", ex);
 			throw new RuntimeException("Failed to change answer bot state for user '" + userName + "': " + ex.getMessage());

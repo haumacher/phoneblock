@@ -75,6 +75,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 	private Collection<String> _jndiOptions;
 
+	private SipServiceConfig _config;
+
 	/** 
 	 * Creates a {@link SipService}.
 	 */
@@ -128,6 +130,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		PortConfig portConfig = new PortConfig();
 		portConfig.setMediaPort(50061);
 		portConfig.setPortCount(20);
+		_config = new SipServiceConfig();
 		AnswerbotConfig botOptions = new AnswerbotConfig();
 		
 		loadConfig(sipConfig, portConfig, botOptions);
@@ -190,7 +193,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			if (host == null || host.isEmpty()) {
 				failed.add(bot);
 			} else {
-				register(bot);
+				register(bot, false);
 			}
 		}
 
@@ -200,7 +203,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			
 				for (AnswerBotSip bot : failed) {
 					LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
-					users.enableAnswerBot(bot.getUserId(), false, _lastRegister);
+					users.enableAnswerBot(bot.getId(), false, _lastRegister);
 				}
 
 				session.commit();
@@ -284,39 +287,56 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		return _instance;
 	}
 	
-	public void enableAnwserBot(String userName, boolean enable) {
+	public void enableAnwserBot(String userName) {
+		enableAnwserBot(userName, false);
+	}
+	
+	public void enableAnwserBot(String userName, boolean temporary) {
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
-			DBAnswerBotSip bot = users.getAnswerBot(userName);
+			DBAnswerBotSip bot = users.getAnswerBotBySipUser(userName);
 			if (bot == null) {
 				LOG.warn("User with ID '" + userName + "' not found.");
 				return;
 			}
 			
-			users.enableAnswerBot(bot.getUserId(), enable, System.currentTimeMillis());
-			tx.commit();
-			
-			if (enable) {
-				register(bot);
-			} else {
-				Registration registration = _clients.remove(bot.getUserName());
-				if (registration == null) {
-					LOG.info("No active registration for user '" + userName + "'.");
-					return;
-				}
-
-				LOG.info("Stopping answer bot '" + userName + "'.");
-				registration.halt();
-			}
+			register(bot, temporary);
 		}
 	}
 
-	/** 
+	public void disableAnwserBot(String userName) {
+		try (SqlSession tx = _dbService.db().openSession()) {
+			Users users = tx.getMapper(Users.class);
+			
+			DBAnswerBotSip bot = users.getAnswerBotBySipUser(userName);
+			if (bot == null) {
+				LOG.warn("User with ID '" + userName + "' not found.");
+				return;
+			}
+			
+			users.enableAnswerBot(bot.getId(), false, System.currentTimeMillis());
+			tx.commit();
+			
+			Registration registration = _clients.remove(bot.getUserName());
+			if (registration == null) {
+				LOG.info("No active registration for user '" + userName + "'.");
+				return;
+			}
+
+			LOG.info("Stopping answer bot '" + userName + "'.");
+			registration.halt();
+		}
+	}
+
+	/**
 	 * Dynamically registers a new answer bot.
+	 * 
+	 * @param temporary Whether the bot is first activated and should only be
+	 *                  permanently activated, if the first registration succeeds.
 	 */
-	public void register(AnswerBotSip bot) {
-		register(bot.getUserId(), toCustomerConfig(bot));
+	public void register(AnswerBotSip bot, boolean temporary) {
+		register(bot, toCustomerConfig(bot), temporary);
 	}
 
 	private CustomerConfig toCustomerConfig(AnswerBotSip bot) {
@@ -329,10 +349,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		return regConfig;
 	}
 
-	private void register(long userId, CustomerOptions customerConfig) {
+	private void register(AnswerBotSip bot, CustomerOptions customerConfig, boolean temporary) {
 		try {
-			Registration client = new Registration(_sipProvider, userId, customerConfig, this);
-			Registration clash = _clients.put(customerConfig.getUser(), client);
+			Registration client = new Registration(_sipProvider, bot, customerConfig, this, temporary);
+			Registration clash = _clients.put(bot.getUserName(), client);
 			
 			if (clash != null) {
 				clash.halt();
@@ -346,26 +366,54 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	}
 
 	@Override
-	public void onRegistrationSuccess(RegistrationClient registration, NameAddress target, NameAddress contact, int expires,
+	public void onRegistrationSuccess(RegistrationClient client, NameAddress target, NameAddress contact, int expires,
 			int renewTime, String result) {
-		long userId = ((Registration) registration).getUserId();
-		updateRegistration(userId, true, result);
-		LOG.info("Sucessfully registered " + registration.getUsername() + ": " + result);
+		Registration registration = (Registration) client;
+		long id = registration.getId();
+		
+		if (registration.isTemporary()) {
+			// Bot was only started temporarily, now enable permanently.
+			
+			try (SqlSession session = _dbService.db().openSession()) {
+				Users users = session.getMapper(Users.class);
+				
+				users.enableAnswerBot(id, true, System.currentTimeMillis());
+				session.commit();
+			}
+			
+			registration.setPermanent();
+		}
+		registration.resetFailures();
+
+		updateRegistration(id, true, result);
+
+		LOG.info("Sucessfully registered " + client.getUsername() + ": " + result);
 	}
 
 	@Override
-	public void onRegistrationFailure(RegistrationClient registration, NameAddress target, NameAddress contact,
+	public void onRegistrationFailure(RegistrationClient client, NameAddress target, NameAddress contact,
 			String result) {
-		long userId = ((Registration) registration).getUserId();
-		updateRegistration(userId, false, result);
-		LOG.warn("Failed to register '" + registration.getUsername() + "': " + result);
+		Registration registration = (Registration) client;
+		long id = registration.getId();
+
+		registration.incFailures();
+		int failures = registration.getFailures();
+
+		LOG.warn("Failed to register '" + client.getUsername() + "' (" + failures + " failures): " + result);
+		updateRegistration(id, false, result);
+		
+		boolean temporary = registration.isTemporary();
+		if (temporary || failures > _config.maxFailures) {
+			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
+			registration.halt();
+		}
 	}
 
-	private void updateRegistration(long userId, boolean registered, String result) {
+	private void updateRegistration(long id, boolean registered, String result) {
 		try (SqlSession session = _dbService.db().openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			int cnt = users.updateSipRegistration(userId, registered, result);
+			int cnt = users.updateSipRegistration(id, registered, result);
 			if (cnt > 0) {
 				session.commit();
 			}
