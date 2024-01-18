@@ -77,7 +77,7 @@ public class DynIpServlet extends HttpServlet {
 			processAddress(update, req.getParameter("ip6"));
 			
 			if (changed(settings.getIpv4(), update.getIpv4()) || changed(settings.getIpv6(), update.getIpv6()) || now - settings.getUpdated() > ONE_DAY) {
-				users.updateDynDny(settings.getUserId(), update.getIpv4(), update.getIpv6(), now);
+				users.updateDynDns(settings.getId(), update.getIpv4(), update.getIpv6(), now);
 				
 				session.commit();
 				LOG.info("Updated IP address for: " + user);

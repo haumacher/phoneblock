@@ -49,37 +49,37 @@ public class AnswerBotSip extends AnswerBotSetting {
 	static final int ANSWER_BOT_SIP__TYPE_ID = 2;
 
 	/** Identifier for the property {@link #getHost()} in binary format. */
-	static final int HOST__ID = 4;
+	static final int HOST__ID = 5;
 
 	/** Identifier for the property {@link #getIpv4()} in binary format. */
-	static final int IPV_4__ID = 5;
+	static final int IPV_4__ID = 6;
 
 	/** Identifier for the property {@link #getIpv6()} in binary format. */
-	static final int IPV_6__ID = 6;
+	static final int IPV_6__ID = 7;
 
 	/** Identifier for the property {@link #getRegistrar()} in binary format. */
-	static final int REGISTRAR__ID = 7;
+	static final int REGISTRAR__ID = 8;
 
 	/** Identifier for the property {@link #getRealm()} in binary format. */
-	static final int REALM__ID = 8;
+	static final int REALM__ID = 9;
 
 	/** Identifier for the property {@link #getUserName()} in binary format. */
-	static final int USER_NAME__ID = 9;
+	static final int USER_NAME__ID = 10;
 
 	/** Identifier for the property {@link #getPasswd()} in binary format. */
-	static final int PASSWD__ID = 10;
+	static final int PASSWD__ID = 11;
 
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
-	static final int REGISTERED__ID = 11;
+	static final int REGISTERED__ID = 12;
 
 	/** Identifier for the property {@link #getLastRegister()} in binary format. */
-	static final int LAST_REGISTER__ID = 12;
+	static final int LAST_REGISTER__ID = 13;
 
 	/** Identifier for the property {@link #getRegisterError()} in binary format. */
-	static final int REGISTER_ERROR__ID = 13;
+	static final int REGISTER_ERROR__ID = 14;
 
 	/** Identifier for the property {@link #getCallsAccepted()} in binary format. */
-	static final int CALLS_ACCEPTED__ID = 14;
+	static final int CALLS_ACCEPTED__ID = 15;
 
 	private String _host = "";
 
@@ -346,6 +346,12 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetCallsAccepted(int value) {
 		_listener.beforeSet(this, CALLS_ACCEPTED__PROP, value);
 		_callsAccepted = value;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setId(long value) {
+		internalSetId(value);
+		return this;
 	}
 
 	@Override

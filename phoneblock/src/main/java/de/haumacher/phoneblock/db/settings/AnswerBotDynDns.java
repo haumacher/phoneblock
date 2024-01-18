@@ -31,16 +31,16 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 	static final int ANSWER_BOT_DYN_DNS__TYPE_ID = 1;
 
 	/** Identifier for the property {@link #getDyndnsUser()} in binary format. */
-	static final int DYNDNS_USER__ID = 4;
+	static final int DYNDNS_USER__ID = 5;
 
 	/** Identifier for the property {@link #getDynDnsPasswd()} in binary format. */
-	static final int DYN_DNS_PASSWD__ID = 5;
+	static final int DYN_DNS_PASSWD__ID = 6;
 
 	/** Identifier for the property {@link #getIpv4()} in binary format. */
-	static final int IPV_4__ID = 6;
+	static final int IPV_4__ID = 7;
 
 	/** Identifier for the property {@link #getIpv6()} in binary format. */
-	static final int IPV_6__ID = 7;
+	static final int IPV_6__ID = 8;
 
 	private String _dyndnsUser = "";
 
@@ -146,6 +146,12 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 	protected final void internalSetIpv6(String value) {
 		_listener.beforeSet(this, IPV_6__PROP, value);
 		_ipv6 = value;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.db.settings.AnswerBotDynDns setId(long value) {
+		internalSetId(value);
+		return this;
 	}
 
 	@Override

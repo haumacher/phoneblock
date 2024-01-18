@@ -8,6 +8,7 @@ import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
 
 import de.haumacher.phoneblock.answerbot.CustomerOptions;
+import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 
 /**
  * {@link RegistrationClient} that holds the complete configuration for the customer.
@@ -15,22 +16,46 @@ import de.haumacher.phoneblock.answerbot.CustomerOptions;
 public class Registration extends RegistrationClient {
 
 	private CustomerOptions _customer;
-	private long _userId;
+	private boolean _temporary;
+	private AnswerBotSip _bot;
+	private int _failures;
 
 	/** 
 	 * Creates a {@link Registration}.
+	 * @param temporary 
 	 */
-	public Registration(SipProvider sipProvider, long userId, CustomerOptions customer, RegistrationClientListener sipService) {
+	public Registration(SipProvider sipProvider, AnswerBotSip bot, CustomerOptions customer, RegistrationClientListener sipService, boolean temporary) {
 		super(sipProvider, customer, sipService);
-		_userId = userId;
+		_bot = bot;
 		_customer = customer;
+		_temporary = temporary;
 	}
 	
+	public boolean isTemporary() {
+		return _temporary;
+	}
+	
+	public void setPermanent() {
+		_temporary = false;
+	}
+	
+	public int getFailures() {
+		return _failures;
+	}
+	
+	public void incFailures() {
+		_failures++;
+	}
+	
+	public void resetFailures() {
+		_failures = 0;
+	}
+
 	/**
-	 * The user ID of the registered user.
+	 * The ID of the registered answerbot.
 	 */
-	public long getUserId() {
-		return _userId;
+	public long getId() {
+		return _bot.getId();
 	}
 	
 	/**
