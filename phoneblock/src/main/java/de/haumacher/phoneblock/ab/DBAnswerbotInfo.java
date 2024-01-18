@@ -6,12 +6,14 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 	
 	public DBAnswerbotInfo(
 			long id, 
+			long userId, 
 			boolean enabled, String registrar, String host, String ip4, String ip6, String realm, 
 			boolean registered, String msg, 
 			int callsAccepted, 
 			String userName, String password, String dyndnsUser, String dyndnsPassword
 	) {
 		setId(id);
+		setUserId(userId);
 		setEnabled(enabled);
 		setRegistrar(registrar);
 		setHost(host);

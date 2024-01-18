@@ -13,7 +13,8 @@ public class DBAnswerBotSip extends AnswerBotSip {
 	/** 
 	 * Creates a {@link DBAnswerBotSip}.
 	 */
-	public DBAnswerBotSip(long userId, String host, String ip4, String ip6, String registrar, String realm, String userName, String passwd) {
+	public DBAnswerBotSip(long id, long userId, String host, String ip4, String ip6, String registrar, String realm, String userName, String passwd) {
+		setId(id);
 		setUserId(userId);
 		setHost(host);
 		setIpv4(ip4);

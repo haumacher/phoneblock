@@ -6,14 +6,60 @@ option NoListener;
 option NoBinary;
 option DartLib = "../../../../phoneblock_answerbot_ui/lib/proto.dart";
 
-message CreateAnswerbotResponse {
-	string userName;
+abstract message SetupRequest {
+
 }
+
+message CreateAnswerbotResponse {
+	long id;
+	string userName;
+	string password;
+}
+
+message CreateAnswerBot extends SetupRequest {
+	// No data.
+}
+
+message EnterHostName extends SetupRequest {
+	long id;
+	string hostName;
+}
+
+message SetupDynDns extends SetupRequest {
+	long id;
+	string hostName;
+}
+
+message SetupDynDnsResponse {
+	long id;
+	string dyndnsUser;
+	string dyndnsPassword;
+}
+
+message CheckDynDns extends SetupRequest {
+	long id;
+}
+
+message EnableAnswerBot extends SetupRequest {
+	long id;
+}
+
+message DisableAnswerBot extends SetupRequest {
+	long id;
+}
+
+message CheckAnswerBot extends SetupRequest {
+	long id;
+}
+
 
 /** Information of a single answer bot. */
 message AnswerbotInfo {
 	/** The primary key identifier of this bot. */
 	long id;
+	
+	/** The ID of the owning user. */
+	long userId;
 
 	/** Whether the bot is enabled (registration is active). */
 	bool enabled;

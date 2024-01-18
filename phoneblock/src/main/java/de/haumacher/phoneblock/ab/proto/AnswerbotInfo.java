@@ -18,6 +18,9 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** @see #getId() */
 	public static final String ID__PROP = "id";
 
+	/** @see #getUserId() */
+	public static final String USER_ID__PROP = "userId";
+
 	/** @see #isEnabled() */
 	public static final String ENABLED__PROP = "enabled";
 
@@ -58,6 +61,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	public static final String DYNDNS_PASSWORD__PROP = "dyndnsPassword";
 
 	private long _id = 0L;
+
+	private long _userId = 0L;
 
 	private boolean _enabled = false;
 
@@ -112,6 +117,26 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(long value) {
 		_id = value;
+	}
+
+	/**
+	 * The ID of the owning user.
+	 */
+	public final long getUserId() {
+		return _userId;
+	}
+
+	/**
+	 * @see #getUserId()
+	 */
+	public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setUserId(long value) {
+		internalSetUserId(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getUserId()} without chain call utility. */
+	protected final void internalSetUserId(long value) {
+		_userId = value;
 	}
 
 	/**
@@ -424,6 +449,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 		private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 			java.util.Arrays.asList(
 				ID__PROP, 
+				USER_ID__PROP, 
 				ENABLED__PROP, 
 				REGISTERED__PROP, 
 				REGISTER_MSG__PROP, 
@@ -447,6 +473,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 		public Object get(String field) {
 			switch (field) {
 				case ID__PROP: return getId();
+				case USER_ID__PROP: return getUserId();
 				case ENABLED__PROP: return isEnabled();
 				case REGISTERED__PROP: return isRegistered();
 				case REGISTER_MSG__PROP: return getRegisterMsg();
@@ -468,6 +495,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 		public void set(String field, Object value) {
 			switch (field) {
 				case ID__PROP: internalSetId((long) value); break;
+				case USER_ID__PROP: internalSetUserId((long) value); break;
 				case ENABLED__PROP: internalSetEnabled((boolean) value); break;
 				case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 				case REGISTER_MSG__PROP: internalSetRegisterMsg((String) value); break;
@@ -501,6 +529,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 			super.writeFields(out);
 			out.name(ID__PROP);
 			out.value(getId());
+			out.name(USER_ID__PROP);
+			out.value(getUserId());
 			out.name(ENABLED__PROP);
 			out.value(isEnabled());
 			out.name(REGISTERED__PROP);
@@ -545,6 +575,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 		protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 			switch (field) {
 				case ID__PROP: setId(in.nextLong()); break;
+				case USER_ID__PROP: setUserId(in.nextLong()); break;
 				case ENABLED__PROP: setEnabled(in.nextBoolean()); break;
 				case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 				case REGISTER_MSG__PROP: setRegisterMsg(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;

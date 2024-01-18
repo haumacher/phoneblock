@@ -113,40 +113,48 @@ public interface Users {
 	@Update("update CALLERS set CALLS=CALLS + 1, LASTUPDATE=#{now} where USERID=#{userId} and PHONE=#{phone}")
 	int addCall(long userId, String phone, long now);
 
-	@Select("select USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where DYNDNS_USER=#{user}")
-	DBAnswerBotDynDns getDynDns(String user);
-	
-	@Select("select USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where USERID=#{userId}")
-	DBAnswerBotDynDns getDynDnsByUserId(long userId);
+	@Select("select ABID, USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where DYNDNS_USER=#{dynDnsUser}")
+	DBAnswerBotDynDns getDynDns(String dynDnsUser);
+
+	@Insert("insert into ANSWERBOT_DYNDNS (ABID, USERID, CREATED, DYNDNS_USER, DYNDNS_PASSWD) values (#{abId}, #{userId}, #{now}, #{dynDnsUser}, #{dynDnsPassword})")
+	int setupDynDns(long abId, long userId, long now, String dynDnsUser, String dynDnsPassword);
 	
 	/**
 	 * Updates the user's dynamic IP address.
 	 */
-	@Insert("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where USERID=#{userId}")
-	void updateDynDny(long userId, String ip4, String ip6, long updated);
+	@Update("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where ABID=#{abId}")
+	void updateDynDns(long abId, String ip4, String ip6, long updated);
 	
-	@Select("select s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.USERID=s.USERID " + 
+	@Select("select s.ID, s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
+			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
 			"where s.ENABLED = true and (s.UPDATED > #{since} or d.UPDATED > #{since})")
 	List<DBAnswerBotSip> getEnabledAnswerBots(long since);
 
-	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, REGISTERED=false, REGISTER_MSG=NULL where USERID=#{userId}")
-	void enableAnswerBot(long userId, boolean enabled, long updated);
+	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, REGISTERED=false, REGISTER_MSG=NULL where ID=#{id}")
+	void enableAnswerBot(long id, boolean enabled, long updated);
 
-	@Insert("insert into ANSWERBOT_SIP (USERID, USERNAME, PASSWD, CREATED, UPDATED) values (#{userId}, #{userName}, #{password}, #{now}, #{now})")
-	int createAnswerBot(long userId, String userName, String password, long now);
-
-	@Select("select s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.USERID=s.USERID " + 
+	@Select("select s.ID, s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
+			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
 			"where s.USERNAME = #{userName}")
-	DBAnswerBotSip getAnswerBot(String userName);
+	DBAnswerBotSip getAnswerBotBySipUser(String userName);
 
-	@Select("select s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.CALLS_ACCEPTED, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.USERID=s.USERID " + 
+	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.CALLS_ACCEPTED, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
+			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
 			"where s.USERID= #{userId}")
 	List<DBAnswerbotInfo> getAnswerBots(long userId);
 	
-	@Update("update ANSWERBOT_SIP set REGISTERED=#{registered}, REGISTER_MSG=#{message} where USERID=#{userId} and (REGISTER_MSG is null or not REGISTER_MSG=#{message} or not REGISTERED=#{registered})")
-	int updateSipRegistration(long userId, boolean registered, String message);
+	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.CALLS_ACCEPTED, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
+			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
+			"where s.ID= #{id}")
+	DBAnswerbotInfo getAnswerBot(long id);
+	
+	@Update("update ANSWERBOT_SIP set REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id} and ((REGISTER_MSG is null) or (not (REGISTER_MSG=#{message})) or (not (REGISTERED=#{registered})))")
+	int updateSipRegistration(long id, boolean registered, String message);
+
+	@Delete("delete from ANSWERBOT_DYNDNS where ABID=#{abId}")
+	int answerbotDeleteDynDns(long abId);
+
+	@Update("update ANSWERBOT_SIP set HOST=#{host} where ID=#{id}")
+	void answerbotEnterHostName(long id, String host);
 
 }

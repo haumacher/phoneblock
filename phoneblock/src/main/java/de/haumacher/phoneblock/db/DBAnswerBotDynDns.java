@@ -15,7 +15,8 @@ public class DBAnswerBotDynDns extends AnswerBotDynDns {
 	/** 
 	 * Creates a {@link DBAnswerBotDynDns}.
 	 */
-	public DBAnswerBotDynDns(long userId, long created, long updated, String user, String passwd, String ip4, String ip6) {
+	public DBAnswerBotDynDns(long id, long userId, long created, long updated, String user, String passwd, String ip4, String ip6) {
+		setId(id);
 		setUserId(userId);
 		setCreated(created);
 		setUpdated(updated);

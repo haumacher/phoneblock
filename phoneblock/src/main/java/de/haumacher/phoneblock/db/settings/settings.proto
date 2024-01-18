@@ -32,6 +32,9 @@ message UserSettings {
 
 /** Common options of answer bot settings. */
 abstract message AnswerBotSetting {
+	/** ID of the answer bot. */
+	long id;
+
 	/** ID of the PhoneBlock user. */
 	long userId;
 	

@@ -47,12 +47,76 @@ abstract class _JsonObject {
 	}
 }
 
+/// Visitor interface for SetupRequest.
+abstract class SetupRequestVisitor<R, A> {
+	R visitCreateAnswerBot(CreateAnswerBot self, A arg);
+	R visitEnterHostName(EnterHostName self, A arg);
+	R visitSetupDynDns(SetupDynDns self, A arg);
+	R visitCheckDynDns(CheckDynDns self, A arg);
+	R visitEnableAnswerBot(EnableAnswerBot self, A arg);
+	R visitDisableAnswerBot(DisableAnswerBot self, A arg);
+	R visitCheckAnswerBot(CheckAnswerBot self, A arg);
+}
+
+abstract class SetupRequest extends _JsonObject {
+	/// Creates a SetupRequest.
+	SetupRequest();
+
+	/// Parses a SetupRequest from a string source.
+	static SetupRequest? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a SetupRequest instance from the given reader.
+	static SetupRequest? read(JsonReader json) {
+		SetupRequest? result;
+
+		json.expectArray();
+		if (!json.hasNext()) {
+			return null;
+		}
+
+		switch (json.expectString()) {
+			case "CreateAnswerBot": result = CreateAnswerBot(); break;
+			case "EnterHostName": result = EnterHostName(); break;
+			case "SetupDynDns": result = SetupDynDns(); break;
+			case "CheckDynDns": result = CheckDynDns(); break;
+			case "EnableAnswerBot": result = EnableAnswerBot(); break;
+			case "DisableAnswerBot": result = DisableAnswerBot(); break;
+			case "CheckAnswerBot": result = CheckAnswerBot(); break;
+			default: result = null;
+		}
+
+		if (!json.hasNext() || json.tryNull()) {
+			return null;
+		}
+
+		if (result == null) {
+			json.skipAnyValue();
+		} else {
+			result._readContent(json);
+		}
+		json.endArray();
+
+		return result;
+	}
+
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg);
+
+}
+
 class CreateAnswerbotResponse extends _JsonObject {
+	int id;
+
 	String userName;
+
+	String password;
 
 	/// Creates a CreateAnswerbotResponse.
 	CreateAnswerbotResponse({
+			this.id = 0, 
 			this.userName = "", 
+			this.password = "", 
 	});
 
 	/// Parses a CreateAnswerbotResponse from a string source.
@@ -73,8 +137,16 @@ class CreateAnswerbotResponse extends _JsonObject {
 	@override
 	void _readProperty(String key, JsonReader json) {
 		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
 			case "userName": {
 				userName = json.expectString();
+				break;
+			}
+			case "password": {
+				password = json.expectString();
 				break;
 			}
 			default: super._readProperty(key, json);
@@ -85,9 +157,405 @@ class CreateAnswerbotResponse extends _JsonObject {
 	void _writeProperties(JsonSink json) {
 		super._writeProperties(json);
 
+		json.addKey("id");
+		json.addNumber(id);
+
 		json.addKey("userName");
 		json.addString(userName);
+
+		json.addKey("password");
+		json.addString(password);
 	}
+
+}
+
+class CreateAnswerBot extends SetupRequest {
+	/// Creates a CreateAnswerBot.
+	CreateAnswerBot();
+
+	/// Parses a CreateAnswerBot from a string source.
+	static CreateAnswerBot? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a CreateAnswerBot instance from the given reader.
+	static CreateAnswerBot read(JsonReader json) {
+		CreateAnswerBot result = CreateAnswerBot();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "CreateAnswerBot";
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitCreateAnswerBot(this, arg);
+
+}
+
+class EnterHostName extends SetupRequest {
+	int id;
+
+	String hostName;
+
+	/// Creates a EnterHostName.
+	EnterHostName({
+			this.id = 0, 
+			this.hostName = "", 
+	});
+
+	/// Parses a EnterHostName from a string source.
+	static EnterHostName? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a EnterHostName instance from the given reader.
+	static EnterHostName read(JsonReader json) {
+		EnterHostName result = EnterHostName();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "EnterHostName";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			case "hostName": {
+				hostName = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+
+		json.addKey("hostName");
+		json.addString(hostName);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitEnterHostName(this, arg);
+
+}
+
+class SetupDynDns extends SetupRequest {
+	int id;
+
+	String hostName;
+
+	/// Creates a SetupDynDns.
+	SetupDynDns({
+			this.id = 0, 
+			this.hostName = "", 
+	});
+
+	/// Parses a SetupDynDns from a string source.
+	static SetupDynDns? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a SetupDynDns instance from the given reader.
+	static SetupDynDns read(JsonReader json) {
+		SetupDynDns result = SetupDynDns();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "SetupDynDns";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			case "hostName": {
+				hostName = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+
+		json.addKey("hostName");
+		json.addString(hostName);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitSetupDynDns(this, arg);
+
+}
+
+class SetupDynDnsResponse extends _JsonObject {
+	int id;
+
+	String dyndnsUser;
+
+	String dyndnsPassword;
+
+	/// Creates a SetupDynDnsResponse.
+	SetupDynDnsResponse({
+			this.id = 0, 
+			this.dyndnsUser = "", 
+			this.dyndnsPassword = "", 
+	});
+
+	/// Parses a SetupDynDnsResponse from a string source.
+	static SetupDynDnsResponse? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a SetupDynDnsResponse instance from the given reader.
+	static SetupDynDnsResponse read(JsonReader json) {
+		SetupDynDnsResponse result = SetupDynDnsResponse();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "SetupDynDnsResponse";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			case "dyndnsUser": {
+				dyndnsUser = json.expectString();
+				break;
+			}
+			case "dyndnsPassword": {
+				dyndnsPassword = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+
+		json.addKey("dyndnsUser");
+		json.addString(dyndnsUser);
+
+		json.addKey("dyndnsPassword");
+		json.addString(dyndnsPassword);
+	}
+
+}
+
+class CheckDynDns extends SetupRequest {
+	int id;
+
+	/// Creates a CheckDynDns.
+	CheckDynDns({
+			this.id = 0, 
+	});
+
+	/// Parses a CheckDynDns from a string source.
+	static CheckDynDns? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a CheckDynDns instance from the given reader.
+	static CheckDynDns read(JsonReader json) {
+		CheckDynDns result = CheckDynDns();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "CheckDynDns";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitCheckDynDns(this, arg);
+
+}
+
+class EnableAnswerBot extends SetupRequest {
+	int id;
+
+	/// Creates a EnableAnswerBot.
+	EnableAnswerBot({
+			this.id = 0, 
+	});
+
+	/// Parses a EnableAnswerBot from a string source.
+	static EnableAnswerBot? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a EnableAnswerBot instance from the given reader.
+	static EnableAnswerBot read(JsonReader json) {
+		EnableAnswerBot result = EnableAnswerBot();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "EnableAnswerBot";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitEnableAnswerBot(this, arg);
+
+}
+
+class DisableAnswerBot extends SetupRequest {
+	int id;
+
+	/// Creates a DisableAnswerBot.
+	DisableAnswerBot({
+			this.id = 0, 
+	});
+
+	/// Parses a DisableAnswerBot from a string source.
+	static DisableAnswerBot? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a DisableAnswerBot instance from the given reader.
+	static DisableAnswerBot read(JsonReader json) {
+		DisableAnswerBot result = DisableAnswerBot();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "DisableAnswerBot";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitDisableAnswerBot(this, arg);
+
+}
+
+class CheckAnswerBot extends SetupRequest {
+	int id;
+
+	/// Creates a CheckAnswerBot.
+	CheckAnswerBot({
+			this.id = 0, 
+	});
+
+	/// Parses a CheckAnswerBot from a string source.
+	static CheckAnswerBot? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a CheckAnswerBot instance from the given reader.
+	static CheckAnswerBot read(JsonReader json) {
+		CheckAnswerBot result = CheckAnswerBot();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "CheckAnswerBot";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitCheckAnswerBot(this, arg);
 
 }
 
@@ -95,6 +563,9 @@ class CreateAnswerbotResponse extends _JsonObject {
 class AnswerbotInfo extends _JsonObject {
 	///  The primary key identifier of this bot.
 	int id;
+
+	///  The ID of the owning user.
+	int userId;
 
 	///  Whether the bot is enabled (registration is active).
 	bool enabled;
@@ -138,6 +609,7 @@ class AnswerbotInfo extends _JsonObject {
 		/// Creates a AnswerbotInfo.
 		AnswerbotInfo({
 				this.id = 0, 
+				this.userId = 0, 
 				this.enabled = false, 
 				this.registered = false, 
 				this.registerMsg, 
@@ -173,6 +645,10 @@ class AnswerbotInfo extends _JsonObject {
 			switch (key) {
 				case "id": {
 					id = json.expectInt();
+					break;
+				}
+				case "userId": {
+					userId = json.expectInt();
 					break;
 				}
 				case "enabled": {
@@ -237,6 +713,9 @@ class AnswerbotInfo extends _JsonObject {
 
 			json.addKey("id");
 			json.addNumber(id);
+
+			json.addKey("userId");
+			json.addNumber(userId);
 
 			json.addKey("enabled");
 			json.addBool(enabled);
