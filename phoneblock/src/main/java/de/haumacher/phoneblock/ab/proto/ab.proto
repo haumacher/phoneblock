@@ -48,6 +48,10 @@ message DisableAnswerBot extends SetupRequest {
 	long id;
 }
 
+message DeleteAnswerBot extends SetupRequest {
+	long id;
+}
+
 message CheckAnswerBot extends SetupRequest {
 	long id;
 }
