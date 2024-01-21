@@ -29,6 +29,7 @@ import de.haumacher.phoneblock.ab.proto.CheckAnswerBot;
 import de.haumacher.phoneblock.ab.proto.CheckDynDns;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerBot;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
+import de.haumacher.phoneblock.ab.proto.DeleteAnswerBot;
 import de.haumacher.phoneblock.ab.proto.DisableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnterHostName;
@@ -287,16 +288,50 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		HttpServletRequest req = context.req;
 		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
 
+		long id = self.getId();
+
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			DBAnswerbotInfo bot = users.getAnswerBot(self.getId());
+			DBAnswerbotInfo bot = users.getAnswerBot(id);
+			if (bot == null) {
+				sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Answerbot '" + id + "' not found.");
+				return null;
+			}
 			SipService.getInstance().disableAnwserBot(bot.getUserName());
 		}
 		
 		sendOk(resp);
-		LOG.info("Answerbot disabled for: " + login);
+		LOG.info("Answerbot '" + id + "' disabled for: " + login);
+		return null;
+	}
+	
+	@Override
+	public Void visit(DeleteAnswerBot self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		HttpServletRequest req = context.req;
+		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+
+		long id = self.getId();
+		
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			DBAnswerbotInfo bot = users.getAnswerBot(id);
+			if (bot == null) {
+				sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Answerbot '" + id + "' not found.");
+				return null;
+			}
+			SipService.getInstance().disableAnwserBot(bot.getUserName());
+			
+			users.answerbotDelete(id);
+			session.commit();
+		}
+		
+		sendOk(resp);
+		LOG.info("Answerbot '" + id + "' deleted for: " + login);
 		return null;
 	}
 

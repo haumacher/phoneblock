@@ -154,6 +154,9 @@ public interface Users {
 	@Delete("delete from ANSWERBOT_DYNDNS where ABID=#{abId}")
 	int answerbotDeleteDynDns(long abId);
 
+	@Delete("delete from ANSWERBOT_SIP where ID=#{id}")
+	int answerbotDelete(long id);
+	
 	@Update("update ANSWERBOT_SIP set HOST=#{host} where ID=#{id}")
 	void answerbotEnterHostName(long id, String host);
 

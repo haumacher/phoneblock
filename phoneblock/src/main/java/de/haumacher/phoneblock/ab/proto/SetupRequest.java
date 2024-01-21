@@ -23,6 +23,9 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.DisableAnswerBot}. */
 		DISABLE_ANSWER_BOT,
 
+		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.DeleteAnswerBot}. */
+		DELETE_ANSWER_BOT,
+
 		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.CheckAnswerBot}. */
 		CHECK_ANSWER_BOT,
 		;
@@ -49,6 +52,9 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 
 		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.DisableAnswerBot}.*/
 		R visit(de.haumacher.phoneblock.ab.proto.DisableAnswerBot self, A arg) throws E;
+
+		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.DeleteAnswerBot}.*/
+		R visit(de.haumacher.phoneblock.ab.proto.DeleteAnswerBot self, A arg) throws E;
 
 		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.CheckAnswerBot}.*/
 		R visit(de.haumacher.phoneblock.ab.proto.CheckAnswerBot self, A arg) throws E;
@@ -77,6 +83,7 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 			case CheckDynDns.CHECK_DYN_DNS__TYPE: result = de.haumacher.phoneblock.ab.proto.CheckDynDns.readCheckDynDns(in); break;
 			case EnableAnswerBot.ENABLE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.EnableAnswerBot.readEnableAnswerBot(in); break;
 			case DisableAnswerBot.DISABLE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.DisableAnswerBot.readDisableAnswerBot(in); break;
+			case DeleteAnswerBot.DELETE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.DeleteAnswerBot.readDeleteAnswerBot(in); break;
 			case CheckAnswerBot.CHECK_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.CheckAnswerBot.readCheckAnswerBot(in); break;
 			default: in.skipValue(); result = null; break;
 		}
