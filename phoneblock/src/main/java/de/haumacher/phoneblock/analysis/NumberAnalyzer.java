@@ -17,6 +17,8 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
+import de.haumacher.phoneblock.db.model.PhoneNumer;
+
 /**
  * Utility for analyzing phone numbers.
  */

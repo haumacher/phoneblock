@@ -20,7 +20,7 @@
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="de.haumacher.phoneblock.db.DB"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
-<%@page import="de.haumacher.phoneblock.db.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>

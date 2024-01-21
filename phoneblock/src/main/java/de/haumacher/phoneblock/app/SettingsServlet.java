@@ -18,13 +18,12 @@ import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 
 /**
