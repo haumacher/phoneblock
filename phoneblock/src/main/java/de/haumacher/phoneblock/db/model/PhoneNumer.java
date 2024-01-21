@@ -1,15 +1,15 @@
-package de.haumacher.phoneblock.analysis;
+package de.haumacher.phoneblock.db.model;
 
-public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.analysis.PhoneNumer} instance.
+	 * Creates a {@link de.haumacher.phoneblock.db.model.PhoneNumer} instance.
 	 */
-	public static de.haumacher.phoneblock.analysis.PhoneNumer create() {
-		return new de.haumacher.phoneblock.analysis.PhoneNumer();
+	public static de.haumacher.phoneblock.db.model.PhoneNumer create() {
+		return new de.haumacher.phoneblock.db.model.PhoneNumer();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.analysis.PhoneNumer} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.db.model.PhoneNumer} type in JSON format. */
 	public static final String PHONE_NUMER__TYPE = "PhoneNumer";
 
 	/** @see #getShortcut() */
@@ -33,27 +33,6 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getCity() */
 	public static final String CITY__PROP = "city";
 
-	/** Identifier for the property {@link #getShortcut()} in binary format. */
-	static final int SHORTCUT__ID = 1;
-
-	/** Identifier for the property {@link #getPlus()} in binary format. */
-	static final int PLUS__ID = 2;
-
-	/** Identifier for the property {@link #getZeroZero()} in binary format. */
-	static final int ZERO_ZERO__ID = 3;
-
-	/** Identifier for the property {@link #getCountryCode()} in binary format. */
-	static final int COUNTRY_CODE__ID = 4;
-
-	/** Identifier for the property {@link #getCountry()} in binary format. */
-	static final int COUNTRY__ID = 5;
-
-	/** Identifier for the property {@link #getCityCode()} in binary format. */
-	static final int CITY_CODE__ID = 6;
-
-	/** Identifier for the property {@link #getCity()} in binary format. */
-	static final int CITY__ID = 7;
-
 	private String _shortcut = null;
 
 	private String _plus = "";
@@ -71,7 +50,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link PhoneNumer} instance.
 	 *
-	 * @see de.haumacher.phoneblock.analysis.PhoneNumer#create()
+	 * @see de.haumacher.phoneblock.db.model.PhoneNumer#create()
 	 */
 	protected PhoneNumer() {
 		super();
@@ -84,7 +63,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getShortcut()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setShortcut(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setShortcut(String value) {
 		internalSetShortcut(value);
 		return this;
 	}
@@ -109,7 +88,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getPlus()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setPlus(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setPlus(String value) {
 		internalSetPlus(value);
 		return this;
 	}
@@ -127,7 +106,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getZeroZero()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setZeroZero(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setZeroZero(String value) {
 		internalSetZeroZero(value);
 		return this;
 	}
@@ -145,7 +124,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCountryCode()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setCountryCode(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setCountryCode(String value) {
 		internalSetCountryCode(value);
 		return this;
 	}
@@ -163,7 +142,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCountry()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setCountry(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setCountry(String value) {
 		internalSetCountry(value);
 		return this;
 	}
@@ -181,7 +160,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCityCode()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setCityCode(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setCityCode(String value) {
 		internalSetCityCode(value);
 		return this;
 	}
@@ -206,7 +185,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCity()
 	 */
-	public de.haumacher.phoneblock.analysis.PhoneNumer setCity(String value) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer setCity(String value) {
 		internalSetCity(value);
 		return this;
 	}
@@ -227,7 +206,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public de.haumacher.phoneblock.analysis.PhoneNumer registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -237,7 +216,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public de.haumacher.phoneblock.analysis.PhoneNumer unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.db.model.PhoneNumer unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -294,8 +273,8 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.analysis.PhoneNumer readPhoneNumer(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.analysis.PhoneNumer result = new de.haumacher.phoneblock.analysis.PhoneNumer();
+	public static de.haumacher.phoneblock.db.model.PhoneNumer readPhoneNumer(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.db.model.PhoneNumer result = new de.haumacher.phoneblock.db.model.PhoneNumer();
 		result.readContent(in);
 		return result;
 	}
@@ -344,78 +323,172 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		}
 	}
 
+	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.PhoneNumer} type. */
+	public static final String PHONE_NUMER__XML_ELEMENT = "phone-numer";
+
+	/** XML attribute or element name of a {@link #getShortcut} property. */
+	private static final String SHORTCUT__XML_ATTR = "shortcut";
+
+	/** XML attribute or element name of a {@link #getPlus} property. */
+	private static final String PLUS__XML_ATTR = "plus";
+
+	/** XML attribute or element name of a {@link #getZeroZero} property. */
+	private static final String ZERO_ZERO__XML_ATTR = "zero-zero";
+
+	/** XML attribute or element name of a {@link #getCountryCode} property. */
+	private static final String COUNTRY_CODE__XML_ATTR = "country-code";
+
+	/** XML attribute or element name of a {@link #getCountry} property. */
+	private static final String COUNTRY__XML_ATTR = "country";
+
+	/** XML attribute or element name of a {@link #getCityCode} property. */
+	private static final String CITY_CODE__XML_ATTR = "city-code";
+
+	/** XML attribute or element name of a {@link #getCity} property. */
+	private static final String CITY__XML_ATTR = "city";
+
 	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
+	public String getXmlTagName() {
+		return PHONE_NUMER__XML_ELEMENT;
 	}
 
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		if (hasShortcut()) {
-			out.name(SHORTCUT__ID);
-			out.value(getShortcut());
-		}
-		out.name(PLUS__ID);
-		out.value(getPlus());
-		out.name(ZERO_ZERO__ID);
-		out.value(getZeroZero());
-		out.name(COUNTRY_CODE__ID);
-		out.value(getCountryCode());
-		out.name(COUNTRY__ID);
-		out.value(getCountry());
-		if (hasCityCode()) {
-			out.name(CITY_CODE__ID);
-			out.value(getCityCode());
-		}
-		if (hasCity()) {
-			out.name(CITY__ID);
-			out.value(getCity());
-		}
+	@Override
+	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		writeAttributes(out);
+		writeElements(out);
 	}
 
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.analysis.PhoneNumer readPhoneNumer(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.analysis.PhoneNumer result = de.haumacher.phoneblock.analysis.PhoneNumer.readPhoneNumer_Content(in);
-		in.endObject();
+	/** Serializes all fields that are written as XML attributes. */
+	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		out.writeAttribute(SHORTCUT__XML_ATTR, getShortcut());
+		out.writeAttribute(PLUS__XML_ATTR, getPlus());
+		out.writeAttribute(ZERO_ZERO__XML_ATTR, getZeroZero());
+		out.writeAttribute(COUNTRY_CODE__XML_ATTR, getCountryCode());
+		out.writeAttribute(COUNTRY__XML_ATTR, getCountry());
+		out.writeAttribute(CITY_CODE__XML_ATTR, getCityCode());
+		out.writeAttribute(CITY__XML_ATTR, getCity());
+	}
+
+	/** Serializes all fields that are written as XML elements. */
+	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
+	}
+
+	/** Creates a new {@link de.haumacher.phoneblock.db.model.PhoneNumer} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static PhoneNumer readPhoneNumer_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		PhoneNumer result = new PhoneNumer();
+		result.readContentXml(in);
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.analysis.PhoneNumer} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.analysis.PhoneNumer readPhoneNumer_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.analysis.PhoneNumer result = new PhoneNumer();
-		result.readContent(in);
-		return result;
-	}
+	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
+			String name = in.getAttributeLocalName(n);
+			String value = in.getAttributeValue(n);
 
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
+			readFieldXmlAttribute(name, value);
+		}
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+			String localName = in.getLocalName();
+			readFieldXmlElement(in, localName);
 		}
 	}
 
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case SHORTCUT__ID: setShortcut(in.nextString()); break;
-			case PLUS__ID: setPlus(in.nextString()); break;
-			case ZERO_ZERO__ID: setZeroZero(in.nextString()); break;
-			case COUNTRY_CODE__ID: setCountryCode(in.nextString()); break;
-			case COUNTRY__ID: setCountry(in.nextString()); break;
-			case CITY_CODE__ID: setCityCode(in.nextString()); break;
-			case CITY__ID: setCity(in.nextString()); break;
-			default: in.skipValue(); 
+	/** Parses the given attribute value and assigns it to the field with the given name. */
+	protected void readFieldXmlAttribute(String name, String value) {
+		switch (name) {
+			case SHORTCUT__XML_ATTR: {
+				setShortcut(value);
+				break;
+			}
+			case PLUS__XML_ATTR: {
+				setPlus(value);
+				break;
+			}
+			case ZERO_ZERO__XML_ATTR: {
+				setZeroZero(value);
+				break;
+			}
+			case COUNTRY_CODE__XML_ATTR: {
+				setCountryCode(value);
+				break;
+			}
+			case COUNTRY__XML_ATTR: {
+				setCountry(value);
+				break;
+			}
+			case CITY_CODE__XML_ATTR: {
+				setCityCode(value);
+				break;
+			}
+			case CITY__XML_ATTR: {
+				setCity(value);
+				break;
+			}
+			default: {
+				// Skip unknown attribute.
+			}
 		}
+	}
+
+	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
+		switch (localName) {
+			case SHORTCUT__XML_ATTR: {
+				setShortcut(in.getElementText());
+				break;
+			}
+			case PLUS__XML_ATTR: {
+				setPlus(in.getElementText());
+				break;
+			}
+			case ZERO_ZERO__XML_ATTR: {
+				setZeroZero(in.getElementText());
+				break;
+			}
+			case COUNTRY_CODE__XML_ATTR: {
+				setCountryCode(in.getElementText());
+				break;
+			}
+			case COUNTRY__XML_ATTR: {
+				setCountry(in.getElementText());
+				break;
+			}
+			case CITY_CODE__XML_ATTR: {
+				setCityCode(in.getElementText());
+				break;
+			}
+			case CITY__XML_ATTR: {
+				setCity(in.getElementText());
+				break;
+			}
+			default: {
+				internalSkipUntilMatchingEndElement(in);
+			}
+		}
+	}
+
+	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		int level = 0;
+		while (true) {
+			switch (in.next()) {
+				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
+				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+			}
+		}
+	}
+
+	/** Creates a new {@link PhoneNumer} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static PhoneNumer readPhoneNumer(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		in.nextTag();
+		return de.haumacher.phoneblock.db.model.PhoneNumer.readPhoneNumer_XmlContent(in);
 	}
 
 }

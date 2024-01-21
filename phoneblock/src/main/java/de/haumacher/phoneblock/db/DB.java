@@ -53,6 +53,7 @@ import de.haumacher.phoneblock.db.model.Blocklist;
 import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.db.model.SpamReport;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
@@ -454,7 +455,7 @@ public class DB {
 	/**
 	 * Looks up all spam reports that were done after the given time in milliseconds since epoch.
 	 */
-	public List<SpamReport> getLatestSpamReports(long notBefore) {
+	public List<DBSpamReport> getLatestSpamReports(long notBefore) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
@@ -521,7 +522,7 @@ public class DB {
 	/**
 	 * Looks all spam reports.
 	 */
-	public List<SpamReport> getAll(int limit) {
+	public List<DBSpamReport> getAll(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getAll(limit);
@@ -531,7 +532,7 @@ public class DB {
 	/**
 	 * Looks up spam reports with the most votes in the last month.
 	 */
-	public List<SpamReport> getTopSpamReports(int cnt) {
+	public List<DBSpamReport> getTopSpamReports(int cnt) {
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.add(Calendar.MONTH, -1);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -547,7 +548,7 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<SpamReport> getLatestBlocklistEntries(String login) {
+	public List<DBSpamReport> getLatestBlocklistEntries(String login) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
@@ -650,14 +651,14 @@ public class DB {
 	 */
 	public SpamReport getPhoneInfo(SpamReports reports, String phone) {
 		if (reports.isWhiteListed(phone)) {
-			return new SpamReport(phone, 0, 0, 0).setWhiteListed(true);
+			return new DBSpamReport(phone, 0, 0, 0).setWhiteListed(true);
 		}
 
 		SpamReport result = reports.getPhoneInfo(phone);
 		if (result == null) {
 			result = reports.getPhoneInfoArchived(phone);
 			if (result == null) {
-				result = new SpamReport(phone, 0, 0, 0);
+				result = new DBSpamReport(phone, 0, 0, 0);
 			} else {
 				result.setArchived(true);
 			}

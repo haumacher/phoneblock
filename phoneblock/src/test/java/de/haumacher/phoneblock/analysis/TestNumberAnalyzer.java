@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import de.haumacher.phoneblock.db.model.PhoneNumer;
+
 /**
  * Test for {@link NumberAnalyzer}.
  */
