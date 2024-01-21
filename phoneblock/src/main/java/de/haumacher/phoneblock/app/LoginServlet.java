@@ -19,14 +19,29 @@ import de.haumacher.phoneblock.db.DBService;
 /**
  * Servlet displaying information about a telephone number in the DB.
  */
-@WebServlet(urlPatterns = "/login")
+@WebServlet(urlPatterns = LoginServlet.PATH)
 public class LoginServlet extends HttpServlet {
+	
+	/**
+	 * Request attribute that save the original location that was requested before login.
+	 * 
+	 * <p>
+	 * The location is a path relative to the context path of the application.
+	 * </p>
+	 * 
+	 * <p>
+	 * The value is transmitted in the login request as additional parameter.
+	 * </p>
+	 */
+	public static final String LOCATION_ATTRIBUTE = "locationAfterLogin";
+	
+	public static final String PATH = "/login";
 
 	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.sendRedirect(req.getContextPath() + "/login.jsp");
+		req.getRequestDispatcher("/login.jsp").forward(req, resp);
 	}
 	
 	@Override
@@ -54,7 +69,13 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
-		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+		
+		String location = req.getParameter(LOCATION_ATTRIBUTE);
+		if (location == null) {
+			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+		} else {
+			resp.sendRedirect(req.getContextPath() + location);
+		}
 	}
 
 	/**

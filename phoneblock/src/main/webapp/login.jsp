@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<%@page import="java.net.URLEncoder"%>
+<%@page import="java.net.URL"%>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
+<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <html>
 <%
@@ -11,7 +15,7 @@
 
 <%
 	boolean error = request.getAttribute("error") != null;
-	String active = error ? "is-active" : "";
+	String userActive = error ? "is-active" : "";
 %>
 <body>
 <jsp:include page="header.jspf"></jsp:include>
@@ -28,21 +32,38 @@
 			und welche Länge Deine Blocklist höchstens haben darf. 
 		</p>
 	</div>
+
+	<%
+		String location = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
+		String locationParam;
+		if (location != null) {
+			locationParam = "&" + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, "UTF-8");
+		} else {
+			locationParam = "";
+		}
+	%>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=Google2Client"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a></p>
+		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=Google2Client<%=locationParam%>"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a></p>
 	</nav>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=FacebookClient"><i class="fa-brands fa-facebook-f"></i> <span>Mit Facebook anmelden</span></a></p>
+		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=FacebookClient<%=locationParam%>"><i class="fa-brands fa-facebook-f"></i> <span>Mit Facebook anmelden</span></a></p>
 	</nav>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="#loginForm" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail anmelden</span></a></p>
-		<div id="loginForm" class="is-collapsible <%=active%>">
+		<p class="panel-heading"><a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit PhoneBlock-Nutzernamen anmelden</span></a></p>
+		<div id="loginForm" class="is-collapsible <%=userActive%>">
 			<div class="panel-block">
 	  		<div class="content">
 				<form action="<%=request.getContextPath()%>/login" method="post">
+				<%
+					if (location != null) {
+				%>
+			    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
+				<%
+					}
+				%>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
 				    <input class="input" type="text" placeholder="Benutzername" name="userName">
