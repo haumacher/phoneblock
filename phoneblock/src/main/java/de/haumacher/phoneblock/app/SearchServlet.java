@@ -23,15 +23,16 @@ import javax.servlet.http.HttpSession;
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Ratings;
-import de.haumacher.phoneblock.db.SpamReport;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.RatingInfo;
 import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.db.model.SearchResult;
+import de.haumacher.phoneblock.db.model.SpamReport;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.JspUtil;
@@ -137,23 +138,38 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		
-		String phone = NumberAnalyzer.normalizeNumber(pathInfo.substring(1));
-		if (phone.isEmpty() || phone.contains("*")) {
+		String query = pathInfo.substring(1);
+		
+		boolean bot = isBot(req);
+		boolean isSeachHit = !bot && req.getParameter("link") == null;
+		
+		SearchResult searchResult = analyze(query, bot, isSeachHit);
+		if (searchResult == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
+		}
+		
+		sendResult(req, resp, searchResult);
+	}
+
+	public static SearchResult analyze(String query) {
+		return analyze(query, false, true);
+	}
+
+	private static SearchResult analyze(String query, boolean isBot, boolean isSeachHit) {
+		String phone = NumberAnalyzer.normalizeNumber(query);
+		if (phone.isEmpty() || phone.contains("*")) {
+			return null;
 		}
 		
 		PhoneNumer number = NumberAnalyzer.analyze(phone);
 		if (number == null) {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
+			return null;
 		}
+		
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 
-		boolean bot = isBot(req);
-
 		// Note: Search for comments first, since new comments may change the state of the number.
-		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId, bot);
+		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId, isBot);
 		
 		SpamReport info;
 		List<? extends SearchInfo> searches;
@@ -170,7 +186,7 @@ public class SearchServlet extends HttpServlet {
 			
 			long now = System.currentTimeMillis();
 			
-			if (!bot && req.getParameter("link") == null) {
+			if (isSeachHit) {
 				db.addSearchHit(reports, phoneId, now);
 				commit = true;
 			}
@@ -218,7 +234,7 @@ public class SearchServlet extends HttpServlet {
 			int ratingVotes = ratingInfo.getVotes();
 			ratings.put(currentRating, ratingVotes);
 			
-			if (ratingVotes > maxVotes && currentRating != Rating.A_LEGITIMATE) {
+			if (ratingVotes >= maxVotes && currentRating != Rating.A_LEGITIMATE) {
 				topRating = currentRating;
 				maxVotes = ratingVotes;
 			}
@@ -229,65 +245,70 @@ public class SearchServlet extends HttpServlet {
 			topRating = Rating.A_LEGITIMATE;
 		}
 		
-		String ratingAttribute = RatingServlet.ratingAttribute(phoneId);
+		return SearchResult.create().setPhoneId(phoneId).setNumber(number).setComments(comments).setInfo(info).setSearches(searches).setAiSummary(aiSummary).setRelatedNumbers(relatedNumbers).setPrev(prev).setNext(next)
+				.setTopRating(topRating).setRatings(ratings);
+	}
+
+	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult) throws ServletException, IOException {
+		String ratingAttribute = RatingServlet.ratingAttribute(searchResult.getPhoneId());
 		if (getSessionAttribute(req, ratingAttribute) != null) {
 			req.setAttribute("thanks", Boolean.TRUE);
 		}
 		
-		String status = status(votes);
+		String status = status(searchResult.getInfo().getVotes());
 		
-		String defaultSummary = defaultSummary(req, info);
+		String defaultSummary = defaultSummary(req, searchResult.getInfo());
 		
 		String summary;
 		String description;
-		if (isEmpty(aiSummary)) {
+		if (isEmpty(searchResult.getAiSummary())) {
 			summary = null;
-			description = defaultSimpleSummary(info);
+			description = defaultSimpleSummary(searchResult.getInfo());
 		} else {
-			description = summary = JspUtil.quote(aiSummary);
+			description = summary = JspUtil.quote(searchResult.getAiSummary());
 		}
 		
-		req.setAttribute("comments", comments);
+		req.setAttribute("comments", searchResult.getComments());
 
 		// The canonical path of this page.
-		req.setAttribute("path", req.getServletPath() + '/' + phoneId);
+		req.setAttribute("path", req.getServletPath() + '/' + searchResult.getPhoneId());
 		
-		req.setAttribute("info", info);
-		req.setAttribute("number", number);
-		req.setAttribute("prev", prev);
-		req.setAttribute("next", next);
+		req.setAttribute("info", searchResult.getInfo());
+		req.setAttribute("number", searchResult.getNumber());
+		req.setAttribute("prev", searchResult.getPrev());
+		req.setAttribute("next", searchResult.getNext());
 		req.setAttribute("summary", summary);
 		req.setAttribute("defaultSummary", defaultSummary);
-		req.setAttribute("rating", topRating);
-		req.setAttribute("ratings", ratings);
-		req.setAttribute("searches", searches);
-		req.setAttribute("relatedNumbers", relatedNumbers);
-		req.setAttribute("title", status + ": Rufnummer ☎ " + phoneId + " - PhoneBlock");
+		req.setAttribute("rating", searchResult.getTopRating());
+		req.setAttribute("ratings", searchResult.getRatings());
+		req.setAttribute("searches", searchResult.getSearches());
+		req.setAttribute("relatedNumbers", searchResult.getRelatedNumbers());
+		req.setAttribute("title", status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
 		req.setAttribute("description", description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
-		if (number.getShortcut() != null) {
+		if (searchResult.getNumber().getShortcut() != null) {
 			keywords.append(", ");
-			keywords.append(number.getShortcut());
+			keywords.append(searchResult.getNumber().getShortcut());
 		}
 		keywords.append(", ");
-		keywords.append(number.getZeroZero());
+		keywords.append(searchResult.getNumber().getZeroZero());
 
 		keywords.append(", ");
-		keywords.append(number.getPlus());
+		keywords.append(searchResult.getNumber().getPlus());
 		
-		if (topRating != Rating.B_MISSED) {
+		if (searchResult.getTopRating() != Rating.B_MISSED) {
 			keywords.append(", ");
-			keywords.append(Ratings.getLabel(topRating));
+			keywords.append(Ratings.getLabel(searchResult.getTopRating()));
 		}
 		
 		keywords.append(", ");
 		keywords.append(status);
 
-		if (number.getCity() != null) {
+		if (searchResult.getNumber().getCity() != null) {
 			keywords.append(", ");
-			keywords.append(number.getCity());
+			keywords.append(searchResult.getNumber().getCity());
 		}
 		
 		req.setAttribute("keywords", keywords.toString());
