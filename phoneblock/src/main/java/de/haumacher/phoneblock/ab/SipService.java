@@ -141,7 +141,23 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
-		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool);
+		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool) {
+			@Override
+			protected void processCallData(String userName, String from, long startTime, long duration) {
+				super.processCallData(userName, from, startTime, duration);
+				
+				DB db = _dbService.db();
+				try (SqlSession session = db.openSession()) {
+					Users users = session.getMapper(Users.class);
+					
+					long id = users.getAnswerBotId(userName);
+					users.recordCall(id, from, startTime, duration);
+					users.recordSummary(id, duration);
+					
+					session.commit();
+				}
+			}
+		};
 		
 		_instance = this;
 		

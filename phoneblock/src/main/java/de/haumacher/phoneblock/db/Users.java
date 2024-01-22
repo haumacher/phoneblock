@@ -132,6 +132,9 @@ public interface Users {
 
 	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, REGISTERED=false, REGISTER_MSG=NULL where ID=#{id}")
 	void enableAnswerBot(long id, boolean enabled, long updated);
+	
+	@Select("select s.ID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
+	long getAnswerBotId(String sipUser);
 
 	@Select("select s.ID, s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
@@ -159,5 +162,11 @@ public interface Users {
 	
 	@Update("update ANSWERBOT_SIP set HOST=#{host} where ID=#{id}")
 	void answerbotEnterHostName(long id, String host);
+
+	@Insert("insert into ANSWERBOT_CALLS (ABID, CALLER, STARTED, DURATION) values (#{abId}, #{caller}, #{started}, #{duration})")
+	void recordCall(long abId, String caller, long started, long duration);
+
+	@Update("update ANSWERBOT_SIP set CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
+	void recordSummary(long id, long duration);
 
 }

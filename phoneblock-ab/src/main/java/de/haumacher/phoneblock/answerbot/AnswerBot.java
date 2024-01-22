@@ -181,19 +181,19 @@ public class AnswerBot extends MultipleUAS {
 			return;
 		}
 		
-		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(msg));
+		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(userName, msg));
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);
 	}
 	
-	protected UserAgentListener createCallHandler(SipMessage msg) {
+	protected UserAgentListener createCallHandler(String userName, SipMessage msg) {
 		String from = msg.getFromUser();
 		if (from == null) {
 			// An anonymous call, accept.
 			if (_botConfig.getAcceptAnonymous()) {
 				LOG.info("Accepting anonymous call.");
-				return spamHandler();
+				return spamHandler(userName, "<anonymous>");
 			} else {
 				LOG.info("Not accepting anonymous call.");
 				return rejectHandler();
@@ -204,7 +204,7 @@ public class AnswerBot extends MultipleUAS {
 
 		if (from.startsWith("*") || (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix()))) {
 			// A local test call, accept.
-			return spamHandler();
+			return spamHandler(userName, from);
 		} else {
 			String fromLabel;
 			{
@@ -246,7 +246,7 @@ public class AnswerBot extends MultipleUAS {
 				return rejectHandler();
 			}
 			
-			return spamHandler();
+			return spamHandler(userName, from);
 		}
 	}
 
@@ -257,9 +257,14 @@ public class AnswerBot extends MultipleUAS {
 
 	/**
 	 * A {@link UserAgentListener} that accepts the call and starts a nonsense conversation with the counterpart.
+	 * 
+	 * @param userName the name of the user owning the virtual answer bot that is processing the call.
+	 * @param from The number of the caller.
 	 */
-	private UserAgentListener spamHandler() {
+	private UserAgentListener spamHandler(String userName, String from) {
 		return new UserAgentListenerAdapter() {
+			private long _startTime;
+
 			@Override
 			public void onUaIncomingCall(UserAgent ua, NameAddress callee, NameAddress caller, MediaDesc[] media_descs) {
 				String recordingFile;
@@ -286,7 +291,25 @@ public class AnswerBot extends MultipleUAS {
 				}
 				return specificPart.substring(0, atIndex);
 			}
+			
+			@Override
+			public void onUaCallIncomingAccepted(UserAgent userAgent) {
+				_startTime = System.currentTimeMillis();
+			}
+			
+			public void onUaCallClosed(UserAgent ua) {
+				long talkDuration = System.currentTimeMillis() - _startTime;
+				processCallData(userName, from, _startTime, talkDuration);
+			}
 		};
+	}
+	
+	/**
+	 * Called after a spam call has been finished.
+	 */
+	protected void processCallData(String userName, String from, long startTime, long talkDuration) {
+		float seconds = Math.round(talkDuration) / 1000.0f;
+		LOG.info("Completed SPAM call for '" + userName + "' with '" + from + "' started " + new Date(startTime) + " talked for " + seconds + " seconds.");
 	}
 
 	/**
