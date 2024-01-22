@@ -67,6 +67,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			return;
 		}
 		
+		LOG.info("Received answerbot command from '" + login + "': " + cmd);
 		try {
 			cmd.visit(this, new RequestContext(req, resp));
 		} catch (Throwable ex) {
