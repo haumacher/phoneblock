@@ -75,6 +75,11 @@ public class AnswerBot extends MultipleUAS {
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AnswerBot.class);
 
 	private static final String VERSION;
+
+	/**
+	 * Prefix of a contact name in a blocklist address book.
+	 */
+	public static final String SPAM_MARKER = "SPAM:";
 	
 	static {
 		String version;
@@ -215,7 +220,10 @@ public class AnswerBot extends MultipleUAS {
 			}
 			
 			if (!fromLabel.isEmpty() && !fromLabel.equals(from)) {
-				LOG.info("Incomming labeled call: " + fromLabel);
+				if (!fromLabel.startsWith(SPAM_MARKER)) {
+					LOG.info("Ignoring call with local address book entry: " + anonymize(fromLabel));
+					return rejectHandler();
+				}
 			}
 			
 			NumberInfo info;
@@ -240,6 +248,11 @@ public class AnswerBot extends MultipleUAS {
 			
 			return spamHandler();
 		}
+	}
+
+	private static String anonymize(String label) {
+		int length = label.length();
+		return length <= 5 ? label : label.substring(0, 2) + "..." + label.substring(length - 2);
 	}
 
 	/**
