@@ -55,6 +55,7 @@ abstract class SetupRequestVisitor<R, A> {
 	R visitCheckDynDns(CheckDynDns self, A arg);
 	R visitEnableAnswerBot(EnableAnswerBot self, A arg);
 	R visitDisableAnswerBot(DisableAnswerBot self, A arg);
+	R visitDeleteAnswerBot(DeleteAnswerBot self, A arg);
 	R visitCheckAnswerBot(CheckAnswerBot self, A arg);
 }
 
@@ -83,6 +84,7 @@ abstract class SetupRequest extends _JsonObject {
 			case "CheckDynDns": result = CheckDynDns(); break;
 			case "EnableAnswerBot": result = EnableAnswerBot(); break;
 			case "DisableAnswerBot": result = DisableAnswerBot(); break;
+			case "DeleteAnswerBot": result = DeleteAnswerBot(); break;
 			case "CheckAnswerBot": result = CheckAnswerBot(); break;
 			default: result = null;
 		}
@@ -512,6 +514,53 @@ class DisableAnswerBot extends SetupRequest {
 
 }
 
+class DeleteAnswerBot extends SetupRequest {
+	int id;
+
+	/// Creates a DeleteAnswerBot.
+	DeleteAnswerBot({
+			this.id = 0, 
+	});
+
+	/// Parses a DeleteAnswerBot from a string source.
+	static DeleteAnswerBot? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a DeleteAnswerBot instance from the given reader.
+	static DeleteAnswerBot read(JsonReader json) {
+		DeleteAnswerBot result = DeleteAnswerBot();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "DeleteAnswerBot";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "id": {
+				id = json.expectInt();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("id");
+		json.addNumber(id);
+	}
+
+	@override
+	R visitSetupRequest<R, A>(SetupRequestVisitor<R, A> v, A arg) => v.visitDeleteAnswerBot(this, arg);
+
+}
+
 class CheckAnswerBot extends SetupRequest {
 	int id;
 
@@ -810,7 +859,10 @@ class ListAnswerbotResponse extends _JsonObject {
 				bots = [];
 				while (json.hasNext()) {
 					if (!json.tryNull()) {
-						bots.add(AnswerbotInfo.read(json));
+						var value = AnswerbotInfo.read(json);
+						if (value != null) {
+							bots.add(value);
+						}
 					}
 				}
 				break;

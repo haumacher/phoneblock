@@ -40,6 +40,7 @@ String getContextPath() {
 var username = "b6c95db0-986e-47b0-af24-e51e56b09ecf";
 var password = "moykCqj2XqEo7XR3FidN";
 var authHeader = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+const bool debugUser = false;
 
 void main() {
   runApp(const MyApp());
@@ -86,8 +87,7 @@ Future<http.Response> sendRequest(SetupRequest request) async {
     encoding: const Utf8Codec(),
     headers: {
       "Content-Type": "application/json",
-      if (kDebugMode)
-        'Authorization': authHeader,
+      if (debugUser) 'Authorization': authHeader,
     },
     body: request.toString(),
   );
@@ -499,7 +499,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   void requestBotList() {
     http.get(Uri.parse('$basePath/ab/list'),
       headers: {
-        if (kDebugMode) 'Authorization': authHeader,
+        if (debugUser) 'Authorization': authHeader,
       },
     ).then(processResponse);
   }
@@ -582,22 +582,51 @@ class AnswerBotListState extends State<AnswerBotList> {
       padding: const EdgeInsets.all(8),
       itemCount: bots.length,
       itemBuilder: (BuildContext context, int index) {
+        var bot = bots[index];
+
         return SizedBox(
           height: 50,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Anrufbeantworter ${bots[index].userName}'),
-                ],
+              Padding(padding: EdgeInsets.only(right: 8),
+                child: Switch(
+                  thumbIcon: switchIcon,
+                  value: bot.enabled,
+                  onChanged: (bool value) {
+                    setState(() {
+                      if (bot.enabled) {
+                        sendRequest(DisableAnswerBot(id: bot.id));
+                      } else {
+                        sendRequest(EnableAnswerBot(id: bot.id));
+                      }
+                      bot.enabled = !bot.enabled;
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('Anrufbeantworter ${bot.userName}'),
+                        if (bot.enabled) Padding(padding: EdgeInsets.only(left: 16),
+                          child: bot.registered ?
+                            Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
+                            Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.arrow_right),
                 iconSize: 32,
-                onPressed: () => showAnswerBot(context, bots[index]),
+                onPressed: () => showAnswerBot(context, bot),
               )
             ],
           )
@@ -608,7 +637,12 @@ class AnswerBotListState extends State<AnswerBotList> {
   }
 
   showAnswerBot(BuildContext context, AnswerbotInfo bot) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(bot)));
+    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(bot)));
+    result.then((value) {
+      if (value != null && value is bool && value) {
+        refreshBotList();
+      }
+    });
   }
 
   refreshBotList() {
@@ -660,18 +694,23 @@ class AnswerBotViewState extends State<AnswerBotView> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
-                    const Expanded(child: Text("PhoneBlock-DynDNS benutzen")),
+                    Expanded(
+                      child: bot.enabled ?
+                        Text("Anrufbeantworter eingeschaltet") :
+                        Text("Anrufbeantworter ausgeschaltet")
+                    ),
                     Switch(
                       thumbIcon: switchIcon,
-                      value: internalDynDns,
+                      value: bot.enabled,
                       onChanged: (bool value) {
                         setState(() {
-                          internalDynDns = value;
+                          bot.enabled = value;
                         });
                       },
                     )
@@ -679,6 +718,8 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 ),
               ),
 
+              Group("DNS Settings"),
+              Text("DNS-Einstellung: ${internalDynDns ? "PhoneBlock-DNS" : "Anderer DynDNS-Anbieter"}"),
               if (internalDynDns) InfoField('DynDNS-User', bot.dyndnsUser, help: "Trage diesen ...."),
               if (internalDynDns) InfoField('DynDNS-Password', bot.dyndnsPassword),
               if (!internalDynDns) TextFormField(
@@ -688,8 +729,32 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 initialValue: bot.host,
               ),
 
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Group("SIP Settings"),
+              ),
+
               InfoField('User', bot.userName),
               InfoField('Password', bot.password),
+
+              if (!bot.enabled) Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    sendRequest(DeleteAnswerBot(id: bot.id)).then((value) {
+                      if (!context.mounted) {
+                        return;
+                      }
+                      if (value.statusCode == 200) {
+                        Navigator.of(context).pop(true);
+                      } else {
+                        showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
+                      }
+                    });
+                  },
+                  child: Text("Anrufbeantworter löschen"),
+                )
+              ),
             ],
           ),
         ),
@@ -701,6 +766,35 @@ class AnswerBotViewState extends State<AnswerBotView> {
         },
         child: const Icon(Icons.help),
       ),
+    );
+  }
+}
+
+class Group extends StatelessWidget {
+  final String label;
+
+  const Group(this.label, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(width: 32,
+          child: Divider(
+            height: 32,
+            thickness: 3,
+          ),
+        ),
+        Padding(padding: EdgeInsets.symmetric(horizontal: 8),
+          child: Text(label),
+        ),
+        Expanded(child:
+        Divider(
+          height: 32,
+          thickness: 3,
+        ),
+        ),
+      ],
     );
   }
 }
