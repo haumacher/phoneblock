@@ -86,7 +86,7 @@ public class RegisterServlet extends HttpServlet {
 			mailService.sendActivationMail(registration.getEmail(), code);
 		} catch (AddressException ex) {
 			removeSession(sessionId);
-			ServletUtil.sendError(resp, "Invalid e-mail address.");
+			ServletUtil.sendError(resp, "Invalid e-mail address: " + ex.getMessage());
 			return;
 		} catch (IOException | MessagingException ex) {
 			ServletUtil.sendMessage(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Sending mail failed, please try again later: " + ex.getMessage());

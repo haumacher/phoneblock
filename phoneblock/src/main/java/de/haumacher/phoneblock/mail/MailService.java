@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.mail.check.EMailChecker;
 
 /**
  * Service for sending e-mail messages.
@@ -73,13 +74,26 @@ public class MailService {
 
 	public void sendActivationMail(String receiver, String code)
 			throws MessagingException, IOException, AddressException {
+		
+		if (receiver == null || receiver.isBlank()) {
+			LOG.info("Rejected emtpy e-mail address..");
+			throw new AddressException("Address must not be empty.");
+		}
+		
+    	InternetAddress address = new InternetAddress(receiver);
+    	
+    	if (EMailChecker.isDisposable(address)) {
+			LOG.warn("Rejected disposable e-mail address: " + receiver);
+    		throw new AddressException("Please do not use disposable e-mail addresses.");
+    	}
+    	
 		LOG.info("Sending activation mail to '" + receiver + "'.");
 
 		Map<String, String> variables = new HashMap<>();
     	variables.put("{code}", code);
     	variables.put("{image}", APP_LOGO_SVG);
     	
-    	sendMail("PhoneBlock E-Mail Bestätigung", receiver, "mail-template", variables);
+		sendMail("PhoneBlock E-Mail Bestätigung", address, "mail-template", variables);
 	}
 
 	public boolean sendHelpMail(DBUserSettings userSettings) {
@@ -92,7 +106,7 @@ public class MailService {
 		LOG.info("Sending help mail to '" + receiver + "'.");
 		
 		try {
-			sendMail("PhoneBlock: Deine Installation", receiver, "help-mail", buildVariables(userSettings));
+			sendMail("PhoneBlock: Deine Installation", new InternetAddress(receiver), "help-mail", buildVariables(userSettings));
 			return true;
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send help mail to: " + receiver, ex);
@@ -113,7 +127,7 @@ public class MailService {
 		LOG.info("Sending welcome mail to '" + receiver + "'.");
 		
 		try {
-			sendMail("Willkommen bei PhoneBlock", receiver, "welcome-mail", buildVariables(userSettings));
+			sendMail("Willkommen bei PhoneBlock", new InternetAddress(receiver), "welcome-mail", buildVariables(userSettings));
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send welcome mail to: " + receiver, ex);
 		}
@@ -144,7 +158,7 @@ public class MailService {
 		return variables;
 	}
 	
-	private void sendMail(String subject, String receiver, String template, Map<String, String> variables)
+	private void sendMail(String subject, InternetAddress receiver, String template, Map<String, String> variables)
 			throws MessagingException, IOException {
 		Message msg = createMessage();
 		msg.setSubject(subject);
@@ -179,10 +193,9 @@ public class MailService {
 		return msg;
 	}
 
-	public void sendMail(String receiver, Message msg) throws AddressException, MessagingException {
-		InternetAddress address = new InternetAddress(receiver);
-		msg.setRecipient(RecipientType.TO, address);
-		Address[] addresses = {address};
+	public void sendMail(InternetAddress receiver, Message msg) throws AddressException, MessagingException {
+		msg.setRecipient(RecipientType.TO, receiver);
+		Address[] addresses = {receiver};
 		
 		try {
 			getTransport().sendMessage(msg, addresses);
