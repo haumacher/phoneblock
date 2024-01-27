@@ -145,6 +145,7 @@ public class SearchServlet extends HttpServlet {
 		SearchResult searchResult = analyze(query, bot, isSeachHit);
 		if (searchResult == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
 		}
 		
 		sendResult(req, resp, searchResult);
