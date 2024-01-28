@@ -607,15 +607,23 @@ class AnswerBotListState extends State<AnswerBotList> {
                 child: Switch(
                   thumbIcon: switchIcon,
                   value: bot.enabled,
-                  onChanged: (bool value) {
-                    setState(() {
-                      if (bot.enabled) {
-                        sendRequest(DisableAnswerBot(id: bot.id));
-                      } else {
-                        sendRequest(EnableAnswerBot(id: bot.id));
+                  onChanged: (bool value) async {
+                    if (bot.enabled) {
+                      sendRequest(DisableAnswerBot(id: bot.id));
+                      setState(() {
+                        bot.enabled = false;
+                      });
+                    } else {
+                      setState(() {
+                        bot.enabled = true;
+                      });
+                      bool ok = await enableAnswerBot(bot);
+                      if (!ok) {
+                        setState(() {
+                          bot.enabled = false;
+                        });
                       }
-                      bot.enabled = !bot.enabled;
-                    });
+                    }
                   },
                 ),
               ),
@@ -648,6 +656,54 @@ class AnswerBotListState extends State<AnswerBotList> {
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
+  }
+
+  Future<bool> enableAnswerBot(AnswerbotInfo bot) async {
+    const int maxCount = 20;
+    ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(max: maxCount, msg: 'Schalte Anrufbeantworter ein...');
+
+    var botId = bot.id;
+    var response = await sendRequest(EnableAnswerBot(id: botId));
+
+    if (!context.mounted) return false;
+
+    if (response.statusCode != 200) {
+      pd.close();
+
+      showErrorDialog(context, response, 'Fehler beim Einschalten des Anrufbeantworters.',
+          "Kann nicht einschalten: ${response.body}");
+      return false;
+    }
+
+    int sleep = 2500;
+    int n = 0;
+    while (true) {
+      http.Response response = await sendRequest(
+          CheckAnswerBot()
+            ..id=botId
+      );
+      if (!context.mounted) return false;
+
+      var responseCode = response.statusCode;
+      if (responseCode == 200) {
+        pd.close();
+        return true;
+      } else {
+        var errorMessage = response.body;
+        if (responseCode != 409 || n++ == maxCount) {
+          pd.close();
+
+          showErrorDialog(context, response, 'Einschalten des Anrufbeantworters fehlgeschlagen',
+              "Einschalten fehlgeschlagen: $errorMessage");
+          return false;
+        } else {
+          await Future.delayed(Duration(milliseconds: sleep));
+
+          pd.update(value: n, msg: "$errorMessage Versuche erneut...");
+        }
+      }
+    }
   }
 
   showAnswerBot(BuildContext context, AnswerbotInfo bot) {
