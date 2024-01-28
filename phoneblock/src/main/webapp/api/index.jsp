@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <html>
 <head>
 <jsp:include page="../head-content.jspf"></jsp:include>
-<link rel="stylesheet" href="<%=request.getContextPath() %>/webjars/swagger-ui-dist/${swagger-ui.version}/swagger-ui.css" />
+<link rel="stylesheet" href="<%=request.getContextPath() %><%=UIProperties.SWAGGER_PATH %>/swagger-ui.css" />
 </head>
 
 <body>
@@ -12,7 +13,7 @@
 <section id="swagger-ui" class="section">
 </section>
 
-<script src="<%=request.getContextPath() %>/webjars/swagger-ui-dist/${swagger-ui.version}/swagger-ui-bundle.js"></script>
+<script src="<%=request.getContextPath() %><%=UIProperties.SWAGGER_PATH %>/swagger-ui-bundle.js"></script>
 <script>
   window.onload = () => {
     window.ui = SwaggerUIBundle({
