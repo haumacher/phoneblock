@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.api.CommentVoteServlet"%>
 <%@page import="de.haumacher.phoneblock.app.ExternalLinkServlet"%>
@@ -48,7 +49,7 @@
 <jsp:include page="head-content.jspf"></jsp:include>
 
 <% if (!ratings.isEmpty() || !searches.isEmpty()) { %>
-<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/chartjs/${chartjs.version}/dist/chart.umd.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.CHARTJS_PATH %>/dist/chart.umd.js"></script>
 <% } %>
 
 <style type="text/css">

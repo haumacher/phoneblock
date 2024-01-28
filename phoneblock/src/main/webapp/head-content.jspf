@@ -1,3 +1,4 @@
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 
@@ -53,10 +54,10 @@
 <meta name="og:locale" content="de_DE" />
 <meta name="og:site_name" content="PhoneBlock">
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/bulma/${bulma.version}/css/bulma.min.css">
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/github-com-creativebulma-bulma-collapsible/${bulma-collapsible.version}/css/bulma-collapsible.min.css">
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/${font-awesome.version}/css/all.min.css">
-<link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.BULMA_PATH %>/css/bulma.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.BULMA_COLLAPSIBLE_PATH %>/css/bulma-collapsible.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.FA_PATH %>/css/all.min.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.SHARIFF_PATH %>/webjars/shariff/${shariff.version}/shariff.min.css">
 
 <link rel="alternate" type="application/rss+xml" title="PhoneBlock Updates" href="https://rss.app/feeds/2BQDpMNxPek9Yal2.xml" />
   
@@ -139,6 +140,6 @@
 }
 </style>
 
-<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/jquery/${jquery.version}/jquery.min.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.JQUERY_PATH %>/jquery.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=4"></script>
-<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/github-com-creativebulma-bulma-collapsible/${bulma-collapsible.version}/js/bulma-collapsible.min.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.BULMA_COLLAPSIBLE_PATH %>/js/bulma-collapsible.min.js"></script>
