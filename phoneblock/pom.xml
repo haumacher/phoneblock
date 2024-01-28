@@ -489,7 +489,7 @@
 						</connector>
 					</connectors>
 					<webApp>
-						<!--<contextPath>/phoneblock</contextPath>-->
+						<contextPath>/phoneblock</contextPath>
 					</webApp>
 				</configuration>
 			</plugin>
