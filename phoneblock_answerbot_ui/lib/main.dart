@@ -10,10 +10,25 @@ import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// Todo: test only.
+var username = "b6c95db0-986e-47b0-af24-e51e56b09ecf";
+var password = "moykCqj2XqEo7XR3FidN";
+var authHeader = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+const bool debugUser = false;
+const bool debugBase = false;
+
+void main() {
+  runApp(const MyApp());
+}
+
+const Color pbColor = Color(0xFF00d1b2);
+
 String basePath = getBasePath();
 
 String getBasePath() {
-  return "https://phoneblock.net/pb-test";
+  if (debugBase) {
+    return "https://phoneblock.net/pb-test";
+  }
 
   String protocol = window.location.protocol;
   String host = window.location.host;
@@ -36,17 +51,6 @@ String getContextPath() {
   return path.substring(0, sep);
 }
 
-// Todo: test only.
-var username = "b6c95db0-986e-47b0-af24-e51e56b09ecf";
-var password = "moykCqj2XqEo7XR3FidN";
-var authHeader = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-const bool debugUser = false;
-
-void main() {
-  runApp(const MyApp());
-}
-
-const Color pbColor = Color(0xFF00d1b2);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
