@@ -84,7 +84,16 @@ public class ManagementService implements ServletContextListener {
 	}
 
 	private ObjectName beanName(ServletContextEvent servletContextEvent) throws MalformedObjectNameException {
-		String appName = servletContextEvent == null ? "phoneblock" : servletContextEvent.getServletContext().getContextPath().substring(1);
+		if (servletContextEvent != null) {
+			String contextPath = servletContextEvent.getServletContext().getContextPath();
+			if (contextPath != null && contextPath.length() > 1) {
+				return objectName(contextPath.substring(1));
+			}
+		}
+		return objectName("phoneblock");
+	}
+
+	private ObjectName objectName(String appName) throws MalformedObjectNameException {
 		return ObjectName.getInstance(ManagementService.class.getPackageName(), "app", appName);
 	}
 
