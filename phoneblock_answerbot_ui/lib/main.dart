@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Todo: test only.
@@ -364,9 +365,9 @@ class BotSetupState extends State<BotSetupForm> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: ElevatedButton(
                       onPressed: () async {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Der PhoneBlock-Anrufbeantworter meldet sich an...')),
-                        );
+                        const int maxCount = 20;
+                        ProgressDialog pd = ProgressDialog(context: context);
+                        pd.show(max: maxCount, msg: 'Versuche Anrufbeantworter anzumelden...');
 
                         {
                           http.Response response = await sendRequest(
@@ -376,12 +377,14 @@ class BotSetupState extends State<BotSetupForm> {
                           if (!context.mounted) return;
 
                           if (response.statusCode != 200) {
+                            pd.close();
+
                             return showErrorDialog(context, response, 'Anmeldung des Anrufbeantworters fehlgeschlagen',
                                 "Registrierung fehlgeschlagen: ${response.body}");
                           }
                         }
 
-                        int sleep = 500;
+                        int sleep = 2500;
                         int n = 0;
                         while (true) {
                           http.Response response = await sendRequest(
@@ -390,19 +393,25 @@ class BotSetupState extends State<BotSetupForm> {
                           );
                           if (!context.mounted) return;
 
-                          if (response.statusCode == 200) {
+                          var responseCode = response.statusCode;
+                          if (responseCode == 200) {
                             break;
                           } else {
-                            if (n++ == 4) {
+                            var errorMessage = response.body;
+                            if (responseCode != 409 || n++ == maxCount) {
+                              pd.close();
+
                               return showErrorDialog(context, response, 'Anmeldung des Anrufbeantworters fehlgeschlagen',
-                                  "Registrierung fehlgeschlagen: ${response.body}");
+                                  "Registrierung fehlgeschlagen: $errorMessage");
                             } else {
                               await Future.delayed(Duration(milliseconds: sleep));
-                              sleep = sleep * 2;
+
+                              pd.update(value: n, msg: "$errorMessage Versuche erneut...");
                             }
                           }
                         }
 
+                        pd.close();
                         setState(() {
                           state = SetupState.finish;
                         });
