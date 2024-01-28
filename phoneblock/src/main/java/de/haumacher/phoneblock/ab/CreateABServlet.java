@@ -354,7 +354,10 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 				if (registerMsg == null) {
 					registerMsg = "No response.";
 				}
-				sendError(resp, HttpServletResponse.SC_CONFLICT, registerMsg);
+
+				boolean active = SipService.getInstance().isActive(bot.getUserName());
+				
+				sendError(resp, active ? HttpServletResponse.SC_CONFLICT: HttpServletResponse.SC_NOT_FOUND, registerMsg);
 				LOG.warn("Answerbot '" + id + "' not registered for: " + login + " (" + registerMsg + ")");
 				return null;
 			}

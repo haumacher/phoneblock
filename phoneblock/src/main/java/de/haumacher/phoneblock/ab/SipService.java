@@ -334,15 +334,19 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			users.enableAnswerBot(bot.getId(), false, System.currentTimeMillis());
 			tx.commit();
 			
-			Registration registration = _clients.remove(bot.getUserName());
-			if (registration == null) {
-				LOG.info("No active registration for user '" + userName + "'.");
-				return;
-			}
-
-			LOG.info("Stopping answer bot '" + userName + "'.");
-			registration.halt();
+			stop(userName);
 		}
+	}
+
+	private void stop(String userName) {
+		Registration registration = _clients.remove(userName);
+		if (registration == null) {
+			LOG.info("No active registration for user '" + userName + "'.");
+			return;
+		}
+
+		LOG.info("Stopping answer bot '" + userName + "'.");
+		registration.halt();
 	}
 
 	/**
@@ -379,6 +383,13 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		} catch (Exception ex) {
 			LOG.error("Registration for " + customerConfig.getUser() + " failed.", ex);
 		}
+	}
+	
+	/**
+	 * Whether a registration client is active for the given user name.
+	 */
+	public boolean isActive(String userName) {
+		return _clients.get(userName) != null;
 	}
 
 	@Override
@@ -421,7 +432,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		boolean temporary = registration.isTemporary();
 		if (temporary || failures > _config.maxFailures) {
 			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
-			registration.halt();
+			stop(registration.getUsername());
 		}
 	}
 
