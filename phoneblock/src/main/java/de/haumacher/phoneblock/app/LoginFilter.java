@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -16,6 +17,11 @@ import de.haumacher.phoneblock.db.DBService;
 public abstract class LoginFilter implements Filter {
 
 	public static final String AUTHENTICATED_USER_ATTR = "authenticated-user";
+	
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		// For backwards-compatibility.
+	}
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -51,7 +57,11 @@ public abstract class LoginFilter implements Filter {
 	 */
 	protected abstract void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException;
 
-
+	@Override
+	public void destroy() {
+		// For backwards-compatibility.
+	}
+	
 	/** 
 	 * The authenticated user of the given session.
 	 */
