@@ -288,15 +288,15 @@ class BotSetupState extends State<BotSetupForm> {
                       "Klammern, das macht Deine Fritz!Box beim Aufruf automatisch. Nutze am besten die Kopierfuntion, "
                       "um die Werte zu übernehmen."),
               InfoField('Domainname', "${dynDns!.dyndnsUser}.box.phoneblock.net",
-                  key: Key("dynip.domainname"),
+                  key: const Key("dynip.domainname"),
                   help: "Dieser Domainname kann später nicht öffentlich aufgelöst werden. Deine Internetadresse wird "
                       "ausschließlich mit PhoneBlock geteilt."),
               InfoField('Benutzername', dynDns!.dyndnsUser,
-                  key: Key("dynip.username"),
+                  key: const Key("dynip.username"),
                   help: "Der Benutzername, mit dem sich Deine Fritz!Box bei "
                   "PhoneBlock anmeldet, um ihre Internetadresse bekannt zu geben."),
               InfoField('Kennwort', dynDns!.dyndnsPassword,
-                  key: Key("dynip.password"),
+                  key: const Key("dynip.password"),
                   help: "Das Kennwort, mit dem sich Deine Fritz!Box bei PhoneBlock anmeldet, "
                   "um ihre Internetadresse bekannt zu geben. Aus Sicherheitsgründen kannst Du kein eigenes Kennwort "
                   "eingeben, sondern musst das von PhoneBlock sicher generierte Kennwort verwenden. "),
@@ -353,10 +353,10 @@ class BotSetupState extends State<BotSetupForm> {
                     "3. Wähle die Option \"LAN/WLAN (IP-Telefon)\", gib dem Telefon den Namen \"PhoneBlock\" und klicke auf \"Weiter\"."),
 
                 InfoField('Benutzername', widget.creation.userName,
-                    key: Key("sip.username"),
+                    key: const Key("sip.username"),
                     help: "Der Benutzername, mit dem sich der PhoneBlock-Anrufbeantworter an Deiner Fritz!Box anmeldet."),
                 InfoField('Kennwort', widget.creation.password,
-                    key: Key("sip.password"),
+                    key: const Key("sip.password"),
                     help: "Das Kennwort, das der PhoneBlock-Anrufbeantworter "
                     "nutzt, um sich an Deiner Fritz!Box anzumelden. "
                     "PhoneBlock hat für Dich ein sicheres Kennwort generiert.  "),
@@ -527,6 +527,7 @@ class AnswerBotListState extends State<AnswerBotList> {
       var bots = ListAnswerbotResponse.read(JsonReader.fromString(response.body)).bots;
       if (bots.isEmpty) {
         msg = "Du hast noch keinen Anrufbeantworter, klicke den Plus-Knopf unten, um einen PhoneBlock-Anrufbeantworter anzulegen.";
+        this.bots = null;
       } else {
         this.bots = bots;
       }
@@ -602,7 +603,7 @@ class AnswerBotListState extends State<AnswerBotList> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(padding: EdgeInsets.only(right: 8),
+              Padding(padding: const EdgeInsets.only(right: 8),
                 child: Switch(
                   thumbIcon: switchIcon,
                   value: bot.enabled,
@@ -626,10 +627,10 @@ class AnswerBotListState extends State<AnswerBotList> {
                     Row(
                       children: [
                         Text('Anrufbeantworter ${bot.userName}'),
-                        if (bot.enabled) Padding(padding: EdgeInsets.only(left: 16),
+                        if (bot.enabled) Padding(padding: const EdgeInsets.only(left: 16),
                           child: bot.registered ?
-                            Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
-                            Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
+                            const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
+                            const Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
                         ),
                       ],
                     )
@@ -715,8 +716,8 @@ class AnswerBotViewState extends State<AnswerBotView> {
                   children: [
                     Expanded(
                       child: bot.enabled ?
-                        Text("Anrufbeantworter eingeschaltet") :
-                        Text("Anrufbeantworter ausgeschaltet")
+                        const Text("Anrufbeantworter eingeschaltet") :
+                        const Text("Anrufbeantworter ausgeschaltet")
                     ),
                     Switch(
                       thumbIcon: switchIcon,
@@ -731,7 +732,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 ),
               ),
 
-              Group("DNS Settings"),
+              const Group("DNS Settings"),
               Text("DNS-Einstellung: ${internalDynDns ? "PhoneBlock-DNS" : "Anderer DynDNS-Anbieter"}"),
               if (internalDynDns) InfoField('DynDNS-User', bot.dyndnsUser, help: "Trage diesen ...."),
               if (internalDynDns) InfoField('DynDNS-Password', bot.dyndnsPassword),
@@ -742,8 +743,8 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 initialValue: bot.host,
               ),
 
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
                 child: Group("SIP Settings"),
               ),
 
@@ -765,7 +766,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                       }
                     });
                   },
-                  child: Text("Anrufbeantworter löschen"),
+                  child: const Text("Anrufbeantworter löschen"),
                 )
               ),
             ],
@@ -792,16 +793,16 @@ class Group extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 32,
+        const SizedBox(width: 32,
           child: Divider(
             height: 32,
             thickness: 3,
           ),
         ),
-        Padding(padding: EdgeInsets.symmetric(horizontal: 8),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Text(label),
         ),
-        Expanded(child:
+        const Expanded(child:
         Divider(
           height: 32,
           thickness: 3,
