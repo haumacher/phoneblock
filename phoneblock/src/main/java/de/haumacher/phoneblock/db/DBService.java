@@ -89,7 +89,12 @@ public class DBService implements ServletContextListener {
 					config.set(property, value);
 					LOG.info("Set property '" + property + "': " + config.get(property));
 				} catch (NamingException ex) {
-					LOG.info(ex.getMessage() + ", using default for property '" + property + "': " + config.get(property));
+					String value = System.getProperty("db." + property);
+					if (value != null) {
+						config.set(property, value);
+					} else {
+						LOG.info(ex.getMessage() + ", using default for property '" + property + "': " + config.get(property));
+					}
 				}
 			}
 		} catch (NamingException ex) {
