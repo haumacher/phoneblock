@@ -142,7 +142,9 @@ class BotSetupState extends State<BotSetupForm> {
                 hintText("Gib den Domain-Namen Deiner Fritz!Box an. Wenn Deine Fritz!Box noch keinen Domain-Namen hat, aktiviere PhoneBlock-DynDNS. "
                     "Den Domain-Namen Deiner Deiner Fritz!Box findest Du unter (Unter Internet > Freigaben > DynDNS). "
                     "Alternativ kannst Du auch die MyFRITZ!-Adresse angeben (Internet > MyFRITZ!-Konto), "
-                    "z.B. z4z...l4n.myfritz.net."),
+                    "z.B. z4z...l4n.myfritz.net.",
+                  helpUrl: "setup-ab/help/01-existing-dyndns.png"
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: ElevatedButton(
@@ -189,7 +191,9 @@ class BotSetupState extends State<BotSetupForm> {
           child: ListView(
               children: <Widget>[
                 hintText("Öffne in Deinen Fritz!Box-Einstellungen die Seite die "
-                    "Internet > Freigaben > DynDNS und trage die hier angegebenen Informationen ein."),
+                    "Internet > Freigaben > DynDNS und trage die hier angegebenen Informationen ein.",
+                    helpUrl: "setup-ab/help/02-configure-dyndns.png"
+                ),
 
                 const InfoField('Update-URL',
                     "https://phoneblock.net/phoneblock/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>",
