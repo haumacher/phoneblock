@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/InfoField.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
 import 'package:phoneblock_answerbot_ui/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BotSetupForm extends StatefulWidget {
   final CreateAnswerbotResponse creation;
@@ -85,10 +87,10 @@ class BotSetupState extends State<BotSetupForm> {
 
               hintText("PhoneBlock muss die Internet-Adresse Deiner "
                   "Fritz!Box kennen, um den Anrufbeantworter an Deiner "
-                  "Fritz!Box anmelden zu können. Wenn Deine Fritz!Box "
-                  "über MyFRITZ! oder DynDNS bereits einen Domainnamen hat, "
-                  "kannst Du diesen verwenden. Wenn nicht kannst Du ganz einfach "
-                  "DynDNS von PhoneBlock einrichten. Aktiviere dann diesen Schalter."),
+                  "Fritz!Box anmelden zu können. Wenn Du schon "
+                  "MyFRITZ! oder einen anderen DynDNS-Anbieter eingerichtet hast, "
+                  "kannst Du diesen Domain-Namen verwenden. Wenn nicht kannst Du ganz einfach "
+                  "DynDNS von PhoneBlock einrichten, aktiviere dann diesen Schalter."),
 
               if (phoneblockDns) ...[
                 Padding(
@@ -137,10 +139,10 @@ class BotSetupState extends State<BotSetupForm> {
                   },
                   onTapOutside: (evt) => _formKey.currentState!.validate(),
                 ),
-                hintText("Wenn Du schon DynDNS eines anderen Anbieters in Deiner Fritz!Box eingerichtet "
-                    "hast, musst Du hier den Domainnamen Deiner Fritz!Box eingeben (Unter Internet > Freigaben > DynDNS). "
-                    "Wenn Du einen My!Fritz-Account hast (Internet > MyFRITZ!-Konto), kannst Du hier auch Deine "
-                    "MyFRITZ!-Adresse angeben (z.B. z4z...l4n.myfritz.net)."),
+                hintText("Gib den Domain-Namen Deiner Fritz!Box an. Wenn Deine Fritz!Box noch keinen Domain-Namen hat, aktiviere PhoneBlock-DynDNS. "
+                    "Den Domain-Namen Deiner Deiner Fritz!Box findest Du unter (Unter Internet > Freigaben > DynDNS). "
+                    "Alternativ kannst Du auch die MyFRITZ!-Adresse angeben (Internet > MyFRITZ!-Konto), "
+                    "z.B. z4z...l4n.myfritz.net."),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: ElevatedButton(
@@ -184,8 +186,7 @@ class BotSetupState extends State<BotSetupForm> {
       body: Form(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
               children: <Widget>[
                 hintText("Öffne in Deinen Fritz!Box-Einstellungen die Seite die "
                     "Internet > Freigaben > DynDNS und trage die hier angegebenen Informationen ein."),
@@ -250,17 +251,28 @@ class BotSetupState extends State<BotSetupForm> {
       body: Form(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
               children: <Widget>[
+                Text(
+                  "Richte jetzt den PhoneBlock-Anrufbeantworter als \"Telefon (mit und ohne Anrufbeantworter)\" ein. "
+                      "Damit das auch klappt, halte Dich bitte genau an die folgenden Schritte:"),
                 hintText(
                     "1. Öffne in Deinen Fritz!Box-Einstellungen die Seite die "
-                        "Telefonie > Telefoniegeräte und klicke auf den Knopf \"Neues Gerät einrichten\". "
-                        "Wähle die Option \"Telefon (mit und ohne Anrufbeantworter)\" und klicke auf \"Weiter\"."),
+                        "Telefonie > Telefoniegeräte und klicke auf den Knopf \"Neues Gerät einrichten\".",
+                  helpUrl: "setup-ab/help/03-create-new-device.png"
+                ),
                 hintText(
-                    "2. Wähle die Option \"Telefon (mit und ohne Anrufbeantworter)\" und klicke auf \"Weiter\"."),
+                    "2. Wähle die Option \"Telefon (mit und ohne Anrufbeantworter)\" und klicke auf \"Weiter\".",
+                    helpUrl: "setup-ab/help/04-create-phone.png"
+                ),
                 hintText(
-                    "3. Wähle die Option \"LAN/WLAN (IP-Telefon)\", gib dem Telefon den Namen \"PhoneBlock\" und klicke auf \"Weiter\"."),
+                    "3. Wähle die Option \"LAN/WLAN (IP-Telefon)\", gib dem Telefon den Namen \"PhoneBlock\" und klicke auf \"Weiter\".",
+                    helpUrl: "setup-ab/help/05-choose-ip-phone.png"
+                ),
+                hintText(
+                    "4. Vergib jetzt den folgenden Benutzernamen und das Kennwort für deinen Anrufbeantworter und klicke dann auf \"Weiter\".",
+                    helpUrl: "setup-ab/help/06-user-name-and-password.png"
+                ),
 
                 InfoField('Benutzername', widget.creation.userName,
                     key: const Key("sip.username"),
@@ -270,6 +282,50 @@ class BotSetupState extends State<BotSetupForm> {
                     help: "Das Kennwort, das der PhoneBlock-Anrufbeantworter "
                         "nutzt, um sich an Deiner Fritz!Box anzumelden. "
                         "PhoneBlock hat für Dich ein sicheres Kennwort generiert.  "),
+                hintText(
+                    "5. Die jetzt abgefragte Rufnummer ist egal, der PhoneBlock-Anrufbeantworter führt "
+                        "aktiv keine Gespräche, sondern nimmt nur SPAM-Anrufe entgegen. Die Rufnummer wird "
+                        "in Schritt 9 wieder abgewählt. Klicke hier einfach auf \"Weiter\".",
+                    helpUrl: "setup-ab/help/07-choose-local-number.png"
+                ),
+                hintText(
+                    "6. Wähle \"alle Anrufe annehmen\" und klicke auf \"Weiter\". Der PhoneBlock-Anrufbeantworter nimmt "
+                        "sowieso nur Gespräche an, wenn die Nummer des Anrufers auf der Blockliste steht. Gleichzeitig "
+                        "nimmt PhoneBlock nie Gespräche von Nummern an, die in Deinem normalen Telefonbuch stehen.",
+                    helpUrl: "setup-ab/help/08-numbers-to-protect.png"
+                ),
+                hintText(
+                    "7. Du siehst eine Zusammenfassung. Die Einstellungen sind (fast) fertig, klicke auf \"Übernehmen\".",
+                    helpUrl: "setup-ab/help/10-check-settings.png"
+                ),
+                hintText(
+                    "8. In der Liste der Telefoniegeräte siehst Du jetzt \"PhoneBlock\". Es fehlen noch ein paar "
+                        "Einstellungen, die man erst nachträglich machen kann. Klicke daher auf den Bearbeiten-Stift "
+                        "in der Zeile des PhoneBlock-Anrufbeantworters.",
+                    helpUrl: "setup-ab/help/09-edit-phone.png"
+                ),
+                hintText(
+                    "9. In dem Feld \"Ausgehende Anrufe\" wähle die letzte (leere) Option, da PhoneBlock nie ausgehende Anrufe tätigt "
+                        "und daher der Anrufbeantworter keine Nummer für ausgehende Anrufe benötigt.",
+                    helpUrl: "setup-ab/help/11-prevent-call.png"
+                ),
+                hintText(
+                    "10. Selektiere den Reiter \"Anmeldedaten\". Bestätige dabei die Rückfage mit Klick auf \"Übernehmen\". "
+                        "Wähle jetzt die Option \"Anmeldung aus dem Internet erlauben\", "
+                        "damit sich der PhoneBlock-Anrufbeantworter aus der PhoneBlock-Cloud an Deiner Fritz!Box anmelden kann. "
+                        "Du musst das Kennwort des Anrufbeantworters (siehe oben) nocheinmal in das "
+                        "Feld \"Kennwort\" eingeben, bevor Du auf \"Übernehmen\" klickst. Lösche hierzu vorher "
+                        "die im Feld befindlichen Sternchen. ",
+                    helpUrl: "setup-ab/help/13-allow-internet-access.png"
+                ),
+                hintText(
+                    "11. Es erscheint eine Nachricht, die vor darauf hinweist, dass über den Internetzugriff kostenpflichtige Verbindungen aufgebaut werden könnten. "
+                        "Du kannst Das getrost bestätigen, da erstens PhoneBlock nie aktiv Verbindungen aufbaut, zweitens PhoneBlock für Dich ein sicheres Passwort erzeugt"
+                        "hat (siehe oben), so dass sich niemand anderes verbinden kann und drittens Du in Schritt 9 die ausgehenden Verbindungen deaktiviert hast. "
+                        "Je nach Einstellungen Deiner Fritz!Box musst Du die Einstellung noch an einem direkt an der Fritz!Box angeschlossenen DECT-Telefon bestätigen."),
+                hintText(
+                    "12. Jetzt ist alles erledigt. Klicke auf Zurück, um wieder in die Liste der Telefoniegeräte zu springen. Du kannst jetzt mit dem Knopf unten "
+                        "Deinen Anrufbeantworter aktivieren."),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -377,22 +433,26 @@ class BotSetupState extends State<BotSetupForm> {
     );
   }
 
-  hintText(String hint) {
+  hintText(String hint, {String? helpUrl}) {
     return             Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child:
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: Icon(Icons.info_outline),
-            ),
-            Expanded(child:
-            Text(hint),
-            ),
-          ],
-        )
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child:Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: helpUrl == null ?
+              const Icon(Icons.info_outline) :
+              IconButton(onPressed: () {
+                  launchUrl(Uri.parse('$basePath/$helpUrl'));
+                },
+                icon: const Icon(Icons.help_outline)),
+          ),
+          Expanded(child:
+          Text(hint),
+          ),
+        ],
+      )
     );
   }
 
