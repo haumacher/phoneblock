@@ -36,6 +36,9 @@
 			<param-value>${phoneblock.contextpath}/</param-value>
 		</init-param>
 	</filter>
+
+	<!-- Note: This is only necessary while developing with a Flutter app started locally in debug mode. -->
+	<!-- If the web UI is deployed to the server, no CORS headers are necessary, since requests have the same origin. -->
 <!-- 
 	<filter>
 		<filter-name>CorsFilter</filter-name>
@@ -65,11 +68,7 @@
 			<param-value>10</param-value>
 		</init-param>
 	</filter>
- -->
 
-	<!-- Note: This is only necessary while developing with a Flutter app started locally in debug mode. -->
-	<!-- If the web UI is deployed to the server, no CORS headers are necessary, since requests have the same origin. -->
-<!-- 
 	<filter-mapping>
 		<filter-name>CorsFilter</filter-name>
 		<url-pattern>/ab/*</url-pattern>
