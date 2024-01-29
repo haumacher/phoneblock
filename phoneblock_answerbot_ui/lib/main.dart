@@ -603,30 +603,6 @@ class AnswerBotListState extends State<AnswerBotList> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(padding: const EdgeInsets.only(right: 8),
-                child: Switch(
-                  thumbIcon: switchIcon,
-                  value: bot.enabled,
-                  onChanged: (bool value) async {
-                    if (bot.enabled) {
-                      sendRequest(DisableAnswerBot(id: bot.id));
-                      setState(() {
-                        bot.enabled = false;
-                      });
-                    } else {
-                      setState(() {
-                        bot.enabled = true;
-                      });
-                      bool ok = await enableAnswerBot(bot);
-                      if (!ok) {
-                        setState(() {
-                          bot.enabled = false;
-                        });
-                      }
-                    }
-                  },
-                ),
-              ),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -639,7 +615,10 @@ class AnswerBotListState extends State<AnswerBotList> {
                           child: bot.registered ?
                             const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
                             const Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
-                        ),
+                        )
+                        else Padding(padding: const EdgeInsets.only(left: 16),
+                          child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)
+                        )
                       ],
                     )
                   ],
@@ -655,6 +634,194 @@ class AnswerBotListState extends State<AnswerBotList> {
         );
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
+    );
+  }
+
+  showAnswerBot(BuildContext context, AnswerbotInfo bot) {
+    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(bot)));
+    result.then((value) {
+      refreshBotList();
+    });
+  }
+
+  refreshBotList() {
+      msg = 'Refreshing data...';
+      requestBotList();
+  }
+}
+
+final MaterialStateProperty<Icon?> switchIcon = MaterialStateProperty.resolveWith<Icon?>(
+      (Set<MaterialState> states) {
+    if (states.contains(MaterialState.selected)) {
+      return const Icon(Icons.check);
+    }
+    return const Icon(Icons.close);
+  },
+);
+
+class AnswerBotView extends StatefulWidget {
+  final AnswerbotInfo bot;
+
+  const AnswerBotView(this.bot, {super.key});
+
+  @override
+  State<StatefulWidget> createState() => AnswerBotViewState();
+}
+
+class AnswerBotViewState extends State<AnswerBotView> {
+  AnswerbotInfo get bot => widget.bot;
+  final _formKey = GlobalKey<FormState>();
+
+  bool internalDynDns = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    var host = bot.host;
+    internalDynDns = host == null || host.isEmpty;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Anrufbeantworter ${bot.userName}"),
+      ),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text('Anrufbeantworter'),
+                          if (bot.enabled) Padding(padding: const EdgeInsets.only(left: 16),
+                            child: bot.registered ?
+                            const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
+                            const Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
+                          )
+                          else Padding(padding: const EdgeInsets.only(left: 16),
+                              child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)
+                          )
+                        ],
+                      ),
+                    ),
+
+                    Padding(padding: const EdgeInsets.only(left: 8),
+                      child: Switch(
+                        thumbIcon: switchIcon,
+                        value: bot.enabled,
+                        onChanged: (bool value) async {
+                          if (bot.enabled) {
+                            sendRequest(DisableAnswerBot(id: bot.id));
+                            setState(() {
+                              bot.enabled = false;
+                            });
+                          } else {
+                            setState(() {
+                              bot.enabled = true;
+                            });
+                            bool ok = await enableAnswerBot(bot);
+                            setState(() {
+                              if (ok) {
+                                bot.registered = true;
+                              } else {
+                                bot.enabled = false;
+                              }
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Group("DNS Settings"),
+              Text("DNS-Einstellung: ${internalDynDns ? "PhoneBlock-DNS" : "Anderer DynDNS-Anbieter"}"),
+              if (internalDynDns) InfoField('DynDNS-User', bot.dyndnsUser, help: "Trage diesen ...."),
+              if (internalDynDns) InfoField('DynDNS-Password', bot.dyndnsPassword),
+              if (!internalDynDns) TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Host',
+                ),
+                initialValue: bot.host,
+              ),
+
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Group("SIP Settings"),
+              ),
+
+              InfoField('User', bot.userName),
+              InfoField('Password', bot.password),
+
+              if (!bot.enabled) Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Anrufbeantworter löschen'),
+                          content: SingleChildScrollView(
+                            child: ListBody(
+                              children: <Widget>[
+                                Text('Soll der Anrufbeantworter ${bot.userName} wirklich gelöscht werden?'),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Abbrechen'),
+                            ),
+                            TextButton(
+                              child: const Text('Löschen'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+
+                                sendRequest(DeleteAnswerBot(id: bot.id)).then((value) {
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+                                  if (value.statusCode == 200) {
+                                    Navigator.of(context).pop(true);
+                                  } else {
+                                    showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: const Text("Anrufbeantworter löschen"),
+                )
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: "Hilfe anzeigen",
+        onPressed: () async {
+          await launchUrl(Uri.parse("https://phoneblock.net/"));
+        },
+        child: const Icon(Icons.help),
+      ),
     );
   }
 
@@ -706,138 +873,6 @@ class AnswerBotListState extends State<AnswerBotList> {
     }
   }
 
-  showAnswerBot(BuildContext context, AnswerbotInfo bot) {
-    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(bot)));
-    result.then((value) {
-      if (value != null && value is bool && value) {
-        refreshBotList();
-      }
-    });
-  }
-
-  refreshBotList() {
-      msg = 'Refreshing data...';
-      requestBotList();
-  }
-}
-
-final MaterialStateProperty<Icon?> switchIcon = MaterialStateProperty.resolveWith<Icon?>(
-      (Set<MaterialState> states) {
-    if (states.contains(MaterialState.selected)) {
-      return const Icon(Icons.check);
-    }
-    return const Icon(Icons.close);
-  },
-);
-
-class AnswerBotView extends StatefulWidget {
-  AnswerbotInfo bot;
-
-  AnswerBotView(this.bot, {super.key});
-
-  @override
-  State<StatefulWidget> createState() => AnswerBotViewState();
-}
-
-class AnswerBotViewState extends State<AnswerBotView> {
-  AnswerbotInfo get bot => widget.bot;
-  final _formKey = GlobalKey<FormState>();
-
-  bool internalDynDns = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    var host = bot.host;
-    internalDynDns = host == null || host.isEmpty;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Anrufbeantworter ${bot.userName}"),
-      ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: bot.enabled ?
-                        const Text("Anrufbeantworter eingeschaltet") :
-                        const Text("Anrufbeantworter ausgeschaltet")
-                    ),
-                    Switch(
-                      thumbIcon: switchIcon,
-                      value: bot.enabled,
-                      onChanged: (bool value) {
-                        setState(() {
-                          bot.enabled = value;
-                        });
-                      },
-                    )
-                  ],
-                ),
-              ),
-
-              const Group("DNS Settings"),
-              Text("DNS-Einstellung: ${internalDynDns ? "PhoneBlock-DNS" : "Anderer DynDNS-Anbieter"}"),
-              if (internalDynDns) InfoField('DynDNS-User', bot.dyndnsUser, help: "Trage diesen ...."),
-              if (internalDynDns) InfoField('DynDNS-Password', bot.dyndnsPassword),
-              if (!internalDynDns) TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Host',
-                ),
-                initialValue: bot.host,
-              ),
-
-              const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Group("SIP Settings"),
-              ),
-
-              InfoField('User', bot.userName),
-              InfoField('Password', bot.password),
-
-              if (!bot.enabled) Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: ElevatedButton(
-                  onPressed: () {
-                    sendRequest(DeleteAnswerBot(id: bot.id)).then((value) {
-                      if (!context.mounted) {
-                        return;
-                      }
-                      if (value.statusCode == 200) {
-                        Navigator.of(context).pop(true);
-                      } else {
-                        showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
-                      }
-                    });
-                  },
-                  child: const Text("Anrufbeantworter löschen"),
-                )
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Hilfe anzeigen",
-        onPressed: () async {
-          await launchUrl(Uri.parse("https://phoneblock.net/"));
-        },
-        child: const Icon(Icons.help),
-      ),
-    );
-  }
 }
 
 class Group extends StatelessWidget {
