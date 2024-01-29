@@ -46,6 +46,12 @@ import de.haumacher.phoneblock.db.Users;
  */
 @WebServlet(urlPatterns = CreateABServlet.PATH)
 public class CreateABServlet extends ABApiServlet implements SetupRequest.Visitor<Void, RequestContext, IOException> {
+	
+	private static class InvalidBotAccess extends RuntimeException {
+		public InvalidBotAccess(String message) {
+			super(message);
+		}
+	}
 
 	private static final Logger LOG = LoggerFactory.getLogger(CreateABServlet.class);
 	
@@ -55,8 +61,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
 		if (login == null) {
-			LOG.warn("Rejected answerbot creation for unauthorized request.");
-			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Not logged in.");
+			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Please authenticate.");
 			return;
 		}
 		
@@ -69,7 +74,9 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		
 		LOG.info("Received answerbot command from '" + login + "': " + cmd);
 		try {
-			cmd.visit(this, new RequestContext(req, resp));
+			cmd.visit(this, new RequestContext(req, resp, login));
+		} catch (InvalidBotAccess ex) {
+			LOG.warn(ex.getMessage());
 		} catch (Throwable ex) {
 			LOG.error("Request failed for: " + login, ex);
 		}
@@ -78,8 +85,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	@Override
 	public Void visit(CreateAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 		
 		DB db = DBService.getInstance();
 		String userName = "ab-" + db.createId(16);
@@ -142,8 +148,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	@Override
 	public Void visit(EnterHostName self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 		
 		String hostName = self.getHostName();
 		
@@ -158,8 +163,12 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.answerbotDeleteDynDns(self.getId());
-			users.answerbotEnterHostName(self.getId(), hostName);
+			long botId = self.getId();
+			DBAnswerbotInfo bot = users.getAnswerBot(botId);
+			checkBotAccess(users, login, bot);
+			
+			users.answerbotDeleteDynDns(botId);
+			users.answerbotEnterHostName(botId, hostName);
 			
 			session.commit();
 		}
@@ -172,12 +181,11 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	@Override
 	public Void visit(SetupDynDns self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 
 		DB db = DBService.getInstance();
 		
-		long id = self.getId();
+		long botId = self.getId();
 		String dynDnsUser = "fb-" + db.createId(16);
 		String dynDnsPassword = db.createPassword(16);
 		
@@ -185,21 +193,16 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
+
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 			
-			DBAnswerbotInfo answerBot = users.getAnswerBot(id);
-			if (answerBot == null) {
-				LOG.warn("Answerbot '" + id + "' not found for: " + login);
-				sendError(resp, HttpServletResponse.SC_CONFLICT, "Answer bot not found: " + id);
-				return null;
-			}
-			
-			users.answerbotDeleteDynDns(id);
-			users.setupDynDns(id, answerBot.getUserId(), now, dynDnsUser, dynDnsPassword);
+			users.answerbotDeleteDynDns(botId);
+			users.setupDynDns(botId, bot.getUserId(), now, dynDnsUser, dynDnsPassword);
 			
 			session.commit();
 		}
 		sendResult(resp, SetupDynDnsResponse.create()
-			.setId(id)
+			.setId(botId)
 			.setDyndnsUser(dynDnsUser)
 			.setDyndnsPassword(dynDnsPassword));
 
@@ -212,21 +215,20 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		HttpServletResponse resp = context.resp;
 		HttpServletRequest req = context.req;
 		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		if (login == null) {
+			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Please authenticate.");
+			return null;
+		}
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			long id = self.getId();
-			DBAnswerbotInfo answerBot = users.getAnswerBot(id);
-			if (answerBot == null) {
-				LOG.warn("Answerbot '" + id + "' not found for: " + login);
-				sendError(resp, HttpServletResponse.SC_CONFLICT, "Answer bot not found: " + id);
-				return null;
-			}
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 
-			String ipv4 = answerBot.getIp4();
-			String ipv6 = answerBot.getIp6();
+			String ipv4 = bot.getIp4();
+			String ipv6 = bot.getIp6();
 			if (isEmpty(ipv4) && isEmpty(ipv6)) {
 				sendError(resp, HttpServletResponse.SC_CONFLICT, "No domain name set.");
 				return null;
@@ -258,19 +260,14 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	@Override
 	public Void visit(EnableAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			long id = self.getId();
-			DBAnswerbotInfo bot = users.getAnswerBot(id);
-			if (isEmpty(bot.getHost()) && isEmpty(bot.getIp4()) && isEmpty(bot.getIp6())) {
-				LOG.warn("No connection information for answer bot '" + id + "' for: " + login);
-				sendError(resp, HttpServletResponse.SC_CONFLICT, "No connection information.");
-			}
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 			
 			SipService sipService = SipService.getInstance();
 			String userName = bot.getUserName();
@@ -286,68 +283,59 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	@Override
 	public Void visit(DisableAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 
-		long id = self.getId();
+		long botId = self.getId();
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			DBAnswerbotInfo bot = users.getAnswerBot(id);
-			if (bot == null) {
-				sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Answerbot '" + id + "' not found.");
-				return null;
-			}
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
+
 			SipService.getInstance().disableAnwserBot(bot.getUserName());
 		}
 		
 		sendOk(resp);
-		LOG.info("Answerbot '" + id + "' disabled for: " + login);
+		LOG.info("Answerbot '" + botId + "' disabled for: " + login);
 		return null;
 	}
 	
 	@Override
 	public Void visit(DeleteAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 
-		long id = self.getId();
+		long botId = self.getId();
 		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			DBAnswerbotInfo bot = users.getAnswerBot(id);
-			if (bot == null) {
-				sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Answerbot '" + id + "' not found.");
-				return null;
-			}
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
+
 			SipService.getInstance().disableAnwserBot(bot.getUserName());
 			
-			users.answerbotDelete(id);
+			users.answerbotDelete(botId);
 			session.commit();
 		}
 		
 		sendOk(resp);
-		LOG.info("Answerbot '" + id + "' deleted for: " + login);
+		LOG.info("Answerbot '" + botId + "' deleted for: " + login);
 		return null;
 	}
 
 	@Override
 	public Void visit(CheckAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
-		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = context.login;
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			long id = self.getId();
-			DBAnswerbotInfo bot = users.getAnswerBot(id);
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 			
 			if (!bot.isRegistered()) {
 				String registerMsg = bot.getRegisterMsg();
@@ -358,7 +346,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 				boolean active = SipService.getInstance().isActive(bot.getUserName());
 				
 				sendError(resp, active ? HttpServletResponse.SC_CONFLICT: HttpServletResponse.SC_NOT_FOUND, registerMsg);
-				LOG.warn("Answerbot '" + id + "' not registered for: " + login + " (" + registerMsg + ")");
+				LOG.warn("Answerbot '" + botId + "' not registered for: " + login + " (" + registerMsg + ")");
 				return null;
 			}
 		}
@@ -366,6 +354,22 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		sendOk(resp);
 		LOG.info("Answerbot checked sucessfully for: " + login);
 		return null;
+	}
+
+	private DBAnswerbotInfo lookupAnswerBot(Users users, String login, long botId) {
+		DBAnswerbotInfo bot = users.getAnswerBot(botId);
+		checkBotAccess(users, login, bot);
+		return bot;
+	}
+
+	private void checkBotAccess(Users users, String login, DBAnswerbotInfo bot) {
+		Long userId = users.getUserId(login);
+		if (bot == null) {
+			throw new InvalidBotAccess("Access to non-existing answer bot for: " + login);
+		}
+		if (userId == null || bot.getUserId() != userId.longValue()) {
+			throw new InvalidBotAccess("Invalid access to answer bot '" + bot.getId() + "' for: " + login);
+		}
 	}
 
 	private void sendOk(HttpServletResponse resp) throws IOException {
