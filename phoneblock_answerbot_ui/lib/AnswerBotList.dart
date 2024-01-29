@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
+import 'package:phoneblock_answerbot_ui/CallList.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
@@ -156,7 +157,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   }
 
   showAnswerBot(BuildContext context, AnswerbotInfo bot) {
-    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(bot)));
+    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => CallListView(bot.id)));
     result.then((value) {
       refreshBotList();
     });

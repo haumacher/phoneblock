@@ -6,6 +6,7 @@ option NoListener;
 option NoBinary;
 option DartLib = "../../../../phoneblock_answerbot_ui/lib/proto.dart";
 
+/** Base class for all supported requests. */
 abstract message SetupRequest {
 
 }
@@ -20,13 +21,19 @@ message CreateAnswerBot extends SetupRequest {
 	// No data.
 }
 
-message EnterHostName extends SetupRequest {
+/** Base class for all requests targeting a single answer bot. */
+abstract message BotRequest extends SetupRequest {
+	/** The ID of the answer bot this request is targeted to */
 	long id;
+}
+
+/** Sets the host name of the Fritz!Box to connect the answer bot to. */
+message EnterHostName extends BotRequest {
 	string hostName;
 }
 
-message SetupDynDns extends SetupRequest {
-	long id;
+/** Sets up a DnyDNS account for the Fritz!Box to register its IP address. */
+message SetupDynDns extends BotRequest {
 	string hostName;
 }
 
@@ -36,26 +43,53 @@ message SetupDynDnsResponse {
 	string dyndnsPassword;
 }
 
-message CheckDynDns extends SetupRequest {
-	long id;
+/** Checks, whether a DynDNS request has been received. */
+message CheckDynDns extends BotRequest {
 }
 
-message EnableAnswerBot extends SetupRequest {
-	long id;
+/** Switches the answer bot on. */
+message EnableAnswerBot extends BotRequest {
 }
 
-message DisableAnswerBot extends SetupRequest {
-	long id;
+/** Switches the answer bot off. */
+message DisableAnswerBot extends BotRequest {
 }
 
-message DeleteAnswerBot extends SetupRequest {
-	long id;
+/** Deletes an answer bot. */
+message DeleteAnswerBot extends BotRequest {
 }
 
-message CheckAnswerBot extends SetupRequest {
-	long id;
+/** Checks whether an anwer bot has successfully registered to its Fritz!Box. */
+message CheckAnswerBot extends BotRequest {
 }
 
+/** Retrieves a list of calls this answer bot has already answered. */
+message ListCalls extends BotRequest {
+}
+
+/** Answer to a {@link ListCalls} request. */
+message ListCallsResponse {
+	/** The total number of calls answered so far. */
+	int callsAnswered;
+	
+	/** The total amout of time taked to SPAM callers so far. */
+	long talkTime;
+	
+	/** The last calls that have been answered. */
+	repeated CallInfo calls;
+}
+
+/** Information about a SPAM call answered. */
+message CallInfo {
+	/** The phone number of the caller. */
+	string caller;
+	
+	/** The time the call has started. */
+	long started;
+	
+	/** The duration of the call in milliseconds. */
+	long duration;
+}
 
 /** Information of a single answer bot. */
 message AnswerbotInfo {
@@ -77,6 +111,9 @@ message AnswerbotInfo {
 	
 	/** The total number of calls accepted by this bot so far. */
 	int callsAccepted;
+
+	/** The total time in milliseconds taked to SPAM customers. */
+	long talkTime;
 
 	/** The name of the box to register at. */
 	string registrar;
@@ -110,6 +147,11 @@ message AnswerbotInfo {
 	@Nullable
 	string dyndnsPassword;
 }
+
+/** Clears the calls answered so far. */
+message ClearCallList extends BotRequest {
+}
+
 
 /** Result of the {@link de.haumacher.phoneblock.ab.ListABServlet}. */
 message ListAnswerbotResponse {
