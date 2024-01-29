@@ -5,6 +5,9 @@ import java.io.IOException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Base class for implementing the answerbot control API.
+ */
 public abstract class ABApiServlet extends HttpServlet {
 
 	protected void sendError(HttpServletResponse resp, int code, String message) throws IOException {
