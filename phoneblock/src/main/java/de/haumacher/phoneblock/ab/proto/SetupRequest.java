@@ -1,5 +1,8 @@
 package de.haumacher.phoneblock.ab.proto;
 
+/**
+ * Base class for all supported requests.
+ */
 public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.data.ReflectiveDataObject {
 
 	/** Type codes for the {@link de.haumacher.phoneblock.ab.proto.SetupRequest} hierarchy. */
@@ -28,36 +31,21 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 
 		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.CheckAnswerBot}. */
 		CHECK_ANSWER_BOT,
+
+		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.ListCalls}. */
+		LIST_CALLS,
+
+		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.ClearCallList}. */
+		CLEAR_CALL_LIST,
 		;
 
 	}
 
 	/** Visitor interface for the {@link de.haumacher.phoneblock.ab.proto.SetupRequest} hierarchy.*/
-	public interface Visitor<R,A,E extends Throwable> {
+	public interface Visitor<R,A,E extends Throwable> extends de.haumacher.phoneblock.ab.proto.BotRequest.Visitor<R,A,E> {
 
 		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.CreateAnswerBot}.*/
 		R visit(de.haumacher.phoneblock.ab.proto.CreateAnswerBot self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.EnterHostName}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.EnterHostName self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.SetupDynDns}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.SetupDynDns self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.CheckDynDns}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.CheckDynDns self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.EnableAnswerBot}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.EnableAnswerBot self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.DisableAnswerBot}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.DisableAnswerBot self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.DeleteAnswerBot}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.DeleteAnswerBot self, A arg) throws E;
-
-		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.CheckAnswerBot}.*/
-		R visit(de.haumacher.phoneblock.ab.proto.CheckAnswerBot self, A arg) throws E;
 
 	}
 
@@ -85,6 +73,8 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 			case DisableAnswerBot.DISABLE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.DisableAnswerBot.readDisableAnswerBot(in); break;
 			case DeleteAnswerBot.DELETE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.DeleteAnswerBot.readDeleteAnswerBot(in); break;
 			case CheckAnswerBot.CHECK_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.CheckAnswerBot.readCheckAnswerBot(in); break;
+			case ListCalls.LIST_CALLS__TYPE: result = de.haumacher.phoneblock.ab.proto.ListCalls.readListCalls(in); break;
+			case ClearCallList.CLEAR_CALL_LIST__TYPE: result = de.haumacher.phoneblock.ab.proto.ClearCallList.readClearCallList(in); break;
 			default: in.skipValue(); result = null; break;
 		}
 		in.endArray();

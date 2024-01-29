@@ -81,6 +81,7 @@ abstract class SetupRequest extends _JsonObject {
 			case "DeleteAnswerBot": result = DeleteAnswerBot(); break;
 			case "CheckAnswerBot": result = CheckAnswerBot(); break;
 			case "ListCalls": result = ListCalls(); break;
+			case "ClearCallList": result = ClearCallList(); break;
 			default: result = null;
 		}
 
@@ -200,6 +201,7 @@ abstract class BotRequestVisitor<R, A> {
 	R visitDeleteAnswerBot(DeleteAnswerBot self, A arg);
 	R visitCheckAnswerBot(CheckAnswerBot self, A arg);
 	R visitListCalls(ListCalls self, A arg);
+	R visitClearCallList(ClearCallList self, A arg);
 }
 
 ///  Base class for all requests targeting a single answer bot.
@@ -235,6 +237,7 @@ abstract class BotRequest extends SetupRequest {
 			case "DeleteAnswerBot": result = DeleteAnswerBot(); break;
 			case "CheckAnswerBot": result = CheckAnswerBot(); break;
 			case "ListCalls": result = ListCalls(); break;
+			case "ClearCallList": result = ClearCallList(); break;
 			default: result = null;
 		}
 
@@ -979,6 +982,33 @@ class AnswerbotInfo extends _JsonObject {
 		}
 
 	}
+
+///  Clears the calls answered so far.
+class ClearCallList extends BotRequest {
+	/// Creates a ClearCallList.
+	ClearCallList({
+			super.id, 
+	});
+
+	/// Parses a ClearCallList from a string source.
+	static ClearCallList? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a ClearCallList instance from the given reader.
+	static ClearCallList read(JsonReader json) {
+		ClearCallList result = ClearCallList();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "ClearCallList";
+
+	@override
+	R visitBotRequest<R, A>(BotRequestVisitor<R, A> v, A arg) => v.visitClearCallList(this, arg);
+
+}
 
 ///  Result of the {@link de.haumacher.phoneblock.ab.ListABServlet}.
 class ListAnswerbotResponse extends _JsonObject {

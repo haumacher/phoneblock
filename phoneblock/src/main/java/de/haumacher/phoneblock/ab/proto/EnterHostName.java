@@ -1,6 +1,9 @@
 package de.haumacher.phoneblock.ab.proto;
 
-public class EnterHostName extends SetupRequest {
+/**
+ * Sets the host name of the Fritz!Box to connect the answer bot to.
+ */
+public class EnterHostName extends BotRequest {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.ab.proto.EnterHostName} instance.
@@ -12,13 +15,8 @@ public class EnterHostName extends SetupRequest {
 	/** Identifier for the {@link de.haumacher.phoneblock.ab.proto.EnterHostName} type in JSON format. */
 	public static final String ENTER_HOST_NAME__TYPE = "EnterHostName";
 
-	/** @see #getId() */
-	public static final String ID__PROP = "id";
-
 	/** @see #getHostName() */
 	public static final String HOST_NAME__PROP = "hostName";
-
-	private long _id = 0L;
 
 	private String _hostName = "";
 
@@ -34,23 +32,6 @@ public class EnterHostName extends SetupRequest {
 	@Override
 	public TypeKind kind() {
 		return TypeKind.ENTER_HOST_NAME;
-	}
-
-	public final long getId() {
-		return _id;
-	}
-
-	/**
-	 * @see #getId()
-	 */
-	public de.haumacher.phoneblock.ab.proto.EnterHostName setId(long value) {
-		internalSetId(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #getId()} without chain call utility. */
-	protected final void internalSetId(long value) {
-		_id = value;
 	}
 
 	public final String getHostName() {
@@ -71,13 +52,18 @@ public class EnterHostName extends SetupRequest {
 	}
 
 	@Override
+	public de.haumacher.phoneblock.ab.proto.EnterHostName setId(long value) {
+		internalSetId(value);
+		return this;
+	}
+
+	@Override
 	public String jsonType() {
 		return ENTER_HOST_NAME__TYPE;
 	}
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			ID__PROP, 
 			HOST_NAME__PROP));
 
 	@Override
@@ -88,7 +74,6 @@ public class EnterHostName extends SetupRequest {
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case ID__PROP: return getId();
 			case HOST_NAME__PROP: return getHostName();
 			default: return super.get(field);
 		}
@@ -97,7 +82,6 @@ public class EnterHostName extends SetupRequest {
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case ID__PROP: internalSetId((long) value); break;
 			case HOST_NAME__PROP: internalSetHostName((String) value); break;
 			default: super.set(field, value); break;
 		}
@@ -113,8 +97,6 @@ public class EnterHostName extends SetupRequest {
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(ID__PROP);
-		out.value(getId());
 		out.name(HOST_NAME__PROP);
 		out.value(getHostName());
 	}
@@ -122,14 +104,13 @@ public class EnterHostName extends SetupRequest {
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case ID__PROP: setId(in.nextLong()); break;
 			case HOST_NAME__PROP: setHostName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
 
 	@Override
-	public <R,A,E extends Throwable> R visit(de.haumacher.phoneblock.ab.proto.SetupRequest.Visitor<R,A,E> v, A arg) throws E {
+	public <R,A,E extends Throwable> R visit(de.haumacher.phoneblock.ab.proto.BotRequest.Visitor<R,A,E> v, A arg) throws E {
 		return v.visit(this, arg);
 	}
 
