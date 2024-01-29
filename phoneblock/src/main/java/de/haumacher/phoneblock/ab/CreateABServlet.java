@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,17 +28,21 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.phoneblock.ab.proto.CheckAnswerBot;
 import de.haumacher.phoneblock.ab.proto.CheckDynDns;
+import de.haumacher.phoneblock.ab.proto.ClearCallList;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerBot;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
 import de.haumacher.phoneblock.ab.proto.DeleteAnswerBot;
 import de.haumacher.phoneblock.ab.proto.DisableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnterHostName;
+import de.haumacher.phoneblock.ab.proto.ListCalls;
+import de.haumacher.phoneblock.ab.proto.ListCallsResponse;
 import de.haumacher.phoneblock.ab.proto.SetupDynDns;
 import de.haumacher.phoneblock.ab.proto.SetupDynDnsResponse;
 import de.haumacher.phoneblock.ab.proto.SetupRequest;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBCallInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 
@@ -77,8 +82,10 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			cmd.visit(this, new RequestContext(req, resp, login));
 		} catch (InvalidBotAccess ex) {
 			LOG.warn(ex.getMessage());
+			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
 		} catch (Throwable ex) {
 			LOG.error("Request failed for: " + login, ex);
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cannot fullfill request.");
 		}
 	}
 
@@ -355,6 +362,48 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		LOG.info("Answerbot checked sucessfully for: " + login);
 		return null;
 	}
+	
+	@Override
+	public Void visit(ListCalls self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		String login = context.login;
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
+			List<DBCallInfo> calls = users.listCalls(botId);
+
+			sendResult(resp, ListCallsResponse.create()
+				.setCallsAnswered(bot.getCallsAccepted())
+				.setTalkTime(bot.getTalkTime())
+				.setCalls(calls));
+		}
+		return null;
+	}
+	
+	@Override
+	public Void visit(ClearCallList self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		String login = context.login;
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			long botId = self.getId();
+			DBAnswerbotInfo bot = users.getAnswerBot(botId);
+			checkBotAccess(users, login, bot);
+			
+			users.clearCallList(botId);
+			session.commit();
+		}
+		
+		sendOk(resp);
+		return null;
+	}
 
 	private DBAnswerbotInfo lookupAnswerBot(Users users, String login, long botId) {
 		DBAnswerbotInfo bot = users.getAnswerBot(botId);
@@ -381,7 +430,9 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	private void sendResult(HttpServletResponse resp, DataObject result) throws IOException {
 		resp.setContentType("application/json");
 		resp.setCharacterEncoding("utf-8");
-		result.writeTo(new JsonWriter(new WriterAdapter(resp.getWriter())));
+		JsonWriter out = new JsonWriter(new WriterAdapter(resp.getWriter()));
+		result.writeTo(out);
+		out.flush();
 	}
 
 	private static boolean isEmpty(String str) {
