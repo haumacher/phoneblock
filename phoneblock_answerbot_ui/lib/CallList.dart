@@ -8,11 +8,13 @@ import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CallListView extends StatefulWidget {
-  final int botId;
+  final AnswerbotInfo bot;
+  int get botId => bot.id;
   
-  const CallListView(this.botId, {super.key});
+  const CallListView(this.bot, {super.key});
 
   @override
   State<StatefulWidget> createState() => CallListViewState();
@@ -57,6 +59,12 @@ class CallListViewState extends State<CallListView> {
       appBar: AppBar(
         title: const Text("Beantwortete SPAM Anrufe"),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerBotView(widget.bot)));
+            },
+            icon: const Icon(Icons.settings),
+          ),
           IconButton(
             onPressed: () {
               setState(refreshCallList);
@@ -128,7 +136,7 @@ class CallListViewState extends State<CallListView> {
                     ],
                   ),
                 ),
-                IconButton(
+                if (!call.caller.startsWith("*")) IconButton(
                   icon: const Icon(Icons.arrow_right),
                   iconSize: 32,
                   onPressed: () => showCall(context, call),
@@ -170,7 +178,7 @@ class CallListViewState extends State<CallListView> {
   }
 
   showCall(BuildContext context, CallInfo call) {
-
+    launchUrl(Uri.parse('https://phoneblock.net/phoneblock/nums/${call.caller}'));
   }
 
   refreshCallList() {

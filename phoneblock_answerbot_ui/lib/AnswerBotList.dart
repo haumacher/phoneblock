@@ -157,7 +157,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   }
 
   showAnswerBot(BuildContext context, AnswerbotInfo bot) {
-    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => CallListView(bot.id)));
+    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => CallListView(bot)));
     result.then((value) {
       refreshBotList();
     });
