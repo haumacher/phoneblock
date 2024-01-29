@@ -10,6 +10,9 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.haumacher.phoneblock.ab.CreateABServlet;
+import de.haumacher.phoneblock.ab.ListABServlet;
+import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
 import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -22,6 +25,8 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebFilter(urlPatterns = {
 	CardDavServlet.URL_PATTERN,
 	CallReportServlet.URL_PATTERN,
+	CreateABServlet.PATH,
+	ListABServlet.PATH,
 })
 public class BasicLoginFilter extends LoginFilter {
 
