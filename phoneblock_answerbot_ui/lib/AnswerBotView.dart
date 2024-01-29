@@ -146,6 +146,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                                     }
                                     if (value.statusCode == 200) {
                                       Navigator.of(context).pop(true);
+                                      Navigator.of(context).pop(true);
                                     } else {
                                       showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
                                     }
