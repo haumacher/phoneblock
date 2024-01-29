@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
-import 'package:phoneblock_answerbot_ui/CallList.dart';
+import 'package:phoneblock_answerbot_ui/CallListView.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
