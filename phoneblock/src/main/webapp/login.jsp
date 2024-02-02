@@ -27,20 +27,20 @@
 	
 	<div class="content">
 		<p>
-			Um Deine persönlichen Einstellungen zu bearbeiten, musst Du Dich anmelden. In Deinen persönlichen 
-			Einstellungen kannst Du z.B. festlegen, ab wann Du eine Telefonnummer in Deine Blocklist aufnehmen willst 
-			und welche Länge Deine Blocklist höchstens haben darf. 
+			Um Deine PhoneBlock-Einstellungen zu bearbeiten, musst Du Dich anmelden. Nachdem Du Dich angemeldet hast,
+			kannst Du z.B. festlegen, ab welcher Konfidenz eine Telefonnummer zu Deiner Blocklist hinzugefügt wird  
+			oder welche Länge Deine Blocklist höchstens haben darf.
 		</p>
+		<p>
+			 Auch die Verwaltung Deiner <a href="<%=request.getContextPath() %>/anrufbeantworter">PhoneBlock-Anrufbeantworter</a>
+			 erfordert eine Anmeldung.
+		</p> 
 	</div>
 
 	<%
-		String location = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
-		String locationParam;
-		if (location != null) {
-			locationParam = "&" + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, "UTF-8");
-		} else {
-			locationParam = "";
-		}
+		String location = LoginServlet.location(request);
+		String locationParam = LoginServlet.locationParam(request);
+		String locationParamFirst = LoginServlet.locationParamFirst(request);
 	%>
 	
 	<nav class="panel">
@@ -74,7 +74,7 @@
 				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
-				  <p class="help">Verwende den Benutzernamen, den Du bei der <a href="<%=request.getContextPath()%>/signup.jsp">Registrierung mit E-Mail-Adresse</a> erhalten hast.</p>
+				  <p class="help">Verwende den Benutzernamen, den Du bei der <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Registrierung mit E-Mail-Adresse</a> erhalten hast.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
@@ -86,7 +86,7 @@
 				  <% if (error) {%>
 					  <p class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
 				  <% } else { %>
-					  <p class="help">Das Passwort wurde Dir nach der <a href="<%=request.getContextPath()%>/signup.jsp">Registrierung</a> angezeigt.</p>
+					  <p class="help">Das Passwort wurde Dir nach der <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Registrierung</a> angezeigt.</p>
 				  <% } %>
 				</div>
 				
@@ -104,7 +104,7 @@
 			<div class="panel-block">
 				<div class="content">
 				<p>
-				Wenn Du noch keinen PhoneBlock-Account hast, dann <a href="<%=request.getContextPath()%>/signup.jsp">registriere Dich</a>!
+				Wenn Du noch keinen PhoneBlock-Account hast, dann <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">registriere Dich</a>!
 				</p>
 
 				<p>

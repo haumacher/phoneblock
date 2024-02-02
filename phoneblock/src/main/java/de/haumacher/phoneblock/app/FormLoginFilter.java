@@ -22,7 +22,8 @@ import de.haumacher.phoneblock.util.ServletUtil;
  * @see BasicLoginFilter
  */
 @WebFilter(urlPatterns = {
-	"/ab/",
+	"/ab",
+	"/ab/index.html",
 })
 public class FormLoginFilter extends LoginFilter {
 
