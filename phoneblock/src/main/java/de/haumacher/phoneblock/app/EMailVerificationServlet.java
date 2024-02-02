@@ -28,6 +28,8 @@ public class EMailVerificationServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		LoginServlet.forwardLocation(req);
+		
 		String email = req.getParameter("email");
 		if (email == null || email.trim().isEmpty()) {
 			req.setAttribute("message", "Die E-Mail darf nicht leer sein.");

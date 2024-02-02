@@ -4,8 +4,11 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -70,7 +73,7 @@ public class LoginServlet extends HttpServlet {
 		
 		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
 		
-		String location = req.getParameter(LOCATION_ATTRIBUTE);
+		String location = location(req);
 		if (location == null) {
 			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 		} else {
@@ -84,6 +87,55 @@ public class LoginServlet extends HttpServlet {
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
 		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+	}
+
+	/**
+	 * Encodes URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParam(HttpServletRequest request) throws UnsupportedEncodingException {
+		return locationParam(request, false);
+	}
+	
+	/**
+	 * Encodes URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParamFirst(HttpServletRequest request) throws UnsupportedEncodingException {
+		return locationParam(request, true);
+	}
+	
+	/**
+	 * Encodes URL parameter transporting the location after login to the next link invocation.
+	 */
+	private static String locationParam(HttpServletRequest request, boolean first) throws UnsupportedEncodingException {
+		String location = location(request);
+		String locationParam;
+		if (location != null) {
+			locationParam = (first ? "?" : "&") + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, "UTF-8");
+		} else {
+			locationParam = "";
+		}
+		return locationParam;
+	}
+
+	/**
+	 * The location after login transmitted with the given request.
+	 */
+	public static String location(HttpServletRequest request) {
+		String location = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
+		if (location == null) {
+			location = (String) request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+		}
+		return location;
+	}
+
+	/**
+	 * Moves a location parameter to a request attribute.
+	 */
+	public static void forwardLocation(HttpServletRequest request) {
+		String location = location(request);
+		if (location != null) {
+			request.setAttribute(LOCATION_ATTRIBUTE, location);
+		}
 	}
 
 }
