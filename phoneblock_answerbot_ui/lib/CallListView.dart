@@ -4,6 +4,7 @@ import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
+import 'package:phoneblock_answerbot_ui/TitleRow.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
@@ -57,7 +58,7 @@ class CallListViewState extends State<CallListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Beantwortete SPAM Anrufe"),
+        title: const TitleRow("Beantwortete SPAM Anrufe"),
         actions: [
           IconButton(
             onPressed: () {
