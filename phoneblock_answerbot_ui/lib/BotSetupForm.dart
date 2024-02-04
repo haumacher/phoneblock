@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/InfoField.dart';
+import 'package:phoneblock_answerbot_ui/TitleRow.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
 import 'package:phoneblock_answerbot_ui/switchIcon.dart';
@@ -56,14 +57,13 @@ class BotSetupState extends State<BotSetupForm> {
   Widget domainSetup(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Anrufbeantworter einrichten"),
+        title: const TitleRow("Anrufbeantworter einrichten"),
       ),
       body: Form(
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -183,7 +183,7 @@ class BotSetupState extends State<BotSetupForm> {
   Widget dynDnsSetup(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("DynDNS einrichten"),
+        title: const TitleRow("DynDNS einrichten"),
       ),
       body: Form(
         child: Padding(
@@ -231,7 +231,7 @@ class BotSetupState extends State<BotSetupForm> {
                         if (!context.mounted) return;
 
                         if (response.statusCode != 200) {
-                          return showErrorDialog(context, response, 'Einrichtung Fehlgeschlagen', "DynDNS nicht aktuell: ${response.body}");
+                          return showErrorDialog(context, response, 'Nicht registriert', "Deine Fritz!Box hat sich bei PhoneBlock noch nicht angemeldet, DynDNS ist nicht aktuell: ${response.body}");
                         }
 
                         setState(() {
@@ -250,7 +250,7 @@ class BotSetupState extends State<BotSetupForm> {
   Widget enableSip(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Anrufbeantworter erstellen"),
+        title: const TitleRow("Anrufbeantworter erstellen"),
       ),
       body: Form(
         child: Padding(

@@ -5,9 +5,12 @@ import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
 import 'package:phoneblock_answerbot_ui/CallListView.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
+import 'package:phoneblock_answerbot_ui/TitleRow.dart';
+import 'package:phoneblock_answerbot_ui/httpAddons.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
+import 'package:phoneblock_answerbot_ui/httpAddons.dart';
 
 class AnswerBotList extends StatefulWidget {
   const AnswerBotList({super.key});
@@ -43,6 +46,11 @@ class AnswerBotListState extends State<AnswerBotList> {
         return;
       }
 
+      if (response.contentType.mimeType != "application/json") {
+        msg = "Informationen können nicht abgerufen werden (Content-Type: ${response.contentType.mimeType}).";
+        return;
+      }
+
       var bots = ListAnswerbotResponse.read(JsonReader.fromString(response.body)).bots;
       if (bots.isEmpty) {
         msg = "Du hast noch keinen Anrufbeantworter, klicke den Plus-Knopf unten, um einen PhoneBlock-Anrufbeantworter anzulegen.";
@@ -57,7 +65,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Deine PhoneBlock Anrufbeantworter"),
+        title: const TitleRow("Deine PhoneBlock Anrufbeantworter"),
         actions: [
           IconButton(
             onPressed: () {
@@ -168,3 +176,4 @@ class AnswerBotListState extends State<AnswerBotList> {
     requestBotList();
   }
 }
+
