@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/InfoField.dart';
@@ -58,6 +59,25 @@ class BotSetupState extends State<BotSetupForm> {
     return Scaffold(
       appBar: AppBar(
         title: const TitleRow("Anrufbeantworter einrichten"),
+        actions: [
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem(
+                  value: "delete",
+                  child: Row(
+                    children: [
+                      Padding(padding: EdgeInsets.only(right: 16),
+                        child: Icon(Icons.delete_forever, color: Colors.black),
+                      ),
+                      Text("Anrufbeantworter löschen")
+                    ],
+                  ))
+            ],
+            onSelected: (value) {
+              AnswerBotViewState.deleteAnswerBot(context, AnswerbotInfo(id: widget.creation.id, userName: widget.creation.userName));
+            },
+          )
+        ],
       ),
       body: Form(
         key: _formKey,

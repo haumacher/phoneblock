@@ -37,6 +37,25 @@ class AnswerBotViewState extends State<AnswerBotView> {
     return Scaffold(
       appBar: AppBar(
         title: TitleRow(bot.userName),
+        actions: [
+          if (!bot.enabled) PopupMenuButton(
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem(
+                  value: "delete",
+                  child: Row(
+                    children: [
+                      Padding(padding: EdgeInsets.only(right: 16),
+                        child: Icon(Icons.delete_forever, color: Colors.black),
+                      ),
+                      Text("Anrufbeantworter löschen")
+                    ],
+                  ))
+            ],
+            onSelected: (value) {
+              AnswerBotViewState.deleteAnswerBot(context, bot).then((value) => Navigator.pop(context));
+            },
+          )
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -113,55 +132,6 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
               InfoField('User', bot.userName),
               InfoField('Password', bot.password),
-
-              if (!bot.enabled) Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showDialog<void>(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Anrufbeantworter löschen'),
-                            content: SingleChildScrollView(
-                              child: ListBody(
-                                children: <Widget>[
-                                  Text('Soll der Anrufbeantworter ${bot.userName} wirklich gelöscht werden?'),
-                                ],
-                              ),
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Abbrechen'),
-                              ),
-                              TextButton(
-                                child: const Text('Löschen'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-
-                                  sendRequest(DeleteAnswerBot(id: bot.id)).then((value) {
-                                    if (!context.mounted) {
-                                      return;
-                                    }
-                                    if (value.statusCode == 200) {
-                                      Navigator.of(context).pop(true);
-                                      Navigator.of(context).pop(true);
-                                    } else {
-                                      showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
-                                    }
-                                  });
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: const Text("Anrufbeantworter löschen"),
-                  )
-              ),
             ],
           ),
         ),
@@ -222,6 +192,48 @@ class AnswerBotViewState extends State<AnswerBotView> {
         }
       }
     }
+  }
+
+  static Future<void> deleteAnswerBot(BuildContext context, AnswerbotInfo bot) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Anrufbeantworter löschen'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Soll der Anrufbeantworter ${bot.userName} wirklich gelöscht werden?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Abbrechen'),
+            ),
+            TextButton(
+              child: const Text('Löschen'),
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                sendRequest(DeleteAnswerBot(id: bot.id)).then((value) {
+                  if (!context.mounted) {
+                    return;
+                  }
+                  if (value.statusCode == 200) {
+                    Navigator.of(context).pop(true);
+                  } else {
+                    showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
+                  }
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
