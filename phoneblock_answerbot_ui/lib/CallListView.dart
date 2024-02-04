@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
-import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/TitleRow.dart';
@@ -132,7 +131,7 @@ class CallListViewState extends State<CallListView> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(call.caller, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                      Text(call.caller, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                       Text("${dateFormat(DateTime.fromMillisecondsSinceEpoch(call.started))}, Dauer ${(call.duration / 1000).round()} s"),
                     ],
                   ),
@@ -152,7 +151,7 @@ class CallListViewState extends State<CallListView> {
 
   String Function(DateTime) relativeDate() {
     final DateTime today = DateTime.now();
-    final DateTime yesterDay = today.subtract(Duration(days: 1));
+    final DateTime yesterDay = today.subtract(const Duration(days: 1));
 
     bool sameDay(DateTime t1, DateTime t2) {
       if (t1.year == t2.year) {
