@@ -12,6 +12,7 @@ String basePath = getBasePath();
 
 String getBasePath() {
   if (debugBase) {
+    return "http://localhost:8080/phoneblock";
     return "https://phoneblock.net/pb-test";
   }
 
