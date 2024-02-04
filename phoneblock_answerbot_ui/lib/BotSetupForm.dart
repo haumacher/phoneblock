@@ -277,7 +277,7 @@ class BotSetupState extends State<BotSetupForm> {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ListView(
               children: <Widget>[
-                Text(
+                const Text(
                   "Richte jetzt den PhoneBlock-Anrufbeantworter als \"Telefon (mit und ohne Anrufbeantworter)\" ein. "
                       "Damit das auch klappt, halte Dich bitte genau an die folgenden Schritte:"),
                 hintText(

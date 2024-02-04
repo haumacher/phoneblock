@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
-import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
 import 'package:phoneblock_answerbot_ui/CallListView.dart';
 import 'package:phoneblock_answerbot_ui/Debug.dart';
@@ -10,7 +9,6 @@ import 'package:phoneblock_answerbot_ui/httpAddons.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
-import 'package:phoneblock_answerbot_ui/httpAddons.dart';
 
 class AnswerBotList extends StatefulWidget {
   const AnswerBotList({super.key});
@@ -189,6 +187,6 @@ class AnswerBotListState extends State<AnswerBotList> {
     requestBotList();
   }
 
-  bool isSet(String? host) => host != null && !host.isEmpty;
+  bool isSet(String? host) => host != null && host.isNotEmpty;
 }
 
