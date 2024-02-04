@@ -138,14 +138,18 @@ class AnswerBotListState extends State<AnswerBotList> {
                       Row(
                         children: [
                           Text('Anrufbeantworter ${bot.userName}'),
-                          if (bot.enabled) Padding(padding: const EdgeInsets.only(left: 16),
-                            child: bot.registered ?
-                            const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
-                            const Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
-                          )
-                          else const Padding(padding: EdgeInsets.only(left: 16),
-                              child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)
-                          )
+                          if (bot.enabled)
+                            bot.registered ?
+                              const Padding(padding: EdgeInsets.only(left: 16),
+                                  child: Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),)) :
+                              const Padding(padding: EdgeInsets.only(left: 16),
+                                  child: Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),))
+                          else
+                            setupComplete(bot) ?
+                              const Padding(padding: EdgeInsets.only(left: 16),
+                                child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)) :
+                              const Padding(padding: EdgeInsets.only(left: 16),
+                                child: Chip(label: Text("unvollständig"), backgroundColor: Colors.black12, labelStyle: TextStyle(color: Colors.black),))
                         ],
                       )
                     ],
@@ -164,8 +168,17 @@ class AnswerBotListState extends State<AnswerBotList> {
     );
   }
 
+  bool setupComplete(AnswerbotInfo bot) => isSet(bot.host) || isSet(bot.ip4) || isSet(bot.ip6);
+
   showAnswerBot(BuildContext context, AnswerbotInfo bot) {
-    var result = Navigator.push(context, MaterialPageRoute(builder: (context) => CallListView(bot)));
+    var result = Navigator.push(context, MaterialPageRoute(builder: (context) =>
+        setupComplete(bot) ?
+          CallListView(bot) :
+          BotSetupForm(
+            CreateAnswerbotResponse(
+              id: bot.id,
+              userName: bot.userName,
+              password: bot.password))));
     result.then((value) {
       refreshBotList();
     });
@@ -175,5 +188,7 @@ class AnswerBotListState extends State<AnswerBotList> {
     msg = 'Refreshing data...';
     requestBotList();
   }
+
+  bool isSet(String? host) => host != null && !host.isEmpty;
 }
 
