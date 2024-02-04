@@ -36,35 +36,51 @@
 %>
 
 		<div class="columns">
-		  <div class="column is-half">
+		  <div class="column is-one-third">
+			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
+			    <span class="icon">
+					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
+			    </span>
+				<span>Anrufbeantworter</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-third">
+			<a class="button is-medium is-info is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
+			    <span class="icon">
+					<i class="fa-solid fa-list"></i>
+			    </span>
+				<span>Telefonbuch</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-third">
 			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
-				<span>PhoneBlock für Android</span>
-			</a>
-		  </div>
-		  <div class="column is-half">
-			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span>PhoneBlock für Fritz!Box</span>			
+				<span>Mobil</span>
 			</a>
 		  </div>
 		</div>
 
 		<h2>Wie funktioniert PhoneBlock?</h2>
 
-		<p>PhoneBlock ist eine von der PhoneBlock-Community gepflegte
-			Liste mit Telefonnummern, die unter Spamverdacht stehen. Diese
-			Telefonliste wird in Deinem Internet-Router "FRITZ!Box" als
-			Sperrliste eingerichtet. So kann Deine Fritz!Box automatisch alle Anrufer 
-			blockieren, die als agressive Telefonwerbung, Telefonterror, oder Telefonbetrüger 
-			bekannt sind. Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
+		<p>
+			PhoneBlock ist eine von der PhoneBlock-Community gepflegte
+			Liste mit Telefonnummern, die unter Spamverdacht stehen. 
+			Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a>
+			nimmt dann Gespräche von Anrufern auf der Sperrliste an, so dass Dein Telefon 
+			bei diesen Anrufen stumm bleibt. 
+		</p>
+		
+		<p>
+			Alternativ kannst Du die 
+			Sperrliste auch als Telefonbuch in Deinen Internet-Router "FRITZ!Box" 
+			importieren und Anrufe von Nummern aus diesem <a href="<%=request.getContextPath()%>/setup.jsp">speziellen Telefonbuch</a> blockiern. 
+			Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
 			aktualisiert die Sperrliste jede Nacht automatisch. Sobald eine Nummer in diese Sperrliste
 			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
-			automatisch ab. Das Telefon bleibt stumm.</p>
+			automatisch ab. Das Telefon bleibt stumm.
+		</p>
 
 		<p>Erhälst Du trotzdem noch einen unerwünschten Anruf, weil die
 			Nummer noch nicht in die Sperrliste aufgenommen ist, kannst Du die

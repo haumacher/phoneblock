@@ -49,7 +49,8 @@
 				<a class="navbar-link" href="#" onclick="return false;">Installation</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Fritz!Box</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/anrufbeantworter/">Anrufbeantworter</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Blocklisten-Telefonbuch</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-android/">Android</a>
 				</div>
 			</div>
