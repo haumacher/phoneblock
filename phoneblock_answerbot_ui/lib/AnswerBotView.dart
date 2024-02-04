@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/InfoField.dart';
+import 'package:phoneblock_answerbot_ui/TitleRow.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
 import 'package:phoneblock_answerbot_ui/switchIcon.dart';
@@ -35,7 +36,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(bot.userName),
+        title: TitleRow(bot.userName),
       ),
       body: Form(
         key: _formKey,
