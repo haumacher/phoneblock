@@ -39,7 +39,6 @@
 
 	<!-- Note: This is only necessary while developing with a Flutter app started locally in debug mode. -->
 	<!-- If the web UI is deployed to the server, no CORS headers are necessary, since requests have the same origin. -->
-<!-- 
 	<filter>
 		<filter-name>CorsFilter</filter-name>
 		<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
@@ -73,7 +72,6 @@
 		<filter-name>CorsFilter</filter-name>
 		<url-pattern>/ab/*</url-pattern>
 	</filter-mapping>
- -->
 
 	<filter-mapping>
 		<filter-name>loginFilter</filter-name>

@@ -27,10 +27,25 @@
 
 		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="<%=request.getContextPath()%>/link/tellows">tellows Anrufschutz</a>"?</h2>
 		<p>
-			Beide Ansätze funktionieren ähnlich über ein Internet-Telefonbuch, das man in seiner Fritz!Box einrichtet 
-			und die Nummern in diesem Telefonbuch blockiert. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
+			Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kennt keine 
+			Größenbeschränkung des Sperrlisten-Telefonbuchs. Er nimmt das Gespräch für alle Nummern, die auf der 
+			Sperrliste stehen, an. Es ist keine nächtliche Aktualisierung der Blockliste in Deiner Fritz!Box notwendig, 
+			Die Blockliste ist immer aktuell.
+		</p>
+		
+		<p>  
+			Den <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
+			VOIP-fähigen Internetrouter installieren, auch dann wenn das CardDAV-Protokoll für Internet-Telefonbücher von Deinem 
+			Router nicht unterstützt wird. 
+		</p>
+		
+		<p>
+			Bei beiden Angeboten kannst Du die <a href="<%=request.getContextPath()%>/setup.jsp">Blockliste als Internet-Telefonbuch</a>, 
+			in Deiner Fritz!Box einrichten 
+			und die Nummern in diesem Telefonbuch sperren. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
 			Deine Blocklist zu personalisieren und ist zudem auch noch kostenlos (siehe oben).
 		</p>
+		
 		<p> 
 			In Deine personalisierte Blocklist kannst Du selbst Nummern hinzufügen und, was 
 			noch wichtiger ist, auch Nummern von der Sperrung ausnehmen (siehe auch "Eine Nummer wird 
@@ -65,10 +80,17 @@
 		</ol>
 
 		<h2>Ich habe keine Fritz!Box, kann ich PhoneBlock trotzdem nutzen?</h2>
+		
+		<p>  
+			Den <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
+			VOIP-fähigen Internetrouter installieren, auch dann wenn das CardDAV-Protokoll für Internet-Telefonbücher von Deinem 
+			Router nicht unterstützt wird. Installiere den Anrufbeantworter als normales VOIP-Telefon, das sich über 
+			Internet an Deiner Box anmeldet.
+		</p>
+		
 		<p>
-			Vielleicht, das hängt von deinem Internet-Router/Telefonanlage ab. Deine Telefonanlage (das Ding, das Dir 
-			Dein Telefonanbieter zur Verfügung gestellt hat und an der Du Deine Telefone anschließt/anmeldest) muss 
-			in der Lage sein, ein Telefonbuch über das <code>CardDAV</code>-Protokoll zu abonieren und alle Anrufe von 
+			Um die Blockliste als Telefonbuch zu importieren, muss Dein Internet-Router/Telefonanlage in der Lage sein, 
+			ein Telefonbuch über das <code>CardDAV</code>-Protokoll zu abonieren und alle Anrufe von 
 			einer Nummer in einem bestimmten Telefonbuch automatisch abzuweisen (oder an den Anrufbeantworter 
 			weiterzuleiten). Ob das bei Deiner Telefonanlage möglich ist, musst Du im Handbuch nachlesen, oder frag 
 			Deinen Telefonanbieter. Solltest Du die Blocklist erfolgreich in einen anderen Router installiert haben, 

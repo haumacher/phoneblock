@@ -250,7 +250,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 <% if (answerBots.isEmpty()) { %>
 	<p>Du hast noch keinen PhoneBlock-Anrufbeantworter.</p>
 
-	<form action="<%= request.getContextPath() + CreateABServlet.PATH %>" method="post">
+	<form action="<%= request.getContextPath()%>/anrufbeantworter/" method="get">
 	<div class="field is-grouped">
 	  <p class="control">
 	    <button class="button is-primary" type="submit">
@@ -278,7 +278,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	<% } %>
 
 	<% if (answerBots.size() < 3) {%>
-	<form action="<%= request.getContextPath() + CreateABServlet.PATH %>" method="post">
+	<form action="<%= request.getContextPath()%>/anrufbeantworter/" method="get">
 	<div class="field is-grouped">
 	  <p class="control">
 	    <button class="button is-primary" type="submit">
