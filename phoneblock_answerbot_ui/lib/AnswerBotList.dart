@@ -130,31 +130,30 @@ class AnswerBotListState extends State<AnswerBotList> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                Padding(padding: const EdgeInsets.only(right: 16),
+                  child: Image.asset("assets/images/ab-logo-color-128.png"),
+                ),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text('Anrufbeantworter ${bot.userName}'),
-                          if (bot.enabled)
-                            bot.registered ?
-                              const Padding(padding: EdgeInsets.only(left: 16),
-                                  child: Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),)) :
-                              const Padding(padding: EdgeInsets.only(left: 16),
-                                  child: Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),))
-                          else
-                            setupComplete(bot) ?
-                              const Padding(padding: EdgeInsets.only(left: 16),
-                                child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)) :
-                              const Padding(padding: EdgeInsets.only(left: 16),
-                                child: Chip(label: Text("unvollständig"), backgroundColor: Colors.black12, labelStyle: TextStyle(color: Colors.black),))
-                        ],
-                      )
+                      Text('Anrufbeantworter ${bot.userName}', overflow: TextOverflow.ellipsis,),
                     ],
                   ),
                 ),
+                if (bot.enabled)
+                  bot.registered ?
+                  const Padding(padding: EdgeInsets.only(left: 16),
+                      child: Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),)) :
+                  const Padding(padding: EdgeInsets.only(left: 16),
+                      child: Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),))
+                else
+                  setupComplete(bot) ?
+                  const Padding(padding: EdgeInsets.only(left: 16),
+                      child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)) :
+                  const Padding(padding: EdgeInsets.only(left: 16),
+                      child: Chip(label: Text("unvollständig"), backgroundColor: Colors.black12, labelStyle: TextStyle(color: Colors.black),)),
                 IconButton(
                   icon: const Icon(Icons.arrow_right),
                   iconSize: 32,
