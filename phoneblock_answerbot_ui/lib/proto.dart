@@ -771,6 +771,9 @@ class AnswerbotInfo extends _JsonObject {
 	///  The message received during the last registration attempt.
 	String? registerMsg;
 
+	///  Number of new calls (reset when clearing the call list).
+	int newCalls;
+
 	///  The total number of calls accepted by this bot so far.
 	int callsAccepted;
 
@@ -811,6 +814,7 @@ class AnswerbotInfo extends _JsonObject {
 				this.enabled = false, 
 				this.registered = false, 
 				this.registerMsg, 
+				this.newCalls = 0, 
 				this.callsAccepted = 0, 
 				this.talkTime = 0, 
 				this.registrar = "", 
@@ -860,6 +864,10 @@ class AnswerbotInfo extends _JsonObject {
 				}
 				case "registerMsg": {
 					registerMsg = json.expectString();
+					break;
+				}
+				case "newCalls": {
+					newCalls = json.expectInt();
 					break;
 				}
 				case "callsAccepted": {
@@ -931,6 +939,9 @@ class AnswerbotInfo extends _JsonObject {
 				json.addKey("registerMsg");
 				json.addString(_registerMsg);
 			}
+
+			json.addKey("newCalls");
+			json.addNumber(newCalls);
 
 			json.addKey("callsAccepted");
 			json.addNumber(callsAccepted);

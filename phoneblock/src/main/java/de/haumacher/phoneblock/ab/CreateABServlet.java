@@ -398,6 +398,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			checkBotAccess(users, login, bot);
 			
 			users.clearCallList(botId);
+			users.clearCallCounter(botId);
 			session.commit();
 		}
 		
