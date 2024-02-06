@@ -137,7 +137,7 @@ class AnswerBotListState extends State<AnswerBotList> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Anrufbeantworter ${bot.userName}', overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
-                      Text('${bot.callsAccepted} Anrufe, ${(bot.talkTime / 1000).round()} s Gesprächszeit'),
+                      Text('${bot.newCalls} neue Anrufe, ${bot.callsAccepted} Anrufe, ${(bot.talkTime / 1000).round()} s Gesprächszeit gesamt', overflow: TextOverflow.ellipsis,),
                     ],
                   ),
                 ),

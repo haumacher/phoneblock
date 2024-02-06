@@ -30,6 +30,9 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** @see #getRegisterMsg() */
 	public static final String REGISTER_MSG__PROP = "registerMsg";
 
+	/** @see #getNewCalls() */
+	public static final String NEW_CALLS__PROP = "newCalls";
+
 	/** @see #getCallsAccepted() */
 	public static final String CALLS_ACCEPTED__PROP = "callsAccepted";
 
@@ -72,6 +75,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	private boolean _registered = false;
 
 	private String _registerMsg = null;
+
+	private int _newCalls = 0;
 
 	private int _callsAccepted = 0;
 
@@ -209,6 +214,26 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	 */
 	public final boolean hasRegisterMsg() {
 		return _registerMsg != null;
+	}
+
+	/**
+	 * Number of new calls (reset when clearing the call list).
+	 */
+	public final int getNewCalls() {
+		return _newCalls;
+	}
+
+	/**
+	 * @see #getNewCalls()
+	 */
+	public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setNewCalls(int value) {
+		internalSetNewCalls(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getNewCalls()} without chain call utility. */
+	protected final void internalSetNewCalls(int value) {
+		_newCalls = value;
 	}
 
 	/**
@@ -478,6 +503,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				ENABLED__PROP, 
 				REGISTERED__PROP, 
 				REGISTER_MSG__PROP, 
+				NEW_CALLS__PROP, 
 				CALLS_ACCEPTED__PROP, 
 				TALK_TIME__PROP, 
 				REGISTRAR__PROP, 
@@ -503,6 +529,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ENABLED__PROP: return isEnabled();
 				case REGISTERED__PROP: return isRegistered();
 				case REGISTER_MSG__PROP: return getRegisterMsg();
+				case NEW_CALLS__PROP: return getNewCalls();
 				case CALLS_ACCEPTED__PROP: return getCallsAccepted();
 				case TALK_TIME__PROP: return getTalkTime();
 				case REGISTRAR__PROP: return getRegistrar();
@@ -526,6 +553,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ENABLED__PROP: internalSetEnabled((boolean) value); break;
 				case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 				case REGISTER_MSG__PROP: internalSetRegisterMsg((String) value); break;
+				case NEW_CALLS__PROP: internalSetNewCalls((int) value); break;
 				case CALLS_ACCEPTED__PROP: internalSetCallsAccepted((int) value); break;
 				case TALK_TIME__PROP: internalSetTalkTime((long) value); break;
 				case REGISTRAR__PROP: internalSetRegistrar((String) value); break;
@@ -567,6 +595,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				out.name(REGISTER_MSG__PROP);
 				out.value(getRegisterMsg());
 			}
+			out.name(NEW_CALLS__PROP);
+			out.value(getNewCalls());
 			out.name(CALLS_ACCEPTED__PROP);
 			out.value(getCallsAccepted());
 			out.name(TALK_TIME__PROP);
@@ -609,6 +639,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ENABLED__PROP: setEnabled(in.nextBoolean()); break;
 				case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 				case REGISTER_MSG__PROP: setRegisterMsg(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+				case NEW_CALLS__PROP: setNewCalls(in.nextInt()); break;
 				case CALLS_ACCEPTED__PROP: setCallsAccepted(in.nextInt()); break;
 				case TALK_TIME__PROP: setTalkTime(in.nextLong()); break;
 				case REGISTRAR__PROP: setRegistrar(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;

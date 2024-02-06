@@ -109,6 +109,9 @@ message AnswerbotInfo {
 	@Nullable
 	string registerMsg;
 	
+	/** Number of new calls (reset when clearing the call list). */
+	int newCalls;
+
 	/** The total number of calls accepted by this bot so far. */
 	int callsAccepted;
 
