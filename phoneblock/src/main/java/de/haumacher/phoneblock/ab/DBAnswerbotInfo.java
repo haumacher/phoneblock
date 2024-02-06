@@ -9,7 +9,7 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 			long userId, 
 			boolean enabled, String registrar, String host, String ip4, String ip6, String realm, 
 			boolean registered, String msg, 
-			int callsAccepted, long talkTime,
+			int newCalls, int callsAccepted, long talkTime,
 			String userName, String password, String dyndnsUser, String dyndnsPassword
 	) {
 		setId(id);
@@ -23,6 +23,7 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 		setRegistered(registered);
 		setRegisterMsg(msg);
 		
+		setNewCalls(newCalls);
 		setCallsAccepted(callsAccepted);
 		setTalkTime(talkTime);
 

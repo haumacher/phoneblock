@@ -141,12 +141,12 @@ public interface Users {
 			"where s.USERNAME = #{userName}")
 	DBAnswerBotSip getAnswerBotBySipUser(String userName);
 
-	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
+	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
 			"where s.USERID= #{userId}")
 	List<DBAnswerbotInfo> getAnswerBots(long userId);
 	
-	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
+	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
 			"where s.ID= #{id}")
 	DBAnswerbotInfo getAnswerBot(long id);
@@ -170,8 +170,11 @@ public interface Users {
 	List<DBCallInfo> listCalls(long abId);
 
 	@Delete("delete from ANSWERBOT_CALLS where ABID=#{abId}")
-	void clearCallList(long botId);
+	void clearCallList(long abId);
 
+	@Delete("update ANSWERBOT_SIP set NEW_CALLS=0 where ID=#{abId}")
+	void clearCallCounter(long abId);
+	
 	@Update("update ANSWERBOT_SIP set CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
 	void recordSummary(long id, long duration);
 
