@@ -63,7 +63,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("Deine PhoneBlock Anrufbeantworter"),
+        title: const TitleRow("Deine Anrufbeantworter"),
         actions: [
           IconButton(
             onPressed: () {
