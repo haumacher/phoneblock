@@ -44,6 +44,14 @@ public class LoginServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
+			String location = location(req);
+			if (location == null) {
+				location = "/settings.jsp";
+			}
+			resp.sendRedirect(req.getContextPath() + location);
+			return;
+		}
 		req.getRequestDispatcher("/login.jsp").forward(req, resp);
 	}
 	
@@ -107,7 +115,13 @@ public class LoginServlet extends HttpServlet {
 	 * Encodes URL parameter transporting the location after login to the next link invocation.
 	 */
 	private static String locationParam(HttpServletRequest request, boolean first) throws UnsupportedEncodingException {
-		String location = location(request);
+		return locationParam(location(request), first);
+	}
+
+	/**
+	 * Creates an URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParam(String location, boolean first) throws UnsupportedEncodingException {
 		String locationParam;
 		if (location != null) {
 			locationParam = (first ? "?" : "&") + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, "UTF-8");
