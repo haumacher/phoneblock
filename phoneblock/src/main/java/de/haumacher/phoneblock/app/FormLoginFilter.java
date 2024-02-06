@@ -33,8 +33,8 @@ public class FormLoginFilter extends LoginFilter {
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 		String originalLocation = originalLocation(request);
 		LOG.info("Requesting login for resource: " + originalLocation);
-		request.setAttribute(LoginServlet.LOCATION_ATTRIBUTE, originalLocation);
-		request.getRequestDispatcher(LoginServlet.PATH).forward(request, response);
+
+		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
 	}
 
 	private String originalLocation(HttpServletRequest request) {
