@@ -79,7 +79,8 @@
 			Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
 			aktualisiert die Sperrliste jede Nacht automatisch. Sobald eine Nummer in diese Sperrliste
 			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
-			automatisch ab. Das Telefon bleibt stumm.
+			automatisch ab. Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">Anrufbeantworter</a> ist allerdings die 
+			bessere Lösung, weil ein Telefonbuch in der Größe beschränkt ist und nicht alle Nummern der Blockliste aufnehmen kann.
 		</p>
 
 		<p>Erhältst Du trotzdem noch einen unerwünschten Anruf, weil die
