@@ -12,7 +12,7 @@ class TitleRow extends StatelessWidget {
         Padding(padding: const EdgeInsets.only(right: 16),
             child: Image.asset('assets/images/ab-logo-appbar.png', height: 48)
         ),
-        Text(title)],
+        Text(title, overflow: TextOverflow.ellipsis,)],
     );
   }
 }

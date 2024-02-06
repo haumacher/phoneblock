@@ -57,7 +57,7 @@ class CallListViewState extends State<CallListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("Beantwortete SPAM Anrufe"),
+        title: const TitleRow("SPAM Anrufe"),
         actions: [
           IconButton(
             onPressed: () {
