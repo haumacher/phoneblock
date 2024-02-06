@@ -49,7 +49,6 @@ function showAB() {
 			Wie genau der PhoneBlock-Anrufbeantworter funktioniert kannst Du 
 			<a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">hier nachlesen</a>.
 		</p>
-
 		
 		<p>
 			Mit folgenden Schritten kommst Du zu Deinem PhoneBlock-Anrufbeantworter:
