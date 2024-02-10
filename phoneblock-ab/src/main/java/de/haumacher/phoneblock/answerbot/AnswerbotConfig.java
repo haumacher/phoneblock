@@ -16,7 +16,10 @@ import org.mjsip.sip.config.MediaDescHandler;
  */
 public class AnswerbotConfig implements AnswerbotOptions {
 
-	@Option(name = "--media", handler = MediaDescHandler.class)
+	@Option(name = "--media",
+			usage = "Media format that is used for communication. Your audio files in the conversation directory must be stored in this format. " +
+					"A typical value for maximum compatibility is 'audio 4080 RTP/AVP { 8 PCMA 8000 160 }', meaning 8-bit PCMA encoded WAV files.",
+			handler = MediaDescHandler.class)
 	private MediaDesc[] _mediaDescs=new MediaDesc[]{};
 	
 	@Option(name = "--conversation", usage = "Directory with WAV files used for streaming during automatic conversation.")
@@ -26,7 +29,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	private String _recordingDir = ".";
 	
 	@Option(name = "--test-prefix", usage = "Phone number prefix that triggers the answer bot to respond (for testing). " + 
-			"A local number typically starts with '*', therefore this is prefix can be used to allow calling the answer bot locally.")
+			"A local number typically starts with '*', therefore this prefix can be used to allow calling the answer bot locally.")
 	private String _testPrefix = "*";
 	
 	/**

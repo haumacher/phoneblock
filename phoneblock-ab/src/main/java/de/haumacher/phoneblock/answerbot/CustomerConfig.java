@@ -12,19 +12,27 @@ import org.mjsip.sip.config.SipURIHandler;
  */
 public class CustomerConfig implements CustomerOptions {
 
-	@Option(name = "--registrar", required = true, handler = SipURIHandler.class)
+	@Option(name = "--registrar", required = true, 
+			usage = "Fully qualified domain name (or address) of the registrar server. It is used as recipient for REGISTER requests.", 
+			handler = SipURIHandler.class)
 	private SipURI registrar;
 	
-	@Option(name = "--route", handler = SipURIHandler.class)
+	@Option(name = "--route",
+			usage = "Additional routing information to reach the registrar. When connecting to a Fritz!Box router, the registrar must be 'fritz.box'. " + 
+					"If this address is not reachable from your anser bot installation, you use '<IP address of your box>;lr' as routing information.",
+			handler = SipURIHandler.class)
 	private SipURI route;
 	
-	@Option(name = "--user")
+	@Option(name = "--user",
+			usage = "User name to register at the registrar server.")
 	private String user;
 	
-	@Option(name = "--passwd")
+	@Option(name = "--passwd",
+			usage = "Password for the user to register at the registrar server.")
 	private String passwd;
 	
-	@Option(name = "--realm")
+	@Option(name = "--realm",
+			usage = "Authentication realm for registering at the registrar server.")
 	private String realm;
 
 	@Override
