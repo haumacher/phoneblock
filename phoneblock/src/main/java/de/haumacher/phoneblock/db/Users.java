@@ -175,7 +175,7 @@ public interface Users {
 	@Delete("update ANSWERBOT_SIP set NEW_CALLS=0 where ID=#{abId}")
 	void clearCallCounter(long abId);
 	
-	@Update("update ANSWERBOT_SIP set CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
-	void recordSummary(long id, long duration);
+	@Update("update ANSWERBOT_SIP set NEW_CALLS=NEW_CALLS + 1, CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
+	void recordCallSummary(long id, long duration);
 
 }

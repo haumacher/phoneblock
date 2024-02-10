@@ -152,7 +152,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					
 					long id = users.getAnswerBotId(userName);
 					users.recordCall(id, from, startTime, duration);
-					users.recordSummary(id, duration);
+					users.recordCallSummary(id, duration);
 					
 					session.commit();
 				}
