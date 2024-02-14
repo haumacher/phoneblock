@@ -78,6 +78,12 @@
 		        </span>
 		    </a>
       			
+			<a class="navbar-item" title="RSS-Feed" href="https://rss.app/feeds/2BQDpMNxPek9Yal2.xml" target="_blank">
+				<span class="icon">
+			    	<i class="fa-solid fa-rss"></i>
+		        </span>
+		    </a>
+      			
 			<div class="navbar-item">
 				<div class="buttons">
 					<% if (LoginFilter.getAuthenticatedUser(request.getSession(false)) == null) { %>
