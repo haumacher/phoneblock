@@ -70,6 +70,7 @@
 			    	<option value="4000" <% if (settings.getMaxLength() == 4000){%>selected="selected"<%}%>>4000 (beachte die Hinweise unten)</option>
 			    	<option value="5000" <% if (settings.getMaxLength() == 5000){%>selected="selected"<%}%>>5000 (riesig, beachte die Hinweise unten)</option>
 			    	<option value="6000" <% if (settings.getMaxLength() == 6000){%>selected="selected"<%}%>>6000 (extrem, Vorsicht, Deine Fritz!Box kann abstürzen)</option>
+			    	<option value="-1" <% if (settings.getMaxLength() == -1){%>selected="selected"<%}%>>Unlimitiert</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">

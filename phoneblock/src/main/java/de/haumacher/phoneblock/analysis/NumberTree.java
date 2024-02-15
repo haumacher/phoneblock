@@ -323,12 +323,17 @@ public class NumberTree {
 			public List<NumberBlock> createBlocks() {
 				createBlockEntries(this);
 				
-				// Sort by weight decreasing.
-				_numbers.sort((n1, n2) -> -Integer.compare(n1._weight, n2._weight));
-				
-				// Sort prefix of max entries by number.
-				List<WeightedNumber> prefix = new ArrayList<>(_numbers.subList(0, Math.min(maxEntries, _numbers.size())));
-				prefix.sort((n1, n2) -> n1._number.compareTo(n2._number));
+				List<WeightedNumber> prefix;
+				if (maxEntries > 0) {
+					// Sort by weight decreasing.
+					_numbers.sort((n1, n2) -> -Integer.compare(n1._weight, n2._weight));
+					
+					// Sort prefix of max entries by number.
+					prefix = new ArrayList<>(_numbers.subList(0, Math.min(maxEntries, _numbers.size())));
+					prefix.sort((n1, n2) -> n1._number.compareTo(n2._number));
+				} else {
+					prefix = _numbers;
+				}
 				
 				// Create blocks of filtered numbers.
 				NumberBlock block = null;

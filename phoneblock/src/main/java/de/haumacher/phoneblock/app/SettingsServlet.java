@@ -173,7 +173,10 @@ public class SettingsServlet extends HttpServlet {
 			minVotes = 100;
 		}
 		
-		if (maxLength <= 1000) {
+		if (maxLength < 0) {
+			maxLength = -1;
+		}
+		else if (maxLength <= 1000) {
 			maxLength = 1000;
 		} 
 		else if (maxLength <= 2000) {
