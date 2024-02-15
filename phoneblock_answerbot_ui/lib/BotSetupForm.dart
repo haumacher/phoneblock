@@ -215,9 +215,9 @@ class BotSetupState extends State<BotSetupForm> {
                     helpUrl: "setup-ab/help/02-configure-dyndns.png"
                 ),
 
-                const InfoField('Update-URL',
-                    "https://phoneblock.net/phoneblock/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>",
-                    key: Key("dynip.updateurl"),
+                InfoField('Update-URL',
+                    "$basePath/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>",
+                    key: const Key("dynip.updateurl"),
                     help: "Die URL, die Deine Fritz!Box aufruft, um PhoneBlock ihre Internetadresse bekannt zu geben. "
                         "Gib die URL genau so ein, wie sie hier geschrieben ist. Ersetze nicht die Werte in den spitzen "
                         "Klammern, das macht Deine Fritz!Box beim Aufruf automatisch. Nutze am besten die Kopierfuntion, "
