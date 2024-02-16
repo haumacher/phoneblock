@@ -20,12 +20,12 @@ void main() {
 class PhoneBlockApp extends StatelessWidget {
   final AppState state;
 
-  const PhoneBlockApp(this.state, {Key? key}) : super(key: key);
+  const PhoneBlockApp(this.state, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PhoneBlock mobile',
+      title: 'PhoneBlock Mobile',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -37,22 +37,20 @@ class PhoneBlockApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   final AppState state;
 
-  const MyHomePage(this.state, {Key? key}) : super(key: key);
+  const MyHomePage(this.state, {super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState(state);
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  AppState state;
-
-  _MyHomePageState(this.state);
+  _MyHomePageState();
 
   void updateCallList() async {
     Iterable<CallLogEntry> callLog = await CallLog.get();
 
     setState(() {
-      state.calls.clear();
+      widget.state.calls.clear();
       Set<String> allNumbers = {};
       for (var call in callLog) {
         var callType = type(call.callType);
@@ -74,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
           continue;
         }
 
-        state.calls.add(Call(
+        widget.state.calls.add(Call(
             phone: phone(call),
             type: callType,
             started: call.timestamp ?? 0,
@@ -123,20 +121,20 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text("PhoneBlock mobile"),
         actions: [
           PopupMenuButton(
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
               itemBuilder: (context){
                 return [
-                  PopupMenuItem<int>(
+                  const PopupMenuItem<int>(
                     value: 0,
                     child: Text("My Account"),
                   ),
 
-                  PopupMenuItem<int>(
+                  const PopupMenuItem<int>(
                     value: 1,
                     child: Text("Settings"),
                   ),
 
-                  PopupMenuItem<int>(
+                  const PopupMenuItem<int>(
                     value: 2,
                     child: Text("Logout"),
                   ),
@@ -144,11 +142,17 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               onSelected:(value){
                 if(value == 0){
-                  print("My account menu is selected.");
+                  if (kDebugMode) {
+                    print("My account menu is selected.");
+                  }
                 }else if(value == 1){
-                  print("Settings menu is selected.");
+                  if (kDebugMode) {
+                    print("Settings menu is selected.");
+                  }
                 }else if(value == 2){
-                  print("Logout menu is selected.");
+                  if (kDebugMode) {
+                    print("Logout menu is selected.");
+                  }
                 }
               }
           ),
@@ -166,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
               subtitle: duration(call),
               trailing: action(call),
             ),
-            onDismissed: (direction) => {debugPrint("Dismissed: " + call.phone) },
+            onDismissed: (direction) => {debugPrint("Dismissed: ${call.phone}") },
           )
         ).toList(),
       ),
@@ -228,11 +232,19 @@ class _MyHomePageState extends State<MyHomePage> {
       case Type.mISSED:
         return IconButton(
             icon: const Icon(Icons.manage_search, color: Colors.blueAccent,),
-            onPressed: () => print('Report as spam: ' + call.phone));
+            onPressed: () {
+              if (kDebugMode) {
+                print('Report as spam: ${call.phone}');
+              }
+            });
       case Type.bLOCKED:
         return IconButton(
             icon: const Icon(Icons.playlist_add, color: Colors.redAccent,),
-            onPressed: () => print('Record call: ' + call.phone));
+            onPressed: () {
+              if (kDebugMode) {
+                print('Record call: ${call.phone}');
+              }
+            });
       case Type.oUTGOING:
         return const SizedBox.shrink();
     }
@@ -388,15 +400,15 @@ Icon icon(Rating rating) {
 
 
 class RateScreen extends StatelessWidget {
-  Call call;
+  final Call call;
 
-  RateScreen(this.call, {Key? key}) : super(key: key);
+  const RateScreen(this.call, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rate ' + call.phone),
+        title: Text('Rate ${call.phone}'),
       ),
       body: Center(
         child: Column(
