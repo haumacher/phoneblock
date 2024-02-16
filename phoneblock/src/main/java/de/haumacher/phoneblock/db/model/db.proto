@@ -124,3 +124,53 @@ message UserComment {
 	/** Number of "thumbs down" ratings for this comment. */
 	int down;
 }
+
+message SpamReport {
+	
+	string phone;
+	int votes;
+	long lastUpdate;
+	long dateAdded;
+	boolean archived;
+	boolean whiteListed;
+}
+
+message PhoneNumer {
+	@Nullable
+	string shortcut;
+	
+	string plus;
+	string zeroZero;
+	
+	string countryCode;
+	string country;
+	
+	@Nullable
+	string cityCode;
+	@Nullable
+	string city;
+}
+
+message SearchResult {
+	string phoneId;
+	
+	PhoneNumer number;
+	
+	repeated UserComment comments;
+	
+	SpamReport info;
+	
+	repeated SearchInfo searches;
+	
+	string aiSummary;
+	
+	repeated string relatedNumbers;
+	
+	string prev;
+	
+	string next;
+	
+	Rating topRating;
+	
+	map<Rating,int> ratings;
+}

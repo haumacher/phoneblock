@@ -18,7 +18,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getNumbers() */
 	public static final String NUMBERS__PROP = "numbers";
 
-	private final java.util.List<de.haumacher.phoneblock.db.model.PhoneInfo> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.db.model.PhoneInfo>() {
+	private final java.util.List<de.haumacher.phoneblock.db.model.PhoneInfo> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.db.model.PhoneInfo element) {
 			_listener.beforeAdd(Blocklist.this, NUMBERS__PROP, index, element);

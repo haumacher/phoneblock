@@ -1,0 +1,58 @@
+#
+# Answerbot configuration for registering to a Fritz!Box in a local network.
+#
+
+###################################################################################################
+# This file is a configuration template. Copy the contents to a file named "phoneblock-answerbot"  
+# and fill out the missing options below. Afterwards, you can start the launch configuration 
+# AnswerBot (Fritz!Box).launch in the /bin folder.
+###################################################################################################
+
+registrar=fritz.box
+realm=fritz.box
+#route=fritz.box
+#force-rport=yes
+
+# The user name for registering the IP phone device configured in your Fritz!Box
+user=phoneblock
+
+# The password for registering the IP phone device configured in your Fritz!Box
+passwd=<fill-out-here>
+
+# The local ports used by the answerbot 
+host-port=55060
+media-port=50061
+port-count=20
+
+# Enable SIP message debugging.
+log-all-packets=no
+
+# Directory where to store recordings to, 'none' to disable recording.
+recodings = .
+
+# The directory where the WAV files for the bot conversation are located.
+conversation=./conversation
+
+# The format of the conversation media stord in the directories in ./conversation/*
+media=audio 4080 RTP/AVP { 8 PCMA 8000 160 ; 120 PCMA 16000 320 }
+
+# Number of milliseconds silence must be detected before responding.
+min-silence-time = 800
+	
+# When recording, the number of milliseconds of silence to record before and after the conterpart's speach.")
+padding-time = 500
+	
+# The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
+silence-db = -35
+
+# The minimum number of PhoneBlock votes for a number to be consideres SPAM.
+min-votes = 4
+
+# Whether to let PhoneBlock accept anonymous calls. It is not recommended to enable this option. Better configure a 
+# separate answering machine in you router to gracefully handle anonymous calls.
+accept-anonymous=no
+
+# Prefix of a number that triggers PhoneBlock to respond to the call (for testing). A local number typically starts
+# with a '*' character. Using this prefix allows to call PhoneBlock locally to verify it is working. 
+test-prefix=*
+

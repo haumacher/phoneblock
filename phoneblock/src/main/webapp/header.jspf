@@ -49,7 +49,8 @@
 				<a class="navbar-link" href="#" onclick="return false;">Installation</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Fritz!Box</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/anrufbeantworter/">Anrufbeantworter</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Blocklisten-Telefonbuch</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-android/">Android</a>
 				</div>
 			</div>
@@ -75,6 +76,12 @@
 			<a class="navbar-item" title="Zur Facebook-Seite" href="<%=request.getContextPath()%>/link/facebook" target="_blank">
 				<span class="icon" style="color: #1877F2;">
 			    	<i class="fa-brands fa-lg fa-facebook"></i>
+		        </span>
+		    </a>
+      			
+			<a class="navbar-item" title="RSS-Feed" href="https://rss.app/feeds/2BQDpMNxPek9Yal2.xml" target="_blank">
+				<span class="icon">
+			    	<i class="fa-solid fa-rss"></i>
 		        </span>
 		    </a>
       			

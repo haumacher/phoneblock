@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DB;
@@ -74,6 +75,8 @@ public class OAuthLoginServlet extends HttpServlet {
 		
 		String extId = userProfile.getId();
 		
+		Optional<Object> location = sessionStore.get(context, LoginServlet.LOCATION_ATTRIBUTE);
+		
 		DB db = DBService.getInstance();
 		String login = db.getLogin(clientName, extId);
 		if (login == null) {
@@ -93,11 +96,16 @@ public class OAuthLoginServlet extends HttpServlet {
 				db.setEmail(login, email);
 			}
 			
-			RegistrationServlet.startSetup(req, resp, login, passwd);
+			if (location.isEmpty()) {
+				RegistrationServlet.startSetup(req, resp, login, passwd);
+				return;
+			}
 		} else {
 			LoginFilter.setAuthenticatedUser(req, login);
-			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 		}
+		
+		String path = location.isEmpty() ? SettingsServlet.PATH : (String) location.get();
+		resp.sendRedirect(req.getContextPath() + path);
 	}
 
 	/**

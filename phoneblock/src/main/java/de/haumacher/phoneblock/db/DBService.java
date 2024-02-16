@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
@@ -43,15 +44,18 @@ public class DBService implements ServletContextListener {
 	private JdbcConnectionPool _pool;
 
 	private MailServiceStarter _mail;
+
+	private SecureRandomService _rnd;
 	
 	public DBService(SchedulerService scheduler) {
-		this(IndexUpdateService.NONE, scheduler, null);
+		this(new SecureRandomService(), IndexUpdateService.NONE, scheduler, null);
 	}
 	
 	/** 
 	 * Creates a {@link DBService}.
 	 */
-	public DBService(IndexUpdateService indexer, SchedulerService scheduler, MailServiceStarter mail) {
+	public DBService(SecureRandomService rnd, IndexUpdateService indexer, SchedulerService scheduler, MailServiceStarter mail) {
+		_rnd = rnd;
 		_indexer = indexer;
 		_scheduler = scheduler;
 		_mail = mail;
@@ -86,7 +90,12 @@ public class DBService implements ServletContextListener {
 					config.set(property, value);
 					LOG.info("Set property '" + property + "': " + config.get(property));
 				} catch (NamingException ex) {
-					LOG.info(ex.getMessage() + ", using default for property '" + property + "': " + config.get(property));
+					String value = System.getProperty("db." + property);
+					if (value != null) {
+						config.set(property, value);
+					} else {
+						LOG.info(ex.getMessage() + ", using default for property '" + property + "': " + config.get(property));
+					}
 				}
 			}
 		} catch (NamingException ex) {
@@ -116,7 +125,7 @@ public class DBService implements ServletContextListener {
 		}
 		
 		_pool = JdbcConnectionPool.create(dataSource);
-		INSTANCE = new DB(config.isSendHelpMails(), _pool, _indexer, _scheduler, _mail == null ? null : _mail.getMailService());
+		INSTANCE = new DB(_rnd.getRnd(), config.isSendHelpMails(), _pool, _indexer, _scheduler, _mail == null ? null : _mail.getMailService());
 	}
 
 	protected int defaultDbPort() {

@@ -132,7 +132,7 @@ public class TestDB {
 		
 		assertEquals(1001, _db.getLastSpamReport().longValue());
 		
-		List<SpamReport> reports = _db.getLatestSpamReports(1001);
+		List<DBSpamReport> reports = _db.getLatestSpamReports(1001);
 		assertEquals(1, reports.size());
 		assertEquals("456", reports.get(0).getPhone());
 	}

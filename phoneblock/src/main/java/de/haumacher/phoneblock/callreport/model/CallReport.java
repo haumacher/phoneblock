@@ -37,7 +37,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private String _lastid = "";
 
-	private final java.util.List<String> _callers = new de.haumacher.msgbuf.util.ReferenceList<String>() {
+	private final java.util.List<String> _callers = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(CallReport.this, CALLERS__PROP, index, element);

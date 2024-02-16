@@ -3,22 +3,6 @@ package de.haumacher.phoneblock.analysis;
 option NoInterfaces;
 option NoXml;
 
-message PhoneNumer {
-	@Nullable
-	string shortcut;
-	
-	string plus;
-	string zeroZero;
-	
-	string countryCode;
-	string country;
-	
-	@Nullable
-	string cityCode;
-	@Nullable
-	string city;
-}
-
 message AreaCodes {
 	map<string, AreaCode> codes;
 }

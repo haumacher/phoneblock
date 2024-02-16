@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.app.oauth;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -18,11 +19,17 @@ import org.pac4j.core.config.Config;
 import org.pac4j.core.config.ConfigFactory;
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.context.WebContextFactory;
+import org.pac4j.core.engine.DefaultSecurityLogic;
+import org.pac4j.core.engine.savedrequest.DefaultSavedRequestHandler;
+import org.pac4j.core.engine.savedrequest.SavedRequestHandler;
+import org.pac4j.core.util.Pac4jConstants;
 import org.pac4j.jee.context.JEEContext;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.LoginServlet;
 
 /**
  * {@link ConfigFactory} for authenticating with external services.
@@ -58,6 +65,22 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
 		
         Config result = new Config(clients);
         result.setWebContextFactory(new ProxyAwareWebContextFactory());
+        
+        DefaultSecurityLogic securityLogic = new DefaultSecurityLogic();
+        SavedRequestHandler savedRequestHandler = new DefaultSavedRequestHandler() {
+        	public void save(WebContext context, org.pac4j.core.context.session.SessionStore sessionStore) {
+        		Optional<String> locationHandle = context.getRequestParameter(LoginServlet.LOCATION_ATTRIBUTE);
+        		if (locationHandle.isPresent()) {
+        			String location = locationHandle.get();
+					LOG.info("Saving requested location during OAuth authentication: " + location);
+        			sessionStore.set(context, LoginServlet.LOCATION_ATTRIBUTE, location);
+        		}
+        		
+        		super.save(context, sessionStore);
+        	}
+        };
+		securityLogic.setSavedRequestHandler(savedRequestHandler);
+		result.setSecurityLogic(securityLogic);
 		return result;
     }
 

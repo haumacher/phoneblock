@@ -4,9 +4,7 @@
 package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +26,7 @@ import de.haumacher.phoneblock.captcha.Captcha;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import de.haumacher.phoneblock.util.ServletUtil;
 
@@ -37,14 +36,12 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebServlet(urlPatterns = "/api/register")
 public class RegisterServlet extends HttpServlet {
 	
-	private final Random _rnd = new SecureRandom();
-	
 	private static final ConcurrentMap<String, SessionInfo> _sessions = new ConcurrentHashMap<>();
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String session = DBService.getInstance().createPassword(20);
-		Captcha captcha = new Captcha(_rnd);
+		Captcha captcha = new Captcha(SecureRandomService.getInstance().getRnd());
 		String captchaImage = "data:image/png;base64," + Base64.getEncoder().encodeToString(captcha.getPng());
 		_sessions.put(session, SessionInfo.create().setCreated(System.currentTimeMillis()).setSession(session).setAnswer(captcha.getText()));
 		SchedulerService.getInstance().executor().schedule(() -> _sessions.remove(session), 15, TimeUnit.MINUTES);

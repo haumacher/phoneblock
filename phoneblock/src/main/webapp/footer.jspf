@@ -1,3 +1,4 @@
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%-- 
   - Author(s): Bernhard Haumacher et al.
@@ -48,7 +49,7 @@
 	</div>
 </footer>
 
-<script src="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.js"></script>
+<script src="<%= request.getContextPath() %><%=UIProperties.SHARIFF_PATH %>/shariff.min.js"></script>
 <script type="text/javascript">
 bulmaCollapsible.attach();
 </script>

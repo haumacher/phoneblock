@@ -8,7 +8,7 @@
 %><%@page import="java.util.List"
 %><%@page import="de.haumacher.phoneblock.db.DB"
 %><%@page import="de.haumacher.phoneblock.db.DBService"
-%><%@page import="de.haumacher.phoneblock.db.SpamReport"
+%><%@page import="de.haumacher.phoneblock.db.model.SpamReport"
 %>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
@@ -81,7 +81,7 @@
 	String count = request.getParameter("count");
 	int pages = count == null ? 2000 : Integer.parseInt(count);
 	long now = System.currentTimeMillis();
-	List<SpamReport> reports = db.getAll(pages);
+	List<? extends SpamReport> reports = db.getAll(pages);
 	long oneWeekBefore = now - 1000L*60*60*24*7;
 	for (SpamReport report : reports) {
 %>

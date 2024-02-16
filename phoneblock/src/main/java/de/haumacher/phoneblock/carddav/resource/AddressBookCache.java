@@ -22,7 +22,7 @@ import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.SpamReport;
+import de.haumacher.phoneblock.db.DBSpamReport;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -177,10 +177,10 @@ public class AddressBookCache implements ServletContextListener {
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
 			ListType listType) {
-		List<SpamReport> result = reports.getReports();
+		List<DBSpamReport> result = reports.getReports();
 		long now = System.currentTimeMillis();
 		NumberTree numberTree = new NumberTree();
-		for (SpamReport report : result) {
+		for (DBSpamReport report : result) {
 			String phone = report.getPhone();
 			
 			int votes = report.getVotes();

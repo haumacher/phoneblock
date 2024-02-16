@@ -27,10 +27,25 @@
 
 		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="<%=request.getContextPath()%>/link/tellows">tellows Anrufschutz</a>"?</h2>
 		<p>
-			Beide Ansätze funktionieren ähnlich über ein Internet-Telefonbuch, das man in seiner Fritz!Box einrichtet 
-			und die Nummern in diesem Telefonbuch blockiert. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
+			Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kennt keine 
+			Größenbeschränkung des Sperrlisten-Telefonbuchs. Er nimmt das Gespräch für alle Nummern, die auf der 
+			Sperrliste stehen, an. Es ist keine nächtliche Aktualisierung der Blockliste in Deiner Fritz!Box notwendig, 
+			Die Blockliste ist immer aktuell.
+		</p>
+		
+		<p>  
+			Den <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
+			VOIP-fähigen Internetrouter installieren, auch dann wenn das CardDAV-Protokoll für Internet-Telefonbücher von Deinem 
+			Router nicht unterstützt wird. 
+		</p>
+		
+		<p>
+			Bei beiden Angeboten kannst Du die <a href="<%=request.getContextPath()%>/setup.jsp">Blockliste als Internet-Telefonbuch</a>, 
+			in Deiner Fritz!Box einrichten 
+			und die Nummern in diesem Telefonbuch sperren. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
 			Deine Blocklist zu personalisieren und ist zudem auch noch kostenlos (siehe oben).
 		</p>
+		
 		<p> 
 			In Deine personalisierte Blocklist kannst Du selbst Nummern hinzufügen und, was 
 			noch wichtiger ist, auch Nummern von der Sperrung ausnehmen (siehe auch "Eine Nummer wird 
@@ -44,10 +59,17 @@
 		</p>
 
 		<h2>Ich habe keine Fritz!Box, kann ich PhoneBlock trotzdem nutzen?</h2>
+		
+		<p>  
+			Den <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
+			VOIP-fähigen Internetrouter installieren, auch dann wenn das CardDAV-Protokoll für Internet-Telefonbücher von Deinem 
+			Router nicht unterstützt wird. Installiere den Anrufbeantworter als normales VOIP-Telefon, das sich über 
+			Internet an Deiner Box anmeldet.
+		</p>
+		
 		<p>
-			Vielleicht, das hängt von deinem Internet-Router/Telefonanlage ab. Deine Telefonanlage (das Ding, das Dir 
-			Dein Telefonanbieter zur Verfügung gestellt hat und an der Du Deine Telefone anschließt/anmeldest) muss 
-			in der Lage sein, ein Telefonbuch über das <code>CardDAV</code>-Protokoll zu abonieren und alle Anrufe von 
+			Um die Blockliste als Telefonbuch zu importieren, muss Dein Internet-Router/Telefonanlage in der Lage sein, 
+			ein Telefonbuch über das <code>CardDAV</code>-Protokoll zu abonieren und alle Anrufe von 
 			einer Nummer in einem bestimmten Telefonbuch automatisch abzuweisen (oder an den Anrufbeantworter 
 			weiterzuleiten). Ob das bei Deiner Telefonanlage möglich ist, musst Du im Handbuch nachlesen, oder frag 
 			Deinen Telefonanbieter. Solltest Du die Blocklist erfolgreich in einen anderen Router installiert haben, 
@@ -111,6 +133,19 @@
 			schnell los zu werden!  
 		</p>
 
+		<h2>Hilfe, ich habe eine Nummer aus Versehen zur Blockliste hinzugefügt</h2>
+		<p>
+			Wenn Du in Deiner Fritz!Box einen neuen "Kontakt" in dem Blocklist-Telefonbuch erstellst, teilt Deine 
+			Fritz!Box das dem PhoneBlock-Server mit und der interpretiert das als Beschwerde über diese Nummer. 
+			Darüberhinaus landet die Nummer dann in deiner persönlichen Sperrliste, damit Du sicher nicht mehr von 
+			dieser Nummer genervt wirst. Aufgrund der komprimierten Speicherung von vielen Nummern in einem Kontakt, 
+			kann man leider auf dieselbe Art und Weise keine Nummer aus der persönlichen Sperrliste löschen. 
+			Stattdessen musst Du Dich in so einem Fall hier auf der Seite mit Deinen Zugangsdaten anmelden und die 
+			Nummer in <a href="<%= request.getContextPath() + SettingsServlet.PATH %>#blacklist">Deinen Einstellungen</a> 
+			aus der  "Black-List" löschen. Beim nächsten Synchronisationslauf sollte die Nummer dann auch wieder aus
+			der Blockliste Deiner Fritz!Box verschwinden. 
+		</p>
+
 		<h2>Eine Nummer wird fälschlicherweise blockiert, was tun?</h2>
 		<p>
 			Kein Problem, öffne <a href="<%= request.getContextPath() + SettingsServlet.PATH %>#whitelist">Deine Einstellungen</a> 
@@ -132,6 +167,23 @@
 			Anrufer wegdrückst.</li>
 		</ol>
 
+		<h2>Muss ich das Telefonbuch manuell aktualisieren?</h2>
+		<p>
+			Nein, das passiert ganz automatisch jede Nacht. Deine Fritz!Box kontaktiert jede Nacht den PhoneBlock-Server
+			und gleicht die Nummern der Blockliste mit dem Blocklist-Telefonbuch ab. Daher bleibt Deine Blockliste immer
+			aktuell. Wenn über einen längeren Zeitraum (aus welchen Gründen auch immer) kein Abruf der Blockliste mehr von
+			Deiner Fritz!Box erfolgt, schreibt Dir PhoneBlock eine E-Mail, damit Du die Konfiguration überprüfen kannst, 
+			bevor Deine Blockliste veraltet.
+		</p>
+
+		<h2>Wann genau erfolgt die Aktualisierung der Blockliste?</h2>
+		<p>
+			Das entscheidet Deine Fritz!Box. Wenn Du nicht explizit auf den "aktualisieren" Knopf des Blocklist-Telefonbuchs
+			drückst, dann würfelt Deine Fritz!Box einen Zeitpunkt zwischen 0 und 6 Uhr für die Aktualisierung. Das ist 
+			von AVM ganz schlau gemacht, weil sich damit die Abrufe relativ gleichmäßig über die ganze Nacht verteilen und so
+			die Server-Last begrenzt bleibt.
+		</p>
+		
 		<h2>Ich finde PhoneBlock toll, kann ich eine Spende machen?</h2>
 		<p>
 			PhoneBlock verfolgt aktuell<sup>(*)</sup> keinerlei kommerzielle Interessen. Spenden sind aktuell keine

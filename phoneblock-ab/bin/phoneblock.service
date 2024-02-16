@@ -1,0 +1,15 @@
+[Unit]
+Description=phoneblock
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/java -jar phoneblock-ab-1.4.6-SNAPSHOT-jar-with-dependencies.jar
+WorkingDirectory=/home/phoneblock
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=10s
+User=phoneblock
+
+[Install]
+WantedBy=multi-user.target

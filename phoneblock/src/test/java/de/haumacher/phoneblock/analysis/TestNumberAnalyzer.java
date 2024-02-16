@@ -3,9 +3,11 @@
  */
 package de.haumacher.phoneblock.analysis;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+
+import de.haumacher.phoneblock.db.model.PhoneNumer;
 
 /**
  * Test for {@link NumberAnalyzer}.

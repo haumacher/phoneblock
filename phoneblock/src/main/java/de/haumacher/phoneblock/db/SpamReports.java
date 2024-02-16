@@ -75,13 +75,13 @@ public interface SpamReports {
 	int deleteArchivedReports(long now);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
-	List<SpamReport> getLatestReports(long after);
+	List<DBSpamReport> getLatestReports(long after);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS order by LASTUPDATE desc limit #{limit}")
-	List<SpamReport> getAll(int limit);
+	List<DBSpamReport> getAll(int limit);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where PHONE = #{phone}")
-	SpamReport getPhoneInfo(String phone);
+	DBSpamReport getPhoneInfo(String phone);
 	
 	@Select("SELECT * FROM SPAMREPORTS s \n"
 			+ "	WHERE s.PHONE > #{phone}\n"
@@ -96,16 +96,16 @@ public interface SpamReports {
 	String getPrevPhone(String phone);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from OLDREPORTS where PHONE = #{phone}")
-	SpamReport getPhoneInfoArchived(String phone);
+	DBSpamReport getPhoneInfoArchived(String phone);
 	
 	@Select("SELECT PHONE, VOTES, LASTUPDATE, DATEADDED FROM SPAMREPORTS s"
 			+ " WHERE s.LASTUPDATE >= #{notBefore}"
 			+ " ORDER BY s.VOTES DESC LIMIT #{cnt}")
-	List<SpamReport> getTopSpammers(int cnt, long notBefore);
+	List<DBSpamReport> getTopSpammers(int cnt, long notBefore);
 	
 	@Select("SELECT x.* FROM SPAMREPORTS x"
 			+ " WHERE VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
-	List<SpamReport> getLatestBlocklistEntries(int minVotes);
+	List<DBSpamReport> getLatestBlocklistEntries(int minVotes);
 	
 	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end, case when r.COUNT is null then 0 else r.COUNT end from SPAMREPORTS s"
 			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
@@ -173,7 +173,7 @@ public interface SpamReports {
 	List<DBSearchInfo> getSearchesAtAll(int revision, Collection<String> numbers);
 	
 	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS")
-	List<SpamReport> getReports();
+	List<DBSpamReport> getReports();
 	
 	@Select("select PHONE from WHITELIST")
 	Set<String> getWhiteList();

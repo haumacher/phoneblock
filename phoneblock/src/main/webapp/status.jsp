@@ -5,7 +5,7 @@
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
-<%@page import="de.haumacher.phoneblock.db.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.util.List"%>
@@ -87,7 +87,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 
 <%
-	List<SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
+	List<? extends SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
 	if (!reports.isEmpty()) {
 %>
 		<h2>Spam-Reports der letzten Stunde</h2> 

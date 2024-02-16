@@ -1,7 +1,7 @@
 package de.haumacher.phoneblock.index.google.impl;
 
 /**
- * Message sent to the Google update service.
+ * Implementation of {@link de.haumacher.phoneblock.index.google.UpdateMessage}.
  */
 public class UpdateMessage_Impl extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.phoneblock.index.google.UpdateMessage {
 
