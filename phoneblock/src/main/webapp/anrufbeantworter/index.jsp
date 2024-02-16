@@ -54,13 +54,14 @@ function showAB() {
 			Mit folgenden Schritten kommst Du zu Deinem PhoneBlock-Anrufbeantworter:
 		</p>
 		
-		<ul>
+		<ol>
 			<li><a href="#register">Bei PhoneBlock anmelden</a></li>
 			<li><a href="#create">Anrufbeantworter erstellen</a></li>
 			<li><a href="#dyndns">DynDNS in der Fritz!Box einrichten</a></li>
 			<li><a href="#sip">Telefoniegerät in der Fritz!Box einrichten</a></li>
 			<li><a href="#enable">PhoneBlock-Anrufbeantworter einschalten</a></li>
-		</ul>
+			<li><a href="#test">Anrufbeantworter testen</a></li>
+		</ol>
 		
 		 <p>
 		 	Die Anleitung führt Dich Schritt für Schritt durch die Einrichtung. Die Konfiguration 
@@ -392,9 +393,11 @@ function showAB() {
 	  		</div>
 		</div>
 		
+		<h2 id="test">Schritt 6: Anrufbeantworter testen</h2>
+
 		<p>
-			Ach ja, wenn Du selber ausprobieren willst, wie sich der Anrufbeantworter verhält, kannst Du ihn von einem direkt an der Fritz!Box 
-			angeschlossenen Telefon (z.B. einem DECT-Schnurlostelefon) über die <em>interne Nummer des Anrufbeantworters</em> anrufen. 
+			Wenn Du ausprobieren willst, wie ein Gespräch mit dem nicht ganz alltäglichen PhoneBlock-Anrufbeantworter abläuft, kannst Du ihn 
+			von einem direkt an der Fritz!Box angeschlossenen Telefon (z.B. einem DECT-Schnurlostelefon) über die <b>interne Nummer</b> des Anrufbeantworters anrufen. 
 			Solche Test-Anrufe nimmter der Anrufbeantworter immer entgegen. <b>Wichtig:</b> Das funktioniert <b>nur</b> über die interne Nummer des 
 			Anrufbeantworters (fängt normalerweise mit "**" an). Die interne Nummer findest Du in der Geräteübersicht Deiner Fritz!Box in der 
 			Zeile "PhoneBlock". Viel Spaß!
