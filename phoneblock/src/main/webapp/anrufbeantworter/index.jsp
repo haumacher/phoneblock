@@ -385,6 +385,12 @@ function showAB() {
 			Gratuliere, wenn alles geklappt hat, sollte der Anrufbeantworter in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a> 
 			jetzt grün als "eingeschaltet" angezeigt werden. Die nächsten unliebsamen Anrufer können in Zukunft mit PhoneBlock diskutieren.
 		</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img class="image" alt="Anrufbeantworter verbunden" src="app/10-answerbot-activated.png"/>
+	  		</div>
+		</div>
 		
 		<p>
 			Ach ja, wenn Du selber ausprobieren willst, wie sich der Anrufbeantworter verhält, kannst Du ihn von einem direkt an der Fritz!Box 
@@ -393,6 +399,13 @@ function showAB() {
 			Anrufbeantworters (fängt normalerweise mit "**" an). Die interne Nummer findest Du in der Geräteübersicht Deiner Fritz!Box in der 
 			Zeile "PhoneBlock". Viel Spaß!
 		</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img class="image" alt="Anrufbeantworter verbunden" src="setup/14-answerbot-local-number.png"/>
+	  		</div>
+		</div>
+		
 	</div>
 </section>
 
