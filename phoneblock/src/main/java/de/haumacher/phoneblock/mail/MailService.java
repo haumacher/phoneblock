@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -248,7 +249,7 @@ public class MailService {
 		StringBuilder result = new StringBuilder();
 		char[] buffer = new char[4096];
 		try (InputStream in = getClass().getResourceAsStream(resource)) {
-			try (Reader r = new InputStreamReader(in, "utf-8")) {
+			try (Reader r = new InputStreamReader(in, StandardCharsets.UTF_8)) {
 				while (true) {
 					int direct = r.read(buffer);
 					if (direct < 0) {
