@@ -400,7 +400,7 @@ function showAB() {
 			von einem direkt an der Fritz!Box angeschlossenen Telefon (z.B. einem DECT-Schnurlostelefon) über die <b>interne Nummer</b> des Anrufbeantworters anrufen. 
 			Solche Test-Anrufe nimmter der Anrufbeantworter immer entgegen. <b>Wichtig:</b> Das funktioniert <b>nur</b> über die interne Nummer des 
 			Anrufbeantworters (fängt normalerweise mit "**" an). Die interne Nummer findest Du in der Geräteübersicht Deiner Fritz!Box in der 
-			Zeile "PhoneBlock". Viel Spaß!
+			Zeile "PhoneBlock". Probier doch mal, ihm eine Photovoltaikanlage aufzuschätzen. Viel Spaß!
 		</p>
 		
 		<div class="columns">
