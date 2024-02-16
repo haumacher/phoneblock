@@ -177,6 +177,23 @@
 			Anrufer wegdrückst.</li>
 		</ol>
 
+		<h2>Muss ich das Telefonbuch manuell aktualisieren?</h2>
+		<p>
+			Nein, das passiert ganz automatisch jede Nacht. Deine Fritz!Box kontaktiert jede Nacht den PhoneBlock-Server
+			und gleicht die Nummern der Blockliste mit dem Blocklist-Telefonbuch ab. Daher bleibt Deine Blockliste immer
+			aktuell. Wenn über einen längeren Zeitraum (aus welchen Gründen auch immer) kein Abruf der Blockliste mehr von
+			Deiner Fritz!Box erfolgt, schreibt Dir PhoneBlock eine E-Mail, damit Du die Konfiguration überprüfen kannst, 
+			bevor Deine Blockliste veraltet.
+		</p>
+
+		<h2>Wann genau erfolgt die Aktualisierung der Blockliste?</h2>
+		<p>
+			Das entscheidet Deine Fritz!Box. Wenn Du nicht explizit auf den "aktualisieren" Knopf des Blocklist-Telefonbuchs
+			drückst, dann würfelt Deine Fritz!Box einen Zeitpunkt zwischen 0 und 6 Uhr für die Aktualisierung. Das ist 
+			von AVM ganz schlau gemacht, weil sich damit die Abrufe relativ gleichmäßig über die ganze Nacht verteilen und so
+			die Server-Last begrenzt bleibt.
+		</p>
+		
 		<h2>Ich finde PhoneBlock toll, kann ich eine Spende machen?</h2>
 		<p>
 			PhoneBlock verfolgt aktuell<sup>(*)</sup> keinerlei kommerzielle Interessen. Spenden sind aktuell keine
