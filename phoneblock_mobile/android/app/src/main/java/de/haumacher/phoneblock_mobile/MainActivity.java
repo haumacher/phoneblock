@@ -1,4 +1,4 @@
-package haumacher.de.phoneblock_mobile;
+package de.haumacher.phoneblock_mobile;
 
 import io.flutter.embedding.android.FlutterActivity;
 

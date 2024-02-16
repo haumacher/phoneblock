@@ -1,5 +1,8 @@
 import 'package:call_log/call_log.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
 
@@ -167,11 +170,21 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ).toList(),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: updateCallList,
-        tooltip: 'Increment',
-        child: const Icon(Icons.update),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: fetchBlocklist,
+            tooltip: 'Update Blocklist',
+            child: const Icon(Icons.cloud_download),
+          ),
+          FloatingActionButton(
+            onPressed: updateCallList,
+            tooltip: 'Increment',
+            child: const Icon(Icons.update),
+          ),
+        ],
+      ) // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
@@ -249,6 +262,92 @@ class _MyHomePageState extends State<MyHomePage> {
       case Type.iNCOMING: return const Icon(Icons.phone_callback, color: Colors.green);
     }
   }
+
+  void fetchBlocklist() async {
+    if (await FlutterContacts.requestPermission()) {
+      if (kDebugMode) {
+        print("Permission OK");
+      }
+      var allGroups = await FlutterContacts.getGroups();
+      if (kDebugMode) {
+        print("Groups: $allGroups");
+      }
+
+      List<Group> spamGroups = [];
+      for (var group in allGroups) {
+        if (group.name == "SPAM") {
+          spamGroups.add(group);
+        }
+      }
+
+      if (kDebugMode) {
+        print("SPAM groups: $spamGroups");
+      }
+
+      var allContacts = await FlutterContacts.getContacts(withGroups: true);
+      var spamContacts = allContacts.where((contact) => containsAny(spamGroups, contact.groups));
+      for (var contact in spamContacts) {
+        if (kDebugMode) {
+          for (var num in contact.phones) {
+            print("Found SPAM number: $num");
+          }
+        }
+        await contact.delete();
+      }
+
+      while (spamGroups.length > 1) {
+        Group duplicate = spamGroups.removeLast();
+        await FlutterContacts.deleteGroup(duplicate);
+      }
+
+      Group spamGroup = spamGroups.firstOrNull ?? await createSpamGroup();
+
+      var photo = Uint8List.sublistView(await rootBundle.load("assets/images/spam_icon.png"));
+
+      var pb = Contact(
+        name: Name(last: "ZZ SPAM"),
+        phones: [
+          Phone("012345679", label: PhoneLabel.work),
+          Phone("0234567891", label: PhoneLabel.work),
+        ],
+        groups: [spamGroup],
+        photo: photo,
+      );
+      pb = await pb.insert();
+
+      if (kDebugMode) {
+        print("Created contact $pb");
+      }
+
+      if (kDebugMode) {
+        print("Update OK");
+      }
+    } else {
+      if (kDebugMode) {
+        print("Permission denied");
+      }
+    }
+  }
+
+  /// Whether [all] contains any element of [some].
+  bool containsAny(List all, List some) {
+    for (Object x in some) {
+      if (all.contains(x)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<Group> createSpamGroup() async {
+    Group spamGroup = Group("phoneblock-spam", "SPAM");
+    spamGroup = await FlutterContacts.insertGroup(spamGroup);
+    if (kDebugMode) {
+      print("Created SPAM group: $spamGroup");
+    }
+    return spamGroup;
+  }
+
 }
 
 Widget label(Rating rating) {
@@ -313,7 +412,7 @@ class RateScreen extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: bgColor(rating),
+          backgroundColor: bgColor(rating),
           shadowColor: Colors.blueGrey,
           elevation: 3,
           shape: RoundedRectangleBorder(
