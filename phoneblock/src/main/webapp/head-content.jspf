@@ -58,6 +58,8 @@
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/font-awesome/${font-awesome.version}/css/all.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.css">
 
+<link rel="alternate" type="application/rss+xml" title="PhoneBlock Updates" href="https://rss.app/feeds/2BQDpMNxPek9Yal2.xml" />
+  
 <style type="text/css">
 
 .swagger-ui pre {
