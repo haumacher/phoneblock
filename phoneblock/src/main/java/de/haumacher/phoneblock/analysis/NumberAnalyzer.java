@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -360,7 +361,7 @@ public class NumberAnalyzer {
 		
 		// See https://www.bundesnetzagentur.de/SharedDocs/Downloads/DE/Sachgebiete/Telekommunikation/Unternehmen_Institutionen/Nummerierung/Rufnummern/ONRufnr/Vorwahlverzeichnis_ONB.zip.html
 		try (InputStream in = NumberAnalyzer.class.getResourceAsStream("NVONB.INTERNET.20220727.ONB.csv")) {
-			try (Reader r = new InputStreamReader(in, "utf-8")) {
+			try (Reader r = new InputStreamReader(in, StandardCharsets.UTF_8)) {
 				Node germany = root.find("+49", 1, root);
 				
 				ICSVParser parser = new CSVParserBuilder().withSeparator(';').withStrictQuotes(false).build();

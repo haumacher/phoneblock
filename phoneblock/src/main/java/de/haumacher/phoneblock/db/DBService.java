@@ -3,7 +3,6 @@
  */
 package de.haumacher.phoneblock.db;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -64,7 +63,7 @@ public class DBService implements ServletContextListener {
             org.h2.Driver.load();
 			DBConfig config = lookupConfig(servletContextEvent);
 			startDB(config);
-		} catch (SQLException | UnsupportedEncodingException ex) {
+		} catch (SQLException ex) {
 			LOG.error("Failed to start DB.", ex);
 		}
 	}
@@ -96,7 +95,7 @@ public class DBService implements ServletContextListener {
 		return config;
 	}
 
-	private void startDB(DBConfig config) throws SQLException, UnsupportedEncodingException {
+	private void startDB(DBConfig config) throws SQLException {
 		LOG.info("Opening H2 database: " + config.getUrl() + " for user '" + config.getUser() + "'.");
 		JdbcDataSource dataSource = new JdbcDataSource();
 		dataSource.setUrl(config.getUrl());

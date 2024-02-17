@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -76,7 +77,7 @@ public class IndexNowUpdateService implements IndexUpdateService {
 		}
 		String url = "https://phoneblock.net" + _contextPath + path;
 		try {
-			URL indexnowUrl = new URL("https://www.bing.com/indexnow?url=" + URLEncoder.encode(url, "utf-8") + "&key=" + _apiKey);
+			URL indexnowUrl = new URL("https://www.bing.com/indexnow?url=" + URLEncoder.encode(url, StandardCharsets.UTF_8) + "&key=" + _apiKey);
 			HttpURLConnection connection = (HttpURLConnection) indexnowUrl.openConnection();
 			connection.connect();
 			int code = connection.getResponseCode();

@@ -6,7 +6,7 @@ package de.haumacher.phoneblock.db;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -114,7 +114,7 @@ public class DB {
 
 	private boolean _sendHelpMails;
 
-	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException, UnsupportedEncodingException {
+	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException {
 		this(false, dataSource, IndexUpdateService.NONE, scheduler, null);
 	}
 	
@@ -124,7 +124,7 @@ public class DB {
 	 *
 	 * @param dataSource
 	 */
-	public DB(boolean sendHelpMails, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException, UnsupportedEncodingException {
+	public DB(boolean sendHelpMails, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
 		_sendHelpMails = sendHelpMails;
 		_dataSource = dataSource;
 		_indexer = indexer;
@@ -154,7 +154,7 @@ public class DB {
 		        ScriptRunner sr = new ScriptRunner(session.getConnection());
 		        sr.setAutoCommit(true);
 		        sr.setDelimiter(";");
-		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-schema.sql"), "utf-8"));
+		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-schema.sql"), StandardCharsets.UTF_8));
 			}
 		}
 		
@@ -217,7 +217,7 @@ public class DB {
 	 * @param login The user name (e.g. e-mail address) of the new account.
 	 * @return The randomly generated password for the account.
 	 */
-	public String createUser(String clientName, String extId, String login, String displayName) throws UnsupportedEncodingException {
+	public String createUser(String clientName, String extId, String login, String displayName) {
 		String passwd = createPassword(20);
 		addUser(clientName, extId, login, displayName, passwd);
 		return passwd;
@@ -709,7 +709,7 @@ public class DB {
 	/** 
 	 * Adds the given user with the given password.
 	 */
-	public void addUser(String clientName, String extId, String login, String displayName, String passwd) throws UnsupportedEncodingException {
+	public void addUser(String clientName, String extId, String login, String displayName, String passwd) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			users.addUser(login, clientName, extId, displayName, pwhash(passwd), System.currentTimeMillis());
@@ -722,7 +722,7 @@ public class DB {
 	 * 
 	 * @return The new password, or <code>null</code>, if the given user does not exist.
 	 */
-	public String resetPassword(String login) throws UnsupportedEncodingException {
+	public String resetPassword(String login) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
@@ -810,7 +810,7 @@ public class DB {
 		if (authHeader.startsWith(BASIC_PREFIX)) {
 			String credentials = authHeader.substring(BASIC_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
-			String decoded = new String(decodedBytes, "utf-8");
+			String decoded = new String(decodedBytes, StandardCharsets.UTF_8);
 			int sepIndex = decoded.indexOf(':');
 			if (sepIndex >= 0) {
 				String login = decoded.substring(0, sepIndex);
@@ -827,7 +827,7 @@ public class DB {
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String login(String login, String passwd) throws UnsupportedEncodingException, IOException {
+	public String login(String login, String passwd) throws IOException {
 		byte[] pwhash = pwhash(passwd);
 		
 		try (SqlSession session = openSession()) {
@@ -878,8 +878,8 @@ public class DB {
 		return result.toString();
 	}
 
-	private byte[] pwhash(String passwd) throws UnsupportedEncodingException {
-		return _sha256.digest(passwd.getBytes("utf-8"));
+	private byte[] pwhash(String passwd) {
+		return _sha256.digest(passwd.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/** 

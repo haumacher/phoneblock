@@ -6,8 +6,8 @@ package de.haumacher.phoneblock.index.google;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import javax.naming.Context;
@@ -120,10 +120,10 @@ public class GoogleUpdateService implements IndexUpdateService {
 		}
 	}
 
-	private byte[] toByteArray(UpdateMessage message) throws IOException, UnsupportedEncodingException {
+	private byte[] toByteArray(UpdateMessage message) throws IOException {
 		StringW buffer = new StringW();
 		message.writeTo(new JsonWriter(buffer));
-		byte[] content = buffer.toString().getBytes("utf-8");
+		byte[] content = buffer.toString().getBytes(StandardCharsets.UTF_8);
 		return content;
 	}
 

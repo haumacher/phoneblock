@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -51,7 +52,7 @@ public class NameGenerator {
 	
 	private static List<String> load(String string) {
 		List<String> result = new ArrayList<>();
-		try (BufferedReader r = new BufferedReader(new InputStreamReader(NameGenerator.class.getResourceAsStream(string), "utf-8"))) {
+		try (BufferedReader r = new BufferedReader(new InputStreamReader(NameGenerator.class.getResourceAsStream(string), StandardCharsets.UTF_8))) {
 			String line;
 			while ((line = r.readLine()) != null) {
 				String name = line.trim();

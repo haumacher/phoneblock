@@ -6,9 +6,8 @@ package de.haumacher.phoneblock.db;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Base64;
@@ -62,7 +61,7 @@ public class TestDB {
 	}
 
 	@Test
-	public void testTopSearches() throws UnsupportedEncodingException, SQLException {
+	public void testTopSearches() {
 		_db.addRating("0", Rating.C_PING, null, 0);
 		_db.addRating("1", Rating.C_PING, null, 0);
 		_db.addRating("2", Rating.C_PING, null, 0);
@@ -98,7 +97,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testSpamReports() throws UnsupportedEncodingException, SQLException {
+	public void testSpamReports() {
 		assertFalse(_db.hasSpamReportFor("123"));
 
 		_db.processVotes("123", 2, 1000);
@@ -138,7 +137,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testBlocklist() throws UnsupportedEncodingException, SQLException {
+	public void testBlocklist() {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 			
@@ -176,7 +175,7 @@ public class TestDB {
 	}
 
 	@Test
-	public void testDuplicateAdd() throws UnsupportedEncodingException, SQLException {
+	public void testDuplicateAdd() {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 
@@ -191,7 +190,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testUserManagement() throws SQLException, IOException {
+	public void testUserManagement() throws IOException {
 		_db.addUser("none", "1", "foo@bar.com", "Mr. X", "123");
 		_db.addUser("none", "2", "baz@bar.com", "Mr. Y", "123");
 		
@@ -209,8 +208,8 @@ public class TestDB {
 		}
 	}
 	
-	private String header(String user, String pw) throws UnsupportedEncodingException {
-		return "Basic " + Base64.getEncoder().encodeToString((user + ':' + pw).getBytes("utf-8"));
+	private String header(String user, String pw) {
+		return "Basic " + Base64.getEncoder().encodeToString((user + ':' + pw).getBytes(StandardCharsets.UTF_8));
 	}
 	
 	@Test
