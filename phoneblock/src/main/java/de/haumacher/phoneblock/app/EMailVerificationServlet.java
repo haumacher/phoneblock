@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import javax.mail.internet.AddressException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -48,6 +49,12 @@ public class EMailVerificationServlet extends HttpServlet {
 			}
 
 			mailService.sendActivationMail(email, code);
+		} catch (AddressException ex) {
+			LOG.warn("Failed to send message: " + ex.getMessage());
+			
+			req.setAttribute("message", "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
+			req.getRequestDispatcher("/signup.jsp").forward(req, resp);
+			return;
 		} catch (Exception ex) {
 			LOG.error("Failed to send message", ex);
 			
