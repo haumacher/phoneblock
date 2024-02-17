@@ -58,6 +58,7 @@ public class SearchServlet extends HttpServlet {
 			or("Googlebot"
 			, "AdsBot-Google"
 			, "AhrefsBot"
+			, "Amazonbot"
 			, "Applebot"
 			, "bingbot"
 			, "BingPreview"
