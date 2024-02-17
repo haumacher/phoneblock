@@ -1,0 +1,68 @@
+package de.haumacher.phoneblock.db.mailcheck.model;
+
+option NoInterfaces;
+option NoXml;
+option NoBinary;
+
+message DomainCheck {
+	string domainName;
+	
+	bool disposable;
+	long lastChanged;
+	int sourceSystem;
+	
+	@Nullable
+	string mxHost;
+	
+	@Nullable
+	string mxIP;
+
+}
+
+/**
+ * Check result from <code>https://mailcheck.p.rapidapi.com</code>.
+ *
+ * <pre>
+ * 	{
+ * 	  "valid": true,
+ * 	  "block": true,
+ * 	  "disposable": true,
+ * 	  "email_forwarder": false,
+ * 	  "domain": "laymro.com",
+ * 	  "text": "Disposable / temporary domain",
+ * 	  "reason": "Heuristics x1",
+ * 	  "risk": 91,
+ * 	  "mx_host": "mail.laymro.com",
+ * 	  "possible_typo": [],
+ * 	  "mx_ip": "167.172.15.120",
+ * 	  "mx_info": "Using MX pointer mail.laymro.com from DNS with priority: 10",
+ * 	  "last_changed_at": "2024-02-07T17:09:29+01:00"
+ * 	} 
+ * </pre>
+ */
+message RapidAPIResult {
+	@Name("valid")
+	bool valid;
+	
+	@Name("block")
+	bool block;
+	
+	@Name("disposable")
+	bool disposable;
+	
+	@Name("email_forwarder")
+	bool forwarder;
+	
+	@Name("domain")
+	string domainName;
+
+	@Name("mx_host")
+	string mxHost;
+	
+	@Name("mx_ip")
+	string mxIP;
+	
+	@Name("last_changed_at")
+	string lastChanged;
+}
+

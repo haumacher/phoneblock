@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DBUserSettings;
-import de.haumacher.phoneblock.mail.check.EMailChecker;
+import de.haumacher.phoneblock.mail.check.EMailCheckService;
 
 /**
  * Service for sending e-mail messages.
@@ -82,7 +82,7 @@ public class MailService {
 		
     	InternetAddress address = new InternetAddress(receiver);
     	
-    	if (EMailChecker.isDisposable(address)) {
+    	if (EMailCheckService.getInstance().isDisposable(address)) {
 			LOG.warn("Rejected disposable e-mail address: " + receiver);
     		throw new AddressException("Please do not use disposable e-mail addresses.");
     	}
