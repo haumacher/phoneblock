@@ -74,8 +74,8 @@ public class SearchOperation {
 
 			_comments = new ArrayList<>(mapper.getComments(_phoneId));
 			
-			// Do not perform a meta-search for a number without comments for a request from a bot.
-			if (!_bot || !_comments.isEmpty()) {
+			// Do not perform a meta-search for a bot request.
+			if (!_bot) {
 				_searchPerformed = shouldSearch(mapper, _phoneId);
 				
 				boolean indexUpdated = false;
