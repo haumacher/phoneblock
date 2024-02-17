@@ -57,6 +57,7 @@ import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
+import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -138,6 +139,7 @@ public class DB {
 		configuration.addMapper(SpamReports.class);
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
+		configuration.addMapper(Domains.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		Set<String> tableNames = new HashSet<>();
