@@ -164,12 +164,12 @@ public class Captcha {
 	}
 
 	private String generateText() {
-		StringBuffer textBuffer = new StringBuffer();
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int n = 0; n < 6; n++) {
 			char ch = SAVE_CHARS.charAt(_rnd.nextInt(SAVE_CHARS.length()));
-			textBuffer.append(ch);
+			stringBuilder.append(ch);
 		}
-		return textBuffer.toString();
+		return stringBuilder.toString();
 	}
 
 	private Color randomColor() {
