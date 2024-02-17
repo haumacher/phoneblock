@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
@@ -9,6 +10,8 @@ import 'package:phoneblock_answerbot_ui/httpAddons.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class AnswerBotList extends StatefulWidget {
   const AnswerBotList({super.key});
@@ -19,6 +22,7 @@ class AnswerBotList extends StatefulWidget {
 
 class AnswerBotListState extends State<AnswerBotList> {
 
+  bool loginRequired = false;
   String msg = 'Loading data...';
 
   List<AnswerbotInfo>? bots;
@@ -39,6 +43,12 @@ class AnswerBotListState extends State<AnswerBotList> {
 
   void processResponse(http.Response response) {
     setState(() {
+      if (response.statusCode == 401) {
+        loginRequired = true;
+        return;
+      }
+      loginRequired = false;
+
       if (response.statusCode != 200) {
         msg = "Informationen können nicht abgerufen werden (Fehler ${response.statusCode}): ${response.body}";
         return;
@@ -61,6 +71,40 @@ class AnswerBotListState extends State<AnswerBotList> {
 
   @override
   Widget build(BuildContext context) {
+    if (loginRequired) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const TitleRow("Deine Anrufbeantworter"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const Text("Anmeldung erforderlich",
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () => login(context),
+                          child: const Text("Login")
+                      )
+                    ]
+                ),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
+
     return Scaffold(
       appBar: AppBar(
         title: const TitleRow("Deine Anrufbeantworter"),
@@ -164,6 +208,10 @@ class AnswerBotListState extends State<AnswerBotList> {
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
+  }
+
+  void login(BuildContext context) {
+    launchUrl(Uri.parse("$basePath/login"));
   }
 
   bool setupComplete(AnswerbotInfo bot) => isSet(bot.host) || isSet(bot.ip4) || isSet(bot.ip6);
