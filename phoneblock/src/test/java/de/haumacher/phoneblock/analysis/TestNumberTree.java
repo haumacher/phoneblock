@@ -7,20 +7,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test of {@link NumberTree}.
  */
-@SuppressWarnings("javadoc")
-public class TestNumberTree {
+class TestNumberTree {
 	
 	@Test
-	public void testLeve1Wildcard() {
+	void testLeve1Wildcard() {
 		NumberTree tree = new NumberTree();
 		tree.insert("0201234567");
 		tree.insert("0305200156399");
@@ -37,11 +36,11 @@ public class TestNumberTree {
 		tree.markWildcards();
 		List<String> entries = tree.createBlockEntries();
 		
-		Assertions.assertEquals(Arrays.asList("0201234567", "030520015632*", "030520015633*", "0305200156399"), entries);
+		assertEquals(List.of("0201234567", "030520015632*", "030520015633*", "0305200156399"), entries);
 	}
 
 	@Test
-	public void testWhitelistBreaksWildcard() {
+	void testWhitelistBreaksWildcard() {
 		NumberTree tree = new NumberTree();
 		tree.insert("0100001");
 		tree.insert("0100002");
@@ -56,11 +55,11 @@ public class TestNumberTree {
 		tree.markWildcards();
 		List<String> entries = tree.createBlockEntries();
 		
-		Assertions.assertEquals(Arrays.asList("0100001", "0100002", "0100003", "0100005", "020000*"), entries);
+		assertEquals(List.of("0100001", "0100002", "0100003", "0100005", "020000*"), entries);
 	}
 	
 	@Test
-	public void testWhitelistBreaksWildcardLevel2() {
+	void testWhitelistBreaksWildcardLevel2() {
 		NumberTree tree = new NumberTree();
 		tree.insert("01000015");
 		tree.insert("01000016");
@@ -76,11 +75,11 @@ public class TestNumberTree {
 		tree.markWildcards();
 		List<String> entries = tree.createBlockEntries();
 		
-		Assertions.assertEquals(Arrays.asList("0100001*", "0100002*", "0100003", "0100005*"), entries);
+		assertEquals(List.of("0100001*", "0100002*", "0100003", "0100005*"), entries);
 	}
 	
 	@Test
-	public void testLeve2Wildcard() {
+	void testLeve2Wildcard() {
 		NumberTree tree = new NumberTree();
 		tree.insert("030123010");
 		tree.insert("030123011");
@@ -94,11 +93,11 @@ public class TestNumberTree {
 		tree.markWildcards();
 		List<String> entries = tree.createBlockEntries();
 		
-		Assertions.assertEquals(Arrays.asList("0301230*"), entries);
+		assertEquals(List.of("0301230*"), entries);
 	}
 	
 	@Test
-	public void testRealData() throws IOException {
+	void testRealData() throws IOException {
 		NumberTree tree = new NumberTree();
 
 		int cnt = 0;
@@ -144,6 +143,10 @@ public class TestNumberTree {
 		System.out.println("Output numbers: " + numbers);
 		System.out.println("Wildcards: " + wildcard);
 		System.out.println("Blocks: " + blocks.size());
+		assertEquals(10049, cnt);
+		assertEquals(266, wildcard);
+		assertEquals(300, numbers);
+		assertEquals(99, blocks.size());
 	}
 	
 }
