@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +29,7 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
 /**
  * Test case for {@link DB}.
  */
-public class TestDB {
+class TestDB {
 	
 	private DB _db;
 	private SchedulerService _scheduler;
@@ -61,7 +60,7 @@ public class TestDB {
 	}
 
 	@Test
-	public void testTopSearches() {
+	void testTopSearches() {
 		_db.addRating("0", Rating.C_PING, null, 0);
 		_db.addRating("1", Rating.C_PING, null, 0);
 		_db.addRating("2", Rating.C_PING, null, 0);
@@ -97,7 +96,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testSpamReports() {
+	void testSpamReports() {
 		assertFalse(_db.hasSpamReportFor("123"));
 
 		_db.processVotes("123", 2, 1000);
@@ -137,7 +136,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testBlocklist() {
+	void testBlocklist() {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 			
@@ -147,35 +146,35 @@ public class TestDB {
 			blockList.addExclude(1, "678");
 			blockList.addExclude(2, "999");
 			
-			assertEquals(new HashSet<>(Arrays.asList("123", "345", "678")), blockList.getExcluded(1));
+			assertEquals(new HashSet<>(List.of("123", "345", "678")), blockList.getExcluded(1));
 			
 			blockList.removeExclude(1, "345");
 			
-			assertEquals(new HashSet<>(Arrays.asList("123", "678")), blockList.getExcluded(1));
+			assertEquals(new HashSet<>(List.of("123", "678")), blockList.getExcluded(1));
 			
 			blockList.removeExclude(2, "123");
 			
-			assertEquals(new HashSet<>(Arrays.asList("123", "678")), blockList.getExcluded(1));
+			assertEquals(new HashSet<>(List.of("123", "678")), blockList.getExcluded(1));
 			
 			blockList.addPersonalization(1, "654");
 			blockList.addPersonalization(1, "321");
 			blockList.addPersonalization(2, "321");
 			blockList.addPersonalization(2, "987");
 			
-			assertEquals(Arrays.asList("321", "654"), blockList.getPersonalizations(1));
+			assertEquals(List.of("321", "654"), blockList.getPersonalizations(1));
 			
 			blockList.removePersonalization(1, "654");
 			
-			assertEquals(Arrays.asList("321"), blockList.getPersonalizations(1));
+			assertEquals(List.of("321"), blockList.getPersonalizations(1));
 			
 			blockList.removePersonalization(2, "321");
 			
-			assertEquals(Arrays.asList("321"), blockList.getPersonalizations(1));
+			assertEquals(List.of("321"), blockList.getPersonalizations(1));
 		}
 	}
 
 	@Test
-	public void testDuplicateAdd() {
+	void testDuplicateAdd() {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 
@@ -190,21 +189,21 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testUserManagement() throws IOException {
+	void testUserManagement() throws IOException {
 		_db.addUser("none", "1", "foo@bar.com", "Mr. X", "123");
 		_db.addUser("none", "2", "baz@bar.com", "Mr. Y", "123");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "123")));
-		assertEquals(null, _db.basicAuth(header("foo@bar.com", "321")));
-		assertEquals(null, _db.basicAuth(header("xxx@bar.com", "123")));
+        assertNull(_db.basicAuth(header("foo@bar.com", "321")));
+        assertNull(_db.basicAuth(header("xxx@bar.com", "123")));
 		
 		try (SqlSession session = _db.openSession()) {
 			long userA = session.getMapper(Users.class).getUserId("foo@bar.com");
 			long userB = session.getMapper(Users.class).getUserId("baz@bar.com");
-			
-			assertTrue(userA != 0);
-			assertTrue(userB != 0);
-			assertTrue(userA != userB);
+
+			assertNotEquals(0, userA);
+			assertNotEquals(0, userB);
+			assertNotEquals(userA, userB);
 		}
 	}
 	
@@ -213,7 +212,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testRatings() {
+	void testRatings() {
 		long now = 1;
 		
 		_db.addRating("123", Rating.G_FRAUD, null, now++);
@@ -236,7 +235,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testSearchHistory() {
+	void testSearchHistory() {
 		
 		_db.addSearchHit("123");
 		_db.addSearchHit("123");
@@ -256,13 +255,13 @@ public class TestDB {
 		_db.addSearchHit("456");
 		_db.addSearchHit("789");
 		
-		assertEquals(Arrays.asList(2, 0, 1, 0), _db.getSearchHistory("123"));
-		assertEquals(Arrays.asList(1, 1, 0, 1), _db.getSearchHistory("456"));
-		assertEquals(Arrays.asList(0, 1, 0, 1), _db.getSearchHistory("789"));
+		assertEquals(List.of(2, 0, 1, 0), _db.getSearchHistory("123"));
+		assertEquals(List.of(1, 1, 0, 1), _db.getSearchHistory("456"));
+		assertEquals(List.of(0, 1, 0, 1), _db.getSearchHistory("789"));
 	}
 	
 	@Test
-	public void testSearchHistoryCleanup() {
+	void testSearchHistoryCleanup() {
 		for (int n = 0; n < 100; n++) {
 			_db.addSearchHit("123");
 			_db.cleanupSearchHistory(30);
@@ -273,7 +272,7 @@ public class TestDB {
 	}
 	
 	@Test
-	public void testQuote() {
+	void testQuote() {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
 	}
 

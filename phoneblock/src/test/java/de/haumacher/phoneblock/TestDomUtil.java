@@ -24,10 +24,10 @@ import de.haumacher.phoneblock.util.DomUtil;
 /**
  * Test case for {@link DomUtil}.
  */
-public class TestDomUtil {
+class TestDomUtil {
 
 	@Test
-	public void testNavigate() throws SAXException, IOException {
+	void testNavigate() throws SAXException, IOException {
 		Document doc = doc("<?xml version=\"1.0\" encoding=\"utf-8\"?><d:propfind xmlns:d=\"DAV:\"><d:prop><d:current-user-principal/></d:prop></d:propfind>");
 		Set<QName> names = toList(elements(doc, qname("DAV:", "propfind", ""), qname("DAV:", "prop", ""))).stream().map(DomUtil::qname).collect(Collectors.toSet());
 		assertEquals(Collections.singleton(qname("DAV:", "current-user-principal", "")), names);

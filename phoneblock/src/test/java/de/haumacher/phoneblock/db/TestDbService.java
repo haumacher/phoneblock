@@ -5,10 +5,8 @@ package de.haumacher.phoneblock.db;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,10 +17,10 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
  *
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
-public class TestDbService {
+class TestDbService {
 
 	@Test
-	public void testStart() throws UnknownHostException, IOException {
+	void testStart() {
 		SchedulerService scheduler = new SchedulerService();
 		DBService service = new DBService(scheduler) {
 			@Override
@@ -41,14 +39,9 @@ public class TestDbService {
 		
 		service.contextDestroyed(null);
 		scheduler.contextDestroyed(null);
-		
-		try {
-			Socket socket = new Socket("localhost", 12345);
-			assertNotNull(socket);
-			fail("Must have been shut down.");
-		} catch (ConnectException ex) {
-			// expected.
-		}
+
+		assertThrows(ConnectException.class, () -> new Socket("localhost", 12345),
+				"Must have been shut down.");
 	}
 	
 }
