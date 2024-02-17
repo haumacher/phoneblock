@@ -178,7 +178,7 @@ class CallListViewState extends State<CallListView> {
   }
 
   showCall(BuildContext context, CallInfo call) {
-    launchUrl(Uri.parse('https://phoneblock.net/phoneblock/nums/${call.caller}'));
+    launchUrl(Uri.parse('https://phoneblock.net/phoneblock/nums/${call.caller}'), webOnlyWindowName: "inspect-number");
   }
 
   refreshCallList() {
