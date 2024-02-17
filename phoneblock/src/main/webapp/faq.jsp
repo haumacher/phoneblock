@@ -93,6 +93,16 @@
 				und Passwort befinden.</li>
 		</ol>
 
+		<h2 id="disposable-mail">Warum kann ich mich nicht mit einer Wegwerf-E-Mail-Adresse registrieren?</h2>
+		<p>
+			Wenn Du PhoneBlock nutzt, dann verbrauchst Du kontinuierlich Rechenkapazität und Internetbandbreite, da 
+			die Blockliste täglich aktualisiert wird. Der Betrieb von PhoneBlock verbraucht aktuell ca. 100GB 
+			Datenvolumen pro Monat. Aktuell ist das für Dich kostenlos. Falls beim Betrieb aber irgendetwas nicht 
+			"rund" läuft, erwarte ich, dass Du ansprechbar bist, um etwaige Probleme abzustellen. Wenn Du Dich
+			mit einer Wegwerf-Adresse registrierst, ist das nicht möglich. Eine Registrierung mit einer Wegwerf-Adressse
+			wäre genauso gut wie überhaupt keine Registrierung. 
+		</p>
+
 		<h2>Ab wann wird eine Nummer von PhoneBlock blockiert?</h2>
 		<p>
 			Wenn Du selbst eine Nummer zur Blocklist hinzufügst, werden Anrufe von dieser Nummer für Dich sofort 
