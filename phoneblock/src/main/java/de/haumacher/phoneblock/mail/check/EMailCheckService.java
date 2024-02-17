@@ -12,6 +12,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.OptionalLong;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -54,6 +55,8 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	
 	private DBService _dbService;
 	private String _apiKey;
+
+	volatile private long _pauseUntil;
 	
 	public EMailCheckService(DBService db) {
 		_dbService = db;
@@ -119,6 +122,16 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	}
 
 	private RapidAPIResult callCheckService(String domainName) throws IOException, InterruptedException {
+		long pauseUntil = _pauseUntil;
+		if (pauseUntil > 0) {
+			long now = System.currentTimeMillis();
+			if (pauseUntil > now) {
+				return null;
+			} else {
+				_pauseUntil = 0;
+			}
+		}
+		
 		HttpRequest request = HttpRequest.newBuilder()
 				.uri(URI.create("https://mailcheck.p.rapidapi.com/?domain=" + URLEncoder.encode(domainName, StandardCharsets.UTF_8)))
 				.header("X-RapidAPI-Key", _apiKey)
@@ -126,12 +139,35 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 				.method("GET", HttpRequest.BodyPublishers.noBody())
 				.build();
 		HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+		
+		OptionalLong cntRemaining = response.headers().firstValueAsLong("x-ratelimit-requests-remaining");
 		if (response.statusCode() != HttpServletResponse.SC_OK) {
 			LOG.warn("Failed to check e-mail domain '" + domainName + "': " + response);
+			
+			// Check limits.
+			// "x-ratelimit-requests-remaining": "995"
+			// "x-ratelimit-requests-reset": "2494052"
+			if (cntRemaining.isPresent()) {
+				long cnt = cntRemaining.getAsLong();
+				if (cnt == 0) {
+					OptionalLong secondsDelay = response.headers().firstValueAsLong("x-ratelimit-requests-reset");
+					if (secondsDelay.isPresent()) {
+						long seconds = secondsDelay.getAsLong();
+						_pauseUntil = System.currentTimeMillis() + seconds * 1000;
+						
+						LOG.warn("Quota exceeded, pausing for " + seconds + " seconds.");
+					}
+				}
+			}
+			
 			return null;
 		}
 		
-		return RapidAPIResult.readRapidAPIResult(new JsonReader(new ReaderAdapter(new StringReader(response.body()))));
+		RapidAPIResult result = RapidAPIResult.readRapidAPIResult(new JsonReader(new ReaderAdapter(new StringReader(response.body()))));
+		
+		LOG.info("Checked new e-mail domain '" + domainName + "' (quota left " + cntRemaining.orElse(-1) + "): " + (result.isDisposable() ? "DISPOSABLE": "OK"));
+		
+		return result;
 	}
 
 	private void rememberResult(SqlSession tx, Domains domains, RapidAPIResult result) {
