@@ -19,7 +19,7 @@
 			Wähle deinen neu angelegten Account aus und selektiere das "Blocklist"-Adressbuch. 
 			Drücke jetzt den Synchronisierungsknopf. Die Synchronisation klappt noch 
 			nicht, du musst zuerst den Zugriff auf deine Kontakte erlauben. Wische dafür von oben nach unten, um die 
-			Systemmeldungen anzuzeigen. Dort erhälst Du eine Aufforderung, den Zugriff zu erlauben. 
+			Systemmeldungen anzuzeigen. Dort erhältst Du eine Aufforderung, den Zugriff zu erlauben. 
 		</p>
 		
 		<div class="columns">

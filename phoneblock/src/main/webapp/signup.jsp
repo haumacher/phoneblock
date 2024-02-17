@@ -19,7 +19,7 @@
 
 <p>
 	Um PhoneBlock in Deinem Internet-Router zu installieren, benötigst Du einen Benutzernamen und ein Passwort. Beides 
-	erhälst Du bei der Registrierung. In der <a href="<%= request.getContextPath() %>/setup.jsp">Installationsanleitung</a>
+	erhältst Du bei der Registrierung. In der <a href="<%= request.getContextPath() %>/setup.jsp">Installationsanleitung</a>
 	erfährst Du, wie Du anschließend die Blocklist abrufen und Anrufer mit diesen Telefonnummern blockieren kannst.  
 </p>
 

@@ -21,7 +21,7 @@
 
 		<p>
 			Ist Deine Telefonnummer auch zwielichtigen Addresshändlern in die
-			Hände gefallen und Du erhälst ständig lästige Anrufe, die Deine
+			Hände gefallen und Du erhältst ständig lästige Anrufe, die Deine
 			Stromrechnung "optimieren", Dir eine Beratung für eine Solaranlage
 			angedeihen lassen wollen, schon wieder einen Hauptgewinn ankündigen,
 			oder sontige "Vergünstigungen" offerieren wollen? Dann ist <b>PhoneBlock</b>
@@ -66,7 +66,7 @@
 			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
 			automatisch ab. Das Telefon bleibt stumm.</p>
 
-		<p>Erhälst Du trotzdem noch einen unerwünschten Anruf, weil die
+		<p>Erhältst Du trotzdem noch einen unerwünschten Anruf, weil die
 			Nummer noch nicht in die Sperrliste aufgenommen ist, kannst Du die
 			<a href="<%=request.getContextPath()%>/block.jsp">Nummer ganz einfach in Deiner FRITZ!Box sperren</a>. 
 			Hierzu machst Du für den unerwünschten 
