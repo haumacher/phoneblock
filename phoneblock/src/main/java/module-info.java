@@ -36,6 +36,7 @@ module phoneblock {
 	requires java.naming;
 	requires java.sql;
 	requires java.xml;
+	requires java.net.http;
 	requires javax.servlet.api;
 	requires de.haumacher.msgbuf;
 	requires org.apache.httpcomponents.httpcore;
