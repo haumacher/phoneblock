@@ -43,6 +43,27 @@
 			gesperrt und Nummern, die Du zu Deiner Whitelist hinzugefügt hast, werden sicher bei Dir nicht blockiert.
 		</p>
 
+		<h2>Meine Fritz!Box unterstützt noch kein CardDAV, kann ich PhoneBlock trotzdem nutzen?</h2>
+		<p>
+			Ja, es gibt zwei Möglichkeiten: 
+		</p>
+		<ol>
+		<li>Nutze statt des Telefonbuchs den PhoneBlock-Anrufbeantworter (aktuell noch im Beta-Test). Den 
+			PhoneBlock-Anrufbeantworter meldest Du wie ein Internettelefon an Deine Fritz!Box an und er geht immer ran,
+			wenn eine SPAM-Nummer anruft, so schnell, dass dein Telefon nicht oder nur ganz kurz klingelt.
+			Aktuell ist der PhoneBlock-Anrufbeantworter erst auf einem Test-System verfügbar, das eine separate Anmeldung
+			erfordert: <a href="https://phoneblock.net/pb-test/anrufbeantworter/">Zum Anrufbeantworter-Testsystem</a>. Wenn Du 
+			Den Anrufbeantworter erfolgreich installieren konntest - oder Probleme dabei hattest, gibt bitte eine Rückmeldung,
+			damit das neue Werkzeug möglichst bald allgemein verfügbar wird.
+		</li>
+		<li>Nutze das Tool <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>, um die Blockliste in Deine 
+			Fritz!Box zu laden. Hierfür benötigst Du allerdings einen PC, auf dem Du das Programm installieren kannst.
+			SpamBlockUp kann auch die PhoneBlock-Blockliste verwenden und von außen in Deine Fritz!Box laden. 
+			Für Details musst Du Dich aber an den Author dieses Programms wenden. PhoneBlock steht zu SpamBlockUp in 
+			keiner Beziehung. 
+		</li>
+		</ol>
+
 		<h2>Ich habe keine Fritz!Box, kann ich PhoneBlock trotzdem nutzen?</h2>
 		<p>
 			Vielleicht, das hängt von deinem Internet-Router/Telefonanlage ab. Deine Telefonanlage (das Ding, das Dir 
@@ -129,6 +150,19 @@
 			von Anrufen dieser Nummer genervt fühlen und sie blockieren. 
 		</p>
 
+		<h2>Hilfe, ich habe eine Nummer aus Versehen zur Blockliste hinzugefügt!</h2>
+		<p>
+			Wenn Du in Deiner Fritz!Box einen neuen "Kontakt" in dem Blocklist-Telefonbuch erstellst, teilt Deine 
+			Fritz!Box das dem PhoneBlock-Server mit und der interpretiert das als Beschwerde über diese Nummer. 
+			Darüberhinaus landet die Nummer dann in deiner persönlichen Sperrliste, damit Du sicher nicht mehr von 
+			dieser Nummer genervt wirst. Aufgrund der komprimierten Speicherung von vielen Nummern in einem Kontakt, 
+			kann man leider auf dieselbe Art und Weise keine Nummer aus der persönlichen Sperrliste löschen. 
+			Stattdessen musst Du Dich in so einem Fall hier auf der Seite mit Deinen Zugangsdaten anmelden und die 
+			Nummer in <a href="<%= request.getContextPath() + SettingsServlet.PATH %>#blacklist">Deinen Einstellungen</a> 
+			aus der  "Black-List" löschen. Beim nächsten Synchronisationslauf sollte die Nummer dann auch wieder aus
+			der Blockliste Deiner Fritz!Box verschwinden. 
+		</p>
+
 		<h2>Ich habe Angst, dass PhoneBlock Nummern blockiert, die ich benötige, was tun?</h2>
 		<p>
 			Mit PhoneBlock musst du Nummern nicht unbedingt blockieren. Du hast die folgenden Möglichkeiten:
@@ -142,6 +176,23 @@
 			Anrufer wegdrückst.</li>
 		</ol>
 
+		<h2>Muss ich das Telefonbuch manuell aktualisieren?</h2>
+		<p>
+			Nein, das passiert ganz automatisch jede Nacht. Deine Fritz!Box kontaktiert jede Nacht den PhoneBlock-Server
+			und gleicht die Nummern der Blockliste mit dem Blocklist-Telefonbuch ab. Daher bleibt Deine Blockliste immer
+			aktuell. Wenn über einen längeren Zeitraum (aus welchen Gründen auch immer) kein Abruf der Blockliste mehr von
+			Deiner Fritz!Box erfolgt, schreibt Dir PhoneBlock eine E-Mail, damit Du die Konfiguration überprüfen kannst, 
+			bevor Deine Blockliste veraltet.
+		</p>
+
+		<h2>Wann genau erfolgt die Aktualisierung der Blockliste?</h2>
+		<p>
+			Das entscheidet Deine Fritz!Box. Wenn Du nicht explizit auf den "aktualisieren" Knopf des Blocklist-Telefonbuchs
+			drückst, dann würfelt Deine Fritz!Box einen Zeitpunkt zwischen 0 und 6 Uhr für die Aktualisierung. Das ist 
+			von AVM ganz schlau gemacht, weil sich damit die Abrufe relativ gleichmäßig über die ganze Nacht verteilen und so
+			die Server-Last begrenzt bleibt.
+		</p>
+		
 		<h2>Ich finde PhoneBlock toll, kann ich eine Spende machen?</h2>
 		<p>
 			PhoneBlock verfolgt aktuell<sup>(*)</sup> keinerlei kommerzielle Interessen. Spenden sind aktuell keine
