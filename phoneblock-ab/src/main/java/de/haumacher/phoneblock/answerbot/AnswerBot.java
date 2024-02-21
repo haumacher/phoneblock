@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -49,6 +50,7 @@ import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
 import org.mjsip.sip.provider.SipParser;
 import org.mjsip.sip.provider.SipProvider;
+import org.mjsip.sound.AudioFile;
 import org.mjsip.time.ConfiguredScheduler;
 import org.mjsip.time.SchedulerConfig;
 import org.mjsip.ua.MediaAgent;
@@ -65,6 +67,10 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -115,9 +121,9 @@ public class AnswerBot extends MultipleUAS {
 		
 		Map<AudioType, Map<SpeechType, List<File>>> audioFragmentsByType = new EnumMap<>(AudioType.class);
 		File conversationDir = botOptions.conversationDir();
+		Map<File, AudioFormat> unsupportedFiles = new HashMap<>();
 		for (SpeechType type : SpeechType.values()) {
 			File stateDir = new File(conversationDir, type.getDirName());
-
 			for (AudioType formatType : AudioType.values()) {
 				if (!isSupported(formatType)) {
 					continue;
@@ -134,7 +140,19 @@ public class AnswerBot extends MultipleUAS {
 				ArrayList<File> files = new ArrayList<>();
 				audioFragments.put(type, files);
 				for (File wav : typeDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
-					files.add(wav);
+					try (AudioInputStream wavInputStream = AudioFile.getAudioFileInputStream(wav.getAbsolutePath())){
+						AudioFormat audioFormat = wavInputStream.getFormat();
+                        if (formatType.sampleRate() == audioFormat.getSampleRate() &&
+                                formatType.channels() == audioFormat.getChannels()) {
+                                    files.add(wav);
+                                    unsupportedFiles.remove(wav);
+                                } else {
+									unsupportedFiles.put(wav, audioFormat);
+								}
+                    } catch (IOException | UnsupportedAudioFileException e) {
+						LOG.warn("Failed to read audio file: {}" ,wav.getAbsolutePath(), e);
+					}
+
 				}
 				int cnt = files.size();
 				if (cnt == 0) {
@@ -142,6 +160,13 @@ public class AnswerBot extends MultipleUAS {
 				} else {
 					LOG.info("Found " + cnt + " audio fragment for dialogue state " + type + " and format '" + formatType + "'.");
 				}
+			}
+		}
+		if(LOG.isWarnEnabled()) {
+			for(Map.Entry<File, AudioFormat> usnupported : unsupportedFiles.entrySet()) {
+				AudioFormat value = usnupported.getValue();
+				LOG.warn("Found unsupported audio file: {} with sampleRate {} and channels {}",
+						usnupported.getKey().getAbsolutePath(), value.getSampleRate(), value.getChannels());
 			}
 		}
 		_audioFragmentsByType = audioFragmentsByType;
@@ -329,7 +354,7 @@ public class AnswerBot extends MultipleUAS {
 	 */
 	public static void main(String[] args) {
 		String program = AnswerBot.class.getSimpleName();
-		LOG.info(program + " " + VERSION);
+		LOG.info("{} {}", program, VERSION);
 
 		SipConfig sipConfig = new SipConfig();
 		CustomerConfig userConfig = new CustomerConfig();
