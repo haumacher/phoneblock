@@ -31,6 +31,24 @@ public class Registration extends RegistrationClient {
 		_temporary = temporary;
 	}
 	
+	public AnswerBotSip getBot() {
+		return _bot;
+	}
+	
+	/**
+	 * The customer configuration of this client.
+	 */
+	public CustomerOptions getCustomer() {
+		return _customer;
+	}
+	
+	/**
+	 * @see #getCustomer()
+	 */
+	public void setCustomer(CustomerOptions customer) {
+		_customer = customer;
+	}
+
 	public boolean isTemporary() {
 		return _temporary;
 	}
@@ -56,13 +74,6 @@ public class Registration extends RegistrationClient {
 	 */
 	public long getId() {
 		return _bot.getId();
-	}
-	
-	/**
-	 * The customer configuration of this client.
-	 */
-	public CustomerOptions getCustomer() {
-		return _customer;
 	}
 	
 }

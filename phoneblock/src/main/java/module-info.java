@@ -32,6 +32,7 @@ module de.haumacher.phoneblock {
 	requires org.mjsip.ua;
 	requires org.mjsip.util; 
 
+	requires org.dnsjava;
 	requires args4j;
 	requires com.google.api.client;
 	requires com.google.auth;

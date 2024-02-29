@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.ab;
 
 import java.io.File;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -13,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -37,6 +37,14 @@ import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.AAAARecord;
+import org.xbill.DNS.ARecord;
+import org.xbill.DNS.DClass;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.TextParseException;
+import org.xbill.DNS.Type;
 import org.zoolu.net.AddressType;
 import org.zoolu.util.ConfigFile;
 
@@ -56,6 +64,8 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
  */
 public class SipService implements ServletContextListener, RegistrationClientListener {
 	
+	private static final Pattern IPV4_PATTERN = Pattern.compile("[1-9][0-9]*\\.[1-9][0-9]*\\.[1-9][0-9]*\\.[1-9][0-9]*");
+
 	private static final Logger LOG = LoggerFactory.getLogger(SipService.class);
 
 	private SchedulerService _scheduler;
@@ -76,6 +86,16 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	private Collection<String> _jndiOptions;
 
 	private SipServiceConfig _config;
+
+	/**
+	 * The initially configured VIA IPv4 address.
+	 */
+	private String _viaV4;
+
+	/**
+	 * The initially configured VIA IPv6 address.
+	 */
+	private String _viaV6;
 
 	/** 
 	 * Creates a {@link SipService}.
@@ -135,6 +155,13 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		loadConfig(sipConfig, portConfig, botOptions);
 		sipConfig.normalize();
+		
+		_viaV4 = sipConfig.getViaAddrIPv4();
+		_viaV6 = sipConfig.getViaAddrIPv6();
+		
+		LOG.info("Configured IPv4 via address: " + _viaV4);
+		LOG.info("Configured IPv6 via address: " + _viaV6);
+		
 		resolveViaAddress(sipConfig);
 		
 		Scheduler scheduler = Scheduler.of(_scheduler.executor());
@@ -165,24 +192,80 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	}
 
 	private void resolveViaAddress(SipConfig sipConfig) {
-		sipConfig.setViaAddrIPv4(resolve(AddressType.IP4, sipConfig.getViaAddrIPv4()));
-		sipConfig.setViaAddrIPv6(resolve(AddressType.IP6, sipConfig.getViaAddrIPv6()));
-	}
-
-	private String resolve(AddressType type, String hostName) {
-		boolean resolveV6 = type == AddressType.IP6;
-		
-		try {
-			for (InetAddress address : InetAddress.getAllByName(hostName)) {
-				boolean ipv6 = address instanceof Inet6Address;
-				if (resolveV6 == ipv6) {
-					return address.getHostAddress();
+		if (_viaV4 != null) {
+			String ipv4 = resolve(AddressType.IP4, _viaV4);
+			if (ipv4 == null) {
+				sipConfig.setViaAddrIPv4(null);
+				LOG.warn("No IPv4 via address found for: " + _viaV4);
+			} else {
+				if (!ipv4.equals(sipConfig.getViaAddrIPv4())) {
+					sipConfig.setViaAddrIPv4(ipv4);
+					LOG.info("Updated IPv4 via address to: " + ipv4);
 				}
 			}
-		} catch (UnknownHostException e) {
-			// Ignore.
 		}
-		return hostName;
+		
+		if (_viaV6 != null) {
+			String ipv6 = resolve(AddressType.IP6, _viaV6);
+			if (ipv6 == null) {
+				sipConfig.setViaAddrIPv4(null);
+				LOG.warn("No IPv6 via address found for: " + _viaV6);
+			} else {
+				if (!ipv6.equals(sipConfig.getViaAddrIPv6())) {
+					sipConfig.setViaAddrIPv6(ipv6);
+					LOG.info("Updated IPv6 via address to: " + ipv6);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Looks up the given host name from DNS.
+	 * 
+	 * <p>
+	 * Note: The default host name resolution from the Java virtual machine is not
+	 * appropriate, because its cache does not respect TTL timeouts and may even
+	 * cache infinitely. It is only configurable globally.
+	 * </p>
+	 */
+	public static String resolve(AddressType type, String hostName) {
+		if (hostName.indexOf(':') >= 0) {
+			// A IPv6 address.
+			return hostName;
+		}
+		if (IPV4_PATTERN.matcher(hostName).matches()) {
+			// A IPv4 address.
+			return hostName;
+		}
+		
+		Name name;
+		try {
+			name = Name.fromString(hostName);
+		} catch (TextParseException e) {
+			LOG.error("Invalid host name: " + hostName);
+			return null;
+		}
+
+		switch (type) {
+		case DEFAULT:
+		case IP6: {
+			Record[] result = new Lookup(name, Type.AAAA, DClass.IN).run();
+			if (result == null) {
+				return null;
+			}
+			
+			return ((AAAARecord) result[0]).getAddress().getHostAddress();
+		}
+		case IP4:
+			Record[] result = new Lookup(name, Type.A, DClass.IN).run();
+			if (result == null) {
+				return null;
+			}
+			
+			return ((ARecord) result[0]).getAddress().getHostAddress();
+		}
+		
+		throw new IllegalArgumentException("No such address type: " + type);
 	}
 	
 	/**
@@ -205,11 +288,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		List<AnswerBotSip> failed = new ArrayList<>();
 		for (AnswerBotSip bot : bots) {
-			String host = getHost(bot);
-			if (host == null || host.isEmpty()) {
-				failed.add(bot);
-			} else {
+			try {
 				register(bot, false);
+			} catch (UnknownHostException e) {
+				failed.add(bot);
 			}
 		}
 
@@ -227,15 +309,29 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		}
 	}
 
-	private String getHost(AnswerBotSip bot) {
+	private String getHost(AnswerBotSip bot) throws UnknownHostException {
 		String host = bot.getHost();
 		if (host == null || host.isEmpty()) {
-			host = bot.getIpv6();
-			if (host == null || host.isEmpty()) {
-				host = bot.getIpv4();
+			String ipv6 = bot.getIpv6();
+			if (ipv6 != null && !ipv6.isEmpty()) {
+				return ipv6;
 			}
+			String ipv4 = bot.getIpv4();
+			if (ipv4 != null && !ipv4.isEmpty()) {
+				return ipv4;
+			}
+			throw new UnknownHostException("Neither host name nor DynDNS configured for: " + bot.getUserName());
+		} else {
+			String ipv6 = resolve(AddressType.IP6, host);
+			if (ipv6 != null) {
+				return ipv6;
+			}
+			String ipv4 = resolve(AddressType.IP4, host);
+			if (ipv4 != null) {
+				return ipv4;
+			}
+			throw new UnknownHostException("Cannot resolve host name '" + host + "' for: " + bot.getUserName());
 		}
-		return host;
 	}
 	
 	private void loadConfig(Object...beans) {
@@ -303,11 +399,11 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		return _instance;
 	}
 	
-	public void enableAnwserBot(String userName) {
+	public void enableAnwserBot(String userName) throws UnknownHostException {
 		enableAnwserBot(userName, false);
 	}
 	
-	public void enableAnwserBot(String userName, boolean temporary) {
+	public void enableAnwserBot(String userName, boolean temporary) throws UnknownHostException {
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
@@ -355,11 +451,11 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	 * @param temporary Whether the bot is first activated and should only be
 	 *                  permanently activated, if the first registration succeeds.
 	 */
-	public void register(AnswerBotSip bot, boolean temporary) {
+	public void register(AnswerBotSip bot, boolean temporary) throws UnknownHostException {
 		register(bot, toCustomerConfig(bot), temporary);
 	}
 
-	private CustomerConfig toCustomerConfig(AnswerBotSip bot) {
+	private CustomerConfig toCustomerConfig(AnswerBotSip bot) throws UnknownHostException {
 		CustomerConfig regConfig = new CustomerConfig();
 		regConfig.setUser(bot.getUserName());
 		regConfig.setPasswd(bot.getPasswd());
@@ -433,6 +529,15 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		if (temporary || failures > _config.maxFailures) {
 			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
 			stop(registration.getUsername());
+		} else {
+			AnswerBotSip bot = registration.getBot();
+			try {
+				// Try to update IP address.
+				registration.setCustomer(toCustomerConfig(bot));
+			} catch (UnknownHostException ex) {
+				LOG.warn("Stopping registration due to failed hostname resolution: " + client.getUsername());
+				stop(registration.getUsername());
+			}
 		}
 	}
 
