@@ -13,7 +13,7 @@
 	<div class="content">
 		<h1>Android-Installation</h1>
 		
-		<h2>Schritt 3: Bestätige Open Sync Einstellungen</h2>
+		<h2>Schritt 3: Stelle PeopleSync Berechtigungen ein</h2>
 		
 		<div class="columns">
 			<div class="column">
