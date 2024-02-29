@@ -32,7 +32,7 @@
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/07-people-sync-add.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>

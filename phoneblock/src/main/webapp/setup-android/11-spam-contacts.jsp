@@ -27,7 +27,7 @@
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/14-open-sync-access-required.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>

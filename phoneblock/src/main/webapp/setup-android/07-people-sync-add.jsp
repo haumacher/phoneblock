@@ -40,7 +40,7 @@
 		</p>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
