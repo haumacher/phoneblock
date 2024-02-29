@@ -27,6 +27,10 @@
 		<div class="columns">
 			<div class="column">
 	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
+	  		</div>
+			<div class="column">
+	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-people-sync-account.png"/>
+	  		</div>
 		</div>
 		
 		<p>
