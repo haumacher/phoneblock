@@ -25,10 +25,10 @@
 		<h2>Schritt 4: Füge ein Adressbuch hinzu und gib die PhoneBlock-Account-Daten an</h2>
 		
 		<div class="columns">
-			<div class="column">
+			<div class="column is-two-fifths">
 	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
 	  		</div>
-			<div class="column">
+			<div class="column is-two-fifths">
 	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-people-sync-account.png"/>
 	  		</div>
 		</div>

@@ -21,7 +21,7 @@
 		</p>
 		
 		<div class="columns">
-			<div class="column">
+			<div class="column is-two-fifths">
 	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/11-spam-contacts.png"/>
 	  		</div>
 		</div>

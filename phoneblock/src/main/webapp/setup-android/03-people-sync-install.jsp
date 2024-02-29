@@ -21,11 +21,11 @@
 		</p>
 
 		<div class="columns">
-			<div class="column">
+			<div class="column is-two-fifths">
 	  			<img class="image" alt="Installiere PeopleSync" src="<%=request.getContextPath() %>/setup-android/03-people-sync-install.png"/>
 	  		</div>
 		
-			<div class="column">
+			<div class="column is-two-fifths">
 				<img class="image" alt="Öffne PeopleSync" src="<%=request.getContextPath() %>/setup-android/04-people-sync-open.png"/>
 			</div>
 		</div>

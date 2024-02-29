@@ -16,10 +16,10 @@
 		<h2>Schritt 3: Stelle PeopleSync Berechtigungen ein</h2>
 		
 		<div class="columns">
-			<div class="column">
+			<div class="column is-two-fifths">
 	  			<img class="image" alt="Berechtigungen" src="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.png"/>
 	  		</div>
-			<div class="column">
+			<div class="column is-two-fifths">
 	  			<img class="image" alt="Sync-Intervalle" src="<%=request.getContextPath() %>/setup-android/06-people-sync-sync.png"/>
 	  		</div>
 		</div>
