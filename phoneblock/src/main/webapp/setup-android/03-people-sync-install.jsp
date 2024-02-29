@@ -14,7 +14,12 @@
 		<h1>Android-Installation</h1>
 		
 		<h2>Schritt 2: Installiere und öffne "PeopleSync"</h2>
-		
+
+		<p>
+			PeopleSync steht übrigens in keiner Beziehung zu PhoneBlock. Mit der App wird lediglich der 
+			Zugriff auf ein Internet-Adressbuch unter Anroid ermöglicht.
+		</p>
+
 		<div class="columns">
 			<div class="column">
 	  			<img class="image" alt="Installiere PeopleSync" src="<%=request.getContextPath() %>/setup-android/03-people-sync-install.png"/>
