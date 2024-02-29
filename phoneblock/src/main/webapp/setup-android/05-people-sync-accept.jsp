@@ -13,27 +13,26 @@
 	<div class="content">
 		<h1>Android-Installation</h1>
 		
-		<h2>Schritt 2: Installiere und öffne "Open Sync"</h2>
+		<h2>Schritt 3: Bestätige Open Sync Einstellungen</h2>
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Installiere Open Sync" src="<%=request.getContextPath() %>/setup-android/03-open-sync-install.png"/>
+	  			<img class="image" alt="Berechtigungen" src="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.png"/>
 	  		</div>
-		
 			<div class="column">
-				<img class="image" alt="Öffne Open Sync" src="<%=request.getContextPath() %>/setup-android/04-open-sync-open.png"/>
-			</div>
+	  			<img class="image" alt="Sync-Intervalle" src="<%=request.getContextPath() %>/setup-android/06-people-sync-sync.png"/>
+	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/05-open-sync-accept.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/05-open-sync-accept.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/07-people-sync-add.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

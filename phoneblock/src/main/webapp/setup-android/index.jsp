@@ -23,11 +23,11 @@
 		</p>
 		
 		<p>
-			Für die Adressbuch-Synchronisation benötigst du die App "Open Sync". Die Anleitung führt dich durch die 
+			Für die Adressbuch-Synchronisation benötigst du die App "PeopleSync". Die Anleitung führt dich durch die 
 			notwendigen Schitte:
 		</p>
 		
-		<h2>Schritt 1: Öffne den Playstore und suche nach "Open Sync"</h2>
+		<h2>Schritt 1: Öffne den Playstore und suche nach "PeopleSync"</h2>
 		
 		<div class="columns">
 			<div class="column">
@@ -35,7 +35,7 @@
 	  		</div>
 		
 			<div class="column">
-				<img class="image" alt="Suche nach Open Sync" src="<%=request.getContextPath() %>/setup-android/02-playstore.png"/>
+				<img class="image" alt="Suche nach PeopleSync" src="<%=request.getContextPath() %>/setup-android/02-playstore.png"/>
 			</div>
 		</div>
 		
@@ -47,7 +47,7 @@
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/03-open-sync-install.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/03-people-sync-install.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

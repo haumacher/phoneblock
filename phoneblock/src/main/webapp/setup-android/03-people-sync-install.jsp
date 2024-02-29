@@ -13,28 +13,27 @@
 	<div class="content">
 		<h1>Android-Installation</h1>
 		
-		<h2>Schritt 3: Bestätige die Open Sync Lizenz</h2>
-		
-		<p>
-			Ach ja, Open Sync steht übrigens in keiner Beziehung zu PhoneBlock. Mit der App wird lediglich der 
-			Zugriff auf ein Internet-Adressbuch unter Anroid ermöglicht.
-		</p>
+		<h2>Schritt 2: Installiere und öffne "PeopleSync"</h2>
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Installiere Open Sync" src="<%=request.getContextPath() %>/setup-android/05-open-sync-accept.png"/>
+	  			<img class="image" alt="Installiere PeopleSync" src="<%=request.getContextPath() %>/setup-android/03-people-sync-install.png"/>
 	  		</div>
+		
+			<div class="column">
+				<img class="image" alt="Öffne PeopleSync" src="<%=request.getContextPath() %>/setup-android/04-people-sync-open.png"/>
+			</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/03-open-sync-install.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/06-open-sync-accu.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

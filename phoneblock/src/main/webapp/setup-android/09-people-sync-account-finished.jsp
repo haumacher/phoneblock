@@ -24,22 +24,22 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/12-open-sync-account-finished.png"/>
+	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.png"/>
 	  		</div>
 			<div class="column">
-	  			<img class="image" alt="Aboniere die Blocklist" src="<%=request.getContextPath() %>/setup-android/13-open-sync-subscribe.png"/>
+	  			<img class="image" alt="Aboniere die Blocklist" src="<%=request.getContextPath() %>/setup-android/10-people-sync-subscribe.png"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/10-open-sync-configure.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/14-open-sync-access-required.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/11-spam-contacts.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>

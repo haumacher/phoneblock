@@ -22,15 +22,11 @@
 	<div class="content">
 		<h1>Android-Installation</h1>
 		
-		<h2>Schritt 5: Füge ein Adressbuch hinzu und gib die PhoneBlock-Account-Daten an</h2>
+		<h2>Schritt 4: Füge ein Adressbuch hinzu und gib die PhoneBlock-Account-Daten an</h2>
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-open-sync-add.png"/>
-	  		</div>
-			<div class="column">
-	  			<img class="image" alt="Keine Tasks" src="<%=request.getContextPath() %>/setup-android/09-open-sync-account.png"/>
-	  		</div>
+	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
 		</div>
 		
 		<p>
@@ -40,14 +36,14 @@
 		</p>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/06-open-sync-accu.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/10-open-sync-configure.jsp">
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.jsp">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>
