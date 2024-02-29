@@ -8,6 +8,6 @@ import org.kohsuke.args4j.Option;
 public class SipServiceConfig {
 	
 	@Option(name = "--max-failures", usage = "Maximum number of consecutive registration failures before an answerbot is disabled.")
-	public int maxFailures = 500;
+	public int maxFailures = 100;
 
 }
