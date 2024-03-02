@@ -23,8 +23,9 @@
 		</p>
 		
 		<p>
-			Für die Adressbuch-Synchronisation benötigst du die App "PeopleSync". Die Anleitung führt dich durch die 
-			notwendigen Schitte:
+			Für die Adressbuch-Synchronisation benötigst du die App 
+			"<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>". 
+			Die Anleitung führt Dich durch die notwendigen Schritte:
 		</p>
 		
 		<h2>Schritt 1: Öffne den Playstore und suche nach "PeopleSync"</h2>

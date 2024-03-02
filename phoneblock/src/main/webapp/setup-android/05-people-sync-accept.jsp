@@ -15,6 +15,11 @@
 		
 		<h2>Schritt 3: Stelle PeopleSync Berechtigungen ein</h2>
 		
+		<p>
+			Damit die Synchronisierung und das automatische Update der Blockliste vernünfigt funktioniert, benötigt PeopleSync
+			eine Reihe von Berechtigungen.  
+		</p>
+		
 		<div class="columns">
 			<div class="column is-two-fifths">
 	  			<img class="image" alt="Berechtigungen" src="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.png"/>

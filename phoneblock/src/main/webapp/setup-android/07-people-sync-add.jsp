@@ -24,6 +24,25 @@
 		
 		<h2>Schritt 4: Füge ein Adressbuch hinzu und gib die PhoneBlock-Account-Daten an</h2>
 		
+		<ol>
+		<li>
+			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a>. 
+		</li>
+			
+		<li>
+			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">PhoneBlock-Anmeldung</a> erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a>)<%}%>. 
+		</li>
+			
+		<li>
+			Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a>)<%}%>. 
+		</li>
+		</ol>
+		
+		<p>			
+			Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
+			<a href="<%=request.getContextPath() %>/signup.jsp">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
+		</p>
+
 		<div class="columns">
 			<div class="column is-two-fifths">
 	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
@@ -32,12 +51,6 @@
 	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-people-sync-account.png"/>
 	  		</div>
 		</div>
-		
-		<p>
-			Gib hier als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a>. Bei 
-			"Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">PhoneBlock</a> erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a>)<%}%>. Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a>)<%}%>. Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
-			<a href="<%=request.getContextPath() %>/signup.jsp">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
-		</p>
 		
 		<p class="buttons is-centered">
 		  <a class="button" href="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.jsp">

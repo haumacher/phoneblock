@@ -16,7 +16,7 @@
 		<h2>Fertig, die Blocklist ist in Deinen Kontakten eingetragen</h2>
 		
 		<p>
-			Öffne Deine Kontakte, unter "S" hast Du eine lange Liste von Spam-Nummern, bei denen Du besser nicht 
+			Öffne Deine Kontakte. Unter dem Buchstaben "S" hast Du eine lange Liste von Spam-Nummern, bei denen Du besser nicht 
 			rangehst und nicht zurückrufst.
 		</p>
 		

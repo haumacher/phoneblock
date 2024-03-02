@@ -16,8 +16,10 @@
 		<h2>Schritt 2: Installiere und öffne "PeopleSync"</h2>
 
 		<p>
-			PeopleSync steht übrigens in keiner Beziehung zu PhoneBlock. Mit der App wird lediglich der 
-			Zugriff auf ein Internet-Adressbuch unter Anroid ermöglicht.
+			<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a> steht 
+			übrigens in keiner Beziehung zu PhoneBlock. Mit der App wird lediglich der 
+			Zugriff auf ein Internet-Adressbuch über das CardDAV-Protocoll unter Anroid ermöglicht. 
+			Wenn Du also Probleme mit dieser App hast, wende Dich bitte direkt an deren Hersteller.
 		</p>
 
 		<div class="columns">
