@@ -13,29 +13,29 @@
 	<div class="content">
 		<h1>Android-Installation</h1>
 		
-		<h2>Schritt 3: Bestätige die Open Sync Lizenz</h2>
+		<h2>Fertig, die Blocklist ist in Deinen Kontakten eingetragen</h2>
 		
 		<p>
-			Ach ja, Open Sync steht übrigens in keiner Beziehung zu PhoneBlock. Mit der App wird lediglich der 
-			Zugriff auf ein Internet-Adressbuch unter Anroid ermöglicht.
+			Öffne Deine Kontakte. Unter dem Buchstaben "S" hast Du eine lange Liste von Spam-Nummern, bei denen Du besser nicht 
+			rangehst und nicht zurückrufst.
 		</p>
 		
 		<div class="columns">
-			<div class="column">
-	  			<img class="image" alt="Installiere Open Sync" src="<%=request.getContextPath() %>/setup-android/05-open-sync-accept.png"/>
+			<div class="column is-two-fifths">
+	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/11-spam-contacts.png"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/03-open-sync-install.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/06-open-sync-accu.jsp">
-		    <span>Weiter</span>
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/status.jsp">
+		    <span>Fertig</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>
 		    </span>

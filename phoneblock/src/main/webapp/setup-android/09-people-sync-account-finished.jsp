@@ -13,29 +13,32 @@
 	<div class="content">
 		<h1>Android-Installation</h1>
 		
-		<h2>Fertig, die Blocklist ist in Deinen Kontakten eingetragen</h2>
+		<h2>Schritt 7: Aboniere die Blocklist</h2>
 		
 		<p>
-			Öffne Deine Kontakte, unter "S" hast Du eine lange Liste von Spam-Nummern, bei denen Du besser nicht 
-			rangehst und nicht zurückrufst.
+			Wähle deinen neu angelegten Account aus und aktiviere das "Blocklist"-Adressbuch. 
+			Drücke jetzt den Synchronisierungsknopf. 
 		</p>
 		
 		<div class="columns">
-			<div class="column">
-	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/17-spam-contacts.png"/>
+			<div class="column is-two-fifths">
+	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.png"/>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img class="image" alt="Aboniere die Blocklist" src="<%=request.getContextPath() %>/setup-android/10-people-sync-subscribe.png"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/14-open-sync-access-required.jsp">
+		  <a class="button" href="<%=request.getContextPath() %>/setup-android/07-people-sync-add.jsp">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/status.jsp">
-		    <span>Fertig</span>
+		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/11-spam-contacts.jsp">
+		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>
 		    </span>
