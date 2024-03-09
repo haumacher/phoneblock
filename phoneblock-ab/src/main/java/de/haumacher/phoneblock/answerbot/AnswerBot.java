@@ -133,8 +133,13 @@ public class AnswerBot extends MultipleUAS {
 				
 				ArrayList<File> files = new ArrayList<>();
 				audioFragments.put(type, files);
-				for (File wav : typeDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"))) {
-					files.add(wav);
+				File[] filesInTypeDir = typeDir.listFiles(f -> f.isFile() && f.getName().endsWith(".wav"));
+				if (filesInTypeDir == null) {
+					LOG.warn("could not read audio fragment from {}", typeDir.getAbsolutePath());
+				} else {
+					for (File wav : filesInTypeDir) {
+						files.add(wav);
+					}
 				}
 				int cnt = files.size();
 				if (cnt == 0) {
