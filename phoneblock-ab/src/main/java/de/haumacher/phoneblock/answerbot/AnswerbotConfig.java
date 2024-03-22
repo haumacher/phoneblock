@@ -56,6 +56,12 @@ public class AnswerbotConfig implements AnswerbotOptions {
 
 	@Option(name = "--min-votes", usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
 	private int _minVotes = 4;
+
+	private String _username;
+
+	private String _password;
+
+	private boolean _sendRatings = false;
 	
 	@Override
 	public int bufferTime() {
@@ -209,9 +215,16 @@ public class AnswerbotConfig implements AnswerbotOptions {
 			System.err.println("Conversation directory does not exist: " + conversationDir().getAbsolutePath());
 			System.exit(1);
 		}
-		if (_testPrefix != null && _testPrefix.isBlank()) {
-			_testPrefix = null;
+		_testPrefix = getNoneBlank(_testPrefix);
+		_username = getNoneBlank(_username);
+		_password = getNoneBlank(_password);
+		if (_username == null || _password == null) {
+			_sendRatings = false;
 		}
+	}
+
+	private static String getNoneBlank(String s) {
+		return  s == null || s.isBlank() ? null : s;
 	}
 	
 }
