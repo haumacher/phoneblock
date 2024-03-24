@@ -347,6 +347,8 @@ public class AnswerBot extends MultipleUAS {
 						LOG.warn("Sending spam call to PhoneBlock was not accepted response code {}", responseCode);
 					}
 
+				} else {
+					LOG.info("Spam call {} send to PhoneBlock", from);
 				}
 			} catch (IOException ex) {
 				LOG.warn("Sending spam call to PhoneBlock failed: {}", ex.getMessage());
