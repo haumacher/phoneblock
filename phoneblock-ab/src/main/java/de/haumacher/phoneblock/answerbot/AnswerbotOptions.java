@@ -54,4 +54,9 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	 */
 	String getTestPrefix();
 
+	String getPhoneblockUsername();
+
+	String getPhoneblockPassword();
+
+	boolean getSendRatings();
 }
