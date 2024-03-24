@@ -54,13 +54,16 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
 	private boolean _acceptAnonymous = false;
 
-	@Option(name = "--min-votes", usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
+	@Option(name = "--min-votes", handler = GreaterThanZeroIntOptionHandler.class, usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
 	private int _minVotes = 4;
 
-	private String _username;
+	@Option(name = "--phoneblock-username", usage = "phoneblock username")
+	private String _phoneblockUsername;
 
-	private String _password;
+	@Option(name = "--phoneblock-password", usage = "phoneblock password")
+	private String _phoneblockPassword;
 
+	@Option(name = "--send-rating", handler = YesNoHandler.class, usage = "Enables the report of spam calls to the phoneblock project")
 	private boolean _sendRatings = false;
 	
 	@Override
@@ -216,9 +219,9 @@ public class AnswerbotConfig implements AnswerbotOptions {
 			System.exit(1);
 		}
 		_testPrefix = getNoneBlank(_testPrefix);
-		_username = getNoneBlank(_username);
-		_password = getNoneBlank(_password);
-		if (_username == null || _password == null) {
+		_phoneblockUsername = getNoneBlank(_phoneblockUsername);
+		_phoneblockPassword = getNoneBlank(_phoneblockPassword);
+		if (_phoneblockUsername == null || _phoneblockPassword == null) {
 			_sendRatings = false;
 		}
 	}
@@ -226,5 +229,31 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	private static String getNoneBlank(String s) {
 		return  s == null || s.isBlank() ? null : s;
 	}
-	
+
+	@Override
+	public String getPhoneblockUsername() {
+		return _phoneblockUsername;
+	}
+
+	public void setPhoneblockUsername(String phoneblockUsername) {
+		_phoneblockUsername = phoneblockUsername;
+	}
+
+	@Override
+	public String getPhoneblockPassword() {
+		return _phoneblockPassword;
+	}
+
+	public void setPhoneblockPassword(String phoneblockPassword) {
+		_phoneblockPassword = phoneblockPassword;
+	}
+
+	@Override
+	public boolean getSendRatings() {
+		return _sendRatings;
+	}
+
+	public void setSendRatings(boolean sendRatings) {
+		this._sendRatings = sendRatings;
+	}
 }
