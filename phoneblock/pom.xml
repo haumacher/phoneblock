@@ -199,12 +199,25 @@
 		    <groupId>org.webjars.npm</groupId>
 		    <artifactId>bulma</artifactId>
 		    <version>${bulma.version}</version>
+		    
+		    <exclusions>
+		    	<exclusion>
+				    <groupId>org.webjars.npm</groupId>
+				    <artifactId>sass</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>github-com-creativebulma-bulma-collapsible</artifactId>
 			<version>${bulma-collapsible.version}</version>
+		    <exclusions>
+		    	<exclusion>
+				    <groupId>org.webjars.npm</groupId>
+				    <artifactId>sass</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 
 		<dependency>
