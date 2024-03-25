@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotDynDns;
+import de.haumacher.phoneblock.dns.DnsServer;
+import de.haumacher.phoneblock.dns.DnsService;
 
 /**
  * Servlet to record a customers dynamic IP address over DynIP protocol.
@@ -80,6 +82,11 @@ public class DynIpServlet extends HttpServlet {
 				users.updateDynDns(settings.getId(), update.getIpv4(), update.getIpv6(), now);
 				
 				session.commit();
+				
+				DnsServer dnsServer = DnsService.getDnsServer();
+				if (dnsServer != null) {
+					dnsServer.load(update);
+				}
 				LOG.info("Updated IP address for: " + user);
 			} else {
 				LOG.info("IP address of user unchanged: " + user);

@@ -10,8 +10,7 @@
 package de.haumacher.phoneblock.dns;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -40,6 +39,8 @@ import org.xbill.DNS.SetResponse;
 import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 import org.xbill.DNS.Zone;
+
+import de.haumacher.phoneblock.db.settings.AnswerBotDynDns;
 
 /**
  * Simplified DNS server handling only a single zone.
@@ -89,12 +90,56 @@ public class DnsServer implements Runnable {
 		_onlyZone = new Zone(_origin, records);
 	}
 	
-	public void addARecord(String name, Inet4Address address) throws TextParseException, UnknownHostException {
-		_onlyZone.addRecord(new ARecord(Name.fromString(name, _origin), dclass, ttl, address));
+	public void updateARecord(String name, InetAddress address) throws TextParseException, UnknownHostException {
+		Name fullName = globalName(name);
+		clearRecords(fullName, Type.A);
+		addARecord(fullName, address);
+	}
+
+	public void addARecord(String name, InetAddress address) throws TextParseException, UnknownHostException {
+		addARecord(globalName(name), address);
+	}
+
+	private void addARecord(Name globalName, InetAddress address) {
+		_onlyZone.addRecord(new ARecord(globalName, dclass, ttl, address));
+	}
+
+	public void updateAAAARecord(String name, InetAddress address) throws TextParseException, UnknownHostException {
+		Name fullName = globalName(name);
+		clearRecords(fullName, Type.AAAA);
+		addAAAARecord(fullName, address);
+	}
+
+	public void addAAAARecord(String name, InetAddress address) throws TextParseException, UnknownHostException {
+		Name fullName = globalName(name);
+		addAAAARecord(fullName, address);
+	}
+
+	private void addAAAARecord(Name fullName, InetAddress address) {
+		_onlyZone.addRecord(new AAAARecord(fullName, dclass, ttl, address));
+	}
+
+	public void clearARecords(String name) throws TextParseException {
+		clearRecords(globalName(name), Type.A);
 	}
 	
-	public void addAAAARecord(String name, Inet6Address address) throws TextParseException, UnknownHostException {
-		_onlyZone.addRecord(new AAAARecord(Name.fromString(name, _origin), dclass, ttl, address));
+	public void clearAAAARecords(String name) throws TextParseException {
+		clearRecords(globalName(name), Type.AAAA);
+	}
+	
+	private void clearRecords(Name fullName, int type) {
+		SetResponse records = _onlyZone.findRecords(fullName, type);
+		if (records != null && records.answers() != null) {
+			for (RRset set : records.answers()) {
+				for (Record r : set.rrs()) {
+					_onlyZone.removeRecord(r);
+				}
+			}
+		}
+	}
+
+	private Name globalName(String name) throws TextParseException {
+		return Name.fromString(name, _origin);
 	}
 
 	public DnsServer start() {
@@ -340,6 +385,19 @@ public class DnsServer implements Runnable {
 
 	public boolean isActive() {
 		return !_shouldStop;
+	}
+
+	public void load(AnswerBotDynDns update) throws TextParseException, UnknownHostException {
+		if (update.getIpv4().isEmpty()) {
+			clearARecords(update.getDyndnsUser());
+		} else {
+			updateARecord(update.getDyndnsUser(), InetAddress.getByName(update.getIpv4()));
+		}
+		if (update.getIpv6().isEmpty()) {
+			clearAAAARecords(update.getDyndnsUser());
+		} else {
+			updateAAAARecord(update.getDyndnsUser(), InetAddress.getByName(update.getIpv6()));
+		}
 	}
 
 }

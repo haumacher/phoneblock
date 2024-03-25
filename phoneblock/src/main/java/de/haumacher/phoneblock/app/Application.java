@@ -27,6 +27,7 @@ import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.dns.DnsService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
@@ -96,6 +97,7 @@ public class Application implements ServletContextListener {
 				new GoogleUpdateService())),
 			mail = new MailServiceStarter(),
 			db = new DBService(rnd, indexer, scheduler, mail),
+			new DnsService(scheduler, db),
 			new EMailCheckService(db),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
