@@ -83,11 +83,25 @@
 			<a href="<%= request.getContextPath()%>/setup-android/">ausführliche Installationsanleitung</a>. 
 		</p>
 		
-		<p> 
-			Mit dem IPhone <a href="<%=request.getContextPath()%>/link/carddav-install">geht das sogar 
-			ganz ohne Zusatzinstallation</a> - ich habe es allerdings nicht ausprobiert. Wenn Du das testest und
-			es nicht funktionieren sollte, dann melde Dich bitte (siehe unten).
-		</p>
+				<p> 
+			Mit dem iPhone <a href="<%=request.getContextPath()%>/link/carddav-install">geht das sogar 
+			ganz ohne Zusatzinstallation</a> 
+      </p>
+
+    		<h3>So gehts:</h3>
+    		<ol>
+    		<li>Öffne “Einstellungen” - “Passwörter & Accounts”. </li>
+    		<li>Tippe auf “Account hinzufügen” - “Andere” > “CardDAV-Account hinzufügen”.</li>
+    		<li>Gib deine Serverinfos ein und tippe auf “Weiter”. Diese findest du <a href="<%= request.getContextPath()%>/phoneblock/setup.jsp">hier</a> </li>
+    		<li>Aktiviere “Kontakte” und tippe auf “Sichern”.</li>
+		<li>Nun siehst du Anrufe mit SPAM: in deinem Kontaktbuch und beim klingeln </li>
+		<li>Falls dir sehr sehr langweilig ist nimm ab und beschwere dich über deine neuen Nachbarn </li>
+		
+    		</ol>
+    		<p>
+      			Wenn du PhoneBlock nur dafür benutzt kannst du auch die Anzahl der Einträge <a href="https://phoneblock.net/phoneblock/settings">hier</a> höher stellen. 
+			Sollte es damit Probleme geben, dann melde Dich bitte (siehe unten).
+    		</p>
 		
 		<p>
 			Allerdings habe ich bisher keine Möglichkeit gefunden,
