@@ -31,25 +31,35 @@
 <%
 	String userAgent = request.getHeader("User-Agent");
 	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
+	boolean iphone = userAgent != null && userAgent.toLowerCase().contains("iPhone");
 	String setupAndroidClass = android ? "is-primary" : "is-info";
-	String setupFritzBoxClass = android ? "is-info" : "is-primary";
+	String setupIphoneBoxClass = iphone ? "is-primary" : "is-info";
+	String setupFritzBoxClass = (android || iphone) ? "is-info" : "is-primary";
 %>
 
 		<div class="columns">
-		  <div class="column is-half">
-			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span>PhoneBlock für Android</span>
-			</a>
-		  </div>
-		  <div class="column is-half">
+		  <div class="column is-one-third">
 			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
 			    <span class="icon">
 					<i class="fa-solid fa-phone"></i>
 			    </span>
-				<span>PhoneBlock für Fritz!Box</span>			
+				<span>Für Fritz!Box</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-third">
+			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span>Für Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-third">
+			<a class="button is-medium <%= setupIphoneBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-iphone/">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span>Für iPhone</span>
 			</a>
 		  </div>
 		</div>

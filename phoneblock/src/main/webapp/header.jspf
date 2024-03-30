@@ -51,6 +51,7 @@
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Fritz!Box</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-android/">Android</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-iphone/">iPhone</a>
 				</div>
 			</div>
 

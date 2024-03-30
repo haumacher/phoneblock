@@ -75,7 +75,7 @@
 			sag bitte Bescheid, damit die Installationsanleitung angepasst werden kann.
 		</p>
 
-		<h2>Kann ich PhoneBlock auch auf meinem Mobiltelefon nutzen?</h2>
+		<h2>Kann ich PhoneBlock auf einen Android Mobiltelefon nutzen?</h2>
 		<p>
 			Ja, du kannst das PhoneBlock-Adressbuch abonieren und siehst dann gleich, ob es sich lohnt, einen Anruf
 			anzunehmen oder bei einem verpassten Anruf zurückzurufen. Spam-Anrufe direkt abweisen geht aktuell nur 
@@ -83,35 +83,12 @@
 			<a href="<%= request.getContextPath()%>/setup-android/">ausführliche Installationsanleitung</a>. 
 		</p>
 		
+		<h2>Kann ich PhoneBlock auf einen iPhone nutzen?</h2>
 		<p> 
-			Mit dem iPhone <a href="<%=request.getContextPath()%>/link/carddav-install">geht das sogar 
-			ganz ohne Zusatzinstallation</a> 
+			Ja, mit dem iPhone geht das sogar ganz ohne Installation zusätzlicher Apps. Schau Dir hier die 
+			<a href="<%= request.getContextPath()%>/setup-iphone/">Installationsanleitung</a> an.
 		</p>
 
-    	<h3>So gehts:</h3>
-   		<ol>
-   		<li>Öffne “Einstellungen” - “Passwörter & Accounts”. </li>
-   		<li>Tippe auf “Account hinzufügen” - “Andere” > “CardDAV-Account hinzufügen”.</li>
-   		<li>Gib deine Serverinfos ein und tippe auf “Weiter”. Diese findest du <a href="<%= request.getContextPath()%>/setup.jsp">hier</a> </li>
-   		<li>Aktiviere “Kontakte” und tippe auf “Sichern”.</li>
-		<li>Nun siehst du Anrufe mit SPAM: in deinem Kontaktbuch und beim Klingeln.</li>
-		<li>Falls dir sehr sehr langweilig ist nimm ab und beschwere dich über deine neuen Nachbarn.</li>
-   		</ol>
-
-   		<p>
-    		Wenn du PhoneBlock nur dafür benutzt kannst du auch die Anzahl der Einträge <a href="<%= request.getContextPath()%>/settings">hier</a> höher stellen. 
-			Sollte es damit Probleme geben, dann melde Dich bitte (siehe unten).
-   		</p>
-		
-		<p>
-			Allerdings habe ich bisher keine Möglichkeit gefunden,
-			alle Anrufe von allen Kontakten einer Gruppe (z.B. "SPAM") zu blockieren. Die App, die diese Funktionalität verspricht 
-			(<a target="_blank" href="<%=request.getContextPath()%>/link/group-blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
-			zu geben. Außerdem will man eigentlich auch nicht alle Telefonterroristen in seinen Kontakten haben. 
-			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
-			Nummern zu den Kontakten hinzuzufügen. 
-		</p>
-		
 		<h2 id="Error26">Meine FritzBox! meldet "Fehler 26" bei der Einrichtung</h2>
 		
 		<p>
