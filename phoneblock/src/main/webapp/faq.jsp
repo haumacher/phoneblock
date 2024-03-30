@@ -75,7 +75,7 @@
 			sag bitte Bescheid, damit die Installationsanleitung angepasst werden kann.
 		</p>
 
-		<h2>Kann ich PhoneBlock auch auf meinem Mobiltelefon nutzen?</h2>
+		<h2>Kann ich PhoneBlock auf einen Android Mobiltelefon nutzen?</h2>
 		<p>
 			Ja, du kannst das PhoneBlock-Adressbuch abonieren und siehst dann gleich, ob es sich lohnt, einen Anruf
 			anzunehmen oder bei einem verpassten Anruf zurückzurufen. Spam-Anrufe direkt abweisen geht aktuell nur 
@@ -83,21 +83,12 @@
 			<a href="<%= request.getContextPath()%>/setup-android/">ausführliche Installationsanleitung</a>. 
 		</p>
 		
+		<h2>Kann ich PhoneBlock auf einen iPhone nutzen?</h2>
 		<p> 
-			Mit dem IPhone <a href="<%=request.getContextPath()%>/link/carddav-install">geht das sogar 
-			ganz ohne Zusatzinstallation</a> - ich habe es allerdings nicht ausprobiert. Wenn Du das testest und
-			es nicht funktionieren sollte, dann melde Dich bitte (siehe unten).
+			Ja, mit dem iPhone geht das sogar ganz ohne Installation zusätzlicher Apps. Schau Dir hier die 
+			<a href="<%= request.getContextPath()%>/setup-iphone/">Installationsanleitung</a> an.
 		</p>
-		
-		<p>
-			Allerdings habe ich bisher keine Möglichkeit gefunden,
-			alle Anrufe von allen Kontakten einer Gruppe (z.B. "SPAM") zu blockieren. Die App, die diese Funktionalität verspricht 
-			(<a target="_blank" href="<%=request.getContextPath()%>/link/group-blocker">Group Blocker</a>) scheint es im PlayStore nicht mehr 
-			zu geben. Außerdem will man eigentlich auch nicht alle Telefonterroristen in seinen Kontakten haben. 
-			Hier müsste man wohl eine eigene App schreiben, welche das Abweisen von Anrufen implementiert, ohne die 
-			Nummern zu den Kontakten hinzuzufügen. 
-		</p>
-		
+
 		<h2 id="Error26">Meine FritzBox! meldet "Fehler 26" bei der Einrichtung</h2>
 		
 		<p>
