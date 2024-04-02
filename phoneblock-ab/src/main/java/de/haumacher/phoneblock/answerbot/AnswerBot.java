@@ -247,7 +247,7 @@ public class AnswerBot extends MultipleUAS {
 				return rejectHandler();
 			}
 			
-			if (info.getVotes() < _botConfig.getMinVotes() && !"A_LEGITIMATE".equals(info.getRating())) {
+			if (info.getVotes() < _botConfig.getMinVotes()) {
 				// Not considered SPAM.
 				LOG.info("Not spam: " + from + " (" + info.getVotes() + " votes)");
 				return rejectHandler();
