@@ -43,7 +43,7 @@
 			    <span class="icon">
 					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
 			    </span>
-				<span>Fritz!Box Anrufbeantworter</span>			
+				<span>Anrufbeantworter</span>			
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
