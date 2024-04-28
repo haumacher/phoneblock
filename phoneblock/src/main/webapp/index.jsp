@@ -31,33 +31,43 @@
 <%
 	String userAgent = request.getHeader("User-Agent");
 	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
+	boolean iphone = userAgent != null && userAgent.toLowerCase().contains("iPhone");
 	String setupAndroidClass = android ? "is-primary" : "is-info";
-	String setupFritzBoxClass = android ? "is-info" : "is-primary";
+	String setupIphoneBoxClass = iphone ? "is-primary" : "is-info";
+	String setupFritzBoxClass = (android || iphone) ? "is-info" : "is-primary";
 %>
 
 		<div class="columns">
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
 			    <span class="icon">
 					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
 			    </span>
-				<span>Anrufbeantworter</span>			
+				<span>Fritz!Box Anrufbeantworter</span>			
 			</a>
 		  </div>
-		  <div class="column is-one-third">
-			<a class="button is-medium is-info is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
+		  <div class="column is-one-quarter">
+			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
 			    <span class="icon">
-					<i class="fa-solid fa-list"></i>
+					<i class="fa-solid fa-phone"></i>
 			    </span>
-				<span>Telefonbuch</span>			
+				<span>Fritz!Box Telefonbuch</span>			
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
-				<span>Mobil</span>
+				<span>Für Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a class="button is-medium <%= setupIphoneBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-iphone/">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span>Für iPhone</span>
 			</a>
 		  </div>
 		</div>

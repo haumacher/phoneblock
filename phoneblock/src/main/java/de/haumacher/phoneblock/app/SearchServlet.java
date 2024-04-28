@@ -193,7 +193,7 @@ public class SearchServlet extends HttpServlet {
 			}
 			
 			
-			info = db.getPhoneInfo(reports, phone);
+			info = db.getPhoneInfo(reports, phoneId);
 			searches = db.getSearches(reports, phoneId);
 			ratingInfos = reports.getRatings(phoneId);
 			aiSummary = reports.getSummary(phoneId);

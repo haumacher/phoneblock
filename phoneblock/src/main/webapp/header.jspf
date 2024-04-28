@@ -52,6 +52,7 @@
 					<a class="navbar-item" href="<%=request.getContextPath() %>/anrufbeantworter/">Anrufbeantworter</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Blocklisten-Telefonbuch</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-android/">Android</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-iphone/">iPhone</a>
 				</div>
 			</div>
 
