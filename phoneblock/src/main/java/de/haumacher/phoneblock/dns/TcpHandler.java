@@ -58,8 +58,14 @@ public class TcpHandler implements Runnable {
 				dataOut.write(packet);
 			}
 		} catch (IOException ex) {
-			LOG.error("Failed to process query.", ex);
+			LOG.error("Failed to process query from " + _socket.getRemoteSocketAddress() + ": " + description(ex));
 		}
+	}
+
+	private String description(IOException ex) {
+		String message = ex.getMessage();
+		String type = ex.getClass().getSimpleName();
+		return message == null ? ex.getClass().getSimpleName() : message + " (" + type + ")";
 	}
 
 }
