@@ -24,10 +24,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
@@ -35,6 +39,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
+import de.haumacher.msgbuf.io.StringW;
+import de.haumacher.msgbuf.json.JsonWriter;
+import de.haumacher.phoneblock.app.api.model.RateRequest;
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
@@ -315,6 +322,43 @@ public class AnswerBot extends MultipleUAS {
 	protected void processCallData(String userName, String from, long startTime, long talkDuration) {
 		float seconds = Math.round(talkDuration) / 1000.0f;
 		LOG.info("Completed SPAM call for '" + userName + "' with '" + from + "' started " + new Date(startTime) + " talked for " + seconds + " seconds.");
+		if (_botConfig.getSendRatings()) {
+			try {
+				URL url = new URL("https://phoneblock.net/phoneblock/api/rate?format=json");
+				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+				connection.addRequestProperty("accept", "application/json");
+				String version = "PhoneBlock-AB/" + VERSION;
+				connection.addRequestProperty("User-Agent", version);
+				String auth = _botConfig.getPhoneblockUsername() + ":" + _botConfig.getPhoneblockPassword();
+				byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
+				String authHeader = "Basic " + new String(encodedAuth);
+				connection.setRequestProperty("Authorization", authHeader);
+				connection.setRequestMethod("POST");
+				connection.setDoOutput(true);
+				try (OutputStream out = connection.getOutputStream()) {
+					RateRequest rateRequest = RateRequest.create().setPhone(from)
+							.setRating(seconds > 1 ? "B_MISSED" : "C_PING").setComment(version);
+					StringW stringWriter = new StringW();
+					JsonWriter jsonWriter = new JsonWriter(stringWriter);
+					rateRequest.writeContent(jsonWriter);
+					out.write(stringWriter.toString().getBytes(StandardCharsets.UTF_8));
+				}
+				int responseCode = connection.getResponseCode();
+				if (responseCode != 200 && LOG.isWarnEnabled()) {
+					try (InputStream errorMessage = connection.getErrorStream()) {
+						LOG.warn("Sending spam call to PhoneBlock was not accepted {} ",
+								new String(errorMessage.readAllBytes()));
+					} catch (IOException ex) {
+						LOG.warn("Sending spam call to PhoneBlock was not accepted response code {}", responseCode);
+					}
+
+				} else {
+					LOG.info("Spam call {} send to PhoneBlock", from);
+				}
+			} catch (IOException ex) {
+				LOG.warn("Sending spam call to PhoneBlock failed: {}", ex.getMessage());
+			}
+		}
 	}
 
 	/**
