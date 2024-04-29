@@ -314,20 +314,24 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		if (host == null || host.isEmpty()) {
 			String ipv6 = bot.getIpv6();
 			if (ipv6 != null && !ipv6.isEmpty()) {
+				LOG.info("Using DynDNS IPv6 address for '" + bot.getUserName() + "': " + ipv6);
 				return ipv6;
 			}
 			String ipv4 = bot.getIpv4();
 			if (ipv4 != null && !ipv4.isEmpty()) {
+				LOG.info("Using DynDNS IPv4 address for '" + bot.getUserName() + "': " + ipv6);
 				return ipv4;
 			}
 			throw new UnknownHostException("Neither host name nor DynDNS configured for: " + bot.getUserName());
 		} else {
 			String ipv6 = resolve(AddressType.IP6, host);
 			if (ipv6 != null) {
+				LOG.info("Resolved IPv6 address for '" + bot.getUserName() + "' (" + host + "): " + ipv6);
 				return ipv6;
 			}
 			String ipv4 = resolve(AddressType.IP4, host);
 			if (ipv4 != null) {
+				LOG.info("Resolved IPv4 address for '" + bot.getUserName() + "' (" + host + "): " + ipv4);
 				return ipv4;
 			}
 			throw new UnknownHostException("Cannot resolve host name '" + host + "' for: " + bot.getUserName());
