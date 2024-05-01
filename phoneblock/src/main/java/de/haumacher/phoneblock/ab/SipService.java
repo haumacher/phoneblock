@@ -537,7 +537,14 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			AnswerBotSip bot = registration.getBot();
 			try {
 				// Try to update IP address.
-				registration.setCustomer(toCustomerConfig(bot));
+				String host = registration.getCustomer().getRoute().getHost();
+				CustomerConfig update = toCustomerConfig(bot);
+				String newHost = update.getRoute().getHost();
+				if (!host.equals(newHost)) {
+					// Create new registration due to host name change.
+					LOG.info("Updating registration '" + client.getUsername() + "' due to address change: " + host + " -> " + newHost);
+					register(bot, update, registration.isTemporary());
+				}
 			} catch (UnknownHostException ex) {
 				LOG.warn("Stopping registration due to failed hostname resolution: " + client.getUsername());
 				stop(registration.getUsername());

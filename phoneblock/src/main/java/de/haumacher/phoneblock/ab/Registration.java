@@ -15,9 +15,9 @@ import de.haumacher.phoneblock.db.settings.AnswerBotSip;
  */
 public class Registration extends RegistrationClient {
 
-	private CustomerOptions _customer;
+	private final CustomerOptions _customer;
 	private boolean _temporary;
-	private AnswerBotSip _bot;
+	private final AnswerBotSip _bot;
 	private int _failures;
 
 	/** 
@@ -40,13 +40,6 @@ public class Registration extends RegistrationClient {
 	 */
 	public CustomerOptions getCustomer() {
 		return _customer;
-	}
-	
-	/**
-	 * @see #getCustomer()
-	 */
-	public void setCustomer(CustomerOptions customer) {
-		_customer = customer;
 	}
 
 	public boolean isTemporary() {
