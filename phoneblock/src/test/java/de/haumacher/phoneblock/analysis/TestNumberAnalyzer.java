@@ -39,5 +39,19 @@ class TestNumberAnalyzer {
 		assertNotNull(info);
 		assertEquals(label, info.getCity());
 	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"017650642602, 017650642602",
+		"+4917650642602+, +4917650642602",
+		"0049176506426+02, 004917650642602",
+		"*017650642+*602*, 017650642602*",
+		"+*4917650642+*602*, +4917650642602*",
+		"*004917650642+*602*, 004917650642602*",
+	})
+	void testNormalize(String input, String normalized) {
+		String normalizedNumber = NumberAnalyzer.normalizeNumber(input);
+		assertEquals(normalized, normalizedNumber);
+	}
 	
 }
