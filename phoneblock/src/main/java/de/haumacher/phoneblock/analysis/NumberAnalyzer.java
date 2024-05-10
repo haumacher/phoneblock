@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -301,11 +302,17 @@ public class NumberAnalyzer {
 		return phoneId;
 	}
 
+	/**
+	 * A number must only consist of digits optionally prefixed by a '+' sign and
+	 * optionally ending in a '*' sign. All other characters must be discarded.
+	 */
+	private static final Pattern NORMALIZE_PATTERN = Pattern.compile("^[^\\+0-9]|(?<=.)[^0-9](?=.)|[^0-9\\*]$");
+
 	/** 
 	 * Removes grouping characters from the given phone number.
 	 */
 	public static String normalizeNumber(String phoneNumber) {
-		return phoneNumber.replaceAll("[^\\+\\*0-9]", "");
+		return NORMALIZE_PATTERN.matcher(phoneNumber).replaceAll("");
 	}
 
 	/**
