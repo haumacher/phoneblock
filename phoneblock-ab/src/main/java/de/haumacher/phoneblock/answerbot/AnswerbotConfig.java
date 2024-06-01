@@ -203,7 +203,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	
 	@Override
 	public Direction getDirection() {
-		return Direction.FULL_DUPLEX;
+		return this.recordingDir() != null ? Direction.FULL_DUPLEX : Direction.SEND_ONLY;
 	}
 
 	/**
