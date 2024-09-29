@@ -9,8 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Random;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

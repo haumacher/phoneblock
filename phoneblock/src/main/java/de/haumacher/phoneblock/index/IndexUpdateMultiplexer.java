@@ -3,7 +3,7 @@
  */
 package de.haumacher.phoneblock.index;
 
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -14,14 +14,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.OptionalLong;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;

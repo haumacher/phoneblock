@@ -10,8 +10,8 @@ import java.sql.Statement;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.jdbcx.JdbcDataSource;
@@ -123,7 +123,7 @@ public class DBService implements ServletContextListener {
 	}
 
 	protected String defaultDbUrl(String appName) {
-		return "jdbc:h2:/var/lib/tomcat9/work/" + appName + "/h2";
+		return "jdbc:h2:/var/lib/tomcat10/work/" + appName + "/h2";
 	}
 	
 	private String appName(ServletContextEvent servletContextEvent) {

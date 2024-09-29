@@ -1,7 +1,7 @@
 package de.haumacher.phoneblock.mail.check;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  * API for e-mail domain checking.

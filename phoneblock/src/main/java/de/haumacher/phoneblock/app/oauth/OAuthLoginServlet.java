@@ -7,18 +7,20 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
+import org.pac4j.core.context.FrameworkParameters;
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
 import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.JEEFrameworkParameters;
 import org.pac4j.jee.context.session.JEESessionStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,8 @@ public class OAuthLoginServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		WebContext context = new JEEContext(req, resp);
-		SessionStore sessionStore = JEESessionStoreFactory.INSTANCE.newSessionStore(req, resp);
+		FrameworkParameters parameters = new JEEFrameworkParameters(req, resp);
+		SessionStore sessionStore = JEESessionStoreFactory.INSTANCE.newSessionStore(parameters);
 		ProfileManager manager = new ProfileManager(context, sessionStore);
 		Optional<UserProfile> profile = manager.getProfile();		
 		if (profile.isEmpty()) {
