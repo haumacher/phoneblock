@@ -409,7 +409,6 @@
 				</executions>
 			</plugin>
 
-<!--
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
@@ -418,7 +417,6 @@
 				<executions>
 					<execution>
 						<id>deploy-to-production</id>
-						<phase>install</phase>
 						<goals>
 							<goal>redeploy</goal>
 						</goals>
@@ -432,7 +430,7 @@
 					<path>${phoneblock.contextpath}</path>
 				</configuration>
 			</plugin>
--->
+
 			<!-- Check for well-known vulnerabilities. -->
 			<!-- Execute explicitly with `mvn dependency-check:check`. -->
 			<plugin>
