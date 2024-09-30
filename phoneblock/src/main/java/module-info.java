@@ -29,7 +29,7 @@ module phoneblock {
 	requires com.google.auth.oauth2;
 	requires com.h2database;
 	requires com.opencsv;
-	requires ez.vcard;
+	requires com.googlecode.ezvcard;
 	requires java.desktop;
 	requires java.management;
 	requires java.naming;
