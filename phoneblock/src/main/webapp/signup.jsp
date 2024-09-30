@@ -26,11 +26,7 @@
 </div>
 
 <nav class="panel">
-	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=Google2Client"><i class="fa-brands fa-google"></i> <span>Mit Google registrieren</span></a></p>
-</nav>
-
-<nav class="panel">
-	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=FacebookClient"><i class="fa-brands fa-facebook-f"></i> <span>Mit Facebook registrieren</span></a></p>
+	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>"><i class="fa-brands fa-google"></i> <span>Mit Google registrieren</span></a></p>
 </nav>
 
 <%

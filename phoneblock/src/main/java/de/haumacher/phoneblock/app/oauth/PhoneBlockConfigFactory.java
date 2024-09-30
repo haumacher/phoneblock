@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PhoneBlockConfigFactory implements ConfigFactory {
 	
+	public static final String GOOGLE_CLIENT = "Google2Client";
+	
 	private static final Logger LOG = LoggerFactory.getLogger(PhoneBlockConfigFactory.class);
 	
     @Override
@@ -48,6 +50,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
         addGoogleClient(clientList, properties);
         
         String clientNames = clientList.stream().map(client -> client.getName()).collect(Collectors.joining(","));
+        LOG.info("Configured clients: " + clientNames);
 		
 		String callbackUrl = "https://phoneblock.net" + contextPath + "/oauth/callback";
 		LOG.info("Using oauth callback URL: " + callbackUrl);
@@ -68,8 +71,11 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
 			LOG.info("Configuring client for Google authentication: " + googleClientId);
 			OidcConfiguration config = new OidcConfiguration();
 			config.setClientId(googleClientId);
-			config.setClientAuthenticationMethodAsString(googleClientSecret);
-			clientList.add(new GoogleOidcClient(config));
+			config.setSecret(googleClientSecret);
+			GoogleOidcClient googleClient = new GoogleOidcClient(config);
+			googleClient.setName(GOOGLE_CLIENT);
+			
+			clientList.add(googleClient);
 		}
 	}
 
