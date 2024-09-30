@@ -48,7 +48,6 @@
 		<bulma.version>0.9.4</bulma.version>
 		<bulma-collapsible.version>1.0.3</bulma-collapsible.version>
 		<chartjs.version>4.1.2</chartjs.version>
-		<shariff.version>3.2.1</shariff.version>
 		<jquery.version>3.6.4</jquery.version>
 		<swagger-ui.version>4.18.3</swagger-ui.version>
 		
@@ -203,18 +202,6 @@
 		    <groupId>org.webjars</groupId>
 		    <artifactId>chartjs</artifactId>
 		    <version>${chartjs.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.shredzone.shariff</groupId>
-			<artifactId>backend</artifactId>
-			<version>1.24</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>shariff</artifactId>
-			<version>${shariff.version}</version>
 		</dependency>
 
 		<dependency>

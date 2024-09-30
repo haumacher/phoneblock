@@ -57,41 +57,6 @@
 		<jsp-file>/sitemap.jsp</jsp-file>
 	</servlet>
 
-	<servlet>
-		<servlet-name>shariff</servlet-name>
-		<servlet-class>org.shredzone.shariff.ShariffServlet</servlet-class>
-
-		<init-param>
-			<param-name>host</param-name>
-			<param-value>^(.*\.)?haumacher\.de$</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>cache.timeToLiveMs</param-name>
-			<param-value>600000</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>cache.useOnError</param-name>
-			<param-value>true</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>facebook.id</param-name>
-			<param-value>${facebook.id}</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>facebook.secret</param-name>
-			<param-value>${facebook.secret}</param-value>
-		</init-param>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>shariff</servlet-name>
-		<url-pattern>/shariff/</url-pattern>
-	</servlet-mapping>
-
 	<servlet-mapping>
 		<servlet-name>sitemap</servlet-name>
 		<url-pattern>/sitemap.xml</url-pattern>

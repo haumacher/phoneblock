@@ -12,19 +12,6 @@
 		Wenn Dir PhoneBlock gefällt, bitte hilf mit, es bekannt zu machen, und teile es mit Deinen Freunden. Je mehr 
 		Leute mitmachen, desto geringer die Chance, dass Dich trotzdem noch ein Werbeanruf trifft!
 		</p>
-		 
-		<div class="shariff"
-			data-backend-url="<%= request.getContextPath() %>/shariff/" 
-			data-url="https://phoneblock.net" 
-			data-button-style="icon-count"
-			data-services="[&quot;whatsapp&quot;,&quot;facebook&quot;,&quot;xing&quot;,&quot;pinterest&quot;,&quot;linkedin&quot;,&quot;tumblr&quot;,&quot;diaspora&quot;,&quot;reddit&quot;,&quot;stumbleupon&quot;,&quot;threema&quot;,&quot;weibo&quot;,&quot;tencent-weibo&quot;,&quot;qzone&quot;,&quot;telegram&quot;,&quot;vk&quot;,&quot;flipboard&quot;,&quot;pocket&quot;,&quot;buffer&quot;]"
-			data-lang="de"
-		></div>
-		
-		<p>
-		Die Social-Media-Buttons sind übrigens "pricacy-aware" und verletzen nicht Deine Privatshäre. 
-		Nähere Informationen findest Du unter dem Stichwort <a target="_blank" href="http://ct.de/-2467514">"shariff"</a>.
-		</p>
 	</div>
 </section>
   
@@ -48,7 +35,6 @@
 	</div>
 </footer>
 
-<script src="<%= request.getContextPath() %>/webjars/shariff/${shariff.version}/shariff.min.js"></script>
 <script type="text/javascript">
 bulmaCollapsible.attach();
 </script>
