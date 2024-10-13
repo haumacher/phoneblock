@@ -3,6 +3,7 @@
 <%@page import="java.net.URL"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
+<%@page import="de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <html>
 <%
@@ -44,11 +45,7 @@
 	%>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=Google2Client<%=locationParam%>"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a></p>
-	</nav>
-	
-	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=FacebookClient<%=locationParam%>"><i class="fa-brands fa-facebook-f"></i> <span>Mit Facebook anmelden</span></a></p>
+		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a></p>
 	</nav>
 	
 	<nav class="panel">

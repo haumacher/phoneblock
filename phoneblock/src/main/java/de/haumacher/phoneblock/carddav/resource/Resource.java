@@ -11,16 +11,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+
+import com.opencsv.ResultSetColumnNameHelperService;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
@@ -38,7 +43,7 @@ public abstract class Resource {
 	
 	private final String _resourcePath;
 
-	private static final Set<QName> UNSUPPORTED_KNOWN = new HashSet<>(Arrays.asList(
+	private static final Map<QName, QName> UNSUPPORTED_KNOWN = Arrays.asList(
 		new QName("DAV:", "add-member"), 
 		new QName("DAV:", "current-user-privilege-set"), 
 		new QName("DAV:", "getcontenttype"),
@@ -75,8 +80,10 @@ public abstract class Resource {
 		new QName("urn:ietf:params:xml:ns:carddav", "max-resource-size"), 
 		new QName("urn:ietf:params:xml:ns:carddav", "supported-address-data"), 
 		new QName("urn:ietf:params:xml:ns:caldav", "calendar-description"),
-		new QName("urn:ietf:params:xml:ns:caldav", "supported-calendar-component-set")
-	));
+		new QName("urn:ietf:params:xml:ns:caldav", "supported-calendar-component-set"),
+		new QName("urn:mobileme:davservices", "quota-available"),
+		new QName("urn:mobileme:davservices", "quota-used")
+	).stream().collect(Collectors.toConcurrentMap(x -> x, x -> x));
 	
 	/** 
 	 * Creates a {@link Resource}.
@@ -185,8 +192,8 @@ public abstract class Resource {
 			}
 		}
 		
-		if (!UNSUPPORTED_KNOWN.contains(property)) {
-			LOG.warn("Property '" + property + "' not found: " + _resourcePath);
+		if (UNSUPPORTED_KNOWN.putIfAbsent(property, property) == null) {
+			LOG.warn("Discovered new unsupported DAV property '" + property + "': " + _resourcePath);
 		}
 		return HttpServletResponse.SC_NOT_FOUND;
 	}

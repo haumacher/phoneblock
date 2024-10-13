@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock</artifactId>
-	<version>1.4.6-SNAPSHOT</version>
+	<version>1.5.0-SNAPSHOT</version>
 	
 	<name>PhoneBlock</name>
 	<description>Ad blocker for your Fritz!Box</description>
@@ -35,8 +35,8 @@
   	<packaging>war</packaging>
 
 	<properties>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 
 		<!-- Note: The mybatis SQL framework requires Java method parameter names 
 			to allow using the method parameter names as SQL variables. -->
@@ -50,7 +50,6 @@
 		<bulma.version>0.9.4</bulma.version>
 		<bulma-collapsible.version>1.0.3</bulma-collapsible.version>
 		<chartjs.version>4.1.2</chartjs.version>
-		<shariff.version>3.2.1</shariff.version>
 		<jquery.version>3.6.4</jquery.version>
 		<swagger-ui.version>4.18.3</swagger-ui.version>
 		
@@ -89,39 +88,60 @@
 		</dependency>
 	
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>4.0.1</version>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet.jsp</groupId>
+			<artifactId>jakarta.servlet.jsp-api</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>jakarta.el</groupId>
+		    <artifactId>jakarta.el-api</artifactId>
+		    <version>6.0.1</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.pac4j</groupId>
-			<artifactId>javaee-pac4j</artifactId>
-			<version>7.1.0</version>
+		    <groupId>org.pac4j</groupId>
+		    <artifactId>pac4j-oidc</artifactId>
+			<version>6.0.6</version>
 		</dependency>
-
 		<dependency>
-			<groupId>org.pac4j</groupId>
-			<artifactId>pac4j-oauth</artifactId>
-			<version>5.7.1</version>
+		    <groupId>org.pac4j</groupId>
+		    <artifactId>pac4j-jakartaee</artifactId>
+			<version>6.0.6</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.pac4j</groupId>
+		    <artifactId>jakartaee-pac4j</artifactId>
+		    <version>8.0.1</version>
 		</dependency>
 	
 		<dependency>
 			<groupId>com.googlecode.ez-vcard</groupId>
 			<artifactId>ez-vcard</artifactId>
-			<version>0.11.3</version>
+			<version>0.12.1</version>
 		</dependency>
 
-	   <dependency>
-			<groupId>com.theokanning.openai-gpt3-java</groupId>
-			<artifactId>service</artifactId>
-			<version>0.16.0</version>       
-	   </dependency>
+		<!-- Explicitly update dependency of ez-vcard to avoid conflict with other transitive dependencies -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.17.2</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>com.theokanning.openai-gpt3-java</groupId>
+		    <artifactId>service</artifactId>
+		    <version>0.18.2</version>
+		</dependency>
    
    		<dependency>
 			<groupId>com.google.api-client</groupId>
 			<artifactId>google-api-client</artifactId>
-			<version>2.2.0</version>
+			<version>2.7.0</version>
 			
 			<!-- Exclude logging implementation, replaced by jcl-over-slf4j -->
 			<exclusions>
@@ -135,7 +155,7 @@
 		<dependency>
 		    <groupId>com.google.auth</groupId>
 		    <artifactId>google-auth-library-oauth2-http</artifactId>
-		    <version>1.16.1</version>
+		    <version>1.27.0</version>
 		</dependency>
 	
 		<dependency>
@@ -147,7 +167,7 @@
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
-		    <version>5.7.1</version>
+		    <version>5.9</version>
 
 			<!-- Exclude logging implementation, replaced by jcl-over-slf4j -->
 			<exclusions>
@@ -162,25 +182,25 @@
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-text</artifactId>
-		    <version>1.10.0</version>
+		    <version>1.12.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.16.1</version>
+			<version>1.18.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>2.2.224</version>
+			<version>2.3.232</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.5.13</version>
+			<version>3.5.16</version>
 		</dependency>
 
 		<dependency>
@@ -227,57 +247,52 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.shredzone.shariff</groupId>
-			<artifactId>backend</artifactId>
-			<version>1.24</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>shariff</artifactId>
-			<version>${shariff.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
 			<version>${jquery.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<version>1.6.2</version>
-		    <artifactId>javax.mail</artifactId>
+		    <groupId>jakarta.mail</groupId>
+		    <artifactId>jakarta.mail-api</artifactId>
+		    <version>2.1.3</version>
+		</dependency>
+		
+		<!-- The actual mail implementation. -->
+		<dependency>
+			<groupId>org.eclipse.angus</groupId>
+			<artifactId>angus-mail</artifactId>
+			<version>2.0.3</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
-		    <version>2.0.7</version>
+		    <version>2.0.16</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>2.0.7</version>
+		    <version>2.0.16</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.tinylog</groupId>
 			<artifactId>slf4j-tinylog</artifactId>
-			<version>2.6.2</version>
+			<version>2.7.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.tinylog</groupId>
 			<artifactId>tinylog-impl</artifactId>
-			<version>2.6.2</version>
+			<version>2.7.0</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.junit.jupiter</groupId>
 		    <artifactId>junit-jupiter</artifactId>
-		    <version>5.10.2</version>
+		    <version>5.11.1</version>
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -435,7 +450,6 @@
 				<executions>
 					<execution>
 						<id>deploy-to-production</id>
-						<phase>install</phase>
 						<goals>
 							<goal>redeploy</goal>
 						</goals>

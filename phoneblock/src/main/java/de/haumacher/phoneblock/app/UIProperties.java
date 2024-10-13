@@ -18,7 +18,6 @@ public class UIProperties {
 	public final static String FA_PATH = getWebJarPath("org.webjars", "font-awesome");
 	public final static String JQUERY_PATH = getWebJarPath("org.webjars", "jquery");
 	public final static String CHARTJS_PATH = getWebJarPath("org.webjars", "chartjs");
-	public final static String SHARIFF_PATH = getWebJarPath("org.webjars", "shariff");
 	public final static String SWAGGER_PATH = getWebJarPath("org.webjars.npm", "swagger-ui-dist");
 
 	private static String getWebJarPath(String groupId, String artifactId) {

@@ -2,8 +2,8 @@ package de.haumacher.phoneblock.ab;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Base class for implementing the answerbot control API.
