@@ -37,6 +37,7 @@
 	<modules>
 		<module>phoneblock-ab</module>
 		<module>phoneblock-shared</module>
+		<module>phoneblock</module>
 	</modules>
 
 	<properties>
