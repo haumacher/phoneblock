@@ -28,6 +28,7 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.LoginServlet;
 
 /**
@@ -48,7 +49,10 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
 			LOG.error("Failed to read configuration properties.", ex);
 		}
     	
-    	String contextPath = properties.getProperty("phoneblock.contextpath");
+    	String contextPath = Application.getContextPath();
+    	if (contextPath == null) {
+    		contextPath = properties.getProperty("phoneblock.contextpath");
+    	}
     	if (contextPath == null) {
     		contextPath = "/phoneblock";
     	}

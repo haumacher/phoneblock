@@ -49,6 +49,12 @@ public class Application implements ServletContextListener {
 	
 	private ServletContextListener[] _services;
 	
+	private static String _contextPath;
+	
+	public static String getContextPath() {
+		return _contextPath;
+	}
+	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
@@ -79,6 +85,8 @@ public class Application implements ServletContextListener {
 		}
 		
 		LOG.info("Starting phoneblock application.");
+		
+		_contextPath = sce.getServletContext().getContextPath();
 		
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
