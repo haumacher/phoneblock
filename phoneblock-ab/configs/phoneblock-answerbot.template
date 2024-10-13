@@ -1,5 +1,5 @@
 #
-# Answerbot configuration for registering to a Fritz!Box in a local network.
+# Answerbot configuration for registering to a Fritz!Box or other router in a local network.
 #
 
 ###################################################################################################
@@ -27,25 +27,39 @@ port-count=20
 # Enable SIP message debugging.
 log-all-packets=no
 
+# Whenever to use IPv4 addresses by default. Set to yes if your network or router don't support IPv6.
+prefer-ipv4=no
+
+# Host IPv4 address added to the via header. If your device uses a static IPv4 address you can add it here.
+# If not set phoneblock tries to detect your IPv4 address automatically by using the the IPv4 you use to connect to the
+# router, which provides your internet connection.
+viaAddr4=
+
+# Host IPv6 address used in communication with an IPv6 counterpart in the via header.
+# If your device uses a static IPv6 address you can add it here.
+# If not set phoneblock tries to detect your IPv6 address automatically by using the the IPv6 you use to connect to the
+# router, which provides your internet connection.
+via-addr-v6=
+
 # Directory where to store recordings to, 'none' to disable recording.
 recodings = .
 
 # The directory where the WAV files for the bot conversation are located.
 conversation=./conversation
 
-# The format of the conversation media stord in the directories in ./conversation/*
+# The format of the conversation media stored in the directories in ./conversation/*
 media=audio 4080 RTP/AVP { 8 PCMA 8000 160 ; 120 PCMA 16000 320 }
 
 # Number of milliseconds silence must be detected before responding.
 min-silence-time = 800
 	
-# When recording, the number of milliseconds of silence to record before and after the conterpart's speach.")
+# When recording, the number of milliseconds of silence to record before and after the counterparts speech.")
 padding-time = 500
 	
 # The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 silence-db = -35
 
-# The minimum number of PhoneBlock votes for a number to be consideres SPAM.
+# The minimum number of PhoneBlock votes for a number to be considered SPAM.
 min-votes = 4
 
 # Whether to let PhoneBlock accept anonymous calls. It is not recommended to enable this option. Better configure a 
@@ -55,4 +69,14 @@ accept-anonymous=no
 # Prefix of a number that triggers PhoneBlock to respond to the call (for testing). A local number typically starts
 # with a '*' character. Using this prefix allows to call PhoneBlock locally to verify it is working. 
 test-prefix=*
+
+# Enables the report of spam calls to the PhoneBlock  project. You need a PhoneBlock  account
+# https://phoneblock.net/phoneblock/signup.jsp for this.
+send-rating=no
+
+# Your PhoneBlock username.
+phoneblock-username=
+
+# Your PhoneBlock password
+phoneblock-password=
 
