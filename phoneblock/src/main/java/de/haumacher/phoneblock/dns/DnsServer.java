@@ -11,10 +11,12 @@ package de.haumacher.phoneblock.dns;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +70,15 @@ public class DnsServer implements Runnable {
 
 	public DnsServer(ScheduledExecutorService executor, int port) throws IOException {
 		_executor = executor;
-		_serverSocket = new ServerSocket(port, 128);
-		_udpHandler = new UdpHandler(_executor, this, null, port);
+
+		try (ServerSocket test = new ServerSocket()) {
+			LOG.info("Supported socket options: " + test.supportedOptions().stream().map(o -> o.name()).collect(Collectors.joining(", ")));
+		}
+		
+		InetAddress bindAddr = null;
+		
+		_serverSocket = new ServerSocket(port, 128, bindAddr);
+		_udpHandler = new UdpHandler(_executor, this, bindAddr, port);
 		
 		_origin = Name.fromString("box.phoneblock.net.");
 		
