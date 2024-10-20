@@ -15,6 +15,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,7 @@ import org.xbill.DNS.DClass;
 import org.xbill.DNS.DNAMERecord;
 import org.xbill.DNS.Flags;
 import org.xbill.DNS.Header;
+import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.NSRecord;
 import org.xbill.DNS.Name;
@@ -38,6 +40,7 @@ import org.xbill.DNS.Record;
 import org.xbill.DNS.SOARecord;
 import org.xbill.DNS.Section;
 import org.xbill.DNS.SetResponse;
+import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 import org.xbill.DNS.Zone;
@@ -65,8 +68,8 @@ public class DnsServer implements Runnable {
 	private transient boolean _shouldStop;
 	private UdpHandler _udpHandler;
 	private Name _origin;
-	private int dclass;
-	private long ttl;
+	private int _dclass;
+	private long _ttl;
 
 	public DnsServer(ScheduledExecutorService executor, int port) throws IOException {
 		_executor = executor;
@@ -80,21 +83,29 @@ public class DnsServer implements Runnable {
 		_serverSocket = new ServerSocket(port, 128, bindAddr);
 		_udpHandler = new UdpHandler(_executor, this, bindAddr, port);
 		
-		_origin = Name.fromString("box.phoneblock.net.");
+		_origin = Name.fromString("mybox.name.");
 		
-		dclass = DClass.IN;
-		ttl = 600;
-		Name nshost = Name.fromString("phoneblock.net.");
-		Name admin = Name.fromString("play.haumacher.de.");
-		long serial = 0;
+		_dclass = DClass.IN;
+		_ttl = 600;
+		Name nshost = Name.fromString("ns.phoneblock.net.");
+		
+		// SOA original record from DNS Console:
+		// 
+		// ns1.your-server.de. postmaster.your-server.de. 2024102012 86400 10800 3600000 3600
+		Name admin = Name.fromString("postmaster.your-server.de.");
+		long serial = 2024102012;
 		long refresh = 86400;
-		long retry = 7200;
+		long retry = 10800;
 		long expire = 3600000;
 		long minimum = 300;
 		
 		Record[] records = {
-			new SOARecord(_origin, dclass, ttl, nshost, admin, serial, refresh, retry, expire, minimum),
-			new NSRecord(_origin, dclass, ttl, nshost),
+			new NSRecord(_origin, _dclass, _ttl, nshost),
+			new SOARecord(_origin, _dclass, _ttl, nshost, admin, serial, refresh, retry, expire, minimum),
+			new ARecord(_origin, _dclass, _ttl, InetAddress.getByName("128.140.84.131")),
+			new AAAARecord(_origin, _dclass, _ttl, InetAddress.getByName("2a01:4f8:c17:6624::1")),
+			new TXTRecord(_origin, _dclass, _ttl, Collections.singletonList("v=spf1 +a +mx ?all")),
+			new MXRecord(_origin, _dclass, _ttl, 10, Name.fromString("www508.your-server.de."))
 		};
 		_onlyZone = new Zone(_origin, records);
 	}
@@ -110,7 +121,7 @@ public class DnsServer implements Runnable {
 	}
 
 	private void addARecord(Name globalName, InetAddress address) {
-		_onlyZone.addRecord(new ARecord(globalName, dclass, ttl, address));
+		_onlyZone.addRecord(new ARecord(globalName, _dclass, _ttl, address));
 	}
 
 	public void updateAAAARecord(String name, InetAddress address) throws TextParseException, UnknownHostException {
@@ -125,7 +136,7 @@ public class DnsServer implements Runnable {
 	}
 
 	private void addAAAARecord(Name fullName, InetAddress address) {
-		_onlyZone.addRecord(new AAAARecord(fullName, dclass, ttl, address));
+		_onlyZone.addRecord(new AAAARecord(fullName, _dclass, _ttl, address));
 	}
 
 	public void clearARecords(String name) throws TextParseException {
