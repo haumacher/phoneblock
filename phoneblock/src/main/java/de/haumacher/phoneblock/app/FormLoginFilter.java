@@ -24,6 +24,7 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebFilter(urlPatterns = {
 	"/ab",
 	"/ab/index.html",
+	"/support-banktransfer.jsp",
 })
 public class FormLoginFilter extends LoginFilter {
 

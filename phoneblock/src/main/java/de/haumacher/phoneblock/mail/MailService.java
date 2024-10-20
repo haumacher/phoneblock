@@ -34,6 +34,7 @@ import jakarta.mail.internet.MimeMultipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 
@@ -44,15 +45,17 @@ public class MailService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
 	
-	private static final String HOME_PAGE = "https://phoneblock.net/";
+	private static final String HOME_PAGE = "https://phoneblock.net";
 	
-	private static final String APP_LOGO_SVG = "https://phoneblock.net/phoneblock/app-logo.svg";
-
 	private static final String FACE_BOOK = "https://www.facebook.com/PhoneBlock";
 	
 	private static final String HELP_VIDEO = "https://www.youtube.com/watch?v=iV3aWhU1cMU&t=3s";
 
-	private static final String SETTINGS = "https://phoneblock.net/phoneblock/settings";
+	private final String _appLogoSvg;
+	
+	private final String _settings;
+	
+	private final String _support;
 	
 	private static final String MAIL = "phoneblock@haumacher.de";
 
@@ -70,6 +73,13 @@ public class MailService {
 		_user = user;
 		_password = password;
 		_properties = properties;
+		
+		String contextPath = Application.getContextPath();
+		String baseUrl = HOME_PAGE + contextPath;
+		
+		_appLogoSvg = baseUrl + "/app-logo.svg";
+		_settings = baseUrl + "/settings";
+		_support = baseUrl + "/support.jsp";
 	}
 
 	public void sendActivationMail(String receiver, String code)
@@ -91,7 +101,7 @@ public class MailService {
 
 		Map<String, String> variables = new HashMap<>();
     	variables.put("{code}", code);
-    	variables.put("{image}", APP_LOGO_SVG);
+    	variables.put("{image}", _appLogoSvg);
     	
 		sendMail("PhoneBlock E-Mail Bestätigung", address, "mail-template", variables);
 	}
@@ -149,12 +159,13 @@ public class MailService {
 		variables.put("{name}", name);
 		variables.put("{userName}", userSettings.getLogin());
 		variables.put("{lastAccess}", lastAccess);
-		variables.put("{image}", APP_LOGO_SVG);
+		variables.put("{image}", _appLogoSvg);
 		variables.put("{home}", HOME_PAGE);
 		variables.put("{facebook}", FACE_BOOK);
 		variables.put("{help}", HELP_VIDEO);
 		variables.put("{mail}", MAIL);
-		variables.put("{settings}", SETTINGS);
+		variables.put("{settings}", _settings);
+		variables.put("{support}", _support);
 		return variables;
 	}
 	
