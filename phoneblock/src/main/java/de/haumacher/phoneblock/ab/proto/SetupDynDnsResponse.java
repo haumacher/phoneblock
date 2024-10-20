@@ -21,11 +21,16 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 	/** @see #getDyndnsPassword() */
 	public static final String DYNDNS_PASSWORD__PROP = "dyndnsPassword";
 
+	/** @see #getDyndnsDomain() */
+	public static final String DYNDNS_DOMAIN__PROP = "dyndnsDomain";
+
 	private long _id = 0L;
 
 	private String _dyndnsUser = "";
 
 	private String _dyndnsPassword = "";
+
+	private String _dyndnsDomain = "";
 
 	/**
 	 * Creates a {@link SetupDynDnsResponse} instance.
@@ -87,6 +92,23 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 		_dyndnsPassword = value;
 	}
 
+	public final String getDyndnsDomain() {
+		return _dyndnsDomain;
+	}
+
+	/**
+	 * @see #getDyndnsDomain()
+	 */
+	public de.haumacher.phoneblock.ab.proto.SetupDynDnsResponse setDyndnsDomain(String value) {
+		internalSetDyndnsDomain(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getDyndnsDomain()} without chain call utility. */
+	protected final void internalSetDyndnsDomain(String value) {
+		_dyndnsDomain = value;
+	}
+
 	@Override
 	public String jsonType() {
 		return SETUP_DYN_DNS_RESPONSE__TYPE;
@@ -96,7 +118,8 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 		java.util.Arrays.asList(
 			ID__PROP, 
 			DYNDNS_USER__PROP, 
-			DYNDNS_PASSWORD__PROP));
+			DYNDNS_PASSWORD__PROP, 
+			DYNDNS_DOMAIN__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -109,6 +132,7 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 			case ID__PROP: return getId();
 			case DYNDNS_USER__PROP: return getDyndnsUser();
 			case DYNDNS_PASSWORD__PROP: return getDyndnsPassword();
+			case DYNDNS_DOMAIN__PROP: return getDyndnsDomain();
 			default: return null;
 		}
 	}
@@ -119,6 +143,7 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 			case ID__PROP: internalSetId((long) value); break;
 			case DYNDNS_USER__PROP: internalSetDyndnsUser((String) value); break;
 			case DYNDNS_PASSWORD__PROP: internalSetDyndnsPassword((String) value); break;
+			case DYNDNS_DOMAIN__PROP: internalSetDyndnsDomain((String) value); break;
 		}
 	}
 
@@ -143,6 +168,8 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 		out.value(getDyndnsUser());
 		out.name(DYNDNS_PASSWORD__PROP);
 		out.value(getDyndnsPassword());
+		out.name(DYNDNS_DOMAIN__PROP);
+		out.value(getDyndnsDomain());
 	}
 
 	@Override
@@ -151,6 +178,7 @@ public class SetupDynDnsResponse extends de.haumacher.msgbuf.data.AbstractDataOb
 			case ID__PROP: setId(in.nextLong()); break;
 			case DYNDNS_USER__PROP: setDyndnsUser(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case DYNDNS_PASSWORD__PROP: setDyndnsPassword(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case DYNDNS_DOMAIN__PROP: setDyndnsDomain(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}

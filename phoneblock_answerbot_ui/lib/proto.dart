@@ -386,11 +386,14 @@ class SetupDynDnsResponse extends _JsonObject {
 
 	String dyndnsPassword;
 
+	String dyndnsDomain;
+
 	/// Creates a SetupDynDnsResponse.
 	SetupDynDnsResponse({
 			this.id = 0, 
 			this.dyndnsUser = "", 
 			this.dyndnsPassword = "", 
+			this.dyndnsDomain = "", 
 	});
 
 	/// Parses a SetupDynDnsResponse from a string source.
@@ -423,6 +426,10 @@ class SetupDynDnsResponse extends _JsonObject {
 				dyndnsPassword = json.expectString();
 				break;
 			}
+			case "dyndnsDomain": {
+				dyndnsDomain = json.expectString();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -439,6 +446,9 @@ class SetupDynDnsResponse extends _JsonObject {
 
 		json.addKey("dyndnsPassword");
 		json.addString(dyndnsPassword);
+
+		json.addKey("dyndnsDomain");
+		json.addString(dyndnsDomain);
 	}
 
 }

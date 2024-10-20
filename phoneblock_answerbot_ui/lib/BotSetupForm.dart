@@ -222,7 +222,7 @@ class BotSetupState extends State<BotSetupForm> {
                         "Gib die URL genau so ein, wie sie hier geschrieben ist. Ersetze nicht die Werte in den spitzen "
                         "Klammern, das macht Deine Fritz!Box beim Aufruf automatisch. Nutze am besten die Kopierfuntion, "
                         "um die Werte zu übernehmen."),
-                InfoField('Domainname', "${dynDns!.dyndnsUser}.box.phoneblock.net",
+                InfoField('Domainname', "${dynDns!.dyndnsDomain}",
                     key: const Key("dynip.domainname"),
                     help: "Dieser Domainname kann später nicht öffentlich aufgelöst werden. Deine Internetadresse wird "
                         "ausschließlich mit PhoneBlock geteilt."),

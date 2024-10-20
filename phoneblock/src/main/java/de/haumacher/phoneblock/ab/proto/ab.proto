@@ -41,6 +41,7 @@ message SetupDynDnsResponse {
 	long id;
 	string dyndnsUser;
 	string dyndnsPassword;
+	string dyndnsDomain;
 }
 
 /** Checks, whether a DynDNS request has been received. */

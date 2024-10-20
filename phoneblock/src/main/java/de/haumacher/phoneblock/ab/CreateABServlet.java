@@ -45,6 +45,8 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBCallInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.dns.DnsServer;
+import de.haumacher.phoneblock.dns.DnsService;
 
 /**
  * Servlet creating an answerbot.
@@ -210,6 +212,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		}
 		sendResult(resp, SetupDynDnsResponse.create()
 			.setId(botId)
+			.setDyndnsDomain(dynDnsUser + "." + DnsServer.DOMAIN_NAME)
 			.setDyndnsUser(dynDnsUser)
 			.setDyndnsPassword(dynDnsPassword));
 

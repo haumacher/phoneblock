@@ -56,6 +56,8 @@ import de.haumacher.phoneblock.db.settings.AnswerBotDynDns;
  */
 public class DnsServer implements Runnable {
 	
+	public static final String DOMAIN_NAME = "mybox.name";
+	
 	public static final int FLAG_DNSSECOK = 1;
 	public static final int FLAG_SIGONLY = 2;
 
@@ -83,7 +85,7 @@ public class DnsServer implements Runnable {
 		_serverSocket = new ServerSocket(port, 128, bindAddr);
 		_udpHandler = new UdpHandler(_executor, this, bindAddr, port);
 		
-		_origin = Name.fromString("mybox.name.");
+		_origin = Name.fromString(DOMAIN_NAME + ".");
 		
 		_dclass = DClass.IN;
 		_ttl = 600;
