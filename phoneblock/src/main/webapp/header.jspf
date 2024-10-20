@@ -1,3 +1,4 @@
+<%@page import="org.pac4j.core.util.Pac4jConstants"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
@@ -110,7 +111,7 @@
 						<strong>Settings</strong>
 					</a>
 					
-					<a class="button is-light" href="<%=request.getContextPath() %>/logout">
+					<a class="button is-light" href="<%=request.getContextPath() %>/logout?<%= Pac4jConstants.URL %>=<%=request.getRequestURI()%>">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>
