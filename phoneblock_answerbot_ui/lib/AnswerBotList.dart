@@ -211,7 +211,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   }
 
   void login(BuildContext context) {
-    launchUrl(Uri.parse("$basePath/login"));
+    launchUrl(Uri.parse("$basePath/login?locationAfterLogin=/ab/"));
   }
 
   bool setupComplete(AnswerbotInfo bot) => isSet(bot.host) || isSet(bot.ip4) || isSet(bot.ip6);

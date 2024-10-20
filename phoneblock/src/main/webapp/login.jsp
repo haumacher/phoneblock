@@ -45,7 +45,9 @@
 	%>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a></p>
+		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%><%=LoginServlet.locationParam(request)%>">
+			<i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a>
+		</p>
 	</nav>
 	
 	<nav class="panel">

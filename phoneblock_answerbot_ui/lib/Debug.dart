@@ -8,6 +8,7 @@ final String authHeader = 'Basic ${base64Encode(utf8.encode('$username:$password
 const bool debugUser = false;
 const bool debugBase = false;
 
+String contextPath = getContextPath();
 String basePath = getBasePath();
 
 String getBasePath() {
@@ -18,9 +19,7 @@ String getBasePath() {
 
   String protocol = window.location.protocol;
   String host = window.location.host;
-  String contextPath = getContextPath();
-  String base = "$protocol//$host$contextPath";
-  return base;
+  return "$protocol//$host$contextPath";
 }
 
 String getContextPath() {

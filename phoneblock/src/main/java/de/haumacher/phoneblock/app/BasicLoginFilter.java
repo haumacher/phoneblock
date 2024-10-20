@@ -25,8 +25,6 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebFilter(urlPatterns = {
 	CardDavServlet.URL_PATTERN,
 	CallReportServlet.URL_PATTERN,
-	CreateABServlet.PATH,
-	ListABServlet.PATH,
 })
 public class BasicLoginFilter extends LoginFilter {
 
