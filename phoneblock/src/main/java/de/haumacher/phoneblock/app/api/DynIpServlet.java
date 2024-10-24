@@ -87,9 +87,9 @@ public class DynIpServlet extends HttpServlet {
 				if (dnsServer != null) {
 					dnsServer.load(update);
 				}
-				LOG.info("Updated IP address for: " + user);
+				LOG.info("Updated IP address for '" + user + "': " + update.getIpv4() + "/" + update.getIpv6());
 			} else {
-				LOG.info("IP address of user unchanged: " + user);
+				LOG.info("IP address of user unchanged: " + user + "': " + update.getIpv4() + "/" + update.getIpv6());
 			}
 			
 			if (update.getIpv4().isEmpty() && update.getIpv6().isEmpty()) {
