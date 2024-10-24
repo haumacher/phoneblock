@@ -56,7 +56,7 @@ import de.haumacher.phoneblock.db.settings.AnswerBotDynDns;
  */
 public class DnsServer implements Runnable {
 	
-	public static final String DOMAIN_NAME = "mybox.name";
+	public static final String DOMAIN_NAME = "box.phoneblock.net";
 	
 	public static final int FLAG_DNSSECOK = 1;
 	public static final int FLAG_SIGONLY = 2;
@@ -94,7 +94,7 @@ public class DnsServer implements Runnable {
 		// SOA original record from DNS Console:
 		// 
 		// ns1.your-server.de. postmaster.your-server.de. 2024102012 86400 10800 3600000 3600
-		Name admin = Name.fromString("postmaster.your-server.de.");
+		Name admin = Name.fromString("haui.haumacher.de.");
 		long serial = 2024102012;
 		long refresh = 86400;
 		long retry = 10800;
@@ -258,8 +258,8 @@ public class DnsServer implements Runnable {
 			return errorMessage(query, rcode);
 		}
 
-		LOG.info("DNS query for '" + name + "': " + Rcode.string(rcode));
-
+		LOG.info("DNS query '" + queryRecord.getName() + " " + Type.string(queryRecord.getType()) + "' for '" + name + "': " + Rcode.string(rcode) + "\n" + response);
+		
 		return response;
 	}
 	
