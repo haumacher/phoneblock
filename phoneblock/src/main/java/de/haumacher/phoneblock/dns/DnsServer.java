@@ -344,7 +344,8 @@ public class DnsServer implements Runnable {
 		}
 		if ((flags & FLAG_SIGONLY) == 0) {
 			for (Record r : rrset.rrs()) {
-				if (r.getName().isWild() && !name.isWild()) {
+				if (!name.isWild()) {
+					// Answer must use same case as query, therefore use name from query..
 					r = r.withName(name);
 				}
 				response.addRecord(r, section);
@@ -352,7 +353,8 @@ public class DnsServer implements Runnable {
 		}
 		if ((flags & (FLAG_SIGONLY | FLAG_DNSSECOK)) != 0) {
 			for  (Record r : rrset.sigs()) {
-				if (r.getName().isWild() && !name.isWild()) {
+				if (!name.isWild()) {
+					// Answer must use same case as query, therefore use name from query..
 					r = r.withName(name);
 				}
 				response.addRecord(r, section);
