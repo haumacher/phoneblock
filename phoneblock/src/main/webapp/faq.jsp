@@ -73,7 +73,7 @@
 			PhoneBlock-Anrufbeantworter meldest Du wie ein Internettelefon an Deine Fritz!Box an und er geht immer ran,
 			wenn eine SPAM-Nummer anruft, so schnell, dass dein Telefon nicht oder nur ganz kurz klingelt.
 			Aktuell ist der PhoneBlock-Anrufbeantworter erst auf einem Test-System verfügbar, das eine separate Anmeldung
-			erfordert: <a href="https://phoneblock.net/pb-test/anrufbeantworter/">Zum Anrufbeantworter-Testsystem</a>. Wenn Du 
+			erfordert: <a href="<%=request.getContextPath()%>/anrufbeantworter/">Zum Anrufbeantworter-Testsystem</a>. Wenn Du 
 			Den Anrufbeantworter erfolgreich installieren konntest - oder Probleme dabei hattest, gibt bitte eine Rückmeldung,
 			damit das neue Werkzeug möglichst bald allgemein verfügbar wird.
 		</li>
@@ -240,14 +240,31 @@
 
 		<h2>Ich habe einen Wunsch, was PhoneBlock unbedingt können sollte, wo kann ich den äußern?</h2>
 		<p>
-			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="<%=request.getContextPath()%>/link/issues" target="_blank">PhoneBlock Projekt-Seite</a> 
+			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="<%=request.getContextPath()%>/link/issues">PhoneBlock Projekt-Seite</a> 
 			ein Ticket öffnen und den Wunsch beschreiben. Gerne kannst Du den Vorschlag aber auch mit mir per E-Mail 
 			diskutieren: <code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
+		</p>
+		
+		<h2>Wie kann ich PhoneBlock wieder deinstallieren?</h2>
+		<p>
+			Du benötigst PhoneBlock nicht mehr, oder bist nicht damit zufrieden? Schade, vielleicht kannst Du ja 
+			<a target="_blank" href="<%=request.getContextPath()%>/link/issues">einen Verbesserungsvorschlag machen</a>?
+		</p>
+		
+		<p>
+			Zum Deinstallieren gehst Du genau wie bei der Installation nur rückwärts vor. Je nachdem wie Du PhoneBlock installiert hast 
+			(als <a href="<%=request.getContextPath()%>/setup.jsp">Telefonbuch</a> oder als 
+			<a href="<%=request.getContextPath()%>/anrufbeantworter/">Anrufbeantworter</a>, oder beides), must Du die entsprechenden 
+			Einstellungen wieder löschen. Beim Telefonbuch: Die Rufsperre (oder die Rufumleitung) löschen, welche sich auf alle Anrufe 
+			aus dem PhoneBlock-Telefonbuch bezieht. Anschließend kannst Du das PhoneBlock-Telefonbuch löschen. Beim Anrufbeantworter: 
+			Das Telefoniegerät "PhoneBlock" löschen und anschließend die DynIP-Freigabe deaktivieren (wenn Du nicht einen separaten 
+			DynIP-Dienst verwendet hast). Anschließend solltest Du noch Deinen PhoneBlock-Account in den 
+			<a href="<%= request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> löschen.
 		</p>
 
 		<h2>Meine Frage wird hier nicht beantwortet, wer hilft?</h2>
 		<p>
-			Schreib doch einen Kommentar auf auf der <a target="_blank" href="<%=request.getContextPath()%>/link/facebook" target="_blank">Facebook-Seite von PhoneBlock</a>, 
+			Schreib doch einen Kommentar auf auf der <a target="_blank" href="<%=request.getContextPath()%>/link/facebook">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
 			Gerne kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
