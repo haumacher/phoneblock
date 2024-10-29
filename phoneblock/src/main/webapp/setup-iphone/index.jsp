@@ -37,7 +37,7 @@
 		
    		<ol>
    		<li><a href="<%=request.getContextPath() %>/signup.jsp">Melde Dich bei PhoneBlock an.</a></li>
-   		<li>Öffne "Einstellungen" - "Passwörter & Accounts". </li>
+   		<li>Öffne "Einstellungen" > "Kontakte" > "Accounts". </li>
    		<li>Tippe auf "Account hinzufügen" - "Andere" > "CardDAV-Account hinzufügen".</li>
    		<li>Gib deine Zugangsdaten ein und tippe auf "Weiter".
    			<dl>
