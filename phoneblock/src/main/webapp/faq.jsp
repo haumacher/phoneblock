@@ -132,6 +132,12 @@
 				kopiert hast. Stelle sicher, dass sich keine Leerzeichen um Anfang oder am Ende von Nutzernamen 
 				und Passwort befinden.</li>
 		</ol>
+		
+		<p>
+			Bitte beachte: Wenn Du das Passwort für Deinen PhoneBlock-Zugang änderst, dann reicht es nicht, in den 
+			Telefonbucheinstellungen das neue Passwort zu setzen. Die Fritz!Box scheint hier ein Problem bei der 
+			Aktualisierung von Zugangsdaten zu haben. Lösche stattdessen das Telefonbuch und richte es erneut ein.
+		</p>
 
 		<h2 id="disposable-mail">Warum kann ich mich nicht mit einer Wegwerf-E-Mail-Adresse registrieren?</h2>
 		<p>
