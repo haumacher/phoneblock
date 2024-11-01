@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.ab;
 
+import java.util.Objects;
+
 import org.mjsip.sip.provider.SipProvider;
 import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationClientListener;
@@ -23,6 +25,7 @@ public class Registration extends RegistrationClient {
 	/** 
 	 * Creates a {@link Registration}.
 	 * @param temporary 
+	 * @param updated 
 	 */
 	public Registration(SipProvider sipProvider, AnswerBotSip bot, CustomerOptions customer, RegistrationClientListener sipService, boolean temporary) {
 		super(sipProvider, customer, sipService);
@@ -54,12 +57,49 @@ public class Registration extends RegistrationClient {
 		return _failures;
 	}
 	
-	public void incFailures() {
+	public boolean recordFailure(long now) {
+		boolean updated = !hasFailure();
+		if (updated) {
+			setUpdate(now);
+		}
+		_bot.setRegistered(false);
 		_failures++;
+		return updated;
 	}
 	
-	public void resetFailures() {
+	public boolean hasFailure() {
+		return _failures > 0;
+	}
+
+	public boolean recordSuccess(long now) {
+		boolean updated = !isRegistered();
+		if (updated) {
+			setUpdate(now);
+		}
+		_bot.setRegistered(true);
 		_failures = 0;
+		return updated;
+	}
+	
+	/**
+	 * The time, when the current state was reached first.
+	 * 
+	 * @see #hasFailure()
+	 * @see #isRegistered()
+	 */
+	public long getLastUpdate() {
+		return _bot.getUpdated();
+	}
+	
+	/**
+	 * Marks the registration as updated now.
+	 */
+	public void setUpdate(long update) {
+		_bot.setUpdated(update);
+	}
+	
+	public boolean isRegistered() {
+		return _bot.isRegistered();
 	}
 
 	/**
@@ -67,6 +107,17 @@ public class Registration extends RegistrationClient {
 	 */
 	public long getId() {
 		return _bot.getId();
+	}
+
+	/**
+	 * Updates the registration message.
+	 * 
+	 * @return Whether the message has changed.
+	 */
+	public boolean updateMessage(String message) {
+		String oldMessage = _bot.getRegisterMessage();
+		_bot.setRegisterMessage(message);
+		return !Objects.equals(message, oldMessage);
 	}
 	
 }

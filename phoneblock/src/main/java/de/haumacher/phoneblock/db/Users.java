@@ -128,10 +128,10 @@ public interface Users {
 	@Update("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where ABID=#{abId}")
 	void updateDynDns(long abId, String ip4, String ip6, long updated);
 	
-	@Select("select s.ID, s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
+	@Select("select s.ID, s.USERID, s.UPDATED, s.REGISTERED, s.REGISTER_MSG, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.ENABLED = true and (s.UPDATED > #{since} or d.UPDATED > #{since})")
-	List<DBAnswerBotSip> getEnabledAnswerBots(long since);
+			"where s.ENABLED = true")
+	List<DBAnswerBotSip> getEnabledAnswerBots();
 
 	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, REGISTERED=false, REGISTER_MSG=NULL where ID=#{id}")
 	void enableAnswerBot(long id, boolean enabled, long updated);
@@ -139,7 +139,7 @@ public interface Users {
 	@Select("select s.ID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
 	long getAnswerBotId(String sipUser);
 
-	@Select("select s.ID, s.USERID, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
+	@Select("select s.ID, s.USERID, s.UPDATED, s.REGISTERED, s.REGISTER_MSG, s.HOST, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
 			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
 			"where s.USERNAME = #{userName}")
 	DBAnswerBotSip getAnswerBotBySipUser(String userName);
@@ -154,8 +154,8 @@ public interface Users {
 			"where s.ID= #{id}")
 	DBAnswerbotInfo getAnswerBot(long id);
 	
-	@Update("update ANSWERBOT_SIP set REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id} and ((REGISTER_MSG is null) or (not (REGISTER_MSG=#{message})) or (not (REGISTERED=#{registered})))")
-	int updateSipRegistration(long id, boolean registered, String message);
+	@Update("update ANSWERBOT_SIP set UPDATED=#{updated}, REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id}")
+	int updateSipRegistration(long id, boolean registered, String message, long updated);
 
 	@Delete("delete from ANSWERBOT_DYNDNS where ABID=#{abId}")
 	int answerbotDeleteDynDns(long abId);

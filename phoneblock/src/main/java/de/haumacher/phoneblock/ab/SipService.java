@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.ab;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +18,6 @@ import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
 
 import org.apache.ibatis.session.SqlSession;
 import org.kohsuke.args4j.ClassParser;
@@ -58,6 +55,8 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Service managing a SIP stack.
@@ -68,6 +67,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 	private static final Logger LOG = LoggerFactory.getLogger(SipService.class);
 
+	private static final long UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
+
 	private SchedulerService _scheduler;
 	private DBService _dbService;
 	
@@ -77,8 +78,6 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	
 	private final ConcurrentHashMap<String, Registration> _clients = new ConcurrentHashMap<>();
 
-	private long _lastRegister;
-	
 	private static SipService _instance;
 
 	private String _fileName;
@@ -188,7 +187,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		_instance = this;
 		
-		_scheduler.executor().scheduleAtFixedRate(this::registerBots, 10, 5 * 60, TimeUnit.SECONDS);
+		_scheduler.executor().schedule(this::registerBots, 10, TimeUnit.SECONDS);
 	}
 
 	private void resolveViaAddress(SipConfig sipConfig) {
@@ -274,16 +273,13 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	private void registerBots() {
 		resolveViaAddress((SipConfig) _sipProvider.sipConfig());
 		
-		long since = _lastRegister;
-		_lastRegister = System.currentTimeMillis();
-		
 		DB db = _dbService.db();
 		
 		List<? extends AnswerBotSip> bots;
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			bots = users.getEnabledAnswerBots(since);
+			bots = users.getEnabledAnswerBots();
 		}
 		
 		List<AnswerBotSip> failed = new ArrayList<>();
@@ -299,9 +295,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			try (SqlSession session = db.openSession()) {
 				Users users = session.getMapper(Users.class);
 			
+				long now = System.currentTimeMillis();
 				for (AnswerBotSip bot : failed) {
 					LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
-					users.enableAnswerBot(bot.getId(), false, _lastRegister);
+					users.enableAnswerBot(bot.getId(), false, now);
 				}
 
 				session.commit();
@@ -510,25 +507,18 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			
 			registration.setPermanent();
 		}
-		registration.resetFailures();
 
-		updateRegistration(id, true, result);
-
-		LOG.info("Sucessfully registered " + client.getUsername() + ": " + result);
+		updateRegistration(registration, true, result);
 	}
 
 	@Override
 	public void onRegistrationFailure(RegistrationClient client, NameAddress target, NameAddress contact,
 			String result) {
 		Registration registration = (Registration) client;
-		long id = registration.getId();
 
-		registration.incFailures();
-		int failures = registration.getFailures();
-
-		LOG.warn("Failed to register '" + client.getUsername() + "' (" + failures + " failures): " + result);
-		updateRegistration(id, false, result);
+		updateRegistration(registration, false, result);
 		
+		int failures = registration.getFailures();
 		boolean temporary = registration.isTemporary();
 		if (temporary || failures > _config.maxFailures) {
 			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
@@ -552,12 +542,32 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		}
 	}
 
-	private void updateRegistration(long id, boolean registered, String result) {
-		try (SqlSession session = _dbService.db().openSession()) {
-			Users users = session.getMapper(Users.class);
-			
-			int cnt = users.updateSipRegistration(id, registered, result);
-			if (cnt > 0) {
+	private void updateRegistration(Registration registration, boolean registered, String message) {
+		long now = System.currentTimeMillis();
+		
+		boolean updateDB;
+		if (registered) {
+			updateDB = registration.recordSuccess(now);
+			LOG.info((updateDB ? "Sucessfully registered " : "Updated registration ") + registration.getUsername() + ": " + message);
+		} else {
+			updateDB = registration.recordFailure(now);
+			LOG.warn((updateDB ? "Failed to register " : "Still failing to register ") + registration.getUsername() + " (" + registration.getFailures() + " failures): " + message);
+		}
+		
+		updateDB = registration.updateMessage(message) | updateDB;
+		
+		if (!updateDB) {
+			if ((now - registration.getLastUpdate()) > UPDATE_INTERVAL) {
+				registration.setUpdate(now);
+				updateDB = true;
+			}
+		}
+		
+		if (updateDB) {
+			try (SqlSession session = _dbService.db().openSession()) {
+				Users users = session.getMapper(Users.class);
+				
+				users.updateSipRegistration(registration.getId(), registered, message, now);
 				session.commit();
 			}
 		}

@@ -82,14 +82,11 @@ message AnswerBotSip extends AnswerBotSetting {
     /** The password used for SIP registration at the user's box. */	
 	string passwd;
 
-	/** Whether this answer bot is currently registered sucessfully. */
+	/** Whether this answer bot is currently registered successfully. */
 	bool registered;
 	
-	/** Whether the last registration process finished. */
-	long lastRegister;
-	
-	/** An error message transmitted during the last registration process. */
-	string registerError;
+	/** The last message transmitted while registering. */
+	string registerMessage;
 	
     /** The number of calls accepted by this answer bot. */	
 	int callsAccepted;
