@@ -133,8 +133,15 @@ public interface Users {
 			"where s.ENABLED = true")
 	List<DBAnswerBotSip> getEnabledAnswerBots();
 
-	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, REGISTERED=false, REGISTER_MSG=NULL where ID=#{id}")
-	void enableAnswerBot(long id, boolean enabled, long updated);
+	/**
+	 * Marks the answerbot with the given ID as either enabled or disabled.
+	 * 
+	 * @param id The ID of the answerbot to update. 
+	 * @param enabled Whether to enable the answerbot.
+	 * @param updated The time of the change.
+	 */
+	@Update("update ANSWERBOT_SIP set ENABLED=#{enabled}, UPDATED=#{updated}, LAST_SUCCESS=0, REGISTERED=false, REGISTER_MSG=NULL where ID=#{id}")
+	void switchAnswerBotState(long id, boolean enabled, long updated);
 	
 	@Select("select s.ID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
 	long getAnswerBotId(String sipUser);

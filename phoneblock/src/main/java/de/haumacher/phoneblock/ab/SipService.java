@@ -288,7 +288,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		List<AnswerBotSip> failed = new ArrayList<>();
 		for (AnswerBotSip bot : bots) {
 			try {
-				register(bot, false);
+				register(bot);
 			} catch (UnknownHostException e) {
 				failed.add(bot);
 			}
@@ -301,7 +301,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				long now = System.currentTimeMillis();
 				for (AnswerBotSip bot : failed) {
 					LOG.warn("Disabling answer bot without host address: " + bot.getUserId() + "/" + bot.getUserName());
-					users.enableAnswerBot(bot.getId(), false, now);
+					users.switchAnswerBotState(bot.getId(), false, now);
 				}
 
 				session.commit();
@@ -404,21 +404,21 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	}
 	
 	public void enableAnwserBot(String userName) throws UnknownHostException {
-		enableAnwserBot(userName, false);
-	}
-	
-	public void enableAnwserBot(String userName, boolean temporary) throws UnknownHostException {
+		DBAnswerBotSip bot;
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
-			DBAnswerBotSip bot = users.getAnswerBotBySipUser(userName);
+			bot = users.getAnswerBotBySipUser(userName);
 			if (bot == null) {
 				LOG.warn("User with ID '" + userName + "' not found.");
 				return;
 			}
 			
-			register(bot, temporary);
+			users.switchAnswerBotState(bot.getId(), true, System.currentTimeMillis());
+			tx.commit();
 		}
+		
+		register(bot);
 	}
 
 	public void disableAnwserBot(String userName) {
@@ -431,7 +431,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				return;
 			}
 			
-			users.enableAnswerBot(bot.getId(), false, System.currentTimeMillis());
+			users.switchAnswerBotState(bot.getId(), false, System.currentTimeMillis());
 			tx.commit();
 		}
 		
@@ -455,8 +455,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	 * @param temporary Whether the bot is first activated and should only be
 	 *                  permanently activated, if the first registration succeeds.
 	 */
-	public void register(AnswerBotSip bot, boolean temporary) throws UnknownHostException {
-		register(bot, toCustomerConfig(bot), temporary);
+	public void register(AnswerBotSip bot) throws UnknownHostException {
+		register(bot, toCustomerConfig(bot));
 	}
 
 	private CustomerConfig toCustomerConfig(AnswerBotSip bot) throws UnknownHostException {
@@ -469,9 +469,9 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		return regConfig;
 	}
 
-	private void register(AnswerBotSip bot, CustomerOptions customerConfig, boolean temporary) {
+	private void register(AnswerBotSip bot, CustomerOptions customerConfig) {
 		try {
-			Registration client = new Registration(_sipProvider, bot, customerConfig, this, temporary);
+			Registration client = new Registration(_sipProvider, bot, customerConfig, this);
 			Registration clash = _clients.put(bot.getUserName(), client);
 			
 			if (clash != null) {
@@ -496,20 +496,6 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	public void onRegistrationSuccess(RegistrationClient client, NameAddress target, NameAddress contact, int expires,
 			int renewTime, String result) {
 		Registration registration = (Registration) client;
-		long id = registration.getId();
-		
-		if (registration.isTemporary()) {
-			// Bot was only started temporarily, now enable permanently.
-			
-			try (SqlSession session = _dbService.db().openSession()) {
-				Users users = session.getMapper(Users.class);
-				
-				users.enableAnswerBot(id, true, System.currentTimeMillis());
-				session.commit();
-			}
-			
-			registration.setPermanent();
-		}
 
 		updateRegistration(registration, true, result);
 	}
@@ -521,8 +507,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 		updateRegistration(registration, false, result);
 		
-		boolean temporary = registration.isTemporary();
-		if (temporary || (System.currentTimeMillis() - registration.getLastSuccess()) > _config.disableTimeout) {
+		if ((System.currentTimeMillis() - registration.getLastSuccess()) > _config.disableTimeout) {
+			boolean temporary = registration.getLastSuccess() == 0;
 			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
 			disableAnwserBot(registration.getUsername());
 		} else {
@@ -535,7 +521,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				if (!host.equals(newHost)) {
 					// Create new registration due to host name change.
 					LOG.info("Updating registration '" + client.getUsername() + "' due to address change: " + host + " -> " + newHost);
-					register(bot, update, registration.isTemporary());
+					register(bot, update);
 				}
 			} catch (UnknownHostException ex) {
 				LOG.warn("Stopping registration due to failed hostname resolution: " + client.getUsername());

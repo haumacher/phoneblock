@@ -282,7 +282,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			SipService sipService = SipService.getInstance();
 			String userName = bot.getUserName();
 			sipService.disableAnwserBot(userName);
-			sipService.enableAnwserBot(userName, true);
+			sipService.enableAnwserBot(userName);
 		}
 		
 		sendOk(resp);
