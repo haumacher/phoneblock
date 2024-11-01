@@ -7,7 +7,7 @@ import org.kohsuke.args4j.Option;
  */
 public class SipServiceConfig {
 	
-	@Option(name = "--max-failures", usage = "Maximum number of consecutive registration failures before an answerbot is disabled.")
-	public int maxFailures = 100;
+	@Option(name = "--disable-timeout", usage = "Time in milliseconds after which a registered bot gets automatically disabled, if no more registration is possible.")
+	public long disableTimeout = 3 * 24 * 60 * 60 * 1000L;
 
 }

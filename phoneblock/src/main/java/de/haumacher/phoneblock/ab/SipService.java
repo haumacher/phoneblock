@@ -67,7 +67,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 	private static final Logger LOG = LoggerFactory.getLogger(SipService.class);
 
-	private static final long UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
+	/**
+	 * Interval in milliseconds a successful registration is stored to the DB.
+	 */
+	static final long UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
 
 	private SchedulerService _scheduler;
 	private DBService _dbService;
@@ -430,9 +433,9 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			
 			users.enableAnswerBot(bot.getId(), false, System.currentTimeMillis());
 			tx.commit();
-			
-			stop(userName);
 		}
+		
+		stop(userName);
 	}
 
 	private void stop(String userName) {
@@ -518,11 +521,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 		updateRegistration(registration, false, result);
 		
-		int failures = registration.getFailures();
 		boolean temporary = registration.isTemporary();
-		if (temporary || failures > _config.maxFailures) {
+		if (temporary || (System.currentTimeMillis() - registration.getLastSuccess()) > _config.disableTimeout) {
 			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
-			stop(registration.getUsername());
+			disableAnwserBot(registration.getUsername());
 		} else {
 			AnswerBotSip bot = registration.getBot();
 			try {
@@ -537,7 +539,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				}
 			} catch (UnknownHostException ex) {
 				LOG.warn("Stopping registration due to failed hostname resolution: " + client.getUsername());
-				stop(registration.getUsername());
+				disableAnwserBot(registration.getUsername());
 			}
 		}
 	}
@@ -550,24 +552,17 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			updateDB = registration.recordSuccess(now);
 			LOG.info((updateDB ? "Sucessfully registered " : "Updated registration ") + registration.getUsername() + ": " + message);
 		} else {
-			updateDB = registration.recordFailure(now);
+			updateDB = registration.recordFailure();
 			LOG.warn((updateDB ? "Failed to register " : "Still failing to register ") + registration.getUsername() + " (" + registration.getFailures() + " failures): " + message);
 		}
 		
 		updateDB = registration.updateMessage(message) | updateDB;
 		
-		if (!updateDB) {
-			if ((now - registration.getLastUpdate()) > UPDATE_INTERVAL) {
-				registration.setUpdate(now);
-				updateDB = true;
-			}
-		}
-		
 		if (updateDB) {
 			try (SqlSession session = _dbService.db().openSession()) {
 				Users users = session.getMapper(Users.class);
 				
-				users.updateSipRegistration(registration.getId(), registered, message, now);
+				users.updateSipRegistration(registration.getId(), registered, message, registration.getLastSuccess());
 				session.commit();
 			}
 		}

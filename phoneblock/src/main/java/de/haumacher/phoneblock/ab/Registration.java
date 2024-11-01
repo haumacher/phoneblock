@@ -57,11 +57,8 @@ public class Registration extends RegistrationClient {
 		return _failures;
 	}
 	
-	public boolean recordFailure(long now) {
+	public boolean recordFailure() {
 		boolean updated = !hasFailure();
-		if (updated) {
-			setUpdate(now);
-		}
 		_bot.setRegistered(false);
 		_failures++;
 		return updated;
@@ -73,8 +70,13 @@ public class Registration extends RegistrationClient {
 
 	public boolean recordSuccess(long now) {
 		boolean updated = !isRegistered();
+		
+		if ((now - getLastSuccess()) > SipService.UPDATE_INTERVAL) {
+			updated = true;
+		}
+		
 		if (updated) {
-			setUpdate(now);
+			setLastSuccess(now);
 		}
 		_bot.setRegistered(true);
 		_failures = 0;
@@ -92,10 +94,10 @@ public class Registration extends RegistrationClient {
 	}
 	
 	/**
-	 * Marks the registration as updated now.
+	 * Marks a successful registration as updated now.
 	 */
-	public void setUpdate(long update) {
-		_bot.setUpdated(update);
+	public void setLastSuccess(long update) {
+		_bot.setLastSuccess(update);
 	}
 	
 	public boolean isRegistered() {
@@ -118,6 +120,10 @@ public class Registration extends RegistrationClient {
 		String oldMessage = _bot.getRegisterMessage();
 		_bot.setRegisterMessage(message);
 		return !Objects.equals(message, oldMessage);
+	}
+
+	public long getLastSuccess() {
+		return _bot.getLastSuccess();
 	}
 	
 }

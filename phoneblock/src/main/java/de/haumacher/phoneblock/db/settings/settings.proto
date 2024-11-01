@@ -88,6 +88,9 @@ message AnswerBotSip extends AnswerBotSetting {
 	/** The last message transmitted while registering. */
 	string registerMessage;
 	
+	/** Time of the last successful registration. */
+	long lastSuccess;
+	
     /** The number of calls accepted by this answer bot. */	
 	int callsAccepted;
 }

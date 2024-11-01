@@ -39,6 +39,9 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #getRegisterMessage() */
 	public static final String REGISTER_MESSAGE__PROP = "registerMessage";
 
+	/** @see #getLastSuccess() */
+	public static final String LAST_SUCCESS__PROP = "lastSuccess";
+
 	/** @see #getCallsAccepted() */
 	public static final String CALLS_ACCEPTED__PROP = "callsAccepted";
 
@@ -72,8 +75,11 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #getRegisterMessage()} in binary format. */
 	static final int REGISTER_MESSAGE__ID = 13;
 
+	/** Identifier for the property {@link #getLastSuccess()} in binary format. */
+	static final int LAST_SUCCESS__ID = 14;
+
 	/** Identifier for the property {@link #getCallsAccepted()} in binary format. */
-	static final int CALLS_ACCEPTED__ID = 14;
+	static final int CALLS_ACCEPTED__ID = 15;
 
 	private String _host = "";
 
@@ -92,6 +98,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	private boolean _registered = false;
 
 	private String _registerMessage = "";
+
+	private long _lastSuccess = 0L;
 
 	private int _callsAccepted = 0;
 
@@ -299,6 +307,27 @@ public class AnswerBotSip extends AnswerBotSetting {
 	}
 
 	/**
+	 * Time of the last successful registration.
+	 */
+	public final long getLastSuccess() {
+		return _lastSuccess;
+	}
+
+	/**
+	 * @see #getLastSuccess()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setLastSuccess(long value) {
+		internalSetLastSuccess(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLastSuccess()} without chain call utility. */
+	protected final void internalSetLastSuccess(long value) {
+		_listener.beforeSet(this, LAST_SUCCESS__PROP, value);
+		_lastSuccess = value;
+	}
+
+	/**
 	 * The number of calls accepted by this answer bot.
 	 */
 	public final int getCallsAccepted() {
@@ -359,6 +388,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			PASSWD__PROP, 
 			REGISTERED__PROP, 
 			REGISTER_MESSAGE__PROP, 
+			LAST_SUCCESS__PROP, 
 			CALLS_ACCEPTED__PROP));
 
 	@Override
@@ -378,6 +408,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__PROP: return getPasswd();
 			case REGISTERED__PROP: return isRegistered();
 			case REGISTER_MESSAGE__PROP: return getRegisterMessage();
+			case LAST_SUCCESS__PROP: return getLastSuccess();
 			case CALLS_ACCEPTED__PROP: return getCallsAccepted();
 			default: return super.get(field);
 		}
@@ -395,6 +426,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__PROP: internalSetPasswd((String) value); break;
 			case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 			case REGISTER_MESSAGE__PROP: internalSetRegisterMessage((String) value); break;
+			case LAST_SUCCESS__PROP: internalSetLastSuccess((long) value); break;
 			case CALLS_ACCEPTED__PROP: internalSetCallsAccepted((int) value); break;
 			default: super.set(field, value); break;
 		}
@@ -428,6 +460,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__PROP);
 		out.value(getRegisterMessage());
+		out.name(LAST_SUCCESS__PROP);
+		out.value(getLastSuccess());
 		out.name(CALLS_ACCEPTED__PROP);
 		out.value(getCallsAccepted());
 	}
@@ -444,6 +478,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__PROP: setPasswd(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__PROP: setRegisterMessage(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LAST_SUCCESS__PROP: setLastSuccess(in.nextLong()); break;
 			case CALLS_ACCEPTED__PROP: setCallsAccepted(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
@@ -475,6 +510,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__ID);
 		out.value(getRegisterMessage());
+		out.name(LAST_SUCCESS__ID);
+		out.value(getLastSuccess());
 		out.name(CALLS_ACCEPTED__ID);
 		out.value(getCallsAccepted());
 	}
@@ -506,6 +543,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__ID: setPasswd(in.nextString()); break;
 			case REGISTERED__ID: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__ID: setRegisterMessage(in.nextString()); break;
+			case LAST_SUCCESS__ID: setLastSuccess(in.nextLong()); break;
 			case CALLS_ACCEPTED__ID: setCallsAccepted(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
