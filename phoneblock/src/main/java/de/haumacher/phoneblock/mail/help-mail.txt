@@ -19,8 +19,10 @@ Viele Grüße
 Bernhard Haumacher 
 
 --
-Kontakt: {mail}
 Homepage: {home}
+Spende: {support}
 Einstellungen: {settings}
+Anrufbeantworter: {app}
 Videoanleitung: {help}
 Facebook: {facebook}
+Kontakt: {mail}

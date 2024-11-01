@@ -58,6 +58,9 @@ public interface Users {
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
 	
+	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where ID=#{userId}")
+	DBUserSettings getSettingsById(long userId);
+	
 	@Select("select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS from USERS u "
 			+ "where u.LASTACCESS < #{lastAccessBefore} "
 			+ "and (u.LASTACCESS > #{accessAfter} "

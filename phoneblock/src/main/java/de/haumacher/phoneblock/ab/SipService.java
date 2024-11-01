@@ -52,8 +52,11 @@ import de.haumacher.phoneblock.answerbot.CustomerOptions;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
+import de.haumacher.phoneblock.mail.MailService;
+import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -99,12 +102,15 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	 */
 	private String _viaV6;
 
+	private MailServiceStarter _mailService;
+
 	/** 
 	 * Creates a {@link SipService}.
 	 */
-	public SipService(SchedulerService scheduler, DBService dbService) {
+	public SipService(SchedulerService scheduler, DBService dbService, MailServiceStarter mailService) {
 		_scheduler = scheduler;
 		_dbService = dbService;
+		_mailService = mailService;
 	}
 	
 	@Override
@@ -511,6 +517,17 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			boolean temporary = registration.getLastSuccess() == 0;
 			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
 			disableAnwserBot(registration.getUsername());
+			
+			if (!temporary) {
+				DBUserSettings userSettings;
+				try (SqlSession session = _dbService.db().openSession()) {
+					Users users = session.getMapper(Users.class);
+					userSettings = users.getSettingsById(registration.getBot().getUserId());
+				}
+				
+				MailService mailService = _mailService.getMailService();
+				mailService.sendDiableMail(userSettings, registration.getBot());
+			}
 		} else {
 			AnswerBotSip bot = registration.getBot();
 			try {

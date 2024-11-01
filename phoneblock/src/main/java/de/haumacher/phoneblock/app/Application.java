@@ -111,7 +111,7 @@ public class Application implements ServletContextListener {
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
 			gpt = new ChatGPTService(db, scheduler, indexer),
-			sip = new SipService(scheduler, db),
+			sip = new SipService(scheduler, db, mail),
 			new ManagementService(indexer, db, gpt, sip),
 			new AddressBookCache(),
 		};
