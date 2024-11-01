@@ -45,6 +45,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
@@ -1051,8 +1052,14 @@ public class DB {
 				// a support mail is not tried again, if the first attempt fails.
 				users.markNotified(user.getId());
 				session.commit();
-				
-				_mailService.sendHelpMail(user);
+
+				// Do not bother users who have answerbots with missing blocklist update. Those may not even 
+				// have a blocklist installed. This check must be reconsidered, if an explicit blocklist 
+				// account can be created.
+				List<DBAnswerbotInfo> answerBots = users.getAnswerBots(user.getId());
+				if (answerBots.size() == 0) {
+					_mailService.sendHelpMail(user);
+				} 
 			}
 		}
 	}
