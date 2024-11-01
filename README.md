@@ -4,21 +4,25 @@
 Der Spam-Filter für deine Fritz!Box - keine Kosten, keine Zusatzhardware
 
 * [PhoneBlock-Homepage](https://phoneblock.net/)
+* [Installation des PhoneBlock-Anrufbeantworters](https://phoneblock.net/phoneblock/anrufbeantworter/)
 * [Installation von PhoneBlock in der Fritz!Box](https://phoneblock.net/phoneblock/setup.jsp)
-* [Installation von PhoneBlock auf dem Mobiltelefon](https://phoneblock.net/phoneblock/setup-android/)
+* [Installation von PhoneBlock auf Android-Telefonen](https://phoneblock.net/phoneblock/setup-android/)
+* [Installation von PhoneBlock auf iPhones](https://phoneblock.net/phoneblock/setup-iphone/)
 * [Berichte über aktuelle Werbeanrufer](https://phoneblock.net/phoneblock/status.jsp)
 * [Fragen und Antworten zu PhoneBlock](https://phoneblock.net/phoneblock/faq.jsp)
 * [API für Entwickler](https://phoneblock.net/phoneblock/api/)
 
 ## Wie funktioniert PhoneBlock?
 
-PhoneBlock ist ein zentrales Adressbuch mit von der PhoneBlock-Community gepflegten Telefonnummern von Spam-Anrufern. Dieses Adressbuch wird in deinem Internet-Router "FRITZ!Box" als Sperrliste eingerichtet. Sobald eine Nummer zu dieser Sperrliste hinzugefügt wird, weist deine FRITZ!Box Anrufer mit dieser Nummer automatisch ab. Das Telefon bleibt stumm.
+PhoneBlock ist ein zentrales Adressbuch mit von der PhoneBlock-Community gepflegten Telefonnummern von Spam-Anrufern. Dieses Adressbuch kann entweder in deinem Internet-Router "FRITZ!Box" als Sperrliste eingerichtet werden, oder steuert den PhoneBlock-Anrufbeantworter. Sobald eine Nummer zu dieser Sperrliste hinzugefügt wird, weist entweder deine FRITZ!Box Anrufer mit dieser Nummer automatisch ab, oder der PhoneBlock-Anrufbeantworter geht ran. Das Telefon bleibt stumm.
 
 Solltest du trotzdem einen unerwünschten Anruf erhalten, weil die Nummer noch nicht in der Sperrliste ist, kannst du die Nummer ganz einfach in das PhoneBlock-Adressbuch deiner FRITZ!Box aufnehmen. Sobald du dies getan hast, aktualisiert deine FrizBox die Sperrliste und Anrufe von dieser neuen Nummer werden bei allen anderen Mitgliedern der PhoneBlock-Community sofort abgewiesen.
 
 ## Was sind die Voraussetzungen?
 
-PhoneBlock funktioniert mit einem "Festnetzanschluss" in Kombination mit einem Internet-Router "FRITZ!Box" von AVM. Es muss nicht das neueste Modell sein, aber du solltest überprüfen, ob das neueste FRITZ!OS darauf installiert ist (07.29 oder neuer). Sollte dies nicht der Fall sein, schau in der [Installationsanleitung](https://phoneblock.net/phoneblock/setup.jsp) nach, ob deine Version bereits die notwendigen Optionen bietet.
+PhoneBlock kann sowohl für einen "Festnetzanschluss" als auch auf dem Mobiltelefon verwendet werden. Bei der Installation fürs Festnetz kann entweder die Blockliste in den Internet-Router importiert werden (hierfür wird einen "FRITZ!Box" mit FRITZ!OS 07.29 oder neuer von AVM benötigt), oder es kann der FritzBox-Anrufbeantworter an dem Internet-Router angemeldet werden, der immer bei SPAM-Anrufen rangeht. 
+
+Beim Import der Blockliste direkt in den Router kann nur ein Teil der Blockliste verwendet werden, da es eine Größenbeschränkung für Telefonbücher in der FRITZ!Box gibt. Besser ist der FritzBox-Anrufbeantworter, weil dieser die gesamte Blockliste verwenden kann.
 
 Das Einzige, was du noch brauchst, ist ein PhoneBlock-Konto, mit dem du die Telefonsperrliste in deiner FRITZ!Box einrichten kannst.
 
@@ -27,21 +31,20 @@ Das Einzige, was du noch brauchst, ist ein PhoneBlock-Konto, mit dem du die Tele
 Nutze PhoneBlock live unter: https://phoneblock.net/ - keine Kosten, keine Zusatzhardware notwendig.
 
 
-
 # English Version
 The Spam-Filter for your Fritz!Box
 
 ## How does PhoneBlock work?
+PhoneBlock is a central address book with telephone numbers of spam callers maintained by the PhoneBlock community. This address book can either be set up in your Internet router “FRITZ!Box” as a blacklist, or it controls the PhoneBlock answering machine. As soon as a number is added to this blacklist, either your FRITZ!Box automatically rejects callers with this number or the PhoneBlock answering machine picks up. The phone remains silent.
 
-PhoneBlock is a central address book with phone numbers of spam callers maintained by the PhoneBlock community. This address book is set up in your Internet router "FRITZ!Box" as a block list. As soon as a number is added to this block list, your FRITZ!Box will automatically reject callers with this number. The telephone remains mute.
-
-If you still receive an unwanted call because the number is not yet in the block list, you can easily add the number to the block list in your FRITZ!Box. As soon as you have done this, your FrizBox will update the central PhoneBlock address bock and calls from this new number will be immediately rejected by all other  members of the PhoneBlock community.
+If you still receive an unwanted call because the number is not yet on the blacklist, you can simply add the number to the PhoneBlock address book of your FRITZ! As soon as you have done this, your FrizBox will update the blacklist and calls from this new number will be immediately rejected by all other members of the PhoneBlock community.
 
 ## What are the requirements?
+PhoneBlock can be used both for a “fixed network connection” and on a cell phone. When installing for the fixed network, either the blocklist can be imported into the Internet router (this requires a “FRITZ!Box” with FRITZ!OS 07.29 or newer from AVM), or the FritzBox answering machine can be registered on the Internet router, which always answers SPAM calls.
 
-PhoneBlock works on a "landline" in combination with a "FRITZ!Box" internet router from AVM. It doesn't have to be the latest model, but you should check if the latest FRITZ!OS is installed on it (07.29 or newer). If this is not the case, check the [installation guide](https://phoneblock.net/phoneblock/setup.jsp) to see if your version already offers the necessary options.
+When importing the block list directly into the router, only part of the block list can be used, as there is a size limit for phone books in the FRITZ! The FritzBox answering machine is better because it can use the entire block list.
 
-The only other thing you need is a PhoneBlock account, with which you can set up the phone block list in your FRITZ!Box.
+The only other thing you need is a PhoneBlock account with which you can set up the phone block list in your FRITZ!Box.
 
 ## Ready to get started?
 
