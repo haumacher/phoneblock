@@ -57,7 +57,7 @@
 				<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>.
 			</p>
 
-			<h2>Anrufbeantworters</h2>
+			<h2>Anrufbeantworter</h2>
 			<p>
 				Bei der Verwendung des <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworters</a>
 				muss PhoneBlock dauerhaft die IP-Adresse Deiner Fritz!Box speichern, um den Anrufbeantworter 
