@@ -5,7 +5,7 @@
 /**
  * The PhoneBlock application.
  */
-module phoneblock {
+module de.haumacher.phoneblock {
 	exports de.haumacher.phoneblock.app;
 	exports de.haumacher.phoneblock.app.api;
 	exports de.haumacher.phoneblock.crawl;
@@ -24,12 +24,23 @@ module phoneblock {
 	exports de.haumacher.phoneblock.db to org.mybatis;
 	exports de.haumacher.phoneblock.db.model to org.mybatis;
 	
+	requires de.haumacher.phoneblock.shared;
+	requires de.haumacher.phoneblock.ab;
+
+	requires org.mjsip.sound;
+	requires org.mjsip.sip;
+	requires org.mjsip.ua;
+	requires org.mjsip.util; 
+
+	requires org.dnsjava;
+	requires args4j;
 	requires com.google.api.client;
 	requires com.google.auth;
 	requires com.google.auth.oauth2;
 	requires com.h2database;
 	requires com.opencsv;
 	requires com.googlecode.ezvcard;
+	requires java.base;
 	requires java.desktop;
 	requires java.management;
 	requires java.naming;

@@ -21,11 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinylog.configuration.Configuration;
 
+import de.haumacher.phoneblock.ab.SipService;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.dns.DnsService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
@@ -33,6 +35,7 @@ import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -45,6 +48,12 @@ public class Application implements ServletContextListener {
 	private static Logger LOG;
 	
 	private ServletContextListener[] _services;
+	
+	private static String _contextPath;
+	
+	public static String getContextPath() {
+		return _contextPath;
+	}
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -77,6 +86,8 @@ public class Application implements ServletContextListener {
 		
 		LOG.info("Starting phoneblock application.");
 		
+		_contextPath = sce.getServletContext().getContextPath();
+		
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
 		DBService db;
@@ -84,24 +95,33 @@ public class Application implements ServletContextListener {
 		MetaSearchService metaSearch;
 		MailServiceStarter mail;
 		ChatGPTService gpt;
+		SecureRandomService rnd;
+		SipService sip;
 		_services = new ServletContextListener[] {
+			rnd = new SecureRandomService(),
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
 				new IndexNowUpdateService(),
 				new GoogleUpdateService())),
 			mail = new MailServiceStarter(),
-			db = new DBService(indexer, scheduler, mail),
+			db = new DBService(rnd, indexer, scheduler, mail),
+			new DnsService(scheduler, db),
 			new EMailCheckService(db),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
 			gpt = new ChatGPTService(db, scheduler, indexer),
-			new ManagementService(indexer, db, gpt),
-			new AddressBookCache()
+			sip = new SipService(scheduler, db, mail),
+			new ManagementService(indexer, db, gpt, sip),
+			new AddressBookCache(),
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
-			_services[n].contextInitialized(sce);
+			try {
+				_services[n].contextInitialized(sce);
+			} catch (Exception ex) {
+				LOG.error("Failed to initialize service '" + _services[n].getClass().getName() + "'.", ex);
+			}
 		}
 	}
 

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.api.CommentVoteServlet"%>
 <%@page import="de.haumacher.phoneblock.app.ExternalLinkServlet"%>
@@ -11,7 +12,7 @@
 <%@page import="de.haumacher.phoneblock.db.model.RatingInfo"%>
 <%@page import="de.haumacher.phoneblock.db.Ratings"%>
 <%@page import="de.haumacher.phoneblock.db.model.Rating"%>
-<%@page import="de.haumacher.phoneblock.analysis.PhoneNumer"%>
+<%@page import="de.haumacher.phoneblock.db.model.PhoneNumer"%>
 <%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.DateFormat"%>
@@ -20,7 +21,7 @@
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="de.haumacher.phoneblock.db.DB"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
-<%@page import="de.haumacher.phoneblock.db.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
@@ -46,7 +47,7 @@
 <jsp:include page="head-content.jspf"></jsp:include>
 
 <% if (!ratings.isEmpty() || !searches.isEmpty()) { %>
-<script type="text/javascript" src="<%=request.getContextPath() %>/webjars/chartjs/${chartjs.version}/dist/chart.umd.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.CHARTJS_PATH %>/dist/chart.umd.js"></script>
 <% } %>
 
 <style type="text/css">
@@ -158,15 +159,23 @@
 %>
 
 		<div class="columns">
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
+			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
+			    <span class="icon">
+					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
+			    </span>
+				<span>Anrufbeantworter</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
 			    <span class="icon">
 					<i class="fa-solid fa-phone"></i>
 			    </span>
-				<span>Für Fritz!Box</span>			
+				<span>Fritz!Box Telefonbuch</span>			
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
@@ -174,7 +183,7 @@
 				<span>Für Android</span>
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupIphoneBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-iphone/">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>

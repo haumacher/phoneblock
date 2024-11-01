@@ -18,7 +18,17 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Identifier for the property {@link #getCodes()} in binary format. */
 	static final int CODES__ID = 1;
 
-	private final java.util.Map<String, de.haumacher.phoneblock.analysis.AreaCode> _codes = new java.util.HashMap<>();
+	private final java.util.Map<String, de.haumacher.phoneblock.analysis.AreaCode> _codes = new de.haumacher.msgbuf.util.ReferenceMap<>() {
+		@Override
+		protected void beforeAdd(String index, de.haumacher.phoneblock.analysis.AreaCode element) {
+			_listener.beforeAdd(AreaCodes.this, CODES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterRemove(String index, de.haumacher.phoneblock.analysis.AreaCode element) {
+			_listener.afterRemove(AreaCodes.this, CODES__PROP, index, element);
+		}
+	};
 
 	/**
 	 * Creates a {@link AreaCodes} instance.

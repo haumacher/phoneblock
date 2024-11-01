@@ -9,3 +9,7 @@ facebook.id=
 facebook.secret=
 
 google.id=
+
+bank.receiver=
+bank.account=
+bank.bic

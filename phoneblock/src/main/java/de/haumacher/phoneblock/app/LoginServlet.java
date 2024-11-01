@@ -4,6 +4,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,14 +21,37 @@ import de.haumacher.phoneblock.db.DBService;
 /**
  * Servlet displaying information about a telephone number in the DB.
  */
-@WebServlet(urlPatterns = "/login")
+@WebServlet(urlPatterns = LoginServlet.PATH)
 public class LoginServlet extends HttpServlet {
+	
+	/**
+	 * Request attribute that save the original location that was requested before login.
+	 * 
+	 * <p>
+	 * The location is a path relative to the context path of the application.
+	 * </p>
+	 * 
+	 * <p>
+	 * The value is transmitted in the login request as additional parameter.
+	 * </p>
+	 */
+	public static final String LOCATION_ATTRIBUTE = "locationAfterLogin";
+	
+	public static final String PATH = "/login";
 
 	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.sendRedirect(req.getContextPath() + "/login.jsp");
+		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
+			String location = location(req);
+			if (location == null) {
+				location = "/settings.jsp";
+			}
+			resp.sendRedirect(req.getContextPath() + location);
+			return;
+		}
+		req.getRequestDispatcher("/login.jsp").forward(req, resp);
 	}
 	
 	@Override
@@ -54,7 +79,13 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
-		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+		
+		String location = location(req);
+		if (location == null) {
+			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+		} else {
+			resp.sendRedirect(req.getContextPath() + location);
+		}
 	}
 
 	/**
@@ -63,6 +94,61 @@ public class LoginServlet extends HttpServlet {
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
 		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+	}
+
+	/**
+	 * Encodes URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParam(HttpServletRequest request) throws UnsupportedEncodingException {
+		return locationParam(request, false);
+	}
+	
+	/**
+	 * Encodes URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParamFirst(HttpServletRequest request) throws UnsupportedEncodingException {
+		return locationParam(request, true);
+	}
+	
+	/**
+	 * Encodes URL parameter transporting the location after login to the next link invocation.
+	 */
+	private static String locationParam(HttpServletRequest request, boolean first) throws UnsupportedEncodingException {
+		return locationParam(location(request), first);
+	}
+
+	/**
+	 * Creates an URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParam(String location, boolean first) throws UnsupportedEncodingException {
+		String locationParam;
+		if (location != null) {
+			locationParam = (first ? "?" : "&") + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, "UTF-8");
+		} else {
+			locationParam = "";
+		}
+		return locationParam;
+	}
+
+	/**
+	 * The location after login transmitted with the given request.
+	 */
+	public static String location(HttpServletRequest request) {
+		String location = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
+		if (location == null) {
+			location = (String) request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+		}
+		return location;
+	}
+
+	/**
+	 * Moves a location parameter to a request attribute.
+	 */
+	public static void forwardLocation(HttpServletRequest request) {
+		String location = location(request);
+		if (location != null) {
+			request.setAttribute(LOCATION_ATTRIBUTE, location);
+		}
 	}
 
 }

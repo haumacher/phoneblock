@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
@@ -33,7 +34,9 @@
 				<p>
 					Bitte bestätige Deine E-Mail-Adresse, indem Du den Code aus der Anmelde-E-Mail hier eingibst.
 				</p>
-				
+<%
+				String location = LoginServlet.location(request);
+%>
 				<form action="<%= request.getContextPath() %>/registration-code" method="post" enctype="application/x-www-form-urlencoded">
 					<div class="field">
 <%
@@ -41,6 +44,14 @@
 %>
 					  <label class="label">Code</label>
 					  <div class="control has-icons-left has-icons-right">
+						<%
+							if (location != null) {
+						%>
+					    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
+						<%
+							}
+						%>
+
 					    <input name="code" class="input<%= message != null ? " is-danger" : "" %>" type="text" placeholder="Bestätigungscode" value="">
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-barcode"></i>

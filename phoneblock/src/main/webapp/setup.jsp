@@ -17,7 +17,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1>Installation</h1>
+		<h1>Installation als Telefonbuch</h1>
 		
 <%
 		HttpSession session = request.getSession(false);
@@ -29,13 +29,20 @@
 		if (token == null) {
 %>
 		<p>
-			Für die Installation benötigst Du einen <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
+			Für die Installation der Blockliste benötigst Du einen <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
 			Internetrouter von AVM</a> und einen PhoneBlock-Account. Es muss nicht unbedingt das neuste Modell
 			sein, aber Du solltest prüfen, ob das aktuelle FRITZ!OS darauf
 			installiert ist (07.29 oder neuer). Ist dies nicht der Fall, prüfe
 			anhand der folgenden Installationsanleitung, ob Deine Version die notwendigen
 			Optionen schon bietet.
-		</p> 
+		</p>
+		
+		<p>
+			Beachte: Aufgrund technischer Beschränkungen der Fritz!Box kann nicht die gesamte Blockliste in ein
+			Telefonbuch geladen werden. Daher bietet die Einrichtung eines 
+			<a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworters</a> den 
+			besseren Schutz vor SPAM-Anrufen.
+		</p>
 			
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -156,7 +163,8 @@
 		</p>
 		
 		<p>
-			Jetzt kannst Du <span class="tag is-danger">5</span> die Anlage des neuen Telefonbuchs bestätigen.
+			Jetzt kannst Du <span class="tag is-danger">5</span> die Anlage des neuen Telefonbuchs bestätigen. Bitte beachte: Wähle <b>keines Deiner Telefone</b> 
+			bei dem Punkt "Telefon-Zuordnung" aus! Ansonsten findest Du auf Deinem Telefon nur noch SPAM-Anrufer in den Kontakten.  
 		</p>
 		
 		<div class="columns">

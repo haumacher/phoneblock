@@ -29,3 +29,68 @@ message UserSettings {
 	/** Timestamp when the user requested the blocklist last time */
 	long lastAccess;
 }
+
+/** Common options of answer bot settings. */
+abstract message AnswerBotSetting {
+	/** ID of the answer bot. */
+	long id;
+
+	/** ID of the PhoneBlock user. */
+	long userId;
+	
+	/** Time when the setting was created. */
+	long created;
+	
+	/** Time when the setting was last updated. */
+	long updated;
+}
+
+/** Configuration options and state of an answer bot. */
+message AnswerBotDynDns extends AnswerBotSetting {
+	/** The user name for DynDNS update and SIP registration. */
+	string dyndnsUser;
+	
+	/** Password hash for DynDNS update. */
+	string dynDnsPasswd;
+	
+	/** IPv4 address transmitted during the last DynDNS update. */
+	string ipv4;
+	
+	/** IPv6 address transmitted during the last DynDNS update. */
+	string ipv6;
+}
+
+message AnswerBotSip extends AnswerBotSetting {	
+	/** Static host name configured for the user's box. */
+	string host;
+	
+	/** IPv4 address transmitted during the last DynDNS update. */
+	string ipv4;
+	
+	/** IPv6 address transmitted during the last DynDNS update. */
+	string ipv6;
+
+    /** The SIP name of the user's box. */	
+	string registrar;
+	
+    /** The SIP domain for authentication at the user's box. */	
+	string realm;
+	
+    /** The user name for SIP registration at the user's box. */	
+	string userName;
+
+    /** The password used for SIP registration at the user's box. */	
+	string passwd;
+
+	/** Whether this answer bot is currently registered successfully. */
+	bool registered;
+	
+	/** The last message transmitted while registering. */
+	string registerMessage;
+	
+	/** Time of the last successful registration. */
+	long lastSuccess;
+	
+    /** The number of calls accepted by this answer bot. */	
+	int callsAccepted;
+}

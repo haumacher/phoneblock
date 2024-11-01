@@ -16,13 +16,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.ibatis.session.SqlSession;
 
+import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 
 /**
@@ -40,20 +41,27 @@ public class SettingsServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
-			Long userId = users.getUserId(userName);
+			Long userIdOpt = users.getUserId(userName);
 			List<String> blacklist;
 			List<String> whitelist;
-			if (userId == null) {
+			List<DBAnswerbotInfo> answerBots;
+			if (userIdOpt == null) {
 				blacklist = Collections.emptyList();
 				whitelist = Collections.emptyList();
+				answerBots = Collections.emptyList();
 			} else {
+				long userId = userIdOpt.longValue();
+				
 				BlockList blocklist = session.getMapper(BlockList.class);
-				blacklist = blocklist.getPersonalizations(userId.longValue());
-				whitelist = blocklist.getWhiteList(userId.longValue());
+				blacklist = blocklist.getPersonalizations(userId);
+				whitelist = blocklist.getWhiteList(userId);
+
+				answerBots = users.getAnswerBots(userId);
 			}
 			
 			req.setAttribute("blacklist", blacklist);
 			req.setAttribute("whitelist", whitelist);
+			req.setAttribute("answerBots", answerBots);
 		}
 		
 		req.getRequestDispatcher("/settings.jsp").forward(req, resp);

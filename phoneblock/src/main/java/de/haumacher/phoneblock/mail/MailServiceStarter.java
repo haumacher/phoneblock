@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
  */
 public class MailServiceStarter implements ServletContextListener {
 	
+	private static final String SMPT_PROPERTY_PREFIX = "smtp.properties.";
+
 	private static final Logger LOG = LoggerFactory.getLogger(MailServiceStarter.class);
 
 	private static MailService INSTANCE;
@@ -44,16 +46,19 @@ public class MailServiceStarter implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		LOG.info("Starting mail service.");
+		String user;
+		String password;
+		Properties properties = new Properties();
 		try {
 			InitialContext initCtx = new InitialContext();
 			Context envCtx = (Context) initCtx.lookup("java:comp/env");
 			
-			String user = (String) envCtx.lookup("smtp/user");        
-			String password = (String) envCtx.lookup("smtp/password");
+			user = (String) envCtx.lookup("smtp/user");        
+			password = (String) envCtx.lookup("smtp/password");
 			if (user == null && password == null) {
-				LOG.warn("No mail configuration found, mail service not available.");
+				LOG.warn("No mail configuration, mail service not available.");
+				return;
 			} else {
-				Properties properties = new Properties();
 				Context propertyContext = (Context) envCtx.lookup("smtp/properties");
 				if (propertyContext != null) {
 					NamingEnumeration<NameClassPair> list = envCtx.list("smtp/properties");
@@ -67,15 +72,40 @@ public class MailServiceStarter implements ServletContextListener {
 						}
 					}
 				}
-				
-				_mailService = new MailService(user, password, properties);
-				_mailService.startUp();
-				
-				INSTANCE = _mailService;
 			}
 		} catch (NamingException ex) {
-			LOG.error("Starting mail service failed.", ex);
+			LOG.info("No JNDI mail configuration: " + ex.getMessage());
+
+			user = getProperty("user");        
+			password = getProperty("password");
+			if (user == null && password == null) {
+				LOG.warn("No mail property configuration, mail service not available.");
+				return;
+			}
+
+			Properties systemProperties = System.getProperties();
+			for (String property : systemProperties.stringPropertyNames()) {
+				if (!property.startsWith(SMPT_PROPERTY_PREFIX)) {
+					continue;
+				}
+				
+				String smtpProperty = property.substring(SMPT_PROPERTY_PREFIX.length());
+				properties.setProperty(smtpProperty, systemProperties.getProperty(property));
+			}
 		}
+
+		_mailService = new MailService(user, password, properties);
+		_mailService.startUp();
+		
+		INSTANCE = _mailService;
+	}
+	
+	private String getProperty(String property) {
+		String value = System.getProperty("smtp." + property);
+		if (value != null) {
+			return value;
+		}
+		return null;
 	}
 	
 	@Override

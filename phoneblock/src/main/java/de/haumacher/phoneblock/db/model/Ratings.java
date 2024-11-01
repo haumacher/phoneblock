@@ -15,7 +15,7 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	/** @see #getValues() */
 	public static final String VALUES__PROP = "values";
 
-	private final java.util.List<de.haumacher.phoneblock.db.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.db.model.Rating>() {
+	private final java.util.List<de.haumacher.phoneblock.db.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.db.model.Rating element) {
 			_listener.beforeAdd(Ratings.this, VALUES__PROP, index, element);

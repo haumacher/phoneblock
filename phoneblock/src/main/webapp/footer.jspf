@@ -1,3 +1,4 @@
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%-- 
   - Author(s): Bernhard Haumacher et al.

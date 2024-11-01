@@ -12,11 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.analysis.PhoneNumer;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.model.PhoneInfo;
+import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.ServletUtil;
 

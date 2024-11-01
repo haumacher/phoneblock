@@ -23,9 +23,11 @@
 		</p>
 		
 		<p>
-			Für die Adressbuch-Synchronisation benötigst du die App 
-			"<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>". 
-			Die Anleitung führt Dich durch die notwendigen Schritte:
+			Für die Adressbuch-Synchronisation benötigst du eine App, mit der man Internet-Telefonbücher synchronisieren kann. 
+			Hierfür kannst Du z.B.   
+			"<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", 
+			oder "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>" verwenden. 
+			Die Anleitung hier ist für "PeopleSync" geschrieben, das Vorgehen mit "DAVx⁵" ist aber ganz ähnlich:
 		</p>
 		
 		<h2>Schritt 1: Öffne den Playstore und suche nach "PeopleSync"</h2>

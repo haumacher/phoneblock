@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="java.net.URLEncoder"%>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory"%>
@@ -26,6 +28,12 @@
 
 </div>
 
+	<%
+		String location = LoginServlet.location(request);
+		String locationParam = LoginServlet.locationParam(request);
+		String locationParamFirst = LoginServlet.locationParamFirst(request);
+	%>
+
 <nav class="panel">
 	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>"><i class="fa-brands fa-google"></i> <span>Mit Google registrieren</span></a></p>
 </nav>
@@ -40,6 +48,13 @@
 		<form action="<%= request.getContextPath() %>/verify-email" method="post" enctype="application/x-www-form-urlencoded">
   		<div class="panel-block">
   		<div class="content">
+			<%
+				if (location != null) {
+			%>
+		    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
+			<%
+				}
+			%>
 			<div class="field">
 			  <label class="label">E-Mail</label>
 			  <div class="control has-icons-left has-icons-right">
@@ -62,7 +77,7 @@
 %>
 					<p class="help is-danger">
 						<%= JspUtil.quote(request.getAttribute("message")) %>
-						<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+						<a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Nochmal probieren</a>.								
 					</p>
 <%
 			  	}
@@ -74,7 +89,7 @@
 			</div>
 			
 			<p>
-				 Wenn Du schon einen PhoneBlock-Account hast, dann <a href="<%=request.getContextPath()%>/login.jsp">melde Dich an</a>! 
+				 Wenn Du schon einen PhoneBlock-Account hast, dann <a href="<%=request.getContextPath()%>/login.jsp<%=locationParamFirst%>">melde Dich an</a>! 
 			</p>
 		</div>
 		</div>

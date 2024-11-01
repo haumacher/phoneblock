@@ -5,7 +5,7 @@
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
-<%@page import="de.haumacher.phoneblock.db.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.util.List"%>
@@ -44,15 +44,23 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 
 		<div class="columns">
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
+			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
+			    <span class="icon">
+					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
+			    </span>
+				<span>Anrufbeantworter</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
 			    <span class="icon">
 					<i class="fa-solid fa-phone"></i>
 			    </span>
-				<span>Für Fritz!Box</span>			
+				<span>Fritz!Box Telefonbuch</span>			
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
@@ -60,7 +68,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 				<span>Für Android</span>
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupIphoneBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-iphone/">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
@@ -126,7 +134,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 
 <%
-	List<SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
+	List<? extends SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
 	if (!reports.isEmpty()) {
 %>
 		<h2>Spam-Reports der letzten Stunde</h2> 

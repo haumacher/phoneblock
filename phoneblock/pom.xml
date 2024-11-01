@@ -30,7 +30,9 @@
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
 	  <tag>HEAD</tag>
-  </scm>
+  	</scm>
+  	
+  	<packaging>war</packaging>
 
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -51,7 +53,9 @@
 		<jquery.version>3.6.4</jquery.version>
 		<swagger-ui.version>4.18.3</swagger-ui.version>
 		
-		<msgbuf.version>1.1.2</msgbuf.version>
+		<jetty.version>9.4.53.v20231009</jetty.version>
+		
+		<msgbuf.version>1.1.4</msgbuf.version>
 		
 		<phoneblock.server.deployUrl>http://localhost:8080/manager/text</phoneblock.server.deployUrl>
 		<phoneblock.server.id>phoneblock</phoneblock.server.id>
@@ -59,6 +63,24 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>de.haumacher</groupId>
+			<artifactId>phoneblock-shared</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
+		<dependency>
+			<groupId>de.haumacher</groupId>
+			<artifactId>phoneblock-ab</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
+		<dependency>
+		    <groupId>dnsjava</groupId>
+		    <artifactId>dnsjava</artifactId>
+		    <version>3.5.3</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.haumacher.msgbuf</groupId>
 			<version>${msgbuf.version}</version>
@@ -197,12 +219,25 @@
 		    <groupId>org.webjars.npm</groupId>
 		    <artifactId>bulma</artifactId>
 		    <version>${bulma.version}</version>
+		    
+		    <exclusions>
+		    	<exclusion>
+				    <groupId>org.webjars.npm</groupId>
+				    <artifactId>sass</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>github-com-creativebulma-bulma-collapsible</artifactId>
 			<version>${bulma-collapsible.version}</version>
+		    <exclusions>
+		    	<exclusion>
+				    <groupId>org.webjars.npm</groupId>
+				    <artifactId>sass</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 
 		<dependency>
@@ -397,6 +432,10 @@
 					                <directory>src/main/webapp</directory>
 					                <filtering>true</filtering>
 					            </resource>
+					            <resource>
+					                <directory>../phoneblock_answerbot_ui/build/web</directory>
+					                <targetPath>ab</targetPath>
+					            </resource>
 					        </webResources>							
 						</configuration>
 					</execution>
@@ -472,6 +511,156 @@
 				</configuration>
 			</plugin>
 
-		</plugins>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.version}</version>
+				
+				<configuration>
+					<scanIntervalSeconds>10</scanIntervalSeconds>
+					<connectors>
+						<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+							<port>8080</port>
+						</connector>
+					</connectors>
+					<webApp>
+						<contextPath>/phoneblock</contextPath>
+					</webApp>
+				</configuration>
+				
+				<dependencies>
+					<dependency>
+					    <groupId>org.eclipse.jetty</groupId>
+					    <artifactId>jetty-servlets</artifactId>
+					    <version>${jetty.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+			  <groupId>org.codehaus.mojo</groupId>
+			  <artifactId>properties-maven-plugin</artifactId>
+			  <version>1.0-alpha-2</version>
+			  <executions>
+			    <execution>
+			      <goals>
+			        <goal>set-system-properties</goal>
+			      </goals>
+			      <configuration>
+			        <properties>
+			          <!-- Log configuration -->
+			          <property>
+			            <name>tinylog.configuration</name>
+			            <value>${project.basedir}/src/test/java/tinylog.properties</value>
+			          </property>
+			          
+			          <!-- SMTP configuration -->
+			          <property>
+			            <name>smtp.user</name>
+			            <value>${phoneblock.smtp.user}</value>
+			          </property>
+			          <property>
+			            <name>smtp.password</name>
+			            <value>${phoneblock.smtp.password}</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.debug</name>
+			            <value>true</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.mime.address.strict</name>
+			            <value>false</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.transport.protocol</name>
+			            <value>smtps</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.smtps.auth</name>
+			            <value>true</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.smtp.starttls.enable</name>
+			            <value>true</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.smtp.ssl.enable</name>
+			            <value>true</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.smtps.host</name>
+			            <value>www508.your-server.de</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.smtp.from</name>
+			            <value>PhoneBlock &lt;${phoneblock.smtp.user}&gt;</value>
+			          </property>
+			          <property>
+			            <name>smtp.properties.mail.smtps.user</name>
+			            <value>${phoneblock.smtp.user}</value>
+			          </property>
+			        </properties>
+			      </configuration>
+			    </execution>
+			  </executions>
+			</plugin>
+			    
+      		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											de.haumacher.msgbuf
+										</groupId>
+										<artifactId>
+											msgbuf-generator-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.1.2,)
+										</versionRange>
+										<goals>
+											<goal>generate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											properties-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0-alpha-2,)
+										</versionRange>
+										<goals>
+											<goal>
+												set-system-properties
+											</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>

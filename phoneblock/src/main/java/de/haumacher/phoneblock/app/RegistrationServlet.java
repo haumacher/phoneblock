@@ -37,6 +37,8 @@ public class RegistrationServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		LoginServlet.forwardLocation(req);
+		
 		Object expectedCode = req.getSession().getAttribute("code");
 		if (expectedCode == null) {
 			req.setAttribute("message", "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
@@ -84,7 +86,13 @@ public class RegistrationServlet extends HttpServlet {
 			String login, String passwd) throws ServletException, IOException {
 		LoginFilter.setAuthenticatedUser(req, login);
 		req.getSession().setAttribute(PASSWORD_ATTR, passwd);
-		resp.sendRedirect(req.getContextPath() + "/setup.jsp");
+		
+		String location = LoginServlet.location(req);
+		if (location != null) {
+			resp.sendRedirect(req.getContextPath() + location);
+		} else {
+			resp.sendRedirect(req.getContextPath() + "/setup.jsp");
+		}
 	}
 	
 	/**

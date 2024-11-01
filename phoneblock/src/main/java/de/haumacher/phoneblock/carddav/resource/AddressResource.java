@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
+import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -93,7 +94,9 @@ public class AddressResource extends Resource {
 		buffer.append("UID:");
 		buffer.append(_block.getBlockId());
 		buffer.append("\n");
-		buffer.append("FN:SPAM: ");
+		buffer.append("FN:");
+		buffer.append(AnswerBot.SPAM_MARKER);
+		buffer.append(" ");
 		buffer.append(_block.getBlockTitle());
 		buffer.append("\n");
 		buffer.append("CATEGORIES:SPAM\n");

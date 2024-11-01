@@ -1,3 +1,4 @@
+<%@page import="org.pac4j.core.util.Pac4jConstants"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
@@ -49,7 +50,8 @@
 				<a class="navbar-link" href="#" onclick="return false;">Installation</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Fritz!Box</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/anrufbeantworter/">Anrufbeantworter</a>
+					<a class="navbar-item" href="<%=request.getContextPath() %>/setup.jsp">Blocklisten-Telefonbuch</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-android/">Android</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/setup-iphone/">iPhone</a>
 				</div>
@@ -62,12 +64,14 @@
 				<a class="navbar-link" href="#" onclick="return false;">More</a>
 
 				<div class="navbar-dropdown">
+					<a class="navbar-item" href="<%=request.getContextPath() %>/support.jsp">An PhoneBlock spenden</a>
+					<hr class="navbar-divider">
 					<a class="navbar-item" href="<%=request.getContextPath() %>/api/">API für Entwickler</a>
 					<a class="navbar-item" href="<%=request.getContextPath()%>/link/github" target="_blank">GitHub Project</a>
 					<a class="navbar-item" href="<%=request.getContextPath() %>/block.jsp">Rufsperre hinzufügen</a>
 					
 					<hr class="navbar-divider">
-					<a class="navbar-item" href="<%=request.getContextPath()%>/link/new-issue" target="_blank">Report an issue</a>
+					<a class="navbar-item" href="<%=request.getContextPath()%>/link/new-issue" target="_blank">Fehler melden</a>
 				</div>
 			</div>
 		</div>
@@ -109,7 +113,7 @@
 						<strong>Settings</strong>
 					</a>
 					
-					<a class="button is-light" href="<%=request.getContextPath() %>/logout">
+					<a class="button is-light" href="<%=request.getContextPath() %>/logout?<%= Pac4jConstants.URL %>=<%=request.getRequestURI()%>">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>

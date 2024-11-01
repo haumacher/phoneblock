@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.haumacher</groupId>
+		<artifactId>phoneblock-parent</artifactId>
+		<version>1.5.0-SNAPSHOT</version>
+	</parent>
+	
+	<artifactId>phoneblock-ab</artifactId>
+	
+	<name>PhoneBlock Anrufbeantworter</name>
+	<description>Ad blocking answering machine for your phone</description>
+	<inceptionYear>2023</inceptionYear>
+	
+	<licenses>
+		<license>
+			<name>GPL-3.0-only</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Bernhard Haumacher</name>
+			<organizationUrl>https://haumacher.de</organizationUrl>
+		</developer>
+	</developers>
+
+	<organization>
+		<url>https://haumacher.de</url>
+	</organization>
+
+	<scm>
+		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
+		<tag>HEAD</tag>
+  	</scm>
+
+	<properties>
+	</properties>
+
+	<dependencies>
+		<dependency>	
+		    <groupId>de.haumacher</groupId>
+			<artifactId>phoneblock-shared</artifactId>
+		    <version>${project.version}</version>
+		</dependency>
+		
+		<dependency>	
+		    <groupId>org.mjsip</groupId>
+			<artifactId>mjsip-ua</artifactId>
+		    <version>1.9.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-assembly-plugin</artifactId>
+			    <executions>
+			        <execution>
+			            <phase>package</phase>
+			            <goals>
+			                <goal>single</goal>
+			            </goals>
+			            <configuration>
+			                <archive>
+				                <manifest>
+				                    <mainClass>de.haumacher.phoneblock.answerbot.AnswerBot</mainClass>
+				                </manifest>
+			                </archive>
+			                <descriptorRefs>
+			                    <descriptorRef>jar-with-dependencies</descriptorRef>
+			                </descriptorRefs>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>		
+		
+		</plugins>
+	</build>
+</project>

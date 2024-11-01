@@ -16,6 +16,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.Application;
+import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.settings.AnswerBotSip;
+import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
@@ -31,12 +38,6 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMessage.RecipientType;
 import jakarta.mail.internet.MimeMultipart;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.db.DBUserSettings;
-import de.haumacher.phoneblock.mail.check.EMailCheckService;
-
 /**
  * Service for sending e-mail messages.
  */
@@ -44,15 +45,19 @@ public class MailService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
 	
-	private static final String HOME_PAGE = "https://phoneblock.net/";
+	private static final String HOME_PAGE = "https://phoneblock.net";
 	
-	private static final String APP_LOGO_SVG = "https://phoneblock.net/phoneblock/app-logo.svg";
-
 	private static final String FACE_BOOK = "https://www.facebook.com/PhoneBlock";
 	
-	private static final String HELP_VIDEO = "https://www.youtube.com/watch?v=iV3aWhU1cMU&t=3s";
+	private static final String HELP_VIDEO = "https://www.youtube.com/@phoneblock";
 
-	private static final String SETTINGS = "https://phoneblock.net/phoneblock/settings";
+	private final String _appLogoSvg;
+	
+	private final String _settings;
+	
+	private final String _app;
+	
+	private final String _support;
 	
 	private static final String MAIL = "phoneblock@haumacher.de";
 
@@ -70,6 +75,14 @@ public class MailService {
 		_user = user;
 		_password = password;
 		_properties = properties;
+		
+		String contextPath = Application.getContextPath();
+		String baseUrl = HOME_PAGE + contextPath;
+		
+		_appLogoSvg = baseUrl + "/app-logo.svg";
+		_settings = baseUrl + "/settings";
+		_app = baseUrl + "/ab/";
+		_support = baseUrl + "/support.jsp";
 	}
 
 	public void sendActivationMail(String receiver, String code)
@@ -91,7 +104,7 @@ public class MailService {
 
 		Map<String, String> variables = new HashMap<>();
     	variables.put("{code}", code);
-    	variables.put("{image}", APP_LOGO_SVG);
+    	variables.put("{image}", _appLogoSvg);
     	
 		sendMail("PhoneBlock E-Mail Bestätigung", address, "mail-template", variables);
 	}
@@ -99,7 +112,7 @@ public class MailService {
 	public boolean sendHelpMail(DBUserSettings userSettings) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
-			LOG.warn("Cannot send help message to '" + userSettings.getId() + "', no e-mail provided.");
+			LOG.warn("Cannot send help mail to '" + userSettings.getId() + "', no e-mail provided.");
 			return true;
 		}
 		
@@ -114,13 +127,41 @@ public class MailService {
 		}
 	}
 	
+	public boolean sendDiableMail(DBUserSettings userSettings, AnswerBotSip answerbot) {
+		String receiver = userSettings.getEmail();
+		if (receiver == null || receiver.isBlank()) {
+			LOG.warn("Cannot send answerbot disable mail to '" + userSettings.getId() + "', no e-mail provided.");
+			return true;
+		}
+		
+		LOG.info("Sending answerbot disable mail to '" + receiver + "'.");
+		
+		try {
+			sendMail("PhoneBlock: Dein Anrufbeantworter", new InternetAddress(receiver), "ab-disable-mail", buildVariables(userSettings, answerbot));
+			return true;
+		} catch (MessagingException | IOException ex) {
+			LOG.error("Failed to send help mail to: " + receiver, ex);
+			return false;
+		}
+	}
+	
+	private Map<String, String> buildVariables(DBUserSettings userSettings, AnswerBotSip answerbot) {
+		Map<String, String> variables = buildVariables(userSettings);
+		
+		variables.put("{lastSuccess}", formatDateTime(answerbot.getLastSuccess()));
+		variables.put("{lastMessage}", answerbot.getRegisterMessage());
+		variables.put("{botId}", answerbot.getUserName());
+		
+		return variables;
+	}
+	
 	/** 
-	 * Sends a welcome message to the given user.
+	 * Sends a welcome mail to the given user.
 	 */
 	public void sendWelcomeMail(DBUserSettings userSettings) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
-			LOG.warn("Cannot send welcome message to '" + userSettings.getId() + "', no e-mail provided.");
+			LOG.warn("Cannot send welcome mail to '" + userSettings.getId() + "', no e-mail provided.");
 			return;
 		}
 		
@@ -141,21 +182,25 @@ public class MailService {
 		}
 		name = toUpperCaseStart(name);
 		
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.GERMAN);
-		long lastAccessTime = userSettings.getLastAccess();
-		String lastAccess = lastAccessTime == 0 ? "Bisher kein Blocklist-Abruf." : dateFormat.format(new Date(lastAccessTime));
-		
 		Map<String, String> variables = new HashMap<>();
 		variables.put("{name}", name);
 		variables.put("{userName}", userSettings.getLogin());
-		variables.put("{lastAccess}", lastAccess);
-		variables.put("{image}", APP_LOGO_SVG);
+		variables.put("{lastAccess}", formatDateTime(userSettings.getLastAccess()));
+		variables.put("{image}", _appLogoSvg);
 		variables.put("{home}", HOME_PAGE);
 		variables.put("{facebook}", FACE_BOOK);
 		variables.put("{help}", HELP_VIDEO);
 		variables.put("{mail}", MAIL);
-		variables.put("{settings}", SETTINGS);
+		variables.put("{settings}", _settings);
+		variables.put("{app}", _app);
+		variables.put("{support}", _support);
 		return variables;
+	}
+
+	protected String formatDateTime(long time) {
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.GERMAN);
+		String result = time == 0 ? "Noch nie." : dateFormat.format(new Date(time));
+		return result;
 	}
 	
 	private void sendMail(String subject, InternetAddress receiver, String template, Map<String, String> variables)

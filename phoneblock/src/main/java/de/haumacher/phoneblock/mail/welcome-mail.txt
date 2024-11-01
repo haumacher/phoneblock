@@ -1,22 +1,28 @@
 Hallo {name},
 
-schön, dass Du PhoneBlock gefunden und bei Dir erfolgreich installiert hast. 
-Unerwünschte Telefonanrufe werden hoffentlich in Zukunft stark abnehmen. 
-Wenn Du mit PhoneBlock zufrieden bist, dann würde ich mich freuen, wenn Du 
-Deinen Freunden, Bekannten und Verwandten davon erzählst. 
+schön, dass Du PhoneBlock gefunden und bei Dir erfolgreich installiert hast.
+Unerwünschte Telefonanrufe werden hoffentlich in Zukunft stark abnehmen.
       
-Teile doch die PhoneBlock-Homepage {home} auf Facebook, Twitter oder einem 
-anderen Kanal und folge PhoneBlock, damit du keine Updates verpasst: {facebook}
+Wenn Du mit PhoneBlock zufrieden bist, dann würde ich mich freuen, wenn 
+Du Dich mit einer kleinen Spende ({support}) 
+an den Kosten für den Betrieb von PhoneBlock beteiligen würdest.
+      
+Noch wichter ist aber dass Du Deinen Freunden, Bekannten und Verwandten davon erzählst. 
+Teile doch die PhoneBlock-Homepage ({home}) 
+auf Facebook, Twitter oder einem anderen Kanal und folge PhoneBlock, damit du 
+keine Updates verpasst: {facebook}
 
-Nur wenn Du anderen von PhoneBlock erzählst, kann sich herumsprechen, dass 
-niemand mehr dem Telefonterror wehrlos ausgeliefert ist. 
+Nur wenn Du anderen von PhoneBlock erzählst, kann sich die frohe Botschaft herumsprechen, 
+dass keiner dem Telefonterror mehr wehrlos ausgeliefert ist. 
 
 Viele Grüße
 Bernhard Haumacher
 
 --
-Kontakt: {mail}
 Homepage: {home}
+Spende: {support}
 Einstellungen: {settings}
+Anrufbeantworter: {app}
 Videoanleitung: {help}
 Facebook: {facebook}
+Kontakt: {mail}

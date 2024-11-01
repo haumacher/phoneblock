@@ -1,0 +1,166 @@
+package de.haumacher.phoneblock.ab.proto;
+
+option NoXml;
+option NoInterfaces;
+option NoListener;
+option NoBinary;
+option DartLib = "../../../../phoneblock_answerbot_ui/lib/proto.dart";
+
+/** Base class for all supported requests. */
+abstract message SetupRequest {
+
+}
+
+message CreateAnswerbotResponse {
+	long id;
+	string userName;
+	string password;
+}
+
+message CreateAnswerBot extends SetupRequest {
+	// No data.
+}
+
+/** Base class for all requests targeting a single answer bot. */
+abstract message BotRequest extends SetupRequest {
+	/** The ID of the answer bot this request is targeted to */
+	long id;
+}
+
+/** Sets the host name of the Fritz!Box to connect the answer bot to. */
+message EnterHostName extends BotRequest {
+	string hostName;
+}
+
+/** Sets up a DnyDNS account for the Fritz!Box to register its IP address. */
+message SetupDynDns extends BotRequest {
+	string hostName;
+}
+
+message SetupDynDnsResponse {
+	long id;
+	string dyndnsUser;
+	string dyndnsPassword;
+	string dyndnsDomain;
+}
+
+/** Checks, whether a DynDNS request has been received. */
+message CheckDynDns extends BotRequest {
+}
+
+/** Switches the answer bot on. */
+message EnableAnswerBot extends BotRequest {
+}
+
+/** Switches the answer bot off. */
+message DisableAnswerBot extends BotRequest {
+}
+
+/** Deletes an answer bot. */
+message DeleteAnswerBot extends BotRequest {
+}
+
+/** Checks whether an anwer bot has successfully registered to its Fritz!Box. */
+message CheckAnswerBot extends BotRequest {
+}
+
+/** Retrieves a list of calls this answer bot has already answered. */
+message ListCalls extends BotRequest {
+}
+
+/** Answer to a {@link ListCalls} request. */
+message ListCallsResponse {
+	/** The total number of calls answered so far. */
+	int callsAnswered;
+	
+	/** The total amout of time taked to SPAM callers so far. */
+	long talkTime;
+	
+	/** The last calls that have been answered. */
+	repeated CallInfo calls;
+}
+
+/** Information about a SPAM call answered. */
+message CallInfo {
+	/** The phone number of the caller. */
+	string caller;
+	
+	/** The time the call has started. */
+	long started;
+	
+	/** The duration of the call in milliseconds. */
+	long duration;
+}
+
+/** Information of a single answer bot. */
+message AnswerbotInfo {
+	/** The primary key identifier of this bot. */
+	long id;
+	
+	/** The ID of the owning user. */
+	long userId;
+
+	/** Whether the bot is enabled (registration is active). */
+	bool enabled;
+
+	/** Whether the bot has sucessfully registered (can accept calls). */
+	bool registered;
+	
+	/** The message received during the last registration attempt. */
+	@Nullable
+	string registerMsg;
+	
+	/** Number of new calls (reset when clearing the call list). */
+	int newCalls;
+
+	/** The total number of calls accepted by this bot so far. */
+	int callsAccepted;
+
+	/** The total time in milliseconds taked to SPAM customers. */
+	long talkTime;
+
+	/** The name of the box to register at. */
+	string registrar;
+	
+	/** The authentication realm expected for registration. */
+	string realm;
+	
+	/** The user name used for SIP registration. */
+	string userName;
+
+	/** The password for SIP registration. */
+	string password;
+	
+	/** The host name of the box to register at (only set, if a third-party DynDNS service is used. */
+	@Nullable
+	string host;
+	
+	/** The IPv4 address of the box to register at (only filled, if internal DynDNS is set up and succeeded). */
+	@Nullable
+	string ip4;
+	
+	/** The IPv6 address of the box to register at (only filled, if internal DynDNS is set up and succeeded). */
+	@Nullable
+	string ip6;
+	
+	/** The user name for DynDNS registration of the box (only filled, if internal DynDNS is set up). */
+	@Nullable
+	string dyndnsUser;
+	
+	/** The password for DynDNS registration of the box. */
+	@Nullable
+	string dyndnsPassword;
+}
+
+/** Clears the calls answered so far. */
+message ClearCallList extends BotRequest {
+}
+
+
+/** Result of the {@link de.haumacher.phoneblock.ab.ListABServlet}. */
+message ListAnswerbotResponse {
+
+	/** Infos for all answer bots of the current user. */
+	repeated AnswerbotInfo bots;
+	
+}
