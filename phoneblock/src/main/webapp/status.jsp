@@ -44,15 +44,23 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 
 		<div class="columns">
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
+			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
+			    <span class="icon">
+					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
+			    </span>
+				<span>Anrufbeantworter</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
 			    <span class="icon">
 					<i class="fa-solid fa-phone"></i>
 			    </span>
-				<span>Für Fritz!Box</span>			
+				<span>Fritz!Box Telefonbuch</span>			
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
@@ -60,7 +68,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 				<span>Für Android</span>
 			</a>
 		  </div>
-		  <div class="column is-one-third">
+		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupIphoneBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-iphone/">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
