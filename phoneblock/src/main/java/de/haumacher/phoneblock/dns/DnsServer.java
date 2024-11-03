@@ -69,8 +69,9 @@ public class DnsServer implements Runnable {
 	private transient boolean _shouldStop;
 	private UdpHandler _udpHandler;
 	private Name _origin;
-	private int _dclass;
-	private long _ttl;
+	private int _dclass = DClass.IN;
+	private long _ttlMaster = 600;
+	private long _ttlClient = 60;
 
 	public DnsServer(ScheduledExecutorService executor, int port) throws IOException {
 		_executor = executor;
@@ -86,8 +87,6 @@ public class DnsServer implements Runnable {
 		
 		_origin = Name.fromString(DOMAIN_NAME + ".");
 		
-		_dclass = DClass.IN;
-		_ttl = 600;
 		Name nshost = Name.fromString("ns.phoneblock.net.");
 		
 		// SOA original record from DNS Console:
@@ -101,12 +100,12 @@ public class DnsServer implements Runnable {
 		long minimum = 300;
 		
 		Record[] records = {
-			new NSRecord(_origin, _dclass, _ttl, nshost),
-			new SOARecord(_origin, _dclass, _ttl, nshost, admin, serial, refresh, retry, expire, minimum),
-			new ARecord(_origin, _dclass, _ttl, InetAddress.getByName("128.140.84.131")),
-			new AAAARecord(_origin, _dclass, _ttl, InetAddress.getByName("2a01:4f8:c17:6624::1")),
-			new TXTRecord(_origin, _dclass, _ttl, Collections.singletonList("v=spf1 +a +mx ?all")),
-			new MXRecord(_origin, _dclass, _ttl, 10, Name.fromString("www508.your-server.de."))
+			new NSRecord(_origin, _dclass, _ttlMaster, nshost),
+			new SOARecord(_origin, _dclass, _ttlMaster, nshost, admin, serial, refresh, retry, expire, minimum),
+			new ARecord(_origin, _dclass, _ttlMaster, InetAddress.getByName("128.140.84.131")),
+			new AAAARecord(_origin, _dclass, _ttlMaster, InetAddress.getByName("2a01:4f8:c17:6624::1")),
+			new TXTRecord(_origin, _dclass, _ttlMaster, Collections.singletonList("v=spf1 +a +mx ?all")),
+			new MXRecord(_origin, _dclass, _ttlMaster, 10, Name.fromString("www508.your-server.de."))
 		};
 		_onlyZone = new Zone(_origin, records);
 	}
@@ -122,7 +121,7 @@ public class DnsServer implements Runnable {
 	}
 
 	private void addARecord(Name globalName, InetAddress address) {
-		_onlyZone.addRecord(new ARecord(globalName, _dclass, _ttl, address));
+		_onlyZone.addRecord(new ARecord(globalName, _dclass, _ttlClient, address));
 	}
 
 	public void updateAAAARecord(String name, InetAddress address) throws TextParseException, UnknownHostException {
@@ -137,7 +136,7 @@ public class DnsServer implements Runnable {
 	}
 
 	private void addAAAARecord(Name fullName, InetAddress address) {
-		_onlyZone.addRecord(new AAAARecord(fullName, _dclass, _ttl, address));
+		_onlyZone.addRecord(new AAAARecord(fullName, _dclass, _ttlClient, address));
 	}
 
 	public void clearARecords(String name) throws TextParseException {
