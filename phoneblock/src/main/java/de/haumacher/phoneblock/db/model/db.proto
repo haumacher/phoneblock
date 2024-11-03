@@ -77,6 +77,29 @@ message PhoneInfo {
 	/** The number of votes that support blocking the requested number. */
 	int votes;
 
+	/** The number of phone numbers with the the same prefix but a different end digit that are also reported as SPAM. */
+	int cnt10;
+	
+	/** The total number of votes against all phone numbers with the the same prefix but a different end digit. */
+	int votes10;
+	
+	/**
+	 * The number of phone numbers with the the same prefix but two different end digits that are also reported as SPAM.
+	 *
+	 * <p>
+	 * This number only considers {@link #cnt10 blocks of phone numbers} with a minimum fill-ratio.
+	 * </p> 
+	 */
+	int cnt100;
+	
+	/** 
+	 * The total number of votes against all phone numbers with the the same prefix but two different end digits. 
+	 *
+	 * <p>
+	 * This number only considers {@link #cnt10 blocks of phone numbers} with a minimum fill-ratio.
+	 * </p> 
+	 */
+	int votes100;
 }
 
 message BlockListEntry {

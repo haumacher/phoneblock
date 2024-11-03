@@ -28,6 +28,24 @@ public interface SpamReports {
 	@Update("update SPAMREPORTS set VOTES = VOTES + #{delta}, LASTUPDATE = CASEWHEN(#{now} > LASTUPDATE, #{now}, LASTUPDATE) where PHONE = #{phone}")
 	int addVote(String phone, int delta, long now);
 
+	@Update("update SPAMREPORTS_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
+	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
+	
+	@Update("update SPAMREPORTS_100 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
+	int updateAggregation100(String prefix, int deltaCnt, int deltaVotes);
+	
+	@Insert("insert into SPAMREPORTS_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
+	int insertAggregation10(String prefix, int cnt, int votes);
+	
+	@Insert("insert into SPAMREPORTS_100 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
+	int insertAggregation100(String prefix, int cnt, int votes);
+	
+	@Select("select PREFIX, CNT, VOTES from SPAMREPORTS_10 where PREFIX = #{prefix}")
+	AggregationInfo getAggregation10(String prefix);
+	
+	@Select("select PREFIX, CNT, VOTES from SPAMREPORTS_100 where PREFIX = #{prefix}")
+	AggregationInfo getAggregation100(String prefix);
+	
 	@Select("select count(1) from SPAMREPORTS where PHONE = #{phone}")
 	boolean isKnown(String phone);
 
@@ -50,7 +68,7 @@ public interface SpamReports {
 	Integer getActiveReportCount();
 	
 	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
-	void delete(String phone);
+	int delete(String phone);
 	
 	@Update("UPDATE SPAMREPORTS s"
 			+ " SET s.VOTES = s.VOTES + (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE)"
@@ -301,5 +319,5 @@ public interface SpamReports {
 			+ "WHERE NOT p.PHONE = #{phone} \n"
 			+ "AND p.PREFIX = SUBSTRING(#{phone}, 0, LENGTH(#{phone}) - 2) order by p.PHONE")
 	List<String> getRelatedNumbers(String phone);
-	
+
 }

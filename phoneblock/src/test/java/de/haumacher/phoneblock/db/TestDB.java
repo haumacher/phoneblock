@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.SearchInfo;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -274,6 +275,69 @@ class TestDB {
 	@Test
 	void testQuote() {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
+	}
+	
+	@Test
+	void testAggregation() {
+		long now = 0;
+		
+		_db.processVotes("040299962900", 1, now);
+		_db.processVotes("040299962900", 1, now);
+		_db.processVotes("040299962901", 1, now);
+		
+		checkPhone("040299962900", 2, 2, 3, 0, 0);
+		checkPhone("040299962909", 0, 2, 3, 0, 0);
+		checkPhone("040299962999", 0, 0, 0, 0, 0);
+		
+		_db.processVotes("040299962902", 1, now);
+		_db.processVotes("040299962903", 1, now);
+		
+		checkPhone("040299962900", 2, 4, 5, 1, 5);
+		checkPhone("040299962909", 0, 4, 5, 1, 5);
+		checkPhone("040299962999", 0, 0, 0, 1, 5);
+		
+		_db.processVotes("040299962903", -1, now);
+		
+		checkPhone("040299962900", 2, 3, 4, 0, 0);
+		checkPhone("040299962909", 0, 3, 4, 0, 0);
+		checkPhone("040299962999", 0, 0, 0, 0, 0);
+	}
+
+	@Test
+	void testAggregation100() {
+		long now = 0;
+		
+		_db.processVotes("040299962900", 1, now);
+		_db.processVotes("040299962901", 1, now);
+		_db.processVotes("040299962902", 1, now);
+		_db.processVotes("040299962903", 1, now);
+		
+		_db.processVotes("040299962910", 1, now);
+		_db.processVotes("040299962911", 1, now);
+		_db.processVotes("040299962912", 1, now);
+		_db.processVotes("040299962913", 1, now);
+		
+		_db.processVotes("040299962920", 1, now);
+		_db.processVotes("040299962921", 1, now);
+		_db.processVotes("040299962922", 1, now);
+		_db.processVotes("040299962923", 1, now);
+		
+		checkPhone("040299962999", 0, 0, 0, 3, 12);
+		
+		_db.processVotes("040299962903", -1, now);
+		_db.processVotes("040299962913", -1, now);
+		_db.processVotes("040299962923", -1, now);
+
+		checkPhone("040299962999", 0, 0, 0, 0, 0);
+	}
+	
+	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
+		PhoneInfo info = _db.getPhoneApiInfo(phone);
+		assertEquals(votes, info.getVotes());
+		assertEquals(cnt10, info.getCnt10());
+		assertEquals(votes10, info.getVotes10());
+		assertEquals(cnt100, info.getCnt100());
+		assertEquals(votes100, info.getVotes100());
 	}
 
 	private DataSource createTestDataSource() {

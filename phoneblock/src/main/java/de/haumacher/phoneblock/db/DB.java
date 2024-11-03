@@ -103,6 +103,8 @@ public class DB {
 
 	private static final String BASIC_PREFIX = "Basic ";
 
+	private static final int MIN_AGGREGATE = 4;
+
 	private MessageDigest _sha256;
 
 	private final SecureRandom _rnd;
@@ -335,15 +337,67 @@ public class DB {
 		final int newVotes = oldVotes + votes;
 		
 		if (newVotes <= 0) {
-			reports.delete(phone);
+			int deleted = reports.delete(phone);
+			if (deleted > 0) {
+				updateAggregation10(reports, phone, -1, -oldVotes);
+			}
 		} else {
 			int rows = reports.addVote(phone, votes, time);
 			if (rows == 0) {
+				// Number was not yet present, must be added.
 				reports.addReport(phone, votes, time);
+				
+				updateAggregation10(reports, phone, 1, votes);
+			} else {
+				// Add new votes to aggregation.
+				updateAggregation10(reports, phone, 0, votes);
 			}
 		}
 		
 		return classify(oldVotes) != classify(newVotes);
+	}
+
+	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
+		String prefix = prefix10(phone);
+		
+		int rows = reports.updateAggregation10(prefix, deltaCnt, deltaVotes);
+		if (rows == 0) {
+			if (deltaCnt > 0) {
+				reports.insertAggregation10(prefix, deltaCnt, deltaVotes);
+			}
+			
+			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary. 
+		} else {
+			if (deltaCnt != 0) {
+				// Check, whether an update to the next aggregation level is necessary.
+				AggregationInfo info = reports.getAggregation10(prefix);
+				if (info != null) {
+					int cnt = info.getCnt();
+					int votes = info.getVotes();
+
+					int cntBefore = cnt - deltaCnt;
+					if (cntBefore < MIN_AGGREGATE && cnt >= MIN_AGGREGATE) {
+						updateAggregation100(reports, phone, 1, votes);
+					}
+					else if (cntBefore >= MIN_AGGREGATE && cnt < MIN_AGGREGATE) {
+						int votesBefore = votes - deltaVotes;
+						
+						updateAggregation100(reports, phone, -1, -votesBefore);
+					}
+				}
+			}
+		}
+	}
+
+	private void updateAggregation100(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
+		String prefix = prefix100(phone);
+
+		int rows = reports.updateAggregation100(prefix, deltaCnt, deltaVotes);
+		if (rows == 0) {
+			if (deltaCnt > 0) {
+				reports.insertAggregation100(prefix, deltaCnt, deltaVotes);
+			}
+		}
 	}
 
 	/** 
@@ -682,8 +736,31 @@ public class DB {
 					result = PhoneInfo.create().setPhone(phone);
 				}
 			}
+			
+			AggregationInfo aggregation10 = reports.getAggregation10(prefix10(phone));
+			if (aggregation10 != null) {
+				result.setCnt10(aggregation10.getCnt());
+				result.setVotes10(aggregation10.getVotes());
+			}
+			
+			AggregationInfo aggregation100 = reports.getAggregation100(prefix100(phone));
+			if (aggregation100 != null) {
+				result.setCnt100(aggregation100.getCnt());
+				result.setVotes100(aggregation100.getVotes());
+			}
+			
 			return result;
 		}
+	}
+	
+	private String prefix10(String phone) {
+		int length = phone.length() - 1;
+		return length < 0 ? "" : phone.substring(0, length);
+	}
+
+	private String prefix100(String phone) {
+		int length = phone.length() - 2;
+		return length < 0 ? "" : phone.substring(0, length);
 	}
 	
 	/**
