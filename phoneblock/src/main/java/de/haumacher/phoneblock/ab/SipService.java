@@ -50,6 +50,7 @@ import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
 import de.haumacher.phoneblock.answerbot.CustomerOptions;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
@@ -318,6 +319,22 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 	private String getHost(AnswerBotSip bot) throws UnknownHostException {
 		String host = bot.getHost();
 		if (host == null || host.isEmpty()) {
+			// Lookup DynDNS address.
+			DBAnswerBotDynDns dynDns;
+			try (SqlSession tx = _dbService.db().openSession()) {
+				Users users = tx.getMapper(Users.class);
+				
+				dynDns = users.getDynDnsForAB(bot.getId());
+			}
+
+			if (dynDns == null) {
+				throw new UnknownHostException("Neither host name nor DynDNS configured for: " + bot.getUserName());
+			} else {
+				// Update addresses.
+				bot.setIpv4(dynDns.getIpv4());
+				bot.setIpv6(dynDns.getIpv6());
+			}
+			
 			String ipv6 = bot.getIpv6();
 			if (ipv6 != null && !ipv6.isEmpty()) {
 				LOG.info("Using DynDNS IPv6 address for '" + bot.getUserName() + "': " + ipv6);

@@ -119,6 +119,9 @@ public interface Users {
 	@Select("select ABID, USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where DYNDNS_USER=#{dynDnsUser}")
 	DBAnswerBotDynDns getDynDns(String dynDnsUser);
 
+	@Select("select ABID, USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where ABID=#{abId}")
+	DBAnswerBotDynDns getDynDnsForAB(long abId);
+	
 	@Select("select ABID, USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS")
 	List<DBAnswerBotDynDns> getDynDnsUsers();
 	
