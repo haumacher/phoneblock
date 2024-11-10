@@ -196,9 +196,9 @@
 <% if (relatedNumbers.size() > 1) { %>
 
 	<p>Die Nummer ☎ <%= info.getPhone()%> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
-	<blockquote style="display: flex; flex-wrap: wrap; column-gap: 64px; row-gap: 0px;">
+	<blockquote class="related-numbers">
 <% for (String related : relatedNumbers) { %>
-		<span><a href="<%= request.getContextPath()%>/nums/<%= related%>" onclick="return showNumber('<%= related%>');">☎ <%= related %></a></span>
+		<span><a href="<%= request.getContextPath()%>/nums/<%= related%>" class="showNumber">☎ <%= related %></a></span>
 <% } %>	
 	</blockquote>
 
@@ -217,7 +217,7 @@
 	String votePath = request.getContextPath() + CommentVoteServlet.PATH; 
 	%>
 	<% for (UserComment comment : comments.subList(0, Math.min(10, comments.size()))) { %>
-
+	<input type="hidden" id="votePath" value="<%=votePath%>">
 <div class="box">
   <article class="media">
     <div class="media-left">
@@ -259,13 +259,13 @@
       %>
       <nav class="level is-mobile">
         <div class="level-left">
-          <a class="level-item thumbs-up" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" onclick="return commentVote('<%=votePath %>', '<%=comment.getId()%>', 1, '<%=upId%>', '<%=downId%>');">
+          <a class="level-item thumbs-up commentVote" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" data-comment-id="<%=comment.getId()%>" data-vote-up-id="<%=upId%>" data-vote-down-id="<%=downId%>">
             <span class="icon">
               <i class="fa-solid fa-thumbs-up"></i>
             </span>
             &nbsp;<span id="<%=upId%>"><%=up%></span>
           </a>
-          <a class="level-item thumbs-down" aria-label="Unsinn" title="Unsinn!" href="#" onclick="return commentVote('<%=votePath %>', '<%=comment.getId()%>', -1, '<%=upId%>', '<%=downId%>');">
+          <a class="level-item thumbs-down commentVote" aria-label="Unsinn" title="Unsinn!" href="#" data-comment-id="<%=comment.getId()%>" data-vote-up-id="<%=upId%>" data-vote-down-id="<%=downId%>">
             <span class="icon">
               <i class="fa-solid fa-thumbs-down"></i>
             </span>&nbsp;<span id="<%=downId%>"><%=down%></span>
@@ -578,10 +578,10 @@
 	
 	<nav class="pagination is-centered" role="navigation" aria-label="pagination">
 	<% if (prev != null) { %>
-		<a class="pagination-previous" href="<%= request.getContextPath()%>/nums/<%= prev%>" onclick="return showNumber('<%= prev%>');">Vorherige Nummer</a>
+		<a class="pagination-previous showNumber" href="<%= request.getContextPath()%>/nums/<%= prev%>">Vorherige Nummer</a>
 	<% } %>
 	<% if (next != null) { %>
-		<a class="pagination-next" href="<%= request.getContextPath()%>/nums/<%= next%>" onclick="return showNumber('<%= next%>');">Nächste Nummer</a>
+		<a class="pagination-next showNumber" href="<%= request.getContextPath()%>/nums/<%= next%>">Nächste Nummer</a>
 	<% } %>
 	</nav>
 </div>

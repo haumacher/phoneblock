@@ -42,12 +42,12 @@
    		<li>Gib deine Zugangsdaten ein und tippe auf "Weiter".
    			<dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Benutzername</b></dt>
 				<dd>
 				<%if (login != null) {%>					
-				<code id="login"><%= login %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a>
+				<code id="login"><%= login %></code> <a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
 				<%} else {%>	
 				Wurde Dir direkt nach der Anmeldung angezeigt.
 				<%}%>
@@ -56,7 +56,7 @@
 				<dt><b>Passwort</b></dt>
 				<dd>
 				<% if (token != null) {%>
-				<code id="passwd"><%= token %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a>
+				<code id="passwd"><%= token %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
 				<%} else {%>
 				Wurde Dir direkt nach der Anmeldung angezeigt.
 				<%}%>

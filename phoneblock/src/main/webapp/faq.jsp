@@ -248,7 +248,7 @@
 		<p>
 			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="<%=request.getContextPath()%>/link/issues">PhoneBlock Projekt-Seite</a> 
 			ein Ticket öffnen und den Wunsch beschreiben. Gerne kannst Du den Vorschlag aber auch mit mir per E-Mail 
-			diskutieren: <code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
+			diskutieren: <code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>
 		</p>
 		
 		<h2>Wie kann ich PhoneBlock wieder deinstallieren?</h2>
@@ -273,7 +273,7 @@
 			Schreib doch einen Kommentar auf auf der <a target="_blank" href="<%=request.getContextPath()%>/link/facebook">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
 			Gerne kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
-			<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>  
+			<code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>
 		</p>
 
 <!-- 

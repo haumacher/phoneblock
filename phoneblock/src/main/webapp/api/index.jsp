@@ -14,15 +14,8 @@
 </section>
 
 <script src="<%=request.getContextPath() %><%=UIProperties.SWAGGER_PATH %>/swagger-ui-bundle.js"></script>
-<script>
-  window.onload = () => {
-    window.ui = SwaggerUIBundle({
-      url: '<%=request.getContextPath()%>/api/phoneblock.json',
-      dom_id: '#swagger-ui',
-    });
-  };
-</script>
-
+<script type="text/javascript" src="api.js"></script>
+<input type="hidden" id="context-path" value="<%=request.getContextPath()%>">
 <jsp:include page="../footer.jspf"></jsp:include>
 </body>
 </html>

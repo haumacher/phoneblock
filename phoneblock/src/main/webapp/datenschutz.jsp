@@ -54,7 +54,7 @@
 				Sollte Deine Telefonnummer irrtümlicherweise auf die Blocklist
 				gelangt sein, kannst Du selbstvertändlich um Löschung ersuchen.
 				Schreib eine E-Mail an 
-				<code>Bernhard Haumacher &lt;<button onclick="return showaddr(this);">...</button>&gt;</code>.
+				<code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>.
 			</p>
 
 			<h2>Anrufbeantworter</h2>

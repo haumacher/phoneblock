@@ -65,17 +65,17 @@
 		
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url');"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code id="login"><%= JspUtil.quote(login) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login');"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login"><%= JspUtil.quote(login) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd');"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -145,12 +145,12 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<code id="url2">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('url2');"><i class="fa-solid fa-copy"></i></a>
+			<code id="url2">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
 		  </div>
 		</div>
 		
 		<p>
-			Trage den Benutzernamen <%if (login != null) {%> <code id="login2"><%= JspUtil.quote(login) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('login2');"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der  
+			Trage den Benutzernamen <%if (login != null) {%> <code id="login2"><%= JspUtil.quote(login) %></code> <a id="login2" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der
 			<a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten hast, in das Feld 
 			<i>Benutzername</i> ein. Am besten überträgst Du ihn mit Cut&amp;Paste.
 		</p>
@@ -158,7 +158,7 @@
 		<p>
 			Das Passwort<%if (token == null) {%>, 
 			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten 
-			hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('passwd2');"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld 
+			hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code> <a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld
 			<i>Passwort</i> in dem Formular in der Fritz!Box eintragen.
 		</p>
 		

@@ -8,24 +8,6 @@
 %>
 <head>
 <jsp:include page="../head-content.jspf"></jsp:include>
-<script type="text/javascript">
-function showFB() {
-	if (window.fbWindow != null && !window.fbWindow.closed) {
-		window.fbWindow.focus();
-	} else {
-		window.fbWindow = window.open("http://fritz.box", "fritzbox");
-	}
-	return false;
-}
-function showAB() {
-	if (window.abWindow != null && !window.abWindow.closed) {
-		window.abWindow.focus();
-	} else {
-		window.abWindow = window.open("<%=request.getContextPath() %>/ab/", "phoneblock-ab");
-	}
-	return false;
-}
-</script>
 </head>
 
 <body>
@@ -33,7 +15,7 @@ function showAB() {
 
 <section class="section">
 	<div class="content">
-		<div style="float: right; max-width: 15%;">
+		<div class="logo-animation">
 			<img alt="PhoneBlock-Anrufbeantworter-Logo" src="logo/ab-logo.svg">
 		</div>
 	
@@ -113,14 +95,14 @@ function showAB() {
 		<h2 id="create">Schritt 2: Anrufbeantworter erstellen</h2>
 		
 		<p>
-			Wenn Du hier klickst öffnet sich Fenster mit der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">PhoneBlock-Anrufbeantworter-App</a>. 
+			Wenn Du hier klickst öffnet sich Fenster mit der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">PhoneBlock-Anrufbeantworter-App</a>.
 			Beim ersten Öffnen ist die Liste Deiner Anrufbeantworter leer und unten rechts befindet sich ein Knopf, 
 			mit dem Du Dir einen Anrufbeantworter erstellen kannst. Drücke diesen Plus-Knopf.
 		</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-primary is-fullwidth" href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">
+			<a class="button is-medium is-primary is-fullwidth showAB" href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab">
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
@@ -145,7 +127,7 @@ function showAB() {
 		<h3>PhoneBlock-DynDNS aktivieren</h3>
 		
 		<p>
-			Aktiviere in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a> 
+			Aktiviere in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
 			den Schalter "PhoneBlock-DynDNS verwenden" (Wenn Du Dich gut auskennst und bereits einen anderen DynDNS-Provider verwendest, kannst Du auch direkt
 			den Host-Namen deiner Fritz!Box eintragen).
 		</p>
@@ -174,19 +156,19 @@ function showAB() {
 		<h3>Anmeldedaten in der Fritz!Box eintragen</h3>
 		
 		<p>
-			Dieser Link <a href="http://fritz.box" target="fritzbox" onclick="return showFB();">öffnet ein Fenster für Deine Fritz!Box</a>. 
+			Dieser Link <a href="http://fritz.box" target="fritzbox" class="showFB">öffnet ein Fenster für Deine Fritz!Box</a>.
 			Melde dich dort mit Deinem Fritz!Box-Kennwort an. Wenn Du das noch nie getan hast, dann findest Du 
 			das Kennwort auf der Unterseite der Fritz!Box. 
 		</p>
 		
 		<p>
-			In Deiner <a href="http://fritz.box" target="fritzbox" onclick="return showFB();">Fritz!Box</a> navigiere in der Seitenleiste zu "Internet &gt; Freigaben" und wähle 
+			In Deiner <a href="http://fritz.box" target="fritzbox" class="showFB">Fritz!Box</a> navigiere in der Seitenleiste zu "Internet &gt; Freigaben" und wähle
 			den Reiter "DynDNS".
 		</p>
 
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-primary is-fullwidth" href="http://fritz.box" target="fritzbox" onclick="return showFB();">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
@@ -202,8 +184,8 @@ function showAB() {
 		</div>
 		
 		<p>
-			Kopiere aus der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a> die Daten für 
-			"Update-Url", "Domainname", "Benutzername" und "Kennwort" und trage sie in Deiner <a href="http://fritz.box" target="fritzbox" onclick="return showFB();">Fritz!Box</a> 
+			Kopiere aus der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a> die Daten für
+			"Update-Url", "Domainname", "Benutzername" und "Kennwort" und trage sie in Deiner <a href="http://fritz.box" target="fritzbox" class="showFB">Fritz!Box</a>
 			ein. Und bestätige mit "Übernehmen" (Punkt 5 im Bild unten). 
 		</p>
 		
@@ -216,7 +198,7 @@ function showAB() {
 		<h3>DynDNS überprüfen</h3>
 
 		<p>
-			Gehe jetzt zurück zu der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a> und 
+			Gehe jetzt zurück zu der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a> und
 			lass die Einstellungen überprüfen (Punkt 6 im Bild oben).
 			Wenn PhoneBlock Deine Fritz!Box gefunden hat, kommst zu zur nächsten Seite mit den Zugangsdaten für den eigentlichen Anrufbeantworter.
 		</p>
@@ -225,7 +207,7 @@ function showAB() {
 		
 		<p>
 			Jetzt wird der Anrufbeantworter als Telefoniegerät in der Fritz!Box eingerichtet. Öffne hierzu wieder 
-			Deine <a href="http://fritz.box" target="fritzbox" onclick="return showFB();">Fritz!Box-Oberfläche</a>.
+			Deine <a href="http://fritz.box" target="fritzbox" class="showFB">Fritz!Box-Oberfläche</a>.
 		</p>
 
 		<h3>Telefoniegerät einrichten</h3>
@@ -271,7 +253,7 @@ function showAB() {
 
 		<p>
 			Auf der nächsten Seite "Einstellungen im IP-Telefon übernehmen" wirst Du nach "Benutzername" und "Kennwort" gefragt. 
-			Kopiere hier die entsprechenden Daten, die Dir in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a>
+			Kopiere hier die entsprechenden Daten, die Dir in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
 			angezeigt werden. Klicke auf "Weiter". 
 		</p>
 		
@@ -359,7 +341,7 @@ function showAB() {
 
 		<p>
 			Im Reiter "Anmeldedaten" musst Du jetzt noch die Option "Anmeldung aus dem Internet erlauben" aktivieren und das Kennwort 
-			erneut aus der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a> kopieren und in das Feld "Kennwort" eintragen. 
+			erneut aus der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a> kopieren und in das Feld "Kennwort" eintragen.
 			Klicke erst dann auf den Knopf "Übernehmen".
 		</p>
 		
@@ -372,7 +354,7 @@ function showAB() {
 		<h2 id="enable">Schritt 5: Anrufbeantworter einschalten</h2>
 		
 		<p>
-			Die Konfiguration Deines Anrufbeantworters ist jetzt abgeschlossen. Wechsele zurück in die <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a>
+			Die Konfiguration Deines Anrufbeantworters ist jetzt abgeschlossen. Wechsele zurück in die <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
 			und schalte Deinen neuen Anrufbeantworter ein.
 		</p>
 		
@@ -383,7 +365,7 @@ function showAB() {
 		</div>
 		
 		<p>
-			Gratuliere, wenn alles geklappt hat, sollte der Anrufbeantworter in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" onclick="return showAB();">Anrufbeantworter-App</a> 
+			Gratuliere, wenn alles geklappt hat, sollte der Anrufbeantworter in der <a href="<%=request.getContextPath() %>/ab/" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
 			jetzt grün als "eingeschaltet" angezeigt werden. Die nächsten unliebsamen Anrufer können in Zukunft mit PhoneBlock diskutieren.
 		</p>
 
@@ -411,7 +393,7 @@ function showAB() {
 		
 	</div>
 </section>
-
+<script type="text/javascript" src="anrufbeantworter.js"></script>
 <jsp:include page="../footer.jspf"></jsp:include>
 </body>
 </html>

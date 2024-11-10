@@ -109,7 +109,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" class="showNumber">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>
@@ -154,7 +154,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" class="showNumber">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>
@@ -199,7 +199,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" class="showNumber">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>
@@ -244,7 +244,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 					<tr>
 						<td>
-							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" onclick="return showNumber('<%= report.getPhone()%>');">☎ <%= JspUtil.quote(report.getPhone()) %></a>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" class="showNumber">☎ <%= JspUtil.quote(report.getPhone()) %></a>
 						</td>
 						
 						<td>

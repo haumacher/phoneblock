@@ -51,6 +51,20 @@ function searchNumber(inputId) {
 	return false;
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+	let links = document.querySelectorAll('.showNumber');
+	links.forEach(function (link) {
+		link.addEventListener('click', function (event) {
+			const href = link.href;
+			const inputId = href.substring(href.lastIndexOf("/") + 1)
+			const result = searchNumber(inputId)
+			if (!result) {
+				event.preventDefault();
+			}
+		});
+	});
+});
+
 function showNumber(number) {
 	displayNumber(number, true);
 	return false;
@@ -75,6 +89,18 @@ function showaddr(target) {
   target.parentNode.replaceChild(link, target);
   return false;
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+	let links = document.querySelectorAll('.showaddr');
+	links.forEach(function (link) {
+		link.addEventListener('click', function (event) {
+			const result = showaddr(event.target)
+			if (!result) {
+				event.preventDefault();
+			}
+		});
+	});
+});
 
 function checkFritzBox(contextPath, button) {
 	if (!button.classList.contains("is-info")) {
@@ -107,11 +133,63 @@ function checkFritzBox(contextPath, button) {
 	return false;
 }
 
+function getContextBasePath() {
+	return  document.getElementById("context-path").value;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+	let link = document.getElementById('search-fritzbox');
+	if (link) {
+		link.addEventListener('click', function (event) {
+			const result = checkFritzBox(getContextBasePath(), this);
+			if (!result) {
+				event.preventDefault();
+			}
+		});
+	}
+});
+
 function copyToClipboard(id) {
 	var element = document.getElementById(id);
 	window.navigator.clipboard.writeText(element.textContent); 
 	return false;
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+	let links = document.querySelectorAll('.copyToClipboard');
+	links.forEach(function (link) {
+		link.addEventListener('click', function (event) {
+			const idSource = link.id;
+			const id = idSource.substring(0, idSource.indexOf("_"))
+			const result = copyToClipboard(id)
+			if (!result) {
+				event.preventDefault();
+			}
+		});
+	});
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+	const voteLinks = document.querySelectorAll('.commentVote');
+
+	voteLinks.forEach(function (link) {
+		link.addEventListener('click', function (event) {
+			const votePath = document.getElementById("votePath");
+			if(!votePath?.value) {
+				throw new Error("no vote path");
+			}
+			const commentId = link.getAttribute('data-comment-id');
+			const upId = link.getAttribute('data-vote-up-id');
+			const downId = link.getAttribute('data-vote-down-id');
+			if (link.classList.contains("thumbs-up")) {
+				commentVote(votePath, commentId, 1, upId, downId);
+			} else if (link.classList.contains("thumbs-down")) {
+				commentVote(votePath, commentId, -1, upId, downId);
+			}
+			event.preventDefault();
+		});
+	});
+});
 
 function commentVote(path, commentId, vote, upId, downId) {
 	var up = document.getElementById(upId);	
@@ -154,3 +232,12 @@ function doVote(up, down, direction, inc) {
 	var value = parseInt(element.textContent) + inc;
 	element.textContent = "" + value;
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+	let links = document.querySelectorAll('.prevent-default');
+	links.forEach(function (link) {
+		link.addEventListener('click', function (event) {
+			event.preventDefault();
+		});
+	});
+});
