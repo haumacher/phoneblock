@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.db.model.BlockListEntry;
 import de.haumacher.phoneblock.db.model.Blocklist;
+import de.haumacher.phoneblock.db.model.NumberInfo;
 import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.SearchInfo;
@@ -103,7 +105,7 @@ public class DB {
 
 	private static final String BASIC_PREFIX = "Basic ";
 
-	private static final int MIN_AGGREGATE = 4;
+	public static final int MIN_AGGREGATE = 4;
 
 	private MessageDigest _sha256;
 
@@ -176,7 +178,7 @@ public class DB {
 		 Date timeCleanup = schedule(20, this::cleanup);
 		 LOG.info("Scheduled next DB cleanup: " + timeCleanup);
 		 
-		 Date timeHistory = schedule(0, this::runCleanupSearchHistory);
+		 Date timeHistory = schedule(0, this::runUpdateHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
 		 
 		 if (sendHelpMails && _mailService != null) {
@@ -336,25 +338,26 @@ public class DB {
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
 		
-		if (newVotes <= 0) {
-			int deleted = reports.delete(phone);
-			if (deleted > 0) {
-				updateAggregation10(reports, phone, -1, -oldVotes);
+		int rows = reports.addVote(phone, votes, time);
+		if (rows == 0) {
+			// Number was not yet present, must be added.
+			reports.addReport(phone, votes, time);
+			
+			if (votes > 0) {
+				updateAggregation10(reports, phone, 1, votes);
 			}
 		} else {
-			int rows = reports.addVote(phone, votes, time);
-			if (rows == 0) {
-				// Number was not yet present, must be added.
-				reports.addReport(phone, votes, time);
-				
-				updateAggregation10(reports, phone, 1, votes);
-			} else {
-				// Add new votes to aggregation.
-				updateAggregation10(reports, phone, 0, votes);
-			}
+			// Add new votes to aggregation.
+			updateAggregation10(reports, phone, delta(oldVotes, newVotes), votes);
 		}
 		
 		return classify(oldVotes) != classify(newVotes);
+	}
+
+	private static int delta(int oldVotes, int newVotes) {
+		boolean wasSpam = oldVotes > 0;
+		boolean isSpam = newVotes > 0;
+		return wasSpam ? (isSpam ? 0 : -1) : (isSpam ? 1 : 0);
 	}
 
 	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
@@ -436,7 +439,7 @@ public class DB {
 	 * @return Whether an index update is required.
 	 */
 	public boolean addRating(SpamReports reports, UserComment comment) {
-		boolean updateRequired;
+		boolean updateRequired = false;
 		
 		String phone = comment.getPhone();
 		Rating rating = comment.getRating();
@@ -451,20 +454,26 @@ public class DB {
 			updateRequired = true;
 		}
 
-		updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), created);
+		updateRequired |= processVotes(reports, phone, Ratings.getVotes(rating), created);
 		if (rating != Rating.B_MISSED) {
-			Rating oldRating = reports.getRating(phone);
+			Rating oldRating = rating(reports, phone);
 			
 			// Record rating.
-			int rows = reports.incRating(phone, rating, created);
-			if (rows == 0) {
-				reports.addRating(phone, rating, created);
-			}
+			reports.incRating(phone, rating, created);
 			
-			Rating newRating = reports.getRating(phone);
-			updateRequired = updateRequired || oldRating != newRating;
+			Rating newRating = rating(reports, phone);
+			updateRequired |= oldRating != newRating;
 		}
 		return updateRequired;
+	}
+
+	private Rating rating(SpamReports reports, String phone) {
+		return rating(getPhoneInfo(reports, phone));
+	}
+
+	public NumberInfo getPhoneInfo(SpamReports reports, String phone) {
+		DBNumbersEntry result = reports.getPhoneInfo(phone);
+		return result != null ? result : NumberInfo.create().setPhone(phone);
 	}
 
 	/** 
@@ -474,7 +483,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			return reports.getRating(phone);
+			return rating(reports, phone);
 		}
 	}
 
@@ -510,74 +519,79 @@ public class DB {
 	/**
 	 * Looks up all spam reports that were done after the given time in milliseconds since epoch.
 	 */
-	public List<DBSpamReport> getLatestSpamReports(long notBefore) {
+	public List<DBNumbersEntry> getLatestSpamReports(long notBefore) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
 		}
 	}
 
-	private static Comparator<? super SearchInfo> byDate = (s1, s2) -> -Long.compare(s1.getLastSearch(), s2.getLastSearch());
-	
 	/**
 	 * Looks up the latest searches.
 	 */
 	public List<? extends SearchInfo> getTopSearches() {
-		return getTopSearches(3, 3);
+		return getTopSearches(6);
 	}
 	
-	List<? extends SearchInfo> getTopSearches(int cntLatest, int cntSearches) {
+	List<? extends SearchInfo> getTopSearches(int cnt) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			int revision = nonNull(reports.getLastRevision());
-			Set<String> yesterdaySearches = revision > 0 ? reports.getTopSearches(revision) : Collections.emptySet();
+			int lastRev = nonNull(reports.getLastRevision());
 			
-			Set<String> topNumbers = reports.getLatestSearchesToday();
-			topNumbers.addAll(yesterdaySearches);
+			int afterRev = lastRev > 0 ? lastRev - 1 : 0;
+			long revisionDate = orMidnightYesterday(reports.getRevisionDate(afterRev));
 			
-			if (topNumbers.isEmpty()) {
-				return Collections.emptyList();
-			}
-
-			List<DBSearchInfo> topSearches = reports.getSearchesTodayAll(topNumbers);
-			Map<String, DBSearchInfo> yesterdayByPhone = reports.getSearchesAtAll(revision, topNumbers).stream().collect(Collectors.toMap(i -> i.getPhone(), i -> i));
-			
-			for (DBSearchInfo today : topSearches) {
-				DBSearchInfo yesterday = yesterdayByPhone.get(today.getPhone());
-				if (yesterday == null) {
-					today.setTotal(0);
+			List<SearchInfo> topSearches = new ArrayList<>();
+			for (DBNumbersEntry entry : reports.getUpdatedPhoneInfos(revisionDate)) {
+				String phone = entry.getPhone();
+				int searches = entry.getSearches();
+				SearchInfo info = SearchInfo.create()
+						.setPhone(phone)
+						.setLastSearch(entry.getUpdated())
+						.setTotal(searches);
+				
+				DBNumberHistory before = reports.getHistoryEntry(phone, afterRev);
+				if (before == null) {
+					info.setCount(searches);
 				} else {
-					today.setTotal(yesterday.getCount());
+					info.setCount(searches - before.getSearches());
 				}
+				
+				topSearches.add(info);
 			}
+			
+			// Top 6 numbers.
+			Comparator<SearchInfo> comparator = Comparator.comparingInt(s -> -s.getCount());
+			comparator = comparator.thenComparingLong(s -> -s.getLastSearch());
+			topSearches.sort(comparator);
+			
+			List<SearchInfo> result = new ArrayList<>(topSearches.subList(0, Math.min(topSearches.size(), cnt)));
 
-			topSearches.sort(byDate);
-			
-			List<SearchInfo> result = new ArrayList<>();
-
-			// Latest 3 (most likely from today).
-			int index = Math.min(cntLatest, topSearches.size());
-			result.addAll(topSearches.subList(0, index));
-			
-			// Sort the rest by total amount of searches (from today and yesterday).
-			ArrayList<DBSearchInfo> tail = new ArrayList<>(topSearches.subList(index, topSearches.size())); 
-			tail.sort((s1, s2) -> -Integer.compare(s1.getCount() + s1.getTotal(), s2.getCount() + s2.getTotal()));
-			
-			// Top 3
-			result.addAll(tail.subList(0, Math.min(cntSearches, tail.size())));
-			
-			// Present all in last search order.
-			result.sort(byDate);
-			
+			// Sorted by date descending.
+			result.sort(Comparator.comparing(s -> -s.getLastSearch()));
 			return result;
 		}
 	}
 	
+	private long orMidnightYesterday(Long revisionDate) {
+		if (revisionDate != null) {
+			return revisionDate.longValue();
+		}
+		
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.add(Calendar.DAY_OF_MONTH, -1);
+		return calendar.getTimeInMillis();
+	}
+
 	/**
 	 * Looks all spam reports.
 	 */
-	public List<DBSpamReport> getAll(int limit) {
+	public List<DBNumbersEntry> getAll(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getAll(limit);
@@ -587,7 +601,7 @@ public class DB {
 	/**
 	 * Looks up spam reports with the most votes in the last month.
 	 */
-	public List<DBSpamReport> getTopSpamReports(int cnt) {
+	public List<DBNumbersEntry> getTopSpamReports(int cnt) {
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.add(Calendar.MONTH, -1);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -603,7 +617,7 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<DBSpamReport> getLatestBlocklistEntries(String login) {
+	public List<DBNumbersEntry> getLatestBlocklistEntries(String login) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
@@ -619,30 +633,67 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Set<String> whiteList = reports.getWhiteList();
-			List<PhoneInfo> numbers = reports.getBlocklist(minVotes)
-					.stream()
-					.collect(Collectors.toMap(s -> s.getPhone(), s -> s, DB::withMaxRating))
-					.values()
+			List<BlockListEntry> numbers = reports.getBlocklist(minVotes)
 					.stream()
 					.filter(s -> !whiteList.contains(s.getPhone()))
-					.map(s -> PhoneInfo.create()
-							.setPhone(s.getPhone())
-							.setVotes(s.getVotes())
-							.setRating(s.getRating()))
-					.sorted((a, b) -> a.getPhone().compareTo(b.getPhone()))
+					.map(DB::toBlocklistEntry)
 					.collect(Collectors.toList());
 			return Blocklist.create().setNumbers(numbers);
 		}
 	}
 	
-	private static BlockListEntry withMaxRating(BlockListEntry a, BlockListEntry b) {
-		return compare(a, b) < 0 ? b : a;
+	private static BlockListEntry toBlocklistEntry(DBNumbersEntry n) {
+		return BlockListEntry.create()
+				.setPhone(n.getPhone())
+				.setVotes(n.getVotes())
+				.setRating(rating(n));
 	}
 
-	private static int compare(BlockListEntry a, BlockListEntry b) {
-		int aCount = a.getCount();
-		int bCount = b.getCount();
-		return aCount < bCount ? -1 : aCount > bCount ? 1 : Integer.compare(a.getRating().ordinal(), b.getRating().ordinal());
+	private static Rating rating(NumberInfo n) {
+		if (n.getVotes() <= 0) {
+			return Rating.A_LEGITIMATE;
+		}
+		
+		Rating result = Rating.B_MISSED;
+		int max = 0;
+
+		{
+			int votes = n.getRatingFraud();
+			if (votes > max) {
+				result = Rating.G_FRAUD;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingGamble();
+			if (votes > max) {
+				result = Rating.F_GAMBLE;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingAdvertising();
+			if (votes > max) {
+				result = Rating.E_ADVERTISING;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingPing();
+			if (votes > max) {
+				result = Rating.D_POLL;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingPing();
+			if (votes > max) {
+				result = Rating.C_PING;
+				max = votes;
+			}
+		}
+		
+		return result;
 	}
 
 	private int getMinVotes(SqlSession session, String login) {
@@ -700,59 +751,77 @@ public class DB {
 			return nonNull(reports.getVotes(phone));
 		}
 	}
-	
-	/**
-	 * Info about the given phone number, or <code>null</code>, if the given number is not a known source of spam.
-	 */
-	public SpamReport getPhoneInfo(SpamReports reports, String phone) {
-		if (reports.isWhiteListed(phone)) {
-			return new DBSpamReport(phone, 0, 0, 0).setWhiteListed(true);
-		}
 
-		SpamReport result = reports.getPhoneInfo(phone);
-		if (result == null) {
-			result = reports.getPhoneInfoArchived(phone);
-			if (result == null) {
-				result = new DBSpamReport(phone, 0, 0, 0);
-			} else {
-				result.setArchived(true);
-			}
-		}
-		return result;
-	}
-	
 	public PhoneInfo getPhoneApiInfo(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			
-			if (reports.isWhiteListed(phone)) {
-				return PhoneInfo.create().setPhone(phone);
-			}
-			
-			PhoneInfo result = reports.getApiPhoneInfo(phone);
-			if (result == null) {
-				result = reports.getApiPhoneInfoArchived(phone);
-				if (result == null) {
-					result = PhoneInfo.create().setPhone(phone);
-				}
-			}
-			
-			AggregationInfo aggregation10 = reports.getAggregation10(prefix10(phone));
-			if (aggregation10 != null) {
-				result.setCnt10(aggregation10.getCnt());
-				result.setVotes10(aggregation10.getVotes());
-			}
-			
-			AggregationInfo aggregation100 = reports.getAggregation100(prefix100(phone));
-			if (aggregation100 != null) {
-				result.setCnt100(aggregation100.getCnt());
-				result.setVotes100(aggregation100.getVotes());
-			}
-			
-			return result;
+			return getPhoneApiInfo(reports, phone);
 		}
 	}
-	
+
+	public PhoneInfo getPhoneApiInfo(SpamReports reports, String phone) {
+		if (reports.isWhiteListed(phone)) {
+			return PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
+		}
+
+		NumberInfo info = getPhoneInfo(reports, phone);
+		AggregationInfo aggregation10 = getAggregation10(reports, phone);
+		AggregationInfo aggregation100 = getAggregation100(reports, phone);
+		
+		return getPhoneInfo(info, aggregation10, aggregation100);
+	}
+
+	public PhoneInfo getPhoneInfo(NumberInfo info, AggregationInfo aggregation10, AggregationInfo aggregation100) {
+		PhoneInfo result = PhoneInfo.create()
+			.setPhone(info.getPhone())
+			.setDateAdded(info.getAdded())
+			.setLastUpdate(info.getUpdated());
+		
+		int votes;
+		if (aggregation100.getVotes() >= MIN_AGGREGATE) {
+			votes = aggregation100.getVotes();
+			if (!info.isActive()) {
+				// Direct votes did not count yet.
+				votes += info.getVotes();
+			}
+			
+			if (aggregation10.getVotes() < MIN_AGGREGATE) {
+				// The votes of this number did not yet count to the aggregation of the block.
+				votes += aggregation10.getVotes();
+			}
+		} else if (aggregation10.getVotes() >= MIN_AGGREGATE) {
+			votes = aggregation10.getVotes();
+			if (!info.isActive()) {
+				// Direct votes did not count yet.
+				votes += info.getVotes();
+			}
+		} else {
+			votes = info.getVotes();
+			result.setArchived(!info.isActive());
+		}
+		
+		result.setVotes(votes);
+		result.setRating(rating(info));
+		
+		return result;
+	}
+
+	public AggregationInfo getAggregation100(SpamReports reports, String phone) {
+		String prefix = prefix100(phone);
+		AggregationInfo result = reports.getAggregation100(prefix);
+		return notNull(prefix, result);
+	}
+
+	public AggregationInfo getAggregation10(SpamReports reports, String phone) {
+		String prefix = prefix10(phone);
+		AggregationInfo result = reports.getAggregation10(prefix);
+		return notNull(prefix, result);
+	}
+
+	public AggregationInfo notNull(String prefix, AggregationInfo result) {
+		return result == null ? new AggregationInfo(prefix, 0, 0) : result;
+	}
+
 	private String prefix10(String phone) {
 		int length = phone.length() - 1;
 		return length < 0 ? "" : phone.substring(0, length);
@@ -787,7 +856,8 @@ public class DB {
 	public void addSearchHit(SpamReports reports, String phone, long now) {
 		int rows = reports.incSearchCount(phone, now);
 		if (rows == 0) {
-			reports.addSearchEntry(phone, now);
+			reports.addReport(phone, 0, now);
+			reports.incSearchCount(phone, now);
 		}
 	}
 	
@@ -1015,7 +1085,6 @@ public class DB {
 		LOG.info("Starting DB cleanup.");
 		
 		Calendar cal = GregorianCalendar.getInstance();
-		long now = cal.getTimeInMillis();
 		cal.add(Calendar.DAY_OF_MONTH, -OLD_VOTE_DAYS);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -1025,21 +1094,9 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			int cnt = reports.updatePrefixes();
-			LOG.info("Added " + cnt + " new numbers to the prefix table.");
-			
-			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
-			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
 			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
-			int deletedNew = reports.deleteArchivedReports(now);
 			
-			LOG.info("Reactivated " + reactivated + " reports, archived " + archived + " reports.");
-			if (deletedOld != reactivated) {
-				LOG.error("Reactivated " + reactivated + " records but deleted " + deletedOld + " reports from archive.");
-			}
-			if (deletedNew != archived) {
-				LOG.error("Archived " + archived + " records but deleted " + deletedNew + " reports from database.");
-			}
+			LOG.info("Archived " + archived + " reports.");
 			
 			session.commit();
 		} catch (PersistenceException ex) {
@@ -1141,31 +1198,32 @@ public class DB {
 		}
 	}
 	
-	private void runCleanupSearchHistory() {
-		LOG.info("Processing search history.");
-		cleanupSearchHistory(365);
+	private void runUpdateHistory() {
+		LOG.info("Processing history.");
+		updateHistory(365);
 	}
 
 	/** 
 	 * Creates a new snapshot of search history.
 	 */
-	public void cleanupSearchHistory(int maxHistory) {
+	public void updateHistory(int maxHistory) {
 		long now = System.currentTimeMillis();
+		updateHistory(maxHistory, now);
+	}
+
+	public void updateHistory(int maxHistory, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
 			reports.createRevision(now);
-			int newest = reports.getLastRevision();
-			reports.fillSearchRevision(newest);
-			reports.backupSearches();
+			int newRev = reports.getLastRevision();
+			Long lastSnapshot = reports.getRevisionDate(newRev - 1);
+			reports.createHistorySnapshot(newRev, lastSnapshot == null ? 0 : lastSnapshot.longValue());
 			
-			reports.fillRatingRevision(newest);
-			reports.backupRatings();
-			
-			int oldest = reports.getOldestRevision();
-			if (newest - oldest >= maxHistory) {
-				reports.cleanSearchCluster(oldest);
-				reports.removeSearchCluster(oldest);
+			int oldestRev = reports.getOldestRevision();
+			if (newRev - oldestRev >= maxHistory) {
+				reports.cleanSearchCluster(oldestRev);
+				reports.removeSearchCluster(oldestRev);
 			}
 			
 			session.commit();
@@ -1179,13 +1237,55 @@ public class DB {
 	 * The entry last in the list represents the searches recorded today.
 	 * </p>
 	 */
-	public List<Integer> getSearchHistory(String phone) {
+	public List<Integer> getSearchHistory(String phone, int size) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			List<Integer> data = reports.getSearchCountHistory(phone);
-			data.add(nonNull(reports.getCurrentSearchHits(phone)));
-			return data;
+			
+			return getSearchHistory(reports, phone, size);
 		}
+	}
+
+	public List<Integer> getSearchHistory(SpamReports reports, String phone, int size) {
+		List<Integer> result = new ArrayList<>();
+
+		int lastRev;
+		int revExpected;
+		List<DBNumberHistory> entries;
+		
+		Integer lastRevision = reports.getLastRevision();
+		if (lastRevision != null) {
+			lastRev = lastRevision.intValue();
+			revExpected = lastRev  - (size - 1);
+			entries = reports.getSearchHistory(revExpected, phone);
+		} else {
+			lastRev = size - 1;
+			revExpected = 0;
+			entries = Collections.emptyList();
+		}
+		
+		int last = 0;
+		for (DBNumberHistory entry : entries) {
+			while (revExpected < entry.getRev()) {
+				result.add(Integer.valueOf(0));
+				revExpected++;
+			}
+			int current = entry.getSearches();
+			result.add(Integer.valueOf(current - last));
+			last = current;
+			revExpected++;
+		}
+		
+		while (revExpected <= lastRev) {
+			result.add(Integer.valueOf(0));
+			revExpected++;
+		}
+		
+		
+		NumberInfo info = getPhoneInfo(reports, phone);
+		result.add(info.getSearches() - last);
+		
+		// Drop first, because this entry contains no delta information.
+		return result.subList(1, result.size());
 	}
 
 	/** 
@@ -1270,45 +1370,6 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return nonNull(reports.getTotalSearches());
 		}
-	}
-
-	public List<? extends SearchInfo> getSearches(String phone) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			return getSearches(reports, phone);
-		}
-	}
-
-	public List<? extends SearchInfo> getSearches(SpamReports reports, String phone) {
-		int lastRevision = nonNull(reports.getLastRevision());
-		int startRevision = Math.max(1,  lastRevision - 6);
-		
-		List<DBSearchInfo> dbHistory = reports.getSearchHistory(startRevision, phone);
-		SearchInfo today = reports.getSearchesToday(phone);
-		if (dbHistory.isEmpty() && today == null) {
-			return Collections.emptyList();
-		}
-
-		List<SearchInfo> result = new ArrayList<>();
-		
-		int revision = startRevision;
-		for (DBSearchInfo info : dbHistory) {
-			while (info.getRevision() > revision) {
-				result.add(SearchInfo.create().setRevision(revision++));
-			}
-			result.add(info);
-			revision++;
-		}
-		while (lastRevision > revision) {
-			result.add(SearchInfo.create().setRevision(revision++));
-		}
-		if (today == null) {
-			today = SearchInfo.create();
-		}
-		today.setRevision(lastRevision + 1);
-		result.add(today);
-		return result;
 	}
 	
 }

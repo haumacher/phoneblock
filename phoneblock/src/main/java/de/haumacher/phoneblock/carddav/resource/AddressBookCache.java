@@ -11,9 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +18,13 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
+import de.haumacher.phoneblock.db.DBNumbersEntry;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.DBSpamReport;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Cache for user address books that keep the data in memory between requests.
@@ -177,14 +176,14 @@ public class AddressBookCache implements ServletContextListener {
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
 			ListType listType) {
-		List<DBSpamReport> result = reports.getReports();
+		List<DBNumbersEntry> result = reports.getReports();
 		long now = System.currentTimeMillis();
 		NumberTree numberTree = new NumberTree();
-		for (DBSpamReport report : result) {
+		for (DBNumbersEntry report : result) {
 			String phone = report.getPhone();
 			
 			int votes = report.getVotes();
-			int ageInDays = (int) ((now - report.getLastUpdate()) / 1000 / 60 / 60 / 24);
+			int ageInDays = (int) ((now - report.getUpdated()) / 1000 / 60 / 60 / 24);
 			
 			numberTree.insert(phone, votes, ageInDays);
 		}

@@ -30,6 +30,18 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #isWhiteListed() */
 	public static final String WHITE_LISTED__PROP = "whiteListed";
 
+	/** @see #getCnt10() */
+	public static final String CNT_10__PROP = "cnt10";
+
+	/** @see #getVotes10() */
+	public static final String VOTES_10__PROP = "votes10";
+
+	/** @see #getCnt100() */
+	public static final String CNT_100__PROP = "cnt100";
+
+	/** @see #getVotes100() */
+	public static final String VOTES_100__PROP = "votes100";
+
 	private String _phone = "";
 
 	private int _votes = 0;
@@ -41,6 +53,14 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	private boolean _archived = false;
 
 	private boolean _whiteListed = false;
+
+	private int _cnt10 = 0;
+
+	private int _votes10 = 0;
+
+	private int _cnt100 = 0;
+
+	private int _votes100 = 0;
 
 	/**
 	 * Creates a {@link SpamReport} instance.
@@ -159,6 +179,98 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		_whiteListed = value;
 	}
 
+	/**
+	 * The number of phone numbers with the the same prefix but a different end digit that are also reported as SPAM.
+	 */
+	public final int getCnt10() {
+		return _cnt10;
+	}
+
+	/**
+	 * @see #getCnt10()
+	 */
+	public de.haumacher.phoneblock.db.model.SpamReport setCnt10(int value) {
+		internalSetCnt10(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getCnt10()} without chain call utility. */
+	protected final void internalSetCnt10(int value) {
+		_listener.beforeSet(this, CNT_10__PROP, value);
+		_cnt10 = value;
+	}
+
+	/**
+	 * The total number of votes against all phone numbers with the the same prefix but a different end digit.
+	 */
+	public final int getVotes10() {
+		return _votes10;
+	}
+
+	/**
+	 * @see #getVotes10()
+	 */
+	public de.haumacher.phoneblock.db.model.SpamReport setVotes10(int value) {
+		internalSetVotes10(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getVotes10()} without chain call utility. */
+	protected final void internalSetVotes10(int value) {
+		_listener.beforeSet(this, VOTES_10__PROP, value);
+		_votes10 = value;
+	}
+
+	/**
+	 * The number of phone numbers with the the same prefix but two different end digits that are also reported as SPAM.
+	 *
+	 * <p>
+	 * This number only considers {@link #getCnt10() blocks of phone numbers} with a minimum fill-ratio.
+	 * </p>
+	 */
+	public final int getCnt100() {
+		return _cnt100;
+	}
+
+	/**
+	 * @see #getCnt100()
+	 */
+	public de.haumacher.phoneblock.db.model.SpamReport setCnt100(int value) {
+		internalSetCnt100(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getCnt100()} without chain call utility. */
+	protected final void internalSetCnt100(int value) {
+		_listener.beforeSet(this, CNT_100__PROP, value);
+		_cnt100 = value;
+	}
+
+	/**
+	 * The total number of votes against all phone numbers with the the same prefix but two different end digits. 
+	 *
+	 * <p>
+	 * This number only considers {@link #getCnt10() blocks of phone numbers} with a minimum fill-ratio.
+	 * </p>
+	 */
+	public final int getVotes100() {
+		return _votes100;
+	}
+
+	/**
+	 * @see #getVotes100()
+	 */
+	public de.haumacher.phoneblock.db.model.SpamReport setVotes100(int value) {
+		internalSetVotes100(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getVotes100()} without chain call utility. */
+	protected final void internalSetVotes100(int value) {
+		_listener.beforeSet(this, VOTES_100__PROP, value);
+		_votes100 = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -193,7 +305,11 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			LAST_UPDATE__PROP, 
 			DATE_ADDED__PROP, 
 			ARCHIVED__PROP, 
-			WHITE_LISTED__PROP));
+			WHITE_LISTED__PROP, 
+			CNT_10__PROP, 
+			VOTES_10__PROP, 
+			CNT_100__PROP, 
+			VOTES_100__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -209,6 +325,10 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case DATE_ADDED__PROP: return getDateAdded();
 			case ARCHIVED__PROP: return isArchived();
 			case WHITE_LISTED__PROP: return isWhiteListed();
+			case CNT_10__PROP: return getCnt10();
+			case VOTES_10__PROP: return getVotes10();
+			case CNT_100__PROP: return getCnt100();
+			case VOTES_100__PROP: return getVotes100();
 			default: return null;
 		}
 	}
@@ -222,6 +342,10 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case DATE_ADDED__PROP: internalSetDateAdded((long) value); break;
 			case ARCHIVED__PROP: internalSetArchived((boolean) value); break;
 			case WHITE_LISTED__PROP: internalSetWhiteListed((boolean) value); break;
+			case CNT_10__PROP: internalSetCnt10((int) value); break;
+			case VOTES_10__PROP: internalSetVotes10((int) value); break;
+			case CNT_100__PROP: internalSetCnt100((int) value); break;
+			case VOTES_100__PROP: internalSetVotes100((int) value); break;
 		}
 	}
 
@@ -252,6 +376,14 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.value(isArchived());
 		out.name(WHITE_LISTED__PROP);
 		out.value(isWhiteListed());
+		out.name(CNT_10__PROP);
+		out.value(getCnt10());
+		out.name(VOTES_10__PROP);
+		out.value(getVotes10());
+		out.name(CNT_100__PROP);
+		out.value(getCnt100());
+		out.name(VOTES_100__PROP);
+		out.value(getVotes100());
 	}
 
 	@Override
@@ -263,6 +395,10 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case DATE_ADDED__PROP: setDateAdded(in.nextLong()); break;
 			case ARCHIVED__PROP: setArchived(in.nextBoolean()); break;
 			case WHITE_LISTED__PROP: setWhiteListed(in.nextBoolean()); break;
+			case CNT_10__PROP: setCnt10(in.nextInt()); break;
+			case VOTES_10__PROP: setVotes10(in.nextInt()); break;
+			case CNT_100__PROP: setCnt100(in.nextInt()); break;
+			case VOTES_100__PROP: setVotes100(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -288,6 +424,18 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** XML attribute or element name of a {@link #isWhiteListed} property. */
 	private static final String WHITE_LISTED__XML_ATTR = "white-listed";
 
+	/** XML attribute or element name of a {@link #getCnt10} property. */
+	private static final String CNT_10__XML_ATTR = "cnt-10";
+
+	/** XML attribute or element name of a {@link #getVotes10} property. */
+	private static final String VOTES_10__XML_ATTR = "votes-10";
+
+	/** XML attribute or element name of a {@link #getCnt100} property. */
+	private static final String CNT_100__XML_ATTR = "cnt-100";
+
+	/** XML attribute or element name of a {@link #getVotes100} property. */
+	private static final String VOTES_100__XML_ATTR = "votes-100";
+
 	@Override
 	public String getXmlTagName() {
 		return SPAM_REPORT__XML_ELEMENT;
@@ -307,6 +455,10 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.writeAttribute(DATE_ADDED__XML_ATTR, Long.toString(getDateAdded()));
 		out.writeAttribute(ARCHIVED__XML_ATTR, Boolean.toString(isArchived()));
 		out.writeAttribute(WHITE_LISTED__XML_ATTR, Boolean.toString(isWhiteListed()));
+		out.writeAttribute(CNT_10__XML_ATTR, Integer.toString(getCnt10()));
+		out.writeAttribute(VOTES_10__XML_ATTR, Integer.toString(getVotes10()));
+		out.writeAttribute(CNT_100__XML_ATTR, Integer.toString(getCnt100()));
+		out.writeAttribute(VOTES_100__XML_ATTR, Integer.toString(getVotes100()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -368,6 +520,22 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 				setWhiteListed(Boolean.parseBoolean(value));
 				break;
 			}
+			case CNT_10__XML_ATTR: {
+				setCnt10(Integer.parseInt(value));
+				break;
+			}
+			case VOTES_10__XML_ATTR: {
+				setVotes10(Integer.parseInt(value));
+				break;
+			}
+			case CNT_100__XML_ATTR: {
+				setCnt100(Integer.parseInt(value));
+				break;
+			}
+			case VOTES_100__XML_ATTR: {
+				setVotes100(Integer.parseInt(value));
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -399,6 +567,22 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			}
 			case WHITE_LISTED__XML_ATTR: {
 				setWhiteListed(Boolean.parseBoolean(in.getElementText()));
+				break;
+			}
+			case CNT_10__XML_ATTR: {
+				setCnt10(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case VOTES_10__XML_ATTR: {
+				setVotes10(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case CNT_100__XML_ATTR: {
+				setCnt100(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case VOTES_100__XML_ATTR: {
+				setVotes100(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			default: {

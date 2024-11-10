@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +24,14 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBNumbersEntry;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.model.NumberInfo;
+import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.RatingInfo;
@@ -173,13 +178,14 @@ public class SearchServlet extends HttpServlet {
 		// Note: Search for comments first, since new comments may change the state of the number.
 		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId, isBot);
 		
-		SpamReport info;
-		List<? extends SearchInfo> searches;
-		List<? extends RatingInfo> ratingInfos;
+		NumberInfo numberInfo;
+		PhoneInfo info;
+		List<Integer> searches;
 		String aiSummary;
 		List<String> relatedNumbers;
 		
-		String prev, next;
+		String prev;
+		String next;
 		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
@@ -193,13 +199,39 @@ public class SearchServlet extends HttpServlet {
 				commit = true;
 			}
 			
+			numberInfo = db.getPhoneInfo(reports, phone);
 			
-			info = db.getPhoneInfo(reports, phoneId);
-			searches = db.getSearches(reports, phoneId);
-			ratingInfos = reports.getRatings(phoneId);
+			if (reports.isWhiteListed(phone)) {
+				info = PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
+				
+				numberInfo.setCalls(0);
+				numberInfo.setVotes(0);
+				numberInfo.setRatingPing(0);
+				numberInfo.setRatingPoll(0);
+				numberInfo.setRatingAdvertising(0);
+				numberInfo.setRatingGamble(0);
+				numberInfo.setRatingFraud(0);
+				
+				relatedNumbers = Collections.emptyList();
+			} else {
+				AggregationInfo aggregation10 = db.getAggregation10(reports, phone);
+				AggregationInfo aggregation100 = db.getAggregation100(reports, phone);
+				
+				info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
+				
+				if (aggregation100.getCnt() >= DB.MIN_AGGREGATE) {
+					relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix());
+				} else {
+					if (aggregation100.getCnt() >= DB.MIN_AGGREGATE) {
+						relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix());
+					} else {
+						relatedNumbers = Collections.emptyList();
+					}
+				}
+			}
+			
+			searches = db.getSearchHistory(reports, phoneId, 7);
 			aiSummary = reports.getSummary(phoneId);
-			
-			relatedNumbers = reports.getRelatedNumbers(phoneId);
 			
 			prev = reports.getPrevPhone(phoneId);
 			next = reports.getNextPhone(phoneId);
@@ -228,27 +260,28 @@ public class SearchServlet extends HttpServlet {
 		comments.addAll(negative.subList(0, negativeCnt));
 		comments.sort(COMMENT_ORDER);
 		
-		Rating topRating = Rating.B_MISSED;
-		int maxVotes = 0;
 		Map<Rating, Integer> ratings = new HashMap<>();
-		for (RatingInfo ratingInfo : ratingInfos) {
-			Rating currentRating = ratingInfo.getRating();
-			int ratingVotes = ratingInfo.getVotes();
-			ratings.put(currentRating, ratingVotes);
-			
-			if (ratingVotes >= maxVotes && currentRating != Rating.A_LEGITIMATE) {
-				topRating = currentRating;
-				maxVotes = ratingVotes;
-			}
-		}
+		ratings.put(Rating.A_LEGITIMATE, numberInfo.getRatingLegitimate());
+		ratings.put(Rating.C_PING, numberInfo.getRatingPing());
+		ratings.put(Rating.D_POLL, numberInfo.getRatingPoll());
+		ratings.put(Rating.E_ADVERTISING, numberInfo.getRatingAdvertising());
+		ratings.put(Rating.F_GAMBLE, numberInfo.getRatingGamble());
+		ratings.put(Rating.G_FRAUD, numberInfo.getRatingFraud());
 		
-		int votes = info.getVotes();
-		if (votes == 0) {
-			topRating = Rating.A_LEGITIMATE;
-		}
+		Rating topRating = info.getRating();
 		
-		return SearchResult.create().setPhoneId(phoneId).setNumber(number).setComments(comments).setInfo(info).setSearches(searches).setAiSummary(aiSummary).setRelatedNumbers(relatedNumbers).setPrev(prev).setNext(next)
-				.setTopRating(topRating).setRatings(ratings);
+		return SearchResult.create()
+				.setPhoneId(phoneId)
+				.setNumber(number)
+				.setComments(comments)
+				.setInfo(info)
+				.setSearches(searches)
+				.setAiSummary(aiSummary)
+				.setRelatedNumbers(relatedNumbers)
+				.setPrev(prev)
+				.setNext(next)
+				.setTopRating(topRating)
+				.setRatings(ratings);
 	}
 
 	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult) throws ServletException, IOException {
@@ -321,7 +354,7 @@ public class SearchServlet extends HttpServlet {
 		return aiSummary == null || aiSummary.isBlank();
 	}
 
-	private String defaultSummary(HttpServletRequest req, SpamReport info) {
+	private String defaultSummary(HttpServletRequest req, PhoneInfo info) {
 		int votes = info.getVotes();
 		if (info.isWhiteListed()) {
 			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.";
@@ -339,7 +372,7 @@ public class SearchServlet extends HttpServlet {
 		}
 	}
 
-	private String defaultSimpleSummary(SpamReport info) {
+	private String defaultSimpleSummary(PhoneInfo info) {
 		int votes = info.getVotes();
 		if (votes == 0) {
 			return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";

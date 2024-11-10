@@ -313,7 +313,6 @@
 		</resources>
 
 		<plugins>
-		
 			<plugin>
 				<groupId>de.haumacher.msgbuf</groupId>
 				<version>${msgbuf.version}</version>
