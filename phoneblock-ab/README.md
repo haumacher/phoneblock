@@ -13,4 +13,72 @@ eine kleine Weile davon abhalten kann, andere zu nerven. Wie das geht? Wenn Phon
 Begrüßungsmeldung abgespielt. Danach wartet PhoneBlock, bis das Gegenüber etwas sagt und stellt danach vollkommen sinnlose 
 Rückfragen. Eine professionelle Telfonmarketingfachkraft kann sich so minutenlang mit PhoneBlock unterhalten. 
 
+## Howto build and run
+
+You need a Java 17 JDK, you can test whether it is in your path:
+```
+java -version
+```
+This should report something like the following:
+```
+openjdk version "17.0.12" 2024-07-16
+```
+
+Git and a Maven build tool are required for building, you can instead download a pre-compiled version from GitHub.
+
+### Clone the repo
+```
+git clone https://github.com/haumacher/phoneblock.git
+cd phoneblock
+```
+
+### Build the code
+
+Assuming, you are in the main directory cloned from GitHub, type
+```
+mvn -am --projects de.haumacher:phoneblock-ab install
+```
+
+After lots of output, it should report:
+```
+[INFO] --- maven-install-plugin:3.0.1:install (default-install) @ phoneblock-ab ---
+[INFO] Installing .../phoneblock/phoneblock-ab/pom.xml to .../.m2/repository/de/haumacher/phoneblock-ab/<version>/phoneblock-ab-<version>.pom
+[INFO] Installing .../phoneblock/phoneblock-ab/target/phoneblock-ab-<version>.jar to .../.m2/repository/de/haumacher/phoneblock-ab/<version>/phoneblock-ab-<version>.jar
+[INFO] Installing .../phoneblock/phoneblock-ab/target/phoneblock-ab-<version>-jar-with-dependencies.jar to .../.m2/repository/de/haumacher/phoneblock-ab/<version>/phoneblock-ab-<version>-jar-with-dependencies.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for PhoneBlock Aggregator <version>:
+[INFO] 
+[INFO] PhoneBlock Aggregator .............................. SUCCESS [  0.446 s]
+[INFO] PhoneBlock shared code ............................. SUCCESS [  2.104 s]
+[INFO] PhoneBlock Anrufbeantworter ........................ SUCCESS [  2.714 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+```
+
+Now you have a runnable JAR in `phoneblock-ab/target/phoneblock-ab-<version>-jar-with-dependencies.jar`.
+
+## Create WAV files for playback by the answerbot
+Create those files in the directory `phoneblock-ab/conversation/*/PCMA`. Be sure to use the WAV audio file format and save these files with 8bit PCMA (a-law encoding) which is required for RTP audio streaming.
+
+## Configure the answerbot
+Copy the configuration template to your home directory
+```
+cp phoneblock-ab/.phoneblock.template ~/.phoneblock
+```
+
+Fill out the missing information. You have to enter at least
+* `via-addr`
+* `user`
+* `passwd`
+* `phoneblock-username`
+* `phoneblock-password`
+* `conversation`
+
+### Start the answerbot
+You can start the answer bot with the following command. This assumes that you have built the code youself. If you downloaded a pre-compiled version, you have to adjust the file name and its path:
+```
+java -jar phoneblock-ab/target/phoneblock-ab-<version>-jar-with-dependencies.jar
+```
+
 
