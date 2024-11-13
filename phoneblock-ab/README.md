@@ -59,7 +59,7 @@ After lots of output, it should report:
 Now you have a runnable JAR in `phoneblock-ab/target/phoneblock-ab-<version>-jar-with-dependencies.jar`.
 
 ## Create WAV files for playback by the answerbot
-Create those files in the directory `phoneblock-ab/conversation/*/PCMA`. Be sure to use the WAV audio file format and save these files with 8bit PCMA (a-law encoding) which is required for RTP audio streaming.
+Create those files in the directory `phoneblock-ab/conversation/*/PCMA`. Have a look at the directory layout of [conversation](conversation) for example. Be sure to use the WAV audio file format and save these files with 8bit PCMA (a-law encoding) which is required for RTP audio streaming.
 
 ## Configure the answerbot
 Copy the configuration template to your home directory
