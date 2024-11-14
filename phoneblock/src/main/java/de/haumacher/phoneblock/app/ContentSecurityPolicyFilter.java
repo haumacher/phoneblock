@@ -26,6 +26,13 @@ public class ContentSecurityPolicyFilter implements Filter {
 
     private static boolean addWebsiteHeaders(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
+        int webappIndex = request.getContextPath().length();
+        
+		if (requestURI.startsWith("/ab", webappIndex)) {
+        	// The flutter UI is breaks with content security policy enabled.
+        	return false;
+        }
+        
         return  !requestURI.contains("/contacts") &&
                 (!requestURI.contains("/api/") || requestURI.lastIndexOf("/") == requestURI.length() - 1);
     }
