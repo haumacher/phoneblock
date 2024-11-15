@@ -4,8 +4,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -99,31 +99,31 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * Encodes URL parameter transporting the location after login to the next link invocation.
 	 */
-	public static String locationParam(HttpServletRequest request) throws UnsupportedEncodingException {
+	public static String locationParam(HttpServletRequest request) {
 		return locationParam(request, false);
 	}
 	
 	/**
 	 * Encodes URL parameter transporting the location after login to the next link invocation.
 	 */
-	public static String locationParamFirst(HttpServletRequest request) throws UnsupportedEncodingException {
+	public static String locationParamFirst(HttpServletRequest request) {
 		return locationParam(request, true);
 	}
 	
 	/**
 	 * Encodes URL parameter transporting the location after login to the next link invocation.
 	 */
-	private static String locationParam(HttpServletRequest request, boolean first) throws UnsupportedEncodingException {
+	private static String locationParam(HttpServletRequest request, boolean first) {
 		return locationParam(location(request), first);
 	}
 
 	/**
 	 * Creates an URL parameter transporting the location after login to the next link invocation.
 	 */
-	public static String locationParam(String location, boolean first) throws UnsupportedEncodingException {
+	public static String locationParam(String location, boolean first) {
 		String locationParam;
 		if (location != null) {
-			locationParam = (first ? "?" : "&") + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, "UTF-8");
+			locationParam = (first ? "?" : "&") + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, StandardCharsets.UTF_8);
 		} else {
 			locationParam = "";
 		}
