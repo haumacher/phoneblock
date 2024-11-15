@@ -11,7 +11,7 @@ via-addr=<fill-in-here>
 # The port where the SIP service should be listening. This can be an arbitrary
 # free port. The default port for SIP is 5060, but any other port should also 
 # do the job. 
-host-port=5060
+host-port=50060
 
 # Set this to true for debugging. This causes all communication to be logged
 # in full detail
@@ -67,7 +67,7 @@ silence-db = -35
 media_port=50100
 
 # The number of subsequent ports that RTP audio transmission can use.
-port-count=100
+port-count=10
 
 # The directory where to store recordings. If no directory is specified, no audio
 # is recorded.

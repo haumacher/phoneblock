@@ -1,0 +1,13 @@
+host-port=50060
+registrar=fritz.box
+route=fritz.box;lr
+realm=fritz.box
+media=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+min-silence-time = 1500
+padding-time = 500
+silence-db = -35
+media_port=50100
+port-count=10
+#recodings=/opt/phoneblock/recordings
+conversation=/opt/phoneblock/conversation
+
