@@ -13,6 +13,8 @@
 <body>
 <jsp:include page="../header.jspf"></jsp:include>
 
+<input type="hidden" id="context-path" value="<%=request.getContextPath()%>">
+
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">

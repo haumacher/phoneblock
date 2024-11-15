@@ -10,7 +10,7 @@ function showAB() {
     if (window.abWindow != null && !window.abWindow.closed) {
         window.abWindow.focus();
     } else {
-        window.abWindow = window.open(window.location.host + "/ab/", "phoneblock-ab");
+        window.abWindow = window.open(getContextBasePath() + "/ab/", "phoneblock-ab");
     }
     return false;
 }
