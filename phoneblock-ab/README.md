@@ -1,7 +1,7 @@
 # phoneblock-ab - Der PhoneBlock-Anrufbeantworter
 
 Das Blocklist-Telefonbuch wird immer größer. Mittlerweile hat es die 10.000 Nummmenmarke geknackt. Ein Telefonbuch in der 
-Fritz!Box kann aber je nach Modell nur höchstens 3000 bis 4000 Nummern fassen. Die Lösung ist der **PhoneBlock-Anrufbeantworter**.
+Fritz!Box kann aber je nach Modell nur höchstens 3000 bis 4000 Nummern fassen. Die Lösung ist der [PhoneBlock-Anrufbeantworter](https://phoneblock.net/phoneblock/anrufbeantworter/).
 
 Den PhoneBlock-Anrufbeantworter meldest du an Deiner Fritz!Box (oder einem beliebigen anderen VOIP-fähigen Internetrouter) 
 als Telefoniegerät "Telefon mit oder ohne Anrufbeantworter" an. Bei einem Anruf checkt der PhoneBlock-AB blitzschnell, ob die 
@@ -11,7 +11,17 @@ keinen nächtlichen Update-Lauf mehr gibt.
 Das Witzige ist, dass der PhoneBlock-Anrufbeantworter deine unerwünschten Anrufer in ein richtiges Gespräch verwickeln und sie so
 eine kleine Weile davon abhalten kann, andere zu nerven. Wie das geht? Wenn PhoneBlock einen Anruf annimmt, wird zuerst eine 
 Begrüßungsmeldung abgespielt. Danach wartet PhoneBlock, bis das Gegenüber etwas sagt und stellt danach vollkommen sinnlose 
-Rückfragen. Eine professionelle Telfonmarketingfachkraft kann sich so minutenlang mit PhoneBlock unterhalten. 
+Rückfragen. Eine professionelle Telfonmarketingfachkraft kann sich so minutenlang mit PhoneBlock unterhalten.
+
+## Ohne eigenen Computer direkt loslegen
+Um den [PhoneBlock-Anrufbeantworter](https://phoneblock.net/phoneblock/anrufbeantworter/) zu nutzen, benötigst Du keine 
+Zusatzhardware. Du kannst die offizielle Version auf phoneblock.net verwenden und diesen Cloud-AB direkt an Deiner Fritz!Box
+anmelden. Natürlich kannst Du den Anrufbeantworter auch lokal bei Dir betreiben, das erfordert allerdings ein gutes Maß an 
+technischen Vorkenntnissen - einfach weiterlesen.
+
+## Start as Docker container
+If you don't want to build the code your own, you can use a [pre-built docker container](https://hub.docker.com/repository/docker/phoneblock/answerbot/general)
+to start the answerbot locally. Check out the details on the docker page.
 
 ## Howto build and run
 
@@ -80,5 +90,3 @@ You can start the answer bot with the following command. This assumes that you h
 ```
 java -jar phoneblock-ab/target/phoneblock-ab-<version>-jar-with-dependencies.jar
 ```
-
-
