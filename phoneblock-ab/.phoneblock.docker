@@ -8,6 +8,5 @@ padding-time = 500
 silence-db = -35
 media_port=50100
 port-count=10
-#recodings=/opt/phoneblock/recordings
+recodings=none
 conversation=/opt/phoneblock/conversation
-

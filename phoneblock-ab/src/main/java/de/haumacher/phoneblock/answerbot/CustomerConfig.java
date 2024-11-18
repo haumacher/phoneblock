@@ -23,11 +23,11 @@ public class CustomerConfig implements CustomerOptions {
 			handler = SipURIHandler.class)
 	private SipURI route;
 	
-	@Option(name = "--user",
+	@Option(name = "--sip-user",
 			usage = "User name to register at the registrar server.")
 	private String user;
 	
-	@Option(name = "--passwd",
+	@Option(name = "--sip-passwd",
 			usage = "Password for the user to register at the registrar server.")
 	private String passwd;
 	
