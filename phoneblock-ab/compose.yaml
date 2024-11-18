@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=fritz.box
+      - ROUTE=fritz.box;lr
+      - REALM=fritz.box
+      - SIP_USER=phoneblock
+      - SIP_PASSWD=your-password
+      - HOST_PORT=50060
+      - PHONEBLOCK_USERNAME=<fill-out-here>
+      - PHONEBLOCK_PASSWORD=<fill-out-here>
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - MIN_SILENCE_TIME = 1500
+      - PADDING_TIME = 500
+      - SILENCE_DB = -35
+      - MEDIA_PORT=50100
+      - PORT_COUNT=10
+      - RECODINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+    volumes:
+      - ./conversation:/opt/phoneblock/conversation
+      - ./recordings:/opt/phoneblock/recordings
+    restart: unless-stopped
