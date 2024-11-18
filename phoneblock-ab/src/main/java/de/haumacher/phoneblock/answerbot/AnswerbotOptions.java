@@ -14,7 +14,7 @@ import org.mjsip.ua.StaticOptions;
 public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 
 	/** 
-	 * The directory where to store recordings, <code>null</code> if recording is diabled.
+	 * The directory where to store recordings, <code>null</code> if recording is disabled.
 	 */
 	String recordingDir();
 

@@ -26,18 +26,11 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	private File _conversationDir = new File("./conversation");
 	
 	@Option(name = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording.")
-	private String _recordingDir = ".";
+	private String _recordingDir = "none";
 	
 	@Option(name = "--test-prefix", usage = "Phone number prefix that triggers the answer bot to respond (for testing). " + 
 			"A local number typically starts with '*', therefore this prefix can be used to allow calling the answer bot locally.")
 	private String _testPrefix = "*";
-	
-	/**
-	 * The configured recoding directory.
-	 */
-	public String getRecordingDir() {
-		return _recordingDir == null || _recordingDir.isBlank() || "none".equals(_recordingDir) ? null : _recordingDir;
-	}
 	
 	@Option(name = "--buffer-time", usage = "Time in milliseconds to buffer the audio stream for silence detection.")
 	private int _bufferTime = 20;
@@ -116,7 +109,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 
 	@Override
 	public String recordingDir() {
-		return _recordingDir;
+		return _recordingDir == null || _recordingDir.isBlank() || "none".equals(_recordingDir) ? null : _recordingDir;
 	}
 	
 	/**
@@ -203,7 +196,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	
 	@Override
 	public Direction getDirection() {
-		return this.recordingDir() != null ? Direction.FULL_DUPLEX : Direction.SEND_ONLY;
+		return recordingDir() != null ? Direction.FULL_DUPLEX : Direction.SEND_ONLY;
 	}
 
 	/**
