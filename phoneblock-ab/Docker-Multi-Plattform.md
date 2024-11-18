@@ -3,9 +3,9 @@ Docker unterstützt das Bereitstellen von Multi-Plattform Images.
 Die Dokumentation hierfür ist unter https://docs.docker.com/build/building/multi-platform/ zu finden.
 
 ## Setup
-Zunächst muss auf dem PC `docker` und `docker-buildx` installiert sein. Nach der installation von `docker-buildx` muss Docker neu gestartet werden.
+Zunächst muss auf dem PC `docker`, `docker-buildx` und `binfmt-support `installiert sein. Nach der installation von `docker-buildx` muss Docker neu gestartet werden.
 ### Ubuntu
-`sudo apt install docker-buildx`
+`sudo apt install docker binfmt-support docker-buildx`
 
 ## Einrichten QEMU
 QEMU wird benötigt um die verschiedenen CPU-Architekturen zu emulieren.
