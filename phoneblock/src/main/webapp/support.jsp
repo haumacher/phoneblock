@@ -27,7 +27,7 @@
 		<p>
 			Wenn Dir PhoneBlock gefällt und es Dir hilft, lästige Plagegeister von deinem Telefonanschluss fernzuhalten, dann
 			bitte ich Dich an den Kosten von PhoneBlock zu beteiligen. Wenn viele Nutzer mitmachen, reicht ein geringer
-			Betrag aus. Schön wäre, wenn Du <b>1€ pro Jahr</b> oder <b>0,05€ pro abgefangenem Spam-Anruf</b> als Beitrag bezahlst, 
+			Betrag aus. Schön wäre, wenn Du <b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b> als Beitrag bezahlst, 
 			die Höhe bleibt aber Dir überlassen.
 		</p>
 
