@@ -69,6 +69,9 @@ message AnswerBotSip extends AnswerBotSetting {
 	
 	/** IPv6 address transmitted during the last DynDNS update. */
 	string ipv6;
+	
+	/** Whether to use the IPv4 address for communication, even if an IPv6 address is available. */
+	bool preferIPv4;
 
     /** The SIP name of the user's box. */	
 	string registrar;

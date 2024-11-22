@@ -335,30 +335,52 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				bot.setIpv6(dynDns.getIpv6());
 			}
 			
+			if (bot.isPreferIPv4()) {
+				String ipv4 = bot.getIpv4();
+				if (nonEmpty(ipv4)) {
+					LOG.info("Using preferred DynDNS IPv4 address for '{}': {}", bot.getUserName(), ipv4);
+					return ipv4;
+				}
+			}
+
 			String ipv6 = bot.getIpv6();
-			if (ipv6 != null && !ipv6.isEmpty()) {
+			if (nonEmpty(ipv6)) {
 				LOG.info("Using DynDNS IPv6 address for '" + bot.getUserName() + "': " + ipv6);
 				return ipv6;
 			}
+			
 			String ipv4 = bot.getIpv4();
-			if (ipv4 != null && !ipv4.isEmpty()) {
-				LOG.info("Using DynDNS IPv4 address for '" + bot.getUserName() + "': " + ipv6);
+			if (nonEmpty(ipv4)) {
+				LOG.info("Using DynDNS IPv4 address for '{}': {}", bot.getUserName(), ipv4);
 				return ipv4;
 			}
 			throw new UnknownHostException("Neither host name nor DynDNS configured for: " + bot.getUserName());
 		} else {
+			if (bot.isPreferIPv4()) {
+				String ipv4 = resolve(AddressType.IP4, host);
+				if (nonEmpty(ipv4)) {
+					LOG.info("Resolved preferred IPv4 address for '{}' ({}): {}", bot.getUserName(), host, ipv4);
+					return ipv4;
+				}
+			}
+			
 			String ipv6 = resolve(AddressType.IP6, host);
-			if (ipv6 != null) {
-				LOG.info("Resolved IPv6 address for '" + bot.getUserName() + "' (" + host + "): " + ipv6);
+			if (nonEmpty(ipv6)) {
+				LOG.info("Resolved IPv6 address for '{}' ({}): {}", bot.getUserName(), host, ipv6);
 				return ipv6;
 			}
+			
 			String ipv4 = resolve(AddressType.IP4, host);
-			if (ipv4 != null) {
-				LOG.info("Resolved IPv4 address for '" + bot.getUserName() + "' (" + host + "): " + ipv4);
+			if (nonEmpty(ipv4)) {
+				LOG.info("Resolved IPv4 address for '{}' ({}): {}", bot.getUserName(), host, ipv4);
 				return ipv4;
 			}
 			throw new UnknownHostException("Cannot resolve host name '" + host + "' for: " + bot.getUserName());
 		}
+	}
+
+	private static boolean nonEmpty(String s) {
+		return s != null && !s.isEmpty();
 	}
 	
 	private void loadConfig(Object...beans) {
@@ -532,7 +554,24 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		if ((System.currentTimeMillis() - registration.getLastSuccess()) > _config.disableTimeout) {
 			boolean temporary = registration.getLastSuccess() == 0;
-			LOG.warn("Stopping " + (temporary ? "temporary " : "") + "registration '" + client.getUsername() + "'.");
+			
+			if (temporary) {
+				AnswerBotSip bot = registration.getBot();
+				if (!bot.isPreferIPv4()) {
+					// Re-try with IPv4 address. There are boxes out there that have an open SIP
+					// port for their IPv4 address but not for their IPv4 address.
+					bot.setPreferIPv4(true);
+					LOG.warn("Retry registration with preferred IPv4 address for '{}'.", client.getUsername());
+					if (renewRegistration(client, registration)) {
+						// Host address has actually changed, new registration is running.
+						return;
+					} else {
+						LOG.info("Host address unchanged for '{}'.", client.getUsername());
+					}
+				}
+			}
+			
+			LOG.warn("Stopping {}registration '{}'.", temporary ? "temporary " : "", client.getUsername());
 			disableAnwserBot(registration.getUsername());
 			
 			if (!temporary) {
@@ -546,29 +585,42 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				mailService.sendDiableMail(userSettings, registration.getBot());
 			}
 		} else {
-			AnswerBotSip bot = registration.getBot();
-			try {
-				// Try to update IP address.
-				String host = registration.getCustomer().getRoute().getHost();
-				CustomerConfig update = toCustomerConfig(bot);
-				String newHost = update.getRoute().getHost();
-				if (!host.equals(newHost)) {
-					// Create new registration due to host name change.
-					LOG.info("Updating registration '" + client.getUsername() + "' due to address change: " + host + " -> " + newHost);
-					register(bot, update);
-				}
-			} catch (UnknownHostException ex) {
-				LOG.warn("Stopping registration due to failed hostname resolution: " + client.getUsername());
-				disableAnwserBot(registration.getUsername());
-			}
+			renewRegistration(client, registration);
 		}
+	}
+
+	public boolean renewRegistration(RegistrationClient client, Registration registration) {
+		AnswerBotSip bot = registration.getBot();
+		try {
+			// Try to update IP address.
+			String host = registration.getCustomer().getRoute().getHost();
+			CustomerConfig update = toCustomerConfig(bot);
+			String newHost = update.getRoute().getHost();
+			if (!host.equals(newHost)) {
+				// Create new registration due to host name change.
+				LOG.info("Updating registration '" + client.getUsername() + "' due to address change: " + host + " -> " + newHost);
+				register(bot, update);
+				return true;
+			}
+		} catch (UnknownHostException ex) {
+			LOG.warn("Stopping registration due to failed hostname resolution: " + client.getUsername());
+			disableAnwserBot(registration.getUsername());
+		}
+		return false;
 	}
 
 	private void updateRegistration(Registration registration, boolean registered, String message) {
 		long now = System.currentTimeMillis();
 		
 		boolean updateDB;
+		boolean markV4 = false;
 		if (registered) {
+			boolean temporary = registration.getLastSuccess() == 0;
+			if (temporary && registration.getBot().isPreferIPv4()) {
+				markV4 = true;
+				// Note: updateDB will evaluate to true below, since last success is updated.
+			}
+			
 			updateDB = registration.recordSuccess(now);
 			LOG.info((updateDB ? "Sucessfully registered " : "Updated registration ") + registration.getUsername() + ": " + message);
 		} else {
@@ -583,6 +635,9 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				Users users = session.getMapper(Users.class);
 				
 				users.updateSipRegistration(registration.getId(), registered, message, registration.getLastSuccess());
+				if (markV4) {
+					users.updatePreferV4(registration.getId(), true);
+				}
 				session.commit();
 			}
 		}

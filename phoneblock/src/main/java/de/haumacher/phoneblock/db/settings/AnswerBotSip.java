@@ -21,6 +21,9 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #getIpv6() */
 	public static final String IPV_6__PROP = "ipv6";
 
+	/** @see #isPreferIPv4() */
+	public static final String PREFER_IPV_4__PROP = "preferIPv4";
+
 	/** @see #getRegistrar() */
 	public static final String REGISTRAR__PROP = "registrar";
 
@@ -57,35 +60,40 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #getIpv6()} in binary format. */
 	static final int IPV_6__ID = 7;
 
+	/** Identifier for the property {@link #isPreferIPv4()} in binary format. */
+	static final int PREFER_IPV_4__ID = 8;
+
 	/** Identifier for the property {@link #getRegistrar()} in binary format. */
-	static final int REGISTRAR__ID = 8;
+	static final int REGISTRAR__ID = 9;
 
 	/** Identifier for the property {@link #getRealm()} in binary format. */
-	static final int REALM__ID = 9;
+	static final int REALM__ID = 10;
 
 	/** Identifier for the property {@link #getUserName()} in binary format. */
-	static final int USER_NAME__ID = 10;
+	static final int USER_NAME__ID = 11;
 
 	/** Identifier for the property {@link #getPasswd()} in binary format. */
-	static final int PASSWD__ID = 11;
+	static final int PASSWD__ID = 12;
 
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
-	static final int REGISTERED__ID = 12;
+	static final int REGISTERED__ID = 13;
 
 	/** Identifier for the property {@link #getRegisterMessage()} in binary format. */
-	static final int REGISTER_MESSAGE__ID = 13;
+	static final int REGISTER_MESSAGE__ID = 14;
 
 	/** Identifier for the property {@link #getLastSuccess()} in binary format. */
-	static final int LAST_SUCCESS__ID = 14;
+	static final int LAST_SUCCESS__ID = 15;
 
 	/** Identifier for the property {@link #getCallsAccepted()} in binary format. */
-	static final int CALLS_ACCEPTED__ID = 15;
+	static final int CALLS_ACCEPTED__ID = 16;
 
 	private String _host = "";
 
 	private String _ipv4 = "";
 
 	private String _ipv6 = "";
+
+	private boolean _preferIPv4 = false;
 
 	private String _registrar = "";
 
@@ -178,6 +186,27 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetIpv6(String value) {
 		_listener.beforeSet(this, IPV_6__PROP, value);
 		_ipv6 = value;
+	}
+
+	/**
+	 * Whether to use the IPv4 address for communication, even if an IPv6 address is available.
+	 */
+	public final boolean isPreferIPv4() {
+		return _preferIPv4;
+	}
+
+	/**
+	 * @see #isPreferIPv4()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setPreferIPv4(boolean value) {
+		internalSetPreferIPv4(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isPreferIPv4()} without chain call utility. */
+	protected final void internalSetPreferIPv4(boolean value) {
+		_listener.beforeSet(this, PREFER_IPV_4__PROP, value);
+		_preferIPv4 = value;
 	}
 
 	/**
@@ -382,6 +411,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			HOST__PROP, 
 			IPV_4__PROP, 
 			IPV_6__PROP, 
+			PREFER_IPV_4__PROP, 
 			REGISTRAR__PROP, 
 			REALM__PROP, 
 			USER_NAME__PROP, 
@@ -402,6 +432,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case HOST__PROP: return getHost();
 			case IPV_4__PROP: return getIpv4();
 			case IPV_6__PROP: return getIpv6();
+			case PREFER_IPV_4__PROP: return isPreferIPv4();
 			case REGISTRAR__PROP: return getRegistrar();
 			case REALM__PROP: return getRealm();
 			case USER_NAME__PROP: return getUserName();
@@ -420,6 +451,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case HOST__PROP: internalSetHost((String) value); break;
 			case IPV_4__PROP: internalSetIpv4((String) value); break;
 			case IPV_6__PROP: internalSetIpv6((String) value); break;
+			case PREFER_IPV_4__PROP: internalSetPreferIPv4((boolean) value); break;
 			case REGISTRAR__PROP: internalSetRegistrar((String) value); break;
 			case REALM__PROP: internalSetRealm((String) value); break;
 			case USER_NAME__PROP: internalSetUserName((String) value); break;
@@ -448,6 +480,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getIpv4());
 		out.name(IPV_6__PROP);
 		out.value(getIpv6());
+		out.name(PREFER_IPV_4__PROP);
+		out.value(isPreferIPv4());
 		out.name(REGISTRAR__PROP);
 		out.value(getRegistrar());
 		out.name(REALM__PROP);
@@ -472,6 +506,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case HOST__PROP: setHost(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case IPV_4__PROP: setIpv4(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case IPV_6__PROP: setIpv6(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case PREFER_IPV_4__PROP: setPreferIPv4(in.nextBoolean()); break;
 			case REGISTRAR__PROP: setRegistrar(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case REALM__PROP: setRealm(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case USER_NAME__PROP: setUserName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -498,6 +533,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getIpv4());
 		out.name(IPV_6__ID);
 		out.value(getIpv6());
+		out.name(PREFER_IPV_4__ID);
+		out.value(isPreferIPv4());
 		out.name(REGISTRAR__ID);
 		out.value(getRegistrar());
 		out.name(REALM__ID);
@@ -537,6 +574,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case HOST__ID: setHost(in.nextString()); break;
 			case IPV_4__ID: setIpv4(in.nextString()); break;
 			case IPV_6__ID: setIpv6(in.nextString()); break;
+			case PREFER_IPV_4__ID: setPreferIPv4(in.nextBoolean()); break;
 			case REGISTRAR__ID: setRegistrar(in.nextString()); break;
 			case REALM__ID: setRealm(in.nextString()); break;
 			case USER_NAME__ID: setUserName(in.nextString()); break;
