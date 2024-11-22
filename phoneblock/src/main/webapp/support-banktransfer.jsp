@@ -28,10 +28,10 @@
 		</p>
 
 		<ul>
-			<li>Empfänger: <code id="receiver">${bank.receiver}</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('receiver');"><i class="fa-solid fa-copy"></i></a></li>
-			<li>Kontonummer: <code id="account">${bank.account}</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('account');"><i class="fa-solid fa-copy"></i></a></li>
-			<li>BIC: <code id="bic">${bank.bic}</code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('bic');"><i class="fa-solid fa-copy"></i></a></li>
-			<li>Verwendungszweck: <code id="purpose">PhoneBlock-<%= LoginFilter.getAuthenticatedUser(request.getSession())%></code> <a title="In die Zwischenablage kopieren." href="#" onclick="return copyToClipboard('purpose');"><i class="fa-solid fa-copy"></i></a></li>
+			<li>Empfänger: <code id="receiver">${bank.receiver}</code> <a id="receiver_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>Kontonummer: <code id="account">${bank.account}</code> <a id="account_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>BIC: <code id="bic">${bank.bic}</code> <a id="bic_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>Verwendungszweck: <code id="purpose">PhoneBlock-<%= LoginFilter.getAuthenticatedUser(request.getSession())%></code> <a id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
 		</ul>
 		
 		<p>

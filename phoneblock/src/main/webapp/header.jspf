@@ -10,14 +10,14 @@
 
 
 <section class="hero is-small is-primary">
-	<div class="hero-body" style="position: relative;">
+	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" style="height: 37px; vertical-align: bottom" height="37">
+			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" class="logo-image">
 			PhoneBlock
 		</p>
 		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
 		<a href="<%=request.getContextPath()%>/link/github" target="_blank">
-			<img alt="Fork me on GitHub" width="149" height="149" style="position: absolute; top: 0px; right: 0px;"
+			<img alt="Fork me on GitHub" width="149" height="149" class="github-image"
 				src="<%=request.getContextPath()%>/assets/forkme.png" />
 		</a>
 	</div>
@@ -47,7 +47,7 @@
 			<a class="navbar-item" href="<%=request.getContextPath() %>/">Home</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link" href="#" onclick="return false;">Installation</a>
+				<a class="navbar-link prevent-default" href="#">Installation</a>
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="<%=request.getContextPath() %>/anrufbeantworter/">Anrufbeantworter</a>
@@ -61,7 +61,7 @@
 			<a class="navbar-item" href="<%=request.getContextPath() %>/status.jsp">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link" href="#" onclick="return false;">More</a>
+				<a class="navbar-link prevent-default">More</a>
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" href="<%=request.getContextPath() %>/support.jsp">An PhoneBlock spenden</a>
@@ -78,7 +78,7 @@
 
 		<div class="navbar-end">
 			<a class="navbar-item" title="Zur Facebook-Seite" href="<%=request.getContextPath()%>/link/facebook" target="_blank">
-				<span class="icon" style="color: #1877F2;">
+				<span class="icon facebook-color">
 			    	<i class="fa-brands fa-lg fa-facebook"></i>
 		        </span>
 		    </a>

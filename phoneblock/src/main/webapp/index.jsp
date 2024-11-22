@@ -13,7 +13,7 @@
 
 <section class="section">
 	<div class="content">
-		<div style="float: right; max-width: 15%;">
+		<div class="logo-animation">
 			<img alt="PhoneBlock Logo" src="animation.svg">
 		</div>
 
@@ -108,7 +108,7 @@
 
 		<h2>Was sind die Vorausetzungen?</h2>
 
-		<div style="float: right;">
+		<div class="fritzbox-position">
 			<a href="<%=request.getContextPath()%>/link/fritzbox"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
 				src="<%=request.getContextPath() %>/fritzbox.png" />
 			</a>
@@ -122,7 +122,8 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a id="search-fritzbox" class="button is-medium is-info is-fullwidth" href="#" onclick="return checkFritzBox('<%=request.getContextPath() %>', this);">
+			  <input type="hidden" id="context-path" value="<%=request.getContextPath()%>">
+			<a id="search-fritzbox" class="button is-medium is-info is-fullwidth" href="#">
 				<span class="icon is-small is-left">
 					<i class="fa-solid fa-magnifying-glass"></i>
 				</span>
