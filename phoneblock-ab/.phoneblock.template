@@ -73,7 +73,7 @@ port-count=10
 
 # The directory where to store recordings. If no directory is specified, no audio
 # is recorded.
-recodings=none
+recordings=none
 
 # The directory where the anwerbot expects audio files for playback. In this directory,
 # the following subdirectories are expected with audio files (*.wav) in the encoding 

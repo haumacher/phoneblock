@@ -42,7 +42,7 @@ viaAddr4=
 via-addr-v6=
 
 # Directory where to store recordings to, 'none' to disable recording.
-recodings = .
+recordings = .
 
 # The directory where the WAV files for the bot conversation are located.
 conversation=./conversation
