@@ -104,37 +104,37 @@ public final class DialogueFactory implements StreamerFactory {
 			};
 			
 			AudioReceiver rx;
-			if (_recordingFile != null) {
-				OutputStream recording = AudioFile.getAudioFileOutputStream(_recordingFile, SimpleAudioSystem.getAudioFormat(flow_spec.getMediaSpec().getCodecType(), sampleRate));
-				
-				AlawSilenceTrimmer silenceTrimmer = 
-					new AlawSilenceTrimmer(sampleRate, _config.bufferTime(), _config.minSilenceTime(), _config.paddingTime(), _config.silenceDb(), recording, speechDispatcher);
-				
-				rx = new AudioReceiver() {
-					@Override
-					public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket socket,
-							AudioFormat audio_format, CodecType codec, int payload_type, RtpPayloadFormat payloadFormat,
-							int sample_rate, int channels, Encoder additional_decoder,
-							RtpStreamReceiverListener listener) throws IOException, UnsupportedAudioFileException {
-						
-						RtpStreamReceiverListener onTerminate = new RtpStreamReceiverListenerAdapter() {
-							@Override
-							public void onRtpStreamReceiverTerminated(RtpStreamReceiver rr, Exception error) {
-								try {
-									silenceTrimmer.close();
-									recording.close();
-								} catch (IOException ex) {
-									AnswerBot.LOG.error("Failed to close recording.", ex);
-								}
+
+			OutputStream recording =  _recordingFile != null ?
+					AudioFile.getAudioFileOutputStream(_recordingFile, SimpleAudioSystem.getAudioFormat(flow_spec.getMediaSpec().getCodecType(), sampleRate))
+					: OutputStream.nullOutputStream();
+
+			AlawSilenceTrimmer silenceTrimmer =
+				new AlawSilenceTrimmer(sampleRate, _config.bufferTime(), _config.minSilenceTime(), _config.paddingTime(), _config.silenceDb(), recording, speechDispatcher);
+
+			rx = new AudioReceiver() {
+				@Override
+				public AudioRxHandle createReceiver(RtpReceiverOptions options, UdpSocket socket,
+						AudioFormat audio_format, CodecType codec, int payload_type, RtpPayloadFormat payloadFormat,
+						int sample_rate, int channels, Encoder additional_decoder,
+						RtpStreamReceiverListener listener) throws IOException, UnsupportedAudioFileException {
+
+					RtpStreamReceiverListener onTerminate = new RtpStreamReceiverListenerAdapter() {
+						@Override
+						public void onRtpStreamReceiverTerminated(RtpStreamReceiver rr, Exception error) {
+							try {
+								silenceTrimmer.close();
+								recording.close();
+							} catch (IOException ex) {
+								AnswerBot.LOG.error("Failed to close recording.", ex);
 							}
-						}.andThen(listener);
-						
-						return new RtpAudioRxHandler(new RtpStreamReceiver(options, silenceTrimmer, additional_decoder, payloadFormat, socket, onTerminate));
-					}
-				};
-			} else {
-				rx = null;
-			}
+						}
+					}.andThen(listener);
+
+					return new RtpAudioRxHandler(new RtpStreamReceiver(options, silenceTrimmer, additional_decoder, payloadFormat, socket, onTerminate));
+				}
+			};
+
 			StreamerOptions options = StreamerOptions.builder().build();
 			return new AudioStreamer(executor, flow_spec, tx, rx, options);
 		} catch (IOException ex) {

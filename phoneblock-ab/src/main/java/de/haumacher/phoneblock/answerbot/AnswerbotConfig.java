@@ -25,7 +25,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--conversation", usage = "Directory with WAV files used for streaming during automatic conversation.")
 	private File _conversationDir = new File("./conversation");
 	
-	@Option(name = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording.")
+	@Option(name = "--recordings", aliases = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording.")
 	private String _recordingDir = "none";
 	
 	@Option(name = "--test-prefix", usage = "Phone number prefix that triggers the answer bot to respond (for testing). " + 
@@ -196,7 +196,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	
 	@Override
 	public Direction getDirection() {
-		return recordingDir() != null ? Direction.FULL_DUPLEX : Direction.SEND_ONLY;
+		return Direction.FULL_DUPLEX;
 	}
 
 	/**

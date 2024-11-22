@@ -21,7 +21,7 @@ services:
       - SILENCE_DB=-35
       - MEDIA_PORT=50100
       - PORT_COUNT=10
-      - RECODINGS=none
+      - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
     volumes:
       - ./conversation:/opt/phoneblock/conversation
