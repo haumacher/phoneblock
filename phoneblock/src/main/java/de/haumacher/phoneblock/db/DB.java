@@ -1222,8 +1222,8 @@ public class DB {
 			
 			int oldestRev = reports.getOldestRevision();
 			if (newRev - oldestRev >= maxHistory) {
-				reports.cleanSearchCluster(oldestRev);
-				reports.removeSearchCluster(oldestRev);
+				reports.cleanRevision(oldestRev);
+				reports.removeRevision(oldestRev);
 			}
 			
 			session.commit();

@@ -34,22 +34,22 @@ public interface SpamReports {
 			""")
 	int addVote(String phone, int delta, long now);
 
-	@Update("update SPAMREPORTS_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
+	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
 	
-	@Update("update SPAMREPORTS_100 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
+	@Update("update NUMBERS_AGGREGATION_100 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation100(String prefix, int deltaCnt, int deltaVotes);
 	
-	@Insert("insert into SPAMREPORTS_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
+	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation10(String prefix, int cnt, int votes);
 	
-	@Insert("insert into SPAMREPORTS_100 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
+	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation100(String prefix, int cnt, int votes);
 	
-	@Select("select PREFIX, CNT, VOTES from SPAMREPORTS_10 where PREFIX = #{prefix}")
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation10(String prefix);
 	
-	@Select("select PREFIX, CNT, VOTES from SPAMREPORTS_100 where PREFIX = #{prefix}")
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation100(String prefix);
 	
 	@Select("""
@@ -78,7 +78,7 @@ public interface SpamReports {
 	@Select("SELECT SUM(s.COUNT) FROM RATINGS s")
 	Integer getTotalRatings();
 	
-	@Select("SELECT SUM(s.COUNT) FROM SEARCHES s")
+	@Select("SELECT SUM(s.SEARCHES) FROM NUMBERS s")
 	Integer getTotalSearches();
 	
 	@Select("""
@@ -174,14 +174,14 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES - i.SEARCHES SEARCHES  FROM (
-				SELECT MAX(h.CLUSTER) CLUSTER, h.PHONE FROM NUMBERS_HISTORY h 
+				SELECT MAX(h.REV) REV, h.PHONE FROM NUMBERS_HISTORY h 
 				WHERE h.PHONE IN ( 
 					select s.PHONE from NUMBERS s where s.UPDATED > #{revTime}
 				) 
 				GROUP BY h.PHONE
 			) c
 			LEFT OUTER JOIN NUMBERS_HISTORY i
-			ON c.CLUSTER = i.CLUSTER  AND c.PHONE = i.PHONE
+			ON c.REV = i.REV  AND c.PHONE = i.PHONE
 			LEFT OUTER JOIN NUMBERS s
 			ON c.PHONE = s.PHONE
 			WHERE s.SEARCHES - i.SEARCHES > 0
@@ -198,8 +198,8 @@ public interface SpamReports {
 	 * </p>
 	 */
 	@Select("""
-			select h.CLUSTER, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.CLUSTER >= #{revision} and h.PHONE = #{phone} order by h.CLUSTER
+			select h.REV, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.REV >= #{revision} and h.PHONE = #{phone} order by h.REV
 			""")
 	List<DBNumberHistory> getSearchHistory(int revision, String phone);
 
@@ -207,14 +207,14 @@ public interface SpamReports {
 	 * The newest history entry for the given number that is not newer than the requested revision.
 	 */
 	@Select("""
-			select h.CLUSTER, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.CLUSTER = (select max(x.CLUSTER) from NUMBERS_HISTORY x where x.PHONE = #{phone} and x.CLUSTER <= #{rev}) and h.PHONE = #{phone}
+			select h.REV, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.REV = (select max(x.REV) from NUMBERS_HISTORY x where x.PHONE = #{phone} and x.REV <= #{rev}) and h.PHONE = #{phone}
 			""")
 	DBNumberHistory getHistoryEntry(String phone, int rev);
 
 	@Select("""
-			select h.CLUSTER, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.CLUSTER = #{rev}
+			select h.REV, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.REV = #{rev}
 			""")
 	List<DBNumberHistory> getHistoryEntries(int rev);
 	
@@ -325,30 +325,30 @@ public interface SpamReports {
 	@Update("UPDATE SUMMARY SET COMMENT = #{comment}, CREATED = #{created} WHERE PHONE = #{phone}")
 	int updateSummary(String phone, String comment, Long created);
 	
-	@Insert("insert into SEARCHCLUSTER (CREATED) values (#{now})")
+	@Insert("insert into REVISION (CREATED) values (#{now})")
 	void createRevision(long now);
 	
-	@Select("select max(ID) from SEARCHCLUSTER")
+	@Select("select max(ID) from REVISION")
 	Integer getLastRevision();
 	
-	@Select("select CREATED from SEARCHCLUSTER where id=#{rev}")
+	@Select("select CREATED from REVISION where id=#{rev}")
 	Long getRevisionDate(int rev);
 	
-	@Select("select min(ID) from SEARCHCLUSTER")
+	@Select("select min(ID) from REVISION")
 	int getOldestRevision();
 
 	@Insert("""
-			insert into NUMBERS_HISTORY (CLUSTER, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
+			insert into NUMBERS_HISTORY (REV, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
 				select #{id}, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 				where s.UPDATED > #{lastSnapshot}
 			)
 			""")
 	void createHistorySnapshot(int id, long lastSnapshot);
 	
-	@Delete("delete from NUMBERS_HISTORY where CLUSTER=#{id}")
-	void cleanSearchCluster(int id);
+	@Delete("delete from NUMBERS_HISTORY where REV=#{id}")
+	void cleanRevision(int id);
 	
-	@Delete("delete from SEARCHCLUSTER where ID=#{id}")
-	void removeSearchCluster(int id);
+	@Delete("delete from REVISION where ID=#{id}")
+	void removeRevision(int id);
 
 }
