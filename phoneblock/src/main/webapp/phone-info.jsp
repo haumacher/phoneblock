@@ -371,8 +371,8 @@
 			labels.append(Ratings.getLabel(r));
 			data.append(ratings.getOrDefault(r, 0));
 			String rgb = Ratings.getRGB(r);
-			backgroundColor.append("'rgba(").append(rgb).append(", 0.2)'");
-			borderColor.append("'rgba(").append(rgb).append(", 1)'");
+			backgroundColor.append("rgba(").append(rgb).append(", 0.2)");
+			borderColor.append("rgba(").append(rgb).append(", 1)");
 		}
 	%>
 	<div id="ratings-data" ratings-labels="<%=labels.toString()%>" ratings-dataset="<%=data.toString()%>" ratings-backgroundColor="<%=backgroundColor.toString()%>" ratings-borderColor="<%=borderColor.toString()%>">
