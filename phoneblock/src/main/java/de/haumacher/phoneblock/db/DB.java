@@ -153,7 +153,8 @@ public class DB {
 		
 		Set<String> tableNames = new HashSet<>();
 		try (SqlSession session = openSession()) {
-			try (ResultSet rset = session.getConnection().getMetaData().getTables(null, "PUBLIC", "%", null)) {
+			Connection connection = session.getConnection();
+			try (ResultSet rset = connection.getMetaData().getTables(null, "PUBLIC", "%", null)) {
 				while (rset.next()) {
 					String tableName = rset.getString("TABLE_NAME");
 					tableNames.add(tableName);
@@ -162,10 +163,125 @@ public class DB {
 			
 			if (!tableNames.containsAll(TABLE_NAMES)) {
 				// Set up schema.
-		        ScriptRunner sr = new ScriptRunner(session.getConnection());
+		        ScriptRunner sr = new ScriptRunner(connection);
 		        sr.setAutoCommit(true);
 		        sr.setDelimiter(";");
 		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-schema.sql"), StandardCharsets.UTF_8));
+			}
+			
+			else if (!tableNames.contains("NUMBERS")) {
+    			LOG.info("Migrating schema to consolidated numbers.");
+    			
+				// Migrate schema.
+		        ScriptRunner sr = new ScriptRunner(connection);
+		        sr.setAutoCommit(true);
+		        sr.setDelimiter(";");
+		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-migration-02.sql"), StandardCharsets.UTF_8));
+
+    			LOG.info("Building revision ranges in numbers history.");
+
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+		        	select h.RMIN, h.RMAX, h.PHONE from NUMBERS_HISTORY h
+		        	order by h.PHONE asc, h.RMIN desc
+        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+		        	
+		        	int rows = 0;
+		        	String lastPhone = "";
+		        	int lastRmin = 0;
+		        	try (ResultSet cursor = stmt.executeQuery()) {
+		        		while (cursor.next()) {
+		        			int rmin = cursor.getInt(1);
+		        			String phone = cursor.getString(3);
+		        			
+		        			if (lastPhone.equals(phone)) {
+		        				cursor.updateInt(2, lastRmin - 1);
+		        			} else {
+		        				cursor.updateInt(2, Integer.MAX_VALUE);
+		        			}
+		        			cursor.updateRow();
+		        			rows++;
+		        			
+		        			if (rows % 1000 == 0) {
+		        				LOG.info("Updated rmax of row {}.", rows);
+		        			}
+		        			
+		        			lastPhone = phone;
+		        			lastRmin = rmin;
+		        		}
+		        	}
+		        }
+
+		        connection.commit();
+
+		        LOG.info("Aggregating numbers history.");
+		        
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+		        	select h.RMIN, h.RMAX, h.PHONE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+		        	order by h.PHONE asc, h.RMIN asc
+        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+		        	
+		        	int rows = 0;
+		        	String lastPhone = "";
+		        	
+		        	int calls = 0;
+		        	int votes = 0; 
+		        	int legitimate = 0;
+		        	int ping = 0;
+		        	int poll = 0;
+		        	int advertising = 0;
+		        	int gamble = 0;
+		        	int fraud = 0;
+		        	int searches = 0;
+		        	
+		        	try (ResultSet cursor = stmt.executeQuery()) {
+		        		while (cursor.next()) {
+		        			String phone = cursor.getString(3);
+		        			
+		        			if (lastPhone.equals(phone)) {
+		        				calls +=       cursor.getInt(4);
+		        				votes +=       cursor.getInt(5); 
+		        				legitimate +=  cursor.getInt(6);
+		        				ping +=        cursor.getInt(7);
+		        				poll +=        cursor.getInt(8);
+		        				advertising += cursor.getInt(9);
+		        				gamble +=      cursor.getInt(10);
+		        				fraud +=       cursor.getInt(11);
+		        				searches +=    cursor.getInt(12);
+		        				
+		        				cursor.updateInt(4, calls);
+		        				cursor.updateInt(5, votes);
+		        				cursor.updateInt(6, legitimate);
+		        				cursor.updateInt(7, ping);
+		        				cursor.updateInt(8, poll);
+		        				cursor.updateInt(9, advertising);
+		        				cursor.updateInt(10, gamble);
+		        				cursor.updateInt(11, fraud);
+		        				cursor.updateInt(12, searches);
+		        				
+		        				cursor.updateRow();
+		        			} else {
+		        				calls =        cursor.getInt(4);
+		        				votes =        cursor.getInt(5); 
+		        				legitimate =   cursor.getInt(6);
+		        				ping =         cursor.getInt(7);
+		        				poll =         cursor.getInt(8);
+		        				advertising =  cursor.getInt(9);
+		        				gamble =       cursor.getInt(10);
+		        				fraud =        cursor.getInt(11);
+		        				searches =     cursor.getInt(12);
+		        			}
+		        			rows++;
+		        			
+		        			if (rows % 1000 == 0) {
+		        				LOG.info("Aggregated row {}.", rows);
+		        			}
+		        			
+		        			lastPhone = phone;
+		        		}
+		        	}
+		        }
+		        
+		        connection.commit();
 			}
 		}
 		
