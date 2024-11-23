@@ -12,10 +12,15 @@ public class NumberHistory extends AbstractNumberInfo {
 	/** Identifier for the {@link de.haumacher.phoneblock.db.model.NumberHistory} type in JSON format. */
 	public static final String NUMBER_HISTORY__TYPE = "NumberHistory";
 
-	/** @see #getRev() */
-	public static final String REV__PROP = "rev";
+	/** @see #getRMin() */
+	public static final String R_MIN__PROP = "rMin";
 
-	private int _rev = 0;
+	/** @see #getRMax() */
+	public static final String R_MAX__PROP = "rMax";
+
+	private int _rMin = 0;
+
+	private int _rMax = 0;
 
 	/**
 	 * Creates a {@link NumberHistory} instance.
@@ -31,22 +36,46 @@ public class NumberHistory extends AbstractNumberInfo {
 		return TypeKind.NUMBER_HISTORY;
 	}
 
-	public final int getRev() {
-		return _rev;
+	/**
+	 * The revision in which this information was stored.
+	 */
+	public final int getRMin() {
+		return _rMin;
 	}
 
 	/**
-	 * @see #getRev()
+	 * @see #getRMin()
 	 */
-	public de.haumacher.phoneblock.db.model.NumberHistory setRev(int value) {
-		internalSetRev(value);
+	public de.haumacher.phoneblock.db.model.NumberHistory setRMin(int value) {
+		internalSetRMin(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getRev()} without chain call utility. */
-	protected final void internalSetRev(int value) {
-		_listener.beforeSet(this, REV__PROP, value);
-		_rev = value;
+	/** Internal setter for {@link #getRMin()} without chain call utility. */
+	protected final void internalSetRMin(int value) {
+		_listener.beforeSet(this, R_MIN__PROP, value);
+		_rMin = value;
+	}
+
+	/**
+	 * The revision up to which this information is valid (inclusive).
+	 */
+	public final int getRMax() {
+		return _rMax;
+	}
+
+	/**
+	 * @see #getRMax()
+	 */
+	public de.haumacher.phoneblock.db.model.NumberHistory setRMax(int value) {
+		internalSetRMax(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getRMax()} without chain call utility. */
+	protected final void internalSetRMax(int value) {
+		_listener.beforeSet(this, R_MAX__PROP, value);
+		_rMax = value;
 	}
 
 	@Override
@@ -122,7 +151,8 @@ public class NumberHistory extends AbstractNumberInfo {
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			REV__PROP));
+			R_MIN__PROP, 
+			R_MAX__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -132,7 +162,8 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case REV__PROP: return getRev();
+			case R_MIN__PROP: return getRMin();
+			case R_MAX__PROP: return getRMax();
 			default: return super.get(field);
 		}
 	}
@@ -140,7 +171,8 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case REV__PROP: internalSetRev((int) value); break;
+			case R_MIN__PROP: internalSetRMin((int) value); break;
+			case R_MAX__PROP: internalSetRMax((int) value); break;
 			default: super.set(field, value); break;
 		}
 	}
@@ -155,14 +187,17 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(REV__PROP);
-		out.value(getRev());
+		out.name(R_MIN__PROP);
+		out.value(getRMin());
+		out.name(R_MAX__PROP);
+		out.value(getRMax());
 	}
 
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case REV__PROP: setRev(in.nextInt()); break;
+			case R_MIN__PROP: setRMin(in.nextInt()); break;
+			case R_MAX__PROP: setRMax(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -170,8 +205,11 @@ public class NumberHistory extends AbstractNumberInfo {
 	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.NumberHistory} type. */
 	public static final String NUMBER_HISTORY__XML_ELEMENT = "number-history";
 
-	/** XML attribute or element name of a {@link #getRev} property. */
-	private static final String REV__XML_ATTR = "rev";
+	/** XML attribute or element name of a {@link #getRMin} property. */
+	private static final String R_MIN__XML_ATTR = "r-min";
+
+	/** XML attribute or element name of a {@link #getRMax} property. */
+	private static final String R_MAX__XML_ATTR = "r-max";
 
 	@Override
 	public String getXmlTagName() {
@@ -182,7 +220,8 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		super.writeAttributes(out);
-		out.writeAttribute(REV__XML_ATTR, Integer.toString(getRev()));
+		out.writeAttribute(R_MIN__XML_ATTR, Integer.toString(getRMin()));
+		out.writeAttribute(R_MAX__XML_ATTR, Integer.toString(getRMax()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -202,8 +241,12 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	protected void readFieldXmlAttribute(String name, String value) {
 		switch (name) {
-			case REV__XML_ATTR: {
-				setRev(Integer.parseInt(value));
+			case R_MIN__XML_ATTR: {
+				setRMin(Integer.parseInt(value));
+				break;
+			}
+			case R_MAX__XML_ATTR: {
+				setRMax(Integer.parseInt(value));
 				break;
 			}
 			default: {
@@ -215,8 +258,12 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
 		switch (localName) {
-			case REV__XML_ATTR: {
-				setRev(Integer.parseInt(in.getElementText()));
+			case R_MIN__XML_ATTR: {
+				setRMin(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case R_MAX__XML_ATTR: {
+				setRMax(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			default: {

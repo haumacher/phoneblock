@@ -4,8 +4,9 @@ import de.haumacher.phoneblock.db.model.NumberHistory;
 
 public class DBNumberHistory extends NumberHistory {
 
-	public DBNumberHistory(int rev, String phone, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
-		setRev(rev)
+	public DBNumberHistory(int rmin, int rmax, String phone, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
+		setRMin(rmin)
+		.setRMax(rmax)
 		.setPhone(phone)
 		.setActive(active)
 		.setCalls(calls)

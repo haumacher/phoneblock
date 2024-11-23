@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -533,44 +535,55 @@ public class DB {
 		return getTopSearches(6);
 	}
 	
-	List<? extends SearchInfo> getTopSearches(int cnt) {
+	public List<? extends SearchInfo> getTopSearches(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			
+
 			int lastRev = nonNull(reports.getLastRevision());
 			
-			int afterRev = lastRev > 0 ? lastRev - 1 : 0;
-			long revisionDate = orMidnightYesterday(reports.getRevisionDate(afterRev));
-			
-			List<SearchInfo> topSearches = new ArrayList<>();
-			for (DBNumberInfo entry : reports.getUpdatedPhoneInfos(revisionDate)) {
-				String phone = entry.getPhone();
-				int searches = entry.getSearches();
-				SearchInfo info = SearchInfo.create()
-						.setPhone(phone)
-						.setLastSearch(entry.getUpdated())
-						.setTotal(searches);
+			int baseRev = lastRev > 0 ? lastRev - 1 : 0;
+			long revisionDate = orMidnightYesterday(reports.getRevisionDate(baseRev));
+		
+			if (false) {
+				// Note: This query produces nonsense results when fired through ibatis. The conventional way below works as expected.
+				List<DBSearchInfo> result = reports.getTopSearches(lastRev, revisionDate, limit);
+				result.sort((a,b)->-Integer.compare(a.getCount(), b.getCount()));
 				
-				DBNumberHistory before = reports.getHistoryEntry(phone, afterRev);
-				if (before == null) {
-					info.setCount(searches);
-				} else {
-					info.setCount(searches - before.getSearches());
-				}
+				result = result.subList(0, limit);
 				
-				topSearches.add(info);
-			}
-			
-			// Top 6 numbers.
-			Comparator<SearchInfo> comparator = Comparator.comparingInt(s -> -s.getCount());
-			comparator = comparator.thenComparingLong(s -> -s.getLastSearch());
-			topSearches.sort(comparator);
-			
-			List<SearchInfo> result = new ArrayList<>(topSearches.subList(0, Math.min(topSearches.size(), cnt)));
+				// Bring in last search order.
+				result.sort((a,b)->-Long.compare(a.getLastSearch(), b.getLastSearch()));
+				
+				return result;
+			} else {
+				Connection connection = session.getConnection();
+				try (PreparedStatement stmt = connection.prepareStatement(
+					"""
+					select s.PHONE, s.SEARCHES - COALESCE(h.SEARCHES, 0) CNT, s.SEARCHES TOTAL, s.UPDATED from NUMBERS s
+					left outer join NUMBERS_HISTORY h on h.PHONE = s.PHONE and h.RMIN <= ? and h.RMAX >= ?
+					where s.UPDATED > ?
+					order by CNT desc
+					""")) {
 
-			// Sorted by date descending.
-			result.sort(Comparator.comparing(s -> -s.getLastSearch()));
-			return result;
+					stmt.setInt(1, baseRev);
+					stmt.setInt(2, baseRev);
+					stmt.setLong(3, revisionDate);
+					
+					List<DBSearchInfo> result = new ArrayList<>();
+					try (ResultSet res = stmt.executeQuery()) {
+						while (res.next() && result.size() < limit) {
+							result.add(new DBSearchInfo(res.getString(1), res.getInt(2), res.getInt(3), res.getLong(4)));
+						}
+					}
+					
+					// Bring in last search order.
+					result.sort((a,b)->-Long.compare(a.getLastSearch(), b.getLastSearch()));
+					
+					return result;
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -1217,8 +1230,10 @@ public class DB {
 			
 			reports.createRevision(now);
 			int newRev = reports.getLastRevision();
-			Long lastSnapshot = reports.getRevisionDate(newRev - 1);
-			reports.createHistorySnapshot(newRev, lastSnapshot == null ? 0 : lastSnapshot.longValue());
+			Long lastRevDate = reports.getRevisionDate(newRev - 1);
+			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
+			reports.outdateHistorySnapshot(newRev, lastSnapshot);
+			reports.createHistorySnapshot(newRev, lastSnapshot);
 			
 			int oldestRev = reports.getOldestRevision();
 			if (newRev - oldestRev >= maxHistory) {
@@ -1249,35 +1264,35 @@ public class DB {
 		List<Integer> result = new ArrayList<>();
 
 		int lastRev;
-		int revExpected;
+		int currentRev;
 		List<DBNumberHistory> entries;
 		
 		Integer lastRevision = reports.getLastRevision();
 		if (lastRevision != null) {
 			lastRev = lastRevision.intValue();
-			revExpected = lastRev  - (size - 1);
-			entries = reports.getSearchHistory(revExpected, phone);
+			currentRev = lastRev  - (size - 1);
+			entries = reports.getSearchHistory(currentRev, phone);
 		} else {
 			lastRev = size - 1;
-			revExpected = 0;
+			currentRev = 0;
 			entries = Collections.emptyList();
 		}
 		
 		int last = 0;
 		for (DBNumberHistory entry : entries) {
-			while (revExpected < entry.getRev()) {
+			while (currentRev < entry.getRMin()) {
 				result.add(Integer.valueOf(0));
-				revExpected++;
+				currentRev++;
 			}
 			int current = entry.getSearches();
 			result.add(Integer.valueOf(current - last));
 			last = current;
-			revExpected++;
+			currentRev++;
 		}
 		
-		while (revExpected <= lastRev) {
+		while (currentRev <= lastRev) {
 			result.add(Integer.valueOf(0));
-			revExpected++;
+			currentRev++;
 		}
 		
 		

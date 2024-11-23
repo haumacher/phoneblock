@@ -15,9 +15,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Identifier for the {@link de.haumacher.phoneblock.db.model.SearchInfo} type in JSON format. */
 	public static final String SEARCH_INFO__TYPE = "SearchInfo";
 
-	/** @see #getRevision() */
-	public static final String REVISION__PROP = "revision";
-
 	/** @see #getPhone() */
 	public static final String PHONE__PROP = "phone";
 
@@ -29,8 +26,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** @see #getLastSearch() */
 	public static final String LAST_SEARCH__PROP = "lastSearch";
-
-	private int _revision = 0;
 
 	private String _phone = "";
 
@@ -47,27 +42,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 */
 	protected SearchInfo() {
 		super();
-	}
-
-	/**
-	 * The time slot, this information is about.
-	 */
-	public final int getRevision() {
-		return _revision;
-	}
-
-	/**
-	 * @see #getRevision()
-	 */
-	public de.haumacher.phoneblock.db.model.SearchInfo setRevision(int value) {
-		internalSetRevision(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #getRevision()} without chain call utility. */
-	protected final void internalSetRevision(int value) {
-		_listener.beforeSet(this, REVISION__PROP, value);
-		_revision = value;
 	}
 
 	/**
@@ -92,7 +66,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/**
-	 * The number of search requests in the {@link #getRevision() time slot}.
+	 * The number of search requests in the {@link #revision time slot}.
 	 */
 	public final int getCount() {
 		return _count;
@@ -134,7 +108,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/**
-	 * When the last search request was performed for the {@link #getPhone() number} in the {@link #getRevision() time slot}.
+	 * When the last search request was performed for the {@link #getPhone() number} in the {@link #revision time slot}.
 	 */
 	public final long getLastSearch() {
 		return _lastSearch;
@@ -183,7 +157,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			REVISION__PROP, 
 			PHONE__PROP, 
 			COUNT__PROP, 
 			TOTAL__PROP, 
@@ -197,7 +170,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case REVISION__PROP: return getRevision();
 			case PHONE__PROP: return getPhone();
 			case COUNT__PROP: return getCount();
 			case TOTAL__PROP: return getTotal();
@@ -209,7 +181,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case REVISION__PROP: internalSetRevision((int) value); break;
 			case PHONE__PROP: internalSetPhone((String) value); break;
 			case COUNT__PROP: internalSetCount((int) value); break;
 			case TOTAL__PROP: internalSetTotal((int) value); break;
@@ -232,8 +203,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(REVISION__PROP);
-		out.value(getRevision());
 		out.name(PHONE__PROP);
 		out.value(getPhone());
 		out.name(COUNT__PROP);
@@ -247,7 +216,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case REVISION__PROP: setRevision(in.nextInt()); break;
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case COUNT__PROP: setCount(in.nextInt()); break;
 			case TOTAL__PROP: setTotal(in.nextInt()); break;
@@ -258,9 +226,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.SearchInfo} type. */
 	public static final String SEARCH_INFO__XML_ELEMENT = "search-info";
-
-	/** XML attribute or element name of a {@link #getRevision} property. */
-	private static final String REVISION__XML_ATTR = "revision";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";
@@ -287,7 +252,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
-		out.writeAttribute(REVISION__XML_ATTR, Integer.toString(getRevision()));
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
 		out.writeAttribute(COUNT__XML_ATTR, Integer.toString(getCount()));
 		out.writeAttribute(TOTAL__XML_ATTR, Integer.toString(getTotal()));
@@ -329,10 +293,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Parses the given attribute value and assigns it to the field with the given name. */
 	protected void readFieldXmlAttribute(String name, String value) {
 		switch (name) {
-			case REVISION__XML_ATTR: {
-				setRevision(Integer.parseInt(value));
-				break;
-			}
 			case PHONE__XML_ATTR: {
 				setPhone(value);
 				break;
@@ -358,10 +318,6 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
 	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
 		switch (localName) {
-			case REVISION__XML_ATTR: {
-				setRevision(Integer.parseInt(in.getElementText()));
-				break;
-			}
 			case PHONE__XML_ATTR: {
 				setPhone(in.getElementText());
 				break;

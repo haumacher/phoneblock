@@ -6,9 +6,6 @@ option NoReflection;
 
 /** Info about how often a number was searched. */
 message SearchInfo {
-	/** The time slot, this information is about. */
-	int revision;
-	
 	/** The phone number */
 	string phone;
 	
@@ -109,7 +106,11 @@ message NumberInfo extends AbstractNumberInfo {
 }
  
 message NumberHistory extends AbstractNumberInfo {
-	int rev;
+	/** The revision in which this information was stored. */
+	int rMin;
+
+	/** The revision up to which this information is valid (inclusive). */
+	int rMax;
 } 
 
 abstract message PhoneSummary {

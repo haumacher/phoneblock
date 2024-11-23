@@ -3,7 +3,12 @@
  */
 package de.haumacher.phoneblock.db;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,10 +28,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.db.model.NumberInfo;
-import de.haumacher.phoneblock.db.model.PhoneInfo;
 import de.haumacher.phoneblock.db.model.Rating;
 import de.haumacher.phoneblock.db.model.SearchInfo;
-import de.haumacher.phoneblock.db.model.SpamReport;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**

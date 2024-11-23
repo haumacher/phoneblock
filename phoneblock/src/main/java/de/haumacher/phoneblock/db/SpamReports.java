@@ -172,23 +172,15 @@ public interface SpamReports {
 			""")
 	Set<String> getLatestSearchesToday();
 	
+	// Note: This query produces nonsense results when fired through ibatis. The very same query the conventional way works as expected.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES - i.SEARCHES SEARCHES  FROM (
-				SELECT MAX(h.REV) REV, h.PHONE FROM NUMBERS_HISTORY h 
-				WHERE h.PHONE IN ( 
-					select s.PHONE from NUMBERS s where s.UPDATED > #{revTime}
-				) 
-				GROUP BY h.PHONE
-			) c
-			LEFT OUTER JOIN NUMBERS_HISTORY i
-			ON c.REV = i.REV  AND c.PHONE = i.PHONE
-			LEFT OUTER JOIN NUMBERS s
-			ON c.PHONE = s.PHONE
-			WHERE s.SEARCHES - i.SEARCHES > 0
-			ORDER BY s.SEARCHES - i.SEARCHES DESC  
-			LIMIT 10;        
+			select s.PHONE, s.SEARCHES - COALESCE(h.SEARCHES, 0) CNT, s.SEARCHES TOTAL, s.UPDATED from NUMBERS s
+			left outer join NUMBERS_HISTORY h on h.PHONE = s.PHONE and h.RMIN <= ${rev} and h.RMAX >= ${rev}
+			where s.UPDATED > #{revTime}
+			order by CNT desc
+			limit #{limit}
 			""")
-	List<DBNumberInfo> getTopSearches(long revTime);
+	List<DBSearchInfo> getTopSearches(int rev, long revTime, int limit);
 	
 	/**
 	 * Retrieves all historic versions for the given number not older than the given revision.
@@ -198,8 +190,8 @@ public interface SpamReports {
 	 * </p>
 	 */
 	@Select("""
-			select h.REV, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.REV >= #{revision} and h.PHONE = #{phone} order by h.REV
+			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.RMIN >= #{revision} and h.PHONE = #{phone} order by h.RMIN
 			""")
 	List<DBNumberHistory> getSearchHistory(int revision, String phone);
 
@@ -207,14 +199,14 @@ public interface SpamReports {
 	 * The newest history entry for the given number that is not newer than the requested revision.
 	 */
 	@Select("""
-			select h.REV, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.REV = (select max(x.REV) from NUMBERS_HISTORY x where x.PHONE = #{phone} and x.REV <= #{rev}) and h.PHONE = #{phone}
+			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.RMIN <= #{rev} and h.RMAX >= #{rev} and h.PHONE = #{phone}
 			""")
 	DBNumberHistory getHistoryEntry(String phone, int rev);
 
 	@Select("""
-			select h.REV, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.REV = #{rev}
+			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.RMIN = #{rev}
 			""")
 	List<DBNumberHistory> getHistoryEntries(int rev);
 	
@@ -337,15 +329,25 @@ public interface SpamReports {
 	@Select("select min(ID) from REVISION")
 	int getOldestRevision();
 
+	@Update("""
+			update NUMBERS_HISTORY 
+			set 
+				RMAX = #{rev} - 1
+			where
+				PHONE in (select s.PHONE from NUMBERS s where s.UPDATED > #{lastSnapshot}) and
+				RMAX = 0x7fffffff
+			""")
+	void outdateHistorySnapshot(int rev, long lastSnapshot);
+	
 	@Insert("""
-			insert into NUMBERS_HISTORY (REV, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
-				select #{id}, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
+				select #{rev}, 0x7fffffff, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 				where s.UPDATED > #{lastSnapshot}
 			)
 			""")
-	void createHistorySnapshot(int id, long lastSnapshot);
+	void createHistorySnapshot(int rev, long lastSnapshot);
 	
-	@Delete("delete from NUMBERS_HISTORY where REV=#{id}")
+	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id}")
 	void cleanRevision(int id);
 	
 	@Delete("delete from REVISION where ID=#{id}")
