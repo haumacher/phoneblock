@@ -1,3 +1,4 @@
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.util.ServletUtil"%>
 <%@page import="org.pac4j.core.util.Pac4jConstants"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
@@ -100,7 +101,7 @@
 						<strong>Sign up</strong>
 					</a>
 					
-					<a class="button is-light" href="<%=request.getContextPath() %>/login.jsp">
+					<a class="button is-light" href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>

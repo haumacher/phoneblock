@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet displaying information about a telephone number in the DB.
@@ -137,6 +138,9 @@ public class LoginServlet extends HttpServlet {
 		String location = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
 		if (location == null) {
 			location = (String) request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+			if (location == null) {
+				location = ServletUtil.currentPage(request).substring(request.getContextPath().length());
+			}
 		}
 		return location;
 	}
