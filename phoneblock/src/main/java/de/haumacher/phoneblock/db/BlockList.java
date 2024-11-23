@@ -45,6 +45,14 @@ public interface BlockList {
 	void addPersonalization(long owner, String phone);
 	
 	/**
+	 * Checks whether the number is already blocked.
+	 * 
+	 * @return The requested number, or <code>null</code> if the number is not yet on the blocklist.
+	 */
+	@Select("select PHONE from BLOCKLIST where OWNER=#{owner} and PHONE=#{phone}")
+	String getPersonalization(long owner, String phone);
+	
+	/**
 	 * Removes a blocklist entry for the user with the given user ID.
 	 */
 	@Delete("delete from BLOCKLIST where OWNER=#{owner} and PHONE=#{phone}")

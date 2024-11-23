@@ -75,7 +75,9 @@ public class RatingServlet extends HttpServlet {
 								blocklist.addExclude(owner, phoneId);
 								blocklist.removePersonalization(owner, phoneId);
 							} else {
-								blocklist.addPersonalization(owner, phoneId);
+								if (blocklist.getPersonalization(owner, phoneId) == null) {
+									blocklist.addPersonalization(owner, phoneId);
+								}
 								blocklist.removeExclude(owner, phoneId);
 							}
 							
