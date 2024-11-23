@@ -277,13 +277,13 @@ public interface SpamReports {
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);
 	
-	@Select("select s.UPDATED from META_UPDATE s where s.PHONE=#{phone}")
+	@Select("select s.LASTUPDATE from META_UPDATE s where s.PHONE=#{phone}")
 	Long getLastMetaSearch(String phone);
 	
-	@Update("update META_UPDATE s set s.UPDATED=#{lastUpdate} where s.PHONE=#{phone}")
+	@Update("update META_UPDATE s set s.LASTUPDATE=#{lastUpdate} where s.PHONE=#{phone}")
 	int setLastMetaSearch(String phone, long lastUpdate);
 	
-	@Insert("insert into META_UPDATE (PHONE, UPDATED) values (#{phone}, #{lastUpdate})")
+	@Insert("insert into META_UPDATE (PHONE, LASTUPDATE) values (#{phone}, #{lastUpdate})")
 	void insertLastMetaSearch(String phone, long lastUpdate);
 	
 	@Select("SELECT PHONE FROM SUMMARY_REQUEST sr ORDER BY sr.PRIORITY LIMIT 1")
