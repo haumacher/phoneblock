@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.db.model.NumberInfo"%>
+<%@page import="de.haumacher.phoneblock.db.DBNumberInfo"%>
 <%@page import="de.haumacher.phoneblock.db.model.SearchInfo"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
@@ -134,7 +136,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 
 <%
-	List<? extends SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
+	List<? extends NumberInfo> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
 	if (!reports.isEmpty()) {
 %>
 		<h2>Spam-Reports der letzten Stunde</h2> 
@@ -150,7 +152,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</thead>
 			<tbody>
 <%			
-				for (SpamReport report : reports) {
+				for (NumberInfo report : reports) {
 %>
 					<tr>
 						<td>
@@ -162,11 +164,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= (now - report.getLastUpdate()) / 1000 / 60 %> minutes ago
+							<%= (now - report.getUpdated()) / 1000 / 60 %> minutes ago
 						</td>
 						
 						<td>
-							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+							<%= report.getAdded() > 0 ? format.format(new Date(report.getAdded())) : "-" %>
 						</td>
 					</tr>
 <%	
@@ -195,7 +197,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</thead>
 			<tbody>
 <%			
-				for (SpamReport report : reports) {
+				for (NumberInfo report : reports) {
 %>
 					<tr>
 						<td>
@@ -207,11 +209,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= format.format(new Date(report.getLastUpdate()))%>
+							<%= format.format(new Date(report.getUpdated()))%>
 						</td>
 
 						<td>
-							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+							<%= report.getAdded() > 0 ? format.format(new Date(report.getAdded())) : "-" %>
 						</td>
 					</tr>
 <%	
@@ -240,7 +242,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</thead>
 			<tbody>
 <%			
-				for (SpamReport report : reports) {
+				for (NumberInfo report : reports) {
 %>
 					<tr>
 						<td>
@@ -252,11 +254,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= format.format(new Date(report.getLastUpdate()))%>
+							<%= format.format(new Date(report.getUpdated()))%>
 						</td>
 
 						<td>
-							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+							<%= report.getAdded() > 0 ? format.format(new Date(report.getAdded())) : "-" %>
 						</td>
 					</tr>
 <%	

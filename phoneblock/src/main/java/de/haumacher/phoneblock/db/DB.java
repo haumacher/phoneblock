@@ -472,7 +472,7 @@ public class DB {
 	}
 
 	public NumberInfo getPhoneInfo(SpamReports reports, String phone) {
-		DBNumbersEntry result = reports.getPhoneInfo(phone);
+		DBNumberInfo result = reports.getPhoneInfo(phone);
 		return result != null ? result : NumberInfo.create().setPhone(phone);
 	}
 
@@ -519,7 +519,7 @@ public class DB {
 	/**
 	 * Looks up all spam reports that were done after the given time in milliseconds since epoch.
 	 */
-	public List<DBNumbersEntry> getLatestSpamReports(long notBefore) {
+	public List<? extends NumberInfo> getLatestSpamReports(long notBefore) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
@@ -543,7 +543,7 @@ public class DB {
 			long revisionDate = orMidnightYesterday(reports.getRevisionDate(afterRev));
 			
 			List<SearchInfo> topSearches = new ArrayList<>();
-			for (DBNumbersEntry entry : reports.getUpdatedPhoneInfos(revisionDate)) {
+			for (DBNumberInfo entry : reports.getUpdatedPhoneInfos(revisionDate)) {
 				String phone = entry.getPhone();
 				int searches = entry.getSearches();
 				SearchInfo info = SearchInfo.create()
@@ -591,7 +591,7 @@ public class DB {
 	/**
 	 * Looks all spam reports.
 	 */
-	public List<DBNumbersEntry> getAll(int limit) {
+	public List<DBNumberInfo> getAll(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getAll(limit);
@@ -601,7 +601,7 @@ public class DB {
 	/**
 	 * Looks up spam reports with the most votes in the last month.
 	 */
-	public List<DBNumbersEntry> getTopSpamReports(int cnt) {
+	public List<DBNumberInfo> getTopSpamReports(int cnt) {
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.add(Calendar.MONTH, -1);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -617,7 +617,7 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<DBNumbersEntry> getLatestBlocklistEntries(String login) {
+	public List<DBNumberInfo> getLatestBlocklistEntries(String login) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
@@ -642,7 +642,7 @@ public class DB {
 		}
 	}
 	
-	private static BlockListEntry toBlocklistEntry(DBNumbersEntry n) {
+	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
 		return BlockListEntry.create()
 				.setPhone(n.getPhone())
 				.setVotes(n.getVotes())

@@ -26,7 +26,7 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBNumbersEntry;
+import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;

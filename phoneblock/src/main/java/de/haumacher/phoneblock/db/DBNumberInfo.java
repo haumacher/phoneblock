@@ -8,12 +8,12 @@ import de.haumacher.phoneblock.db.model.NumberInfo;
 /**
  * Data class for DB access.
  */
-public class DBNumbersEntry extends NumberInfo {
+public class DBNumberInfo extends NumberInfo {
 
 	/** 
 	 * Creates a {@link DBBlockListEntry}.
 	 */
-	public DBNumbersEntry(String phone, long added, long updated, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
+	public DBNumberInfo(String phone, long added, long updated, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
 		setPhone(phone)
 		.setAdded(added)
 		.setUpdated(updated)

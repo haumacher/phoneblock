@@ -106,7 +106,7 @@ public interface SpamReports {
 			where UPDATED >= #{after} and ACTIVE
 			order by UPDATED desc
 			""")
-	List<DBNumbersEntry> getLatestReports(long after);
+	List<DBNumberInfo> getLatestReports(long after);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
@@ -114,19 +114,19 @@ public interface SpamReports {
 			order by UPDATED desc
 			limit #{limit}
 			""")
-	List<DBNumbersEntry> getAll(int limit);
+	List<DBNumberInfo> getAll(int limit);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where s.PHONE = #{phone}
 			""")
-	DBNumbersEntry getPhoneInfo(String phone);
+	DBNumberInfo getPhoneInfo(String phone);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where s.UPDATED > #{updatedAfter}
 			""")
-	List<DBNumbersEntry> getUpdatedPhoneInfos(long updatedAfter);
+	List<DBNumberInfo> getUpdatedPhoneInfos(long updatedAfter);
 	
 	@Select("""
 			select s.PHONE from NUMBERS s
@@ -149,20 +149,20 @@ public interface SpamReports {
 			WHERE ACTIVE and s.UPDATED >= #{notBefore}
 			ORDER BY s.VOTES DESC LIMIT #{cnt}
 			""")
-	List<DBNumbersEntry> getTopSpammers(int cnt, long notBefore);
+	List<DBNumberInfo> getTopSpammers(int cnt, long notBefore);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			WHERE ACTIVE and VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10
 			""")
-	List<DBNumbersEntry> getLatestBlocklistEntries(int minVotes);
+	List<DBNumberInfo> getLatestBlocklistEntries(int minVotes);
 
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where s.ACTIVE and s.VOTES >= #{minVotes}
 			order by s.PHONE
 			""")
-	List<DBNumbersEntry> getBlocklist(int minVotes);
+	List<DBNumberInfo> getBlocklist(int minVotes);
 	
 	@Select("""
 			SELECT x.PHONE FROM NUMBERS x
@@ -188,7 +188,7 @@ public interface SpamReports {
 			ORDER BY s.SEARCHES - i.SEARCHES DESC  
 			LIMIT 10;        
 			""")
-	List<DBNumbersEntry> getTopSearches(long revTime);
+	List<DBNumberInfo> getTopSearches(long revTime);
 	
 	/**
 	 * Retrieves all historic versions for the given number not older than the given revision.
@@ -228,13 +228,13 @@ public interface SpamReports {
 		    </foreach>
 		</script>
 		""")
-	List<DBNumbersEntry> getNumbers(Collection<String> numbers);
+	List<DBNumberInfo> getNumbers(Collection<String> numbers);
 
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where ACTIVE
 			""")
-	List<DBNumbersEntry> getReports();
+	List<DBNumberInfo> getReports();
 	
 	@Select("""
 			select PHONE from WHITELIST
