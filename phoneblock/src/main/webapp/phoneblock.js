@@ -182,9 +182,9 @@ document.addEventListener('DOMContentLoaded', function () {
 			const upId = link.getAttribute('data-vote-up-id');
 			const downId = link.getAttribute('data-vote-down-id');
 			if (link.classList.contains("thumbs-up")) {
-				commentVote(votePath, commentId, 1, upId, downId);
+				commentVote(votePath.value, commentId, 1, upId, downId);
 			} else if (link.classList.contains("thumbs-down")) {
-				commentVote(votePath, commentId, -1, upId, downId);
+				commentVote(votePath.value, commentId, -1, upId, downId);
 			}
 			event.preventDefault();
 		});

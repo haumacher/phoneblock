@@ -50,31 +50,7 @@
 <script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.CHARTJS_PATH %>/dist/chart.umd.js"></script>
 <% } %>
 
-<style type="text/css">
-	.box .fa-star {
-		color: green;
-	}
-	
-	.fa-triangle-exclamation {
-		color: red;
-	}
-	
-	.image.is-64x64 i {
-		font-size: 64px;
-	}
-	
-	.level-item.thumbs-up {
-		color: green;
-	}
-	
-	.level-item.thumbs-down {
-		color: red;
-	}
-	
-	.level-item {
-		padding-right: 1rem;
-	}
-</style>
+<link rel="stylesheet" href="<%= request.getContextPath() %>/phone-info.css">
 </head>
 
 <body>
@@ -373,103 +349,36 @@
 <div class="columns">
 	<div class="column is-half">
 <% if (!ratings.isEmpty()) { %>
+	<%
+		StringBuilder labels = new StringBuilder();
+		StringBuilder data = new StringBuilder();
+		StringBuilder backgroundColor = new StringBuilder();
+		StringBuilder borderColor = new StringBuilder();
+
+		boolean first = true;
+		for (Rating r : Rating.values()) {
+			if (r == Rating.B_MISSED) {
+				continue;
+			}
+			if (first) {
+				first = false;
+			} else {
+				labels.append(',');
+				data.append(',');
+				backgroundColor.append('|');
+				borderColor.append('|');
+			}
+			labels.append(Ratings.getLabel(r));
+			data.append(ratings.getOrDefault(r, 0));
+			String rgb = Ratings.getRGB(r);
+			backgroundColor.append("rgba(").append(rgb).append(", 0.2)");
+			borderColor.append("rgba(").append(rgb).append(", 1)");
+		}
+	%>
+	<div id="ratings-data" ratings-labels="<%=labels.toString()%>" ratings-dataset="<%=data.toString()%>" ratings-backgroundColor="<%=backgroundColor.toString()%>" ratings-borderColor="<%=borderColor.toString()%>">
+	</div>
 	<canvas id="ratings" width="400" height="200" aria-label="Anzahl Bewertungen" role="img"></canvas>
-	<script type="text/javascript">
-	new Chart(document.getElementById('ratings').getContext('2d'), {
-	    type: 'bar',
-	    data: {
-	        labels: [
-	        	<%
-	        	{
-		        	boolean first = true;
-		        	for (Rating r : Rating.values()) {
-		        		if (r == Rating.B_MISSED) {
-							continue;
-		        		}
-		        		if (first) {
-		        			first = false;
-		        		} else {
-		        			out.write(',');
-		        		}
-		        		out.write('\'');
-		        		out.write(Ratings.getLabel(r));
-		        		out.write('\'');
-		        	}
-	        	}
-				%>
-        	],
-	        datasets: [{
-	            label: 'Anzahl Bewertungen',
-	            data: [
-		        	<%
-		        	{
-			        	boolean first = true;
-			        	for (Rating r : Rating.values()) {
-			        		if (r == Rating.B_MISSED) {
-								continue;
-			        		}
-			        		if (first) {
-			        			first = false;
-			        		} else {
-			        			out.write(',');
-			        		}
-			        		out.write(Integer.toString(ratings.getOrDefault(r, 0)));
-			        	}
-		        	}
-					%>
-            	],
-	            backgroundColor: [
-		        	<%
-		        	{
-			        	boolean first = true;
-			        	for (Rating r : Rating.values()) {
-			        		if (r == Rating.B_MISSED) {
-								continue;
-			        		}
-			        		if (first) {
-			        			first = false;
-			        		} else {
-			        			out.write(',');
-			        		}
-			        		out.write("'rgba(");
-			        		out.write(Ratings.getRGB(r));
-			        		out.write(", 0.2)'");
-			        	}
-		        	}
-					%>
-	            ],
-	            borderColor: [
-		        	<%
-		        	{
-			        	boolean first = true;
-			        	for (Rating r : Rating.values()) {
-			        		if (r == Rating.B_MISSED) {
-								continue;
-			        		}
-			        		if (first) {
-			        			first = false;
-			        		} else {
-			        			out.write(',');
-			        		}
-			        		out.write("'rgba(");
-			        		out.write(Ratings.getRGB(r));
-			        		out.write(", 1)'");
-			        	}
-		        	}
-					%>
-	            ],
-	            borderWidth: 1
-	        }]
-	    },
-	    options: {
-	        scales: {
-	            y: {
-	                beginAtZero: true
-	            }
-	        }
-	    }
-	});
-	</script>
+	<script type="text/javascript" src="<%= request.getContextPath() %>/phone-info-ratings.js"></script>
 <% } else { %>
 	<p>
 		Es gibt bisher noch keine Bewertungen, sei der erste, der eine seine Einschätzung teilt!
@@ -479,62 +388,32 @@
 
 	<div class="column is-half">
 <% if (!searches.isEmpty()) { %>
+	<%
+		SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.");
+		Calendar date = new GregorianCalendar();
+		date.add(Calendar.DAY_OF_MONTH, -(searches.size() - 1));
+
+		StringBuilder labels = new StringBuilder();
+		StringBuilder data = new StringBuilder();
+
+		boolean first = true;
+
+		for (SearchInfo r : searches) {
+			if (first) {
+				first = false;
+			} else {
+				labels.append(',');
+				data.append(',');
+			}
+			labels.append(fmt.format(date.getTime()));
+			date.add(Calendar.DAY_OF_MONTH, 1);
+			data.append(r.getCount());
+		}
+	%>
+	<div id="searches-data" searches-labels="<%=labels.toString()%>" searches-dataset="<%=data.toString()%>">
+	</div>
 	<canvas id="searches" width="400" height="200" aria-label="Suchanfragen in der letzten Woche" role="img"></canvas>
-	<script type="text/javascript">
-	new Chart(document.getElementById('searches').getContext('2d'), {
-		type: 'line',
-	    data: {
-	        labels: [
-	        	<%
-	        	SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.");
-	        	Calendar date = new GregorianCalendar();
-	        	date.add(Calendar.DAY_OF_MONTH, -(searches.size() - 1));
-	        	{
-		        	boolean first = true;
-		        	for (SearchInfo r : searches) {
-		        		if (first) {
-		        			first = false;
-		        		} else {
-		        			out.write(',');
-		        		}
-		        		out.write('\'');
-		        		out.write(fmt.format(date.getTime()));
-		        		out.write('\'');
-		        		
-		        		date.add(Calendar.DAY_OF_MONTH, 1);
-		        	}
-	        	}
-				%>
-        	],
-	        datasets: [{
-	            label: 'Suchanfragen in der letzten Woche',
-	            data: [
-		        	<%{
-			        	boolean first = true;
-			        	for (SearchInfo r : searches) {
-			        		if (first) {
-			        			first = false;
-			        		} else {
-			        			out.write(',');
-			        		}
-			        		out.write(Integer.toString(r.getCount()));
-			        	}
-		        	}%>
-            	],
-            	fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-        	}]
-	    },
-	    options: {
-	        scales: {
-	            y: {
-	                beginAtZero: true
-	            }
-	        }
-	    }
-	});
-	</script>
+	<script type="text/javascript" src="<%= request.getContextPath() %>/phone-info-searches.js"></script>
 <% } else {%>
 	<p>Es gibt keine Suchanfragen für diese Nummer.</p>
 <% } %>
