@@ -14,65 +14,61 @@ public class Ratings {
 	 * The number of votes the given {@link Ratings} is worth.
 	 */
 	public static int getVotes(de.haumacher.phoneblock.db.model.Rating rating) {
-		switch (rating) {
-			case A_LEGITIMATE: return -10;
-			case B_MISSED: return 2; 
-			case C_PING: return 2; 
-			case D_POLL: return 2; 
-			case E_ADVERTISING: return 2; 
-			case F_GAMBLE: return 2; 
-			case G_FRAUD: return 2;
-		}
-		throw new IllegalArgumentException("No such rating: " + rating);
-	}
+        return switch (rating) {
+            case A_LEGITIMATE -> -10;
+            case B_MISSED -> 2;
+            case C_PING -> 2;
+            case D_POLL -> 2;
+            case E_ADVERTISING -> 2;
+            case F_GAMBLE -> 2;
+            case G_FRAUD -> 2;
+        };
+    }
 
 	/**
 	 * The label to display this {@link Ratings}.
 	 */
 	public static String getLabel(de.haumacher.phoneblock.db.model.Rating rating) {
-		switch (rating) {
-			case A_LEGITIMATE: return "Seriös"; 
-			case B_MISSED: return "Unbekannt"; 
-			case C_PING: return "Ping-Anruf"; 
-			case D_POLL: return "Umfrage"; 
-			case E_ADVERTISING: return "Werbung"; 
-			case F_GAMBLE: return "Gewinnspiel"; 
-			case G_FRAUD: return "Betrug";
-		}
-		throw new IllegalArgumentException("No such rating: " + rating);
-	}
+        return switch (rating) {
+            case A_LEGITIMATE -> "Seriös";
+            case B_MISSED -> "Unbekannt";
+            case C_PING -> "Ping-Anruf";
+            case D_POLL -> "Umfrage";
+            case E_ADVERTISING -> "Werbung";
+            case F_GAMBLE -> "Gewinnspiel";
+            case G_FRAUD -> "Betrug";
+        };
+    }
 
 	/**
 	 * The CSS class for visualizing the given rating.
 	 */
 	public static String getCssClass(de.haumacher.phoneblock.db.model.Rating rating) {
-		switch (rating) {
-			case A_LEGITIMATE: return "is-legitimate"; 
-			case B_MISSED: return "is-missed";
-			case C_PING: return "is-ping"; 
-			case D_POLL: return "is-poll"; 
-			case E_ADVERTISING: return "is-advertising"; 
-			case F_GAMBLE: return "is-gamble"; 
-			case G_FRAUD: return "is-fraud";
-		}
-		throw new IllegalArgumentException("No such rating: " + rating);
-	}
+        return switch (rating) {
+            case A_LEGITIMATE -> "is-legitimate";
+            case B_MISSED -> "is-missed";
+            case C_PING -> "is-ping";
+            case D_POLL -> "is-poll";
+            case E_ADVERTISING -> "is-advertising";
+            case F_GAMBLE -> "is-gamble";
+            case G_FRAUD -> "is-fraud";
+        };
+    }
 
 	/**
 	 * The RGB color values to display the given rating in a chart.
 	 */
 	public static String getRGB(de.haumacher.phoneblock.db.model.Rating rating) {
-		switch (rating) {
-		case A_LEGITIMATE: return "72, 199, 142"; 
-		case B_MISSED: return "170, 172, 170";
-		case C_PING: return "31, 94, 220"; 
-		case D_POLL: return "157, 31, 220"; 
-		case E_ADVERTISING: return "241, 207, 70"; 
-		case F_GAMBLE: return "241, 122, 70"; 
-		case G_FRAUD: return "241, 70, 104";
-		}
-		throw new IllegalArgumentException("No such rating: " + rating);
-	}
+        return switch (rating) {
+            case A_LEGITIMATE -> "72, 199, 142";
+            case B_MISSED -> "170, 172, 170";
+            case C_PING -> "31, 94, 220";
+            case D_POLL -> "157, 31, 220";
+            case E_ADVERTISING -> "241, 207, 70";
+            case F_GAMBLE -> "241, 122, 70";
+            case G_FRAUD -> "241, 70, 104";
+        };
+    }
 
 	/**
 	 * Comparator function for {@link RatingInfo}s.
