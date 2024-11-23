@@ -376,8 +376,9 @@
 		}
 	%>
 	<div id="ratings-data" ratings-labels="<%=labels.toString()%>" ratings-dataset="<%=data.toString()%>" ratings-backgroundColor="<%=backgroundColor.toString()%>" ratings-borderColor="<%=borderColor.toString()%>">
+	</div>
 	<canvas id="ratings" width="400" height="200" aria-label="Anzahl Bewertungen" role="img"></canvas>
-		<script type="text/javascript" src="<%= request.getContextPath() %>/phone-info-ratings.js"></script>
+	<script type="text/javascript" src="<%= request.getContextPath() %>/phone-info-ratings.js"></script>
 <% } else { %>
 	<p>
 		Es gibt bisher noch keine Bewertungen, sei der erste, der eine seine Einschätzung teilt!
