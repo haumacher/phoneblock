@@ -36,6 +36,7 @@ import de.haumacher.phoneblock.db.model.SpamReport;
 import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.JspUtil;
+import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet displaying information about a telephone number in the DB.
@@ -313,8 +314,7 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		req.setAttribute("keywords", keywords.toString());
-		
-		req.getRequestDispatcher("/phone-info.jsp").forward(req, resp);
+		ServletUtil.display(req, resp, "/phone-info.jsp");
 	}
 
 	private static boolean isEmpty(String aiSummary) {

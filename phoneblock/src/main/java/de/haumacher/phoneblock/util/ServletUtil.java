@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.util;
 
 import java.io.IOException;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
@@ -23,6 +24,8 @@ import de.haumacher.phoneblock.db.DBService;
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
 public class ServletUtil {
+
+	private static final String CURRENT_PAGE = "currentPage";
 
 	/** 
 	 * Send an authentication request.
@@ -91,6 +94,19 @@ public class ServletUtil {
 		
 		sendAuthenticationRequest(resp);
 		return false;
+	}
+	
+	public static String currentPage(HttpServletRequest req) {
+		String currentPage = (String) req.getAttribute(CURRENT_PAGE);
+		if (currentPage == null) {
+			currentPage = req.getRequestURI();
+		}
+		return currentPage;
+	}
+
+	public static void display(HttpServletRequest req, HttpServletResponse resp, String page) throws ServletException, IOException {
+		req.setAttribute(CURRENT_PAGE, req.getRequestURI());
+		req.getRequestDispatcher(page).forward(req, resp);
 	}
 
 }

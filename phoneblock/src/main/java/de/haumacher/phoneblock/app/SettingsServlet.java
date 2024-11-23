@@ -25,6 +25,7 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet updating user settings.
@@ -64,7 +65,7 @@ public class SettingsServlet extends HttpServlet {
 			req.setAttribute("answerBots", answerBots);
 		}
 		
-		req.getRequestDispatcher("/settings.jsp").forward(req, resp);
+		ServletUtil.display(req, resp, "/settings.jsp");
 	}
 	
 	@Override
