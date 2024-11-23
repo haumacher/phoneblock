@@ -53,7 +53,7 @@
 		<jquery.version>3.6.4</jquery.version>
 		<swagger-ui.version>4.18.3</swagger-ui.version>
 		
-		<jetty.version>9.4.53.v20231009</jetty.version>
+		<jetty.version>9.4.54.v20240208</jetty.version>
 		
 		<msgbuf.version>1.1.4</msgbuf.version>
 		
@@ -78,7 +78,7 @@
 		<dependency>
 		    <groupId>dnsjava</groupId>
 		    <artifactId>dnsjava</artifactId>
-		    <version>3.5.3</version>
+		    <version>3.6.0</version>
 		</dependency>
 
 		<dependency>
