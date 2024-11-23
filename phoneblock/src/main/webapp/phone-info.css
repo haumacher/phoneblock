@@ -1,0 +1,23 @@
+.box .fa-star {
+    color: green;
+}
+
+.fa-triangle-exclamation {
+    color: red;
+}
+
+.image.is-64x64 i {
+    font-size: 64px;
+}
+
+.level-item.thumbs-up {
+    color: green;
+}
+
+.level-item.thumbs-down {
+    color: red;
+}
+
+.level-item {
+    padding-right: 1rem;
+}
