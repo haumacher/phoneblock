@@ -843,7 +843,10 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			int minVotes = getMinVotes(session, login);
-			return new Status(reports.getStatistics(minVotes), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
+			return new Status(
+					reports.getStatistics(minVotes), 
+					nonNull(reports.getTotalVotes()), 
+					nonNull(reports.getArchivedReportCount()));
 		}
 	}
 

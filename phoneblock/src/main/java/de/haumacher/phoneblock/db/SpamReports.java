@@ -247,7 +247,9 @@ public interface SpamReports {
 	
 	@Select("""
 			SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM NUMBERS s
-			GROUP BY confidence ORDER BY confidence DESC
+			where ACTIVE
+			GROUP BY confidence 
+			ORDER BY confidence DESC
 			""")
 	List<Statistics> getStatistics(int minVotes);
 	
