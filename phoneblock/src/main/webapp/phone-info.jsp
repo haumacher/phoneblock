@@ -174,7 +174,7 @@
 	<p>Die Nummer ☎ <%= info.getPhone()%> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
 	<blockquote class="related-numbers">
 <% for (String related : relatedNumbers) { %>
-		<span><a href="<%= request.getContextPath()%>/nums/<%= related%>" class="showNumber">☎ <%= related %></a></span>
+		<span><a href="<%= request.getContextPath()%>/nums/<%= related%>" data-onclick="showNumber">☎ <%= related %></a></span>
 <% } %>	
 	</blockquote>
 
@@ -457,10 +457,10 @@
 	
 	<nav class="pagination is-centered" role="navigation" aria-label="pagination">
 	<% if (prev != null) { %>
-		<a class="pagination-previous showNumber" href="<%= request.getContextPath()%>/nums/<%= prev%>">Vorherige Nummer</a>
+		<a class="pagination-previous" data-onclick="showNumber" href="<%= request.getContextPath()%>/nums/<%= prev%>">Vorherige Nummer</a>
 	<% } %>
 	<% if (next != null) { %>
-		<a class="pagination-next showNumber" href="<%= request.getContextPath()%>/nums/<%= next%>">Nächste Nummer</a>
+		<a class="pagination-next" data-onclick="showNumber" href="<%= request.getContextPath()%>/nums/<%= next%>">Nächste Nummer</a>
 	<% } %>
 	</nav>
 </div>

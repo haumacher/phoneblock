@@ -1,3 +1,26 @@
+/** Map of named onclick handlers that an be associated with elements through the `data-onclick` attribute. */
+const commands = {
+	"showNumber": function (event) {
+		const href = this.href;
+		const number = href.substring(href.lastIndexOf("/") + 1)
+		event.preventDefault();
+		displayNumber(number, true);
+	}
+};
+
+/** Link onclick handlers to elements referencing them through the data-onclick attribute. */
+document.addEventListener('DOMContentLoaded', () => {
+	const elements = document.querySelectorAll('[data-onclick]');
+	elements.forEach((element) => {
+		const cmdId = element.getAttribute("data-onclick");
+		const cmd = commands[cmdId];
+		
+		if (cmd != null) {
+			element.addEventListener('click', cmd);
+		}
+	});
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   // Get all "navbar-burger" elements
   const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
@@ -48,23 +71,6 @@ function makeSearchButton(buttonId, inputId) {
 function searchNumber(inputId) {
 	var number = document.getElementById(inputId).value;
 	displayNumber(number, false);
-	return false;
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-	let links = document.querySelectorAll('.showNumber');
-	links.forEach(function (link) {
-		link.addEventListener('click', function (event) {
-			const href = link.href;
-			const inputId = href.substring(href.lastIndexOf("/") + 1)
-			event.preventDefault();
-			showNumber(inputId)
-		});
-	});
-});
-
-function showNumber(number) {
-	displayNumber(number, true);
 	return false;
 }
 
