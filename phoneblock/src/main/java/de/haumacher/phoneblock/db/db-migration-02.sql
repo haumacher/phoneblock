@@ -39,6 +39,7 @@ CREATE TABLE NUMBERS (
 );
 
 CREATE INDEX NUMBERS_ACTIVE_IDX ON NUMBERS (ACTIVE DESC,VOTES DESC);
+CREATE INDEX NUMBERS_UPDATED_IDX ON PUBLIC.NUMBERS (UPDATED DESC);
 
 -- Clear new NUMBERS table after failed attempt
 -----------------------------------------------
