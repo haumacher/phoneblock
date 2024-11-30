@@ -100,8 +100,8 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			<thead>
 				<tr>
 					<th>Rufnummer</th>
-					<th title="Suchanfragen nach dieser Nummer heute">Heute</th>
-					<th title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Gestern</th>
+					<th title="Anzahl an Suchanfragen nach dieser Nummer seit gestern">Heute und gestern</th>
+					<th title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Gesamt</th>
 					<th>Letzte Anfrage</th>
 				</tr>
 			</thead>
