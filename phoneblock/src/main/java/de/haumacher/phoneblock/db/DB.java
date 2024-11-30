@@ -655,14 +655,14 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			int lastRev = nonNull(reports.getLastRevision());
+			int revMidnight = nonNull(reports.getLastRevision());
 			
-			int baseRev = lastRev > 0 ? lastRev - 1 : 0;
-			long revTime = orMidnightYesterday(reports.getRevisionDate(baseRev));
+			int revYesterday = revMidnight > 0 ? revMidnight - 1 : 0;
+			long midnightYesterday = orMidnightYesterday(reports.getRevisionDate(revYesterday));
 		
 			if (false) {
 				// Note: This query produces nonsense results when fired through ibatis. The conventional way below works as expected.
-				List<DBSearchInfo> result = reports.getTopSearches(lastRev, revTime, limit);
+				List<DBSearchInfo> result = reports.getTopSearches(revMidnight, midnightYesterday, limit);
 				result.sort((a,b)->-Integer.compare(a.getCount(), b.getCount()));
 				
 				result = result.subList(0, limit);
@@ -672,16 +672,18 @@ public class DB {
 				
 				return result;
 			} else {
-				List<DBSearchInfo> searches = reports.getSearchesSince(revTime);
+				List<DBSearchInfo> searches = reports.getSearchesSince(midnightYesterday);
 				Set<String> numbers = searches.stream().map(s -> s.getPhone()).collect(Collectors.toSet());
-				Map<String, DBSearchInfo> atRev = numbers.isEmpty() ? Collections.emptyMap() : reports.getSearchesAt(baseRev, numbers).stream().collect(Collectors.toMap(s -> s.getPhone(), s -> s));
+				Map<String, DBSearchInfo> searchesYesterday = numbers.isEmpty() ? 
+					Collections.emptyMap() : 
+					reports.getSearchesAt(revYesterday, numbers).stream().collect(Collectors.toMap(s -> s.getPhone(), s -> s));
 				
 				for (DBSearchInfo s : searches) {
-					DBSearchInfo base = atRev.get(s.getPhone());
-					if (base == null) {
+					DBSearchInfo yesterday = searchesYesterday.get(s.getPhone());
+					if (yesterday == null) {
 						s.setCount(s.getTotal());
 					} else {
-						s.setCount(s.getTotal() - base.getTotal());
+						s.setCount(s.getTotal() - yesterday.getTotal());
 					}
 				}
 				
