@@ -57,10 +57,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		link.addEventListener('click', function (event) {
 			const href = link.href;
 			const inputId = href.substring(href.lastIndexOf("/") + 1)
-			const result = searchNumber(inputId)
-			if (!result) {
-				event.preventDefault();
-			}
+			event.preventDefault();
+			showNumber(inputId)
 		});
 	});
 });
