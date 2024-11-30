@@ -357,7 +357,7 @@ public interface SpamReports {
 				PHONE in (select s.PHONE from NUMBERS s where s.UPDATED > #{lastSnapshot}) and
 				RMAX = 0x7fffffff
 			""")
-	void outdateHistorySnapshot(int rev, long lastSnapshot);
+	int outdateHistorySnapshot(int rev, long lastSnapshot);
 	
 	@Insert("""
 			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
@@ -365,10 +365,10 @@ public interface SpamReports {
 				where s.UPDATED > #{lastSnapshot}
 			)
 			""")
-	void createHistorySnapshot(int rev, long lastSnapshot);
+	int createHistorySnapshot(int rev, long lastSnapshot);
 	
 	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id}")
-	void cleanRevision(int id);
+	int cleanRevision(int id);
 	
 	@Delete("delete from REVISION where ID=#{id}")
 	void removeRevision(int id);

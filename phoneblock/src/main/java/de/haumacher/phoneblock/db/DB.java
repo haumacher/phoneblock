@@ -674,7 +674,7 @@ public class DB {
 			} else {
 				List<DBSearchInfo> searches = reports.getSearchesSince(revTime);
 				Set<String> numbers = searches.stream().map(s -> s.getPhone()).collect(Collectors.toSet());
-				Map<String, DBSearchInfo> atRev = reports.getSearchesAt(baseRev, numbers).stream().collect(Collectors.toMap(s -> s.getPhone(), s -> s));
+				Map<String, DBSearchInfo> atRev = numbers.isEmpty() ? Collections.emptyMap() : reports.getSearchesAt(baseRev, numbers).stream().collect(Collectors.toMap(s -> s.getPhone(), s -> s));
 				
 				for (DBSearchInfo s : searches) {
 					DBSearchInfo base = atRev.get(s.getPhone());
@@ -686,7 +686,7 @@ public class DB {
 				}
 				
 				searches.sort(Comparator.<DBSearchInfo>comparingInt(s -> s.getCount()).reversed());
-				searches = searches.subList(0, limit);
+				searches = searches.subList(0, Math.min(searches.size(),  limit));
 				
 				searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
 				return searches;
@@ -695,10 +695,16 @@ public class DB {
 	}
 	
 	private long orMidnightYesterday(Long revisionDate) {
+		long midnightYesterday = midnightYesterday();
+		
 		if (revisionDate != null) {
-			return revisionDate.longValue();
+			return Math.max(midnightYesterday, revisionDate.longValue());
 		}
 		
+		return midnightYesterday;
+	}
+
+	public long midnightYesterday() {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
 		calendar.set(Calendar.MINUTE, 0);
@@ -1342,13 +1348,17 @@ public class DB {
 			int newRev = reports.getLastRevision();
 			Long lastRevDate = reports.getRevisionDate(newRev - 1);
 			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
-			reports.outdateHistorySnapshot(newRev, lastSnapshot);
-			reports.createHistorySnapshot(newRev, lastSnapshot);
+			int updateCnt = reports.outdateHistorySnapshot(newRev, lastSnapshot);
+			int insertCnt = reports.createHistorySnapshot(newRev, lastSnapshot);
+			
+			LOG.info("Created revision {} with {} new and {} updated search entries.", newRev, insertCnt - updateCnt, updateCnt);
 			
 			int oldestRev = reports.getOldestRevision();
 			if (newRev - oldestRev >= maxHistory) {
-				reports.cleanRevision(oldestRev);
+				int removedCnt = reports.cleanRevision(oldestRev);
 				reports.removeRevision(oldestRev);
+				
+				LOG.info("Dropped revision {} with {} search entries.", oldestRev, removedCnt);
 			}
 			
 			session.commit();

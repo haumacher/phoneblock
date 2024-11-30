@@ -67,7 +67,7 @@ class TestDB {
 
 	@Test
 	void testTopSearches() {
-		long now = 1000;
+		long now = 1000000000000000000L;
 
 		_db.addSearchHit("0", now++);
 		_db.addSearchHit("5", now++);
