@@ -658,11 +658,11 @@ public class DB {
 			int lastRev = nonNull(reports.getLastRevision());
 			
 			int baseRev = lastRev > 0 ? lastRev - 1 : 0;
-			long revisionDate = orMidnightYesterday(reports.getRevisionDate(baseRev));
+			long revTime = orMidnightYesterday(reports.getRevisionDate(baseRev));
 		
 			if (false) {
 				// Note: This query produces nonsense results when fired through ibatis. The conventional way below works as expected.
-				List<DBSearchInfo> result = reports.getTopSearches(lastRev, revisionDate, limit);
+				List<DBSearchInfo> result = reports.getTopSearches(lastRev, revTime, limit);
 				result.sort((a,b)->-Integer.compare(a.getCount(), b.getCount()));
 				
 				result = result.subList(0, limit);
@@ -672,34 +672,25 @@ public class DB {
 				
 				return result;
 			} else {
-				Connection connection = session.getConnection();
-				try (PreparedStatement stmt = connection.prepareStatement(
-					"""
-					select s.PHONE, s.SEARCHES - COALESCE(h.SEARCHES, 0) CNT, s.SEARCHES TOTAL, s.UPDATED from NUMBERS s
-					left outer join NUMBERS_HISTORY h on h.PHONE = s.PHONE and h.RMIN <= ? and h.RMAX >= ?
-					where s.UPDATED > ?
-					order by CNT desc
-					""")) {
-
-					stmt.setInt(1, baseRev);
-					stmt.setInt(2, baseRev);
-					stmt.setLong(3, revisionDate);
-					
-					List<DBSearchInfo> result = new ArrayList<>();
-					try (ResultSet res = stmt.executeQuery()) {
-						while (res.next() && result.size() < limit) {
-							result.add(new DBSearchInfo(res.getString(1), res.getInt(2), res.getInt(3), res.getLong(4)));
-						}
+				List<DBSearchInfo> searches = reports.getSearchesSince(revTime);
+				Set<String> numbers = searches.stream().map(s -> s.getPhone()).collect(Collectors.toSet());
+				Map<String, DBSearchInfo> atRev = reports.getSearchesAt(baseRev, numbers).stream().collect(Collectors.toMap(s -> s.getPhone(), s -> s));
+				
+				for (DBSearchInfo s : searches) {
+					DBSearchInfo base = atRev.get(s.getPhone());
+					if (base == null) {
+						s.setCount(s.getTotal());
+					} else {
+						s.setCount(s.getTotal() - base.getTotal());
 					}
-					
-					// Bring in last search order.
-					result.sort((a,b)->-Long.compare(a.getLastSearch(), b.getLastSearch()));
-					
-					return result;
 				}
+				
+				searches.sort(Comparator.<DBSearchInfo>comparingInt(s -> s.getCount()).reversed());
+				searches = searches.subList(0, limit);
+				
+				searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
+				return searches;
 			}
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
 		}
 	}
 	

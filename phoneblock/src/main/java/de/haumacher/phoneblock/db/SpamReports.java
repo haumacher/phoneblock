@@ -182,6 +182,24 @@ public interface SpamReports {
 			""")
 	List<DBSearchInfo> getTopSearches(int rev, long revTime, int limit);
 	
+	@Select("""
+			select s.PHONE, 0, s.SEARCHES TOTAL, s.UPDATED from NUMBERS s
+			where s.UPDATED > #{revTime}
+			""")
+	List<DBSearchInfo> getSearchesSince(long revTime);
+
+	@Select("""
+			<script>
+			select h.PHONE, 0, h.SEARCHES TOTAL, 0 from NUMBERS_HISTORY h 
+			where h.PHONE in 
+			    <foreach item="item" index="index" collection="numbers" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			and h.RMIN &lt;= ${rev} and h.RMAX &gt;= ${rev}
+			</script>
+			""")
+	List<DBSearchInfo> getSearchesAt(int rev, Set<String> numbers);
+	
 	/**
 	 * Retrieves all historic versions for the given number not older than the given revision.
 	 * 
