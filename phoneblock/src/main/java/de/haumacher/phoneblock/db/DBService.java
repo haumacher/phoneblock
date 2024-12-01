@@ -180,14 +180,6 @@ public class DBService implements ServletContextListener {
         	}
 		} finally {
 			if (_pool != null) {
-				try (Connection connection = _pool.getConnection()) {
-					try (Statement statement = connection.createStatement()) {
-						statement.execute("SHUTDOWN");
-					}
-				} catch (Exception ex) {
-					LOG.error("Database shutdown failed.", ex);
-				}
-
 				try {
 					_pool.dispose();
 					_pool = null;

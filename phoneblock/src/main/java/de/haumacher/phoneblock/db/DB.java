@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -1002,6 +1003,16 @@ public class DB {
 	public void shutdown() {
 		for (ScheduledFuture<?> task : _tasks) {
 			task.cancel(false);
+		}
+		
+		if (_dataSource != null) {
+			try (Connection connection = _dataSource.getConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					statement.execute("SHUTDOWN COMPACT");
+				}
+			} catch (Exception ex) {
+				LOG.error("Database shutdown failed.", ex);
+			}
 		}
 	}
 
