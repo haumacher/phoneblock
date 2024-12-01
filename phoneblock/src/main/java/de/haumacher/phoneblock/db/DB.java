@@ -807,7 +807,7 @@ public class DB {
 			}
 		}
 		{
-			int votes = n.getRatingPing();
+			int votes = n.getRatingPoll();
 			if (votes > max) {
 				result = Rating.D_POLL;
 				max = votes;
