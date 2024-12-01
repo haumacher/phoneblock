@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -337,8 +338,9 @@ public interface SpamReports {
 	@Update("UPDATE SUMMARY SET COMMENT = #{comment}, CREATED = #{created} WHERE PHONE = #{phone}")
 	int updateSummary(String phone, String comment, Long created);
 	
-	@Insert("insert into REVISION (CREATED) values (#{now})")
-	void createRevision(long now);
+	@Insert("insert into REVISION (CREATED) values (#{date})")
+	@Options(useGeneratedKeys = true, keyColumn = "ID", keyProperty = "id")
+	void storeRevision(Rev newRev);
 	
 	@Select("select max(ID) from REVISION")
 	Integer getLastRevision();

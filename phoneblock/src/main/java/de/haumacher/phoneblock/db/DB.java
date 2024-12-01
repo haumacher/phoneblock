@@ -174,6 +174,8 @@ public class DB {
 		 } else {
 			 LOG.info("Support mails are disabled.");
 		 }
+		 
+		 runUpdateHistory();
 	}
 
 	private void setupSchema() throws SQLException {
@@ -1245,7 +1247,7 @@ public class DB {
 			LOG.info("Archived " + archived + " reports.");
 			
 			session.commit();
-		} catch (PersistenceException ex) {
+		} catch (Exception ex) {
 			LOG.error("Failed to cleanup DB.", ex);
 		}
 		
@@ -1346,8 +1348,12 @@ public class DB {
 	
 	private void runUpdateHistory() {
 		LOG.info("Processing history.");
-		updateHistory(365);
-	}
+		try {
+			updateHistory(365);
+		} catch (Exception ex) {
+			LOG.error("Failed to process history.", ex);
+		}
+		LOG.info("Finished procssing history.");	}
 
 	/** 
 	 * Creates a new snapshot of search history.
@@ -1361,17 +1367,20 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			reports.createRevision(now);
-			int newRev = reports.getLastRevision();
-			Long lastRevDate = reports.getRevisionDate(newRev - 1);
-			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
-			int updateCnt = reports.outdateHistorySnapshot(newRev, lastSnapshot);
-			int insertCnt = reports.createHistorySnapshot(newRev, lastSnapshot);
+			Rev newRev = new Rev(now);
+			reports.storeRevision(newRev);
 			
-			LOG.info("Created revision {} with {} new and {} updated search entries.", newRev, insertCnt - updateCnt, updateCnt);
+			int newRevId = newRev.getId();
+			
+			Long lastRevDate = reports.getRevisionDate(newRevId - 1);
+			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
+			int updateCnt = reports.outdateHistorySnapshot(newRevId, lastSnapshot);
+			int insertCnt = reports.createHistorySnapshot(newRevId, lastSnapshot);
+			
+			LOG.info("Created revision {} with {} new and {} updated search entries.", newRevId, insertCnt - updateCnt, updateCnt);
 			
 			int oldestRev = reports.getOldestRevision();
-			if (newRev - oldestRev >= maxHistory) {
+			if (newRevId - oldestRev >= maxHistory) {
 				int removedCnt = reports.cleanRevision(oldestRev);
 				reports.removeRevision(oldestRev);
 				
