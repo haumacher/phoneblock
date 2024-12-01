@@ -174,8 +174,6 @@ public class DB {
 		 } else {
 			 LOG.info("Support mails are disabled.");
 		 }
-		 
-		 runUpdateHistory();
 	}
 
 	private void setupSchema() throws SQLException {
