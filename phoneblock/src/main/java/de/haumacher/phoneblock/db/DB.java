@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -37,8 +38,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -179,6 +178,8 @@ public class DB {
 	private void setupSchema() throws SQLException {
 		Set<String> tableNames = new HashSet<>();
 		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
 			Connection connection = session.getConnection();
 			try (ResultSet rset = connection.getMetaData().getTables(null, "PUBLIC", "%", null)) {
 				while (rset.next()) {
@@ -239,11 +240,37 @@ public class DB {
 
 		        connection.commit();
 
-		        LOG.info("Aggregating numbers history.");
+		        LOG.info("Loading ratings today.");
 		        
+		        Map<String, Map<String, Integer>> ratingsToday = new HashMap<>();
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+			        	SELECT r.PHONE, r.RATING, r.COUNT - r.BACKUP FROM RATINGS r WHERE r.COUNT > r.BACKUP;
+	        		""")) {
+		        	try (ResultSet result = stmt.executeQuery()) {
+		        		while (result.next()) {
+		        			ratingsToday.computeIfAbsent(result.getString(1), x -> new HashMap<>()).put(result.getString(2), Integer.valueOf(result.getInt(3)));
+		        		}
+		        	}
+		        }
+		        
+		        LOG.info("Loading searches today.");
+		        
+		        Map<String, Integer> searchesToday = new HashMap<>();
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+			        	SELECT s.PHONE, s.TODAY FROM SEARCHES s WHERE s.TODAY > 0
+	        		""")) {
+		        	try (ResultSet result = stmt.executeQuery()) {
+		        		while (result.next()) {
+		        			searchesToday.put(result.getString(1), Integer.valueOf(result.getInt(2)));
+		        		}
+		        	}
+		        }
+		        
+		        LOG.info("Aggregating numbers history.");
+
 		        try (PreparedStatement stmt = connection.prepareStatement("""
 		        	select h.RMIN, h.RMAX, h.PHONE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-		        	order by h.PHONE asc, h.RMIN asc
+		        	order by h.PHONE asc, h.RMIN desc
         		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 		        	
 		        	int rows = 0;
@@ -263,44 +290,74 @@ public class DB {
 		        		while (cursor.next()) {
 		        			String phone = cursor.getString(3);
 		        			
-		        			if (lastPhone.equals(phone)) {
-		        				calls +=       cursor.getInt(4);
-		        				votes +=       cursor.getInt(5); 
-		        				legitimate +=  cursor.getInt(6);
-		        				ping +=        cursor.getInt(7);
-		        				poll +=        cursor.getInt(8);
-		        				advertising += cursor.getInt(9);
-		        				gamble +=      cursor.getInt(10);
-		        				fraud +=       cursor.getInt(11);
-		        				searches +=    cursor.getInt(12);
+		        			if (!lastPhone.equals(phone)) {
+		        				NumberInfo info = getPhoneInfo(reports, phone);
+		        				calls = info.getCalls();
+		        				votes = info.getVotes();
+		        				legitimate = info.getRatingLegitimate();
+		        				ping = info.getRatingPing();
+		        				poll = info.getRatingPoll();
+		        				advertising = info.getRatingAdvertising();
+		        				gamble = info.getRatingGamble();
+		        				fraud = info.getRatingFraud();
+		        				searches = info.getSearches();
 		        				
-		        				cursor.updateInt(4, calls);
-		        				cursor.updateInt(5, votes);
-		        				cursor.updateInt(6, legitimate);
-		        				cursor.updateInt(7, ping);
-		        				cursor.updateInt(8, poll);
-		        				cursor.updateInt(9, advertising);
-		        				cursor.updateInt(10, gamble);
-		        				cursor.updateInt(11, fraud);
-		        				cursor.updateInt(12, searches);
+		        				Integer todaySearches = searchesToday.get(phone);
+		        				if (todaySearches != null) {
+		        					searches -= todaySearches.intValue();
+		        				}
 		        				
-		        				cursor.updateRow();
-		        			} else {
-		        				calls =        cursor.getInt(4);
-		        				votes =        cursor.getInt(5); 
-		        				legitimate =   cursor.getInt(6);
-		        				ping =         cursor.getInt(7);
-		        				poll =         cursor.getInt(8);
-		        				advertising =  cursor.getInt(9);
-		        				gamble =       cursor.getInt(10);
-		        				fraud =        cursor.getInt(11);
-		        				searches =     cursor.getInt(12);
+		        				Map<String, Integer> todayRatings = ratingsToday.get(phone);
+		        				if (todayRatings != null) {
+		        					for (Entry<String, Integer> entry : todayRatings.entrySet()) {
+		        						switch (entry.getKey()) {
+		        						case "A_LEGITIMATE": legitimate -= entry.getValue().intValue(); break;
+		        						case "C_PING": ping -= entry.getValue().intValue(); break;
+		        						case "D_POLL": poll -= entry.getValue().intValue(); break;
+		        						case "E_ADVERTISING": advertising -= entry.getValue().intValue(); break;
+		        						case "F_GAMBLE": gamble -= entry.getValue().intValue(); break;
+		        						case "G_FRAUD": fraud -= entry.getValue().intValue(); break;
+		        						}
+		        					}
+		        				}
 		        			}
+		        			
+	        				int deltaCalls = cursor.getInt(4);
+	        				int deltaVotes = cursor.getInt(5);
+	        				int deltaLegitimate = cursor.getInt(6);
+	        				int deltaPing = cursor.getInt(7);
+	        				int deltaPoll = cursor.getInt(8);
+	        				int deltaAdvertising = cursor.getInt(9);
+	        				int deltaGamble = cursor.getInt(10);
+	        				int deltaFraud = cursor.getInt(11);
+	        				int deltaSearches = cursor.getInt(12);
+	        				
+	        				cursor.updateInt(4, Math.max(0, calls));
+	        				cursor.updateInt(5, Math.max(0, votes));
+	        				cursor.updateInt(6, Math.max(0, legitimate));
+	        				cursor.updateInt(7, Math.max(0, ping));
+	        				cursor.updateInt(8, Math.max(0, poll));
+	        				cursor.updateInt(9, Math.max(0, advertising));
+	        				cursor.updateInt(10, Math.max(0, gamble));
+	        				cursor.updateInt(11, Math.max(0, fraud));
+	        				cursor.updateInt(12, Math.max(0, searches));
+	        				
+	        				cursor.updateRow();
 		        			rows++;
 		        			
 		        			if (rows % 1000 == 0) {
 		        				LOG.info("Aggregated row {}.", rows);
 		        			}
+
+							calls -=       deltaCalls;
+							votes -=       deltaVotes; 
+							legitimate -=  deltaLegitimate;
+							ping -=        deltaPing;
+							poll -=        deltaPoll;
+							advertising -= deltaAdvertising;
+							gamble -=      deltaGamble;
+							fraud -=       deltaFraud;
+							searches -=    deltaSearches;
 		        			
 		        			lastPhone = phone;
 		        		}

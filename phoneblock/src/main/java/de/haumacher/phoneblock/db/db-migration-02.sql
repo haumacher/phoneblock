@@ -68,13 +68,15 @@ INSERT INTO NUMBERS (PHONE, ADDED, UPDATED, VOTES, ACTIVE) (
 --------------------------------------------
 SELECT COUNT(1), ACTIVE FROM NUMBERS GROUP BY ACTIVE; 
 
--- Move ratings from RATINGS to NUMBERS
+-- Move searches from SEARCHES to NUMBERS
 ---------------------------------------
 UPDATE NUMBERS n 
 SET SEARCHES = (SELECT s.COUNT FROM SEARCHES s WHERE n.PHONE = s.PHONE),
 	UPDATED = GREATEST(UPDATED, (SELECT s.LASTUPDATE FROM SEARCHES s WHERE n.PHONE = s.PHONE)) 
 WHERE EXISTS (SELECT s.COUNT FROM SEARCHES s WHERE n.PHONE = s.PHONE);
 
+-- Move ratings from RATINGS to NUMBERS
+---------------------------------------
 UPDATE NUMBERS n 
 SET PING = (SELECT s.COUNT FROM RATINGS s WHERE n.PHONE = s.PHONE AND s.RATING='C_PING'),
 	UPDATED = GREATEST(UPDATED , (SELECT s.LASTUPDATE FROM RATINGS s WHERE n.PHONE = s.PHONE AND s.RATING='C_PING')) 
@@ -154,6 +156,8 @@ INSERT INTO NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES) (
 -- NUMBERS_HISTORY
 ---------------------------------
 
+DROP TABLE NUMBERS_HISTORY IF EXISTS;
+
 CREATE TABLE NUMBERS_HISTORY (
 	RMIN INTEGER NOT NULL,
 	RMAX INTEGER NOT NULL,
@@ -232,81 +236,10 @@ WHERE EXISTS (
 	SELECT s.COUNT FROM RATINGHISTORY s WHERE s.REV = n.RMAX AND s.PHONE = n.PHONE AND s.RATING = 'G_FRAUD'
 );
 
--- Copy votes from NUMBERS to NUMBERS_HISTORY, since no historic information is available here.
-UPDATE NUMBERS_HISTORY n 
-SET VOTES = COALESCE (
-	(SELECT s.VOTES FROM NUMBERS s WHERE s.PHONE = n.PHONE), 0
-);
-
 
 -- Import META_UPDATE
 UPDATE NUMBERS n SET LASTMETA = COALESCE( (SELECT u.LASTUPDATE FROM META_UPDATE u WHERE u.PHONE = n.PHONE), 0);
 
 
--- Complete revision ranges
--- Note: The rest is done in code, because it is too inefficient to do in SQL.
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET RMAX = COALESCE (
--- 	(SELECT min(h.RMIN) - 1 FROM NUMBERS_HISTORY h WHERE h.RMIN > n.RMIN AND h.PHONE = n.PHONE), 0x7fffffff
--- );
--- 
--- --
--- -- Convert NUMBERS_HISTORY to a table with running sums
--- -- These queries are inefficient, since a quadratic operation is performed by the database, but is unclear how to optimize.
--- --
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.SEARCHES = n.SEARCHES + COALESCE(
--- 		(SELECT SUM(s.SEARCHES) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.LEGITIMATE = n.LEGITIMATE + COALESCE(
--- 		(SELECT SUM(s.LEGITIMATE) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.PING = n.PING + COALESCE(
--- 		(SELECT SUM(s.PING) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.POLL = n.POLL + COALESCE(
--- 		(SELECT SUM(s.POLL) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.ADVERTISING = n.ADVERTISING + COALESCE(
--- 		(SELECT SUM(s.ADVERTISING) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.GAMBLE = n.GAMBLE + COALESCE(
--- 		(SELECT SUM(s.GAMBLE) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
--- 
--- UPDATE NUMBERS_HISTORY n 
--- SET 
--- 	n.FRAUD = n.FRAUD + COALESCE(
--- 		(SELECT SUM(s.FRAUD) FROM NUMBERS_HISTORY s WHERE s.PHONE = n.PHONE AND s.RMAX < n.RMAX), 
--- 		0
--- 	)
--- ;
+-- Revision ranges are completed in code.
+-- History information diff is expanded in code.
