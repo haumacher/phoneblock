@@ -151,6 +151,31 @@ public class DB {
 		configuration.addMapper(Domains.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
+		setupSchema();
+		
+		try {
+			_sha256 = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException ex) {
+			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
+		}
+		
+		 cleanup();
+
+		 Date timeCleanup = schedule(20, this::cleanup);
+		 LOG.info("Scheduled next DB cleanup: " + timeCleanup);
+		 
+		 Date timeHistory = schedule(0, this::runUpdateHistory);
+		 LOG.info("Scheduled search history cleanup: " + timeHistory);
+		 
+		 if (sendHelpMails && _mailService != null) {
+			 Date supportMails = schedule(18, this::sendSupportMails);
+			 LOG.info("Scheduled support mails: " + supportMails);
+		 } else {
+			 LOG.info("Support mails are disabled.");
+		 }
+	}
+
+	private void setupSchema() throws SQLException {
 		Set<String> tableNames = new HashSet<>();
 		try (SqlSession session = openSession()) {
 			Connection connection = session.getConnection();
@@ -284,27 +309,6 @@ public class DB {
 		        connection.commit();
 			}
 		}
-		
-		try {
-			_sha256 = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException ex) {
-			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
-		}
-		
-		 cleanup();
-
-		 Date timeCleanup = schedule(20, this::cleanup);
-		 LOG.info("Scheduled next DB cleanup: " + timeCleanup);
-		 
-		 Date timeHistory = schedule(0, this::runUpdateHistory);
-		 LOG.info("Scheduled search history cleanup: " + timeHistory);
-		 
-		 if (sendHelpMails && _mailService != null) {
-			 Date supportMails = schedule(18, this::sendSupportMails);
-			 LOG.info("Scheduled support mails: " + supportMails);
-		 } else {
-			 LOG.info("Support mails are disabled.");
-		 }
 	}
 
 	private Date schedule(int atHour, Runnable command) {
