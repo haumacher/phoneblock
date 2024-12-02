@@ -209,7 +209,7 @@
     <div class="media-content">
       <div class="content">
         <p class="commentHeader">
-		  <strong>☎ <%= info.getPhone()%></strong>
+		  <strong>☎ <%= comment.getPhone()%></strong>
           <small>
           <% if (comment.getService() != null && !comment.getService().isEmpty()) { %>
           <a target="_blank" href="<%= request.getContextPath()%><%= ExternalLinkServlet.LINK_PREFIX%><%= comment.getService()%>/<%=  comment.getPhone()%>"><%= comment.getService()%></a>

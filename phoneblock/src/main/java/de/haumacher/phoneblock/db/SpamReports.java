@@ -330,6 +330,15 @@ public interface SpamReports {
 	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN from COMMENTS s where s.PHONE=#{phone}")
 	List<DBUserComment> getComments(String phone);
 	
+	@Select("""
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN 
+			from COMMENTS s 
+			where 
+				s.PHONE > #{prefix} and
+				s.PHONE < concat(#{prefix}, 'Z')
+			""")
+	List<DBUserComment> getAllComments(String prefix);
+	
 	@Insert("insert into COMMENTS (ID, PHONE, RATING, COMMENT, SERVICE, CREATED) values (#{id}, #{phone}, #{rating}, #{comment}, #{service}, #{created})")
 	void addComment(String id, String phone, Rating rating, String comment, String service, long created);
 	

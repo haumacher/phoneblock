@@ -175,9 +175,6 @@ public class SearchServlet extends HttpServlet {
 		
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 
-		// Note: Search for comments first, since new comments may change the state of the number.
-		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId, isBot);
-		
 		NumberInfo numberInfo;
 		PhoneInfo info;
 		List<Integer> searches;
@@ -187,9 +184,19 @@ public class SearchServlet extends HttpServlet {
 		String prev;
 		String next;
 		
+		List<? extends UserComment> comments;
+		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			// Note: Search for comments first, since new comments may change the state of the number.
+			if (isSeachHit) {
+				comments = MetaSearchService.getInstance().fetchComments(phoneId);
+			} else {
+				comments = reports.getComments(phoneId);
+			}
+			
 			boolean commit = false;
 			
 			long now = System.currentTimeMillis();
@@ -221,9 +228,17 @@ public class SearchServlet extends HttpServlet {
 				
 				if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
 					relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix());
+					
+					if (comments.isEmpty()) {
+						comments = reports.getAllComments(aggregation100.getPrefix());
+					}
 				} else {
 					if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
 						relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix());
+
+						if (comments.isEmpty()) {
+							comments = reports.getAllComments(aggregation10.getPrefix());
+						}
 					} else {
 						relatedNumbers = Collections.emptyList();
 					}
@@ -256,9 +271,9 @@ public class SearchServlet extends HttpServlet {
 			}
 			negativeCnt = Math.min(10 - positiveCnt, negativeCnt);
 		}
-		comments = new ArrayList<>(positive.subList(0, positiveCnt));
-		comments.addAll(negative.subList(0, negativeCnt));
-		comments.sort(COMMENT_ORDER);
+		List<UserComment> shownComments = new ArrayList<>(positive.subList(0, positiveCnt));
+		shownComments.addAll(negative.subList(0, negativeCnt));
+		shownComments.sort(COMMENT_ORDER);
 		
 		Map<Rating, Integer> ratings = new HashMap<>();
 		ratings.put(Rating.A_LEGITIMATE, numberInfo.getRatingLegitimate());
@@ -273,7 +288,7 @@ public class SearchServlet extends HttpServlet {
 		return SearchResult.create()
 				.setPhoneId(phoneId)
 				.setNumber(number)
-				.setComments(comments)
+				.setComments(shownComments)
 				.setInfo(info)
 				.setSearches(searches)
 				.setAiSummary(aiSummary)

@@ -51,17 +51,14 @@ public class SearchOperation {
 
 	private boolean _searchPerformed;
 
-	private boolean _bot;
-
 	/** 
 	 * Creates a {@link SearchOperation}.
 	 */
-	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, String phoneId, boolean bot) {
+	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, String phoneId) {
 		_scheduler = scheduler;
 		_indexer = indexer;
 		_plugins = plugins;
 		_phoneId = phoneId;
-		_bot = bot;
 	}
 
 	/** 
@@ -73,9 +70,7 @@ public class SearchOperation {
 			SpamReports mapper = session.getMapper(SpamReports.class);
 
 			_comments = new ArrayList<>(mapper.getComments(_phoneId));
-			
-			// Do not perform a meta-search for a bot request.
-			if (!_bot) {
+			{
 				_searchPerformed = shouldSearch(mapper, _phoneId);
 				
 				boolean indexUpdated = false;
