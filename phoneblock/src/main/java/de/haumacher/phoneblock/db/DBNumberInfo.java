@@ -13,10 +13,11 @@ public class DBNumberInfo extends NumberInfo {
 	/** 
 	 * Creates a {@link DBBlockListEntry}.
 	 */
-	public DBNumberInfo(String phone, long added, long updated, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
 		setPhone(phone)
 		.setAdded(added)
 		.setUpdated(updated)
+		.setLastSearch(lastSearch)
 		.setActive(active)
 		.setCalls(calls)
 		.setVotes(votes)

@@ -707,6 +707,17 @@ public class DB {
 	}
 
 	/**
+	 * Looks up the top searches overall.
+	 */
+	public List<? extends NumberInfo> getTopSearchesOverall(int limit) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			return reports.getTopSearchesOverall(limit);
+		}
+	}
+	
+	/**
 	 * Looks up the latest searches.
 	 */
 	public List<? extends SearchInfo> getTopSearches() {
@@ -792,15 +803,9 @@ public class DB {
 	 * Looks up spam reports with the most votes in the last month.
 	 */
 	public List<DBNumberInfo> getTopSpamReports(int cnt) {
-		Calendar cal = GregorianCalendar.getInstance();
-		cal.add(Calendar.MONTH, -1);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		long notBefore = cal.getTimeInMillis();
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getTopSpammers(cnt, notBefore);
+			return reports.getTopSpammers(cnt);
 		}
 	}
 	

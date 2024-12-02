@@ -97,20 +97,21 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS s
 			set ACTIVE=false
-			where s.UPDATED < #{before}
-			and s.VOTES - (#{before} - s.UPDATED)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
+			where s.UPDATED < #{before} 
+			and s.LASTSEARCH < #{before}
+			and s.VOTES - (#{before} - GREATEST(s.UPDATED, s.LASTSEARCH))/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
 			""")
 	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where UPDATED >= #{after} and ACTIVE
 			order by UPDATED desc
 			""")
 	List<DBNumberInfo> getLatestReports(long after);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where ACTIVE
 			order by UPDATED desc
 			limit #{limit}
@@ -118,16 +119,10 @@ public interface SpamReports {
 	List<DBNumberInfo> getAll(int limit);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where s.PHONE = #{phone}
 			""")
 	DBNumberInfo getPhoneInfo(String phone);
-	
-	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-			where s.UPDATED > #{updatedAfter}
-			""")
-	List<DBNumberInfo> getUpdatedPhoneInfos(long updatedAfter);
 	
 	@Select("""
 			select s.PHONE from NUMBERS s
@@ -146,20 +141,26 @@ public interface SpamReports {
 	String getPrevPhone(String phone);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-			WHERE ACTIVE and s.UPDATED >= #{notBefore}
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			WHERE ACTIVE
 			ORDER BY s.VOTES DESC LIMIT #{cnt}
 			""")
-	List<DBNumberInfo> getTopSpammers(int cnt, long notBefore);
+	List<DBNumberInfo> getTopSpammers(int cnt);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			ORDER BY s.SEARCHES DESC LIMIT #{cnt}
+			""")
+	List<DBNumberInfo> getTopSearchesOverall(int cnt);
+	
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			WHERE ACTIVE and VOTES >= #{minVotes} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
 			""")
 	List<DBNumberInfo> getLatestBlocklistEntries(int minVotes);
 
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where s.ACTIVE and s.VOTES >= #{minVotes}
 			order by s.PHONE
 			""")
@@ -168,24 +169,24 @@ public interface SpamReports {
 	@Select("""
 			SELECT x.PHONE FROM NUMBERS x
 			WHERE x.SEARCHES - x.BACKUP > 0
-			ORDER BY x.UPDATED DESC
+			ORDER BY x.LASTSEARCH DESC
 			LIMIT 5
 			""")
 	Set<String> getLatestSearchesToday();
 	
 	// Note: This query produces nonsense results when fired through ibatis. The very same query the conventional way works as expected.
 	@Select("""
-			select s.PHONE, s.SEARCHES - COALESCE(h.SEARCHES, 0) CNT, s.SEARCHES TOTAL, s.UPDATED from NUMBERS s
+			select s.PHONE, s.SEARCHES - COALESCE(h.SEARCHES, 0) CNT, s.SEARCHES TOTAL, s.LASTSEARCH from NUMBERS s
 			left outer join NUMBERS_HISTORY h on h.PHONE = s.PHONE and h.RMIN <= ${rev} and h.RMAX >= ${rev}
-			where s.UPDATED > #{revTime}
+			where s.LASTSEARCH > #{revTime}
 			order by CNT desc
 			limit #{limit}
 			""")
 	List<DBSearchInfo> getTopSearches(int rev, long revTime, int limit);
 	
 	@Select("""
-			select s.PHONE, 0, s.SEARCHES TOTAL, s.UPDATED from NUMBERS s
-			where s.UPDATED > #{revTime}
+			select s.PHONE, 0, s.SEARCHES TOTAL, s.LASTSEARCH from NUMBERS s
+			where s.LASTSEARCH > #{revTime}
 			""")
 	List<DBSearchInfo> getSearchesSince(long revTime);
 
@@ -232,7 +233,7 @@ public interface SpamReports {
 	@Select(
 		"""
 		<script>
-		select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 		where s.PHONE in 
 		    <foreach item="item" index="index" collection="numbers" open="(" separator="," close=")">
 		        #{item}
@@ -242,7 +243,7 @@ public interface SpamReports {
 	List<DBNumberInfo> getNumbers(Collection<String> numbers);
 
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 			where ACTIVE
 			""")
 	List<DBNumberInfo> getReports();
@@ -286,7 +287,7 @@ public interface SpamReports {
 			""")
 	int incRating(String phone, Rating rating, long now);
 	
-	@Update("update NUMBERS s set s.SEARCHES = s.SEARCHES + 1, UPDATED=#{now} where s.PHONE=#{phone}")
+	@Update("update NUMBERS s set s.SEARCHES = s.SEARCHES + 1, LASTSEARCH=#{now} where s.PHONE=#{phone}")
 	int incSearchCount(String phone, long now);
 
 	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN from COMMENTS s where s.PHONE=#{phone}")
@@ -356,7 +357,7 @@ public interface SpamReports {
 			set 
 				RMAX = #{rev} - 1
 			where
-				PHONE in (select s.PHONE from NUMBERS s where s.UPDATED > #{lastSnapshot}) and
+				PHONE in (select s.PHONE from NUMBERS s where s.UPDATED > #{lastSnapshot} or s.LASTSEARCH > #{lastSnapshot}) and
 				RMAX = 0x7fffffff
 			""")
 	int outdateHistorySnapshot(int rev, long lastSnapshot);
@@ -364,7 +365,7 @@ public interface SpamReports {
 	@Insert("""
 			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
 				select #{rev}, 0x7fffffff, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-				where s.UPDATED > #{lastSnapshot}
+				where s.UPDATED > #{lastSnapshot} or s.LASTSEARCH > #{lastSnapshot}
 			)
 			""")
 	int createHistorySnapshot(int rev, long lastSnapshot);

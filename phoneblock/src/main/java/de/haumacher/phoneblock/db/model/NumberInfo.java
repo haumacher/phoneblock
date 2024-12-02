@@ -18,9 +18,14 @@ public class NumberInfo extends AbstractNumberInfo {
 	/** @see #getUpdated() */
 	public static final String UPDATED__PROP = "updated";
 
+	/** @see #getLastSearch() */
+	public static final String LAST_SEARCH__PROP = "lastSearch";
+
 	private long _added = 0L;
 
 	private long _updated = 0L;
+
+	private long _lastSearch = 0L;
 
 	/**
 	 * Creates a {@link NumberInfo} instance.
@@ -76,6 +81,27 @@ public class NumberInfo extends AbstractNumberInfo {
 	protected final void internalSetUpdated(long value) {
 		_listener.beforeSet(this, UPDATED__PROP, value);
 		_updated = value;
+	}
+
+	/**
+	 * Time when the number was last searched on the web site or through the API.
+	 */
+	public final long getLastSearch() {
+		return _lastSearch;
+	}
+
+	/**
+	 * @see #getLastSearch()
+	 */
+	public de.haumacher.phoneblock.db.model.NumberInfo setLastSearch(long value) {
+		internalSetLastSearch(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLastSearch()} without chain call utility. */
+	protected final void internalSetLastSearch(long value) {
+		_listener.beforeSet(this, LAST_SEARCH__PROP, value);
+		_lastSearch = value;
 	}
 
 	@Override
@@ -152,7 +178,8 @@ public class NumberInfo extends AbstractNumberInfo {
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			ADDED__PROP, 
-			UPDATED__PROP));
+			UPDATED__PROP, 
+			LAST_SEARCH__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -164,6 +191,7 @@ public class NumberInfo extends AbstractNumberInfo {
 		switch (field) {
 			case ADDED__PROP: return getAdded();
 			case UPDATED__PROP: return getUpdated();
+			case LAST_SEARCH__PROP: return getLastSearch();
 			default: return super.get(field);
 		}
 	}
@@ -173,6 +201,7 @@ public class NumberInfo extends AbstractNumberInfo {
 		switch (field) {
 			case ADDED__PROP: internalSetAdded((long) value); break;
 			case UPDATED__PROP: internalSetUpdated((long) value); break;
+			case LAST_SEARCH__PROP: internalSetLastSearch((long) value); break;
 			default: super.set(field, value); break;
 		}
 	}
@@ -191,6 +220,8 @@ public class NumberInfo extends AbstractNumberInfo {
 		out.value(getAdded());
 		out.name(UPDATED__PROP);
 		out.value(getUpdated());
+		out.name(LAST_SEARCH__PROP);
+		out.value(getLastSearch());
 	}
 
 	@Override
@@ -198,6 +229,7 @@ public class NumberInfo extends AbstractNumberInfo {
 		switch (field) {
 			case ADDED__PROP: setAdded(in.nextLong()); break;
 			case UPDATED__PROP: setUpdated(in.nextLong()); break;
+			case LAST_SEARCH__PROP: setLastSearch(in.nextLong()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -211,6 +243,9 @@ public class NumberInfo extends AbstractNumberInfo {
 	/** XML attribute or element name of a {@link #getUpdated} property. */
 	private static final String UPDATED__XML_ATTR = "updated";
 
+	/** XML attribute or element name of a {@link #getLastSearch} property. */
+	private static final String LAST_SEARCH__XML_ATTR = "last-search";
+
 	@Override
 	public String getXmlTagName() {
 		return NUMBER_INFO__XML_ELEMENT;
@@ -222,6 +257,7 @@ public class NumberInfo extends AbstractNumberInfo {
 		super.writeAttributes(out);
 		out.writeAttribute(ADDED__XML_ATTR, Long.toString(getAdded()));
 		out.writeAttribute(UPDATED__XML_ATTR, Long.toString(getUpdated()));
+		out.writeAttribute(LAST_SEARCH__XML_ATTR, Long.toString(getLastSearch()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -249,6 +285,10 @@ public class NumberInfo extends AbstractNumberInfo {
 				setUpdated(Long.parseLong(value));
 				break;
 			}
+			case LAST_SEARCH__XML_ATTR: {
+				setLastSearch(Long.parseLong(value));
+				break;
+			}
 			default: {
 				super.readFieldXmlAttribute(name, value);
 			}
@@ -264,6 +304,10 @@ public class NumberInfo extends AbstractNumberInfo {
 			}
 			case UPDATED__XML_ATTR: {
 				setUpdated(Long.parseLong(in.getElementText()));
+				break;
+			}
+			case LAST_SEARCH__XML_ATTR: {
+				setLastSearch(Long.parseLong(in.getElementText()));
 				break;
 			}
 			default: {

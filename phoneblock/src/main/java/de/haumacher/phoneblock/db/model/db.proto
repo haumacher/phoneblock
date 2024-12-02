@@ -103,6 +103,9 @@ message NumberInfo extends AbstractNumberInfo {
 	
 	/** Time when the information was last updated. */
 	long updated;
+	
+	/** Time when the number was last searched on the web site or through the API. */
+	long lastSearch;
 }
  
 message NumberHistory extends AbstractNumberInfo {
