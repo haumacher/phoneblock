@@ -367,6 +367,24 @@ public class DB {
 		        }
 		        
 		        connection.commit();
+
+		        LOG.info("Computing aggregate lastPing for blocks of 10.");
+		        
+		        for (AggregationInfo a : reports.getAllAggregation10().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_10).toList()) {
+		        	long lastPing = reports.getLastPingPrefix(a.getPrefix());
+		        	reports.sendPing(a.getPrefix(), lastPing);
+		        }
+
+		        connection.commit();
+
+		        LOG.info("Computing aggregate lastPing for blocks of 100.");
+
+		        for (AggregationInfo a : reports.getAllAggregation100().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_100).toList()) {
+		        	long lastPing = reports.getLastPingPrefix(a.getPrefix());
+		        	reports.sendPing(a.getPrefix(), lastPing);
+		        }
+		        
+		        connection.commit();
 			}
 		}
 	}
@@ -533,7 +551,29 @@ public class DB {
 			updateAggregation10(reports, phone, delta(oldVotes, newVotes), votes);
 		}
 		
+		pingRelatedNumbers(reports, phone, time);
+		
 		return classify(oldVotes) != classify(newVotes);
+	}
+
+	/**
+	 * Updates the "last-ping" of all related numbers in the same block.
+	 * 
+	 * <p>
+	 * This ensures that numbers of mass spammers are only archived, if none of their numbers is active anymore.
+	 * </p>
+	 */
+	private void pingRelatedNumbers(SpamReports reports, String phone, long now) {
+		AggregationInfo aggregation10 = getAggregation10(reports, phone);
+		if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
+			String prefix = aggregation10.getPrefix();
+			
+			AggregationInfo aggregation100 = getAggregation100(reports, phone);
+			if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
+				prefix = aggregation100.getPrefix();
+			}
+			reports.sendPing(prefix, now);
+		}
 	}
 
 	private static int delta(int oldVotes, int newVotes) {
@@ -646,6 +686,9 @@ public class DB {
 			Rating newRating = rating(reports, phone);
 			updateRequired |= oldRating != newRating;
 		}
+		
+		pingRelatedNumbers(reports, phone, created);
+		
 		return updateRequired;
 	}
 
@@ -1059,6 +1102,8 @@ public class DB {
 			reports.addReport(phone, 0, now);
 			reports.incSearchCount(phone, now);
 		}
+		
+		pingRelatedNumbers(reports, phone, now);
 	}
 	
 	/**

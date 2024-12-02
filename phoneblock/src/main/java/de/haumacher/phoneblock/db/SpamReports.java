@@ -30,7 +30,10 @@ public interface SpamReports {
 	void addReport(String phone, int votes, long now);
 	
 	@Update("""
-			update NUMBERS set VOTES = VOTES + #{delta}, UPDATED = CASEWHEN(#{now} > UPDATED, #{now}, UPDATED)
+			update NUMBERS set 
+				VOTES = VOTES + #{delta}, 
+				UPDATED = GREATEST(UPDATED, #{now}),
+				LASTPING = GREATEST(LASTPING, #{now})
 			where PHONE = #{phone}
 			""")
 	int addVote(String phone, int delta, long now);
@@ -50,17 +53,42 @@ public interface SpamReports {
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation10(String prefix);
 	
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10")
+	List<AggregationInfo> getAllAggregation10();
+	
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation100(String prefix);
 	
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100")
+	List<AggregationInfo> getAllAggregation100();
+	
 	@Select("""
-			SELECT p.PHONE FROM NUMBERS p
-			WHERE p.PHONE > #{prefix}
-			AND p.PHONE < concat(#{prefix}, 'Z')
-			AND p.VOTES > 0
-			order by p.PHONE
+			SELECT max(s.LASTPING) 
+			FROM NUMBERS s
+			WHERE s.PHONE > #{prefix}
+			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND s.VOTES > 0
+			""")
+	long getLastPingPrefix(String prefix);
+	
+	@Select("""
+			SELECT s.PHONE FROM NUMBERS s
+			WHERE s.PHONE > #{prefix}
+			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND s.VOTES > 0
+			order by s.PHONE
 			""")
 	List<String> getRelatedNumbers(String prefix);
+	
+	@Update("""
+			update NUMBERS s
+			set
+				s.LASTPING = GREATEST(s.LASTPING, #{now})
+			where s.PHONE > #{prefix}
+			and s.PHONE < concat(#{prefix}, 'Z')
+			and s.VOTES > 0
+			""")
+	void sendPing(String prefix, long now);
 	
 	@Select("""
 			select count(1) from NUMBERS
@@ -98,9 +126,9 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS s
 			set ACTIVE=false
-			where s.UPDATED < #{before} 
-			and s.LASTSEARCH < #{before}
-			and s.VOTES - (#{before} - GREATEST(s.UPDATED, s.LASTSEARCH))/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
+			where ACTIVE
+			and s.LASTPING < #{before}
+			and s.VOTES - (#{before} - s.LASTPING)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
 			""")
 	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
 	
@@ -283,12 +311,20 @@ public interface SpamReports {
 				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', 1, 0), 
 				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', 1, 0), 
 				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', 1, 0), 
-				s.UPDATED = greatest(s.UPDATED, #{now}) 
+				s.UPDATED = greatest(s.UPDATED, #{now}), 
+				s.LASTPING = greatest(s.LASTPING, #{now}) 
 			where s.PHONE = #{phone}
 			""")
 	int incRating(String phone, Rating rating, long now);
 	
-	@Update("update NUMBERS s set s.SEARCHES = s.SEARCHES + 1, LASTSEARCH=#{now} where s.PHONE=#{phone}")
+	@Update("""
+			update NUMBERS s
+			set 
+				s.SEARCHES = s.SEARCHES + 1, 
+				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}), 
+				s.LASTPING = GREATEST(s.LASTPING, #{now})
+			where s.PHONE=#{phone}
+			""")
 	int incSearchCount(String phone, long now);
 
 	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN from COMMENTS s where s.PHONE=#{phone}")
@@ -358,7 +394,7 @@ public interface SpamReports {
 			set 
 				RMAX = #{rev} - 1
 			where
-				PHONE in (select s.PHONE from NUMBERS s where s.UPDATED > #{lastSnapshot} or s.LASTSEARCH > #{lastSnapshot}) and
+				PHONE in (select s.PHONE from NUMBERS s where s.LASTPING > #{lastSnapshot}) and
 				RMAX = 0x7fffffff
 			""")
 	int outdateHistorySnapshot(int rev, long lastSnapshot);
@@ -366,7 +402,7 @@ public interface SpamReports {
 	@Insert("""
 			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
 				select #{rev}, 0x7fffffff, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-				where s.UPDATED > #{lastSnapshot} or s.LASTSEARCH > #{lastSnapshot}
+				where s.LASTPING > #{lastSnapshot}
 			)
 			""")
 	int createHistorySnapshot(int rev, long lastSnapshot);
