@@ -57,6 +57,7 @@ public interface SpamReports {
 			SELECT p.PHONE FROM NUMBERS p
 			WHERE p.PHONE > #{prefix}
 			AND p.PHONE < concat(#{prefix}, 'Z')
+			AND p.VOTES > 0
 			order by p.PHONE
 			""")
 	List<String> getRelatedNumbers(String prefix);

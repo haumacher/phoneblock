@@ -219,10 +219,10 @@ public class SearchServlet extends HttpServlet {
 				
 				info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
 				
-				if (aggregation100.getCnt() >= DB.MIN_AGGREGATE) {
+				if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
 					relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix());
 				} else {
-					if (aggregation100.getCnt() >= DB.MIN_AGGREGATE) {
+					if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
 						relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix());
 					} else {
 						relatedNumbers = Collections.emptyList();

@@ -107,7 +107,9 @@ public class DB {
 
 	private static final String BASIC_PREFIX = "Basic ";
 
-	public static final int MIN_AGGREGATE = 4;
+	public static final int MIN_AGGREGATE_10 = 4;
+	
+	public static final int MIN_AGGREGATE_100 = 3;
 
 	private MessageDigest _sha256;
 
@@ -559,10 +561,10 @@ public class DB {
 					int votes = info.getVotes();
 
 					int cntBefore = cnt - deltaCnt;
-					if (cntBefore < MIN_AGGREGATE && cnt >= MIN_AGGREGATE) {
+					if (cntBefore < MIN_AGGREGATE_10 && cnt >= MIN_AGGREGATE_10) {
 						updateAggregation100(reports, phone, 1, votes);
 					}
-					else if (cntBefore >= MIN_AGGREGATE && cnt < MIN_AGGREGATE) {
+					else if (cntBefore >= MIN_AGGREGATE_10 && cnt < MIN_AGGREGATE_10) {
 						int votesBefore = votes - deltaVotes;
 						
 						updateAggregation100(reports, phone, -1, -votesBefore);
@@ -976,18 +978,18 @@ public class DB {
 			.setLastUpdate(info.getUpdated());
 		
 		int votes;
-		if (aggregation100.getVotes() >= MIN_AGGREGATE) {
+		if (aggregation100.getVotes() >= MIN_AGGREGATE_100) {
 			votes = aggregation100.getVotes();
 			if (!info.isActive()) {
 				// Direct votes did not count yet.
 				votes += info.getVotes();
 			}
 			
-			if (aggregation10.getVotes() < MIN_AGGREGATE) {
+			if (aggregation10.getVotes() < MIN_AGGREGATE_10) {
 				// The votes of this number did not yet count to the aggregation of the block.
 				votes += aggregation10.getVotes();
 			}
-		} else if (aggregation10.getVotes() >= MIN_AGGREGATE) {
+		} else if (aggregation10.getVotes() >= MIN_AGGREGATE_10) {
 			votes = aggregation10.getVotes();
 			if (!info.isActive()) {
 				// Direct votes did not count yet.
