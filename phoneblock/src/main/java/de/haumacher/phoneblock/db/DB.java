@@ -889,7 +889,7 @@ public class DB {
 				.setRating(rating(n));
 	}
 
-	private static Rating rating(NumberInfo n) {
+	public static Rating rating(NumberInfo n) {
 		if (n.getVotes() <= 0) {
 			return Rating.A_LEGITIMATE;
 		}
@@ -1020,6 +1020,7 @@ public class DB {
 			.setDateAdded(info.getAdded())
 			.setLastUpdate(info.getUpdated());
 		
+		Rating rating = rating(info);
 		int votes;
 		if (aggregation100.getVotes() >= MIN_AGGREGATE_100) {
 			votes = aggregation100.getVotes();
@@ -1044,7 +1045,7 @@ public class DB {
 		}
 		
 		result.setVotes(votes);
-		result.setRating(rating(info));
+		result.setRating(rating);
 		
 		return result;
 	}

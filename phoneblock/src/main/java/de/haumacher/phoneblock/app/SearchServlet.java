@@ -232,12 +232,22 @@ public class SearchServlet extends HttpServlet {
 					if (comments.isEmpty()) {
 						comments = reports.getAllComments(aggregation100.getPrefix());
 					}
+					
+					if (info.getRating() == Rating.B_MISSED) {
+						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix());
+						info.setRating(DB.rating(aggregateInfo));
+					}
 				} else {
 					if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
 						relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix());
 
 						if (comments.isEmpty()) {
 							comments = reports.getAllComments(aggregation10.getPrefix());
+						}
+
+						if (info.getRating() == Rating.B_MISSED) {
+							DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix());
+							info.setRating(DB.rating(aggregateInfo));
 						}
 					} else {
 						relatedNumbers = Collections.emptyList();

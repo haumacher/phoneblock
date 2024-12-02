@@ -154,6 +154,15 @@ public interface SpamReports {
 	DBNumberInfo getPhoneInfo(String phone);
 	
 	@Select("""
+			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES) 
+			from NUMBERS s
+			where 
+				s.PHONE > #{prefix} and
+				s.PHONE < concat(#{prefix}, 'Z')
+			""")
+	DBNumberInfo getPhoneInfoAggregate(String prefix);
+	
+	@Select("""
 			select s.PHONE from NUMBERS s
 			WHERE s.PHONE > #{phone}
 			ORDER BY s.PHONE
