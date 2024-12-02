@@ -205,40 +205,11 @@ public interface SpamReports {
 	List<DBNumberInfo> getBlocklist(int minVotes);
 	
 	@Select("""
-			SELECT x.PHONE FROM NUMBERS x
-			WHERE x.SEARCHES - x.BACKUP > 0
-			ORDER BY x.LASTSEARCH DESC
-			LIMIT 5
-			""")
-	Set<String> getLatestSearchesToday();
-	
-	// Note: This query produces nonsense results when fired through ibatis. The very same query the conventional way works as expected.
-	@Select("""
-			select s.PHONE, s.SEARCHES - COALESCE(h.SEARCHES, 0) CNT, s.SEARCHES TOTAL, s.LASTSEARCH from NUMBERS s
-			left outer join NUMBERS_HISTORY h on h.PHONE = s.PHONE and h.RMIN <= ${rev} and h.RMAX >= ${rev}
-			where s.LASTSEARCH > #{revTime}
-			order by CNT desc
+			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
+			order by s.SEARCHES_CURRENT desc
 			limit #{limit}
 			""")
-	List<DBSearchInfo> getTopSearches(int rev, long revTime, int limit);
-	
-	@Select("""
-			select s.PHONE, 0, s.SEARCHES TOTAL, s.LASTSEARCH from NUMBERS s
-			where s.LASTSEARCH > #{revTime}
-			""")
-	List<DBSearchInfo> getSearchesSince(long revTime);
-
-	@Select("""
-			<script>
-			select h.PHONE, 0, h.SEARCHES TOTAL, 0 from NUMBERS_HISTORY h 
-			where h.PHONE in 
-			    <foreach item="item" index="index" collection="numbers" open="(" separator="," close=")">
-			        #{item}
-			    </foreach>
-			and h.RMIN &lt;= ${rev} and h.RMAX &gt;= ${rev}
-			</script>
-			""")
-	List<DBSearchInfo> getSearchesAt(int rev, Set<String> numbers);
+	List<DBSearchInfo> getTopSearchesCurrent(int limit);
 	
 	/**
 	 * Retrieves all historic versions for the given number not older than the given revision.
@@ -330,6 +301,7 @@ public interface SpamReports {
 			update NUMBERS s
 			set 
 				s.SEARCHES = s.SEARCHES + 1, 
+				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1, 
 				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}), 
 				s.LASTPING = GREATEST(s.LASTPING, #{now})
 			where s.PHONE=#{phone}
@@ -424,6 +396,15 @@ public interface SpamReports {
 			)
 			""")
 	int createHistorySnapshot(int rev, long lastSnapshot);
+	
+	@Update("""
+			update NUMBERS s
+			set
+				s.SEARCHES_BACKUP = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP,
+				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP
+			where s.LASTPING > #{lastSnapshot}
+			""")
+	int updateSearches(long lastSnapshot);
 	
 	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id}")
 	int cleanRevision(int id);

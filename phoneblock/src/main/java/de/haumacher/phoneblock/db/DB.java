@@ -772,58 +772,14 @@ public class DB {
 	public List<? extends SearchInfo> getTopSearches(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-
-			int revMidnight = nonNull(reports.getLastRevision());
-			
-			int revYesterday = revMidnight > 0 ? revMidnight - 1 : 0;
-			long midnightYesterday = orMidnightYesterday(reports.getRevisionDate(revYesterday));
 		
-			if (false) {
-				// Note: This query produces nonsense results when fired through ibatis. The conventional way below works as expected.
-				List<DBSearchInfo> result = reports.getTopSearches(revMidnight, midnightYesterday, limit);
-				result.sort((a,b)->-Integer.compare(a.getCount(), b.getCount()));
-				
-				result = result.subList(0, limit);
-				
-				// Bring in last search order.
-				result.sort((a,b)->-Long.compare(a.getLastSearch(), b.getLastSearch()));
-				
-				return result;
-			} else {
-				List<DBSearchInfo> searches = reports.getSearchesSince(midnightYesterday);
-				Set<String> numbers = searches.stream().map(s -> s.getPhone()).collect(Collectors.toSet());
-				Map<String, DBSearchInfo> searchesYesterday = numbers.isEmpty() ? 
-					Collections.emptyMap() : 
-					reports.getSearchesAt(revYesterday, numbers).stream().collect(Collectors.toMap(s -> s.getPhone(), s -> s));
-				
-				for (DBSearchInfo s : searches) {
-					DBSearchInfo yesterday = searchesYesterday.get(s.getPhone());
-					if (yesterday == null) {
-						s.setCount(s.getTotal());
-					} else {
-						s.setCount(s.getTotal() - yesterday.getTotal());
-					}
-				}
-				
-				searches.sort(Comparator.<DBSearchInfo>comparingInt(s -> s.getCount()).reversed());
-				searches = searches.subList(0, Math.min(searches.size(),  limit));
-				
-				searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
-				return searches;
-			}
+			List<DBSearchInfo> searches = reports.getTopSearchesCurrent(limit);
+			
+			searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
+			return searches;
 		}
 	}
 	
-	private long orMidnightYesterday(Long revisionDate) {
-		long midnightYesterday = midnightYesterday();
-		
-		if (revisionDate != null) {
-			return Math.max(midnightYesterday, revisionDate.longValue());
-		}
-		
-		return midnightYesterday;
-	}
-
 	public long midnightYesterday() {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -1484,6 +1440,7 @@ public class DB {
 			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
 			int updateCnt = reports.outdateHistorySnapshot(newRevId, lastSnapshot);
 			int insertCnt = reports.createHistorySnapshot(newRevId, lastSnapshot);
+			reports.updateSearches(lastSnapshot);
 			
 			LOG.info("Created revision {} with {} new and {} updated search entries.", newRevId, insertCnt - updateCnt, updateCnt);
 			
