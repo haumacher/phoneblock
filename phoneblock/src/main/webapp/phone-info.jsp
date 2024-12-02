@@ -43,7 +43,10 @@
 	
 	String prev = (String) request.getAttribute("prev");
 	String next = (String) request.getAttribute("next");
-%>
+
+	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
+	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);
+%>			
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
 
@@ -59,7 +62,7 @@
 
 <section class="section">
 <div class="content">
-	<h1>Bewertung von ☎ <%= info.getPhone()%></h1>
+	<h1>Rufnummer ☎ <%= info.getPhone()%></h1>
 
 <%
 	String categoryClass;
@@ -107,7 +110,7 @@
 
 <article class="message <%= categoryClass%>">
   <div class="message-header">
-    <p>Information zum Anrufer</p>
+    <p>Information zur Rufnummer <%= analysis.getPlus() %></p>
   </div>
   <div class="message-body">
 
@@ -118,6 +121,31 @@
 
 	<%-- Note: No additional quoting, is already quoted. --%>
 	<p><%= defaultSummary %></p>
+  
+	<ul>
+		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
+		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>
+
+		<%if (analysis.getCity() != null) { %>		
+		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
+		<%}%>
+
+<%
+		if (info.getVotes() > 0) {
+%>	
+		<li>Stimmen für Sperrung: <%= info.getVotes() %></li>
+		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
+
+<%
+			long dateAdded = info.getDateAdded();
+			if (dateAdded > 0) {
+%>
+		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
+<%			
+			}
+		} 
+%>
+	</ul>
   
   </div>
 </article>
@@ -180,83 +208,8 @@
 	</blockquote>
 
 <% } %>	
-	
-<%
-	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
-	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);
-%>			
 
-<% if (!comments.isEmpty()) { %>
-	<h2>Meinungen von anderen</h2>
-	
-	<% 
-	int commentId = 1;
-	String votePath = request.getContextPath() + CommentVoteServlet.PATH; 
-	%>
-	<% for (UserComment comment : comments.subList(0, Math.min(10, comments.size()))) { %>
-	<input type="hidden" id="votePath" value="<%=votePath%>">
-<div class="box">
-  <article class="media">
-    <div class="media-left">
-      <figure class="image is-64x64">
-		<% if (comment.getRating() == Rating.A_LEGITIMATE) { %>
-			<i class="fa-solid fa-star"></i>
-		<% } else { %>
-			<i class="fa-solid fa-triangle-exclamation"></i>
-		<% } %>
-      </figure>
-    </div>
-    <div class="media-content">
-      <div class="content">
-        <p class="commentHeader">
-		  <strong>☎ <%= comment.getPhone()%></strong>
-          <small>
-          <% if (comment.getService() != null && !comment.getService().isEmpty()) { %>
-          <a target="_blank" href="<%= request.getContextPath()%><%= ExternalLinkServlet.LINK_PREFIX%><%= comment.getService()%>/<%=  comment.getPhone()%>"><%= comment.getService()%></a>
-		  <% } else { %>
-		  <span>PhoneBlock</span>
-		  <% } %>
-		  </small>
-		  <small><%= dateFormat.format(new Date(comment.getCreated())) %></small>
-        </p>
-        <p class="commentText">
-          <% if (comment.getService() != null && comment.getComment().length() > 280) { %>
-	          <%= JspUtil.quote(comment.getComment().substring(0, 277) + "...") %>
-          <% } else { %>
-	          <%= JspUtil.quote(comment.getComment()) %>
-          <% } %>
-        </p>
-      </div>
-            
-      <%
-      	String upId = "id" + commentId++;
-      	String downId = "id" + commentId++;
-      	int up = Math.max(0, comment.getUp() - comment.getDown());
-      	int down = Math.max(0, comment.getDown() - comment.getUp());
-      %>
-      <nav class="level is-mobile">
-        <div class="level-left">
-          <a class="level-item thumbs-up commentVote" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" data-comment-id="<%=comment.getId()%>" data-vote-up-id="<%=upId%>" data-vote-down-id="<%=downId%>">
-            <span class="icon">
-              <i class="fa-solid fa-thumbs-up"></i>
-            </span>
-            &nbsp;<span id="<%=upId%>"><%=up%></span>
-          </a>
-          <a class="level-item thumbs-down commentVote" aria-label="Unsinn" title="Unsinn!" href="#" data-comment-id="<%=comment.getId()%>" data-vote-up-id="<%=upId%>" data-vote-down-id="<%=downId%>">
-            <span class="icon">
-              <i class="fa-solid fa-thumbs-down"></i>
-            </span>&nbsp;<span id="<%=downId%>"><%=down%></span>
-          </a>
-        </div>
-      </nav>
-    </div>
-  </article>
-</div>
-	
-	<%} %>	
-<% } %>
-	
-	<h2>Deine Bewertung</h2>
+	<h2>Schreib eine Bewertung für <%= info.getPhone() %></h2>
 	
 <% if (thanks) { %>
 	<div id="thanks" class="notification is-info">
@@ -421,6 +374,76 @@
 	</div>
 </div>
 
+<% if (!comments.isEmpty()) { %>
+	<h2>Kommentare zu <%= analysis.getPlus() %></h2>
+	
+	<% 
+	int commentId = 1;
+	String votePath = request.getContextPath() + CommentVoteServlet.PATH; 
+	%>
+	<% for (UserComment comment : comments.subList(0, Math.min(10, comments.size()))) { %>
+	<input type="hidden" id="votePath" value="<%=votePath%>">
+<div class="box">
+  <article class="media">
+    <div class="media-left">
+      <figure class="image is-64x64">
+		<% if (comment.getRating() == Rating.A_LEGITIMATE) { %>
+			<i class="fa-solid fa-star"></i>
+		<% } else { %>
+			<i class="fa-solid fa-triangle-exclamation"></i>
+		<% } %>
+      </figure>
+    </div>
+    <div class="media-content">
+      <div class="content">
+        <p class="commentHeader">
+		  <strong>☎ <%= comment.getPhone()%></strong>
+          <small>
+          <% if (comment.getService() != null && !comment.getService().isEmpty()) { %>
+          <a target="_blank" href="<%= request.getContextPath()%><%= ExternalLinkServlet.LINK_PREFIX%><%= comment.getService()%>/<%=  comment.getPhone()%>"><%= comment.getService()%></a>
+		  <% } else { %>
+		  <span>PhoneBlock</span>
+		  <% } %>
+		  </small>
+		  <small><%= dateFormat.format(new Date(comment.getCreated())) %></small>
+        </p>
+        <p class="commentText">
+          <% if (comment.getService() != null && comment.getComment().length() > 280) { %>
+	          <%= JspUtil.quote(comment.getComment().substring(0, 277) + "...") %>
+          <% } else { %>
+	          <%= JspUtil.quote(comment.getComment()) %>
+          <% } %>
+        </p>
+      </div>
+            
+      <%
+      	String upId = "id" + commentId++;
+      	String downId = "id" + commentId++;
+      	int up = Math.max(0, comment.getUp() - comment.getDown());
+      	int down = Math.max(0, comment.getDown() - comment.getUp());
+      %>
+      <nav class="level is-mobile">
+        <div class="level-left">
+          <a class="level-item thumbs-up commentVote" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" data-comment-id="<%=comment.getId()%>" data-vote-up-id="<%=upId%>" data-vote-down-id="<%=downId%>">
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-up"></i>
+            </span>
+            &nbsp;<span id="<%=upId%>"><%=up%></span>
+          </a>
+          <a class="level-item thumbs-down commentVote" aria-label="Unsinn" title="Unsinn!" href="#" data-comment-id="<%=comment.getId()%>" data-vote-up-id="<%=upId%>" data-vote-down-id="<%=downId%>">
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-down"></i>
+            </span>&nbsp;<span id="<%=downId%>"><%=down%></span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </article>
+</div>
+	
+	<%} %>	
+<% } %>
+
 <% if (android) { %>
 
 	<h2>Keine Lust mehr nach Telefonnummern zu googeln?</h2>
@@ -429,32 +452,6 @@
 		und du weißt sofort, ob es sich lohnt den Anruf anzunehmen oder eine Nummer zurückzurufen. 
 	</p>	
 <% } %>
-
-	<h2>Details</h2>
-	<ul>
-		<li>Alternative Schreibweisen: <%if (analysis.getShortcut() != null) {%><code><%= analysis.getShortcut() %></code>, <%}%><code><%= analysis.getPlus() %></code>, <code><%= analysis.getZeroZero() %></code></li>
-		<li>Land: <%= analysis.getCountry() %> (<code><%= analysis.getCountryCode() %></code>)</li>
-
-		<%if (analysis.getCity() != null) { %>		
-		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
-		<%}%>
-
-<%
-		if (info.getVotes() > 0) {
-%>	
-		<li>Stimmen für Sperrung: <%= info.getVotes() %></li>
-		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
-
-<%
-			long dateAdded = info.getDateAdded();
-			if (dateAdded > 0) {
-%>
-		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
-<%			
-			}
-		} 
-%>
-	</ul>
 	
 	<nav class="pagination is-centered" role="navigation" aria-label="pagination">
 	<% if (prev != null) { %>
