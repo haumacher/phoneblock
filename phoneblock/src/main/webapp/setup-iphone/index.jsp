@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
@@ -36,7 +37,7 @@
 %>
 		
    		<ol>
-   		<li><a href="<%=request.getContextPath() %>/signup.jsp">Melde Dich bei PhoneBlock an.</a></li>
+   		<li><a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Melde Dich bei PhoneBlock an.</a></li>
    		<li>Öffne "Einstellungen" > "Kontakte" > "Accounts". </li>
    		<li>Tippe auf "Account hinzufügen" - "Andere" > "CardDAV-Account hinzufügen".</li>
    		<li>Gib deine Zugangsdaten ein und tippe auf "Weiter".
@@ -72,7 +73,7 @@
 
 		<p>			
 			Du hast die Zugangsdaten nicht mehr zur Hand? Macht nichts, einfach 
-			<a href="<%=request.getContextPath() %>/signup.jsp">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
+			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
 		</p>
    		
    		<p>
@@ -82,7 +83,7 @@
    		</p>
    		
    		<p>
-    		Wenn du PhoneBlock nur auf dem iPhone benutzt kannst du auch die Anzahl der Einträge <a href="<%= request.getContextPath()%>/settings">hier</a> höher stellen. 
+    		Wenn du PhoneBlock nur auf dem iPhone benutzt kannst du auch die Anzahl der Einträge <a href="<%= request.getContextPath()%><%=SettingsServlet.PATH%>">hier</a> höher stellen. 
 			Sollte es damit Probleme geben, dann melde Dich bitte (siehe <a href="<%=request.getContextPath() %>/faq.jsp">FAQ</a>).
    		</p>
 	</div>

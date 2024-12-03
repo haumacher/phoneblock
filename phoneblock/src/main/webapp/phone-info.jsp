@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.api.CommentVoteServlet"%>
@@ -331,7 +332,7 @@
 		</p>
 		
 		<p>
-		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a href="<%= request.getContextPath() %>/login.jsp">melde Dich vorher an</a>!
+		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a href="<%= request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">melde Dich vorher an</a>!
 		</p>
 		
 		<div class="buttons">
@@ -500,7 +501,7 @@
 	</div>
 
 	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/signup.jsp">
+		<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
 			<p class="title">PhoneBlock installieren</p>
 			<p class="subtitle">Noch nicht installiert? Dann los!</p>
 		</a>
@@ -513,7 +514,7 @@
 
 <div class="tile is-ancestor">
 	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/signup.jsp">
+		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
 			<p class="title">PhoneBlock installieren</p>
 			<p class="subtitle">Account erstellen und einrichten!</p>
 		</a>

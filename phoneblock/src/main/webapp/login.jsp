@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.net.URL"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
@@ -39,9 +40,9 @@
 	</div>
 
 	<%
-		String location = LoginServlet.location(request);
-		String locationParam = LoginServlet.locationParam(request);
-		String locationParamFirst = LoginServlet.locationParamFirst(request);
+		String location = LoginServlet.location(request, SettingsServlet.PATH);
+		String locationParam = LoginServlet.locationParam(location);
+		String locationParamFirst = LoginServlet.locationParamFirst(location);
 	%>
 	
 	<nav class="panel">

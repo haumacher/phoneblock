@@ -71,14 +71,14 @@
 %>
 							<p class="help is-danger">
 								<%= JspUtil.quote(request.getAttribute("message")) %>
-								<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+								<a href="<%=request.getContextPath()%>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Nochmal probieren</a>.								
 							</p>
 <%
 						} else {
 %>
 							<p class="help is-info">
 								Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!
-								<a href="<%=request.getContextPath()%>/signup.jsp">Nochmal probieren</a>.								
+								<a href="<%=request.getContextPath()%>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Nochmal probieren</a>.								
 							</p>
 <%							
 					  	}

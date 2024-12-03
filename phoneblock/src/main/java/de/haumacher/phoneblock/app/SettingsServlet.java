@@ -86,7 +86,7 @@ public class SettingsServlet extends HttpServlet {
 					return;
 					
 				default: 
-					resp.sendRedirect(req.getContextPath() + "/settings");
+					resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 			}
 		}
 	}
@@ -140,7 +140,7 @@ public class SettingsServlet extends HttpServlet {
 		
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
-		resp.sendRedirect(req.getContextPath() + "/settings");
+		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 
 	private String normalize(String value) {
@@ -203,7 +203,7 @@ public class SettingsServlet extends HttpServlet {
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
-		resp.sendRedirect(req.getContextPath() + "/settings");
+		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 
 	private void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -46,7 +46,7 @@
 			
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="<%=request.getContextPath() %>/signup.jsp">
+			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
 				<button class="button is-medium is-info is-fullwidth">PhoneBlock-Account erstellen</button>
 			</a>
 		  </div>
@@ -157,7 +157,7 @@
 		
 		<p>
 			Das Passwort<%if (token == null) {%>, 
-			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten 
+			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Registrierung</a> erhalten 
 			hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code> <a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld
 			<i>Passwort</i> in dem Formular in der Fritz!Box eintragen.
 		</p>

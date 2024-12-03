@@ -47,7 +47,7 @@ public class LoginServlet extends HttpServlet {
 		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
 			String location = location(req);
 			if (location == null) {
-				location = "/settings.jsp";
+				location = SettingsServlet.PATH;
 			}
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
@@ -121,6 +121,17 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * Creates an URL parameter transporting the location after login to the next link invocation.
 	 */
+	public static String locationParam(String location) {
+		return locationParam(location, false);
+	}
+
+	/**
+	 * Creates an URL parameter transporting the location after login to the next link invocation.
+	 */
+	public static String locationParamFirst(String location) {
+		return locationParam(location, true);
+	}
+	
 	public static String locationParam(String location, boolean first) {
 		String locationParam;
 		if (location != null) {
@@ -132,17 +143,31 @@ public class LoginServlet extends HttpServlet {
 	}
 
 	/**
-	 * The location after login transmitted with the given request.
+	 * The location after login transmitted with the given request, or the current page.
 	 */
 	public static String location(HttpServletRequest request) {
-		String location = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
-		if (location == null) {
-			location = (String) request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
-			if (location == null) {
-				location = ServletUtil.currentPage(request).substring(request.getContextPath().length());
-			}
+		return location(request, null);
+	}
+	
+	/**
+	 * The location after login transmitted with the given request, or the given default location, or the current page.
+	 */
+	public static String location(HttpServletRequest request, String defaultLocation) {
+		String locationAttribute = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
+		if (locationAttribute != null) {
+			return locationAttribute;
 		}
-		return location;
+		
+		String locationParam = (String) request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+		if (locationParam != null) {
+			return locationParam;
+		}
+		
+		if (defaultLocation != null) {
+			return defaultLocation;
+		}
+		
+		return ServletUtil.currentPage(request).substring(request.getContextPath().length());
 	}
 
 	/**

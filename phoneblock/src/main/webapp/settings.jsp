@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
+<%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="true"%>
@@ -19,6 +21,7 @@
 
 <%
 	String userName = LoginFilter.getAuthenticatedUser(session);
+	Object token = RegistrationServlet.getPassword(session);
 %>
 <body>
 <jsp:include page="header.jspf"></jsp:include>
@@ -29,7 +32,7 @@
 		<h1>Einstellungen</h1>
 		
 		<p>
-			Um deine persönlichen Einstellungen zu bearbeiten, musst Du Dich <a href="<%= request.getContextPath()%>/login.jsp">anmelden</a>.
+			Um deine persönlichen Einstellungen zu bearbeiten, musst Du Dich <a href="<%= request.getContextPath()%>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">anmelden</a>.
 		</p>
 	</div>
 </section>
@@ -44,18 +47,36 @@
 				Wilkommen <%= JspUtil.quote(settings.getDisplayName()) %>.
 			</p>
 			
-			<form action="<%= request.getContextPath() %>/settings" method="post">
-			<div class="field">
-			  <label class="label">Benutzername</label>
-			  <div class="control has-icons-left">
-			    <input class="input" type="text" value="<%= JspUtil.quote(userName)%>" name="userName" disabled="disabled">
-			    <span class="icon is-small is-left">
-			      <i class="fa-solid fa-user"></i>
-			    </span>
+			<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>" method="post">
+
+<% if (token != null) { %>
+			<article class="message is-info">
+			  <div class="message-header">
+			    <p>Deine Zugangsdaten</p>
 			  </div>
-			  <p class="help">Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen. </p>
-			</div>
-			
+			  
+			  <div class="message-body">
+<% } %>			
+				<div class="field">
+				  <label class="label">Benutzername</label>
+				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help">Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen. </p>
+				</div>
+					
+<% if (token != null) { %>
+				<div class="field">
+				  <label class="label">Passwort</label>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help">Dieses Passwort musst Du für die <a href="<%=request.getContextPath()%>/setup.jsp">Einrichtung des Telefonbuchs</a> oder für die <a href="<%=request.getContextPath()%><%=SettingsServlet.PATH%>">Anmeldung an dieser Webseite</a> verwenden. </p>
+				  <p class="help">
+				  	Bitte notiere Dir das Passwort (oder speichere es am besten in einem <a href="https://keepass.info/">Passwort-Manager</a>), 
+				  	denn es wird nur solange angezeigt bis Du Dich abmeldest, oder Deine Sitzung abläuft.
+				  </p>
+				</div>
+			  </div>
+			</article>
+<% } %>			
+
 			<div class="field">
 			  <label class="label">Maximale Blocklist-Größe</label>
 			  <div class="control has-icons-left">
@@ -148,7 +169,7 @@ List<String> blacklist = (List<String>) request.getAttribute("blacklist");
 	<div class="content">
 	<h2 id="blacklist">Deine Blacklist</h2>
 	
-	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
+	<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>?action=lists" method="post">
 
 <% if (blacklist.isEmpty()) { %>
 	<p>Du hast keine Nummern explizit gesperrt. Um eine Nummer zu sperren, suche die Nummer über das Suchfeld oben und schreibe einen negativen Kommentar, oder mach in Deiner Fritz!Box einen Telefonbucheintrag für die Nummer in der Blocklist.</p>
@@ -183,7 +204,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	<div class="content">
 	<h2 id="whitelist">Deine Whitelist</h2>
 	
-	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
+	<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>?action=lists" method="post">
 
 <% if (whitelist.isEmpty()) { %>
 	<p>Du hast keine Nummern von der Sperrung ausgenommen.</p>
@@ -211,7 +232,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	</div>
 	
 	<div class="content">
-	<form action="<%= request.getContextPath() %>/settings?action=lists" method="post">
+	<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>?action=lists" method="post">
 
 	<div class="field">
 	  <label class="label">Ausnahme hinzufügen</label>

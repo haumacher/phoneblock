@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
@@ -30,19 +31,31 @@
 			Betrag aus. Schön wäre, wenn Du <b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b> als Beitrag bezahlst, 
 			die Höhe bleibt aber Dir überlassen.
 		</p>
+<%
+	String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
+%>
 
 		<div class="tile is-ancestor">
 			<div class="tile is-parent is-12">
 				<a class="tile is-child notification is-primary" href="http://paypal.me/phoneblock" target="_blank">
-					<p class="title">
+					<div class="title">
 					    <span class="icon">
 							<i class="fa-brands fa-paypal"></i>
 					    </span>
 						<span>Mit PayPal spenden</span>			
-					</p>
+					</div>
 					<p class="subtitle">
 						Nutze "Geld an Freunde senden", PayPal berechnet ansonsten absurde Gebühren, bei 1€ kommen nur 60Ct an.
 					</p>
+<% if (userName == null) { %>					
+					<p class="subtitle">
+						Gib bitte die ersten paar Zeichen deines Nutzernamens mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
+					</p>
+<% } else { %>
+					<p class="subtitle">
+						Bitte gibt <code id="purpose">PhoneBlock-<%= userName.substring(0, 13)%></code><spam id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></spam> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
+					</p>
+<% } %>					
 				</a>
 			</div>
 		</div>

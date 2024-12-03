@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
@@ -29,13 +30,15 @@
 </div>
 
 	<%
-		String location = LoginServlet.location(request);
-		String locationParam = LoginServlet.locationParam(request);
-		String locationParamFirst = LoginServlet.locationParamFirst(request);
+		String location = LoginServlet.location(request, SettingsServlet.PATH);
+		String locationParam = LoginServlet.locationParam(location);
+		String locationParamFirst = LoginServlet.locationParamFirst(location);
 	%>
 
 <nav class="panel">
-	<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>"><i class="fa-brands fa-google"></i> <span>Mit Google registrieren</span></a></p>
+	<p class="panel-heading">
+		<a href="<%=request.getContextPath()%>/oauth/login<%=locationParamFirst%>&force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>"><i class="fa-brands fa-google"></i> <span>Mit Google registrieren</span></a>
+	</p>
 </nav>
 
 <%

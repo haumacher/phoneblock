@@ -31,7 +31,7 @@
 			<li>Empfänger: <code id="receiver">${bank.receiver}</code> <a id="receiver_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
 			<li>Kontonummer: <code id="account">${bank.account}</code> <a id="account_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
 			<li>BIC: <code id="bic">${bank.bic}</code> <a id="bic_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
-			<li>Verwendungszweck: <code id="purpose">PhoneBlock-<%= LoginFilter.getAuthenticatedUser(request.getSession())%></code> <a id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>Verwendungszweck: <code id="purpose">PhoneBlock-<%= LoginFilter.getAuthenticatedUser(request.getSession()).substring(0, 13)%></code> <a id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
 		</ul>
 		
 		<p>

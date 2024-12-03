@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.Application;
+import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
@@ -80,7 +81,7 @@ public class MailService {
 		String baseUrl = HOME_PAGE + contextPath;
 		
 		_appLogoSvg = baseUrl + "/app-logo.svg";
-		_settings = baseUrl + "/settings";
+		_settings = baseUrl + SettingsServlet.PATH;
 		_app = baseUrl + "/ab/";
 		_support = baseUrl + "/support.jsp";
 	}
