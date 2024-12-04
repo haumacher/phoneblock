@@ -820,6 +820,7 @@ public class DB {
 	
 	/**
 	 * Checks credentials in the given authorization header.
+	 * Ignores whitespaces surrounding username or password.
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
@@ -830,8 +831,8 @@ public class DB {
 			String decoded = new String(decodedBytes, StandardCharsets.UTF_8);
 			int sepIndex = decoded.indexOf(':');
 			if (sepIndex >= 0) {
-				String login = decoded.substring(0, sepIndex);
-				String passwd = decoded.substring(sepIndex + 1);
+				String login = decoded.substring(0, sepIndex).trim();
+				String passwd = decoded.substring(sepIndex + 1).trim();
 				return login(login, passwd);
 			}
 		}
