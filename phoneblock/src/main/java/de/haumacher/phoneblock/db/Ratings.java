@@ -15,8 +15,8 @@ public class Ratings {
 	 */
 	public static int getVotes(de.haumacher.phoneblock.db.model.Rating rating) {
         return switch (rating) {
-            case A_LEGITIMATE -> -10;
-            case B_MISSED, G_FRAUD, C_PING, D_POLL, E_ADVERTISING, F_GAMBLE -> 2;
+            case A_LEGITIMATE -> -1;
+            case B_MISSED, G_FRAUD, C_PING, D_POLL, E_ADVERTISING, F_GAMBLE -> 1;
         };
     }
 
