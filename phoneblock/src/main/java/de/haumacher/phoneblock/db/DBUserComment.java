@@ -3,8 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.UserComment;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 
 /**
  * DB data class for {@link UserComment}.

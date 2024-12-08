@@ -5,23 +5,22 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.db.BlockList;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
-import de.haumacher.phoneblock.db.model.Rating;
 
 /**
  * Servlet accepting ratings from the web UI.

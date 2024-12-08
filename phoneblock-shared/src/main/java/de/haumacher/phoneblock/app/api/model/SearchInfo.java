@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
 /**
  * Info about how often a number was searched.
@@ -6,13 +6,13 @@ package de.haumacher.phoneblock.db.model;
 public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.db.model.SearchInfo} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SearchInfo} instance.
 	 */
-	public static de.haumacher.phoneblock.db.model.SearchInfo create() {
-		return new de.haumacher.phoneblock.db.model.SearchInfo();
+	public static de.haumacher.phoneblock.app.api.model.SearchInfo create() {
+		return new de.haumacher.phoneblock.app.api.model.SearchInfo();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.db.model.SearchInfo} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.SearchInfo} type in JSON format. */
 	public static final String SEARCH_INFO__TYPE = "SearchInfo";
 
 	/** @see #getPhone() */
@@ -38,7 +38,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link SearchInfo} instance.
 	 *
-	 * @see de.haumacher.phoneblock.db.model.SearchInfo#create()
+	 * @see de.haumacher.phoneblock.app.api.model.SearchInfo#create()
 	 */
 	protected SearchInfo() {
 		super();
@@ -54,7 +54,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getPhone()
 	 */
-	public de.haumacher.phoneblock.db.model.SearchInfo setPhone(String value) {
+	public de.haumacher.phoneblock.app.api.model.SearchInfo setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -75,7 +75,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCount()
 	 */
-	public de.haumacher.phoneblock.db.model.SearchInfo setCount(int value) {
+	public de.haumacher.phoneblock.app.api.model.SearchInfo setCount(int value) {
 		internalSetCount(value);
 		return this;
 	}
@@ -96,7 +96,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getTotal()
 	 */
-	public de.haumacher.phoneblock.db.model.SearchInfo setTotal(int value) {
+	public de.haumacher.phoneblock.app.api.model.SearchInfo setTotal(int value) {
 		internalSetTotal(value);
 		return this;
 	}
@@ -117,7 +117,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getLastSearch()
 	 */
-	public de.haumacher.phoneblock.db.model.SearchInfo setLastSearch(long value) {
+	public de.haumacher.phoneblock.app.api.model.SearchInfo setLastSearch(long value) {
 		internalSetLastSearch(value);
 		return this;
 	}
@@ -131,7 +131,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public de.haumacher.phoneblock.db.model.SearchInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.SearchInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -141,7 +141,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.SearchInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.SearchInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -189,8 +189,8 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.model.SearchInfo readSearchInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.SearchInfo result = new de.haumacher.phoneblock.db.model.SearchInfo();
+	public static de.haumacher.phoneblock.app.api.model.SearchInfo readSearchInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.app.api.model.SearchInfo result = new de.haumacher.phoneblock.app.api.model.SearchInfo();
 		result.readContent(in);
 		return result;
 	}
@@ -224,7 +224,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		}
 	}
 
-	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.SearchInfo} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.SearchInfo} type. */
 	public static final String SEARCH_INFO__XML_ELEMENT = "search-info";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
@@ -263,7 +263,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		// No element fields.
 	}
 
-	/** Creates a new {@link de.haumacher.phoneblock.db.model.SearchInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.SearchInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static SearchInfo readSearchInfo_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		SearchInfo result = new SearchInfo();
 		result.readContentXml(in);
@@ -353,7 +353,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Creates a new {@link SearchInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static SearchInfo readSearchInfo(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
-		return de.haumacher.phoneblock.db.model.SearchInfo.readSearchInfo_XmlContent(in);
+		return de.haumacher.phoneblock.app.api.model.SearchInfo.readSearchInfo_XmlContent(in);
 	}
 
 }

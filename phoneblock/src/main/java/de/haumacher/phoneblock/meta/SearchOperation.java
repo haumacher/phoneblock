@@ -22,10 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;

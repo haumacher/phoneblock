@@ -14,34 +14,30 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.SearchResult;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.model.NumberInfo;
-import de.haumacher.phoneblock.db.model.PhoneInfo;
-import de.haumacher.phoneblock.db.model.PhoneNumer;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.RatingInfo;
-import de.haumacher.phoneblock.db.model.SearchInfo;
-import de.haumacher.phoneblock.db.model.SearchResult;
-import de.haumacher.phoneblock.db.model.SpamReport;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.JspUtil;
 import de.haumacher.phoneblock.util.ServletUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet displaying information about a telephone number in the DB.

@@ -1,27 +1,27 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
 public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
-	/** Type codes for the {@link de.haumacher.phoneblock.db.model.AbstractNumberInfo} hierarchy. */
+	/** Type codes for the {@link de.haumacher.phoneblock.app.api.model.AbstractNumberInfo} hierarchy. */
 	public enum TypeKind {
 
-		/** Type literal for {@link de.haumacher.phoneblock.db.model.NumberInfo}. */
+		/** Type literal for {@link de.haumacher.phoneblock.app.api.model.NumberInfo}. */
 		NUMBER_INFO,
 
-		/** Type literal for {@link de.haumacher.phoneblock.db.model.NumberHistory}. */
+		/** Type literal for {@link de.haumacher.phoneblock.app.api.model.NumberHistory}. */
 		NUMBER_HISTORY,
 		;
 
 	}
 
-	/** Visitor interface for the {@link de.haumacher.phoneblock.db.model.AbstractNumberInfo} hierarchy.*/
+	/** Visitor interface for the {@link de.haumacher.phoneblock.app.api.model.AbstractNumberInfo} hierarchy.*/
 	public interface Visitor<R,A,E extends Throwable> {
 
-		/** Visit case for {@link de.haumacher.phoneblock.db.model.NumberInfo}.*/
-		R visit(de.haumacher.phoneblock.db.model.NumberInfo self, A arg) throws E;
+		/** Visit case for {@link de.haumacher.phoneblock.app.api.model.NumberInfo}.*/
+		R visit(de.haumacher.phoneblock.app.api.model.NumberInfo self, A arg) throws E;
 
-		/** Visit case for {@link de.haumacher.phoneblock.db.model.NumberHistory}.*/
-		R visit(de.haumacher.phoneblock.db.model.NumberHistory self, A arg) throws E;
+		/** Visit case for {@link de.haumacher.phoneblock.app.api.model.NumberHistory}.*/
+		R visit(de.haumacher.phoneblock.app.api.model.NumberHistory self, A arg) throws E;
 
 	}
 
@@ -100,7 +100,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getPhone()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setPhone(String value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -121,7 +121,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #isActive()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setActive(boolean value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setActive(boolean value) {
 		internalSetActive(value);
 		return this;
 	}
@@ -139,7 +139,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getCalls()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setCalls(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setCalls(int value) {
 		internalSetCalls(value);
 		return this;
 	}
@@ -160,7 +160,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getVotes()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setVotes(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
@@ -181,7 +181,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getRatingLegitimate()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setRatingLegitimate(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRatingLegitimate(int value) {
 		internalSetRatingLegitimate(value);
 		return this;
 	}
@@ -202,7 +202,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getRatingPing()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setRatingPing(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRatingPing(int value) {
 		internalSetRatingPing(value);
 		return this;
 	}
@@ -223,7 +223,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getRatingPoll()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setRatingPoll(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRatingPoll(int value) {
 		internalSetRatingPoll(value);
 		return this;
 	}
@@ -244,7 +244,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getRatingAdvertising()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setRatingAdvertising(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRatingAdvertising(int value) {
 		internalSetRatingAdvertising(value);
 		return this;
 	}
@@ -265,7 +265,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getRatingGamble()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setRatingGamble(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRatingGamble(int value) {
 		internalSetRatingGamble(value);
 		return this;
 	}
@@ -286,7 +286,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getRatingFraud()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setRatingFraud(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRatingFraud(int value) {
 		internalSetRatingFraud(value);
 		return this;
 	}
@@ -307,7 +307,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/**
 	 * @see #getSearches()
 	 */
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo setSearches(int value) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setSearches(int value) {
 		internalSetSearches(value);
 		return this;
 	}
@@ -321,7 +321,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -331,7 +331,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.AbstractNumberInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -395,13 +395,13 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.model.AbstractNumberInfo readAbstractNumberInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.AbstractNumberInfo result;
+	public static de.haumacher.phoneblock.app.api.model.AbstractNumberInfo readAbstractNumberInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.app.api.model.AbstractNumberInfo result;
 		in.beginArray();
 		String type = in.nextString();
 		switch (type) {
-			case NumberInfo.NUMBER_INFO__TYPE: result = de.haumacher.phoneblock.db.model.NumberInfo.readNumberInfo(in); break;
-			case NumberHistory.NUMBER_HISTORY__TYPE: result = de.haumacher.phoneblock.db.model.NumberHistory.readNumberHistory(in); break;
+			case NumberInfo.NUMBER_INFO__TYPE: result = de.haumacher.phoneblock.app.api.model.NumberInfo.readNumberInfo(in); break;
+			case NumberHistory.NUMBER_HISTORY__TYPE: result = de.haumacher.phoneblock.app.api.model.NumberHistory.readNumberHistory(in); break;
 			default: in.skipValue(); result = null; break;
 		}
 		in.endArray();
@@ -461,7 +461,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		}
 	}
 
-	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.AbstractNumberInfo} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.AbstractNumberInfo} type. */
 	public static final String ABSTRACT_NUMBER_INFO__XML_ELEMENT = "abstract-number-info";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
@@ -523,15 +523,15 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		// No element fields.
 	}
 
-	/** Creates a new {@link de.haumacher.phoneblock.db.model.AbstractNumberInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.AbstractNumberInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static AbstractNumberInfo readAbstractNumberInfo_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		switch (in.getLocalName()) {
 			case NumberInfo.NUMBER_INFO__XML_ELEMENT: {
-				return de.haumacher.phoneblock.db.model.NumberInfo.readNumberInfo_XmlContent(in);
+				return de.haumacher.phoneblock.app.api.model.NumberInfo.readNumberInfo_XmlContent(in);
 			}
 
 			case NumberHistory.NUMBER_HISTORY__XML_ELEMENT: {
-				return de.haumacher.phoneblock.db.model.NumberHistory.readNumberHistory_XmlContent(in);
+				return de.haumacher.phoneblock.app.api.model.NumberHistory.readNumberHistory_XmlContent(in);
 			}
 
 			default: {
@@ -680,7 +680,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** Creates a new {@link AbstractNumberInfo} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static AbstractNumberInfo readAbstractNumberInfo(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
-		return de.haumacher.phoneblock.db.model.AbstractNumberInfo.readAbstractNumberInfo_XmlContent(in);
+		return de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.readAbstractNumberInfo_XmlContent(in);
 	}
 
 	/** Accepts the given visitor. */

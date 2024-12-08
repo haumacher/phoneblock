@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.db;
 
-import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.SearchInfo;
 
 public class DBSearchInfo extends SearchInfo {
 	

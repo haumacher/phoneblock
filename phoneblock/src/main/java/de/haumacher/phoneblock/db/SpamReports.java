@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-import de.haumacher.phoneblock.db.model.Rating;
+import de.haumacher.phoneblock.app.api.model.Rating;
 
 /**
  * Interface for the spam report table.
@@ -131,6 +131,17 @@ public interface SpamReports {
 			and s.VOTES - (#{before} - s.LASTPING)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
 			""")
 	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
+	
+	@Update("""
+			update NUMBERS s
+			set
+				CALLS = CALLS + 1,
+				s.UPDATED = greatest(s.UPDATED, #{now}), 
+				s.LASTPING = greatest(s.LASTPING, #{now}) 
+			where
+				PHONE = #{phone}
+			""")
+	void recordCall(String phone, long now);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s

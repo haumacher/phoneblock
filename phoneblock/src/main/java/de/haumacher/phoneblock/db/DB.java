@@ -50,16 +50,15 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.BlockListEntry;
+import de.haumacher.phoneblock.app.api.model.Blocklist;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
-import de.haumacher.phoneblock.db.model.BlockListEntry;
-import de.haumacher.phoneblock.db.model.Blocklist;
-import de.haumacher.phoneblock.db.model.NumberInfo;
-import de.haumacher.phoneblock.db.model.PhoneInfo;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.SearchInfo;
-import de.haumacher.phoneblock.db.model.SpamReport;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
@@ -977,30 +976,31 @@ public class DB {
 			.setLastUpdate(info.getUpdated());
 		
 		Rating rating = rating(info);
-		int votes;
+		int votesWildcard;
 		if (aggregation100.getVotes() >= MIN_AGGREGATE_100) {
-			votes = aggregation100.getVotes();
+			votesWildcard = aggregation100.getVotes();
 			if (!info.isActive()) {
 				// Direct votes did not count yet.
-				votes += info.getVotes();
+				votesWildcard += info.getVotes();
 			}
 			
 			if (aggregation10.getVotes() < MIN_AGGREGATE_10) {
 				// The votes of this number did not yet count to the aggregation of the block.
-				votes += aggregation10.getVotes();
+				votesWildcard += aggregation10.getVotes();
 			}
 		} else if (aggregation10.getVotes() >= MIN_AGGREGATE_10) {
-			votes = aggregation10.getVotes();
+			votesWildcard = aggregation10.getVotes();
 			if (!info.isActive()) {
 				// Direct votes did not count yet.
-				votes += info.getVotes();
+				votesWildcard += info.getVotes();
 			}
 		} else {
-			votes = info.getVotes();
+			votesWildcard = info.getVotes();
 			result.setArchived(!info.isActive());
 		}
 		
-		result.setVotes(votes);
+		result.setVotes(info.getVotes());
+		result.setVotesWildcard(votesWildcard);
 		result.setRating(rating);
 		
 		return result;

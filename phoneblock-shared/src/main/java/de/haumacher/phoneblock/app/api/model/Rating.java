@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
 /**
  * A classification of phone calls.

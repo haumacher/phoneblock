@@ -1,15 +1,18 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
+/**
+ * Represents a row in the PhoneBlock database for an history entry for a phone number
+ */
 public class NumberHistory extends AbstractNumberInfo {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.db.model.NumberHistory} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.NumberHistory} instance.
 	 */
-	public static de.haumacher.phoneblock.db.model.NumberHistory create() {
-		return new de.haumacher.phoneblock.db.model.NumberHistory();
+	public static de.haumacher.phoneblock.app.api.model.NumberHistory create() {
+		return new de.haumacher.phoneblock.app.api.model.NumberHistory();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.db.model.NumberHistory} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.NumberHistory} type in JSON format. */
 	public static final String NUMBER_HISTORY__TYPE = "NumberHistory";
 
 	/** @see #getRMin() */
@@ -25,7 +28,7 @@ public class NumberHistory extends AbstractNumberInfo {
 	/**
 	 * Creates a {@link NumberHistory} instance.
 	 *
-	 * @see de.haumacher.phoneblock.db.model.NumberHistory#create()
+	 * @see de.haumacher.phoneblock.app.api.model.NumberHistory#create()
 	 */
 	protected NumberHistory() {
 		super();
@@ -46,7 +49,7 @@ public class NumberHistory extends AbstractNumberInfo {
 	/**
 	 * @see #getRMin()
 	 */
-	public de.haumacher.phoneblock.db.model.NumberHistory setRMin(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRMin(int value) {
 		internalSetRMin(value);
 		return this;
 	}
@@ -67,7 +70,7 @@ public class NumberHistory extends AbstractNumberInfo {
 	/**
 	 * @see #getRMax()
 	 */
-	public de.haumacher.phoneblock.db.model.NumberHistory setRMax(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRMax(int value) {
 		internalSetRMax(value);
 		return this;
 	}
@@ -79,67 +82,67 @@ public class NumberHistory extends AbstractNumberInfo {
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setPhone(String value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setActive(boolean value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setActive(boolean value) {
 		internalSetActive(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setCalls(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setCalls(int value) {
 		internalSetCalls(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setVotes(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setRatingLegitimate(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRatingLegitimate(int value) {
 		internalSetRatingLegitimate(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setRatingPing(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRatingPing(int value) {
 		internalSetRatingPing(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setRatingPoll(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRatingPoll(int value) {
 		internalSetRatingPoll(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setRatingAdvertising(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRatingAdvertising(int value) {
 		internalSetRatingAdvertising(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setRatingGamble(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRatingGamble(int value) {
 		internalSetRatingGamble(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setRatingFraud(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRatingFraud(int value) {
 		internalSetRatingFraud(value);
 		return this;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.NumberHistory setSearches(int value) {
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setSearches(int value) {
 		internalSetSearches(value);
 		return this;
 	}
@@ -178,8 +181,8 @@ public class NumberHistory extends AbstractNumberInfo {
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.model.NumberHistory readNumberHistory(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.NumberHistory result = new de.haumacher.phoneblock.db.model.NumberHistory();
+	public static de.haumacher.phoneblock.app.api.model.NumberHistory readNumberHistory(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.app.api.model.NumberHistory result = new de.haumacher.phoneblock.app.api.model.NumberHistory();
 		result.readContent(in);
 		return result;
 	}
@@ -202,7 +205,7 @@ public class NumberHistory extends AbstractNumberInfo {
 		}
 	}
 
-	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.NumberHistory} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.NumberHistory} type. */
 	public static final String NUMBER_HISTORY__XML_ELEMENT = "number-history";
 
 	/** XML attribute or element name of a {@link #getRMin} property. */
@@ -231,7 +234,7 @@ public class NumberHistory extends AbstractNumberInfo {
 		// No element fields.
 	}
 
-	/** Creates a new {@link de.haumacher.phoneblock.db.model.NumberHistory} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.NumberHistory} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static NumberHistory readNumberHistory_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		NumberHistory result = new NumberHistory();
 		result.readContentXml(in);
@@ -275,11 +278,11 @@ public class NumberHistory extends AbstractNumberInfo {
 	/** Creates a new {@link NumberHistory} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static NumberHistory readNumberHistory(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
-		return de.haumacher.phoneblock.db.model.NumberHistory.readNumberHistory_XmlContent(in);
+		return de.haumacher.phoneblock.app.api.model.NumberHistory.readNumberHistory_XmlContent(in);
 	}
 
 	@Override
-	public <R,A,E extends Throwable> R visit(de.haumacher.phoneblock.db.model.AbstractNumberInfo.Visitor<R,A,E> v, A arg) throws E {
+	public <R,A,E extends Throwable> R visit(de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.Visitor<R,A,E> v, A arg) throws E {
 		return v.visit(this, arg);
 	}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<%@page import="de.haumacher.phoneblock.db.model.NumberInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.NumberInfo"%>
 <%@page pageEncoding="UTF-8" contentType="application/xml; charset=UTF-8" session="false"
 %><%@page import="java.util.Calendar"
 %><%@page import="java.util.GregorianCalendar"
@@ -9,7 +9,7 @@
 %><%@page import="java.util.List"
 %><%@page import="de.haumacher.phoneblock.db.DB"
 %><%@page import="de.haumacher.phoneblock.db.DBService"
-%><%@page import="de.haumacher.phoneblock.db.model.SpamReport"
+%><%@page import="de.haumacher.phoneblock.app.api.model.SpamReport"
 %>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>

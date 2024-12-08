@@ -1,15 +1,15 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
 public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.db.model.SpamReport} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SpamReport} instance.
 	 */
-	public static de.haumacher.phoneblock.db.model.SpamReport create() {
-		return new de.haumacher.phoneblock.db.model.SpamReport();
+	public static de.haumacher.phoneblock.app.api.model.SpamReport create() {
+		return new de.haumacher.phoneblock.app.api.model.SpamReport();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.db.model.SpamReport} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.SpamReport} type in JSON format. */
 	public static final String SPAM_REPORT__TYPE = "SpamReport";
 
 	/** @see #getPhone() */
@@ -65,7 +65,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link SpamReport} instance.
 	 *
-	 * @see de.haumacher.phoneblock.db.model.SpamReport#create()
+	 * @see de.haumacher.phoneblock.app.api.model.SpamReport#create()
 	 */
 	protected SpamReport() {
 		super();
@@ -78,7 +78,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getPhone()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setPhone(String value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
@@ -96,7 +96,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getVotes()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setVotes(int value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
@@ -114,7 +114,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getLastUpdate()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setLastUpdate(long value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setLastUpdate(long value) {
 		internalSetLastUpdate(value);
 		return this;
 	}
@@ -132,7 +132,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getDateAdded()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setDateAdded(long value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setDateAdded(long value) {
 		internalSetDateAdded(value);
 		return this;
 	}
@@ -150,7 +150,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #isArchived()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setArchived(boolean value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setArchived(boolean value) {
 		internalSetArchived(value);
 		return this;
 	}
@@ -168,7 +168,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #isWhiteListed()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setWhiteListed(boolean value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setWhiteListed(boolean value) {
 		internalSetWhiteListed(value);
 		return this;
 	}
@@ -189,7 +189,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCnt10()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setCnt10(int value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setCnt10(int value) {
 		internalSetCnt10(value);
 		return this;
 	}
@@ -210,7 +210,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getVotes10()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setVotes10(int value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setVotes10(int value) {
 		internalSetVotes10(value);
 		return this;
 	}
@@ -235,7 +235,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCnt100()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setCnt100(int value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setCnt100(int value) {
 		internalSetCnt100(value);
 		return this;
 	}
@@ -260,7 +260,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getVotes100()
 	 */
-	public de.haumacher.phoneblock.db.model.SpamReport setVotes100(int value) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport setVotes100(int value) {
 		internalSetVotes100(value);
 		return this;
 	}
@@ -274,7 +274,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public de.haumacher.phoneblock.db.model.SpamReport registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -284,7 +284,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.SpamReport unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.SpamReport unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -350,8 +350,8 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.model.SpamReport readSpamReport(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.SpamReport result = new de.haumacher.phoneblock.db.model.SpamReport();
+	public static de.haumacher.phoneblock.app.api.model.SpamReport readSpamReport(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.app.api.model.SpamReport result = new de.haumacher.phoneblock.app.api.model.SpamReport();
 		result.readContent(in);
 		return result;
 	}
@@ -403,7 +403,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		}
 	}
 
-	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.SpamReport} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.SpamReport} type. */
 	public static final String SPAM_REPORT__XML_ELEMENT = "spam-report";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
@@ -466,7 +466,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		// No element fields.
 	}
 
-	/** Creates a new {@link de.haumacher.phoneblock.db.model.SpamReport} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.SpamReport} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static SpamReport readSpamReport_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		SpamReport result = new SpamReport();
 		result.readContentXml(in);
@@ -604,7 +604,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Creates a new {@link SpamReport} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static SpamReport readSpamReport(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
-		return de.haumacher.phoneblock.db.model.SpamReport.readSpamReport_XmlContent(in);
+		return de.haumacher.phoneblock.app.api.model.SpamReport.readSpamReport_XmlContent(in);
 	}
 
 }

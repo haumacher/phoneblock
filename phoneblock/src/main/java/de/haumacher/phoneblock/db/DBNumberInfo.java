@@ -3,7 +3,7 @@
  */
 package de.haumacher.phoneblock.db;
 
-import de.haumacher.phoneblock.db.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
 
 /**
  * Data class for DB access.

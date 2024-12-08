@@ -4,16 +4,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.api.CommentVoteServlet"%>
 <%@page import="de.haumacher.phoneblock.app.ExternalLinkServlet"%>
-<%@page import="de.haumacher.phoneblock.db.model.UserComment"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.UserComment"%>
 <%@page import="java.util.GregorianCalendar"%>
 <%@page import="java.util.Calendar"%>
 <%@page import="java.util.ArrayList"%>
-<%@page import="de.haumacher.phoneblock.db.model.SearchInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.SearchInfo"%>
 <%@page import="java.util.Map"%>
-<%@page import="de.haumacher.phoneblock.db.model.RatingInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.RatingInfo"%>
 <%@page import="de.haumacher.phoneblock.db.Ratings"%>
-<%@page import="de.haumacher.phoneblock.db.model.Rating"%>
-<%@page import="de.haumacher.phoneblock.db.model.PhoneNumer"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.Rating"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.PhoneNumer"%>
 <%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.DateFormat"%>
@@ -22,7 +22,7 @@
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="de.haumacher.phoneblock.db.DB"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
-<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>

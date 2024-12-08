@@ -49,11 +49,13 @@ import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
 import de.haumacher.phoneblock.answerbot.CustomerOptions;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.mail.MailService;
@@ -178,6 +180,28 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
 		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool) {
+			@Override
+			protected PhoneInfo fetchPhoneInfo(String from) {
+				DB db = _dbService.db();
+				try (SqlSession session = db.openSession()) {
+					SpamReports reports = session.getMapper(SpamReports.class);
+
+					PhoneInfo info = db.getPhoneApiInfo(reports, from);
+					
+					try {
+						if (info.getVotes() > 0) {
+							long now = System.currentTimeMillis();
+							reports.recordCall(info.getPhone(), now);
+							session.commit();
+						}
+					} catch (Exception ex) {
+						LOG.error("Failed to record call from " + info.getPhone() + ".", ex);
+					}
+					
+					return info;
+				}
+			}
+			
 			@Override
 			protected void processCallData(String userName, String from, long startTime, long duration) {
 				super.processCallData(userName, from, startTime, duration);

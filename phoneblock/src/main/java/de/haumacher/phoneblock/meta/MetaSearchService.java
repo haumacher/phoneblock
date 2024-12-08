@@ -14,17 +14,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.crawl.FetchService;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Command line tool to start a meta search.

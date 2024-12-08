@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.db.model.NumberInfo"%>
-<%@page import="de.haumacher.phoneblock.db.model.SearchInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.NumberInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.SearchInfo"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
-<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.util.List"%>

@@ -12,11 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +41,10 @@ import de.haumacher.phoneblock.db.DBCallInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.dns.DnsServer;
-import de.haumacher.phoneblock.dns.DnsService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet creating an answerbot.

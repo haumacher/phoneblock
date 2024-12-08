@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.db;
 
-import de.haumacher.phoneblock.db.model.NumberHistory;
+import de.haumacher.phoneblock.app.api.model.NumberHistory;
 
 public class DBNumberHistory extends NumberHistory {
 

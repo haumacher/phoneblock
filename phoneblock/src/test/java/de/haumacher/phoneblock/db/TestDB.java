@@ -27,9 +27,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.haumacher.phoneblock.db.model.NumberInfo;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
