@@ -775,6 +775,12 @@ class AnswerbotInfo extends _JsonObject {
 	///  Whether the bot is enabled (registration is active).
 	bool enabled;
 
+	///  The minimum PhoneBlock votes to consider a call as SPAM and accept it.
+	int minVotes;
+
+	///  Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
+	bool wildcards;
+
 	///  Whether the bot has sucessfully registered (can accept calls).
 	bool registered;
 
@@ -822,6 +828,8 @@ class AnswerbotInfo extends _JsonObject {
 				this.id = 0, 
 				this.userId = 0, 
 				this.enabled = false, 
+				this.minVotes = 0, 
+				this.wildcards = false, 
 				this.registered = false, 
 				this.registerMsg, 
 				this.newCalls = 0, 
@@ -866,6 +874,14 @@ class AnswerbotInfo extends _JsonObject {
 				}
 				case "enabled": {
 					enabled = json.expectBool();
+					break;
+				}
+				case "minVotes": {
+					minVotes = json.expectInt();
+					break;
+				}
+				case "wildcards": {
+					wildcards = json.expectBool();
 					break;
 				}
 				case "registered": {
@@ -940,6 +956,12 @@ class AnswerbotInfo extends _JsonObject {
 
 			json.addKey("enabled");
 			json.addBool(enabled);
+
+			json.addKey("minVotes");
+			json.addNumber(minVotes);
+
+			json.addKey("wildcards");
+			json.addBool(wildcards);
 
 			json.addKey("registered");
 			json.addBool(registered);

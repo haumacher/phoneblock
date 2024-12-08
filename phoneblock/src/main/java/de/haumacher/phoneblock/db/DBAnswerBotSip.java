@@ -17,7 +17,7 @@ public class DBAnswerBotSip extends AnswerBotSip {
 			long updated, long lastSuccess, boolean registered, String registerMessage, 
 			String host, boolean preferV4, String ip4, String ip6, String registrar, String realm, 
 			String userName, String passwd,
-			int minVotes, boolean wildcard
+			int minVotes, boolean wildcards
 	) {
 		setId(id);
 		setUserId(userId);
@@ -34,7 +34,7 @@ public class DBAnswerBotSip extends AnswerBotSip {
 		setUserName(userName);
 		setPasswd(passwd);
 		setMinVotes(minVotes);
-		setWildcard(wildcard);
+		setWildcards(wildcards);
 	}
 
 }

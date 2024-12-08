@@ -102,6 +102,16 @@ message AnswerbotInfo {
 
 	/** Whether the bot is enabled (registration is active). */
 	bool enabled;
+	
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int minVotes;
+	
+	/** 
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	 */
+	bool wildcards;
 
 	/** Whether the bot has sucessfully registered (can accept calls). */
 	bool registered;

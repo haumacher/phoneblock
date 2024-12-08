@@ -93,7 +93,7 @@ message AnswerBotSip extends AnswerBotSetting {
 	/** 
 	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
 	 */
-	bool wildcard;
+	bool wildcards;
 
 	/** Whether this answer bot is currently registered successfully. */
 	bool registered;

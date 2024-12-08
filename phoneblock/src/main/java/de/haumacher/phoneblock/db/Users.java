@@ -173,14 +173,36 @@ public interface Users {
 			""")
 	DBAnswerBotSip getAnswerBotBySipUser(String userName);
 
-	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.USERID= #{userId}")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.ENABLED, s.MIN_VOTES, s.WILDCARDS, 
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
+				s.REGISTERED, s.REGISTER_MSG, 
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
+				s.USERNAME, s.PASSWD, 
+				d.DYNDNS_USER, d.DYNDNS_PASSWD 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d 
+			on d.ABID=s.ID  
+			where s.USERID= #{userId}
+			""")
 	List<DBAnswerbotInfo> getAnswerBots(long userId);
 	
-	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.ID= #{id}")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.ENABLED, s.MIN_VOTES, s.WILDCARDS, 
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
+				s.REGISTERED, s.REGISTER_MSG, 
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
+				s.USERNAME, s.PASSWD, 
+				d.DYNDNS_USER, d.DYNDNS_PASSWD 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d 
+			on d.ABID=s.ID  
+			where s.ID= #{id}
+			""")
 	DBAnswerbotInfo getAnswerBot(long id);
 	
 	@Update("update ANSWERBOT_SIP set LAST_SUCCESS=#{lastSuccess}, REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id}")

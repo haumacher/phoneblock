@@ -536,7 +536,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		regConfig.setRegistrar(new SipURI(bot.getRegistrar()));
 		regConfig.setRoute(new SipURI(getHost(bot)).addLr());
 		regConfig.setMinVotes(bot.getMinVotes());
-		regConfig.setWildcard(bot.isWildcard());
+		regConfig.setWildcard(bot.isWildcards());
 		return regConfig;
 	}
 

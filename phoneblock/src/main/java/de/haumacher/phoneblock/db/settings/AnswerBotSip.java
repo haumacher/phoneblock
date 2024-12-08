@@ -39,8 +39,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #getMinVotes() */
 	public static final String MIN_VOTES__PROP = "minVotes";
 
-	/** @see #isWildcard() */
-	public static final String WILDCARD__PROP = "wildcard";
+	/** @see #isWildcards() */
+	public static final String WILDCARDS__PROP = "wildcards";
 
 	/** @see #isRegistered() */
 	public static final String REGISTERED__PROP = "registered";
@@ -84,8 +84,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #getMinVotes()} in binary format. */
 	static final int MIN_VOTES__ID = 13;
 
-	/** Identifier for the property {@link #isWildcard()} in binary format. */
-	static final int WILDCARD__ID = 14;
+	/** Identifier for the property {@link #isWildcards()} in binary format. */
+	static final int WILDCARDS__ID = 14;
 
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
 	static final int REGISTERED__ID = 15;
@@ -117,7 +117,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 
 	private int _minVotes = 0;
 
-	private boolean _wildcard = false;
+	private boolean _wildcards = false;
 
 	private boolean _registered = false;
 
@@ -333,22 +333,22 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/**
 	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
 	 */
-	public final boolean isWildcard() {
-		return _wildcard;
+	public final boolean isWildcards() {
+		return _wildcards;
 	}
 
 	/**
-	 * @see #isWildcard()
+	 * @see #isWildcards()
 	 */
-	public de.haumacher.phoneblock.db.settings.AnswerBotSip setWildcard(boolean value) {
-		internalSetWildcard(value);
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setWildcards(boolean value) {
+		internalSetWildcards(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #isWildcard()} without chain call utility. */
-	protected final void internalSetWildcard(boolean value) {
-		_listener.beforeSet(this, WILDCARD__PROP, value);
-		_wildcard = value;
+	/** Internal setter for {@link #isWildcards()} without chain call utility. */
+	protected final void internalSetWildcards(boolean value) {
+		_listener.beforeSet(this, WILDCARDS__PROP, value);
+		_wildcards = value;
 	}
 
 	/**
@@ -475,7 +475,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			USER_NAME__PROP, 
 			PASSWD__PROP, 
 			MIN_VOTES__PROP, 
-			WILDCARD__PROP, 
+			WILDCARDS__PROP, 
 			REGISTERED__PROP, 
 			REGISTER_MESSAGE__PROP, 
 			LAST_SUCCESS__PROP, 
@@ -498,7 +498,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case USER_NAME__PROP: return getUserName();
 			case PASSWD__PROP: return getPasswd();
 			case MIN_VOTES__PROP: return getMinVotes();
-			case WILDCARD__PROP: return isWildcard();
+			case WILDCARDS__PROP: return isWildcards();
 			case REGISTERED__PROP: return isRegistered();
 			case REGISTER_MESSAGE__PROP: return getRegisterMessage();
 			case LAST_SUCCESS__PROP: return getLastSuccess();
@@ -519,7 +519,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case USER_NAME__PROP: internalSetUserName((String) value); break;
 			case PASSWD__PROP: internalSetPasswd((String) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
-			case WILDCARD__PROP: internalSetWildcard((boolean) value); break;
+			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 			case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 			case REGISTER_MESSAGE__PROP: internalSetRegisterMessage((String) value); break;
 			case LAST_SUCCESS__PROP: internalSetLastSuccess((long) value); break;
@@ -556,8 +556,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getPasswd());
 		out.name(MIN_VOTES__PROP);
 		out.value(getMinVotes());
-		out.name(WILDCARD__PROP);
-		out.value(isWildcard());
+		out.name(WILDCARDS__PROP);
+		out.value(isWildcards());
 		out.name(REGISTERED__PROP);
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__PROP);
@@ -580,7 +580,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case USER_NAME__PROP: setUserName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PASSWD__PROP: setPasswd(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
-			case WILDCARD__PROP: setWildcard(in.nextBoolean()); break;
+			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 			case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__PROP: setRegisterMessage(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LAST_SUCCESS__PROP: setLastSuccess(in.nextLong()); break;
@@ -615,8 +615,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getPasswd());
 		out.name(MIN_VOTES__ID);
 		out.value(getMinVotes());
-		out.name(WILDCARD__ID);
-		out.value(isWildcard());
+		out.name(WILDCARDS__ID);
+		out.value(isWildcards());
 		out.name(REGISTERED__ID);
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__ID);
@@ -654,7 +654,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case USER_NAME__ID: setUserName(in.nextString()); break;
 			case PASSWD__ID: setPasswd(in.nextString()); break;
 			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
-			case WILDCARD__ID: setWildcard(in.nextBoolean()); break;
+			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
 			case REGISTERED__ID: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__ID: setRegisterMessage(in.nextString()); break;
 			case LAST_SUCCESS__ID: setLastSuccess(in.nextLong()); break;
