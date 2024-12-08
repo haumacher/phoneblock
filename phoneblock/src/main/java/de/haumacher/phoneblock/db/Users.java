@@ -205,6 +205,16 @@ public interface Users {
 			""")
 	DBAnswerbotInfo getAnswerBot(long id);
 	
+	@Update("""
+			update ANSWERBOT_SIP s
+			set
+				s.MIN_VOTES=#{minVotes},
+				s.WILDCARDS=#{wildcards},
+			where
+				s.ID=#{id}
+			""")
+	void updateAnswerbot(long id, int minVotes, boolean wildcards);
+	
 	@Update("update ANSWERBOT_SIP set LAST_SUCCESS=#{lastSuccess}, REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id}")
 	int updateSipRegistration(long id, boolean registered, String message, long lastSuccess);
 

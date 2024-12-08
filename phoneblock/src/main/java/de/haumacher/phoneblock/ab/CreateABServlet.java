@@ -35,6 +35,7 @@ import de.haumacher.phoneblock.ab.proto.ListCallsResponse;
 import de.haumacher.phoneblock.ab.proto.SetupDynDns;
 import de.haumacher.phoneblock.ab.proto.SetupDynDnsResponse;
 import de.haumacher.phoneblock.ab.proto.SetupRequest;
+import de.haumacher.phoneblock.ab.proto.UpdateAnswerBot;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBCallInfo;
@@ -264,6 +265,36 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		}
 		return true;
 	}
+	
+	@Override
+	public Void visit(UpdateAnswerBot self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		String login = context.login;
+
+		DBAnswerbotInfo bot;
+		
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			long botId = self.getId();
+			bot = lookupAnswerBot(users, login, botId);
+			
+			users.updateAnswerbot(botId, self.getMinVotes(), self.isWildcards());
+			session.commit();
+		}
+
+		String userName = bot.getUserName();
+		if (self.isEnabled()) {
+			enableAnswerbot(userName);
+		} else {
+			disableAnswerbot(userName);
+		}
+		
+		sendOk(resp);
+		LOG.info("Updated answerbot: " + self);
+		return null;
+	}
 
 	@Override
 	public Void visit(EnableAnswerBot self, RequestContext context) throws IOException {
@@ -277,15 +308,18 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			long botId = self.getId();
 			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 			
-			SipService sipService = SipService.getInstance();
-			String userName = bot.getUserName();
-			sipService.disableAnwserBot(userName);
-			sipService.enableAnwserBot(userName);
+			enableAnswerbot(bot.getUserName());
 		}
 		
 		sendOk(resp);
 		LOG.info("Answerbot enabled for: " + login);
 		return null;
+	}
+
+	private void enableAnswerbot(String userName) throws UnknownHostException {
+		SipService sipService = SipService.getInstance();
+		sipService.disableAnwserBot(userName);
+		sipService.enableAnwserBot(userName);
 	}
 
 	@Override
@@ -301,14 +335,14 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 
 			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 
-			SipService.getInstance().disableAnwserBot(bot.getUserName());
+			disableAnswerbot(bot.getUserName());
 		}
 		
 		sendOk(resp);
 		LOG.info("Answerbot '" + botId + "' disabled for: " + login);
 		return null;
 	}
-	
+
 	@Override
 	public Void visit(DeleteAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
@@ -322,7 +356,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 
 			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
 
-			SipService.getInstance().disableAnwserBot(bot.getUserName());
+			disableAnswerbot(bot.getUserName());
 			
 			users.answerbotDelete(botId);
 			session.commit();
@@ -332,7 +366,11 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		LOG.info("Answerbot '" + botId + "' deleted for: " + login);
 		return null;
 	}
-
+	
+	private void disableAnswerbot(String userName) {
+		SipService.getInstance().disableAnwserBot(userName);
+	}
+	
 	@Override
 	public Void visit(CheckAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
