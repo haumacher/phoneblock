@@ -134,9 +134,17 @@ public interface Users {
 	@Update("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where ABID=#{abId}")
 	void updateDynDns(long abId, String ip4, String ip6, long updated);
 	
-	@Select("select s.ID, s.USERID, s.UPDATED, s.LAST_SUCCESS, s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.ENABLED = true")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.UPDATED, s.LAST_SUCCESS, 
+				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, 
+				s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD,
+				s.MIN_VOTES, s.WILDCARDS 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID  
+			where s.ENABLED = true
+			""")
 	List<DBAnswerBotSip> getEnabledAnswerBots();
 
 	/**
@@ -152,9 +160,17 @@ public interface Users {
 	@Select("select s.ID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
 	long getAnswerBotId(String sipUser);
 
-	@Select("select s.ID, s.USERID, s.UPDATED, s.LAST_SUCCESS, s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.USERNAME = #{userName}")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.UPDATED, s.LAST_SUCCESS, 
+				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, 
+				s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD,
+				s.MIN_VOTES, s.WILDCARDS 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID  
+			where s.USERNAME = #{userName}
+			""")
 	DBAnswerBotSip getAnswerBotBySipUser(String userName);
 
 	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 

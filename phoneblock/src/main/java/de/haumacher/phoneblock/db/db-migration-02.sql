@@ -4,6 +4,13 @@
 --
 
 ---------------------------------
+-- ANSWERBOT_SIP
+---------------------------------
+
+ALTER TABLE PUBLIC.ANSWERBOT_SIP ADD MIN_VOTES INTEGER DEFAULT 4 NOT NULL;
+ALTER TABLE PUBLIC.ANSWERBOT_SIP ADD WILDCARDS BOOLEAN DEFAULT true NOT NULL;
+
+---------------------------------
 -- REVISION
 ---------------------------------
 

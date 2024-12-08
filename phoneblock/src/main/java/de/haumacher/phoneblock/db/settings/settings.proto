@@ -85,6 +85,16 @@ message AnswerBotSip extends AnswerBotSetting {
     /** The password used for SIP registration at the user's box. */	
 	string passwd;
 
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int minVotes;
+	
+	/** 
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	 */
+	bool wildcard;
+
 	/** Whether this answer bot is currently registered successfully. */
 	bool registered;
 	
