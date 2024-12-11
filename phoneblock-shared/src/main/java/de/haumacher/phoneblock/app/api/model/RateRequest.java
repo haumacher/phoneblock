@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Request to a add a new rating for a phone number.
  */
-public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RateRequest} instance.
@@ -24,18 +24,9 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** @see #getComment() */
 	public static final String COMMENT__PROP = "comment";
 
-	/** Identifier for the property {@link #getPhone()} in binary format. */
-	static final int PHONE__ID = 1;
-
-	/** Identifier for the property {@link #getRating()} in binary format. */
-	static final int RATING__ID = 2;
-
-	/** Identifier for the property {@link #getComment()} in binary format. */
-	static final int COMMENT__ID = 3;
-
 	private String _phone = "";
 
-	private String _rating = "";
+	private de.haumacher.phoneblock.app.api.model.Rating _rating = de.haumacher.phoneblock.app.api.model.Rating.A_LEGITIMATE;
 
 	private String _comment = "";
 
@@ -70,22 +61,23 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	/**
-	 * The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.db.model.Rating}.
+	 * The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.app.api.model.Rating}.
 	 */
-	public final String getRating() {
+	public final de.haumacher.phoneblock.app.api.model.Rating getRating() {
 		return _rating;
 	}
 
 	/**
 	 * @see #getRating()
 	 */
-	public de.haumacher.phoneblock.app.api.model.RateRequest setRating(String value) {
+	public de.haumacher.phoneblock.app.api.model.RateRequest setRating(de.haumacher.phoneblock.app.api.model.Rating value) {
 		internalSetRating(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getRating()} without chain call utility. */
-	protected final void internalSetRating(String value) {
+	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
+		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
 	}
@@ -163,7 +155,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public void set(String field, Object value) {
 		switch (field) {
 			case PHONE__PROP: internalSetPhone((String) value); break;
-			case RATING__PROP: internalSetRating((String) value); break;
+			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
 			case COMMENT__PROP: internalSetComment((String) value); break;
 		}
 	}
@@ -186,7 +178,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		out.name(PHONE__PROP);
 		out.value(getPhone());
 		out.name(RATING__PROP);
-		out.value(getRating());
+		getRating().writeTo(out);
 		out.name(COMMENT__PROP);
 		out.value(getComment());
 	}
@@ -195,65 +187,9 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case RATING__PROP: setRating(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(PHONE__ID);
-		out.value(getPhone());
-		out.name(RATING__ID);
-		out.value(getRating());
-		out.name(COMMENT__ID);
-		out.value(getComment());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.app.api.model.RateRequest readRateRequest(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.app.api.model.RateRequest result = de.haumacher.phoneblock.app.api.model.RateRequest.readRateRequest_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RateRequest} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.app.api.model.RateRequest readRateRequest_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.app.api.model.RateRequest result = new RateRequest();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case PHONE__ID: setPhone(in.nextString()); break;
-			case RATING__ID: setRating(in.nextString()); break;
-			case COMMENT__ID: setComment(in.nextString()); break;
-			default: in.skipValue(); 
 		}
 	}
 
@@ -283,7 +219,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
-		out.writeAttribute(RATING__XML_ATTR, getRating());
+		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
 		out.writeAttribute(COMMENT__XML_ATTR, getComment());
 	}
 
@@ -327,7 +263,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				break;
 			}
 			case RATING__XML_ATTR: {
-				setRating(value);
+				setRating(de.haumacher.phoneblock.app.api.model.Rating.valueOfProtocol(value));
 				break;
 			}
 			case COMMENT__XML_ATTR: {
@@ -348,7 +284,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				break;
 			}
 			case RATING__XML_ATTR: {
-				setRating(in.getElementText());
+				setRating(de.haumacher.phoneblock.app.api.model.Rating.valueOfProtocol(in.getElementText()));
 				break;
 			}
 			case COMMENT__XML_ATTR: {

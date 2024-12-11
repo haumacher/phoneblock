@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Requesting a new user account.
  */
-public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} instance.
@@ -23,15 +23,6 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 
 	/** @see #getEmail() */
 	public static final String EMAIL__PROP = "email";
-
-	/** Identifier for the property {@link #getSession()} in binary format. */
-	static final int SESSION__ID = 1;
-
-	/** Identifier for the property {@link #getAnswer()} in binary format. */
-	static final int ANSWER__ID = 2;
-
-	/** Identifier for the property {@link #getEmail()} in binary format. */
-	static final int EMAIL__ID = 3;
 
 	private String _session = "";
 
@@ -198,62 +189,6 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 			case ANSWER__PROP: setAnswer(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(SESSION__ID);
-		out.value(getSession());
-		out.name(ANSWER__ID);
-		out.value(getAnswer());
-		out.name(EMAIL__ID);
-		out.value(getEmail());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.app.api.model.RegistrationRequest readRegistrationRequest(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.app.api.model.RegistrationRequest result = de.haumacher.phoneblock.app.api.model.RegistrationRequest.readRegistrationRequest_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.app.api.model.RegistrationRequest readRegistrationRequest_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.app.api.model.RegistrationRequest result = new RegistrationRequest();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case SESSION__ID: setSession(in.nextString()); break;
-			case ANSWER__ID: setAnswer(in.nextString()); break;
-			case EMAIL__ID: setEmail(in.nextString()); break;
-			default: in.skipValue(); 
 		}
 	}
 

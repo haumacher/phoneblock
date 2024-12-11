@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
 /**
  * List of blocked numbers for retrieval through the <i>PhoneBlock API</i>.
@@ -6,26 +6,26 @@ package de.haumacher.phoneblock.db.model;
 public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.db.model.Blocklist} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.Blocklist} instance.
 	 */
-	public static de.haumacher.phoneblock.db.model.Blocklist create() {
-		return new de.haumacher.phoneblock.db.model.Blocklist();
+	public static de.haumacher.phoneblock.app.api.model.Blocklist create() {
+		return new de.haumacher.phoneblock.app.api.model.Blocklist();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.db.model.Blocklist} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.Blocklist} type in JSON format. */
 	public static final String BLOCKLIST__TYPE = "Blocklist";
 
 	/** @see #getNumbers() */
 	public static final String NUMBERS__PROP = "numbers";
 
-	private final java.util.List<de.haumacher.phoneblock.db.model.PhoneInfo> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.BlockListEntry>() {
 		@Override
-		protected void beforeAdd(int index, de.haumacher.phoneblock.db.model.PhoneInfo element) {
+		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
 			_listener.beforeAdd(Blocklist.this, NUMBERS__PROP, index, element);
 		}
 
 		@Override
-		protected void afterRemove(int index, de.haumacher.phoneblock.db.model.PhoneInfo element) {
+		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
 			_listener.afterRemove(Blocklist.this, NUMBERS__PROP, index, element);
 		}
 	};
@@ -33,7 +33,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/**
 	 * Creates a {@link Blocklist} instance.
 	 *
-	 * @see de.haumacher.phoneblock.db.model.Blocklist#create()
+	 * @see de.haumacher.phoneblock.app.api.model.Blocklist#create()
 	 */
 	protected Blocklist() {
 		super();
@@ -42,20 +42,20 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/**
 	 * Numbers in the blocklist.
 	 */
-	public final java.util.List<de.haumacher.phoneblock.db.model.PhoneInfo> getNumbers() {
+	public final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> getNumbers() {
 		return _numbers;
 	}
 
 	/**
 	 * @see #getNumbers()
 	 */
-	public de.haumacher.phoneblock.db.model.Blocklist setNumbers(java.util.List<? extends de.haumacher.phoneblock.db.model.PhoneInfo> value) {
+	public de.haumacher.phoneblock.app.api.model.Blocklist setNumbers(java.util.List<? extends de.haumacher.phoneblock.app.api.model.BlockListEntry> value) {
 		internalSetNumbers(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getNumbers()} without chain call utility. */
-	protected final void internalSetNumbers(java.util.List<? extends de.haumacher.phoneblock.db.model.PhoneInfo> value) {
+	protected final void internalSetNumbers(java.util.List<? extends de.haumacher.phoneblock.app.api.model.BlockListEntry> value) {
 		if (value == null) throw new IllegalArgumentException("Property 'numbers' cannot be null.");
 		_numbers.clear();
 		_numbers.addAll(value);
@@ -64,27 +64,27 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/**
 	 * Adds a value to the {@link #getNumbers()} list.
 	 */
-	public de.haumacher.phoneblock.db.model.Blocklist addNumber(de.haumacher.phoneblock.db.model.PhoneInfo value) {
+	public de.haumacher.phoneblock.app.api.model.Blocklist addNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry value) {
 		internalAddNumber(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addNumber(de.haumacher.phoneblock.db.model.PhoneInfo)} without chain call utility. */
-	protected final void internalAddNumber(de.haumacher.phoneblock.db.model.PhoneInfo value) {
+	/** Implementation of {@link #addNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry)} without chain call utility. */
+	protected final void internalAddNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry value) {
 		_numbers.add(value);
 	}
 
 	/**
 	 * Removes a value from the {@link #getNumbers()} list.
 	 */
-	public final void removeNumber(de.haumacher.phoneblock.db.model.PhoneInfo value) {
+	public final void removeNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry value) {
 		_numbers.remove(value);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public de.haumacher.phoneblock.db.model.Blocklist registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.Blocklist registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -94,7 +94,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.Blocklist unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.Blocklist unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -128,13 +128,13 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case NUMBERS__PROP: internalSetNumbers(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.db.model.PhoneInfo.class, value)); break;
+			case NUMBERS__PROP: internalSetNumbers(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.app.api.model.BlockListEntry.class, value)); break;
 		}
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.model.Blocklist readBlocklist(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.Blocklist result = new de.haumacher.phoneblock.db.model.Blocklist();
+	public static de.haumacher.phoneblock.app.api.model.Blocklist readBlocklist(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.app.api.model.Blocklist result = new de.haumacher.phoneblock.app.api.model.Blocklist();
 		result.readContent(in);
 		return result;
 	}
@@ -149,7 +149,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		super.writeFields(out);
 		out.name(NUMBERS__PROP);
 		out.beginArray();
-		for (de.haumacher.phoneblock.db.model.PhoneInfo x : getNumbers()) {
+		for (de.haumacher.phoneblock.app.api.model.BlockListEntry x : getNumbers()) {
 			x.writeTo(out);
 		}
 		out.endArray();
@@ -161,7 +161,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case NUMBERS__PROP: {
 				in.beginArray();
 				while (in.hasNext()) {
-					addNumber(de.haumacher.phoneblock.db.model.PhoneInfo.readPhoneInfo(in));
+					addNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry.readBlockListEntry(in));
 				}
 				in.endArray();
 			}
@@ -170,7 +170,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		}
 	}
 
-	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.Blocklist} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.Blocklist} type. */
 	public static final String BLOCKLIST__XML_ELEMENT = "blocklist";
 
 	/** XML attribute or element name of a {@link #getNumbers} property. */
@@ -194,13 +194,13 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeStartElement(NUMBERS__XML_ATTR);
-		for (de.haumacher.phoneblock.db.model.PhoneInfo element : getNumbers()) {
+		for (de.haumacher.phoneblock.app.api.model.BlockListEntry element : getNumbers()) {
 			element.writeTo(out);
 		}
 		out.writeEndElement();
 	}
 
-	/** Creates a new {@link de.haumacher.phoneblock.db.model.Blocklist} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.Blocklist} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static Blocklist readBlocklist_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		Blocklist result = new Blocklist();
 		result.readContentXml(in);
@@ -266,14 +266,14 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				break;
 			}
 
-			addNumber(de.haumacher.phoneblock.db.model.PhoneInfo.readPhoneInfo_XmlContent(in));
+			addNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry.readBlockListEntry_XmlContent(in));
 		}
 	}
 
 	/** Creates a new {@link Blocklist} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static Blocklist readBlocklist(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
-		return de.haumacher.phoneblock.db.model.Blocklist.readBlocklist_XmlContent(in);
+		return de.haumacher.phoneblock.app.api.model.Blocklist.readBlocklist_XmlContent(in);
 	}
 
 }

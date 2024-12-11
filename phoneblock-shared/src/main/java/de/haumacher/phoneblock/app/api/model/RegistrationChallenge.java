@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Information that must be requested to start a registration process.
  */
-public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} instance.
@@ -20,12 +20,6 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 
 	/** @see #getCaptcha() */
 	public static final String CAPTCHA__PROP = "captcha";
-
-	/** Identifier for the property {@link #getSession()} in binary format. */
-	static final int SESSION__ID = 1;
-
-	/** Identifier for the property {@link #getCaptcha()} in binary format. */
-	static final int CAPTCHA__ID = 2;
 
 	private String _session = "";
 
@@ -163,59 +157,6 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 			case SESSION__PROP: setSession(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CAPTCHA__PROP: setCaptcha(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(SESSION__ID);
-		out.value(getSession());
-		out.name(CAPTCHA__ID);
-		out.value(getCaptcha());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.app.api.model.RegistrationChallenge readRegistrationChallenge(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.app.api.model.RegistrationChallenge result = de.haumacher.phoneblock.app.api.model.RegistrationChallenge.readRegistrationChallenge_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.app.api.model.RegistrationChallenge readRegistrationChallenge_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.app.api.model.RegistrationChallenge result = new RegistrationChallenge();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case SESSION__ID: setSession(in.nextString()); break;
-			case CAPTCHA__ID: setCaptcha(in.nextString()); break;
-			default: in.skipValue(); 
 		}
 	}
 

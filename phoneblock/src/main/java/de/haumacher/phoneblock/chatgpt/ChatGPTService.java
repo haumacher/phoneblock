@@ -16,9 +16,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +28,17 @@ import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
 import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserComment;
 import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Service creating summary texts for phone numbers by asking ChatGPT to create a summary of user comments.

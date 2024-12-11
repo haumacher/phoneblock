@@ -3,7 +3,12 @@
  */
 package de.haumacher.phoneblock.db;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,8 +27,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -61,38 +67,47 @@ class TestDB {
 
 	@Test
 	void testTopSearches() {
-		_db.addRating("0", Rating.C_PING, null, 0);
-		_db.addRating("1", Rating.C_PING, null, 0);
-		_db.addRating("2", Rating.C_PING, null, 0);
-		_db.addRating("3", Rating.C_PING, null, 0);
-		_db.addRating("4", Rating.C_PING, null, 0);
-		_db.addRating("5", Rating.C_PING, null, 0);
+		long now = 1000000000000000000L;
+
+		_db.addSearchHit("0", now++);
+		_db.addSearchHit("5", now++);
+
+		_db.updateHistory(30, now++);
 		
-		_db.addSearchHit("5", 0);
-		_db.addSearchHit("0", 0);
-		_db.addSearchHit("0", 0);
-		_db.addSearchHit("0", 0);
+		// Yesterday
+		_db.addRating("0", Rating.C_PING, null, now++);
+		_db.addRating("1", Rating.C_PING, null, now++);
+		_db.addRating("2", Rating.C_PING, null, now++);
+		_db.addRating("3", Rating.C_PING, null, now++);
+		_db.addRating("4", Rating.C_PING, null, now++);
+		_db.addRating("5", Rating.C_PING, null, now++);
 		
-		_db.addSearchHit("1", 1);
-		_db.addSearchHit("2", 2);
-		_db.addSearchHit("3", 3);
-		_db.cleanupSearchHistory(30);
+		_db.addSearchHit("5", now++);
+		_db.addSearchHit("0", now++);
+		_db.addSearchHit("0", now++);
+		_db.addSearchHit("0", now++);
 		
-		_db.addSearchHit("0", 4);
-		_db.addSearchHit("4", 5);
-		_db.addSearchHit("5", 6);
+		_db.addSearchHit("1", now++);
+		_db.addSearchHit("2", now++);
+		_db.addSearchHit("3", now++);
+		_db.updateHistory(30, now++);
 		
-		List<? extends SearchInfo> topSearches = _db.getTopSearches(1, 1);
+		// Today
+		_db.addSearchHit("0", now++);
+		_db.addSearchHit("4", now++);
+		_db.addSearchHit("5", now++);
+		
+		List<? extends SearchInfo> topSearches = _db.getTopSearches(2);
 
 		assertEquals(2, topSearches.size());
 		
 		assertEquals("5", topSearches.get(0).getPhone());
-		assertEquals(1, topSearches.get(0).getCount());
-		assertEquals(1, topSearches.get(0).getTotal());
+		assertEquals(2, topSearches.get(0).getCount());
+		assertEquals(3, topSearches.get(0).getTotal());
 		
 		assertEquals("0", topSearches.get(1).getPhone());
-		assertEquals(1, topSearches.get(1).getCount());
-		assertEquals(3, topSearches.get(1).getTotal());
+		assertEquals(4, topSearches.get(1).getCount());
+		assertEquals(5, topSearches.get(1).getTotal());
 	}
 	
 	@Test
@@ -111,12 +126,10 @@ class TestDB {
 		assertEquals(0, _db.getVotesFor("999"));
 		
 		_db.processVotes("999", -1, 1002);
-		assertFalse(_db.hasSpamReportFor("999"));
-		assertEquals(0, _db.getVotesFor("999"));
+		assertEquals(-1, _db.getVotesFor("999"));
 		
 		_db.processVotes("999", 0, 1003);
-		assertFalse(_db.hasSpamReportFor("999"));
-		assertEquals(0, _db.getVotesFor("999"));
+		assertEquals(-1, _db.getVotesFor("999"));
 		
 		_db.processVotes("123", 1, 1004);
 		assertEquals(3, _db.getVotesFor("123"));
@@ -126,13 +139,14 @@ class TestDB {
 		
 		_db.processVotes("123", -2, 1006);
 		assertEquals(0, _db.getVotesFor("123"));
-		assertFalse(_db.hasSpamReportFor("123"));
 		
-		assertEquals(1001, _db.getLastSpamReport().longValue());
+		assertEquals(1006, _db.getLastSpamReport().longValue());
 		
-		List<DBSpamReport> reports = _db.getLatestSpamReports(1001);
-		assertEquals(1, reports.size());
-		assertEquals("456", reports.get(0).getPhone());
+		List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
+		assertEquals(3, reports.size());
+		assertEquals("456", reports.get(2).getPhone());
+		assertEquals("999", reports.get(1).getPhone());
+		assertEquals("123", reports.get(0).getPhone());
 	}
 	
 	@Test
@@ -225,55 +239,139 @@ class TestDB {
 
 		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
 		
-		_db.cleanupSearchHistory(10);
+		_db.updateHistory(10);
 		
 		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
 		
-		_db.addRating("123", Rating.C_PING, null, now++);
+		_db.addRating("123", Rating.E_ADVERTISING, null, now++);
 		
-		assertEquals(Rating.C_PING, _db.getRating("123"));
+		assertEquals(Rating.E_ADVERTISING, _db.getRating("123"));
 	}
 	
 	@Test
 	void testSearchHistory() {
+		String _123 = "123";
+		String _456 = "456";
+		String _789 = "789";
 		
-		_db.addSearchHit("123");
-		_db.addSearchHit("123");
-		_db.addSearchHit("456");
+		_db.addSearchHit(_123);
+		_db.addSearchHit(_123);
+		_db.addSearchHit(_456);
 		
-		_db.cleanupSearchHistory(30);
+		_db.updateHistory(30);
 		
-		_db.addSearchHit("456");
-		_db.addSearchHit("789");
+		_db.addSearchHit(_456);
+		_db.addSearchHit(_789);
 		
-		_db.cleanupSearchHistory(30);
+		_db.updateHistory(30);
 		
-		_db.addSearchHit("123");
+		_db.addSearchHit(_123);
 		
-		_db.cleanupSearchHistory(30);
+		_db.updateHistory(30);
 		
-		_db.addSearchHit("456");
-		_db.addSearchHit("789");
+		_db.addSearchHit(_456);
+		_db.addSearchHit(_789);
 		
-		assertEquals(List.of(2, 0, 1, 0), _db.getSearchHistory("123"));
-		assertEquals(List.of(1, 1, 0, 1), _db.getSearchHistory("456"));
-		assertEquals(List.of(0, 1, 0, 1), _db.getSearchHistory("789"));
+		assertEquals(List.of(2, 0, 1, 0), _db.getSearchHistory(_123, 4));
+		assertEquals(List.of(1, 1, 0, 1), _db.getSearchHistory(_456, 4));
+		assertEquals(List.of(0, 1, 0, 1), _db.getSearchHistory(_789, 4));
 	}
 	
 	@Test
 	void testSearchHistoryCleanup() {
-		for (int n = 0; n < 100; n++) {
-			_db.addSearchHit("123");
-			_db.cleanupSearchHistory(30);
+		long time = 1000;
+		for (int n = 0; n < 49; n++) {
+			_db.addSearchHit("123", time);
+			_db.updateHistory(30, time);
+			
+			time++;
 		}
-		_db.addSearchHit("123");
+		_db.addSearchHit("123", time);
 		
-		assertEquals(31, _db.getSearchHistory("123").size());
+		List<Integer> all = _db.getSearchHistory("123", 31);
+		assertEquals(31, all.size());
+		assertEquals(1, all.get(31 - 1));
+		assertEquals(1, all.get(1));
+		assertEquals(50 - 30, all.get(0));
+		
+		assertEquals(7, _db.getSearchHistory("123", 7).size());
 	}
 	
 	@Test
 	void testQuote() {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
+	}
+	
+	@Test
+	void testAggregation() {
+		long now = 0;
+		
+		_db.processVotes("040299962900", 1, now);
+		_db.processVotes("040299962900", 1, now);
+		_db.processVotes("040299962901", 1, now);
+		
+		checkPhone("040299962900", 2, 2, 3, 0, 0);
+		checkPhone("040299962909", 0, 2, 3, 0, 0);
+		checkPhone("040299962999", 0, 0, 0, 0, 0);
+		
+		_db.processVotes("040299962902", 1, now);
+		_db.processVotes("040299962903", 1, now);
+		
+		checkPhone("040299962900", 2, 4, 5, 1, 5);
+		checkPhone("040299962909", 0, 4, 5, 1, 5);
+		checkPhone("040299962999", 0, 0, 0, 1, 5);
+		
+		_db.processVotes("040299962903", -1, now);
+		
+		checkPhone("040299962900", 2, 3, 4, 0, 0);
+		checkPhone("040299962909", 0, 3, 4, 0, 0);
+		checkPhone("040299962999", 0, 0, 0, 0, 0);
+	}
+
+	@Test
+	void testAggregation100() {
+		long now = 0;
+		
+		_db.processVotes("040299962900", 1, now);
+		_db.processVotes("040299962901", 1, now);
+		_db.processVotes("040299962902", 1, now);
+		_db.processVotes("040299962903", 1, now);
+		
+		_db.processVotes("040299962910", 1, now);
+		_db.processVotes("040299962911", 1, now);
+		_db.processVotes("040299962912", 1, now);
+		_db.processVotes("040299962913", 1, now);
+		
+		_db.processVotes("040299962920", 1, now);
+		_db.processVotes("040299962921", 1, now);
+		_db.processVotes("040299962922", 1, now);
+		_db.processVotes("040299962923", 1, now);
+		
+		checkPhone("040299962999", 0, 0, 0, 3, 12);
+		
+		_db.processVotes("040299962903", -1, now);
+		_db.processVotes("040299962913", -1, now);
+		_db.processVotes("040299962923", -1, now);
+
+		checkPhone("040299962999", 0, 0, 0, 0, 0);
+	}
+	
+	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			
+			NumberInfo info = _db.getPhoneInfo(reports, phone);
+			assertEquals(votes, info.getVotes());
+			
+			AggregationInfo aggregation10 = _db.getAggregation10(reports, phone);
+			assertEquals(cnt10, aggregation10.getCnt());
+			assertEquals(votes10, aggregation10.getVotes());
+			
+			AggregationInfo aggregation100 = _db.getAggregation100(reports, phone);
+			assertEquals(cnt100, aggregation100.getCnt());
+			assertEquals(votes100, aggregation100.getVotes());
+			
+		}
 	}
 
 	private DataSource createTestDataSource() {

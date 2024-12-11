@@ -24,6 +24,12 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** @see #isEnabled() */
 	public static final String ENABLED__PROP = "enabled";
 
+	/** @see #getMinVotes() */
+	public static final String MIN_VOTES__PROP = "minVotes";
+
+	/** @see #isWildcards() */
+	public static final String WILDCARDS__PROP = "wildcards";
+
 	/** @see #isRegistered() */
 	public static final String REGISTERED__PROP = "registered";
 
@@ -71,6 +77,10 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	private long _userId = 0L;
 
 	private boolean _enabled = false;
+
+	private int _minVotes = 0;
+
+	private boolean _wildcards = false;
 
 	private boolean _registered = false;
 
@@ -167,6 +177,46 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** Internal setter for {@link #isEnabled()} without chain call utility. */
 	protected final void internalSetEnabled(boolean value) {
 		_enabled = value;
+	}
+
+	/**
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it.
+	 */
+	public final int getMinVotes() {
+		return _minVotes;
+	}
+
+	/**
+	 * @see #getMinVotes()
+	 */
+	public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setMinVotes(int value) {
+		internalSetMinVotes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getMinVotes()} without chain call utility. */
+	protected final void internalSetMinVotes(int value) {
+		_minVotes = value;
+	}
+
+	/**
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
+	 */
+	public final boolean isWildcards() {
+		return _wildcards;
+	}
+
+	/**
+	 * @see #isWildcards()
+	 */
+	public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setWildcards(boolean value) {
+		internalSetWildcards(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isWildcards()} without chain call utility. */
+	protected final void internalSetWildcards(boolean value) {
+		_wildcards = value;
 	}
 
 	/**
@@ -501,6 +551,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				ID__PROP, 
 				USER_ID__PROP, 
 				ENABLED__PROP, 
+				MIN_VOTES__PROP, 
+				WILDCARDS__PROP, 
 				REGISTERED__PROP, 
 				REGISTER_MSG__PROP, 
 				NEW_CALLS__PROP, 
@@ -527,6 +579,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ID__PROP: return getId();
 				case USER_ID__PROP: return getUserId();
 				case ENABLED__PROP: return isEnabled();
+				case MIN_VOTES__PROP: return getMinVotes();
+				case WILDCARDS__PROP: return isWildcards();
 				case REGISTERED__PROP: return isRegistered();
 				case REGISTER_MSG__PROP: return getRegisterMsg();
 				case NEW_CALLS__PROP: return getNewCalls();
@@ -551,6 +605,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ID__PROP: internalSetId((long) value); break;
 				case USER_ID__PROP: internalSetUserId((long) value); break;
 				case ENABLED__PROP: internalSetEnabled((boolean) value); break;
+				case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
+				case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 				case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 				case REGISTER_MSG__PROP: internalSetRegisterMsg((String) value); break;
 				case NEW_CALLS__PROP: internalSetNewCalls((int) value); break;
@@ -589,6 +645,10 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 			out.value(getUserId());
 			out.name(ENABLED__PROP);
 			out.value(isEnabled());
+			out.name(MIN_VOTES__PROP);
+			out.value(getMinVotes());
+			out.name(WILDCARDS__PROP);
+			out.value(isWildcards());
 			out.name(REGISTERED__PROP);
 			out.value(isRegistered());
 			if (hasRegisterMsg()) {
@@ -637,6 +697,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ID__PROP: setId(in.nextLong()); break;
 				case USER_ID__PROP: setUserId(in.nextLong()); break;
 				case ENABLED__PROP: setEnabled(in.nextBoolean()); break;
+				case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
+				case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 				case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 				case REGISTER_MSG__PROP: setRegisterMsg(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 				case NEW_CALLS__PROP: setNewCalls(in.nextInt()); break;

@@ -44,12 +44,6 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--silence-db", usage = "The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 	private double silenceDb = -30;
 
-	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
-	private boolean _acceptAnonymous = false;
-
-	@Option(name = "--min-votes", handler = GreaterThanZeroIntOptionHandler.class, usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
-	private int _minVotes = 4;
-
 	@Option(name = "--phoneblock-username", usage = "phoneblock username")
 	private String _phoneblockUsername;
 
@@ -129,30 +123,6 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	 */
 	public void setConversationDir(File conversationDir) {
 		_conversationDir = conversationDir;
-	}
-	
-	@Override
-	public boolean getAcceptAnonymous() {
-		return _acceptAnonymous;
-	}
-	
-	/**
-	 * @see #getAcceptAnonymous()
-	 */
-	public void setAcceptAnonymous(boolean acceptAnonymous) {
-		_acceptAnonymous = acceptAnonymous;
-	}
-	
-	@Override
-	public int getMinVotes() {
-		return _minVotes;
-	}
-	
-	/**
-	 * @see #getMinVotes()
-	 */
-	public void setMinVotes(int minVotes) {
-		_minVotes = minVotes;
 	}
 	
 	@Override

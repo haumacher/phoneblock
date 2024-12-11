@@ -3,8 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.RatingInfo;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.RatingInfo;
 
 /**
  * {@link RatingInfo} for usage from the DB layer.
