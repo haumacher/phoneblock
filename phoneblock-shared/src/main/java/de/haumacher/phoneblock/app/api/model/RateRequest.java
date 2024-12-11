@@ -61,7 +61,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	}
 
 	/**
-	 * The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.app.api.model.Rating}.
+	 * The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.db.model.Rating}.
 	 */
 	public final de.haumacher.phoneblock.app.api.model.Rating getRating() {
 		return _rating;
