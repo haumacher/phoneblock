@@ -209,7 +209,7 @@ public interface Users {
 			update ANSWERBOT_SIP s
 			set
 				s.MIN_VOTES=#{minVotes},
-				s.WILDCARDS=#{wildcards},
+				s.WILDCARDS=#{wildcards}
 			where
 				s.ID=#{id}
 			""")
