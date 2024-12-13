@@ -24,6 +24,9 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** @see #isEnabled() */
 	public static final String ENABLED__PROP = "enabled";
 
+	/** @see #isPreferIPv4() */
+	public static final String PREFER_IPV_4__PROP = "preferIPv4";
+
 	/** @see #getMinVotes() */
 	public static final String MIN_VOTES__PROP = "minVotes";
 
@@ -77,6 +80,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	private long _userId = 0L;
 
 	private boolean _enabled = false;
+
+	private boolean _preferIPv4 = false;
 
 	private int _minVotes = 0;
 
@@ -177,6 +182,26 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** Internal setter for {@link #isEnabled()} without chain call utility. */
 	protected final void internalSetEnabled(boolean value) {
 		_enabled = value;
+	}
+
+	/**
+	 * Whether to limit communication to IPv4.
+	 */
+	public final boolean isPreferIPv4() {
+		return _preferIPv4;
+	}
+
+	/**
+	 * @see #isPreferIPv4()
+	 */
+	public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setPreferIPv4(boolean value) {
+		internalSetPreferIPv4(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isPreferIPv4()} without chain call utility. */
+	protected final void internalSetPreferIPv4(boolean value) {
+		_preferIPv4 = value;
 	}
 
 	/**
@@ -551,6 +576,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				ID__PROP, 
 				USER_ID__PROP, 
 				ENABLED__PROP, 
+				PREFER_IPV_4__PROP, 
 				MIN_VOTES__PROP, 
 				WILDCARDS__PROP, 
 				REGISTERED__PROP, 
@@ -579,6 +605,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ID__PROP: return getId();
 				case USER_ID__PROP: return getUserId();
 				case ENABLED__PROP: return isEnabled();
+				case PREFER_IPV_4__PROP: return isPreferIPv4();
 				case MIN_VOTES__PROP: return getMinVotes();
 				case WILDCARDS__PROP: return isWildcards();
 				case REGISTERED__PROP: return isRegistered();
@@ -605,6 +632,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ID__PROP: internalSetId((long) value); break;
 				case USER_ID__PROP: internalSetUserId((long) value); break;
 				case ENABLED__PROP: internalSetEnabled((boolean) value); break;
+				case PREFER_IPV_4__PROP: internalSetPreferIPv4((boolean) value); break;
 				case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 				case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 				case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
@@ -645,6 +673,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 			out.value(getUserId());
 			out.name(ENABLED__PROP);
 			out.value(isEnabled());
+			out.name(PREFER_IPV_4__PROP);
+			out.value(isPreferIPv4());
 			out.name(MIN_VOTES__PROP);
 			out.value(getMinVotes());
 			out.name(WILDCARDS__PROP);
@@ -697,6 +727,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case ID__PROP: setId(in.nextLong()); break;
 				case USER_ID__PROP: setUserId(in.nextLong()); break;
 				case ENABLED__PROP: setEnabled(in.nextBoolean()); break;
+				case PREFER_IPV_4__PROP: setPreferIPv4(in.nextBoolean()); break;
 				case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 				case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 				case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;

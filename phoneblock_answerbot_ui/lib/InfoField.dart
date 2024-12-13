@@ -1,18 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:phoneblock_answerbot_ui/Debug.dart';
 
-class InfoField extends StatelessWidget {
+class InfoField extends StatefulWidget {
   final String label;
   final String? help;
   final String? value;
+  final double padding;
+  final bool password;
+  final bool noCopy;
 
-  const InfoField(this.label, this.value, {this.help, super.key});
+  const InfoField(this.label, this.value, {
+    this.help,
+    this.padding = 0,
+    this.password = false,
+    this.noCopy = false,
+    super.key
+  });
+
+  @override
+  State<StatefulWidget> createState() {
+    return InfoFieldState();
+  }
+}
+
+class InfoFieldState extends State<InfoField> {
+  bool shown = false;
+
+  String get text => (widget.password && !shown) ? "************" : (widget.value ?? "<not set>");
 
   @override
   Widget build(BuildContext context) {
-    var help = this.help;
+    var help = widget.help;
 
-    return Column(
+    var controller = TextEditingController(text: text);
+
+    Widget result = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -20,24 +44,43 @@ class InfoField extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 decoration: InputDecoration(
-                  labelText: label,
+                  labelText: widget.label,
                 ),
-                initialValue: value ?? "<not set>",
+                controller: controller,
                 readOnly: true,
               ),
             ),
+            if (widget.password) IconButton(
+                onPressed: () {
+                  setState(() {
+                    shown = !shown;
+                    controller.text = text;
+                  });
+                },
+                icon: shown ?
+                  const Icon(FontAwesomeIcons.eyeSlash) :
+                  const Icon(FontAwesomeIcons.eye),
+              tooltip: shown ? "Versteckt das Passwort." : "Zeigt das Passwort an (Du kannst das Passwort mit dem Kopierknopf kopieren, ohne es vorher anzuzeigen).",
+            ),
             IconButton(
                 onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: value ?? ""));
+                  await Clipboard.setData(ClipboardData(text: widget.value ?? ""));
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied to clipboard.")));
                 },
-                icon: const Icon(Icons.copy)
+                icon: const Icon(Icons.copy),
+                tooltip: "Kopiert den Wert in die Zwischenablage.",
             ),
           ],
         ),
         if (help != null) Text(help, style: const TextStyle(fontSize: 12, color: Colors.black54))
       ],
     );
+
+    return widget.padding == 0 ?
+      result :
+      Padding(
+        padding: EdgeInsets.only(top: widget.padding),
+        child: result);
   }
 }

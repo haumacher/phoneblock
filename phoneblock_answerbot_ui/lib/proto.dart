@@ -488,6 +488,9 @@ class UpdateAnswerBot extends BotRequest {
 	///  Whether the bot is enabled (registration is active).
 	bool enabled;
 
+	///  Whether to limit communication to IPv4.
+	bool preferIPv4;
+
 	///  The minimum PhoneBlock votes to consider a call as SPAM and accept it.
 	int minVotes;
 
@@ -498,6 +501,7 @@ class UpdateAnswerBot extends BotRequest {
 	UpdateAnswerBot({
 			super.id, 
 			this.enabled = false, 
+			this.preferIPv4 = false, 
 			this.minVotes = 0, 
 			this.wildcards = false, 
 	});
@@ -524,6 +528,10 @@ class UpdateAnswerBot extends BotRequest {
 				enabled = json.expectBool();
 				break;
 			}
+			case "preferIPv4": {
+				preferIPv4 = json.expectBool();
+				break;
+			}
 			case "minVotes": {
 				minVotes = json.expectInt();
 				break;
@@ -542,6 +550,9 @@ class UpdateAnswerBot extends BotRequest {
 
 		json.addKey("enabled");
 		json.addBool(enabled);
+
+		json.addKey("preferIPv4");
+		json.addBool(preferIPv4);
 
 		json.addKey("minVotes");
 		json.addNumber(minVotes);
@@ -636,7 +647,7 @@ class DeleteAnswerBot extends BotRequest {
 
 }
 
-///  Checks whether an anwer bot has successfully registered to its Fritz!Box.
+///  Checks whether an answer bot has successfully registered to its Fritz!Box.
 class CheckAnswerBot extends BotRequest {
 	/// Creates a CheckAnswerBot.
 	CheckAnswerBot({
@@ -850,6 +861,9 @@ class AnswerbotInfo extends _JsonObject {
 	///  Whether the bot is enabled (registration is active).
 	bool enabled;
 
+	///  Whether to limit communication to IPv4.
+	bool preferIPv4;
+
 	///  The minimum PhoneBlock votes to consider a call as SPAM and accept it.
 	int minVotes;
 
@@ -903,6 +917,7 @@ class AnswerbotInfo extends _JsonObject {
 				this.id = 0, 
 				this.userId = 0, 
 				this.enabled = false, 
+				this.preferIPv4 = false, 
 				this.minVotes = 0, 
 				this.wildcards = false, 
 				this.registered = false, 
@@ -949,6 +964,10 @@ class AnswerbotInfo extends _JsonObject {
 				}
 				case "enabled": {
 					enabled = json.expectBool();
+					break;
+				}
+				case "preferIPv4": {
+					preferIPv4 = json.expectBool();
 					break;
 				}
 				case "minVotes": {
@@ -1031,6 +1050,9 @@ class AnswerbotInfo extends _JsonObject {
 
 			json.addKey("enabled");
 			json.addBool(enabled);
+
+			json.addKey("preferIPv4");
+			json.addBool(preferIPv4);
 
 			json.addKey("minVotes");
 			json.addNumber(minVotes);

@@ -280,7 +280,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			long botId = self.getId();
 			bot = lookupAnswerBot(users, login, botId);
 			
-			users.updateAnswerbot(botId, self.getMinVotes(), self.isWildcards());
+			users.updateAnswerbot(botId, self.isPreferIPv4(), self.getMinVotes(), self.isWildcards());
 			session.commit();
 		}
 

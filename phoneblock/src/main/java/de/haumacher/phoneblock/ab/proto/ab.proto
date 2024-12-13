@@ -54,6 +54,9 @@ message UpdateAnswerBot extends BotRequest {
 	/** Whether the bot is enabled (registration is active). */
 	bool enabled;
 	
+	/** Whether to limit communication to IPv4. */
+	bool preferIPv4;
+	
 	/** 
 	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
 	 */
@@ -78,7 +81,7 @@ message DisableAnswerBot extends BotRequest {
 message DeleteAnswerBot extends BotRequest {
 }
 
-/** Checks whether an anwer bot has successfully registered to its Fritz!Box. */
+/** Checks whether an answer bot has successfully registered to its Fritz!Box. */
 message CheckAnswerBot extends BotRequest {
 }
 
@@ -121,6 +124,9 @@ message AnswerbotInfo {
 	/** Whether the bot is enabled (registration is active). */
 	bool enabled;
 	
+	/** Whether to limit communication to IPv4. */
+	bool preferIPv4;
+
 	/** 
 	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
 	 */

@@ -6,7 +6,7 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 	
 	public DBAnswerbotInfo(
 			long id, long userId, 
-			boolean enabled, int minVotes, boolean wildcards, 
+			boolean enabled, boolean prepareIPv4, int minVotes, boolean wildcards, 
 			String registrar, String host, String ip4, String ip6, String realm, 
 			boolean registered, String msg, 
 			int newCalls, int callsAccepted, long talkTime,
@@ -17,6 +17,7 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 		setUserId(userId);
 		
 		setEnabled(enabled);
+		setPreferIPv4(prepareIPv4);
 		setMinVotes(minVotes);
 		setWildcards(wildcards);
 		

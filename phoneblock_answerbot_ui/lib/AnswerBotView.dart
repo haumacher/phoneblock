@@ -8,6 +8,7 @@ import 'package:phoneblock_answerbot_ui/sendRequest.dart';
 import 'package:phoneblock_answerbot_ui/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AnswerBotView extends StatefulWidget {
   final AnswerbotInfo bot;
@@ -17,6 +18,9 @@ class AnswerBotView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => AnswerBotViewState();
 }
+
+const double fieldSpacing = 8;
+const double groupSpacing = 16;
 
 class AnswerBotViewState extends State<AnswerBotView> {
   AnswerbotInfo get bot => widget.bot;
@@ -71,7 +75,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     Expanded(
                       child: Row(
                         children: [
-                          const Text('Anrufbeantworter'),
+                          const Text('Anrufbeantworter Status'),
                           if (bot.enabled) Padding(padding: const EdgeInsets.only(left: 16),
                             child: bot.registered ?
                             const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
@@ -100,11 +104,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                             });
                             bool ok = await enableAnswerBot(bot);
                             setState(() {
-                              if (ok) {
-                                bot.registered = true;
-                              } else {
-                                bot.enabled = false;
-                              }
+                              bot.registered = ok;
                             });
                           }
                         },
@@ -114,24 +114,103 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 ),
               ),
 
-              const Group("DNS Settings"),
-              Text("DNS-Einstellung: ${internalDynDns ? "PhoneBlock-DNS" : "Anderer DynDNS-Anbieter"}"),
-              if (internalDynDns) InfoField('DynDNS-User', bot.dyndnsUser, help: "Trage diesen ...."),
-              if (internalDynDns) InfoField('DynDNS-Password', bot.dyndnsPassword),
-              if (!internalDynDns) TextFormField(
+              const Group("Anrufbeantworter-Einstellungen"),
+
+              DropdownButtonFormField(
+                items: const [
+                  DropdownMenuItem(value: 4, child: Text("4 - sofort sperren")),
+                  DropdownMenuItem(value: 8, child: Text("8 - Bestätigung abwarten")),
+                  DropdownMenuItem(value: 20, child: Text("20 - nur wenn sicher SPAM")),
+                  DropdownMenuItem(value: 100, child: Text("100 - nur Top-Spammer")),
+                ],
                 decoration: const InputDecoration(
-                  labelText: 'Host',
+                    labelText: 'Mindestkonfidenz',
+                    helperText: "Wie viele Beschwerden notwendig sind, damit eine Nummer durch den Anrufbeantworter abgefangen wird."
                 ),
-                initialValue: bot.host,
+                value: bot.minVotes,
+                disabledHint: const Text("Kann nur bei ausgeschaltetem Anrufbeantworter geändert werden."),
+                onChanged: (value) {
+                  setState(() {
+                    bot.minVotes = value ?? 4;
+                  });
+                },
+              ),
+              
+              SwitchField("Nummernbereiche sperren", value: bot.wildcards,
+                help: "Nimmt das Gespräch auch für einen Nummer an, die selbst noch nicht als SPAM bekannt ist, wenn die Vermutung naheliegt, dass die Nummer zu einem Anlagenanschluss gehört, von dem SPAM ausgeht.",
+                onChanged: (bool value) {
+                  setState(() {
+                    bot.wildcards = value;
+                  });
+                }),
+
+              SwitchField("IPv4 Kommunikation bevorzugen", value: bot.preferIPv4,
+                help: "Wenn verfügbar wird die Kommunikation mit dem Anrufbeantworter über IPv4 abgewickelt. Es scheint Telefonanschlüsse zu geben, bei denen eine Sprachverbindung über IPv6 nicht möglich ist, obwohl eine IPv6 Adresse verfügbar ist.",
+                onChanged: (bool value) {
+                  setState(() {
+                    bot.preferIPv4 = value;
+                  });
+                }),
+
+              ElevatedButton(
+                onPressed: () async {
+                  bool ok = await updateAnswerBot(bot);
+                  setState(() {
+                    bot.registered = ok;
+                  });
+                }, 
+                child: const Text("Einstellungen speichern"),
               ),
 
               const Padding(
-                padding: EdgeInsets.only(top: 16),
+                padding: EdgeInsets.only(top: groupSpacing),
+                child: const Group("DNS Settings"),),
+
+              InfoField('DNS-Einstellung', internalDynDns ? "PhoneBlock-DNS" : "Anderer Anbieter oder Domainname",
+                help: "Wie der Anrufbeantworter Deine Fritz!Box im Internet findet.",
+                noCopy: true,
+                padding: fieldSpacing,),
+
+              if (internalDynDns) ...[
+                const InfoField('Update-URL',
+                  "https://phoneblock.net/phoneblock/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>",
+                  help: "Nutzername für die DynDNS-Freige in Deiner Fritz!Box.",
+                  padding: fieldSpacing,),
+                InfoField('Domainname', "${bot.dyndnsUser}box.phoneblock.net",
+                  help: "Name den Deine Fritz!Box im Internet erhält.",
+                  padding: fieldSpacing,),
+                InfoField('DynDNS-Benutzername', bot.dyndnsUser,
+                  help: "Nutzername für die DynDNS-Freige in Deiner Fritz!Box.",
+                  padding: fieldSpacing,),
+                InfoField('DynDNS-Kennwort', bot.dyndnsPassword,
+                  password: true,
+                  help: "Das Kennwort, dass Du für die DynDNS-Freigabe verwenden musst.",
+                  padding: fieldSpacing,),
+              ],
+
+              if (!internalDynDns)
+                Padding(
+                  padding: const EdgeInsets.only(top: fieldSpacing),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                        labelText: 'Host',
+                        helperText: "Der Host-Name, über den Deine Fritz!Box aus dem Internet erreichbar ist."
+                    ),
+                    initialValue: bot.host,
+                  ),
+                ),
+
+              const Padding(
+                padding: EdgeInsets.only(top: groupSpacing),
                 child: Group("SIP Settings"),
               ),
 
-              InfoField('User', bot.userName),
-              InfoField('Password', bot.password),
+              InfoField('User', bot.userName,
+                help: "Der Nutzername, der in der Fritz!Box für den Zugriff auf das Telefoniegerät eingerichtet sein muss.",),
+              InfoField('Password', bot.password,
+                password: true,
+                help: "Das Passwort, dass für den Zugriff auf das Telefoniegerät in der Fritz!Box vergeben sein muss.",
+                padding: fieldSpacing,),
             ],
           ),
         ),
@@ -146,10 +225,43 @@ class AnswerBotViewState extends State<AnswerBotView> {
     );
   }
 
-  Future<bool> enableAnswerBot(AnswerbotInfo bot) async {
-    const int maxCount = 20;
+  final int maxRetry = 20;
+
+  Future<bool> updateAnswerBot(AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
-    pd.show(max: maxCount, msg: 'Schalte Anrufbeantworter ein...');
+    pd.show(max: maxRetry, msg: 'Speichere Einstellungen...');
+
+    var botId = bot.id;
+    var response = await sendRequest(
+      UpdateAnswerBot(
+        id: botId,
+        enabled: bot.enabled,
+        preferIPv4: bot.preferIPv4,
+        minVotes: bot.minVotes,
+        wildcards: bot.wildcards,
+      ));
+
+    if (!context.mounted) return false;
+
+    if (response.statusCode != 200) {
+      pd.close();
+
+      showErrorDialog(context, response, 'Fehler beim Speichern der Einstellungen.',
+        "Speichern fehlgeschlagen: ${response.body}");
+      return false;
+    }
+
+    if (bot.enabled) {
+      return await waitForRegister(botId, pd, 'Neu einschalten nach Speichern fehlgeschlagen');
+    } else {
+      pd.close();
+      return false;
+    }
+  }
+
+  Future<bool> enableAnswerBot(AnswerbotInfo bot) async {
+    ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(max: maxRetry, msg: 'Schalte Anrufbeantworter ein...');
 
     var botId = bot.id;
     var response = await sendRequest(EnableAnswerBot(id: botId));
@@ -160,10 +272,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
       pd.close();
 
       showErrorDialog(context, response, 'Fehler beim Einschalten des Anrufbeantworters.',
-          "Kann nicht einschalten: ${response.body}");
+        "Kann nicht einschalten: ${response.body}");
       return false;
     }
 
+    return await waitForRegister(botId, pd, 'Einschalten des Anrufbeantworters fehlgeschlagen');
+  }
+
+  Future<bool> waitForRegister(int botId, ProgressDialog pd, String errorMessage) async {
     int sleep = 2500;
     int n = 0;
     while (true) {
@@ -172,22 +288,22 @@ class AnswerBotViewState extends State<AnswerBotView> {
             ..id=botId
       );
       if (!context.mounted) return false;
-
+    
       var responseCode = response.statusCode;
       if (responseCode == 200) {
         pd.close();
         return true;
       } else {
         var errorMessage = response.body;
-        if (responseCode != 409 || n++ == maxCount) {
+        if (responseCode != 409 || n++ == maxRetry) {
           pd.close();
-
-          showErrorDialog(context, response, 'Einschalten des Anrufbeantworters fehlgeschlagen',
+    
+          showErrorDialog(context, response, errorMessage,
               "Einschalten fehlgeschlagen: $errorMessage");
           return false;
         } else {
           await Future.delayed(Duration(milliseconds: sleep));
-
+    
           pd.update(value: n, msg: "$errorMessage Versuche erneut...");
         }
       }
@@ -235,6 +351,48 @@ class AnswerBotViewState extends State<AnswerBotView> {
       },
     );
   }
+}
+
+class SwitchField extends StatelessWidget {
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final String? help;
+
+  const SwitchField(this.label, {super.key, this.value = false, this.onChanged, this.help});
+
+  @override
+  Widget build(BuildContext context) {
+    var help = this.help;
+    var switchTextStyle = TextStyle(fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: help == null ?
+              Text(label, style: switchTextStyle,) :
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: switchTextStyle),
+                    Text(help)]),
+          ),
+
+          Padding(padding: const EdgeInsets.only(left: 8),
+            child: Switch(
+              thumbIcon: switchIcon,
+              value: value,
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
 }
 
 class Group extends StatelessWidget {

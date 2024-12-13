@@ -18,6 +18,9 @@ public class UpdateAnswerBot extends BotRequest {
 	/** @see #isEnabled() */
 	public static final String ENABLED__PROP = "enabled";
 
+	/** @see #isPreferIPv4() */
+	public static final String PREFER_IPV_4__PROP = "preferIPv4";
+
 	/** @see #getMinVotes() */
 	public static final String MIN_VOTES__PROP = "minVotes";
 
@@ -25,6 +28,8 @@ public class UpdateAnswerBot extends BotRequest {
 	public static final String WILDCARDS__PROP = "wildcards";
 
 	private boolean _enabled = false;
+
+	private boolean _preferIPv4 = false;
 
 	private int _minVotes = 0;
 
@@ -62,6 +67,26 @@ public class UpdateAnswerBot extends BotRequest {
 	/** Internal setter for {@link #isEnabled()} without chain call utility. */
 	protected final void internalSetEnabled(boolean value) {
 		_enabled = value;
+	}
+
+	/**
+	 * Whether to limit communication to IPv4.
+	 */
+	public final boolean isPreferIPv4() {
+		return _preferIPv4;
+	}
+
+	/**
+	 * @see #isPreferIPv4()
+	 */
+	public de.haumacher.phoneblock.ab.proto.UpdateAnswerBot setPreferIPv4(boolean value) {
+		internalSetPreferIPv4(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isPreferIPv4()} without chain call utility. */
+	protected final void internalSetPreferIPv4(boolean value) {
+		_preferIPv4 = value;
 	}
 
 	/**
@@ -118,6 +143,7 @@ public class UpdateAnswerBot extends BotRequest {
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			ENABLED__PROP, 
+			PREFER_IPV_4__PROP, 
 			MIN_VOTES__PROP, 
 			WILDCARDS__PROP));
 
@@ -130,6 +156,7 @@ public class UpdateAnswerBot extends BotRequest {
 	public Object get(String field) {
 		switch (field) {
 			case ENABLED__PROP: return isEnabled();
+			case PREFER_IPV_4__PROP: return isPreferIPv4();
 			case MIN_VOTES__PROP: return getMinVotes();
 			case WILDCARDS__PROP: return isWildcards();
 			default: return super.get(field);
@@ -140,6 +167,7 @@ public class UpdateAnswerBot extends BotRequest {
 	public void set(String field, Object value) {
 		switch (field) {
 			case ENABLED__PROP: internalSetEnabled((boolean) value); break;
+			case PREFER_IPV_4__PROP: internalSetPreferIPv4((boolean) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 			default: super.set(field, value); break;
@@ -158,6 +186,8 @@ public class UpdateAnswerBot extends BotRequest {
 		super.writeFields(out);
 		out.name(ENABLED__PROP);
 		out.value(isEnabled());
+		out.name(PREFER_IPV_4__PROP);
+		out.value(isPreferIPv4());
 		out.name(MIN_VOTES__PROP);
 		out.value(getMinVotes());
 		out.name(WILDCARDS__PROP);
@@ -168,6 +198,7 @@ public class UpdateAnswerBot extends BotRequest {
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case ENABLED__PROP: setEnabled(in.nextBoolean()); break;
+			case PREFER_IPV_4__PROP: setPreferIPv4(in.nextBoolean()); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 			default: super.readField(in, field);

@@ -176,7 +176,7 @@ public interface Users {
 	@Select("""
 			select 
 				s.ID, s.USERID, 
-				s.ENABLED, s.MIN_VOTES, s.WILDCARDS, 
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
 				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
 				s.REGISTERED, s.REGISTER_MSG, 
 				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
@@ -192,7 +192,7 @@ public interface Users {
 	@Select("""
 			select 
 				s.ID, s.USERID, 
-				s.ENABLED, s.MIN_VOTES, s.WILDCARDS, 
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
 				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
 				s.REGISTERED, s.REGISTER_MSG, 
 				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
@@ -208,12 +208,13 @@ public interface Users {
 	@Update("""
 			update ANSWERBOT_SIP s
 			set
+				s.PREFER_V4=#{preferIPv4},
 				s.MIN_VOTES=#{minVotes},
 				s.WILDCARDS=#{wildcards}
 			where
 				s.ID=#{id}
 			""")
-	void updateAnswerbot(long id, int minVotes, boolean wildcards);
+	void updateAnswerbot(long id, boolean preferIPv4, int minVotes, boolean wildcards);
 	
 	@Update("update ANSWERBOT_SIP set LAST_SUCCESS=#{lastSuccess}, REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id}")
 	int updateSipRegistration(long id, boolean registered, String message, long lastSuccess);
