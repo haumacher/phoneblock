@@ -24,6 +24,7 @@ import de.haumacher.phoneblock.db.DBService;
  */
 @WebServlet(urlPatterns = {
 	RegistrationServlet.REGISTER_WEB,
+	RegistrationServlet.REGISTER_MOBILE,
 })
 public class RegistrationServlet extends HttpServlet {
 
@@ -33,6 +34,8 @@ public class RegistrationServlet extends HttpServlet {
 	public static final String REGISTER_ERROR_ATTR = "message";
 
 	public static final String REGISTER_WEB = "/register-web";
+	
+	public static final String REGISTER_MOBILE = "/register-mobile";
 
 	private static final String PASSWORD_ATTR = "passwd";
 
@@ -111,6 +114,8 @@ public class RegistrationServlet extends HttpServlet {
 
 	private static String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			return "/mobile/response.jsp";
 		case REGISTER_WEB:
 		default:
 			return "/setup.jsp";
@@ -124,6 +129,8 @@ public class RegistrationServlet extends HttpServlet {
 
 	private String errorPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			return "/mobile/code.jsp";
 		case REGISTER_WEB:
 		default:
 			return "/signup-code.jsp";

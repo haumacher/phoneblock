@@ -25,6 +25,7 @@ import de.haumacher.phoneblock.util.ServletUtil;
  */
 @WebServlet(urlPatterns = {
 	EMailVerificationServlet.LOGIN_WEB,
+	EMailVerificationServlet.VERIFY_MOBILE,
 })
 public class EMailVerificationServlet extends HttpServlet {
 
@@ -39,6 +40,9 @@ public class EMailVerificationServlet extends HttpServlet {
 	public static final String VERIFY_ERROR_ATTR = "message";
 	
 	public static final String LOGIN_WEB = "/login-web";
+	
+	public static final String VERIFY_MOBILE = "/verify-mobile";
+	
 	
 	private static final Logger LOG = LoggerFactory.getLogger(EMailVerificationServlet.class);
 
@@ -92,6 +96,8 @@ public class EMailVerificationServlet extends HttpServlet {
 	 */
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+		case VERIFY_MOBILE: 
+			return "/mobile/login.jsp";
 		case LOGIN_WEB: 
 		default:
 			return "/login.jsp";
@@ -100,6 +106,8 @@ public class EMailVerificationServlet extends HttpServlet {
 
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+			case VERIFY_MOBILE: 
+				return "/mobile/code.jsp";
 			case LOGIN_WEB: 
 			default:
 				return "/signup-code.jsp"; 
