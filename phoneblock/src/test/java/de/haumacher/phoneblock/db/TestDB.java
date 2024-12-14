@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.db;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -30,6 +31,8 @@ import org.junit.jupiter.api.Test;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
+import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
@@ -63,6 +66,41 @@ class TestDB {
 		
 		_scheduler.contextDestroyed(null);
 		_scheduler = null;
+	}
+	
+	@Test
+	void testAuthToken() {
+		_db.createUser("test", "test1", "user1", "User 1");
+		UserSettings user = _db.getSettings("user1");
+
+		String token1 = _db.createLoginToken("user1", 1000, "creating-browser");
+		AuthToken authToken1 = _db.checkAuthToken(token1, 1001, "other-browser");
+		
+		assertEquals(authToken1.getUserId(), user.getId());
+		assertEquals(1000, authToken1.getLastAccess());
+		assertEquals("creating-browser", authToken1.getUserAgent());
+		assertTrue(authToken1.isImplicit());
+		assertTrue(authToken1.isAccessLogin());
+		
+		String token2 = _db.createLoginToken("user1", 1002, "creating-browser");
+		String token3 = _db.createLoginToken("user1", 1003, "creating-browser");
+		String token4 = _db.createLoginToken("user1", 1004, "creating-browser");
+		String token5 = _db.createLoginToken("user1", 1005, "creating-browser");
+		
+		assertNotNull(_db.checkAuthToken(token1, 1005, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token2, 1005, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token3, 1005, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token4, 1005, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token5, 1005, "login-browser"));
+		
+		String token6 = _db.createLoginToken("user1", 1006, "creating-browser");
+		
+		assertNull(_db.checkAuthToken(token1, 1006, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token2, 1006, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token3, 1006, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token4, 1006, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token5, 1006, "login-browser"));
+		assertNotNull(_db.checkAuthToken(token6, 1006, "login-browser"));
 	}
 
 	@Test

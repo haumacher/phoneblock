@@ -22,6 +22,7 @@ module de.haumacher.phoneblock {
 		de.haumacher.phoneblock.meta.plugins.MetaWerruft;
 	
 	exports de.haumacher.phoneblock.db to org.mybatis;
+	exports de.haumacher.phoneblock.db.settings to org.mybatis;
 	
 	requires de.haumacher.phoneblock.shared;
 	requires de.haumacher.phoneblock.ab;

@@ -7,11 +7,13 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 
 /**
  * Operations for user management.
@@ -34,6 +36,70 @@ public interface Users {
 	@Delete("delete from USERS where LOGIN=#{login}")
 	void deleteUser(String login);
 	
+	@Insert("""
+			insert into TOKENS (
+				USERID, CREATED, PWHASH, 
+				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
+				LASTACCESS, USERAGENT
+			)
+			values (
+				#{userId}, #{created}, #{pwHash}, 
+				#{implicit}, #{accessQuery}, #{accessDownload}, #{accessCarddav},#{accessRate},#{accessLogin},
+				#{lastAccess}, #{userAgent}
+			)
+			""")
+	@Options(useGeneratedKeys = true, keyColumn = "ID", keyProperty = "id")
+	void createAuthToken(AuthToken token);
+	
+	@Update("""
+			update TOKENS
+			set
+				LASTACCESS=#{lastAccess},
+				USERAGENT=#{userAgent}
+			where
+				ID=#{id}
+			""")
+	void updateAuthToken(long id, long lastAccess, String userAgent);
+
+	@Delete("""
+			delete from TOKENS
+			where ID=#{id}
+			""")
+	void invalidateAuthToken(long id);
+	
+	@Select("""
+			select ID 
+			from TOKENS
+			where
+				USERID=#{userId} and
+				IMPLICIT
+			order by LASTACCESS desc
+			offset 4 rows
+			""")
+	List<Long> getOutdatedLoginTokens(long userId);
+	
+	@Delete("""
+			<script>
+			delete from TOKENS
+			where ID in
+			    <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
+			""")
+	int deleteTokens(List<Long> ids);
+	
+	@Select("""
+			select
+				ID, 
+				USERID, CREATED, PWHASH, 
+				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
+				LASTACCESS, USERAGENT
+			from TOKENS
+			where ID=#{id}
+			""")
+	DBAuthToken getAuthToken(long id);
+
 	@Select("select count(1) from USERS")
 	int getUserCount();
 	

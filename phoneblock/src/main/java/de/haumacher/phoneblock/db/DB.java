@@ -3,6 +3,9 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -48,6 +51,8 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.msgbuf.binary.OctetDataReader;
+import de.haumacher.msgbuf.binary.OctetDataWriter;
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
@@ -59,6 +64,7 @@ import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
@@ -69,6 +75,8 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
  * The database abstraction layer.
  */
 public class DB {
+
+	private static final String TOKEN_VERSION = "pbt_";
 
 	private static final int MAX_COMMENT_LENGTH = 8192;
 
@@ -109,8 +117,6 @@ public class DB {
 	public static final int MIN_AGGREGATE_10 = 4;
 	
 	public static final int MIN_AGGREGATE_100 = 3;
-
-	private MessageDigest _sha256;
 
 	private final SecureRandom _rnd;
 	
@@ -153,12 +159,6 @@ public class DB {
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
-		
-		try {
-			_sha256 = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException ex) {
-			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
-		}
 		
 		 cleanup();
 
@@ -453,7 +453,102 @@ public class DB {
 		
 		return buffer.toString();
 	}
+	
+	public String createAuthToken(String login, AuthToken template) {
+		byte[] secret = new byte[16];
+		_rnd.nextBytes(secret);
+		
+		byte[] digest = sha256().digest(secret);
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
 
+			long userId = users.getUserId(login);
+			
+			template
+				.setUserId(userId)
+				.setPwHash(digest);
+			
+			List<Long> outdatedIds = users.getOutdatedLoginTokens(userId);
+			if (outdatedIds != null && !outdatedIds.isEmpty()) {
+				int tokens = users.deleteTokens(outdatedIds);
+				
+				LOG.info("Deleted {} outdated login tokens for user {}.", tokens, userId);
+			}
+			
+			users.createAuthToken(template);
+			session.commit();
+		}
+		
+		try {
+			ByteArrayOutputStream tokenStream = new ByteArrayOutputStream();
+			OctetDataWriter writer = new OctetDataWriter(tokenStream);
+			writer.beginObject();
+			writer.name(1);
+			writer.value(template.getId());
+			writer.name(2);
+			writer.value(secret);
+			writer.endObject();
+			return TOKEN_VERSION + Base64.getEncoder().withoutPadding().encodeToString(tokenStream.toByteArray());
+		} catch (IOException ex) {
+			throw new IOError(ex);
+		}
+	}
+	
+	public String createLoginToken(String login, long now, String userAgent) {
+		return createAuthToken(login, AuthToken.create().setCreated(now).setLastAccess(now).setImplicit(true).setAccessLogin(true).setUserAgent(userAgent));
+	}
+	
+	public AuthToken checkAuthToken(String token, long now, String userAgent) {
+		if (!token.startsWith(TOKEN_VERSION)) {
+			return null;
+		}
+		
+		try {
+			byte[] tokenBytes = Base64.getDecoder().decode(token.substring(TOKEN_VERSION.length()));
+			ByteArrayInputStream in = new ByteArrayInputStream(tokenBytes);
+			OctetDataReader reader = new OctetDataReader(in);
+			reader.beginObject();
+			reader.nextName();
+			long id = reader.nextLong();
+			reader.nextName();
+			byte[] secret = reader.nextBinary();
+			reader.endObject();
+
+			try (SqlSession session = openSession()) {
+				Users users = session.getMapper(Users.class);
+				
+				DBAuthToken result = users.getAuthToken(id);
+				if (result == null) {
+					LOG.info("Outdated authorization token received: {}", token);
+					return null;
+				}
+				
+				byte[] expectedHash = result.getPwHash();
+				byte[] digest = sha256().digest(secret);
+				
+				if (!Arrays.equals(digest, expectedHash)) {
+					LOG.info("Invalid authorization token received for user {}: {}", result.getUserId(), token);
+					return null;
+				}
+				
+				users.updateAuthToken(result.getId(), now, userAgent);
+				
+				return result;
+			}
+		} catch (IOException e) {
+			LOG.info("Failed to parse authorization token: {}", token);
+			return null;
+		}
+	}
+
+	public void invalidateAuthToken(long id) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.invalidateAuthToken(id);
+			session.commit();
+		}
+	}
+	
 	/** 
 	 * Creates a unique random (numeric) ID with the given length.
 	 */
@@ -1255,7 +1350,7 @@ public class DB {
 	}
 
 	private byte[] pwhash(String passwd) {
-		return _sha256.digest(passwd.getBytes(StandardCharsets.UTF_8));
+		return sha256().digest(passwd.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/** 
@@ -1595,6 +1690,14 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return nonNull(reports.getTotalSearches());
+		}
+	}
+
+	private MessageDigest sha256() {
+		try {
+			return MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException ex) {
+			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
 	}
 	

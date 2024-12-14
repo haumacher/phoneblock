@@ -30,6 +30,45 @@ message UserSettings {
 	long lastAccess;
 }
 
+/** A user's authorization token. */
+message AuthToken {
+	/** The token ID */
+	long id;
+	
+	/** The ID of the user that owns this token. */
+	long userId;
+	
+	/** Time when this token was created */
+	long created;
+	
+	/** The hash of this token's secret. */
+	bytes pwHash;
+	
+	/** Whether this is an implicitly created token for the "stay logged-in" functionality. */
+	boolean implicit;
+	
+	/** Whether this token has access to the query API. */
+	boolean accessQuery;
+
+	/** Whether this token has access to the blocklist download API. */
+	boolean accessDownload;
+	
+	/** Whether this token has access to the CARDDAV synchronization API. */
+	boolean accessCarddav;
+	
+	/** Whether this token has access to the rate API. */
+	boolean accessRate;
+	
+	/** Whether this token is allowed to log-in to the website. */
+	boolean accessLogin;
+	
+	/** When this token was used or updated the last time. */
+	long lastAccess;
+	
+	/** The user agent that used this token the last time. */
+	string userAgent;
+}
+
 /** Common options of answer bot settings. */
 abstract message AnswerBotSetting {
 	/** ID of the answer bot. */
