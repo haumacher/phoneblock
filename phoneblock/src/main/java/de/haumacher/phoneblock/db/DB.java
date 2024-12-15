@@ -119,7 +119,7 @@ public class DB {
 	public static final int MIN_AGGREGATE_100 = 3;
 
 	/**
-	 * One minute in milliseconds.
+	 * One hour in milliseconds.
 	 */
 	public static final long RATE_LIMIT_MS = 1000*60*60;
 
