@@ -99,6 +99,8 @@ class TestDB {
 		// Skip rate limit.
 		time += DB.RATE_LIMIT_MS;
 		
+		String oldToken1 = token1.getToken();
+		
 		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "login-browser", true));
 		assertNotNull(token2 = _db.checkAuthToken(token2.getToken(), time++, "login-browser", true));
 		assertNotNull(token3 = _db.checkAuthToken(token3.getToken(), time++, "login-browser", true));
@@ -106,6 +108,7 @@ class TestDB {
 		assertNotNull(token5 = _db.checkAuthToken(token5.getToken(), time++, "login-browser", true));
 		
 		assertNotEquals(origToken1, token1.getToken());
+		assertNull(_db.checkAuthToken(oldToken1, time, "bad-browser", false));
 		
 		AuthToken token6 = _db.createLoginToken("user1", time++, "creating-browser");
 		

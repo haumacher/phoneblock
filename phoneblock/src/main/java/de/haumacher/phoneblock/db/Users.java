@@ -76,6 +76,12 @@ public interface Users {
 			""")
 	void invalidateAuthToken(long id);
 	
+	@Delete("""
+			delete from TOKENS
+			where USERID=#{userId}
+			""")
+	void invalidateAllTokens(long userId);
+	
 	@Select("""
 			select ID 
 			from TOKENS

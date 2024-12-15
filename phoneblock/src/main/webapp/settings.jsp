@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.PBLogoutFilter"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
@@ -283,6 +284,33 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 					<i class="fa-solid fa-eraser"></i>
 			    </span>
 				<span>Passwort zurücksetzen</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+<nav class="panel is-warning">
+	<p class="panel-heading"><a href="#logoutForm" data-action="collapse"><i class="fa-solid fa-right-from-bracket"></i> <span>An allen Geräten abmelden</span></a></p>
+	<div id="logoutForm" class="is-collapsible">
+		<form action="<%= request.getContextPath() %>/logout?url=<%=request.getContextPath()%>/&all=true" method="post" enctype="application/x-www-form-urlencoded">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p>
+	  			Meldet Dich bei allen Geräten ab, bei denen Du beim Login die Option "Auf diesem Gerät angemeldet bleiben" 
+	  			aktiviert hast. Bei Deinem nächsten Besuch musst Du Dich auf allen Geräten erneut anmelden. Nutze diese 
+	  			Abmelden-Funktion, wenn Du aus Versehen auf einem öffentlichen PC die Funktion "angemeldet bleiben"
+	  			aktiviert hast.
+	  			</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-right-from-bracket"></i>
+			    </span>
+				<span>Überall abmelden</span>
 			</button>
   		</div>
   		</form>

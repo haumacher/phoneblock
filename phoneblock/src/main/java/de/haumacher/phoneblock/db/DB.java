@@ -579,6 +579,7 @@ public class DB {
 					result.setLastAccess(now);
 
 					if (renew) {
+						LOG.info("Renewing autorization token for user {}.", result.getUserName());
 						renewToken(users, result);
 					}
 					
@@ -597,10 +598,12 @@ public class DB {
 	private void renewToken(Users users, DBAuthToken authorization) throws IOError {
 		byte[] newSecret = createSecret();
 		byte[] newHash = sha256().digest(newSecret);
-		users.updateAuthTokenSecret(authorization.getId(), newHash);
 		
 		String newToken = createToken(authorization, newSecret);
+		authorization.setPwHash(newHash);
 		authorization.setToken(newToken);
+
+		users.updateAuthTokenSecret(authorization.getId(), newHash);
 	}
 
 	public void invalidateAuthToken(long id) {
@@ -608,6 +611,18 @@ public class DB {
 			Users users = session.getMapper(Users.class);
 			users.invalidateAuthToken(id);
 			session.commit();
+		}
+	}
+	
+	public void logoutAll(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			Long userId = users.getUserId(login);
+			if (userId != null) {
+				users.invalidateAllTokens(userId.longValue());
+				session.commit();
+			}
 		}
 	}
 	
@@ -1762,5 +1777,5 @@ public class DB {
 			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
 	}
-	
+
 }
