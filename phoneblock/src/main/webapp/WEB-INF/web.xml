@@ -24,7 +24,7 @@
 
 	<filter>
 		<filter-name>logoutFilter</filter-name>
-		<filter-class>org.pac4j.jee.filter.LogoutFilter</filter-class>
+		<filter-class>de.haumacher.phoneblock.app.PBLogoutFilter</filter-class>
 		
 		<init-param>
 			<param-name>destroySession</param-name>

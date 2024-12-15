@@ -63,4 +63,5 @@ module de.haumacher.phoneblock {
 	requires api;
 	requires service;
 	requires org.tinylog.api;
+	requires jakartaee.pac4j;
 }

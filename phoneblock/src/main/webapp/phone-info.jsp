@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.api.model.PhoneInfo"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.UIProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
@@ -22,18 +23,17 @@
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="de.haumacher.phoneblock.db.DB"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
-<%@page import="de.haumacher.phoneblock.app.api.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <%
 	PhoneNumer analysis = (PhoneNumer) request.getAttribute("number");
-	SpamReport info = (SpamReport) request.getAttribute("info");
+	PhoneInfo info = (PhoneInfo) request.getAttribute("info");
 	Rating rating = (Rating) request.getAttribute("rating");
 	List<String> relatedNumbers = (List<String>) request.getAttribute("relatedNumbers");
 	Map<Rating, Integer> ratings = (Map<Rating, Integer>) request.getAttribute("ratings");
-	List<? extends SearchInfo> searches = (List<? extends SearchInfo>) request.getAttribute("searches");
+	List<Integer> searches = (List<Integer>) request.getAttribute("searches");
 	
 	boolean thanks = request.getAttribute("thanks") != null;
 	
@@ -352,7 +352,7 @@
 
 		boolean first = true;
 
-		for (SearchInfo r : searches) {
+		for (Integer r : searches) {
 			if (first) {
 				first = false;
 			} else {
@@ -361,7 +361,7 @@
 			}
 			labels.append(fmt.format(date.getTime()));
 			date.add(Calendar.DAY_OF_MONTH, 1);
-			data.append(r.getCount());
+			data.append(r);
 		}
 	%>
 	<div id="searches-data" searches-labels="<%=labels.toString()%>" searches-dataset="<%=data.toString()%>">

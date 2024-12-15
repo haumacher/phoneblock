@@ -38,6 +38,9 @@ message AuthToken {
 	/** The ID of the user that owns this token. */
 	long userId;
 	
+	/** The login name of the user that owns this token. */
+	string userName;
+	
 	/** Time when this token was created */
 	long created;
 	
@@ -67,6 +70,9 @@ message AuthToken {
 	
 	/** The user agent that used this token the last time. */
 	string userAgent;
+	
+	/** The encoded token that must be used by the client for authorization. */
+	string token;
 }
 
 /** Common options of answer bot settings. */

@@ -112,11 +112,16 @@ public class DB {
 	private SqlSessionFactory _sessionFactory;
 	private DataSource _dataSource;
 
-	private static final String BASIC_PREFIX = "Basic ";
+	private static final String BASIC_AUTH_PREFIX = "Basic ";
 
 	public static final int MIN_AGGREGATE_10 = 4;
 	
 	public static final int MIN_AGGREGATE_100 = 3;
+
+	/**
+	 * One minute in milliseconds.
+	 */
+	public static final long RATE_LIMIT_MS = 1000*60*60;
 
 	private final SecureRandom _rnd;
 	
@@ -454,15 +459,20 @@ public class DB {
 		return buffer.toString();
 	}
 	
-	public String createAuthToken(String login, AuthToken template) {
-		byte[] secret = new byte[16];
-		_rnd.nextBytes(secret);
-		
+	/**
+	 * Creates a persistent authorization token.
+	 * 
+	 * <p>
+	 * Note: The given template is completed with user ID, password hash, and token.
+	 * </p>
+	 */
+	public void createAuthToken(AuthToken template) {
+		byte[] secret = createSecret();
 		byte[] digest = sha256().digest(secret);
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 
-			long userId = users.getUserId(login);
+			long userId = users.getUserId(template.getUserName());
 			
 			template
 				.setUserId(userId)
@@ -479,6 +489,11 @@ public class DB {
 			session.commit();
 		}
 		
+		String token = createToken(template, secret);
+		template.setToken(token);
+	}
+
+	private String createToken(AuthToken template, byte[] secret) throws IOError {
 		try {
 			ByteArrayOutputStream tokenStream = new ByteArrayOutputStream();
 			OctetDataWriter writer = new OctetDataWriter(tokenStream);
@@ -493,12 +508,34 @@ public class DB {
 			throw new IOError(ex);
 		}
 	}
-	
-	public String createLoginToken(String login, long now, String userAgent) {
-		return createAuthToken(login, AuthToken.create().setCreated(now).setLastAccess(now).setImplicit(true).setAccessLogin(true).setUserAgent(userAgent));
+
+	private byte[] createSecret() {
+		byte[] secret = new byte[16];
+		_rnd.nextBytes(secret);
+		return secret;
 	}
 	
-	public AuthToken checkAuthToken(String token, long now, String userAgent) {
+	public AuthToken createLoginToken(String login, long now, String userAgent) {
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent);
+		createAuthToken(authorization);
+		return authorization;
+	}
+
+	public AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
+		return AuthToken.create()
+			.setUserName(login)
+			.setCreated(now)
+			.setLastAccess(now)
+			.setImplicit(true)
+			.setAccessLogin(true)
+			.setUserAgent(nonNullUA(userAgent));
+	}
+	
+	private String nonNullUA(String userAgent) {
+		return userAgent == null ? "-" : userAgent;
+	}
+
+	public AuthToken checkAuthToken(String token, long now, String userAgent, boolean renew) {
 		if (!token.startsWith(TOKEN_VERSION)) {
 			return null;
 		}
@@ -531,7 +568,22 @@ public class DB {
 					return null;
 				}
 				
-				users.updateAuthToken(result.getId(), now, userAgent);
+				result.setUserName(users.getUserName(result.getUserId()));
+				
+				// Remember token, since an update is sent to the client.
+				result.setToken(token);
+				
+				// Rate limit DB modification.
+				if (now - result.getLastAccess() > RATE_LIMIT_MS) {
+					users.updateAuthToken(result.getId(), now, userAgent);
+					result.setLastAccess(now);
+
+					if (renew) {
+						renewToken(users, result);
+					}
+					
+					session.commit();
+				}
 				
 				return result;
 			}
@@ -539,6 +591,16 @@ public class DB {
 			LOG.info("Failed to parse authorization token: {}", token);
 			return null;
 		}
+	}
+
+	/** Changes the secret to invalidate the old token and exchange it with a new token. */
+	private void renewToken(Users users, DBAuthToken authorization) throws IOError {
+		byte[] newSecret = createSecret();
+		byte[] newHash = sha256().digest(newSecret);
+		users.updateAuthTokenSecret(authorization.getId(), newHash);
+		
+		String newToken = createToken(authorization, newSecret);
+		authorization.setToken(newToken);
 	}
 
 	public void invalidateAuthToken(long id) {
@@ -1278,8 +1340,8 @@ public class DB {
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
 	public String basicAuth(String authHeader) throws IOException {
-		if (authHeader.startsWith(BASIC_PREFIX)) {
-			String credentials = authHeader.substring(BASIC_PREFIX.length());
+		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
+			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
 			String decoded = new String(decodedBytes, StandardCharsets.UTF_8);
 			int sepIndex = decoded.indexOf(':');

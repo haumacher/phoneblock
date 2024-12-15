@@ -60,6 +60,15 @@ public interface Users {
 				ID=#{id}
 			""")
 	void updateAuthToken(long id, long lastAccess, String userAgent);
+	
+	@Update("""
+			update TOKENS
+			set
+				PWHASH=#{pwHash}
+			where
+				ID=#{id}
+			""")
+	void updateAuthTokenSecret(long id, byte[] pwHash);
 
 	@Delete("""
 			delete from TOKENS
@@ -123,6 +132,9 @@ public interface Users {
 
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
+	
+	@Select("select LOGIN from USERS where ID=#{userId}")
+	String getUserName(long userId);
 	
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where ID=#{userId}")
 	DBUserSettings getSettingsById(long userId);

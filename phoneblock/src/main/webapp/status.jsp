@@ -6,7 +6,6 @@
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
-<%@page import="de.haumacher.phoneblock.app.api.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.util.List"%>

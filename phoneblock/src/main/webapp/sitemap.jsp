@@ -9,7 +9,6 @@
 %><%@page import="java.util.List"
 %><%@page import="de.haumacher.phoneblock.db.DB"
 %><%@page import="de.haumacher.phoneblock.db.DBService"
-%><%@page import="de.haumacher.phoneblock.app.api.model.SpamReport"
 %>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>

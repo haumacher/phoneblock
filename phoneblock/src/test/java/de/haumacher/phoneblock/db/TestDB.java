@@ -71,36 +71,50 @@ class TestDB {
 	@Test
 	void testAuthToken() {
 		_db.createUser("test", "test1", "user1", "User 1");
-		UserSettings user = _db.getSettings("user1");
 
-		String token1 = _db.createLoginToken("user1", 1000, "creating-browser");
-		AuthToken authToken1 = _db.checkAuthToken(token1, 1001, "other-browser");
+		long time = 1000;
+		final long createTime = time;
 		
-		assertEquals(authToken1.getUserId(), user.getId());
-		assertEquals(1000, authToken1.getLastAccess());
-		assertEquals("creating-browser", authToken1.getUserAgent());
-		assertTrue(authToken1.isImplicit());
-		assertTrue(authToken1.isAccessLogin());
+		AuthToken token1 = _db.createLoginToken("user1", time++, "creating-browser");
 		
-		String token2 = _db.createLoginToken("user1", 1002, "creating-browser");
-		String token3 = _db.createLoginToken("user1", 1003, "creating-browser");
-		String token4 = _db.createLoginToken("user1", 1004, "creating-browser");
-		String token5 = _db.createLoginToken("user1", 1005, "creating-browser");
+		// Skip rate limit.
+		time += DB.RATE_LIMIT_MS;
 		
-		assertNotNull(_db.checkAuthToken(token1, 1005, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token2, 1005, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token3, 1005, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token4, 1005, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token5, 1005, "login-browser"));
+		final String origToken1 = token1.getToken();
+		final long checkTime = time;
+		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "other-browser", true));
 		
-		String token6 = _db.createLoginToken("user1", 1006, "creating-browser");
+		assertEquals(token1.getUserName(), "user1");
+		assertEquals(createTime, token1.getCreated());
+		assertEquals(checkTime, token1.getLastAccess());
+		assertEquals("creating-browser", token1.getUserAgent());
+		assertTrue(token1.isImplicit());
+		assertTrue(token1.isAccessLogin());
 		
-		assertNull(_db.checkAuthToken(token1, 1006, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token2, 1006, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token3, 1006, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token4, 1006, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token5, 1006, "login-browser"));
-		assertNotNull(_db.checkAuthToken(token6, 1006, "login-browser"));
+		AuthToken token2 = _db.createLoginToken("user1", time++, "creating-browser");
+		AuthToken token3 = _db.createLoginToken("user1", time++, "creating-browser");
+		AuthToken token4 = _db.createLoginToken("user1", time++, "creating-browser");
+		AuthToken token5 = _db.createLoginToken("user1", time++, "creating-browser");
+		
+		// Skip rate limit.
+		time += DB.RATE_LIMIT_MS;
+		
+		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "login-browser", true));
+		assertNotNull(token2 = _db.checkAuthToken(token2.getToken(), time++, "login-browser", true));
+		assertNotNull(token3 = _db.checkAuthToken(token3.getToken(), time++, "login-browser", true));
+		assertNotNull(token4 = _db.checkAuthToken(token4.getToken(), time++, "login-browser", true));
+		assertNotNull(token5 = _db.checkAuthToken(token5.getToken(), time++, "login-browser", true));
+		
+		assertNotEquals(origToken1, token1.getToken());
+		
+		AuthToken token6 = _db.createLoginToken("user1", time++, "creating-browser");
+		
+		assertNull(   _db.checkAuthToken(token1.getToken(), time++, "login-browser", false));
+		assertNotNull(_db.checkAuthToken(token2.getToken(), time++, "login-browser", false));
+		assertNotNull(_db.checkAuthToken(token3.getToken(), time++, "login-browser", false));
+		assertNotNull(_db.checkAuthToken(token4.getToken(), time++, "login-browser", false));
+		assertNotNull(_db.checkAuthToken(token5.getToken(), time++, "login-browser", false));
+		assertNotNull(_db.checkAuthToken(token6.getToken(), time++, "login-browser", false));
 	}
 
 	@Test
