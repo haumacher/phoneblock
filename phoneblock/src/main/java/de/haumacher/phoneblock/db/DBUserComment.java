@@ -14,7 +14,7 @@ public class DBUserComment extends UserComment {
 	/** 
 	 * Creates a {@link DBUserComment}.
 	 */
-	public DBUserComment(String id, String phone, Rating rating, String comment, String service, long created, int up, int down) {
+	public DBUserComment(String id, String phone, Rating rating, String comment, String service, long created, int up, int down, Long userId) {
 		setId(id);
 		setPhone(phone);
 		setRating(rating);
@@ -23,6 +23,7 @@ public class DBUserComment extends UserComment {
 		setCreated(created);
 		setUp(up);
 		setDown(down);
+		setUserId(userId);
 	}
 	
 }

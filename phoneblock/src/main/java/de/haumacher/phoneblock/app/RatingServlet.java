@@ -57,33 +57,12 @@ public class RatingServlet extends HttpServlet {
 		if (session.getAttribute(ratingAttr) == null) {
 			if (ratingName != null || comment != null) {
 				Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
+				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
+
 				DB db = DBService.getInstance();
-				db.addRating(phoneId, rating, comment, System.currentTimeMillis());
+				db.addRating(userName, phoneId, rating, comment, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
-				
-				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
-				if (userName != null) {
-					try (SqlSession tx = db.openSession()) {
-						Users users = tx.getMapper(Users.class);
-						Long userId = users.getUserId(userName);
-						if (userId != null) {
-							BlockList blocklist = tx.getMapper(BlockList.class);
-							long owner = userId.longValue();
-							if (rating == Rating.A_LEGITIMATE) {
-								blocklist.addExclude(owner, phoneId);
-								blocklist.removePersonalization(owner, phoneId);
-							} else {
-								if (blocklist.getPersonalization(owner, phoneId) == null) {
-									blocklist.addPersonalization(owner, phoneId);
-								}
-								blocklist.removeExclude(owner, phoneId);
-							}
-							
-							tx.commit();
-						}
-					}
-				}
 				
 				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}

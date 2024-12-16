@@ -180,6 +180,10 @@ public abstract class LoginFilter implements Filter {
 		}
 	}
 
+	public static String getAuthenticatedUser(HttpServletRequest req) {
+		return (String) req.getAttribute(AUTHENTICATED_USER_ATTR);
+	}
+	
 	/** 
 	 * The authenticated user of the given session.
 	 */

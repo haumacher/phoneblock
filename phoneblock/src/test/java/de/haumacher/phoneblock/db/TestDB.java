@@ -130,12 +130,12 @@ class TestDB {
 		_db.updateHistory(30, now++);
 		
 		// Yesterday
-		_db.addRating("0", Rating.C_PING, null, now++);
-		_db.addRating("1", Rating.C_PING, null, now++);
-		_db.addRating("2", Rating.C_PING, null, now++);
-		_db.addRating("3", Rating.C_PING, null, now++);
-		_db.addRating("4", Rating.C_PING, null, now++);
-		_db.addRating("5", Rating.C_PING, null, now++);
+		_db.addRating(null, "0", Rating.C_PING, null, now++);
+		_db.addRating(null, "1", Rating.C_PING, null, now++);
+		_db.addRating(null, "2", Rating.C_PING, null, now++);
+		_db.addRating(null, "3", Rating.C_PING, null, now++);
+		_db.addRating(null, "4", Rating.C_PING, null, now++);
+		_db.addRating(null, "5", Rating.C_PING, null, now++);
 		
 		_db.addSearchHit("5", now++);
 		_db.addSearchHit("0", now++);
@@ -217,11 +217,11 @@ class TestDB {
 			
 			assertEquals(new HashSet<>(List.of("123", "345", "678")), blockList.getExcluded(1));
 			
-			blockList.removeExclude(1, "345");
+			blockList.removePersonalization(1, "345");
 			
 			assertEquals(new HashSet<>(List.of("123", "678")), blockList.getExcluded(1));
 			
-			blockList.removeExclude(2, "123");
+			blockList.removePersonalization(2, "123");
 			
 			assertEquals(new HashSet<>(List.of("123", "678")), blockList.getExcluded(1));
 			
@@ -284,13 +284,13 @@ class TestDB {
 	void testRatings() {
 		long now = 1;
 		
-		_db.addRating("123", Rating.G_FRAUD, null, now++);
-		_db.addRating("123", Rating.B_MISSED, null, now++);
-		_db.addRating("123", Rating.B_MISSED, null, now++);
-		_db.addRating("123", Rating.C_PING, null, now++);
-		_db.addRating("123", Rating.D_POLL, null, now++);
-		_db.addRating("123", Rating.E_ADVERTISING, null, now++);
-		_db.addRating("123", Rating.F_GAMBLE, null, now++);
+		_db.addRating(null, "123", Rating.G_FRAUD, null, now++);
+		_db.addRating(null, "123", Rating.B_MISSED, null, now++);
+		_db.addRating(null, "123", Rating.B_MISSED, null, now++);
+		_db.addRating(null, "123", Rating.C_PING, null, now++);
+		_db.addRating(null, "123", Rating.D_POLL, null, now++);
+		_db.addRating(null, "123", Rating.E_ADVERTISING, null, now++);
+		_db.addRating(null, "123", Rating.F_GAMBLE, null, now++);
 
 		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
 		
@@ -298,7 +298,7 @@ class TestDB {
 		
 		assertEquals(Rating.G_FRAUD, _db.getRating("123"));
 		
-		_db.addRating("123", Rating.E_ADVERTISING, null, now++);
+		_db.addRating(null, "123", Rating.E_ADVERTISING, null, now++);
 		
 		assertEquals(Rating.E_ADVERTISING, _db.getRating("123"));
 	}
@@ -427,6 +427,28 @@ class TestDB {
 			assertEquals(votes100, aggregation100.getVotes());
 			
 		}
+	}
+	
+	@Test
+	void testRating() {
+		_db.createUser("domain", "ext-1", "user-1", "User 1");
+		
+		long time = 1;
+		
+		_db.addRating("user-1", "0123456789", Rating.B_MISSED, "Don't know.", time++);
+		_db.addRating("user-1", "0123456789", Rating.C_PING, "Did not answer.", time++);
+		
+		// Only one rating recorded.
+		assertEquals(1, _db.getVotesFor("0123456789"));
+		
+		// Both comments have been recorded.
+		assertEquals(2, _db.getComments("0123456789").size());
+		
+		_db.addRating("user-1", "0123456789", Rating.A_LEGITIMATE, "Was my uncle.", time++);
+
+		assertEquals(0, _db.getVotesFor("0123456789"));
+
+		assertEquals(3, _db.getComments("0123456789").size());
 	}
 
 	private DataSource createTestDataSource() {

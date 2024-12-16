@@ -799,24 +799,56 @@ public class DB {
 	/** 
 	 * Adds a rating for a phone number.
 	 *
+	 * @param userName The login name of the user creating the rating, or <code>null</code> if the rating is anonymous.
 	 * @param phone The phone number to rate.
 	 * @param rating The user rating.
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
 	 */
-	public void addRating(String phone, Rating rating, String comment, long now) {
+	public void addRating(String userName, String phone, Rating rating, String comment, long now) {
 		boolean updateRequired;
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
+			boolean recordVote = true;
+			Long userIdOptional = null;
+			if (userName != null) {
+				Users users = session.getMapper(Users.class);
+				userIdOptional = users.getUserId(userName);
+				if (userIdOptional == null) {
+					LOG.error("User ID not found for: {}", userName);
+					return;
+				}
+				
+				BlockList blocklist = session.getMapper(BlockList.class);
+				long userId = userIdOptional.longValue();
+				
+				Boolean state = blocklist.getPersonalizationState(userId, phone);
+				
+				boolean block = rating != Rating.A_LEGITIMATE;
+				
+				if (state != null && block == state.booleanValue()) {
+					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
+					recordVote = false;
+				} else {
+					blocklist.removePersonalization(userId, phone);
+					if (block) {
+						blocklist.addPersonalization(userId, phone);
+					} else {
+						blocklist.addExclude(userId, phone);
+					}
+				}
+			}
+			
 			UserComment userComment = UserComment.create()
 				.setId(UUID.randomUUID().toString())
+				.setUserId(userIdOptional)
 				.setPhone(phone)
 				.setRating(rating)
 				.setComment(comment)
 				.setCreated(now);
 			
-			updateRequired = addRating(reports, userComment);
+			updateRequired = addRating(reports, userComment, recordVote);
 			
 			session.commit();
 		}
@@ -825,13 +857,21 @@ public class DB {
 			_indexer.publishUpdate(phone);
 		}
 	}
+	
+	public List<? extends UserComment> getComments(String phone) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getComments(phone);
+		}
+	} 
 
 	/** 
 	 * Adds a rating for a phone number without DB commit.
+	 * @param recordVote 
 	 * 
 	 * @return Whether an index update is required.
 	 */
-	public boolean addRating(SpamReports reports, UserComment comment) {
+	public boolean addRating(SpamReports reports, UserComment comment, boolean recordVote) {
 		boolean updateRequired = false;
 		
 		String phone = comment.getPhone();
@@ -843,22 +883,24 @@ public class DB {
 				// Limit to DB constraint.
 				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
 			}
-			reports.addComment(comment.getId(), phone, rating, commentText, comment.getService(), created);
+			reports.addComment(comment.getId(), phone, rating, commentText, comment.getService(), created, comment.getUserId());
 			updateRequired = true;
 		}
 
-		updateRequired |= processVotes(reports, phone, Ratings.getVotes(rating), created);
-		if (rating != Rating.B_MISSED) {
-			Rating oldRating = rating(reports, phone);
+		if (recordVote) {
+			updateRequired |= processVotes(reports, phone, Ratings.getVotes(rating), created);
+			if (rating != Rating.B_MISSED) {
+				Rating oldRating = rating(reports, phone);
+				
+				// Record rating.
+				reports.incRating(phone, rating, created);
+				
+				Rating newRating = rating(reports, phone);
+				updateRequired |= oldRating != newRating;
+			}
 			
-			// Record rating.
-			reports.incRating(phone, rating, created);
-			
-			Rating newRating = rating(reports, phone);
-			updateRequired |= oldRating != newRating;
+			pingRelatedNumbers(reports, phone, created);
 		}
-		
-		pingRelatedNumbers(reports, phone, created);
 		
 		return updateRequired;
 	}
@@ -1436,6 +1478,7 @@ public class DB {
 	 * @param principal The current user.
 	 * @param phoneText The phone number to explicitly allow.
 	 */
+	@Deprecated
 	public void deleteEntry(String principal, String phoneText) {
 		String phoneId = NumberAnalyzer.toId(phoneText);
 		if (phoneId == null) {
@@ -1449,16 +1492,15 @@ public class DB {
 			
 			long currentUser = users.getUserId(principal);
 			
-			boolean wasAddedBefore = blockList.removePersonalization(currentUser, phoneId);
+			Boolean stateBefore = blockList.getPersonalizationState(currentUser, phoneId);
 
-			// For safety reasons, to prevent primary key constraint violation.
-			blockList.removeExclude(currentUser, phoneId);
-			
+			blockList.removePersonalization(currentUser, phoneId);
 			blockList.addExclude(currentUser, phoneId);
 			
-			if (wasAddedBefore) {
-				// Note: Only a spam reporter may revoke his vote. This prevents vandals from deleting the whole list.
-				processVotesAndPublish(spamreport, phoneId, -2, System.currentTimeMillis());
+			if (stateBefore == null || stateBefore.booleanValue()) {
+				// Do not add positive votes, if the number was voted positive before. This prevents vandals 
+				// from deleting the whole list by repeatedly adding numbers to the exclude list.
+				processVotesAndPublish(spamreport, phoneId, -1, System.currentTimeMillis());
 			}
 			
 			session.commit();

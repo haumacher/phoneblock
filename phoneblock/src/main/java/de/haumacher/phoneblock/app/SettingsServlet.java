@@ -110,7 +110,6 @@ public class SettingsServlet extends HttpServlet {
 							}
 							
 							blocklist.removePersonalization(owner, phone);
-							blocklist.removeExclude(owner, phone);
 							blocklist.addExclude(owner, phone);
 						}
 					}
@@ -129,7 +128,7 @@ public class SettingsServlet extends HttpServlet {
 							continue;
 						}
 						
-						blocklist.removeExclude(owner, phone);
+						blocklist.removePersonalization(owner, phone);
 					}
 				}
 			}

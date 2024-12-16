@@ -86,7 +86,7 @@ public class SearchOperation {
 							comment.setId(UUID.randomUUID().toString());
 							_comments.add(comment);
 							
-							db.addRating(mapper, comment);
+							db.addRating(mapper, comment, true);
 							commentCnt++;
 							indexUpdated = true;
 						}
