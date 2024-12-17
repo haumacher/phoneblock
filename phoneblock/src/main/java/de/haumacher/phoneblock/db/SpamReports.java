@@ -24,14 +24,16 @@ public interface SpamReports {
 	Long getLastUpdate();
 	
 	@Insert("""
-			insert into NUMBERS (PHONE, VOTES, UPDATED, ADDED)
-			values (#{phone}, #{votes}, #{now}, #{now})
+			insert into NUMBERS (PHONE, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED)
+			values (#{phone}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now})
 			""")
 	void addReport(String phone, int votes, long now);
 	
 	@Update("""
 			update NUMBERS set 
-				VOTES = VOTES + #{delta}, 
+				VOTES = VOTES + #{delta},
+				DOWN_VOTES = DOWN_VOTES + CASEWHEN (#{delta} > 0, #{delta}, 0),
+				UP_VOTES = UP_VOTES + CASEWHEN (#{delta} < 0, 0 - #{delta}, 0),
 				UPDATED = GREATEST(UPDATED, #{now}),
 				LASTPING = GREATEST(LASTPING, #{now})
 			where PHONE = #{phone}
@@ -102,7 +104,7 @@ public interface SpamReports {
 			""")
 	Integer getVotes(String phone);
 
-	@Select("SELECT SUM(s.VOTES) FROM NUMBERS s")
+	@Select("SELECT SUM(s.DOWN_VOTES) + SUM(s.UP_VOTES) FROM NUMBERS s")
 	Integer getTotalVotes();
 	
 	@Select("SELECT SUM(s.COUNT) FROM RATINGS s")
@@ -145,14 +147,14 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-			where UPDATED >= #{after} and ACTIVE
+			where UPDATED >= #{after} and VOTES > 0 and ACTIVE
 			order by UPDATED desc
 			""")
 	List<DBNumberInfo> getLatestReports(long after);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-			where ACTIVE
+			where VOTES > 0 and ACTIVE
 			order by UPDATED desc
 			limit #{limit}
 			""")
@@ -409,8 +411,8 @@ public interface SpamReports {
 	int outdateHistorySnapshot(int rev, long lastSnapshot);
 	
 	@Insert("""
-			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
-				select #{rev}, 0x7fffffff, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, DOWN_VOTES, UP_VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
+				select #{rev}, 0x7fffffff, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.DOWN_VOTES, s.UP_VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
 				where s.LASTPING > #{lastSnapshot}
 			)
 			""")

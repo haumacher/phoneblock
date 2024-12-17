@@ -189,6 +189,13 @@ class TestDB {
 		_db.processVotes("123", 1, 1004);
 		assertEquals(3, _db.getVotesFor("123"));
 		
+		{
+			List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
+			assertEquals(2, reports.size());
+			assertEquals("123", reports.get(0).getPhone());
+			assertEquals("456", reports.get(1).getPhone());
+		}
+		
 		_db.processVotes("123", -1, 1005);
 		assertEquals(2, _db.getVotesFor("123"));
 		
@@ -198,10 +205,8 @@ class TestDB {
 		assertEquals(1006, _db.getLastSpamReport().longValue());
 		
 		List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
-		assertEquals(3, reports.size());
-		assertEquals("456", reports.get(2).getPhone());
-		assertEquals("999", reports.get(1).getPhone());
-		assertEquals("123", reports.get(0).getPhone());
+		assertEquals(1, reports.size());
+		assertEquals("456", reports.get(0).getPhone());
 	}
 	
 	@Test
