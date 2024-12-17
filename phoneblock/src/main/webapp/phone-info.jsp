@@ -67,7 +67,7 @@
 
 <%
 	String categoryClass;
-	if (info.getVotes() == 0) {
+	if (info.getVotes() <= 0) {
 		categoryClass = "is-success";
 %>
 	<p>
