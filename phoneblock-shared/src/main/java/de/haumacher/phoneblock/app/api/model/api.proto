@@ -261,6 +261,10 @@ message UserComment {
 	/** Technical identifier of this comment. */
 	string id;
 	
+	/** The user ID of the user that created this comment, or <code>null</code>, if the comment was created by an anonymous user. */
+	@Nullable
+	long userId;
+	
 	/** The phone number this comment belongs to. */
 	string phone;
 	

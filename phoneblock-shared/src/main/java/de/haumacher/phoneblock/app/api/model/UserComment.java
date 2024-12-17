@@ -18,6 +18,9 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** @see #getId() */
 	public static final String ID__PROP = "id";
 
+	/** @see #getUserId() */
+	public static final String USER_ID__PROP = "userId";
+
 	/** @see #getPhone() */
 	public static final String PHONE__PROP = "phone";
 
@@ -40,6 +43,8 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public static final String DOWN__PROP = "down";
 
 	private String _id = "";
+
+	private Long _userId = null;
 
 	private String _phone = "";
 
@@ -83,6 +88,34 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetId(String value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+	}
+
+	/**
+	 * The user ID of the user that created this comment, or <code>null</code>, if the comment was created by an anonymous user.
+	 */
+	public final Long getUserId() {
+		return _userId;
+	}
+
+	/**
+	 * @see #getUserId()
+	 */
+	public de.haumacher.phoneblock.app.api.model.UserComment setUserId(Long value) {
+		internalSetUserId(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getUserId()} without chain call utility. */
+	protected final void internalSetUserId(Long value) {
+		_listener.beforeSet(this, USER_ID__PROP, value);
+		_userId = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getUserId()} has a value.
+	 */
+	public final boolean hasUserId() {
+		return _userId != null;
 	}
 
 	/**
@@ -263,6 +296,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			ID__PROP, 
+			USER_ID__PROP, 
 			PHONE__PROP, 
 			RATING__PROP, 
 			COMMENT__PROP, 
@@ -280,6 +314,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public Object get(String field) {
 		switch (field) {
 			case ID__PROP: return getId();
+			case USER_ID__PROP: return getUserId();
 			case PHONE__PROP: return getPhone();
 			case RATING__PROP: return getRating();
 			case COMMENT__PROP: return getComment();
@@ -295,6 +330,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public void set(String field, Object value) {
 		switch (field) {
 			case ID__PROP: internalSetId((String) value); break;
+			case USER_ID__PROP: internalSetUserId((Long) value); break;
 			case PHONE__PROP: internalSetPhone((String) value); break;
 			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
 			case COMMENT__PROP: internalSetComment((String) value); break;
@@ -322,6 +358,10 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		super.writeFields(out);
 		out.name(ID__PROP);
 		out.value(getId());
+		if (hasUserId()) {
+			out.name(USER_ID__PROP);
+			out.value(getUserId());
+		}
 		out.name(PHONE__PROP);
 		out.value(getPhone());
 		out.name(RATING__PROP);
@@ -342,6 +382,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case ID__PROP: setId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case USER_ID__PROP: setUserId(in.nextLong()); break;
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -358,6 +399,9 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** XML attribute or element name of a {@link #getId} property. */
 	private static final String ID__XML_ATTR = "id";
+
+	/** XML attribute or element name of a {@link #getUserId} property. */
+	private static final String USER_ID__XML_ATTR = "user-id";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";
@@ -394,6 +438,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(ID__XML_ATTR, getId());
+		out.writeAttribute(USER_ID__XML_ATTR, Long.toString(getUserId()));
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
 		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
 		out.writeAttribute(COMMENT__XML_ATTR, getComment());
@@ -442,6 +487,10 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				setId(value);
 				break;
 			}
+			case USER_ID__XML_ATTR: {
+				setUserId(Long.parseLong(value));
+				break;
+			}
 			case PHONE__XML_ATTR: {
 				setPhone(value);
 				break;
@@ -481,6 +530,10 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (localName) {
 			case ID__XML_ATTR: {
 				setId(in.getElementText());
+				break;
+			}
+			case USER_ID__XML_ATTR: {
+				setUserId(Long.parseLong(in.getElementText()));
 				break;
 			}
 			case PHONE__XML_ATTR: {
