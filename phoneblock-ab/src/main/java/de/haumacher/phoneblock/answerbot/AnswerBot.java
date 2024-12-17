@@ -108,8 +108,13 @@ public class AnswerBot extends MultipleUAS {
 
 	private Function<String, CustomerOptions> _configForUser;
 
-	/** 
-	 * Creates an {@link AnswerBot}. 
+	/**
+	 * Creates an {@link AnswerBot}.
+	 * 
+	 * @param configForUser Function that retrieves the configuration for a SIP
+	 *                      user. When a call arrives, the message contains the name
+	 *                      of the registered answerbot. This user name is used, to
+	 *                      retrieve the configuration options for that user.
 	 */
 	public AnswerBot(SipProvider sip_provider, AnswerbotOptions botOptions, Function<String, CustomerOptions> configForUser, PortPool portPool) {
 		super(sip_provider, portPool, botOptions);
@@ -237,7 +242,7 @@ public class AnswerBot extends MultipleUAS {
 				}
 			}
 			
-			PhoneInfo info = fetchPhoneInfo(from);
+			PhoneInfo info = fetchPhoneInfo(user, from);
 			if (info == null) {
 				LOG.info("Ignoring call from {}, failed to retrieve rating.", from);
 				return rejectHandler();
@@ -262,11 +267,12 @@ public class AnswerBot extends MultipleUAS {
 	/**
 	 * Retrieve a rating for the given number.
 	 * 
+	 * @param customerOptions Information about the answerbot owner.
 	 * @param from The number that is calling.
 	 * @return Information for the calling number, <code>null</code> if no
 	 *         information can be retrieved. In the later case, the call is ignored.
 	 */
-	protected PhoneInfo fetchPhoneInfo(String from) {
+	protected PhoneInfo fetchPhoneInfo(CustomerOptions customerOptions, String from) {
 		try {
 			URL url = new URL("https://phoneblock.net/phoneblock/api/num/" + from + "?format=json");
 			URLConnection connection = url.openConnection();

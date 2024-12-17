@@ -243,6 +243,9 @@ public interface Users {
 	
 	@Select("select s.ID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
 	long getAnswerBotId(String sipUser);
+	
+	@Select("select s.USERID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
+	long getAnswerBotUserId(String sipUser);
 
 	@Select("""
 			select 

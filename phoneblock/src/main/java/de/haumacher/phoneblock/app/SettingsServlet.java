@@ -12,7 +12,6 @@ import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -104,7 +103,7 @@ public class SettingsServlet extends HttpServlet {
 					if (key.equals("add-wl")) {
 						String addValues = entry.getValue()[0];
 						for (String value : addValues.split("[,;]")) {
-							String phone = normalize(value);
+							String phone = NumberAnalyzer.toId(value);
 							if (phone == null) {
 								continue;
 							}
@@ -114,7 +113,7 @@ public class SettingsServlet extends HttpServlet {
 						}
 					}
 					else if (key.startsWith("bl-")) {
-						String phone = normalize(key.substring("bl-".length()));
+						String phone = NumberAnalyzer.toId(key.substring("bl-".length()));
 						if (phone == null) {
 							continue;
 						}
@@ -123,7 +122,7 @@ public class SettingsServlet extends HttpServlet {
 					}
 					
 					else if (key.startsWith("wl-")) {
-						String phone = normalize(key.substring("wl-".length()));
+						String phone = NumberAnalyzer.toId(key.substring("wl-".length()));
 						if (phone == null) {
 							continue;
 						}
@@ -139,19 +138,6 @@ public class SettingsServlet extends HttpServlet {
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
 		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
-	}
-
-	private String normalize(String value) {
-		String phone = NumberAnalyzer.normalizeNumber(value);
-		if (phone.isEmpty() || phone.contains("*")) {
-			return null;
-		}
-		
-		PhoneNumer number = NumberAnalyzer.analyze(phone);
-		if (number == null) {
-			return null;
-		}
-		return NumberAnalyzer.getPhoneId(number);
 	}
 
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
