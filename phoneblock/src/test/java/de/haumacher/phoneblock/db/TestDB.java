@@ -309,6 +309,15 @@ class TestDB {
 		String _456 = "456";
 		String _789 = "789";
 		
+		// A search far in the history.
+		_db.addSearchHit(_123);
+		
+		// No more searches for three periods.
+		_db.updateHistory(30);
+		_db.updateHistory(30);
+		_db.updateHistory(30);
+		
+		// The first day of the four day history.
 		_db.addSearchHit(_123);
 		_db.addSearchHit(_123);
 		_db.addSearchHit(_456);
@@ -324,11 +333,12 @@ class TestDB {
 		
 		_db.updateHistory(30);
 		
+		_db.addSearchHit(_456);
 		_db.addSearchHit(_456);
 		_db.addSearchHit(_789);
 		
 		assertEquals(List.of(2, 0, 1, 0), _db.getSearchHistory(_123, 4));
-		assertEquals(List.of(1, 1, 0, 1), _db.getSearchHistory(_456, 4));
+		assertEquals(List.of(1, 1, 0, 2), _db.getSearchHistory(_456, 4));
 		assertEquals(List.of(0, 1, 0, 1), _db.getSearchHistory(_789, 4));
 	}
 	

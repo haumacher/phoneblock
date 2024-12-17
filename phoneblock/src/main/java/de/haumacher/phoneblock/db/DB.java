@@ -1688,41 +1688,41 @@ public class DB {
 	public List<Integer> getSearchHistory(SpamReports reports, String phone, int size) {
 		List<Integer> result = new ArrayList<>();
 
-		int lastRev;
-		int currentRev;
+		int latestRev;
+		int rev;
 		List<DBNumberHistory> entries;
 		
 		Integer lastRevision = reports.getLastRevision();
 		if (lastRevision != null) {
-			lastRev = lastRevision.intValue();
-			currentRev = lastRev  - (size - 1);
-			entries = reports.getSearchHistory(currentRev, phone);
+			latestRev = lastRevision.intValue();
+			rev = latestRev  - (size - 1);
+			entries = reports.getSearchHistory(rev, phone);
 		} else {
-			lastRev = size - 1;
-			currentRev = 0;
+			latestRev = (size - 1);
+			rev = 0;
 			entries = Collections.emptyList();
 		}
 		
-		int last = 0;
+		int lastCnt = 0;
 		for (DBNumberHistory entry : entries) {
-			while (currentRev < entry.getRMin()) {
+			while (entry.getRMin() > rev) {
 				result.add(Integer.valueOf(0));
-				currentRev++;
+				rev++;
 			}
 			int current = entry.getSearches();
-			result.add(Integer.valueOf(current - last));
-			last = current;
-			currentRev++;
+			result.add(Integer.valueOf(current - lastCnt));
+			lastCnt = current;
+			rev++;
 		}
 		
-		while (currentRev <= lastRev) {
+		while (rev <= latestRev) {
 			result.add(Integer.valueOf(0));
-			currentRev++;
+			rev++;
 		}
 		
-		
+		// Add searches today (not yet contained in the history)
 		NumberInfo info = getPhoneInfo(reports, phone);
-		result.add(info.getSearches() - last);
+		result.add(info.getSearches() - lastCnt);
 		
 		// Drop first, because this entry contains no delta information.
 		return result.subList(1, result.size());

@@ -232,7 +232,7 @@ public interface SpamReports {
 	 */
 	@Select("""
 			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.RMIN >= #{revision} and h.PHONE = #{phone} order by h.RMIN
+			where h.RMAX >= #{revision} and h.PHONE = #{phone} order by h.RMIN
 			""")
 	List<DBNumberHistory> getSearchHistory(int revision, String phone);
 

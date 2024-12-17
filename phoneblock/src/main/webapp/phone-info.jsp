@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SearchServlet"%>
 <%@page import="de.haumacher.phoneblock.app.api.model.PhoneInfo"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.UIProperties"%>
@@ -28,21 +29,21 @@
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
 <%
-	PhoneNumer analysis = (PhoneNumer) request.getAttribute("number");
-	PhoneInfo info = (PhoneInfo) request.getAttribute("info");
-	Rating rating = (Rating) request.getAttribute("rating");
-	List<String> relatedNumbers = (List<String>) request.getAttribute("relatedNumbers");
-	Map<Rating, Integer> ratings = (Map<Rating, Integer>) request.getAttribute("ratings");
-	List<Integer> searches = (List<Integer>) request.getAttribute("searches");
+	PhoneNumer analysis = (PhoneNumer) request.getAttribute(SearchServlet.NUMBER_ATTR);
+	PhoneInfo info = (PhoneInfo) request.getAttribute(SearchServlet.INFO_ATTR);
+	Rating rating = (Rating) request.getAttribute(SearchServlet.RATING_ATTR);
+	List<String> relatedNumbers = (List<String>) request.getAttribute(SearchServlet.RELATED_NUMBERS_ATTR);
+	Map<Rating, Integer> ratings = (Map<Rating, Integer>) request.getAttribute(SearchServlet.RATINGS_ATTR);
+	List<Integer> searches = (List<Integer>) request.getAttribute(SearchServlet.SEARCHES_ATTR);
 	
-	boolean thanks = request.getAttribute("thanks") != null;
+	boolean thanks = request.getAttribute(SearchServlet.THANKS_ATTR) != null;
 	
-	List<UserComment> comments = (List<UserComment>) request.getAttribute("comments");
-	String summary = (String) request.getAttribute("summary");
-	String defaultSummary = (String) request.getAttribute("defaultSummary");
+	List<UserComment> comments = (List<UserComment>) request.getAttribute(SearchServlet.COMMENTS_ATTR);
+	String summary = (String) request.getAttribute(SearchServlet.SUMMARY_ATTR);
+	String defaultSummary = (String) request.getAttribute(SearchServlet.DEFAULT_SUMMARY_ATTR);
 	
-	String prev = (String) request.getAttribute("prev");
-	String next = (String) request.getAttribute("next");
+	String prev = (String) request.getAttribute(SearchServlet.PREV_ATTR);
+	String next = (String) request.getAttribute(SearchServlet.NEXT_ATTR);
 
 	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
 	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);

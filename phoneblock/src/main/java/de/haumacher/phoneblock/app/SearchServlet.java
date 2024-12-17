@@ -45,6 +45,38 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(urlPatterns = SearchServlet.NUMS_PREFIX + "/*")
 public class SearchServlet extends HttpServlet {
 	
+	public static final String KEYWORDS_ATTR = "keywords";
+
+	public static final String THANKS_ATTR = "thanks";
+
+	public static final String DESCRIPTION_ATTR = "description";
+
+	public static final String TITLE_ATTR = "title";
+
+	public static final String RELATED_NUMBERS_ATTR = "relatedNumbers";
+
+	public static final String SEARCHES_ATTR = "searches";
+
+	public static final String RATINGS_ATTR = "ratings";
+
+	public static final String RATING_ATTR = "rating";
+
+	public static final String DEFAULT_SUMMARY_ATTR = "defaultSummary";
+
+	public static final String SUMMARY_ATTR = "summary";
+
+	public static final String NEXT_ATTR = "next";
+
+	public static final String PREV_ATTR = "prev";
+
+	public static final String NUMBER_ATTR = "number";
+
+	public static final String INFO_ATTR = "info";
+
+	public static final String PATH_ATTR = "path";
+
+	public static final String COMMENTS_ATTR = "comments";
+
 	private static final int ONE_SECOND = 1000;
 
 	private static final int ONE_MINUTE = ONE_SECOND * 60;
@@ -308,7 +340,7 @@ public class SearchServlet extends HttpServlet {
 	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult) throws ServletException, IOException {
 		String ratingAttribute = RatingServlet.ratingAttribute(searchResult.getPhoneId());
 		if (getSessionAttribute(req, ratingAttribute) != null) {
-			req.setAttribute("thanks", Boolean.TRUE);
+			req.setAttribute(THANKS_ATTR, Boolean.TRUE);
 		}
 		
 		String status = status(searchResult.getInfo().getVotes());
@@ -324,23 +356,23 @@ public class SearchServlet extends HttpServlet {
 			description = summary = JspUtil.quote(searchResult.getAiSummary());
 		}
 		
-		req.setAttribute("comments", searchResult.getComments());
+		req.setAttribute(COMMENTS_ATTR, searchResult.getComments());
 
 		// The canonical path of this page.
-		req.setAttribute("path", req.getServletPath() + '/' + searchResult.getPhoneId());
+		req.setAttribute(PATH_ATTR, req.getServletPath() + '/' + searchResult.getPhoneId());
 		
-		req.setAttribute("info", searchResult.getInfo());
-		req.setAttribute("number", searchResult.getNumber());
-		req.setAttribute("prev", searchResult.getPrev());
-		req.setAttribute("next", searchResult.getNext());
-		req.setAttribute("summary", summary);
-		req.setAttribute("defaultSummary", defaultSummary);
-		req.setAttribute("rating", searchResult.getTopRating());
-		req.setAttribute("ratings", searchResult.getRatings());
-		req.setAttribute("searches", searchResult.getSearches());
-		req.setAttribute("relatedNumbers", searchResult.getRelatedNumbers());
-		req.setAttribute("title", status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
-		req.setAttribute("description", description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
+		req.setAttribute(INFO_ATTR, searchResult.getInfo());
+		req.setAttribute(NUMBER_ATTR, searchResult.getNumber());
+		req.setAttribute(PREV_ATTR, searchResult.getPrev());
+		req.setAttribute(NEXT_ATTR, searchResult.getNext());
+		req.setAttribute(SUMMARY_ATTR, summary);
+		req.setAttribute(DEFAULT_SUMMARY_ATTR, defaultSummary);
+		req.setAttribute(RATING_ATTR, searchResult.getTopRating());
+		req.setAttribute(RATINGS_ATTR, searchResult.getRatings());
+		req.setAttribute(SEARCHES_ATTR, searchResult.getSearches());
+		req.setAttribute(RELATED_NUMBERS_ATTR, searchResult.getRelatedNumbers());
+		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
+		req.setAttribute(DESCRIPTION_ATTR, description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
@@ -367,7 +399,7 @@ public class SearchServlet extends HttpServlet {
 			keywords.append(searchResult.getNumber().getCity());
 		}
 		
-		req.setAttribute("keywords", keywords.toString());
+		req.setAttribute(KEYWORDS_ATTR, keywords.toString());
 		ServletUtil.display(req, resp, "/phone-info.jsp");
 	}
 
