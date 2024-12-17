@@ -412,7 +412,7 @@ public class SearchServlet extends HttpServlet {
 		if (info.isWhiteListed()) {
 			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.";
 		}
-		if (votes == 0) {
+		if (votes <= 0) {
 			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
 					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
 					info.getPhone() + "</code> sprechen.";
@@ -427,7 +427,7 @@ public class SearchServlet extends HttpServlet {
 
 	private String defaultSimpleSummary(PhoneInfo info) {
 		int votes = info.getVotes();
-		if (votes == 0) {
+		if (votes <= 0) {
 			return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
 		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
 			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
@@ -459,7 +459,7 @@ public class SearchServlet extends HttpServlet {
 	}
 
 	private String status(int votes) {
-		if (votes == 0) {
+		if (votes <= 0) {
 			return "Keine Beschwerden";
 		} else if (votes < DB.MIN_VOTES) {
 			return "Spamverdacht";
