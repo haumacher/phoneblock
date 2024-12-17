@@ -217,6 +217,7 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
+			where s.VOTES > 0
 			order by s.SEARCHES_CURRENT desc
 			limit #{limit}
 			""")
