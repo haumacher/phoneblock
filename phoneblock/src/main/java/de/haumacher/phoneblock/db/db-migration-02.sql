@@ -327,5 +327,9 @@ UPDATE NUMBERS SET UP_VOTES = -VOTES WHERE VOTES < 0;
 UPDATE NUMBERS_HISTORY SET DOWN_VOTES = VOTES WHERE VOTES > 0;
 UPDATE NUMBERS_HISTORY SET UP_VOTES = -VOTES WHERE VOTES < 0;
 
+-- Update user settings to new values.
+UPDATE USERS SET MIN_VOTES = 10 WHERE MIN_VOTES = 8;
+UPDATE USERS SET MIN_VOTES = 100 WHERE MIN_VOTES = 20;
+
 -- Revision ranges are completed in code.
 -- History information diff is expanded in code.
