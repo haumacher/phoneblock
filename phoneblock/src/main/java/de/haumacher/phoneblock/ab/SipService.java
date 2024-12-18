@@ -45,15 +45,20 @@ import org.xbill.DNS.Type;
 import org.zoolu.net.AddressType;
 import org.zoolu.util.ConfigFile;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
 import de.haumacher.phoneblock.answerbot.CustomerOptions;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.mail.MailService;
@@ -178,6 +183,54 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
 		_answerBot = new AnswerBot(_sipProvider, botOptions, this::getCustomer, _portPool) {
+			@Override
+			protected PhoneInfo fetchPhoneInfo(CustomerOptions customerOptions, String from) {
+				DB db = _dbService.db();
+				try (SqlSession session = db.openSession()) {
+					SpamReports reports = session.getMapper(SpamReports.class);
+					BlockList blocklist = session.getMapper(BlockList.class);
+					Users users = session.getMapper(Users.class);
+					
+					String phoneId = NumberAnalyzer.toId(from);
+					if (phoneId == null) {
+						return null;
+					}
+					
+					// Find out the ID of the owning user, to look up the personalizations.
+					String botName = customerOptions.getUser();
+					long userId = users.getAnswerBotUserId(botName);
+					Boolean state = blocklist.getPersonalizationState(userId, phoneId);
+					
+					PhoneInfo info;
+					if (state != null) {
+						// There is a personalization for the calling number.
+						if (state.booleanValue()) {
+							// Locally blocked.
+							LOG.info("Caller is on blacklist of {}: {}", botName, phoneId);
+							info = PhoneInfo.create().setPhone(phoneId).setRating(Rating.B_MISSED).setVotes(1000);
+						} else {
+							// On the exclude list.
+							LOG.info("Call form white-listed number of {}.", botName);
+							info = PhoneInfo.create().setPhone(phoneId).setRating(Rating.A_LEGITIMATE).setVotes(0);
+						}
+					} else {
+						info = db.getPhoneApiInfo(reports, phoneId);
+					}
+					
+					try {
+						if (info.getVotes() > 0) {
+							long now = System.currentTimeMillis();
+							reports.recordCall(info.getPhone(), now);
+							session.commit();
+						}
+					} catch (Exception ex) {
+						LOG.error("Failed to record call from " + info.getPhone() + ".", ex);
+					}
+					
+					return info;
+				}
+			}
+			
 			@Override
 			protected void processCallData(String userName, String from, long startTime, long duration) {
 				super.processCallData(userName, from, startTime, duration);
@@ -511,6 +564,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		regConfig.setRealm(bot.getRealm());
 		regConfig.setRegistrar(new SipURI(bot.getRegistrar()));
 		regConfig.setRoute(new SipURI(getHost(bot)).addLr());
+		regConfig.setMinVotes(bot.getMinVotes());
+		regConfig.setWildcard(bot.isWildcards());
 		return regConfig;
 	}
 

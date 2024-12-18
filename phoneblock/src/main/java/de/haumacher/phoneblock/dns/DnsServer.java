@@ -256,8 +256,8 @@ public class DnsServer implements Runnable {
 			return errorMessage(query, rcode);
 		}
 
-		LOG.info("DNS query '" + queryRecord.getName() + " " + Type.string(queryRecord.getType()) + "' for '" + name + "': " + Rcode.string(rcode) + "\n" + response);
-		
+		LOG.info("DNS query {} type {}: {}", name, Type.string(type), Rcode.string(rcode));
+		LOG.debug("DNS result:\n{}", response);
 		return response;
 	}
 	

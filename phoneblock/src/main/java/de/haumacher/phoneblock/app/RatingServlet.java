@@ -5,23 +5,22 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.db.BlockList;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
-import de.haumacher.phoneblock.db.model.Rating;
 
 /**
  * Servlet accepting ratings from the web UI.
@@ -58,33 +57,12 @@ public class RatingServlet extends HttpServlet {
 		if (session.getAttribute(ratingAttr) == null) {
 			if (ratingName != null || comment != null) {
 				Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
+				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
+
 				DB db = DBService.getInstance();
-				db.addRating(phoneId, rating, comment, System.currentTimeMillis());
+				db.addRating(userName, phoneId, rating, comment, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
-				
-				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
-				if (userName != null) {
-					try (SqlSession tx = db.openSession()) {
-						Users users = tx.getMapper(Users.class);
-						Long userId = users.getUserId(userName);
-						if (userId != null) {
-							BlockList blocklist = tx.getMapper(BlockList.class);
-							long owner = userId.longValue();
-							if (rating == Rating.A_LEGITIMATE) {
-								blocklist.addExclude(owner, phoneId);
-								blocklist.removePersonalization(owner, phoneId);
-							} else {
-								if (blocklist.getPersonalization(owner, phoneId) == null) {
-									blocklist.addPersonalization(owner, phoneId);
-								}
-								blocklist.removeExclude(owner, phoneId);
-							}
-							
-							tx.commit();
-						}
-					}
-				}
 				
 				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}

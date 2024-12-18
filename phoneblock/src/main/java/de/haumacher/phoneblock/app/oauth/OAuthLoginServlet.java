@@ -107,6 +107,11 @@ public class OAuthLoginServlet extends HttpServlet {
 			LoginFilter.setAuthenticatedUser(req, login);
 		}
 		
+		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_PARAM);
+		if (remember.isPresent()) {
+			LoginServlet.processRememberMe(req, resp, db, (String) remember.get(), login);
+		}
+		
 		String path = location.isEmpty() ? SettingsServlet.PATH : (String) location.get();
 		resp.sendRedirect(req.getContextPath() + path);
 	}

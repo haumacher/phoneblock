@@ -5,20 +5,19 @@ package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.meta.MetaSearchService;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.app.SearchServlet;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.model.PhoneInfo;
-import de.haumacher.phoneblock.db.model.PhoneNumer;
-import de.haumacher.phoneblock.meta.MetaSearchService;
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet for live API lookup of ratings.

@@ -1,15 +1,15 @@
-package de.haumacher.phoneblock.db.model;
+package de.haumacher.phoneblock.app.api.model;
 
 public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.db.model.PhoneNumer} instance.
+	 * Creates a {@link de.haumacher.phoneblock.app.api.model.PhoneNumer} instance.
 	 */
-	public static de.haumacher.phoneblock.db.model.PhoneNumer create() {
-		return new de.haumacher.phoneblock.db.model.PhoneNumer();
+	public static de.haumacher.phoneblock.app.api.model.PhoneNumer create() {
+		return new de.haumacher.phoneblock.app.api.model.PhoneNumer();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.db.model.PhoneNumer} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.PhoneNumer} type in JSON format. */
 	public static final String PHONE_NUMER__TYPE = "PhoneNumer";
 
 	/** @see #getShortcut() */
@@ -50,7 +50,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Creates a {@link PhoneNumer} instance.
 	 *
-	 * @see de.haumacher.phoneblock.db.model.PhoneNumer#create()
+	 * @see de.haumacher.phoneblock.app.api.model.PhoneNumer#create()
 	 */
 	protected PhoneNumer() {
 		super();
@@ -63,7 +63,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getShortcut()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setShortcut(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setShortcut(String value) {
 		internalSetShortcut(value);
 		return this;
 	}
@@ -88,7 +88,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getPlus()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setPlus(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setPlus(String value) {
 		internalSetPlus(value);
 		return this;
 	}
@@ -106,7 +106,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getZeroZero()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setZeroZero(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setZeroZero(String value) {
 		internalSetZeroZero(value);
 		return this;
 	}
@@ -124,7 +124,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCountryCode()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setCountryCode(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setCountryCode(String value) {
 		internalSetCountryCode(value);
 		return this;
 	}
@@ -142,7 +142,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCountry()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setCountry(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setCountry(String value) {
 		internalSetCountry(value);
 		return this;
 	}
@@ -160,7 +160,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCityCode()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setCityCode(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setCityCode(String value) {
 		internalSetCityCode(value);
 		return this;
 	}
@@ -185,7 +185,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * @see #getCity()
 	 */
-	public de.haumacher.phoneblock.db.model.PhoneNumer setCity(String value) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setCity(String value) {
 		internalSetCity(value);
 		return this;
 	}
@@ -206,7 +206,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
-	public de.haumacher.phoneblock.db.model.PhoneNumer registerListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer registerListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalRegisterListener(l);
 		return this;
 	}
@@ -216,7 +216,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public de.haumacher.phoneblock.db.model.PhoneNumer unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
 		internalUnregisterListener(l);
 		return this;
 	}
@@ -273,8 +273,8 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.model.PhoneNumer readPhoneNumer(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.model.PhoneNumer result = new de.haumacher.phoneblock.db.model.PhoneNumer();
+	public static de.haumacher.phoneblock.app.api.model.PhoneNumer readPhoneNumer(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.app.api.model.PhoneNumer result = new de.haumacher.phoneblock.app.api.model.PhoneNumer();
 		result.readContent(in);
 		return result;
 	}
@@ -323,7 +323,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		}
 	}
 
-	/** XML element name representing a {@link de.haumacher.phoneblock.db.model.PhoneNumer} type. */
+	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.PhoneNumer} type. */
 	public static final String PHONE_NUMER__XML_ELEMENT = "phone-numer";
 
 	/** XML attribute or element name of a {@link #getShortcut} property. */
@@ -374,7 +374,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		// No element fields.
 	}
 
-	/** Creates a new {@link de.haumacher.phoneblock.db.model.PhoneNumer} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.PhoneNumer} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static PhoneNumer readPhoneNumer_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		PhoneNumer result = new PhoneNumer();
 		result.readContentXml(in);
@@ -488,7 +488,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Creates a new {@link PhoneNumer} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
 	public static PhoneNumer readPhoneNumer(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
-		return de.haumacher.phoneblock.db.model.PhoneNumer.readPhoneNumer_XmlContent(in);
+		return de.haumacher.phoneblock.app.api.model.PhoneNumer.readPhoneNumer_XmlContent(in);
 	}
 
 }

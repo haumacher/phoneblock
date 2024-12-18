@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Internal data that is kept between registration requests on the server.
  */
-public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SessionInfo} instance.
@@ -29,21 +29,6 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** @see #getCode() */
 	public static final String CODE__PROP = "code";
-
-	/** Identifier for the property {@link #getCreated()} in binary format. */
-	static final int CREATED__ID = 1;
-
-	/** Identifier for the property {@link #getSession()} in binary format. */
-	static final int SESSION__ID = 2;
-
-	/** Identifier for the property {@link #getEmail()} in binary format. */
-	static final int EMAIL__ID = 3;
-
-	/** Identifier for the property {@link #getAnswer()} in binary format. */
-	static final int ANSWER__ID = 4;
-
-	/** Identifier for the property {@link #getCode()} in binary format. */
-	static final int CODE__ID = 5;
 
 	private long _created = 0L;
 
@@ -268,68 +253,6 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 			case ANSWER__PROP: setAnswer(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CODE__PROP: setCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(CREATED__ID);
-		out.value(getCreated());
-		out.name(SESSION__ID);
-		out.value(getSession());
-		out.name(EMAIL__ID);
-		out.value(getEmail());
-		out.name(ANSWER__ID);
-		out.value(getAnswer());
-		out.name(CODE__ID);
-		out.value(getCode());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.app.api.model.SessionInfo readSessionInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.app.api.model.SessionInfo result = de.haumacher.phoneblock.app.api.model.SessionInfo.readSessionInfo_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.SessionInfo} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.app.api.model.SessionInfo readSessionInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.app.api.model.SessionInfo result = new SessionInfo();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case CREATED__ID: setCreated(in.nextLong()); break;
-			case SESSION__ID: setSession(in.nextString()); break;
-			case EMAIL__ID: setEmail(in.nextString()); break;
-			case ANSWER__ID: setAnswer(in.nextString()); break;
-			case CODE__ID: setCode(in.nextString()); break;
-			default: in.skipValue(); 
 		}
 	}
 

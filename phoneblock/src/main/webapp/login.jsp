@@ -46,13 +46,47 @@
 	%>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%><%=LoginServlet.locationParam(request)%>">
-			<i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a>
+		<p class="panel-heading">
+			<a href="#googleLogin" data-action="collapse"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a>
 		</p>
+		<div id="googleLogin" class="is-collapsible">
+			<div class="panel-block">
+	  		<div class="content">
+				<form action="<%=request.getContextPath()%>/oauth/login" method="get">
+
+			    <input type="hidden" name="force_client" value="<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>">
+<% if (location != null) { %>
+			    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
+<% } %>
+				<div class="field">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input type="checkbox" name="<%=LoginServlet.REMEMBER_PARAM%>" value="true"/>
+					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a href="<%=request.getContextPath()%>/datenschutz.jsp">Cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span>Weiter zu Google</span>
+				    </button>
+				  </p>
+				</div>
+				</form>
+			</div>
+			</div>
+		</div>
 	</nav>
 	
 	<nav class="panel">
-		<p class="panel-heading"><a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit PhoneBlock-Nutzernamen anmelden</span></a></p>
+		<p class="panel-heading">
+			<a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit PhoneBlock-Nutzernamen anmelden</span></a>
+		</p>
 		<div id="loginForm" class="is-collapsible <%=userActive%>">
 			<div class="panel-block">
 	  		<div class="content">
@@ -66,7 +100,7 @@
 				%>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" type="text" placeholder="Benutzername" name="userName">
+				    <input class="input" type="text" placeholder="Benutzername" name="<%=LoginServlet.USER_NAME_PARAM%>">
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -78,7 +112,7 @@
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" type="password" placeholder="PhoneBlock-Passwort" name="password">
+				    <input class="input" type="<%=LoginServlet.PASSWORD_PARAM%>" placeholder="PhoneBlock-Passwort" name="password">
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
@@ -89,11 +123,23 @@
 					  <p class="help">Das Passwort wurde Dir nach der <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Registrierung</a> angezeigt.</p>
 				  <% } %>
 				</div>
+
+				<div class="field">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input type="checkbox" name="<%=LoginServlet.REMEMBER_PARAM%>" value="true"/>
+					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a href="<%=request.getContextPath()%>/datenschutz.jsp">Cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
 				
-				<div class="field is-grouped is-grouped-right">
+				<div class="field is-grouped">
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
-				      Anmelden
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span>Anmelden</span>
 				    </button>
 				  </p>
 				</div>

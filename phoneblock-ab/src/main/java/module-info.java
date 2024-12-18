@@ -10,7 +10,7 @@ module de.haumacher.phoneblock.ab {
 
 	requires transitive org.mjsip.sound;
 	requires transitive org.mjsip.sip;
-	requires org.mjsip.ua;
+	requires transitive org.mjsip.ua;
 	requires org.mjsip.util; 
 	requires org.mjsip.net; 
 

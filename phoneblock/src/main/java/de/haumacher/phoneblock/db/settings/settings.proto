@@ -30,6 +30,51 @@ message UserSettings {
 	long lastAccess;
 }
 
+/** A user's authorization token. */
+message AuthToken {
+	/** The token ID */
+	long id;
+	
+	/** The ID of the user that owns this token. */
+	long userId;
+	
+	/** The login name of the user that owns this token. */
+	string userName;
+	
+	/** Time when this token was created */
+	long created;
+	
+	/** The hash of this token's secret. */
+	bytes pwHash;
+	
+	/** Whether this is an implicitly created token for the "stay logged-in" functionality. */
+	boolean implicit;
+	
+	/** Whether this token has access to the query API. */
+	boolean accessQuery;
+
+	/** Whether this token has access to the blocklist download API. */
+	boolean accessDownload;
+	
+	/** Whether this token has access to the CARDDAV synchronization API. */
+	boolean accessCarddav;
+	
+	/** Whether this token has access to the rate API. */
+	boolean accessRate;
+	
+	/** Whether this token is allowed to log-in to the website. */
+	boolean accessLogin;
+	
+	/** When this token was used or updated the last time. */
+	long lastAccess;
+	
+	/** The user agent that used this token the last time. */
+	string userAgent;
+	
+	/** The encoded token that must be used by the client for authorization. */
+	string token;
+}
+
 /** Common options of answer bot settings. */
 abstract message AnswerBotSetting {
 	/** ID of the answer bot. */
@@ -84,6 +129,16 @@ message AnswerBotSip extends AnswerBotSetting {
 
     /** The password used for SIP registration at the user's box. */	
 	string passwd;
+
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int minVotes;
+	
+	/** 
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	 */
+	bool wildcards;
 
 	/** Whether this answer bot is currently registered successfully. */
 	bool registered;

@@ -44,15 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-	document.getElementById("pb-seach-input").addEventListener("keypress", function(event) {
-	  if (event.key === "Enter") {
-	    event.preventDefault();
-	    
-	    document.getElementById("pb-seach-button").click();
-	  }
-	}); 
-	
-	makeSearchButton("pb-seach-button", "pb-seach-input");
+	const searchInput = document.getElementById("pb-seach-input");
+	if (searchInput != null) {
+		searchInput.addEventListener("keypress", function(event) {
+		  if (event.key === "Enter") {
+		    event.preventDefault();
+		    
+		    document.getElementById("pb-seach-button").click();
+		  }
+		}); 
+		makeSearchButton("pb-seach-button", "pb-seach-input");
+	}
 });
 
 function makeSearchButton(buttonId, inputId) {

@@ -76,6 +76,7 @@ abstract class SetupRequest extends _JsonObject {
 			case "EnterHostName": result = EnterHostName(); break;
 			case "SetupDynDns": result = SetupDynDns(); break;
 			case "CheckDynDns": result = CheckDynDns(); break;
+			case "UpdateAnswerBot": result = UpdateAnswerBot(); break;
 			case "EnableAnswerBot": result = EnableAnswerBot(); break;
 			case "DisableAnswerBot": result = DisableAnswerBot(); break;
 			case "DeleteAnswerBot": result = DeleteAnswerBot(); break;
@@ -196,6 +197,7 @@ abstract class BotRequestVisitor<R, A> {
 	R visitEnterHostName(EnterHostName self, A arg);
 	R visitSetupDynDns(SetupDynDns self, A arg);
 	R visitCheckDynDns(CheckDynDns self, A arg);
+	R visitUpdateAnswerBot(UpdateAnswerBot self, A arg);
 	R visitEnableAnswerBot(EnableAnswerBot self, A arg);
 	R visitDisableAnswerBot(DisableAnswerBot self, A arg);
 	R visitDeleteAnswerBot(DeleteAnswerBot self, A arg);
@@ -232,6 +234,7 @@ abstract class BotRequest extends SetupRequest {
 			case "EnterHostName": result = EnterHostName(); break;
 			case "SetupDynDns": result = SetupDynDns(); break;
 			case "CheckDynDns": result = CheckDynDns(); break;
+			case "UpdateAnswerBot": result = UpdateAnswerBot(); break;
 			case "EnableAnswerBot": result = EnableAnswerBot(); break;
 			case "DisableAnswerBot": result = DisableAnswerBot(); break;
 			case "DeleteAnswerBot": result = DeleteAnswerBot(); break;
@@ -481,6 +484,89 @@ class CheckDynDns extends BotRequest {
 }
 
 ///  Switches the answer bot on.
+class UpdateAnswerBot extends BotRequest {
+	///  Whether the bot is enabled (registration is active).
+	bool enabled;
+
+	///  Whether to limit communication to IPv4.
+	bool preferIPv4;
+
+	///  The minimum PhoneBlock votes to consider a call as SPAM and accept it.
+	int minVotes;
+
+	///  Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
+	bool wildcards;
+
+	/// Creates a UpdateAnswerBot.
+	UpdateAnswerBot({
+			super.id, 
+			this.enabled = false, 
+			this.preferIPv4 = false, 
+			this.minVotes = 0, 
+			this.wildcards = false, 
+	});
+
+	/// Parses a UpdateAnswerBot from a string source.
+	static UpdateAnswerBot? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a UpdateAnswerBot instance from the given reader.
+	static UpdateAnswerBot read(JsonReader json) {
+		UpdateAnswerBot result = UpdateAnswerBot();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "UpdateAnswerBot";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "enabled": {
+				enabled = json.expectBool();
+				break;
+			}
+			case "preferIPv4": {
+				preferIPv4 = json.expectBool();
+				break;
+			}
+			case "minVotes": {
+				minVotes = json.expectInt();
+				break;
+			}
+			case "wildcards": {
+				wildcards = json.expectBool();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("enabled");
+		json.addBool(enabled);
+
+		json.addKey("preferIPv4");
+		json.addBool(preferIPv4);
+
+		json.addKey("minVotes");
+		json.addNumber(minVotes);
+
+		json.addKey("wildcards");
+		json.addBool(wildcards);
+	}
+
+	@override
+	R visitBotRequest<R, A>(BotRequestVisitor<R, A> v, A arg) => v.visitUpdateAnswerBot(this, arg);
+
+}
+
+///  Switches the answer bot on.
 class EnableAnswerBot extends BotRequest {
 	/// Creates a EnableAnswerBot.
 	EnableAnswerBot({
@@ -561,7 +647,7 @@ class DeleteAnswerBot extends BotRequest {
 
 }
 
-///  Checks whether an anwer bot has successfully registered to its Fritz!Box.
+///  Checks whether an answer bot has successfully registered to its Fritz!Box.
 class CheckAnswerBot extends BotRequest {
 	/// Creates a CheckAnswerBot.
 	CheckAnswerBot({
@@ -775,6 +861,15 @@ class AnswerbotInfo extends _JsonObject {
 	///  Whether the bot is enabled (registration is active).
 	bool enabled;
 
+	///  Whether to limit communication to IPv4.
+	bool preferIPv4;
+
+	///  The minimum PhoneBlock votes to consider a call as SPAM and accept it.
+	int minVotes;
+
+	///  Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
+	bool wildcards;
+
 	///  Whether the bot has sucessfully registered (can accept calls).
 	bool registered;
 
@@ -822,6 +917,9 @@ class AnswerbotInfo extends _JsonObject {
 				this.id = 0, 
 				this.userId = 0, 
 				this.enabled = false, 
+				this.preferIPv4 = false, 
+				this.minVotes = 0, 
+				this.wildcards = false, 
 				this.registered = false, 
 				this.registerMsg, 
 				this.newCalls = 0, 
@@ -866,6 +964,18 @@ class AnswerbotInfo extends _JsonObject {
 				}
 				case "enabled": {
 					enabled = json.expectBool();
+					break;
+				}
+				case "preferIPv4": {
+					preferIPv4 = json.expectBool();
+					break;
+				}
+				case "minVotes": {
+					minVotes = json.expectInt();
+					break;
+				}
+				case "wildcards": {
+					wildcards = json.expectBool();
 					break;
 				}
 				case "registered": {
@@ -940,6 +1050,15 @@ class AnswerbotInfo extends _JsonObject {
 
 			json.addKey("enabled");
 			json.addBool(enabled);
+
+			json.addKey("preferIPv4");
+			json.addBool(preferIPv4);
+
+			json.addKey("minVotes");
+			json.addNumber(minVotes);
+
+			json.addKey("wildcards");
+			json.addBool(wildcards);
 
 			json.addKey("registered");
 			json.addBool(registered);

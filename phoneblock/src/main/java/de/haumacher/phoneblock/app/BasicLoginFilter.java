@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.ab.ListABServlet;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
 import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
@@ -31,6 +32,14 @@ public class BasicLoginFilter extends LoginFilter {
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
 		ServletUtil.sendAuthenticationRequest(response);
+	}
+	
+	@Override
+	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
+		switch (request.getServletPath()) {
+		case CallReportServlet.URL_PATTERN: return authorization.isAccessRate();
+		default: return authorization.isAccessCarddav();
+		}
 	}
 
 }

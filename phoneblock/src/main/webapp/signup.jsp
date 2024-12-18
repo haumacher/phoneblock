@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.EMailVerificationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
@@ -48,7 +49,7 @@
 <nav class="panel">
 	<p class="panel-heading"><a href="#registerForm" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail registrieren</span></a></p>
 	<div id="registerForm" class="is-collapsible <%=active%>">
-		<form action="<%= request.getContextPath() %>/verify-email" method="post" enctype="application/x-www-form-urlencoded">
+		<form action="<%= request.getContextPath() %><%= EMailVerificationServlet.VERIFY_WEB%>" method="post" enctype="application/x-www-form-urlencoded">
   		<div class="panel-block">
   		<div class="content">
 			<%

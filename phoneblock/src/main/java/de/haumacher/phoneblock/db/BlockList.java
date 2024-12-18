@@ -23,51 +23,68 @@ public interface BlockList {
 	/**
 	 * All numbers that the user with the given user ID has explicitly blocked.
 	 */
-	@Select("select PHONE from BLOCKLIST where OWNER = #{owner} order by PHONE")
-	List<String> getPersonalizations(long owner);
+	@Select("""
+			select PHONE from PERSONALIZATION 
+			where USERID = #{userId} and BLOCKED 
+			order by PHONE
+			""")
+	List<String> getPersonalizations(long userId);
 
 	/**
 	 * All numbers that the user with the given user ID has explicitly allowed.
 	 */
-	@Select("select PHONE from EXCLUDES where OWNER = #{owner}")
-	Set<String> getExcluded(long owner);
+	@Select("""
+			select PHONE from PERSONALIZATION 
+			where USERID = #{userId} and NOT BLOCKED 
+			order by PHONE
+			""")
+	Set<String> getExcluded(long userId);
 	
 	/**
 	 * List of all numbers that the user with the given user ID has explicitly allowed.
 	 */
-	@Select("select PHONE from EXCLUDES where OWNER = #{owner} order by PHONE")
-	List<String> getWhiteList(long owner);
+	@Select("""
+			select PHONE from PERSONALIZATION 
+			where USERID = #{userId} and NOT BLOCKED 
+			order by PHONE
+			""")
+	List<String> getWhiteList(long userId);
 
 	/**
 	 * Adds a blocklist entry for the user with the given user ID.
 	 */
-	@Insert("insert into BLOCKLIST (OWNER, PHONE) values (#{owner}, #{phone})")
-	void addPersonalization(long owner, String phone);
-	
-	/**
-	 * Checks whether the number is already blocked.
-	 * 
-	 * @return The requested number, or <code>null</code> if the number is not yet on the blocklist.
-	 */
-	@Select("select PHONE from BLOCKLIST where OWNER=#{owner} and PHONE=#{phone}")
-	String getPersonalization(long owner, String phone);
+	@Insert("""
+			insert into PERSONALIZATION (USERID, PHONE, BLOCKED) 
+			values (#{userId}, #{phone}, true)
+			""")
+	void addPersonalization(long userId, String phone);
 	
 	/**
 	 * Removes a blocklist entry for the user with the given user ID.
 	 */
-	@Delete("delete from BLOCKLIST where OWNER=#{owner} and PHONE=#{phone}")
-	boolean removePersonalization(long owner, String phone);
+	@Delete("""
+			delete from PERSONALIZATION 
+			where USERID=#{userId} and PHONE=#{phone}
+			""")
+	boolean removePersonalization(long userId, String phone);
+	
+	/**
+	 * Retrieves the personalization state of a phone number
+	 */
+	@Select("""
+			select BLOCKED 
+			from PERSONALIZATION 
+			where USERID=#{userId} and PHONE=#{phone}
+			""")
+	Boolean getPersonalizationState(long userId, String phone);
 	
 	/**
 	 * Adds an exclusion from the blocklist for the user with the given user ID.
 	 */
-	@Insert("insert into EXCLUDES (OWNER, PHONE) values (#{owner}, #{phone})")
-	void addExclude(long owner, String phone);
-	
-	/**
-	 * Removes an exclusion from the blocklist for the user with the given user ID.
-	 */
-	@Delete("delete from EXCLUDES where OWNER=#{owner} and PHONE=#{phone}")
-	boolean removeExclude(long owner, String phone);
+	@Insert("""
+			insert into PERSONALIZATION (USERID, PHONE, BLOCKED) 
+			values (#{userId}, #{phone}, false)
+			""")
+	void addExclude(long userId, String phone);
 	
 }

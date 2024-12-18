@@ -36,6 +36,12 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #getPasswd() */
 	public static final String PASSWD__PROP = "passwd";
 
+	/** @see #getMinVotes() */
+	public static final String MIN_VOTES__PROP = "minVotes";
+
+	/** @see #isWildcards() */
+	public static final String WILDCARDS__PROP = "wildcards";
+
 	/** @see #isRegistered() */
 	public static final String REGISTERED__PROP = "registered";
 
@@ -75,17 +81,23 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #getPasswd()} in binary format. */
 	static final int PASSWD__ID = 12;
 
+	/** Identifier for the property {@link #getMinVotes()} in binary format. */
+	static final int MIN_VOTES__ID = 13;
+
+	/** Identifier for the property {@link #isWildcards()} in binary format. */
+	static final int WILDCARDS__ID = 14;
+
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
-	static final int REGISTERED__ID = 13;
+	static final int REGISTERED__ID = 15;
 
 	/** Identifier for the property {@link #getRegisterMessage()} in binary format. */
-	static final int REGISTER_MESSAGE__ID = 14;
+	static final int REGISTER_MESSAGE__ID = 16;
 
 	/** Identifier for the property {@link #getLastSuccess()} in binary format. */
-	static final int LAST_SUCCESS__ID = 15;
+	static final int LAST_SUCCESS__ID = 17;
 
 	/** Identifier for the property {@link #getCallsAccepted()} in binary format. */
-	static final int CALLS_ACCEPTED__ID = 16;
+	static final int CALLS_ACCEPTED__ID = 18;
 
 	private String _host = "";
 
@@ -102,6 +114,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 	private String _userName = "";
 
 	private String _passwd = "";
+
+	private int _minVotes = 0;
+
+	private boolean _wildcards = false;
 
 	private boolean _registered = false;
 
@@ -294,6 +310,48 @@ public class AnswerBotSip extends AnswerBotSetting {
 	}
 
 	/**
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it.
+	 */
+	public final int getMinVotes() {
+		return _minVotes;
+	}
+
+	/**
+	 * @see #getMinVotes()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setMinVotes(int value) {
+		internalSetMinVotes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getMinVotes()} without chain call utility. */
+	protected final void internalSetMinVotes(int value) {
+		_listener.beforeSet(this, MIN_VOTES__PROP, value);
+		_minVotes = value;
+	}
+
+	/**
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
+	 */
+	public final boolean isWildcards() {
+		return _wildcards;
+	}
+
+	/**
+	 * @see #isWildcards()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setWildcards(boolean value) {
+		internalSetWildcards(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isWildcards()} without chain call utility. */
+	protected final void internalSetWildcards(boolean value) {
+		_listener.beforeSet(this, WILDCARDS__PROP, value);
+		_wildcards = value;
+	}
+
+	/**
 	 * Whether this answer bot is currently registered successfully.
 	 */
 	public final boolean isRegistered() {
@@ -416,6 +474,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 			REALM__PROP, 
 			USER_NAME__PROP, 
 			PASSWD__PROP, 
+			MIN_VOTES__PROP, 
+			WILDCARDS__PROP, 
 			REGISTERED__PROP, 
 			REGISTER_MESSAGE__PROP, 
 			LAST_SUCCESS__PROP, 
@@ -437,6 +497,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case REALM__PROP: return getRealm();
 			case USER_NAME__PROP: return getUserName();
 			case PASSWD__PROP: return getPasswd();
+			case MIN_VOTES__PROP: return getMinVotes();
+			case WILDCARDS__PROP: return isWildcards();
 			case REGISTERED__PROP: return isRegistered();
 			case REGISTER_MESSAGE__PROP: return getRegisterMessage();
 			case LAST_SUCCESS__PROP: return getLastSuccess();
@@ -456,6 +518,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case REALM__PROP: internalSetRealm((String) value); break;
 			case USER_NAME__PROP: internalSetUserName((String) value); break;
 			case PASSWD__PROP: internalSetPasswd((String) value); break;
+			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
+			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 			case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 			case REGISTER_MESSAGE__PROP: internalSetRegisterMessage((String) value); break;
 			case LAST_SUCCESS__PROP: internalSetLastSuccess((long) value); break;
@@ -490,6 +554,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getUserName());
 		out.name(PASSWD__PROP);
 		out.value(getPasswd());
+		out.name(MIN_VOTES__PROP);
+		out.value(getMinVotes());
+		out.name(WILDCARDS__PROP);
+		out.value(isWildcards());
 		out.name(REGISTERED__PROP);
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__PROP);
@@ -511,6 +579,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case REALM__PROP: setRealm(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case USER_NAME__PROP: setUserName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PASSWD__PROP: setPasswd(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
+			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 			case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__PROP: setRegisterMessage(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LAST_SUCCESS__PROP: setLastSuccess(in.nextLong()); break;
@@ -543,6 +613,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getUserName());
 		out.name(PASSWD__ID);
 		out.value(getPasswd());
+		out.name(MIN_VOTES__ID);
+		out.value(getMinVotes());
+		out.name(WILDCARDS__ID);
+		out.value(isWildcards());
 		out.name(REGISTERED__ID);
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__ID);
@@ -579,6 +653,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case REALM__ID: setRealm(in.nextString()); break;
 			case USER_NAME__ID: setUserName(in.nextString()); break;
 			case PASSWD__ID: setPasswd(in.nextString()); break;
+			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
+			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
 			case REGISTERED__ID: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__ID: setRegisterMessage(in.nextString()); break;
 			case LAST_SUCCESS__ID: setLastSuccess(in.nextLong()); break;

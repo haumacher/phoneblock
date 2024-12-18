@@ -14,17 +14,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.crawl.FetchService;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Command line tool to start a meta search.
@@ -140,8 +139,8 @@ public class MetaSearchService implements ServletContextListener {
 	 * @param bot
 	 *        Whether a bot requested the info.
 	 */
-	public List<UserComment> fetchComments(String phoneId, boolean bot) {
-		return createSearch(phoneId, bot).search().getComments();
+	public List<UserComment> fetchComments(String phoneId) {
+		return createSearch(phoneId).search().getComments();
 	}
 
 	/**
@@ -207,17 +206,7 @@ public class MetaSearchService implements ServletContextListener {
 	 * Creates a search for the given phone number.
 	 */
 	private SearchOperation createSearch(String phoneId) {
-		return createSearch(phoneId, false);
-	}
-	
-	/**
-	 * Creates a search for the given phone number.
-	 * 
-	 * @param bot
-	 *        Whether the search is done for a bot.
-	 */
-	private SearchOperation createSearch(String phoneId, boolean bot) {
-		return new SearchOperation(_scheduler, _indexer, _plugins, phoneId, bot);
+		return new SearchOperation(_scheduler, _indexer, _plugins, phoneId);
 	}
 
 	/** 

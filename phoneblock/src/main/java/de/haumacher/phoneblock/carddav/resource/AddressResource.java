@@ -137,15 +137,16 @@ public class AddressResource extends Resource {
 						continue;
 					}
 					
-					LOG.info("Adding to block list: " + phoneId);
-					
-					blockList.removeExclude(currentUser, phoneId);
-					
-					// Safety, prevent duplicate key constraint violation.
-					blockList.removePersonalization(currentUser, phoneId);
-					
-					blockList.addPersonalization(currentUser, phoneId);
-					db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
+					Boolean state = blockList.getPersonalizationState(currentUser, phoneId);
+					if (state == null || !state.booleanValue()) {
+						LOG.info("Adding to block list: " + phoneId);
+						
+						// Safety, prevent duplicate key constraint violation.
+						blockList.removePersonalization(currentUser, phoneId);
+						blockList.addPersonalization(currentUser, phoneId);
+						
+						db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
+					}
 				}
 				
 				session.commit();
