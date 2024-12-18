@@ -352,6 +352,12 @@ UPDATE PERSONALIZATION
 SET PHONE = CONCAT('00', SUBSTRING(PHONE, 1, LENGTH(PHONE)))
 WHERE PHONE LIKE '+%';
 
+
+---------------------------------
+-- Prevent numbers with only a single old vote to be added to min-votes 2 blocklists
+---------------------------------
+UPDATE NUMBERS SET VOTES = 1, DOWN_VOTES = DOWN_VOTES - 1 WHERE VOTES = 2; 
+
 ---------------------------------
 -- Update user settings to new values.
 ---------------------------------
