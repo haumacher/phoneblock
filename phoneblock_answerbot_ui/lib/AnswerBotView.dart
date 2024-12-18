@@ -118,9 +118,9 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
               DropdownButtonFormField(
                 items: const [
-                  DropdownMenuItem(value: 4, child: Text("4 - sofort sperren")),
-                  DropdownMenuItem(value: 8, child: Text("8 - Bestätigung abwarten")),
-                  DropdownMenuItem(value: 20, child: Text("20 - nur wenn sicher SPAM")),
+                  DropdownMenuItem(value: 2, child: Text("2 - sofort sperren")),
+                  DropdownMenuItem(value: 4, child: Text("4 - Bestätigung abwarten")),
+                  DropdownMenuItem(value: 10, child: Text("10 - erst wenn sicher")),
                   DropdownMenuItem(value: 100, child: Text("100 - nur Top-Spammer")),
                 ],
                 decoration: const InputDecoration(

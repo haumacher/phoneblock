@@ -117,10 +117,10 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="minVotes">
-			    <option value="4" <%if (settings.getMinVotes() == 4) {%>selected="selected"<%}%>>4 (sofort sperren)</option>	
-			    <option value="8" <%if (settings.getMinVotes() == 8) {%>selected="selected"<%}%>>8</option>	
-			    <option value="20" <%if (settings.getMinVotes() == 20) {%>selected="selected"<%}%>>20</option>	
-			    <option value="100" <%if (settings.getMinVotes() == 100) {%>selected="selected"<%}%>>100 (nur sperren wenn ganz sicher)</option>	
+			    <option value="2" <%if (settings.getMinVotes() == 2) {%>selected="selected"<%}%>>2 (sofort sperren)</option>	
+			    <option value="4" <%if (settings.getMinVotes() == 4) {%>selected="selected"<%}%>>4 (Bestätigungen abwarten)</option>	
+			    <option value="10" <%if (settings.getMinVotes() == 10) {%>selected="selected"<%}%>>10 (erst wenn sicher)</option>	
+			    <option value="100" <%if (settings.getMinVotes() == 100) {%>selected="selected"<%}%>>100 (nur Top-Spammer)</option>	
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">

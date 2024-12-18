@@ -145,14 +145,14 @@ public class SettingsServlet extends HttpServlet {
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
 		boolean wildcards = req.getParameter("wildcards") != null;
 		
-		if (minVotes <= 4) {
+		if (minVotes <= 2) {
+			minVotes = 2;
+		}
+		else if (minVotes <= 4) {
 			minVotes = 4;
 		}
-		else if (minVotes <= 8) {
-			minVotes = 8;
-		}
-		else if (minVotes <= 20) {
-			minVotes = 20;
+		else if (minVotes <= 10) {
+			minVotes = 10;
 		}
 		else {
 			minVotes = 100;
