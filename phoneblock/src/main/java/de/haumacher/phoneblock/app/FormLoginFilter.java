@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
@@ -51,6 +52,11 @@ public class FormLoginFilter extends LoginFilter {
 			location.append(query);
 		}
 		return location.toString();
+	}
+	
+	@Override
+	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
+		return authorization.isAccessLogin();
 	}
 
 }

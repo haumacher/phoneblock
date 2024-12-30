@@ -76,7 +76,7 @@
 			</div>
 			
 			<div class="tile is-parent is-6 ">
-				<a class="tile is-child notification is-info" href="<%=request.getContextPath()%><%=LoginServlet.PATH %>?<%=LoginServlet.LOCATION_ATTRIBUTE%>=/support-banktransfer.jsp">
+				<a class="tile is-child notification is-info" href="<%=request.getContextPath()%>/support-banktransfer.jsp">
 					<p class="title">
 					    <span class="icon">
 							<i class="fa-solid fa-building-columns"></i>

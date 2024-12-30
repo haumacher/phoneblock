@@ -16,7 +16,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
@@ -25,6 +27,15 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebServlet(urlPatterns = LoginServlet.PATH)
 public class LoginServlet extends HttpServlet {
 	
+	public static final String USER_NAME_PARAM = "userName";
+
+	public static final String PASSWORD_PARAM = "password";
+
+	/**
+	 * Request parameter that makes the login persistent, if its value is <code>true</code>.
+	 */
+	public static final String REMEMBER_PARAM = "remember";
+
 	/**
 	 * Request attribute that save the original location that was requested before login.
 	 * 
@@ -57,8 +68,8 @@ public class LoginServlet extends HttpServlet {
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = req.getParameter("userName");
-		String password = req.getParameter("password");
+		String userName = req.getParameter(USER_NAME_PARAM);
+		String password = req.getParameter(PASSWORD_PARAM);
 		
 		if (userName == null || userName.isEmpty()) {
 			LOG.info("Login without user name.");
@@ -72,12 +83,16 @@ public class LoginServlet extends HttpServlet {
 			return;
 		}
 		
-		String authenticatedUser = DBService.getInstance().login(userName, password);
+		DB db = DBService.getInstance();
+		String authenticatedUser = db.login(userName, password);
 		if (authenticatedUser == null) {
 			LOG.warn("Login failed for user: " + userName);
 			sendFailure(req, resp);
 			return;
 		}
+
+		String rememberValue = req.getParameter(REMEMBER_PARAM);
+		processRememberMe(req, resp, db, rememberValue, userName);
 		
 		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
 		
@@ -86,6 +101,18 @@ public class LoginServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 		} else {
 			resp.sendRedirect(req.getContextPath() + location);
+		}
+	}
+
+	public static void processRememberMe(HttpServletRequest req, HttpServletResponse resp, DB db, String rememberValue,
+			String userName) {
+		boolean rememberMe = "true".equals(rememberValue);
+		if (rememberMe) {
+			AuthToken authorization = db.createAuthorizationTemplate(userName, System.currentTimeMillis(), req.getHeader("User-Agent"));
+			
+			db.createAuthToken(authorization);
+			
+			LoginFilter.setLoginCookie(req, resp, authorization);
 		}
 	}
 

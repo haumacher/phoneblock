@@ -40,6 +40,15 @@
 				Anmeldung und der Bewertung von Telefonnummern wird ein technisch 
 				notwendiges Session-Cookie gesetzt. 
 			</p>
+			<p>
+				Wenn Du die Funktion "Auf diesem Gerät angemeldet bleiben" beim Login
+				aktivierst, dann setzt PhoneBlock ein persistentes Cookie, mit dem 
+				Dich die Seite bei Deinem nächsten Besuch wiedererkennt, so dass du 
+				automatisch angemeldet bist, ohne Dein Passwort erneut eingeben, 
+				oder den Google-Loginvorgang wiederholen zu müssen. Wenn Du den "Abmelden"
+				Knopf klickst, wird dieses Cookie wieder gelöscht und Du musst Dich bei 
+				Deinem nächsten Besuch erneut anmelden.
+			</p>
 
 			<h2>Account-Löschung</h2>
 			<p>

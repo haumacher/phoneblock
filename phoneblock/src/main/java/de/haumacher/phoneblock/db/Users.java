@@ -7,11 +7,13 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 
 /**
  * Operations for user management.
@@ -34,6 +36,85 @@ public interface Users {
 	@Delete("delete from USERS where LOGIN=#{login}")
 	void deleteUser(String login);
 	
+	@Insert("""
+			insert into TOKENS (
+				USERID, CREATED, PWHASH, 
+				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
+				LASTACCESS, USERAGENT
+			)
+			values (
+				#{userId}, #{created}, #{pwHash}, 
+				#{implicit}, #{accessQuery}, #{accessDownload}, #{accessCarddav},#{accessRate},#{accessLogin},
+				#{lastAccess}, #{userAgent}
+			)
+			""")
+	@Options(useGeneratedKeys = true, keyColumn = "ID", keyProperty = "id")
+	void createAuthToken(AuthToken token);
+	
+	@Update("""
+			update TOKENS
+			set
+				LASTACCESS=#{lastAccess},
+				USERAGENT=#{userAgent}
+			where
+				ID=#{id}
+			""")
+	void updateAuthToken(long id, long lastAccess, String userAgent);
+	
+	@Update("""
+			update TOKENS
+			set
+				PWHASH=#{pwHash}
+			where
+				ID=#{id}
+			""")
+	void updateAuthTokenSecret(long id, byte[] pwHash);
+
+	@Delete("""
+			delete from TOKENS
+			where ID=#{id}
+			""")
+	void invalidateAuthToken(long id);
+	
+	@Delete("""
+			delete from TOKENS
+			where USERID=#{userId}
+			""")
+	void invalidateAllTokens(long userId);
+	
+	@Select("""
+			select ID 
+			from TOKENS
+			where
+				USERID=#{userId} and
+				IMPLICIT
+			order by LASTACCESS desc
+			offset 4 rows
+			""")
+	List<Long> getOutdatedLoginTokens(long userId);
+	
+	@Delete("""
+			<script>
+			delete from TOKENS
+			where ID in
+			    <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
+			""")
+	int deleteTokens(List<Long> ids);
+	
+	@Select("""
+			select
+				ID, 
+				USERID, CREATED, PWHASH, 
+				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
+				LASTACCESS, USERAGENT
+			from TOKENS
+			where ID=#{id}
+			""")
+	DBAuthToken getAuthToken(long id);
+
 	@Select("select count(1) from USERS")
 	int getUserCount();
 	
@@ -57,6 +138,9 @@ public interface Users {
 
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
+	
+	@Select("select LOGIN from USERS where ID=#{userId}")
+	String getUserName(long userId);
 	
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where ID=#{userId}")
 	DBUserSettings getSettingsById(long userId);
@@ -134,9 +218,17 @@ public interface Users {
 	@Update("update ANSWERBOT_DYNDNS set IP4=#{ip4}, IP6=#{ip6}, UPDATED=#{updated} where ABID=#{abId}")
 	void updateDynDns(long abId, String ip4, String ip6, long updated);
 	
-	@Select("select s.ID, s.USERID, s.UPDATED, s.LAST_SUCCESS, s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.ENABLED = true")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.UPDATED, s.LAST_SUCCESS, 
+				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, 
+				s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD,
+				s.MIN_VOTES, s.WILDCARDS 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID  
+			where s.ENABLED = true
+			""")
 	List<DBAnswerBotSip> getEnabledAnswerBots();
 
 	/**
@@ -151,21 +243,65 @@ public interface Users {
 	
 	@Select("select s.ID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
 	long getAnswerBotId(String sipUser);
+	
+	@Select("select s.USERID from ANSWERBOT_SIP s where s.USERNAME = #{sipUser}")
+	long getAnswerBotUserId(String sipUser);
 
-	@Select("select s.ID, s.USERID, s.UPDATED, s.LAST_SUCCESS, s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.USERNAME = #{userName}")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.UPDATED, s.LAST_SUCCESS, 
+				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, 
+				s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD,
+				s.MIN_VOTES, s.WILDCARDS 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID  
+			where s.USERNAME = #{userName}
+			""")
 	DBAnswerBotSip getAnswerBotBySipUser(String userName);
 
-	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.USERID= #{userId}")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
+				s.REGISTERED, s.REGISTER_MSG, 
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
+				s.USERNAME, s.PASSWD, 
+				d.DYNDNS_USER, d.DYNDNS_PASSWD 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d 
+			on d.ABID=s.ID  
+			where s.USERID= #{userId}
+			""")
 	List<DBAnswerbotInfo> getAnswerBots(long userId);
 	
-	@Select("select s.ID, s.USERID, s.ENABLED, s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, s.REGISTERED, s.REGISTER_MSG, s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, s.USERNAME, s.PASSWD, d.DYNDNS_USER, d.DYNDNS_PASSWD from ANSWERBOT_SIP s " + 
-			"left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID " + 
-			"where s.ID= #{id}")
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
+				s.REGISTERED, s.REGISTER_MSG, 
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
+				s.USERNAME, s.PASSWD, 
+				d.DYNDNS_USER, d.DYNDNS_PASSWD 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d 
+			on d.ABID=s.ID  
+			where s.ID= #{id}
+			""")
 	DBAnswerbotInfo getAnswerBot(long id);
+	
+	@Update("""
+			update ANSWERBOT_SIP s
+			set
+				s.PREFER_V4=#{preferIPv4},
+				s.MIN_VOTES=#{minVotes},
+				s.WILDCARDS=#{wildcards}
+			where
+				s.ID=#{id}
+			""")
+	void updateAnswerbot(long id, boolean preferIPv4, int minVotes, boolean wildcards);
 	
 	@Update("update ANSWERBOT_SIP set LAST_SUCCESS=#{lastSuccess}, REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id}")
 	int updateSipRegistration(long id, boolean registered, String message, long lastSuccess);

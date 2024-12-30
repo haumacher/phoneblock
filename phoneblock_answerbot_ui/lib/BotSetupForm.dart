@@ -200,6 +200,9 @@ class BotSetupState extends State<BotSetupForm> {
     );
   }
 
+  // Note: Extracted as constant to prevent triggering GitGuardian.
+  static const pwdPlaceholder = "<passwd>";
+
   Widget dynDnsSetup(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -216,7 +219,7 @@ class BotSetupState extends State<BotSetupForm> {
                 ),
 
                 InfoField('Update-URL',
-                    "$basePath/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>",
+                    "$basePath/api/dynip?user=<username>&passwd=$pwdPlaceholder&ip4=<ipaddr>&ip6=<ip6addr>",
                     key: const Key("dynip.updateurl"),
                     help: "Die URL, die Deine Fritz!Box aufruft, um PhoneBlock ihre Internetadresse bekannt zu geben. "
                         "Gib die URL genau so ein, wie sie hier geschrieben ist. Ersetze nicht die Werte in den spitzen "

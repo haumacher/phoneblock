@@ -20,11 +20,14 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
 /**
- * {@link HttpServlet} invoked from the <code>signup-code.jsp</code> form after the e-mail verification code has been
- * entered.
+ * {@link HttpServlet} invoked from the signup page when the e-mail verification code is entered.
  */
-@WebServlet(urlPatterns = "/registration-code")
+@WebServlet(urlPatterns = {
+	RegistrationServlet.REGISTER_WEB,
+})
 public class RegistrationServlet extends HttpServlet {
+
+	public static final String REGISTER_WEB = "/register-web";
 
 	private static final String PASSWORD_ATTR = "passwd";
 
@@ -41,15 +44,13 @@ public class RegistrationServlet extends HttpServlet {
 		
 		Object expectedCode = req.getSession().getAttribute("code");
 		if (expectedCode == null) {
-			req.setAttribute("message", "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
-			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
+			sendError(req, resp, "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
 			return;
 		}
 		
 		String code = req.getParameter("code");
 		if (code == null || code.trim().isEmpty() || !code.equals(expectedCode)) {
-			req.setAttribute("message", "Der Bestätigungscode stimmt nicht überein.");
-			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
+			sendError(req, resp, "Der Bestätigungscode stimmt nicht überein.");
 			return;
 		}
 		
@@ -71,8 +72,7 @@ public class RegistrationServlet extends HttpServlet {
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
-			req.setAttribute("message", "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
-			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
+			sendError(req, resp, "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
 			return;
 		}
 		
@@ -91,10 +91,31 @@ public class RegistrationServlet extends HttpServlet {
 		if (location != null) {
 			resp.sendRedirect(req.getContextPath() + location);
 		} else {
-			resp.sendRedirect(req.getContextPath() + "/setup.jsp");
+			resp.sendRedirect(req.getContextPath() + successPage(req));
+		}
+	}
+
+	private static String successPage(HttpServletRequest req) {
+		switch (req.getServletPath()) {
+		case REGISTER_WEB:
+		default:
+			return "/setup.jsp";
 		}
 	}
 	
+	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
+		req.setAttribute("message", message);
+		req.getRequestDispatcher(errorPage(req)).forward(req, resp);
+	}
+
+	private String errorPage(HttpServletRequest req) {
+		switch (req.getServletPath()) {
+		case REGISTER_WEB:
+		default:
+			return "/signup-code.jsp";
+		}
+	}
+
 	/**
 	 * The password that was newly assigned.
 	 */

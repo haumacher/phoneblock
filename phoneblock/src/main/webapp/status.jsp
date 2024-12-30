@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.db.model.SearchInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.NumberInfo"%>
+<%@page import="de.haumacher.phoneblock.app.api.model.SearchInfo"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.db.DBService"%>
 <%@page import="de.haumacher.phoneblock.db.Status"%>
 <%@page import="de.haumacher.phoneblock.db.Statistics"%>
-<%@page import="de.haumacher.phoneblock.db.model.SpamReport"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.util.List"%>
@@ -92,14 +92,14 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 	List<? extends SearchInfo> searches = DBService.getInstance().getTopSearches();
 	if (!searches.isEmpty()) {
 %>
-		<h2>Top-Suchanfragen</h2> 
+		<h2>Aktuelle Suchanfragen</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
 					<th>Rufnummer</th>
-					<th title="Suchanfragen nach dieser Nummer heute">Heute</th>
-					<th title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Gestern</th>
+					<th title="Anzahl an Suchanfragen nach dieser Nummer seit gestern">Heute und gestern</th>
+					<th title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Gesamt</th>
 					<th>Letzte Anfrage</th>
 				</tr>
 			</thead>
@@ -134,7 +134,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 %>
 
 <%
-	List<? extends SpamReport> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
+	List<? extends NumberInfo> reports = DBService.getInstance().getLatestSpamReports(System.currentTimeMillis() - 60 * 60 * 1000);
 	if (!reports.isEmpty()) {
 %>
 		<h2>Spam-Reports der letzten Stunde</h2> 
@@ -150,7 +150,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</thead>
 			<tbody>
 <%			
-				for (SpamReport report : reports) {
+				for (NumberInfo report : reports) {
 %>
 					<tr>
 						<td>
@@ -162,11 +162,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= (now - report.getLastUpdate()) / 1000 / 60 %> minutes ago
+							<%= (now - report.getUpdated()) / 1000 / 60 %> minutes ago
 						</td>
 						
 						<td>
-							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+							<%= report.getAdded() > 0 ? format.format(new Date(report.getAdded())) : "-" %>
 						</td>
 					</tr>
 <%	
@@ -195,7 +195,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</thead>
 			<tbody>
 <%			
-				for (SpamReport report : reports) {
+				for (NumberInfo report : reports) {
 %>
 					<tr>
 						<td>
@@ -207,11 +207,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= format.format(new Date(report.getLastUpdate()))%>
+							<%= format.format(new Date(report.getUpdated()))%>
 						</td>
 
 						<td>
-							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+							<%= report.getAdded() > 0 ? format.format(new Date(report.getAdded())) : "-" %>
 						</td>
 					</tr>
 <%	
@@ -240,7 +240,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</thead>
 			<tbody>
 <%			
-				for (SpamReport report : reports) {
+				for (NumberInfo report : reports) {
 %>
 					<tr>
 						<td>
@@ -252,11 +252,11 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 						</td>
 						
 						<td>
-							<%= format.format(new Date(report.getLastUpdate()))%>
+							<%= format.format(new Date(report.getUpdated()))%>
 						</td>
 
 						<td>
-							<%= report.getDateAdded() > 0 ? format.format(new Date(report.getDateAdded())) : "-" %>
+							<%= report.getAdded() > 0 ? format.format(new Date(report.getAdded())) : "-" %>
 						</td>
 					</tr>
 <%	
@@ -265,6 +265,51 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 			</tbody>
 		</table>
 <%	
+	}
+%>
+
+<%
+	List<? extends NumberInfo> topSearches = DBService.getInstance().getTopSearchesOverall(15);
+	if (!topSearches.isEmpty()) {
+%>
+		<h2>Meistgesuchte Nummern</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Rufnummer</th>
+					<th title="Anzahl an Suchanfragen nach dieser Nummer">Suchanfragen</th>
+					<th title="Anzahl der SPAM-Votes for diese Nummer">Votes</th>
+					<th>Letzte Anfrage</th>
+				</tr>
+			</thead>
+			<tbody>
+<%			
+				for (NumberInfo report : topSearches) {
+%>
+					<tr>
+						<td>
+							<a href="<%= request.getContextPath()%>/nums/<%= report.getPhone()%>" data-onclick="showNumber">☎ <%= JspUtil.quote(report.getPhone()) %></a>
+						</td>
+						
+						<td>
+							<%=report.getSearches()%>
+						</td>
+						
+						<td>
+							<%=report.getVotes()%>
+						</td>
+						
+						<td>
+							<%= report.getLastSearch() > 0 ? format.format(new Date(report.getLastSearch())) : "-" %>
+						</td>
+					</tr>
+<%	
+				}
+%>
+			</tbody>
+		</table>
+<%
 	}
 %>
 

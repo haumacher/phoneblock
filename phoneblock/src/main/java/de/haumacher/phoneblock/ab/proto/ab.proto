@@ -49,6 +49,27 @@ message CheckDynDns extends BotRequest {
 }
 
 /** Switches the answer bot on. */
+message UpdateAnswerBot extends BotRequest {
+
+	/** Whether the bot is enabled (registration is active). */
+	bool enabled;
+	
+	/** Whether to limit communication to IPv4. */
+	bool preferIPv4;
+	
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int minVotes;
+	
+	/** 
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	 */
+	bool wildcards;
+	
+}
+
+/** Switches the answer bot on. */
 message EnableAnswerBot extends BotRequest {
 }
 
@@ -60,7 +81,7 @@ message DisableAnswerBot extends BotRequest {
 message DeleteAnswerBot extends BotRequest {
 }
 
-/** Checks whether an anwer bot has successfully registered to its Fritz!Box. */
+/** Checks whether an answer bot has successfully registered to its Fritz!Box. */
 message CheckAnswerBot extends BotRequest {
 }
 
@@ -102,6 +123,19 @@ message AnswerbotInfo {
 
 	/** Whether the bot is enabled (registration is active). */
 	bool enabled;
+	
+	/** Whether to limit communication to IPv4. */
+	bool preferIPv4;
+
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int minVotes;
+	
+	/** 
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	 */
+	bool wildcards;
 
 	/** Whether the bot has sucessfully registered (can accept calls). */
 	bool registered;

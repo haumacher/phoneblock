@@ -33,4 +33,18 @@ public interface CustomerOptions extends RegistrationOptions, UserOptions {
 		return new NameAddress(new SipURI(getUser(),getProxy()));
 	}
 
+	/** 
+	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
+	 */
+	int getMinVotes();
+	
+	/** 
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	 */
+	boolean getWildcard();
+	
+	/** 
+	 * Whether to accept anonymous calls.
+	 */
+	boolean getAcceptAnonymous();
 }

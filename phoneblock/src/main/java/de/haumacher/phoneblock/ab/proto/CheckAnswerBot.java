@@ -1,7 +1,7 @@
 package de.haumacher.phoneblock.ab.proto;
 
 /**
- * Checks whether an anwer bot has successfully registered to its Fritz!Box.
+ * Checks whether an answer bot has successfully registered to its Fritz!Box.
  */
 public class CheckAnswerBot extends BotRequest {
 

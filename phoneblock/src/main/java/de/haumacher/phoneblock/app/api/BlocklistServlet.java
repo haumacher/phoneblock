@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.model.Blocklist;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

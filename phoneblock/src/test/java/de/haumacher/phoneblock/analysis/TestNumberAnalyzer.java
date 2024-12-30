@@ -3,12 +3,13 @@
  */
 package de.haumacher.phoneblock.analysis;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import de.haumacher.phoneblock.db.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 
 /**
  * Test for {@link NumberAnalyzer}.
@@ -48,6 +49,7 @@ class TestNumberAnalyzer {
 		"*017650642+*602*, 017650642602*",
 		"+*4917650642+*602*, +4917650642602*",
 		"*004917650642+*602*, 004917650642602*",
+		"00+491722144286, 00491722144286",
 	})
 	void testNormalize(String input, String normalized) {
 		String normalizedNumber = NumberAnalyzer.normalizeNumber(input);

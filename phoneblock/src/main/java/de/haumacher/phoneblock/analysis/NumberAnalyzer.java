@@ -19,7 +19,7 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
-import de.haumacher.phoneblock.db.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 
 /**
  * Utility for analyzing phone numbers.
@@ -288,20 +288,19 @@ public class NumberAnalyzer {
 	 * Creates a database ID for the given phone number, or <code>null</code> if the number is invalid. 
 	 */
 	public static String toId(String phoneText) {
-		String phoneNumber = NumberAnalyzer.normalizeNumber(phoneText);
+		String phoneNumber = normalizeNumber(phoneText);
 		if (phoneNumber.contains("*")) {
 			LOG.warn("Ignoring number with wildcard: " + phoneText);
 			return null;
 		}
 		
-		PhoneNumer number = NumberAnalyzer.analyze(phoneNumber);
+		PhoneNumer number = analyze(phoneNumber);
 		if (number == null) {
 			LOG.warn("Ignoring invalid phone number: " + phoneText);
 			return null;
 		}
 		
-		String phoneId = NumberAnalyzer.getPhoneId(number);
-		return phoneId;
+		return getPhoneId(number);
 	}
 
 	/**

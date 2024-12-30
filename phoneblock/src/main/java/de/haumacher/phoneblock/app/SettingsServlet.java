@@ -8,12 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
@@ -23,9 +17,13 @@ import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
-import de.haumacher.phoneblock.db.model.PhoneNumer;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.ServletUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet updating user settings.
@@ -105,18 +103,17 @@ public class SettingsServlet extends HttpServlet {
 					if (key.equals("add-wl")) {
 						String addValues = entry.getValue()[0];
 						for (String value : addValues.split("[,;]")) {
-							String phone = normalize(value);
+							String phone = NumberAnalyzer.toId(value);
 							if (phone == null) {
 								continue;
 							}
 							
 							blocklist.removePersonalization(owner, phone);
-							blocklist.removeExclude(owner, phone);
 							blocklist.addExclude(owner, phone);
 						}
 					}
 					else if (key.startsWith("bl-")) {
-						String phone = normalize(key.substring("bl-".length()));
+						String phone = NumberAnalyzer.toId(key.substring("bl-".length()));
 						if (phone == null) {
 							continue;
 						}
@@ -125,12 +122,12 @@ public class SettingsServlet extends HttpServlet {
 					}
 					
 					else if (key.startsWith("wl-")) {
-						String phone = normalize(key.substring("wl-".length()));
+						String phone = NumberAnalyzer.toId(key.substring("wl-".length()));
 						if (phone == null) {
 							continue;
 						}
 						
-						blocklist.removeExclude(owner, phone);
+						blocklist.removePersonalization(owner, phone);
 					}
 				}
 			}
@@ -143,32 +140,19 @@ public class SettingsServlet extends HttpServlet {
 		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 
-	private String normalize(String value) {
-		String phone = NumberAnalyzer.normalizeNumber(value);
-		if (phone.isEmpty() || phone.contains("*")) {
-			return null;
-		}
-		
-		PhoneNumer number = NumberAnalyzer.analyze(phone);
-		if (number == null) {
-			return null;
-		}
-		return NumberAnalyzer.getPhoneId(number);
-	}
-
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
 		int minVotes = Integer.parseInt(req.getParameter("minVotes"));
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
 		boolean wildcards = req.getParameter("wildcards") != null;
 		
-		if (minVotes <= 4) {
+		if (minVotes <= 2) {
+			minVotes = 2;
+		}
+		else if (minVotes <= 4) {
 			minVotes = 4;
 		}
-		else if (minVotes <= 8) {
-			minVotes = 8;
-		}
-		else if (minVotes <= 20) {
-			minVotes = 20;
+		else if (minVotes <= 10) {
+			minVotes = 10;
 		}
 		else {
 			minVotes = 100;

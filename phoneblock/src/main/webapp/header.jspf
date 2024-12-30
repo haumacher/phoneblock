@@ -15,7 +15,7 @@
 	<div class="hero-body">
 		<p class="title">
 			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" class="logo-image">
-			PhoneBlock
+			<a href="<%=request.getContextPath() %>/">PhoneBlock</a>
 		</p>
 		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
 		<a href="<%=request.getContextPath()%>/link/github" target="_blank">
@@ -46,8 +46,6 @@
 	</div>
 	<div id="navbarBasicExample" class="navbar-menu">
 		<div class="navbar-start">
-			<a class="navbar-item" href="<%=request.getContextPath() %>/">Home</a>
-
 			<div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link prevent-default" href="#">Installation</a>
 
@@ -79,13 +77,15 @@
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" title="Zur Facebook-Seite" href="<%=request.getContextPath()%>/link/facebook" target="_blank">
-				<span class="icon facebook-color">
-			    	<i class="fa-brands fa-lg fa-facebook"></i>
-		        </span>
+			<a class="navbar-item" title="Answerbot App" href="<%=request.getContextPath()%>/ab/" target="_blank">
+				<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-appbar.svg" width="20px" height="20px"/>
+		    </a>
+
+			<a class="navbar-item" title="Zur News-Seite" href="https://news.phoneblock.net" target="_blank">
+				<img src="<%=request.getContextPath()%>/assets/no-facebook.svg" width="20px" height="20px"/>
 		    </a>
       			
-			<a class="navbar-item" title="RSS-Feed" href="https://rss.app/feeds/2BQDpMNxPek9Yal2.xml" target="_blank">
+			<a class="navbar-item" title="RSS-Feed" href="https://news.phoneblock.net/feed" target="_blank">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>

@@ -1,6 +1,8 @@
 package de.haumacher.phoneblock.app.api.model;
 
 option NoInterfaces;
+option NoBinary;
+option NoReflection;
 
 /**
  * Information that must be requested to start a registration process.
@@ -78,6 +80,30 @@ message SessionInfo {
 	string code;
 }
 
+/** A classification of phone calls. */
+enum Rating {
+	/** A regular non-spam call. */
+	A_LEGITIMATE;
+	 
+	/** The call is negatively rated without determining the call type. For legacy reasons, this constant is named "missed".  */
+	B_MISSED; 
+	
+	/** The caller immediately cut the connection. */
+	C_PING;
+
+	/** A poll. */
+	D_POLL; 
+	
+	/** Some form of advertising, marketing unwanted consulting. */
+	E_ADVERTISING; 
+	
+	/** Some form of gambling or notice of prize notification. */
+	F_GAMBLE; 
+	
+	/** Some form of fraud. */
+	G_FRAUD;
+}
+
 /** Request to a add a new rating for a phone number. */
 message RateRequest {
 
@@ -85,21 +111,253 @@ message RateRequest {
 	string phone;
 	
 	/** The rating code. Must be one of the the codes defined in {@link de.haumacher.phoneblock.db.model.Rating}. */
-	string rating;
+	Rating rating;
 
 	/** A user comment describing the call or owner of the phone number. */
 	string comment;
 
 }
 
-message NumberInfo {
+/** Information about a phone number that is published to the <i>PhoneBlock API</i>.  */
+message PhoneInfo {
+	/** The number being requested. */
+	string phone;
+	
+	/** The number of votes that support blocking the requested number. */
+	int votes;
+	
+	/** The rating for the requested phone number. */
+	Rating rating;
+
+	/** 
+	 * The number of votes when also considering votes for numbers that have all but the last two digits in common with the requested number.
+	 *
+	 * <p>
+	 * Votes to those near-by numbers are only considered, when the density of SPAM numbers around the requested number is found to be high.
+	 * </p>
+	 */
+	int votesWildcard;
+
+	/** Whether this number is on the white list and therefore cannot receive votes. */	
+	boolean whiteListed;
+	
+	/** Whether this number no longer is on the blocklist, because no votes have been received for a long time. */	
+	boolean archived;
+
+	/** Date when this number was added to the SPAM database (in milliseconds since epoch). */	
+	long dateAdded;
+
+	/** Date when the last report for this number was received (in milliseconds since epoch). */	
+	long lastUpdate;
+}
+
+/** Info about how often a number was searched. */
+message SearchInfo {
+	/** The phone number */
+	string phone;
+	
+	/** The number of search requests in the {@link #revision time slot}. */
+	int count;
+	
+	/** Some other number of serch requests (context dependent). */
+	int total;
+	
+	/** When the last search request was performed for the {@link #phone number} in the {@link #revision time slot}. */
+	long lastSearch;
+}
+
+/** Info of how often a certain number was rated in a certain way. */
+message RatingInfo {
 	/** The number being rated. */
 	string phone;
 	
 	/** The {@link Rating} of the {@link #phone number}. */
-	string rating;
+	Rating rating;
 	
 	/** How often the {@link #phone number} was rated in a {@link #rating certain way}. */
 	int votes;
+}
+
+/** List of blocked numbers for retrieval through the <i>PhoneBlock API</i>. */
+message Blocklist {
+	/** Numbers in the blocklist. */
+	repeated BlockListEntry numbers;
+}
+
+abstract message AbstractNumberInfo {
+
+	/** The number being requested. */
+	string phone;
+	
+	/** Whether the number is considered active. Only active numbers are inserted into a blocklist. */
+	boolean active;
+	
+	int calls;
+	
+	/** The number of votes that support blocking the requested number. */
+	int votes;
+	
+	/** The number ratings of kind "legitimate". */
+	int ratingLegitimate;
+
+	/** The number ratings of kind "ping". */
+	int ratingPing;
+
+	/** The number ratings of kind "poll". */
+	int ratingPoll;
+
+	/** The number ratings of kind "advertising". */
+	int ratingAdvertising;
+
+	/** The number ratings of kind "gamble". */
+	int ratingGamble;
+
+	/** The number ratings of kind "fraud". */
+	int ratingFraud;
+	
+	/** The number of search request for this number. */
+	int searches;
+
+}
+
+/** Represents a row in the PhoneBlock database for a phone number */
+message NumberInfo extends AbstractNumberInfo {
+	/** Time when the number was inserted */
+	long added;
+	
+	/** Time when the information was last updated. */
+	long updated;
+	
+	/** Time when the number was last searched on the web site or through the API. */
+	long lastSearch;
+}
+ 
+/** Represents a row in the PhoneBlock database for an history entry for a phone number */
+message NumberHistory extends AbstractNumberInfo {
+	/** The revision in which this information was stored. */
+	int rMin;
+
+	/** The revision up to which this information is valid (inclusive). */
+	int rMax;
+} 
+
+message BlockListEntry {
+	/** The number being requested. */
+	string phone;
+	
+	/** The number of votes that support blocking the requested number. */
+	int votes;
+	
+	/** The rating for the requested phone number. */
+	Rating rating;
+}
+
+message Ratings {
+	repeated Rating values;
+}
+
+/** A comment posted for a phone number */
+message UserComment {
+	/** Technical identifier of this comment. */
+	string id;
+	
+	/** The user ID of the user that created this comment, or <code>null</code>, if the comment was created by an anonymous user. */
+	@Nullable
+	long userId;
+	
+	/** The phone number this comment belongs to. */
+	string phone;
+	
+	/** The rating of the comment (1 for positive, 5 for negative). */
+	Rating rating;
+	
+	/** The comment text */
+	string comment;
+	
+	/** The source of the comment, <code>phoneblock</code> for comments entered on the web site. */
+	string service;
+	
+	/** The creation date of the comment in milliseconds since epoch. */
+	long created;
+	
+	/** Number of "thumbs up" ratings for this comment. */
+	int up;
+	
+	/** Number of "thumbs down" ratings for this comment. */
+	int down;
+}
+
+message SpamReport {
+	
+	string phone;
+	int votes;
+	long lastUpdate;
+	long dateAdded;
+	boolean archived;
+	boolean whiteListed;
+	
+	/** The number of phone numbers with the the same prefix but a different end digit that are also reported as SPAM. */
+	int cnt10;
+	
+	/** The total number of votes against all phone numbers with the the same prefix but a different end digit. */
+	int votes10;
+	
+	/**
+	 * The number of phone numbers with the the same prefix but two different end digits that are also reported as SPAM.
+	 *
+	 * <p>
+	 * This number only considers {@link #cnt10 blocks of phone numbers} with a minimum fill-ratio.
+	 * </p> 
+	 */
+	int cnt100;
+	
+	/** 
+	 * The total number of votes against all phone numbers with the the same prefix but two different end digits. 
+	 *
+	 * <p>
+	 * This number only considers {@link #cnt10 blocks of phone numbers} with a minimum fill-ratio.
+	 * </p> 
+	 */
+	int votes100;
+}
+
+message PhoneNumer {
+	@Nullable
+	string shortcut;
+	
+	string plus;
+	string zeroZero;
+	
+	string countryCode;
+	string country;
+	
+	@Nullable
+	string cityCode;
+	@Nullable
+	string city;
+}
+
+message SearchResult {
+	string phoneId;
+	
+	PhoneNumer number;
+	
+	repeated UserComment comments;
+	
+	PhoneInfo info;
+	
+	repeated int searches;
+	
+	string aiSummary;
+	
+	repeated string relatedNumbers;
+	
+	string prev;
+	
+	string next;
+	
+	Rating topRating;
+	
+	map<Rating,int> ratings;
 }
 

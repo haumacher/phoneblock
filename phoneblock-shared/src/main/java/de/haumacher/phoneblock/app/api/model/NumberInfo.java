@@ -1,6 +1,9 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+/**
+ * Represents a row in the PhoneBlock database for a phone number
+ */
+public class NumberInfo extends AbstractNumberInfo {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.NumberInfo} instance.
@@ -12,29 +15,20 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.NumberInfo} type in JSON format. */
 	public static final String NUMBER_INFO__TYPE = "NumberInfo";
 
-	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	/** @see #getAdded() */
+	public static final String ADDED__PROP = "added";
 
-	/** @see #getRating() */
-	public static final String RATING__PROP = "rating";
+	/** @see #getUpdated() */
+	public static final String UPDATED__PROP = "updated";
 
-	/** @see #getVotes() */
-	public static final String VOTES__PROP = "votes";
+	/** @see #getLastSearch() */
+	public static final String LAST_SEARCH__PROP = "lastSearch";
 
-	/** Identifier for the property {@link #getPhone()} in binary format. */
-	static final int PHONE__ID = 1;
+	private long _added = 0L;
 
-	/** Identifier for the property {@link #getRating()} in binary format. */
-	static final int RATING__ID = 2;
+	private long _updated = 0L;
 
-	/** Identifier for the property {@link #getVotes()} in binary format. */
-	static final int VOTES__ID = 3;
-
-	private String _phone = "";
-
-	private String _rating = "";
-
-	private int _votes = 0;
+	private long _lastSearch = 0L;
 
 	/**
 	 * Creates a {@link NumberInfo} instance.
@@ -45,89 +39,138 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		super();
 	}
 
-	/**
-	 * The number being rated.
-	 */
-	public final String getPhone() {
-		return _phone;
+	@Override
+	public TypeKind kind() {
+		return TypeKind.NUMBER_INFO;
 	}
 
 	/**
-	 * @see #getPhone()
+	 * Time when the number was inserted
 	 */
+	public final long getAdded() {
+		return _added;
+	}
+
+	/**
+	 * @see #getAdded()
+	 */
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setAdded(long value) {
+		internalSetAdded(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getAdded()} without chain call utility. */
+	protected final void internalSetAdded(long value) {
+		_listener.beforeSet(this, ADDED__PROP, value);
+		_added = value;
+	}
+
+	/**
+	 * Time when the information was last updated.
+	 */
+	public final long getUpdated() {
+		return _updated;
+	}
+
+	/**
+	 * @see #getUpdated()
+	 */
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setUpdated(long value) {
+		internalSetUpdated(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getUpdated()} without chain call utility. */
+	protected final void internalSetUpdated(long value) {
+		_listener.beforeSet(this, UPDATED__PROP, value);
+		_updated = value;
+	}
+
+	/**
+	 * Time when the number was last searched on the web site or through the API.
+	 */
+	public final long getLastSearch() {
+		return _lastSearch;
+	}
+
+	/**
+	 * @see #getLastSearch()
+	 */
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setLastSearch(long value) {
+		internalSetLastSearch(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLastSearch()} without chain call utility. */
+	protected final void internalSetLastSearch(long value) {
+		_listener.beforeSet(this, LAST_SEARCH__PROP, value);
+		_lastSearch = value;
+	}
+
+	@Override
 	public de.haumacher.phoneblock.app.api.model.NumberInfo setPhone(String value) {
 		internalSetPhone(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getPhone()} without chain call utility. */
-	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
-		_phone = value;
-	}
-
-	/**
-	 * The {@link Rating} of the {@link #getPhone() number}.
-	 */
-	public final String getRating() {
-		return _rating;
-	}
-
-	/**
-	 * @see #getRating()
-	 */
-	public de.haumacher.phoneblock.app.api.model.NumberInfo setRating(String value) {
-		internalSetRating(value);
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setActive(boolean value) {
+		internalSetActive(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getRating()} without chain call utility. */
-	protected final void internalSetRating(String value) {
-		_listener.beforeSet(this, RATING__PROP, value);
-		_rating = value;
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setCalls(int value) {
+		internalSetCalls(value);
+		return this;
 	}
 
-	/**
-	 * How often the {@link #getPhone() number} was rated in a {@link #getRating() certain way}.
-	 */
-	public final int getVotes() {
-		return _votes;
-	}
-
-	/**
-	 * @see #getVotes()
-	 */
+	@Override
 	public de.haumacher.phoneblock.app.api.model.NumberInfo setVotes(int value) {
 		internalSetVotes(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getVotes()} without chain call utility. */
-	protected final void internalSetVotes(int value) {
-		_listener.beforeSet(this, VOTES__PROP, value);
-		_votes = value;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
 	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setRatingLegitimate(int value) {
+		internalSetRatingLegitimate(value);
 		return this;
 	}
 
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
 	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setRatingPing(int value) {
+		internalSetRatingPing(value);
 		return this;
 	}
 
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setRatingPoll(int value) {
+		internalSetRatingPoll(value);
+		return this;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setRatingAdvertising(int value) {
+		internalSetRatingAdvertising(value);
+		return this;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setRatingGamble(int value) {
+		internalSetRatingGamble(value);
+		return this;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setRatingFraud(int value) {
+		internalSetRatingFraud(value);
+		return this;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.app.api.model.NumberInfo setSearches(int value) {
+		internalSetSearches(value);
+		return this;
 	}
 
 	@Override
@@ -137,9 +180,9 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
-			PHONE__PROP, 
-			RATING__PROP, 
-			VOTES__PROP));
+			ADDED__PROP, 
+			UPDATED__PROP, 
+			LAST_SEARCH__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -149,19 +192,20 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public Object get(String field) {
 		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case RATING__PROP: return getRating();
-			case VOTES__PROP: return getVotes();
-			default: return null;
+			case ADDED__PROP: return getAdded();
+			case UPDATED__PROP: return getUpdated();
+			case LAST_SEARCH__PROP: return getLastSearch();
+			default: return super.get(field);
 		}
 	}
 
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case RATING__PROP: internalSetRating((String) value); break;
-			case VOTES__PROP: internalSetVotes((int) value); break;
+			case ADDED__PROP: internalSetAdded((long) value); break;
+			case UPDATED__PROP: internalSetUpdated((long) value); break;
+			case LAST_SEARCH__PROP: internalSetLastSearch((long) value); break;
+			default: super.set(field, value); break;
 		}
 	}
 
@@ -173,119 +217,56 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	@Override
-	public final void writeTo(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
-		writeContent(out);
-	}
-
-	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
-		out.name(PHONE__PROP);
-		out.value(getPhone());
-		out.name(RATING__PROP);
-		out.value(getRating());
-		out.name(VOTES__PROP);
-		out.value(getVotes());
+		out.name(ADDED__PROP);
+		out.value(getAdded());
+		out.name(UPDATED__PROP);
+		out.value(getUpdated());
+		out.name(LAST_SEARCH__PROP);
+		out.value(getLastSearch());
 	}
 
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
-			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case RATING__PROP: setRating(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case VOTES__PROP: setVotes(in.nextInt()); break;
+			case ADDED__PROP: setAdded(in.nextLong()); break;
+			case UPDATED__PROP: setUpdated(in.nextLong()); break;
+			case LAST_SEARCH__PROP: setLastSearch(in.nextLong()); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(PHONE__ID);
-		out.value(getPhone());
-		out.name(RATING__ID);
-		out.value(getRating());
-		out.name(VOTES__ID);
-		out.value(getVotes());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.app.api.model.NumberInfo readNumberInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.app.api.model.NumberInfo result = de.haumacher.phoneblock.app.api.model.NumberInfo.readNumberInfo_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.app.api.model.NumberInfo} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.app.api.model.NumberInfo readNumberInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.app.api.model.NumberInfo result = new NumberInfo();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case PHONE__ID: setPhone(in.nextString()); break;
-			case RATING__ID: setRating(in.nextString()); break;
-			case VOTES__ID: setVotes(in.nextInt()); break;
-			default: in.skipValue(); 
 		}
 	}
 
 	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.NumberInfo} type. */
 	public static final String NUMBER_INFO__XML_ELEMENT = "number-info";
 
-	/** XML attribute or element name of a {@link #getPhone} property. */
-	private static final String PHONE__XML_ATTR = "phone";
+	/** XML attribute or element name of a {@link #getAdded} property. */
+	private static final String ADDED__XML_ATTR = "added";
 
-	/** XML attribute or element name of a {@link #getRating} property. */
-	private static final String RATING__XML_ATTR = "rating";
+	/** XML attribute or element name of a {@link #getUpdated} property. */
+	private static final String UPDATED__XML_ATTR = "updated";
 
-	/** XML attribute or element name of a {@link #getVotes} property. */
-	private static final String VOTES__XML_ATTR = "votes";
+	/** XML attribute or element name of a {@link #getLastSearch} property. */
+	private static final String LAST_SEARCH__XML_ATTR = "last-search";
 
 	@Override
 	public String getXmlTagName() {
 		return NUMBER_INFO__XML_ELEMENT;
 	}
 
-	@Override
-	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
-		writeAttributes(out);
-		writeElements(out);
-	}
-
 	/** Serializes all fields that are written as XML attributes. */
+	@Override
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
-		out.writeAttribute(PHONE__XML_ATTR, getPhone());
-		out.writeAttribute(RATING__XML_ATTR, getRating());
-		out.writeAttribute(VOTES__XML_ATTR, Integer.toString(getVotes()));
+		super.writeAttributes(out);
+		out.writeAttribute(ADDED__XML_ATTR, Long.toString(getAdded()));
+		out.writeAttribute(UPDATED__XML_ATTR, Long.toString(getUpdated()));
+		out.writeAttribute(LAST_SEARCH__XML_ATTR, Long.toString(getLastSearch()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
+	@Override
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		super.writeElements(out);
 		// No element fields.
 	}
 
@@ -296,74 +277,44 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return result;
 	}
 
-	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
-	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
-		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
-			String name = in.getAttributeLocalName(n);
-			String value = in.getAttributeValue(n);
-
-			readFieldXmlAttribute(name, value);
-		}
-		while (true) {
-			int event = in.nextTag();
-			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
-				break;
-			}
-			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-
-			String localName = in.getLocalName();
-			readFieldXmlElement(in, localName);
-		}
-	}
-
-	/** Parses the given attribute value and assigns it to the field with the given name. */
+	@Override
 	protected void readFieldXmlAttribute(String name, String value) {
 		switch (name) {
-			case PHONE__XML_ATTR: {
-				setPhone(value);
+			case ADDED__XML_ATTR: {
+				setAdded(Long.parseLong(value));
 				break;
 			}
-			case RATING__XML_ATTR: {
-				setRating(value);
+			case UPDATED__XML_ATTR: {
+				setUpdated(Long.parseLong(value));
 				break;
 			}
-			case VOTES__XML_ATTR: {
-				setVotes(Integer.parseInt(value));
+			case LAST_SEARCH__XML_ATTR: {
+				setLastSearch(Long.parseLong(value));
 				break;
 			}
 			default: {
-				// Skip unknown attribute.
+				super.readFieldXmlAttribute(name, value);
 			}
 		}
 	}
 
-	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	@Override
 	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
 		switch (localName) {
-			case PHONE__XML_ATTR: {
-				setPhone(in.getElementText());
+			case ADDED__XML_ATTR: {
+				setAdded(Long.parseLong(in.getElementText()));
 				break;
 			}
-			case RATING__XML_ATTR: {
-				setRating(in.getElementText());
+			case UPDATED__XML_ATTR: {
+				setUpdated(Long.parseLong(in.getElementText()));
 				break;
 			}
-			case VOTES__XML_ATTR: {
-				setVotes(Integer.parseInt(in.getElementText()));
+			case LAST_SEARCH__XML_ATTR: {
+				setLastSearch(Long.parseLong(in.getElementText()));
 				break;
 			}
 			default: {
-				internalSkipUntilMatchingEndElement(in);
-			}
-		}
-	}
-
-	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
-		int level = 0;
-		while (true) {
-			switch (in.next()) {
-				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
-				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+				super.readFieldXmlElement(in, localName);
 			}
 		}
 	}
@@ -372,6 +323,11 @@ public class NumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	public static NumberInfo readNumberInfo(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
 		in.nextTag();
 		return de.haumacher.phoneblock.app.api.model.NumberInfo.readNumberInfo_XmlContent(in);
+	}
+
+	@Override
+	public <R,A,E extends Throwable> R visit(de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.Visitor<R,A,E> v, A arg) throws E {
+		return v.visit(this, arg);
 	}
 
 }

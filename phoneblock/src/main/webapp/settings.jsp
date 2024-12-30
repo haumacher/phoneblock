@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.PBLogoutFilter"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
@@ -56,6 +57,12 @@
 			  </div>
 			  
 			  <div class="message-body">
+
+				<div class="field">
+				  <label class="label">Internetadresse des CardDAV-Servers</label>
+				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+
 <% } %>			
 				<div class="field">
 				  <label class="label">Benutzername</label>
@@ -116,10 +123,10 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="minVotes">
-			    <option value="4" <%if (settings.getMinVotes() == 4) {%>selected="selected"<%}%>>4 (sofort sperren)</option>	
-			    <option value="8" <%if (settings.getMinVotes() == 8) {%>selected="selected"<%}%>>8</option>	
-			    <option value="20" <%if (settings.getMinVotes() == 20) {%>selected="selected"<%}%>>20</option>	
-			    <option value="100" <%if (settings.getMinVotes() == 100) {%>selected="selected"<%}%>>100 (nur sperren wenn ganz sicher)</option>	
+			    <option value="2" <%if (settings.getMinVotes() == 2) {%>selected="selected"<%}%>>2 (sofort sperren)</option>	
+			    <option value="4" <%if (settings.getMinVotes() == 4) {%>selected="selected"<%}%>>4 (Bestätigungen abwarten)</option>	
+			    <option value="10" <%if (settings.getMinVotes() == 10) {%>selected="selected"<%}%>>10 (erst wenn sicher)</option>	
+			    <option value="100" <%if (settings.getMinVotes() == 100) {%>selected="selected"<%}%>>100 (nur Top-Spammer)</option>	
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
@@ -283,6 +290,33 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 					<i class="fa-solid fa-eraser"></i>
 			    </span>
 				<span>Passwort zurücksetzen</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+<nav class="panel is-warning">
+	<p class="panel-heading"><a href="#logoutForm" data-action="collapse"><i class="fa-solid fa-right-from-bracket"></i> <span>An allen Geräten abmelden</span></a></p>
+	<div id="logoutForm" class="is-collapsible">
+		<form action="<%= request.getContextPath() %>/logout?url=<%=request.getContextPath()%>/&all=true" method="post" enctype="application/x-www-form-urlencoded">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p>
+	  			Meldet Dich bei allen Geräten ab, bei denen Du beim Login die Option "Auf diesem Gerät angemeldet bleiben" 
+	  			aktiviert hast. Bei Deinem nächsten Besuch musst Du Dich auf allen Geräten erneut anmelden. Nutze diese 
+	  			Abmelden-Funktion, wenn Du aus Versehen auf einem öffentlichen PC die Funktion "angemeldet bleiben"
+	  			aktiviert hast.
+	  			</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-right-from-bracket"></i>
+			    </span>
+				<span>Überall abmelden</span>
 			</button>
   		</div>
   		</form>
