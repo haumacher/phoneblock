@@ -31,11 +31,6 @@ public class RegistrationServlet extends HttpServlet {
 
 	private static final String PASSWORD_ATTR = "passwd";
 
-	/**
-	 * The authorization scope "email".
-	 */
-	public static final String IDENTIFIED_BY_EMAIL = "email";
-	
 	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Override
@@ -57,17 +52,16 @@ public class RegistrationServlet extends HttpServlet {
 		String email = (String) req.getSession().getAttribute("email");
 		
 		String login;
-		String passwd;
 		try {
 			DB db = DBService.getInstance();
-			String extId = email.trim().toLowerCase();
-			login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+			login = db.getEmailLogin(email);
 			if (login == null) {
 				login = UUID.randomUUID().toString();
-				passwd = db.createUser(IDENTIFIED_BY_EMAIL, extId, login, email);
+				String passwd = db.createUser(login, email);
 				db.setEmail(login, email);
+				startSetup(req, resp, login, passwd);
 			} else {
-				passwd = db.resetPassword(login);
+				startSetup(req, resp, login, null);
 			}
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
@@ -75,8 +69,6 @@ public class RegistrationServlet extends HttpServlet {
 			sendError(req, resp, "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
 			return;
 		}
-		
-		startSetup(req, resp, login, passwd);
 	}
 
 	/** 
@@ -85,13 +77,20 @@ public class RegistrationServlet extends HttpServlet {
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
 		LoginFilter.setAuthenticatedUser(req, login);
-		req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+		if (passwd != null) {
+			req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+		}
 		
 		String location = LoginServlet.location(req);
 		if (location != null) {
 			resp.sendRedirect(req.getContextPath() + location);
 		} else {
-			resp.sendRedirect(req.getContextPath() + successPage(req));
+			if (passwd == null) {
+				// Was already registered, no automatic password-reset.
+				resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+			} else {
+				resp.sendRedirect(req.getContextPath() + successPage(req));
+			}
 		}
 	}
 
