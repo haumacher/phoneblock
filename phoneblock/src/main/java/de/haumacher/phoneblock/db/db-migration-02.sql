@@ -352,6 +352,8 @@ UPDATE PERSONALIZATION
 SET PHONE = CONCAT('00', SUBSTRING(PHONE, 1, LENGTH(PHONE)))
 WHERE PHONE LIKE '+%';
 
+DELETE FROM NUMBERS WHERE PHONE LIKE '%+%';
+DELETE FROM NUMBERS WHERE PHONE LIKE '%/%';
 
 ---------------------------------
 -- Prevent numbers with only a single old vote to be added to min-votes 2 blocklists
