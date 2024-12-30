@@ -263,7 +263,7 @@ public class DB {
 		        
 		        Map<String, Integer> searchesToday = new HashMap<>();
 		        try (PreparedStatement stmt = connection.prepareStatement("""
-			        	SELECT s.PHONE, s.TODAY FROM SEARCHES s WHERE s.TODAY > 0
+			        	SELECT s.PHONE, s.COUNT - s.BACKUP FROM SEARCHES s WHERE s.COUNT - s.BACKUP > 0
 	        		""")) {
 		        	try (ResultSet result = stmt.executeQuery()) {
 		        		while (result.next()) {
