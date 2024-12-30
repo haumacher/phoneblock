@@ -32,10 +32,11 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS set 
 				VOTES = VOTES + #{delta},
-				DOWN_VOTES = DOWN_VOTES + CASEWHEN (#{delta} > 0, #{delta}, 0),
-				UP_VOTES = UP_VOTES + CASEWHEN (#{delta} < 0, 0 - #{delta}, 0),
+				DOWN_VOTES = DOWN_VOTES + CASEWHEN(#{delta} > 0, #{delta}, 0),
+				UP_VOTES = UP_VOTES + CASEWHEN(#{delta} < 0, 0 - #{delta}, 0),
 				UPDATED = GREATEST(UPDATED, #{now}),
-				LASTPING = GREATEST(LASTPING, #{now})
+				LASTPING = GREATEST(LASTPING, #{now}),
+				ACTIVE = CASEWHEN(#{delta} > 0, true, ACTIVE)
 			where PHONE = #{phone}
 			""")
 	int addVote(String phone, int delta, long now);
