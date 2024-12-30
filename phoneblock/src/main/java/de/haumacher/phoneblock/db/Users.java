@@ -12,7 +12,6 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
-import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 
 /**
@@ -20,9 +19,9 @@ import de.haumacher.phoneblock.db.settings.AuthToken;
  */
 public interface Users {
 
-	@Insert("insert into USERS (LOGIN, CLIENTNAME, EXTID, DISPLAYNAME, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH) " + 
-			"values (#{login}, #{clientName}, #{extId}, #{displayName}, #{pwhash}, #{registered}, 4, 2000)")
-	void addUser(String login, String clientName, String extId, String displayName, byte[] pwhash, long registered);
+	@Insert("insert into USERS (LOGIN, DISPLAYNAME, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH) " + 
+			"values (#{login}, #{displayName}, #{pwhash}, #{registered}, 4, 2000)")
+	void addUser(String login, String displayName, byte[] pwhash, long registered);
 	
 	@Update("update USERS set PWHASH=#{pwhash} where ID=#{userId}")
 	void setPassword(long userId, byte[] pwhash);
@@ -30,8 +29,11 @@ public interface Users {
 	@Update("update USERS set EMAIL=#{email} where LOGIN=#{login}")
 	void setEmail(String login, String email);
 	
-	@Update("update USERS set EXTID=#{extId} where LOGIN=#{login}")
-	void setExtId(String login, String extId);
+	@Update("update USERS set GOOGLEID=#{googleId} where LOGIN=#{login}")
+	void setGoogleId(String login, String googleId);
+	
+	@Update("update USERS set DISPLAYNAME=#{displayName} where LOGIN=#{login}")
+	void setDisplayName(String login,  String displayName);
 	
 	@Delete("delete from USERS where LOGIN=#{login}")
 	void deleteUser(String login);
@@ -131,10 +133,16 @@ public interface Users {
 	Long getUserId(String login);
 	
 	/** 
-	 * Retrieves the user ID for the user with the given user name (e-mail).
+	 * Retrieves the user ID for the user with the given Google ID.
 	 */
-	@Select("select LOGIN from USERS where CLIENTNAME=#{clientName} and EXTID=#{extId}")
-	String getLogin(String clientName, String extId);
+	@Select("select LOGIN from USERS where GOOGLEID=#{googleId}")
+	String getGoogleLogin(String googleId);
+	
+	/** 
+	 * Retrieves the user ID for the user with the given e-mail.
+	 */
+	@Select("select LOGIN from USERS where EMAIL=#{email}")
+	String getEmailLogin(String email);
 
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
 	DBUserSettings getSettings(String login);
