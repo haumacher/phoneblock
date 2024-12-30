@@ -1191,18 +1191,18 @@ public class DB {
 		
 		Rating rating = rating(info);
 		int votesWildcard;
-		if (aggregation100.getVotes() >= MIN_AGGREGATE_100) {
+		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
 			votesWildcard = aggregation100.getVotes();
 			if (!info.isActive()) {
 				// Direct votes did not count yet.
 				votesWildcard += info.getVotes();
 			}
 			
-			if (aggregation10.getVotes() < MIN_AGGREGATE_10) {
+			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
 				// The votes of this number did not yet count to the aggregation of the block.
 				votesWildcard += aggregation10.getVotes();
 			}
-		} else if (aggregation10.getVotes() >= MIN_AGGREGATE_10) {
+		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
 			votesWildcard = aggregation10.getVotes();
 			if (!info.isActive()) {
 				// Direct votes did not count yet.
