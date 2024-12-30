@@ -78,10 +78,12 @@ public interface SpamReports {
 			SELECT s.PHONE FROM NUMBERS s
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND LENGTH(PHONE) = #{length}
 			AND s.VOTES > 0
 			order by s.PHONE
 			""")
-	List<String> getRelatedNumbers(String prefix);
+	List<String> getRelatedNumbers(String prefix, int expectedLength);
 	
 	@Update("""
 			update NUMBERS s
