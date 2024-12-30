@@ -79,7 +79,7 @@ public interface SpamReports {
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
 			AND s.PHONE < concat(#{prefix}, 'Z')
-			AND LENGTH(PHONE) = #{length}
+			AND LENGTH(PHONE) = #{expectedLength}
 			AND s.VOTES > 0
 			order by s.PHONE
 			""")
