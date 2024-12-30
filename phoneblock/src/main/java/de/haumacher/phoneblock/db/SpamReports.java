@@ -73,7 +73,7 @@ public interface SpamReports {
 			AND LENGTH(s.PHONE) = #{expectedLength}
 			AND s.VOTES > 0
 			""")
-	long getLastPingPrefix(String prefix, int expectedLength);
+	Long getLastPingPrefix(String prefix, int expectedLength);
 	
 	@Select("""
 			SELECT s.PHONE FROM NUMBERS s

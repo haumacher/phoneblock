@@ -375,8 +375,14 @@ public class DB {
 		        LOG.info("Computing aggregate lastPing for blocks of 10.");
 		        
 		        for (AggregationInfo a : reports.getAllAggregation10().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_10).toList()) {
-		        	long lastPing = reports.getLastPingPrefix(a.getPrefix(), a.getPrefix().length() + 1);
-		        	reports.sendPing(a.getPrefix(), a.getPrefix().length() + 1, lastPing);
+		        	String prefix = a.getPrefix();
+					int prefixLength = prefix.length();
+					Long lastPing = reports.getLastPingPrefix(prefix, prefixLength + 1);
+		        	if (lastPing != null) {
+		        		reports.sendPing(prefix, prefixLength + 1, lastPing.longValue());
+		        	} else {
+		        		LOG.warn("Did not find a last ping value for prefix 10: " + prefix);
+		        	}
 		        }
 
 		        connection.commit();
@@ -384,8 +390,14 @@ public class DB {
 		        LOG.info("Computing aggregate lastPing for blocks of 100.");
 
 		        for (AggregationInfo a : reports.getAllAggregation100().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_100).toList()) {
-		        	long lastPing = reports.getLastPingPrefix(a.getPrefix(), a.getPrefix().length() + 2);
-		        	reports.sendPing(a.getPrefix(), a.getPrefix().length() + 2, lastPing);
+		        	String prefix = a.getPrefix();
+					int prefixLength = prefix.length();
+					Long lastPing = reports.getLastPingPrefix(prefix, prefixLength + 2);
+		        	if (lastPing != null) {
+		        		reports.sendPing(prefix, prefixLength + 2, lastPing.longValue());
+		        	} else {
+		        		LOG.warn("Did not find a last ping value for prefix 100: " + prefix);
+		        	}
 		        }
 		        
 		        connection.commit();
