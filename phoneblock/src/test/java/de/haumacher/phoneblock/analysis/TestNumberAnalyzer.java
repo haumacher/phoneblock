@@ -49,6 +49,7 @@ class TestNumberAnalyzer {
 		"*017650642+*602*, 017650642602*",
 		"+*4917650642+*602*, +4917650642602*",
 		"*004917650642+*602*, 004917650642602*",
+		"00+491722144286, 00491722144286",
 	})
 	void testNormalize(String input, String normalized) {
 		String normalizedNumber = NumberAnalyzer.normalizeNumber(input);

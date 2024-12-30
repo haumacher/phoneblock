@@ -176,32 +176,45 @@ public class SearchServlet extends HttpServlet {
 		
 		boolean bot = isBot(req);
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
-		
-		SearchResult searchResult = analyze(query, bot, isSeachHit);
-		if (searchResult == null) {
+
+		PhoneNumer number = extractNumber(query);
+		if (number == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 		
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
+		if (!phone.equals(query)) {
+			// Normalize the URL in the browser.
+			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+			return;
+		}
+		
+		SearchResult searchResult = analyze(number, isSeachHit);
 		sendResult(req, resp, searchResult);
 	}
 
 	public static SearchResult analyze(String query) {
-		return analyze(query, false, true);
+		PhoneNumer number = extractNumber(query);
+		return number == null ? null : analyze(number, true);
 	}
 
-	private static SearchResult analyze(String query, boolean isBot, boolean isSeachHit) {
-		String phone = NumberAnalyzer.normalizeNumber(query);
-		if (phone.isEmpty() || phone.contains("*")) {
+	private static PhoneNumer extractNumber(String query) {
+		String rawPhoneNumber = NumberAnalyzer.normalizeNumber(query);
+		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
 			return null;
 		}
 		
-		PhoneNumer number = NumberAnalyzer.analyze(phone);
+		PhoneNumer number = NumberAnalyzer.analyze(rawPhoneNumber);
 		if (number == null) {
 			return null;
 		}
-		
-		String phoneId = NumberAnalyzer.getPhoneId(number);
+		return number;
+	}
+
+	private static SearchResult analyze(PhoneNumer number, boolean isSeachHit) {
+		String phone = NumberAnalyzer.getPhoneId(number);
 
 		NumberInfo numberInfo;
 		PhoneInfo info;
@@ -220,9 +233,9 @@ public class SearchServlet extends HttpServlet {
 			
 			// Note: Search for comments first, since new comments may change the state of the number.
 			if (isSeachHit) {
-				comments = MetaSearchService.getInstance().fetchComments(phoneId);
+				comments = MetaSearchService.getInstance().fetchComments(phone);
 			} else {
-				comments = reports.getComments(phoneId);
+				comments = reports.getComments(phone);
 			}
 			
 			boolean commit = false;
@@ -230,7 +243,7 @@ public class SearchServlet extends HttpServlet {
 			long now = System.currentTimeMillis();
 			
 			if (isSeachHit) {
-				db.addSearchHit(reports, phoneId, now);
+				db.addSearchHit(reports, phone, now);
 				commit = true;
 			}
 			
@@ -283,11 +296,11 @@ public class SearchServlet extends HttpServlet {
 				}
 			}
 			
-			searches = db.getSearchHistory(reports, phoneId, 7);
-			aiSummary = reports.getSummary(phoneId);
+			searches = db.getSearchHistory(reports, phone, 7);
+			aiSummary = reports.getSummary(phone);
 			
-			prev = reports.getPrevPhone(phoneId);
-			next = reports.getNextPhone(phoneId);
+			prev = reports.getPrevPhone(phone);
+			next = reports.getNextPhone(phone);
 			
 			if (commit) {
 				session.commit();
@@ -324,7 +337,7 @@ public class SearchServlet extends HttpServlet {
 		Rating topRating = info.getRating();
 		
 		return SearchResult.create()
-				.setPhoneId(phoneId)
+				.setPhoneId(phone)
 				.setNumber(number)
 				.setComments(shownComments)
 				.setInfo(info)

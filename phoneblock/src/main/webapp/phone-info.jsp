@@ -16,7 +16,6 @@
 <%@page import="de.haumacher.phoneblock.db.Ratings"%>
 <%@page import="de.haumacher.phoneblock.app.api.model.Rating"%>
 <%@page import="de.haumacher.phoneblock.app.api.model.PhoneNumer"%>
-<%@page import="de.haumacher.phoneblock.analysis.NumberAnalyzer"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.DateFormat"%>
 <%@page import="java.util.List"%>
