@@ -416,9 +416,12 @@ public class SearchServlet extends HttpServlet {
 			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
 					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
 					info.getPhone() + "</code> sprechen.";
-		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
+		} else if (votes < DB.MIN_VOTES) {
 			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
 					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
+		} else if (info.isArchived()) {
+			return "Es gibt " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber nicht mehr blockiert.";
 		} else {
 			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> ist eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
 					+ "/status.jsp\">unerwünschten Telefonanrufen</a>. " + votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
@@ -429,9 +432,12 @@ public class SearchServlet extends HttpServlet {
 		int votes = info.getVotes();
 		if (votes <= 0) {
 			return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
-		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
+		} else if (votes < DB.MIN_VOTES) {
 			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
 					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber noch nicht blockiert.";
+		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
+			return "Es gibt " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber nicht mehr blockiert.";
 		} else {
 			return "Die Telefonnummer ☎ " + info.getPhone() + " ist eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
 					votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
