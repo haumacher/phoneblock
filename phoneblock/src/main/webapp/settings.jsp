@@ -57,6 +57,12 @@
 			  </div>
 			  
 			  <div class="message-body">
+
+				<div class="field">
+				  <label class="label">Internetadresse des CardDAV-Servers</label>
+				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+
 <% } %>			
 				<div class="field">
 				  <label class="label">Benutzername</label>
