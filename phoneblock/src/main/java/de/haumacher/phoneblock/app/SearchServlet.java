@@ -271,11 +271,11 @@ public class SearchServlet extends HttpServlet {
 					relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phone.length());
 					
 					if (comments.isEmpty()) {
-						comments = reports.getAllComments(aggregation100.getPrefix());
+						comments = reports.getAllComments(aggregation100.getPrefix(), phone.length());
 					}
 					
 					if (info.getRating() == Rating.B_MISSED) {
-						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix());
+						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix(), phone.length());
 						info.setRating(DB.rating(aggregateInfo));
 					}
 				} else {
@@ -283,11 +283,11 @@ public class SearchServlet extends HttpServlet {
 						relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phone.length());
 
 						if (comments.isEmpty()) {
-							comments = reports.getAllComments(aggregation10.getPrefix());
+							comments = reports.getAllComments(aggregation10.getPrefix(), phone.length());
 						}
 
 						if (info.getRating() == Rating.B_MISSED) {
-							DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix());
+							DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix(), phone.length());
 							info.setRating(DB.rating(aggregateInfo));
 						}
 					} else {

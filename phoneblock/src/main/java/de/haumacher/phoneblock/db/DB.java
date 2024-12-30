@@ -375,8 +375,8 @@ public class DB {
 		        LOG.info("Computing aggregate lastPing for blocks of 10.");
 		        
 		        for (AggregationInfo a : reports.getAllAggregation10().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_10).toList()) {
-		        	long lastPing = reports.getLastPingPrefix(a.getPrefix());
-		        	reports.sendPing(a.getPrefix(), lastPing);
+		        	long lastPing = reports.getLastPingPrefix(a.getPrefix(), a.getPrefix().length() + 1);
+		        	reports.sendPing(a.getPrefix(), a.getPrefix().length() + 1, lastPing);
 		        }
 
 		        connection.commit();
@@ -384,8 +384,8 @@ public class DB {
 		        LOG.info("Computing aggregate lastPing for blocks of 100.");
 
 		        for (AggregationInfo a : reports.getAllAggregation100().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_100).toList()) {
-		        	long lastPing = reports.getLastPingPrefix(a.getPrefix());
-		        	reports.sendPing(a.getPrefix(), lastPing);
+		        	long lastPing = reports.getLastPingPrefix(a.getPrefix(), a.getPrefix().length() + 2);
+		        	reports.sendPing(a.getPrefix(), a.getPrefix().length() + 2, lastPing);
 		        }
 		        
 		        connection.commit();
@@ -743,7 +743,7 @@ public class DB {
 			if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
 				prefix = aggregation100.getPrefix();
 			}
-			reports.sendPing(prefix, now);
+			reports.sendPing(prefix, phone.length(), now);
 		}
 	}
 

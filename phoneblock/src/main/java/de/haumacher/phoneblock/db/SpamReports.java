@@ -70,16 +70,16 @@ public interface SpamReports {
 			FROM NUMBERS s
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND LENGTH(s.PHONE) = #{expectedLength}
 			AND s.VOTES > 0
 			""")
-	long getLastPingPrefix(String prefix);
+	long getLastPingPrefix(String prefix, int expectedLength);
 	
 	@Select("""
 			SELECT s.PHONE FROM NUMBERS s
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
-			AND s.PHONE < concat(#{prefix}, 'Z')
-			AND LENGTH(PHONE) = #{expectedLength}
+			AND LENGTH(s.PHONE) = #{expectedLength}
 			AND s.VOTES > 0
 			order by s.PHONE
 			""")
@@ -91,9 +91,10 @@ public interface SpamReports {
 				s.LASTPING = GREATEST(s.LASTPING, #{now})
 			where s.PHONE > #{prefix}
 			and s.PHONE < concat(#{prefix}, 'Z')
+			and LENGTH(s.PHONE) = #{expectedLength}
 			and s.VOTES > 0
 			""")
-	void sendPing(String prefix, long now);
+	void sendPing(String prefix, int expectedLength, long now);
 	
 	@Select("""
 			select count(1) from NUMBERS
@@ -173,10 +174,11 @@ public interface SpamReports {
 			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES) 
 			from NUMBERS s
 			where 
-				s.PHONE > #{prefix} and
-				s.PHONE < concat(#{prefix}, 'Z')
+				s.PHONE > #{prefix}
+				and s.PHONE < concat(#{prefix}, 'Z')
+				and LENGTH(s.PHONE) = #{expectedLength}
 			""")
-	DBNumberInfo getPhoneInfoAggregate(String prefix);
+	DBNumberInfo getPhoneInfoAggregate(String prefix, int expectedLength);
 	
 	@Select("""
 			select s.PHONE from NUMBERS s
@@ -336,10 +338,11 @@ public interface SpamReports {
 			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
 			where 
-				s.PHONE > #{prefix} and
-				s.PHONE < concat(#{prefix}, 'Z')
+				s.PHONE > #{prefix}
+				and s.PHONE < concat(#{prefix}, 'Z')
+				and LENGTH(s.PHONE) = #{expectedLength}
 			""")
-	List<DBUserComment> getAllComments(String prefix);
+	List<DBUserComment> getAllComments(String prefix, int expectedLength);
 	
 	@Insert("""
 			insert into COMMENTS (ID, PHONE, RATING, COMMENT, SERVICE, CREATED, USERID) 
