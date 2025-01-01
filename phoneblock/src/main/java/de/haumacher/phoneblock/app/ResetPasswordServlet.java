@@ -40,7 +40,7 @@ public class ResetPasswordServlet extends HttpServlet {
 		String password = DBService.getInstance().resetPassword(login);
 		if (password == null) {
 			req.setAttribute("message", "Nutzername nicht gefunden, bitte versuch Dich neu zu registrieren.");
-			req.getRequestDispatcher("/signup.jsp").forward(req, resp);
+			req.getRequestDispatcher("/login.jsp").forward(req, resp);
 			return;
 		}
 		
