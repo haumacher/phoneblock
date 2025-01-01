@@ -27,15 +27,15 @@
 		
 		<ol>
 		<li>
-			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>.
+			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>.
 		</li>
 			
 		<li>
-			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">PhoneBlock-Anmeldung</a> erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code> <a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
+			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">PhoneBlock-Anmeldung</a> erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code><a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
 		</li>
 			
 		<li>
-			Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
+			Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
 		</li>
 		</ol>
 		

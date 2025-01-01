@@ -112,3 +112,7 @@
 .token {
 	padding-right:5px;
 }
+
+.copyToClipboard {
+	padding-left: 0.5ex;	
+}
