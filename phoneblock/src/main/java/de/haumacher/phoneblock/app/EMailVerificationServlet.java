@@ -21,10 +21,9 @@ import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
- * {@link HttpServlet} that is invoked from the <code>signup.jsp</code> form.
+ * {@link HttpServlet} that is invoked from the <code>login.jsp</code> form when requesting to login by e-mail.
  */
 @WebServlet(urlPatterns = {
-	EMailVerificationServlet.VERIFY_WEB,
 	EMailVerificationServlet.LOGIN_WEB,
 })
 public class EMailVerificationServlet extends HttpServlet {
@@ -39,7 +38,6 @@ public class EMailVerificationServlet extends HttpServlet {
 	 */
 	public static final String VERIFY_ERROR_ATTR = "message";
 	
-	public static final String VERIFY_WEB = "/verify-web";
 	public static final String LOGIN_WEB = "/login-web";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(EMailVerificationServlet.class);
@@ -95,17 +93,14 @@ public class EMailVerificationServlet extends HttpServlet {
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case LOGIN_WEB: 
-			return "/login.jsp";
-		case VERIFY_WEB: 
 		default:
-			return "/signup.jsp";
+			return "/login.jsp";
 		}
 	}
 
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 			case LOGIN_WEB: 
-			case VERIFY_WEB: 
 			default:
 				return "/signup-code.jsp"; 
 		}
