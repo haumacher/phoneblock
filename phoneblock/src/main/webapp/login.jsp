@@ -1,4 +1,13 @@
+<%
+	// If already logged in, forward to final destination.
+	String userName = LoginFilter.getAuthenticatedUser(request);
+	if (userName != null) {
+		LoginServlet.redirectToLocationAfterLogin(request, response);
+		return;
+	}
+%>
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.app.EMailVerificationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.net.URLEncoder"%>
