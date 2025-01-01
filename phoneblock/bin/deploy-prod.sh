@@ -7,7 +7,9 @@ set -ex
     flutter build web --base-href /phoneblock/ab/ 
 )
 
-mvn clean install
+mvn clean release:prepare -B
 
 scp phoneblock/target/phoneblock-*.war phoneblock.net:/var/lib/tomcat10/webapps/phoneblock.war
+
+mvn release:clean
 
