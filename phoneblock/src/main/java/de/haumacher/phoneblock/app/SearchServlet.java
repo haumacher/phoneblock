@@ -426,14 +426,21 @@ public class SearchServlet extends HttpServlet {
 			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.";
 		}
 		if (votes <= 0) {
-			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
-					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
-					info.getPhone() + "</code> sprechen.";
+			int votesWildcard = info.getVotesWildcard();
+			if (votesWildcard <= 0) {
+				return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
+						"/\">PhoneBlock</a>-Datenbank enthalten. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
+						info.getPhone() + "</code> sprechen.";
+			} else {
+				return "Die Telefonnummer selbst ist nicht in der <a href=\"" + req.getContextPath() +
+						"/\">PhoneBlock</a>-Datenbank enthalten. Die Nummer ☎ <code>" + info.getPhone() + "</code> stammt aber aus einem Nummernblock mit Spam-Verdacht. " +  
+						"Es sprechen " + votesText(votesWildcard) + " für die Sperrung des Nummernblocks.";
+			}
 		} else if (votes < DB.MIN_VOTES) {
-			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+			return "Es gibt bereits " + votesText(votes) 
 					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
 		} else if (info.isArchived()) {
-			return "Es gibt " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+			return "Es gibt " + votesText(votes) 
 					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber nicht mehr blockiert.";
 		} else {
 			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> ist eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
@@ -441,15 +448,24 @@ public class SearchServlet extends HttpServlet {
 		}
 	}
 
+	private String votesText(int votes) {
+		return votes == 1 ? "eine Stimme" : votes + " Stimmen";
+	}
+
 	private String defaultSimpleSummary(PhoneInfo info) {
 		int votes = info.getVotes();
 		if (votes <= 0) {
-			return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
+			int votesWildcard = info.getVotesWildcard();
+			if (votesWildcard <= 0) {
+				return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
+			} else {
+				return "Die Telefonnummer ☎ " + info.getPhone() + " stammt aber aus einem Nummernblock mit Spam-Verdacht.";
+			}
 		} else if (votes < DB.MIN_VOTES) {
-			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+			return "Es gibt bereits " + votesText(votes) 
 					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber noch nicht blockiert.";
 		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
-			return "Es gibt " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
+			return "Es gibt " + votesText(votes) 
 					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber nicht mehr blockiert.";
 		} else {
 			return "Die Telefonnummer ☎ " + info.getPhone() + " ist eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
