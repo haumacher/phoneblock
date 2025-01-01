@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.SettingsServlet;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
@@ -104,10 +105,11 @@ public class MailService {
 		LOG.info("Sending activation mail to '" + receiver + "'.");
 
 		Map<String, String> variables = new HashMap<>();
+		variables.put("{name}", DB.toDisplayName(address.getAddress()));
     	variables.put("{code}", code);
     	variables.put("{image}", _appLogoSvg);
     	
-		sendMail("PhoneBlock E-Mail Bestätigung", address, "mail-template", variables);
+		sendMail("PhoneBlock Anmelde-Code", address, "mail-template", variables);
 	}
 
 	public boolean sendHelpMail(DBUserSettings userSettings) {
