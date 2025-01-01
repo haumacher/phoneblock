@@ -68,21 +68,11 @@
 	if (userName == null) { 
 %>
 		<p>
-		Als erstes musst Du Dich 
-		<a href="<%=request.getContextPath()%>/signup.jsp?locationAfterLogin=/anrufbeantworter/#register">bei PhoneBlock registrieren</a>.
-		Wenn Du bereits einen PhoneBlock-Account hast, <a href="<%=request.getContextPath()%>/login.jsp?locationAfterLogin=/anrufbeantworter/#create">melde Dich an</a>. 
+		Als erstes musst Du Dich bei PhoneBlock registrieren bzw. anmelden, um mit der Einrichtung zu beginnen.
 		</p>
 		
 		<div class="columns">
-		  <div class="column is-half">
-			<a class="button is-medium is-primary is-fullwidth" href="<%=request.getContextPath()%>/signup.jsp?locationAfterLogin=/anrufbeantworter/#create">
-			    <span class="icon">
-					<i class="fa-solid fa-user-plus"></i>
-			    </span>
-				<span>Registrieren</span>			
-			</a>
-		  </div>
-		  <div class="column is-half">
+		  <div class="column is-half is-offset-one-quarter">
 			<a class="button is-medium is-info is-fullwidth" href="<%=request.getContextPath()%>/login.jsp?locationAfterLogin=/anrufbeantworter/#create">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
@@ -144,7 +134,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" src="app/01-create-answerbot.png"/>
+	  			<img class="image appscreen" alt="DynDNS einrichten" src="app/01-create-answerbot.png"/>
 	  		</div>
 		</div>
 		
@@ -165,7 +155,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" src="app/02-enable-dyndns.png"/>
+	  			<img class="image appscreen" alt="DynDNS einrichten" src="app/02-enable-dyndns.png"/>
 	  		</div>
 		</div>
 		
@@ -175,7 +165,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" src="app/03-create-dyndns-account.png"/>
+	  			<img class="image appscreen" alt="DynDNS einrichten" src="app/03-create-dyndns-account.png"/>
 	  		</div>
 		</div>
 		
@@ -391,7 +381,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Zugriff aus dem Internet" src="app/06-register-answerbot.png"/>
+	  			<img class="image appscreen" alt="Zugriff aus dem Internet" src="app/06-register-answerbot.png"/>
 	  		</div>
 		</div>
 		
@@ -402,7 +392,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Anrufbeantworter verbunden" src="app/10-answerbot-activated.png"/>
+	  			<img class="image appscreen" alt="Anrufbeantworter verbunden" src="app/10-answerbot-activated.png"/>
 	  		</div>
 		</div>
 		

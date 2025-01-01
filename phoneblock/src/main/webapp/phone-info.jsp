@@ -509,7 +509,7 @@
 	</div>
 
 	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
+		<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst("/setup.jsp") %>">
 			<p class="title">PhoneBlock installieren</p>
 			<p class="subtitle">Noch nicht installiert? Dann los!</p>
 		</a>
@@ -522,7 +522,7 @@
 
 <div class="tile is-ancestor">
 	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
+		<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst("/setup.jsp") %>">
 			<p class="title">PhoneBlock installieren</p>
 			<p class="subtitle">Account erstellen und einrichten!</p>
 		</a>

@@ -37,7 +37,7 @@
 %>
 		
    		<ol>
-   		<li><a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Melde Dich bei PhoneBlock an.</a></li>
+   		<li><a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">Melde Dich bei PhoneBlock an.</a></li>
    		<li>Öffne "Einstellungen" > "Kontakte" > "Accounts". </li>
    		<li>Tippe auf "Account hinzufügen" - "Andere" > "CardDAV-Account hinzufügen".</li>
    		<li>Gib deine Zugangsdaten ein und tippe auf "Weiter".
@@ -73,7 +73,7 @@
 
 		<p>			
 			Du hast die Zugangsdaten nicht mehr zur Hand? Macht nichts, einfach 
-			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
+			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">anmelden und in den Einstellungen das Passwort zurücksetzen</a>.
 		</p>
    		
    		<p>

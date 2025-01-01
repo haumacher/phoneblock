@@ -34,11 +34,11 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Öffne Playstore" src="<%=request.getContextPath() %>/setup-android/01-home.png"/>
+	  			<img class="image appscreen" alt="Öffne Playstore" src="<%=request.getContextPath() %>/setup-android/01-home.png"/>
 	  		</div>
 		
 			<div class="column">
-				<img class="image" alt="Suche nach PeopleSync" src="<%=request.getContextPath() %>/setup-android/02-playstore.png"/>
+				<img class="image appscreen" alt="Suche nach PeopleSync" src="<%=request.getContextPath() %>/setup-android/02-playstore.png"/>
 			</div>
 		</div>
 		
