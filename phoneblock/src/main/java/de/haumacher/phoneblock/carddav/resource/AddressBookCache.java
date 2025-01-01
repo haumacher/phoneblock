@@ -79,7 +79,7 @@ public class AddressBookCache implements ServletContextListener {
 
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			Users users = session.getMapper(Users.class);
-			UserSettings settings = users.getSettings(principal);
+			UserSettings settings = users.getSettingsRaw(principal);
 			
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();

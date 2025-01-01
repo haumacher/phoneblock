@@ -176,15 +176,8 @@ public class MailService {
 	}
 
 	private Map<String, String> buildVariables(DBUserSettings userSettings) {
-		String name = userSettings.getDisplayName();
-		int atIndex = name.indexOf('@');
-		if (atIndex > 0) {
-			name = name.substring(0, atIndex);
-		}
-		name = toUpperCaseStart(name);
-		
 		Map<String, String> variables = new HashMap<>();
-		variables.put("{name}", name);
+		variables.put("{name}", userSettings.getDisplayName());
 		variables.put("{userName}", userSettings.getLogin());
 		variables.put("{lastAccess}", formatDateTime(userSettings.getLastAccess()));
 		variables.put("{image}", _appLogoSvg);
@@ -333,39 +326,6 @@ public class MailService {
 			_session = startSession();
 		}
 		return _session;
-	}
-
-	private static String toUpperCaseStart(String name) {
-		StringBuilder result = new StringBuilder();
-		boolean first = true;
-		for (String part : name.replace('.', ' ').replace('_', ' ').split("\\s+")) {
-			if (part.length() == 0) {
-				continue;
-			}
-			
-			if (first) {
-				first = false;
-			} else {
-				result.append(' ');
-			}
-			
-			boolean firstPart = true;
-			for (String subPart : part.split("-")) {
-				if (subPart.length() == 0) {
-					continue;
-				}
-
-				if (firstPart) {
-					firstPart = false;
-				} else {
-					result.append('-');
-				}
-				result.append(Character.toUpperCase(subPart.charAt(0)));
-				result.append(subPart.substring(1));
-			}
-		}
-
-		return result.toString();
 	}
 
 }

@@ -145,7 +145,7 @@ public interface Users {
 	String getEmailLogin(String email);
 
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
-	DBUserSettings getSettings(String login);
+	DBUserSettings getSettingsRaw(String login);
 	
 	@Select("select LOGIN from USERS where ID=#{userId}")
 	String getUserName(long userId);
