@@ -20,7 +20,7 @@
 
 		<p>
 			Vielen Dank, dass Du Dich an den Kosten von PhoneBlock beteiligst. Wenn viele mitmachen, reicht ein kleiner Betrag reicht aus, z.B. 
-			<b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b>, Du kannst die höhe Deines Beitrages aber selbst wählen.
+			<b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b>, Du kannst die Höhe Deines Beitrages aber selbst wählen.
 		</p>
 		
 		<p>
