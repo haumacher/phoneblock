@@ -67,7 +67,11 @@
 				<div class="field">
 				  <label class="label">Benutzername</label>
 				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help">Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen. </p>
+				  <p class="help">
+				  	Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen.
+				  	Dein Passwort wurde Dir nach Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf der Seite
+				  	ein neues Passwort erstellen lassen. Aber Vorsicht: Das alte Passwort wird dadurch ungültig. 
+				  </p>
 				</div>
 					
 <% if (token != null) { %>
