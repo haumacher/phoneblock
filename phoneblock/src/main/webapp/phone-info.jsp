@@ -140,10 +140,13 @@
 
 <% if (info.getVotes() > 0) { %>	
 		<li>Stimmen für Sperrung: <%= info.getVotes() %></li>
-<% 	if (info.getVotesWildcard() > info.getVotes()) { %>
-		<li>Stimmen für Sperrung des Nummernblocks: <%= info.getVotesWildcard() %></li>
-<%	} %>	
+<% } %>	
 		
+<% if (info.getVotesWildcard() > info.getVotes()) { %>
+		<li>Stimmen für Sperrung des Nummernblocks: <%= info.getVotesWildcard() %></li>
+<%} %>	
+		
+<% if (info.getVotes() > 0 || info.getVotesWildcard() > 0) { %>	
 		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
 
 <%
