@@ -27,6 +27,11 @@ import de.haumacher.phoneblock.db.DBService;
 })
 public class RegistrationServlet extends HttpServlet {
 
+	/**
+	 * Request attribute set, if registration fails.
+	 */
+	public static final String REGISTER_ERROR_ATTR = "message";
+
 	public static final String REGISTER_WEB = "/register-web";
 
 	private static final String PASSWORD_ATTR = "passwd";
@@ -53,16 +58,23 @@ public class RegistrationServlet extends HttpServlet {
 		
 		String login;
 		try {
+			String passwd;
+			
 			DB db = DBService.getInstance();
 			login = db.getEmailLogin(email);
 			if (login == null) {
 				login = UUID.randomUUID().toString();
-				String passwd = db.createUser(login, email);
+				passwd = db.createUser(login, email);
 				db.setEmail(login, email);
-				startSetup(req, resp, login, passwd);
 			} else {
-				startSetup(req, resp, login, null);
+				// No longer known.
+				passwd = null;
 			}
+			
+			String rememberValue = req.getParameter(LoginServlet.REMEMBER_PARAM);
+			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);
+
+			startSetup(req, resp, login, passwd);
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
@@ -103,7 +115,7 @@ public class RegistrationServlet extends HttpServlet {
 	}
 	
 	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
-		req.setAttribute("message", message);
+		req.setAttribute(REGISTER_ERROR_ATTR, message);
 		req.getRequestDispatcher(errorPage(req)).forward(req, resp);
 	}
 

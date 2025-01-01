@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.EMailVerificationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.net.URL"%>
@@ -15,10 +16,6 @@
 <jsp:include page="head-content.jspf"></jsp:include>
 </head>
 
-<%
-	boolean error = request.getAttribute("error") != null;
-	String userActive = error ? "is-active" : "";
-%>
 <body>
 <jsp:include page="header.jspf"></jsp:include>
 
@@ -82,7 +79,83 @@
 			</div>
 		</div>
 	</nav>
+
+<%
+	Object emailMessage = request.getAttribute(EMailVerificationServlet.VERIFY_ERROR_ATTR);
+	boolean emailError = emailMessage != null;
+	String emailActive = emailError ? "is-active" : "";
+	String inputClass = emailError ? "input is-danger" : "input";
+%>
+	<nav class="panel">
+		<p class="panel-heading"><a href="#emailLogin" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail anmelden</span></a></p>
+		<div id="emailLogin" class="is-collapsible <%=emailActive%>">
+			<form action="<%= request.getContextPath() %><%= EMailVerificationServlet.LOGIN_WEB%>" method="post" enctype="application/x-www-form-urlencoded">
+	  		<div class="panel-block">
+	  		<div class="content">
+<% if (location != null) { %>
+			    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
+<% } %>
+				<div class="field">
+					<label class="label">E-Mail</label>
+					<div class="control has-icons-left has-icons-right">
+					    <input name="email" 
+					    	class="<%= inputClass %>" 
+					    	type="email" 
+					    	placeholder="Deine E-Mail-Adresse" 
+					    	value="<%= JspUtil.quote(request.getAttribute("email")) %>"
+					    />
+					    <span class="icon is-small is-left">
+					      <i class="fas fa-envelope"></i>
+					    </span>
+<% if (emailError) { %>
+					    <span class="icon is-small is-right">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+<% } %>
+					</div>
+<% if (emailError) { %>
+					<p class="help is-danger">
+						<%= JspUtil.quote(request.getAttribute("message")) %>
+					</p>
+<% } %>
+				</div>
+
+				<div class="field">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input type="checkbox" name="<%=LoginServlet.REMEMBER_PARAM%>" value="true"/>
+					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a href="<%=request.getContextPath()%>/datenschutz.jsp">Cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span>Code anfordern</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p>
+					 Du erhälst einen Code an die angegebene E-Mail-Adresse, mit dem Du Dich anmelden kannst. 
+					 Wenn Du schon einen PhoneBlock-Nutzernamen und ein Passwort hast, dann kannst Du Dich auch
+					 mit diesem anmelden, siehe unten.  
+				</p>
+			</div>
+			</div>
+			</form>
+		</div>
+	</nav>
 	
+<%
+	boolean loginError = request.getAttribute(LoginServlet.LOGIN_ERROR_ATTR) != null;
+	String userActive = loginError ? "is-active" : "";
+%>
+
 	<nav class="panel">
 		<p class="panel-heading">
 			<a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit PhoneBlock-Nutzernamen anmelden</span></a>
@@ -90,7 +163,7 @@
 		<div id="loginForm" class="is-collapsible <%=userActive%>">
 			<div class="panel-block">
 	  		<div class="content">
-				<form action="<%=request.getContextPath()%>/login" method="post">
+				<form action="<%=request.getContextPath()%><%=LoginServlet.PATH %>" method="post">
 				<%
 					if (location != null) {
 				%>
@@ -117,11 +190,11 @@
 				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
-				  <% if (error) {%>
+<% if (loginError) {%>
 					  <p class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
-				  <% } else { %>
+<% } else { %>
 					  <p class="help">Das Passwort wurde Dir nach der <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Registrierung</a> angezeigt.</p>
-				  <% } %>
+<% } %>
 				</div>
 
 				<div class="field">

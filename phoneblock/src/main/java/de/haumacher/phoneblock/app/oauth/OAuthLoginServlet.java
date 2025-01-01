@@ -101,6 +101,7 @@ public class OAuthLoginServlet extends HttpServlet {
 		}
 		
 		if (login == null) {
+			// Create new account.
 			login = UUID.randomUUID().toString();
 			
 			if (displayName == null) {
@@ -112,7 +113,7 @@ public class OAuthLoginServlet extends HttpServlet {
 			}
 			
 			String passwd = db.createUser(login, displayName);
-			db.setGoogleId(login, googleId, displayName);
+			db.setGoogleId(login, googleId, null);
 			if (email != null) {
 				try {
 					db.setEmail(login, email);

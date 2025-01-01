@@ -18,16 +18,29 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * {@link HttpServlet} that is invoked from the <code>signup.jsp</code> form.
  */
 @WebServlet(urlPatterns = {
 	EMailVerificationServlet.VERIFY_WEB,
+	EMailVerificationServlet.LOGIN_WEB,
 })
 public class EMailVerificationServlet extends HttpServlet {
 
+	/**
+	 * Request attribute holding the page to re-start login/signup.
+	 */
+	public static final String RESTART_PAGE_ATTR = "restartPage";
+
+	/**
+	 * Request attribute set, if e-mail verification failed.
+	 */
+	public static final String VERIFY_ERROR_ATTR = "message";
+	
 	public static final String VERIFY_WEB = "/verify-web";
+	public static final String LOGIN_WEB = "/login-web";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(EMailVerificationServlet.class);
 
@@ -66,17 +79,23 @@ public class EMailVerificationServlet extends HttpServlet {
 		req.getSession().setAttribute("email", email);
 		req.getSession().setAttribute("code", code);
 		req.setAttribute("email", email);
+		req.setAttribute(RESTART_PAGE_ATTR, failurePage(req));
 		req.getRequestDispatcher(successPage(req)).forward(req, resp);
 	}
 
 	private void sendFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
-		req.setAttribute("message", message);
+		req.setAttribute(VERIFY_ERROR_ATTR, message);
 		req.getRequestDispatcher(failurePage(req)).forward(req, resp);
 	}
 
-	private String failurePage(HttpServletRequest req) {
+	/**
+	 * The page to redirect, if something went wrong.
+	 */
+	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+		case LOGIN_WEB: 
+			return "/login.jsp";
 		case VERIFY_WEB: 
 		default:
 			return "/signup.jsp";
@@ -85,6 +104,7 @@ public class EMailVerificationServlet extends HttpServlet {
 
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+			case LOGIN_WEB: 
 			case VERIFY_WEB: 
 			default:
 				return "/signup-code.jsp"; 
