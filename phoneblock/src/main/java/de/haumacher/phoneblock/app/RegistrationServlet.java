@@ -64,7 +64,10 @@ public class RegistrationServlet extends HttpServlet {
 			login = db.getEmailLogin(email);
 			if (login == null) {
 				login = UUID.randomUUID().toString();
-				passwd = db.createUser(login, email);
+				
+				String displayName = DB.toDisplayName(email);
+				
+				passwd = db.createUser(login, displayName);
 				db.setEmail(login, email);
 			} else {
 				// No longer known.

@@ -1124,14 +1124,63 @@ public class DB {
 	}
 
 	private int getMinVotes(SqlSession session, String login) {
-		int minVotes = (login == null) ? MIN_VOTES : getSettings(session, login).getMinVotes();
+		int minVotes = (login == null) ? MIN_VOTES : getUserSettingsRaw(session, login).getMinVotes();
 		return minVotes;
 	}
 
-	private DBUserSettings getSettings(SqlSession session, String login) {
+	private DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
 		Users users = session.getMapper(Users.class);
-		DBUserSettings settings = users.getSettings(login);
-		return settings;
+		return users.getSettingsRaw(login);
+	}
+
+	private DBUserSettings getUserSettings(Users users, String login) {
+		DBUserSettings result = users.getSettingsRaw(login);
+
+		// For legacy compatibility (e-mail addresses as display name).
+		result.setDisplayName(DB.toDisplayName(result.getDisplayName()));
+		
+		return result;
+	}
+
+	/**
+	 * Guesses a display name from an e-mail address.
+	 */
+	public static String toDisplayName(String email) {
+		int atIndex = email.indexOf('@');
+		if (atIndex > 0) {
+			email = email.substring(0, atIndex);
+		}
+		
+		StringBuilder result = new StringBuilder();
+		boolean first = true;
+		for (String part : email.replace('.', ' ').replace('_', ' ').split("\\s+")) {
+			if (part.length() == 0) {
+				continue;
+			}
+			
+			if (first) {
+				first = false;
+			} else {
+				result.append(' ');
+			}
+			
+			boolean firstPart = true;
+			for (String subPart : part.split("-")) {
+				if (subPart.length() == 0) {
+					continue;
+				}
+		
+				if (firstPart) {
+					firstPart = false;
+				} else {
+					result.append('-');
+				}
+				result.append(Character.toUpperCase(subPart.charAt(0)));
+				result.append(subPart.substring(1));
+			}
+		}
+		
+		return result.toString();
 	}
 	
 	/**
@@ -1394,7 +1443,7 @@ public class DB {
 				// This was the first access, send welcome message;
 				MailService mailService = _mailService;
 				if (mailService != null) {
-					DBUserSettings userSettings = users.getSettings(login);
+					DBUserSettings userSettings = getUserSettings(users, login);
 					users.markWelcome(userSettings.getId());
 					session.commit();
 					
@@ -1413,7 +1462,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			return users.getSettings(login);
+			return getUserSettings(users, login);
 		}
 	}
 	
