@@ -286,7 +286,7 @@
 	
 	<div class="tile is-ancestor">
 		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/signup.jsp">
+			<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/login.jsp">
 				<p class="title">Klar zum Loslegen?</p>
 				<p class="subtitle">PhoneBlock-Account erstellen!</p>
 			</a>

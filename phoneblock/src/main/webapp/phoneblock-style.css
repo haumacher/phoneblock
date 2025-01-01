@@ -112,3 +112,12 @@
 .token {
 	padding-right:5px;
 }
+
+.copyToClipboard {
+	padding-left: 0.5ex;	
+}
+
+.appscreen {
+	border: 5px solid #555;
+	border-radius: 10px;
+}

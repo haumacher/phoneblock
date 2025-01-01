@@ -71,7 +71,7 @@
    </url>
 
    <url>
-      <loc>https://phoneblock.net/phoneblock/signup.jsp</loc>
+      <loc>https://phoneblock.net/phoneblock/login.jsp</loc>
       <lastmod>${maven.build.timestamp}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.5</priority>

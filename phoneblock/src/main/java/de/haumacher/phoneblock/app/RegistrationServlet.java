@@ -27,15 +27,15 @@ import de.haumacher.phoneblock.db.DBService;
 })
 public class RegistrationServlet extends HttpServlet {
 
+	/**
+	 * Request attribute set, if registration fails.
+	 */
+	public static final String REGISTER_ERROR_ATTR = "message";
+
 	public static final String REGISTER_WEB = "/register-web";
 
 	private static final String PASSWORD_ATTR = "passwd";
 
-	/**
-	 * The authorization scope "email".
-	 */
-	public static final String IDENTIFIED_BY_EMAIL = "email";
-	
 	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Override
@@ -57,26 +57,33 @@ public class RegistrationServlet extends HttpServlet {
 		String email = (String) req.getSession().getAttribute("email");
 		
 		String login;
-		String passwd;
 		try {
+			String passwd;
+			
 			DB db = DBService.getInstance();
-			String extId = email.trim().toLowerCase();
-			login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+			login = db.getEmailLogin(email);
 			if (login == null) {
 				login = UUID.randomUUID().toString();
-				passwd = db.createUser(IDENTIFIED_BY_EMAIL, extId, login, email);
+				
+				String displayName = DB.toDisplayName(email);
+				
+				passwd = db.createUser(login, displayName);
 				db.setEmail(login, email);
 			} else {
-				passwd = db.resetPassword(login);
+				// No longer known.
+				passwd = null;
 			}
+			
+			String rememberValue = req.getParameter(LoginServlet.REMEMBER_PARAM);
+			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);
+
+			startSetup(req, resp, login, passwd);
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
 			sendError(req, resp, "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
 			return;
 		}
-		
-		startSetup(req, resp, login, passwd);
 	}
 
 	/** 
@@ -85,13 +92,20 @@ public class RegistrationServlet extends HttpServlet {
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
 		LoginFilter.setAuthenticatedUser(req, login);
-		req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+		if (passwd != null) {
+			req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+		}
 		
 		String location = LoginServlet.location(req);
 		if (location != null) {
 			resp.sendRedirect(req.getContextPath() + location);
 		} else {
-			resp.sendRedirect(req.getContextPath() + successPage(req));
+			if (passwd == null) {
+				// Was already registered, no automatic password-reset.
+				resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+			} else {
+				resp.sendRedirect(req.getContextPath() + successPage(req));
+			}
 		}
 	}
 
@@ -104,7 +118,7 @@ public class RegistrationServlet extends HttpServlet {
 	}
 	
 	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
-		req.setAttribute("message", message);
+		req.setAttribute(REGISTER_ERROR_ATTR, message);
 		req.getRequestDispatcher(errorPage(req)).forward(req, resp);
 	}
 

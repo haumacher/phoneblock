@@ -22,10 +22,10 @@
 		
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image" alt="Berechtigungen" src="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.png"/>
+	  			<img class="image appscreen" alt="Berechtigungen" src="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.png"/>
 	  		</div>
 			<div class="column is-two-fifths">
-	  			<img class="image" alt="Sync-Intervalle" src="<%=request.getContextPath() %>/setup-android/06-people-sync-sync.png"/>
+	  			<img class="image appscreen" alt="Sync-Intervalle" src="<%=request.getContextPath() %>/setup-android/06-people-sync-sync.png"/>
 	  		</div>
 		</div>
 		

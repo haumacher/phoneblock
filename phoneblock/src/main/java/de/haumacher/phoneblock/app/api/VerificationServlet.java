@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.app.api;
 import java.io.IOException;
 import java.util.UUID;
 
+import jakarta.mail.internet.AddressException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -45,17 +46,22 @@ public class VerificationServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		String email = sessionInfo.getEmail();
 		
-		String extId = email.trim().toLowerCase();
-		String login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+		String login;
 		String password;
-		if (login == null) {
-			login = UUID.randomUUID().toString();
-			password = db.createUser(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId, login, email);
-		} else {
-			password = db.resetPassword(login);
+		try {
+			login = db.getEmailLogin(email);
+			if (login == null) {
+				login = UUID.randomUUID().toString();
+				password = db.createUser(login, email);
+				db.setEmail(login, email);
+			} else {
+				password = db.resetPassword(login);
+			}
+		} catch (AddressException e) {
+			ServletUtil.sendError(resp, "Invalid e-mail address.");
+			return;
 		}
 		
-		db.setEmail(login, email);
 		
 		ServletUtil.sendResult(req, resp, RegistrationResult.create().setSession(sessionInfo.getSession()).setLogin(login).setPassword(password));
 	}

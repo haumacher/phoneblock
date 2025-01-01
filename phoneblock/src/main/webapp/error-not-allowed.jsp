@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isErrorPage="true" session="false"%>
 <html>
 <head>
@@ -13,7 +15,7 @@
 			<h1>Diese Seite kann nicht im Browser angezeigt werden</h1>
 
 			<p>
-				Deinen Addressbuch-Link, den Du bei der <a href="<%=request.getContextPath()%>/signup.jsp">Anmeldung</a>
+				Deinen Addressbuch-Link, den Du bei der <a href="<%=request.getContextPath()%>/login.jsp">Anmeldung</a>
 				erhalten hast, musst Du wie in der <a href="<%=request.getContextPath()%>/setup.jsp">Installationsanleitung</a> 
 				beschrieben zusammen mit Deiner
 				E-Mail-Adresse und dem Dir zugeschickten Passwort in Deiner
@@ -26,9 +28,9 @@
 			<div class="tile is-ancestor">
 				<div class="tile is-parent is-6">
 					<a class="tile is-child notification is-primary"
-						href="<%=request.getContextPath()%>/signup.jsp">
+						href="<%=request.getContextPath()%>/login.jsp<%=LoginServlet.locationParamFirst(SettingsServlet.PATH)%>">
 						<p class="title">Anmeldedaten vergessen?</p>
-						<p class="subtitle">Einfach nochmal registrieren!</p>
+						<p class="subtitle">Einfach nochmal registrieren und Passwort zurücksetzen!</p>
 					</a>
 				</div>
 

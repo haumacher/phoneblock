@@ -22,10 +22,10 @@
 		
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.png"/>
+	  			<img class="image appscreen" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.png"/>
 	  		</div>
 			<div class="column is-two-fifths">
-	  			<img class="image" alt="Aboniere die Blocklist" src="<%=request.getContextPath() %>/setup-android/10-people-sync-subscribe.png"/>
+	  			<img class="image appscreen" alt="Aboniere die Blocklist" src="<%=request.getContextPath() %>/setup-android/10-people-sync-subscribe.png"/>
 	  		</div>
 		</div>
 		
