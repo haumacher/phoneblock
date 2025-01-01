@@ -181,7 +181,7 @@
 				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
-				  <p class="help">Verwende den Benutzernamen, den Du bei der <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Registrierung mit E-Mail-Adresse</a> erhalten hast.</p>
+				  <p class="help">Verwende den Benutzernamen, den Du bei Deiner Anmeldung mit Google oder E-Mail-Adresse erhalten hast.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
@@ -193,7 +193,10 @@
 <% if (loginError) {%>
 					  <p class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
 <% } else { %>
-					  <p class="help">Das Passwort wurde Dir nach der <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">Registrierung</a> angezeigt.</p>
+					  <p class="help">
+					  	Das Passwort wurde Dir nach der ersten Anmeldung angezeigt. Wenn Du das Passwort nicht mehr zur Hand hast, 
+					  	dann melde Dich einfach mit Google oder Deiner E-Mail-Adresse an, siehe oben.
+					  </p>
 <% } %>
 				</div>
 
@@ -218,19 +221,6 @@
 				</div>
 				</form>
 			</div>
-			</div>
-			
-			<div class="panel-block">
-				<div class="content">
-				<p>
-				Wenn Du noch keinen PhoneBlock-Account hast, dann <a href="<%=request.getContextPath()%>/signup.jsp<%=locationParamFirst%>">registriere Dich</a>!
-				</p>
-
-				<p>
-				Wenn Du das Passwort vergessen hast, kannst Du dieselbe E-Mail-Adresse einfach erneut registrieren. Aber 
-				Vorsicht: Danach musst Du das <a href="<%=request.getContextPath()%>/setup.jsp">Passwort auch in Deiner Fritz!Box ändern</a>.
-				</p>
-				</div>
 			</div>
 		</div>
 	</nav>	
