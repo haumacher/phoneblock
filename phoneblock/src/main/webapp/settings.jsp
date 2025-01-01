@@ -45,7 +45,8 @@
 				UserSettings settings = DBService.getInstance().getSettings(userName);
 			%>
 			<p>
-				Wilkommen <%= JspUtil.quote(settings.getDisplayName()) %>.
+				Willkommen <%= JspUtil.quote(settings.getDisplayName()) %><% if (settings.getEmail() != null) { %>				
+				(<%= JspUtil.quote(settings.getEmail()) %>)<% } %>.
 			</p>
 			
 			<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>" method="post">
