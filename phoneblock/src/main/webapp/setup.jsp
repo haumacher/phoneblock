@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
@@ -46,7 +47,7 @@
 			
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
+			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">
 				<button class="button is-medium is-info is-fullwidth">PhoneBlock-Account erstellen</button>
 			</a>
 		  </div>
@@ -151,13 +152,13 @@
 		
 		<p>
 			Trage den Benutzernamen <%if (login != null) {%> <code id="login2"><%= JspUtil.quote(login) %></code><a id="login2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der
-			<a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten hast, in das Feld 
+			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">Registrierung</a> erhalten hast, in das Feld 
 			<i>Benutzername</i> ein. Am besten überträgst Du ihn mit Cut&amp;Paste.
 		</p>
 		
 		<p>
 			Das Passwort<%if (token == null) {%>, 
-			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Registrierung</a> erhalten 
+			das Du bei der <a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">Registrierung</a> erhalten 
 			hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code><a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld
 			<i>Passwort</i> in dem Formular in der Fritz!Box eintragen.
 		</p>
