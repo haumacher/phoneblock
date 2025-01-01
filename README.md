@@ -30,6 +30,8 @@ Das Einzige, was du noch brauchst, ist ein PhoneBlock-Konto, mit dem du die Tele
 
 Nutze PhoneBlock live unter: https://phoneblock.net/ - keine Kosten, keine Zusatzhardware notwendig.
 
+Du möchtest den Anrufbeantworter lieber bei Dir zu Hause betreiben - kein Problem versucht's doch am besten mit dem Docker-Image: https://hub.docker.com/r/phoneblock/answerbot
+
 
 # English Version
 The Spam-Filter for your Fritz!Box
@@ -49,3 +51,5 @@ The only other thing you need is a PhoneBlock account with which you can set up 
 ## Ready to get started?
 
 Start using PhoneBlock live at: https://phoneblock.net/ - no cost, no additional hardware required.
+
+You would prefer to operate the answering machine at home - no problem, just try the Docker image: https://hub.docker.com/r/phoneblock/answerbot
