@@ -27,6 +27,11 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebServlet(urlPatterns = LoginServlet.PATH)
 public class LoginServlet extends HttpServlet {
 	
+	/**
+	 * Request attribute set, if a login was not successful.
+	 */
+	public static final String LOGIN_ERROR_ATTR = "loginError";
+
 	public static final String USER_NAME_PARAM = "userName";
 
 	public static final String PASSWORD_PARAM = "password";
@@ -120,7 +125,7 @@ public class LoginServlet extends HttpServlet {
 	 * Redirects the client to the login page.
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
+		req.setAttribute(LOGIN_ERROR_ATTR, "Anmeldung fehlgeschlagen.");
 		req.getRequestDispatcher("/login.jsp").forward(req, resp);
 	}
 
