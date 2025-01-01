@@ -35,12 +35,19 @@
 	
 	<div class="content">
 		<p>
-			Um Deine PhoneBlock-Einstellungen zu bearbeiten, musst Du Dich anmelden. Nachdem Du Dich angemeldet hast,
-			kannst Du z.B. festlegen, ab welcher Konfidenz eine Telefonnummer zu Deiner Blocklist hinzugefügt wird  
-			oder welche Länge Deine Blocklist höchstens haben darf.
+			Um PhoneBlock als <a href="<%=request.getContextPath() %>/setup.jsp">Blocklisten-Telefonbuch</a>, 
+			oder <a href="<%=request.getContextPath() %>/anrufbeantworter/">intelligenten Anrufbeantworter</a> einzurichten, 
+			musst Du Dich zuvor hier anmelden.
 		</p>
+
+		<p> 
+			Nach der Anmeldung kannst Du in den <a href="<%=request.getContextPath() %><%=SettingsServlet.PATH %>">PhoneBlock-Einstellungen</a>
+			 z.B. festlegen, ab welcher Konfidenz eine Telefonnummer zu Deiner
+			Blocklist hinzugefügt wird oder welche Länge Deine Blocklist höchstens haben darf.
+		</p>
+
 		<p>
-			 Auch die Verwaltung Deiner <a href="<%=request.getContextPath() %>/anrufbeantworter">PhoneBlock-Anrufbeantworter</a>
+			 Auch die Verwaltung Deiner <a href="<%=request.getContextPath() %>/ab/">PhoneBlock-Anrufbeantworter</a>
 			 erfordert eine Anmeldung.
 		</p> 
 	</div>
@@ -83,6 +90,11 @@
 				    </button>
 				  </p>
 				</div>
+				
+				<p class="help">
+					 Wenn Du einen Google-Account hast, dann kannst Du Dich mit diesem bequem bei PhoneBlock anmelden.  
+				</p>
+				
 				</form>
 			</div>
 			</div>
@@ -149,7 +161,7 @@
 				  </p>
 				</div>
 				
-				<p>
+				<p class="help">
 					 Du erhälst einen Code an die angegebene E-Mail-Adresse, mit dem Du Dich anmelden kannst. 
 					 Wenn Du schon einen PhoneBlock-Nutzernamen und ein Passwort hast, dann kannst Du Dich auch
 					 mit diesem anmelden, siehe unten.  
