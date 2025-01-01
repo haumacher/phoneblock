@@ -75,6 +75,14 @@
 %>
 			<span class="tag is-info <%= categoryClass%>"><i class="fa-solid fa-star"></i>&nbsp;Auf der weißen Liste</span>
 <%
+		} else if (info.getVotesWildcard() > 0) {
+			categoryClass = "is-warning";
+%>
+			<span class="tag is-info <%= categoryClass%>">Nummernblock mit Spamverdacht</span>
+<% if (rating != Rating.B_MISSED && rating != Rating.A_LEGITIMATE) { %>
+			<span class="tag is-info <%= Ratings.getCssClass(rating)%>"><%= Ratings.getLabel(rating)%></span>
+<% } %>
+<%		
 		} else {
 %>
 			<span class="tag is-info <%= categoryClass%>">Keine Beschwerden</span>
@@ -130,21 +138,24 @@
 		<li>Stadt: <%= analysis.getCity() %> (<code><%= analysis.getCityCode() %></code>)</li>
 		<%}%>
 
-<%
-		if (info.getVotes() > 0) {
-%>	
+<% if (info.getVotes() > 0) { %>	
 		<li>Stimmen für Sperrung: <%= info.getVotes() %></li>
+<% } %>	
+		
+<% if (info.getVotesWildcard() > info.getVotes()) { %>
+		<li>Stimmen für Sperrung des Nummernblocks: <%= info.getVotesWildcard() %></li>
+<%} %>	
+		
+<% if (info.getVotes() > 0 || info.getVotesWildcard() > 0) { %>	
 		<li>Letzte Beschwerde vom: <%= format.format(new Date(info.getLastUpdate())) %></li>
 
 <%
-			long dateAdded = info.getDateAdded();
-			if (dateAdded > 0) {
+	long dateAdded = info.getDateAdded();
+	if (dateAdded > 0) {
 %>
 		<li>Nummer aktiv seit: <%= format.format(new Date(dateAdded)) %></li>
-<%			
-			}
-		} 
-%>
+<% 	} %>
+<% } %>
 	</ul>
   
   </div>
