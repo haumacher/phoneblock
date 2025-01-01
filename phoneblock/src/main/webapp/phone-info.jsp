@@ -79,9 +79,9 @@
 			categoryClass = "is-warning";
 %>
 			<span class="tag is-info <%= categoryClass%>">Nummernblock mit Spamverdacht</span>
-<% if (rating != Rating.B_MISSED) { %>
+<% if (rating != Rating.B_MISSED && rating != Rating.A_LEGITIMATE) { %>
 			<span class="tag is-info <%= Ratings.getCssClass(rating)%>"><%= Ratings.getLabel(rating)%></span>
-<% } %>		
+<% } %>
 <%		
 		} else {
 %>
