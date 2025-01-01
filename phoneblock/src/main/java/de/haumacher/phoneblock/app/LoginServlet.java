@@ -101,6 +101,13 @@ public class LoginServlet extends HttpServlet {
 		
 		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
 		
+		redirectToLocationAfterLogin(req, resp);
+	}
+
+	/**
+	 * Redirects the current request to its final destination.
+	 */
+	public static void redirectToLocationAfterLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String location = location(req);
 		if (location == null) {
 			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
