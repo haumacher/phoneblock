@@ -60,13 +60,13 @@
 
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 <% } %>			
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help">
 				  	Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen.
 				  	Dein Passwort wurde Dir nach Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf der Seite
@@ -77,7 +77,7 @@
 <% if (token != null) { %>
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help">Dieses Passwort musst Du für die <a href="<%=request.getContextPath()%>/setup.jsp">Einrichtung des Telefonbuchs</a> oder für die <a href="<%=request.getContextPath()%><%=SettingsServlet.PATH%>">Anmeldung an dieser Webseite</a> verwenden. </p>
 				  <p class="help">
 				  	Bitte notiere Dir das Passwort (oder speichere es am besten in einem <a href="https://keepass.info/">Passwort-Manager</a>), 

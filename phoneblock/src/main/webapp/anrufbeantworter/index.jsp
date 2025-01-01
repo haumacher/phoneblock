@@ -105,12 +105,12 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help">Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen. </p>
 				</div>
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help">Dieses Passwort musst Du für die <a href="<%=request.getContextPath()%><%=SettingsServlet.PATH%>">Anmeldung an dieser Webseite</a> verwenden. </p>
 				  <p class="help">
 				  	Bitte notiere Dir das Passwort (oder speichere es am besten in einem <a href="https://keepass.info/">Passwort-Manager</a>), 
