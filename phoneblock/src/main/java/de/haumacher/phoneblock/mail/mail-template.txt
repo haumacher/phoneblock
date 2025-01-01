@@ -1,11 +1,11 @@
-Hallo PhoneBlock-Nutzer,
+Hallo {name},
 
-hier kommt der Bestätigungscode für Deinen PhoneBlock-Account. Um Deine E-Mail-Adresse zu verifizieren, 
+hier kommt der Anmeldecode für Deinen PhoneBlock-Account. Um Deine E-Mail-Adresse zu verifizieren, 
 trage bitte den folgenden Code in die Anmelde-Maske ein, die Du gerade in Deinem Browser offen hast:
 
         {code}
 
-Wenn Du keinen PhoneBlock-Account erstellen willst, kannst Du diese E-Mail getrost ignorieren.
+Wenn Du Dich nicht bei PhoneBlock anmelden willst, kannst Du diese E-Mail getrost ignorieren.
 
 Vielen Dank für Dein Interesse an PhoneBlock!
 Dein PhoneBlock-Server
