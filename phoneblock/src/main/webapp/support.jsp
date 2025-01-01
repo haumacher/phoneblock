@@ -53,7 +53,7 @@
 					</p>
 <% } else { %>
 					<p class="subtitle">
-						Bitte gibt <code id="purpose">PhoneBlock-<%= userName.substring(0, 13)%></code><spam id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></spam> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
+						Bitte gibt <code id="purpose">PhoneBlock-<%= userName.substring(0, 13)%></code><span id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></span> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
 					</p>
 <% } %>					
 				</a>
