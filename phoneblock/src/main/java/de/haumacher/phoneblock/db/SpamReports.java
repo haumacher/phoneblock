@@ -424,6 +424,11 @@ public interface SpamReports {
 			""")
 	int createHistorySnapshot(int rev, long lastSnapshot);
 	
+	/**
+	 * Remove the backup (searches yesterday) from the current searches. Store the searches from the currently completed day into the backup.
+	 * @param lastSnapshot Time when the last revision was created.
+	 * @return The number of updated lines.
+	 */
 	@Update("""
 			update NUMBERS s
 			set
