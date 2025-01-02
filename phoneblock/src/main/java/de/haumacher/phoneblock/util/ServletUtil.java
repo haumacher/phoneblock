@@ -82,20 +82,6 @@ public class ServletUtil {
 		resp.getWriter().write(message);
 	}
 
-	public static boolean checkAuthentication(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String authHeader = req.getHeader("Authorization");
-		if (authHeader != null && !authHeader.isEmpty()) {
-			String userName = DBService.getInstance().basicAuth(authHeader);
-			if (userName != null) {
-				req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
-				return true;
-			}
-		}
-		
-		sendAuthenticationRequest(resp);
-		return false;
-	}
-	
 	public static String currentPage(HttpServletRequest req) {
 		String currentPage = (String) req.getAttribute(CURRENT_PAGE);
 		if (currentPage == null) {

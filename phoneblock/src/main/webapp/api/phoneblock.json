@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.3.2"
+		"version": "v1.3.3"
 	},
 	"servers": [
 		{
@@ -54,7 +54,13 @@
 							}
 						}
 					}
-				}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"PhoneBlockToken": []
+					}
+				]
 			},
 			"parameters": [
 				{
@@ -138,7 +144,8 @@
 				},
 				"security": [
 					{
-						"PhoneBlock": []
+						"PhoneBlockUser": [],
+						"PhoneBlockToken": []
 					}
 				]
 			},
@@ -388,7 +395,8 @@
 				},
 				"security": [
 					{
-						"PhoneBlock": []
+						"PhoneBlockUser": [],
+						"PhoneBlockToken": []
 					}
 				]
 			}
@@ -396,9 +404,15 @@
 	},
 	"components": {
 		"securitySchemes": {
-			"PhoneBlock": {
+			"PhoneBlockUser": {
+				"description": "A PhoneBlock user name and its password.",
 				"type": "http",
 				"scheme": "Basic"
+			},
+			"PhoneBlockToken": {
+				"description": "A PhoneBlock authorization token created for persistent login.",
+				"type": "http",
+				"scheme": "Bearer"
 			}
 		}
 	}
