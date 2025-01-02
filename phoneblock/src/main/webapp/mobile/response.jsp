@@ -31,7 +31,7 @@
 <h1>Du bist erfolgreich angemeldet</h1>
 
 <p>
-	Dein Authorisierungstoken: <code><%=JspUtil.quote(request.getAttribute("token"))%></code>
+	Dein Authorisierungstoken: <code id="token"><%=JspUtil.quote(request.getAttribute("token"))%></code>
 </p>
 
 <p>

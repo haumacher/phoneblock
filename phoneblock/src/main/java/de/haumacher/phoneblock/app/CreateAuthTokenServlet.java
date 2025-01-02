@@ -11,6 +11,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Servlet for requesting a fresh authorization token to use for API access.
+ */
 @WebServlet(urlPatterns = CreateAuthTokenServlet.CREATE_TOKEN)
 public class CreateAuthTokenServlet extends HttpServlet {
 
