@@ -9,7 +9,6 @@
 %>
 <head>
 <jsp:include page="../head-content.jspf"></jsp:include>
-<script type="text/javascript" src="<%= request.getContextPath() %>/mobile/response.js"></script>
 </head>
 
 <body>
@@ -42,6 +41,8 @@
 
 </div>
 </section>
+
+<script type="text/javascript" src="<%= request.getContextPath() %>/mobile/response.js"></script>
 
 </body>
 </html>
