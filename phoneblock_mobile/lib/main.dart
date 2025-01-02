@@ -1,10 +1,12 @@
-import 'package:call_log/call_log.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+const String PHONE_BLOCK_CONNECT_URL = 'https://phoneblock.net/pb-test/mobile/login.jsp';
 
 void main() {
   AppState state = AppState(calls: [
@@ -46,68 +48,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   _MyHomePageState();
 
-  void updateCallList() async {
-    Iterable<CallLogEntry> callLog = await CallLog.get();
-
-    setState(() {
-      widget.state.calls.clear();
-      Set<String> allNumbers = {};
-      for (var call in callLog) {
-        var callType = type(call.callType);
-        if (callType == Type.oUTGOING) {
-          // Numbers to which the caller initiated a call should never be blocked.
-          continue;
-        }
-        if (call.name != null) {
-          // In the local address book, never attempt to block.
-          continue;
-        }
-        var number = call.number;
-        if (number == null) {
-          // Strange call without number cannot be blocked anyways.
-          continue;
-        }
-        var newNumber = allNumbers.add(number);
-        if (!newNumber) {
-          continue;
-        }
-
-        widget.state.calls.add(Call(
-            phone: phone(call),
-            type: callType,
-            started: call.timestamp ?? 0,
-            duration: call.duration ?? 0,
-            label: call.name
-        ));
-      }
-    });
-  }
-
-  String phone(CallLogEntry call) {
-    return call.number ?? "Unknown";
-  }
-
-  Type type(CallType? callType) {
-    if (callType == null) {
-      return Type.mISSED;
-    }
-    switch (callType) {
-      case CallType.incoming: return Type.iNCOMING;
-      case CallType.wifiIncoming: return Type.iNCOMING;
-
-      case CallType.outgoing: return Type.oUTGOING;
-      case CallType.wifiOutgoing: return Type.oUTGOING;
-
-      case CallType.rejected: return Type.bLOCKED;
-      case CallType.blocked: return Type.bLOCKED;
-
-      case CallType.missed: return Type.mISSED;
-      case CallType.voiceMail: return Type.mISSED;
-      case CallType.answeredExternally: return Type.mISSED;
-      case CallType.unknown: return Type.mISSED;
-    }
-}
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -126,30 +66,44 @@ class _MyHomePageState extends State<MyHomePage> {
                 return [
                   const PopupMenuItem<int>(
                     value: 0,
-                    child: Text("My Account"),
+                    child: Text("Login"),
                   ),
 
                   const PopupMenuItem<int>(
                     value: 1,
-                    child: Text("Settings"),
+                    child: Text("My Account"),
                   ),
 
                   const PopupMenuItem<int>(
                     value: 2,
+                    child: Text("Settings"),
+                  ),
+
+                  const PopupMenuItem<int>(
+                    value: 3,
                     child: Text("Logout"),
                   ),
                 ];
               },
               onSelected:(value){
-                if(value == 0){
+                if (value == 0) {
+                  if (kDebugMode) {
+                    print("Login is selected.");
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                } else if (value == 1){
                   if (kDebugMode) {
                     print("My account menu is selected.");
                   }
-                }else if(value == 1){
+                }else if(value == 2){
                   if (kDebugMode) {
                     print("Settings menu is selected.");
                   }
-                }else if(value == 2){
+                }else if(value == 3){
                   if (kDebugMode) {
                     print("Logout menu is selected.");
                   }
@@ -181,11 +135,6 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: fetchBlocklist,
             tooltip: 'Update Blocklist',
             child: const Icon(Icons.cloud_download),
-          ),
-          FloatingActionButton(
-            onPressed: updateCallList,
-            tooltip: 'Increment',
-            child: const Icon(Icons.update),
           ),
         ],
       ) // This trailing comma makes auto-formatting nicer for build methods.
@@ -398,6 +347,88 @@ Icon icon(Rating rating) {
   }
 }
 
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Connect to PhoneBlock"),),
+      body: const LoginWidget(),
+    );
+  }
+}
+
+class LoginWidget extends StatefulWidget {
+  const LoginWidget({super.key});
+
+  @override
+  State<StatefulWidget> createState() => LoginState();
+}
+
+class LoginState extends State<LoginWidget> {
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller =
+      WebViewController.fromPlatformCreationParams(
+          const PlatformWebViewControllerCreationParams()
+      )
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            debugPrint('WebView is loading (progress : $progress%)');
+          },
+          onPageStarted: (String url) {
+            debugPrint('Page started loading: $url');
+          },
+          onPageFinished: (String url) {
+            debugPrint('Page finished loading: $url');
+          },
+          onWebResourceError: (WebResourceError error) {
+            debugPrint(
+                '''
+                Page resource error:
+                  code: ${error.errorCode}
+                  description: ${error.description}
+                  errorType: ${error.errorType}
+                  isForMainFrame: ${error.isForMainFrame}
+                ''');
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            if (!request.url.startsWith('https://phoneblock.net/')) {
+              debugPrint('blocking navigation to ${request.url}');
+              return NavigationDecision.prevent;
+            }
+            debugPrint('allowing navigation to ${request.url}');
+            return NavigationDecision.navigate;
+          },
+          onHttpError: (HttpResponseError error) {
+            debugPrint('Error occurred on page: ${error.response?.statusCode}');
+          },
+          onUrlChange: (UrlChange change) {
+            debugPrint('url change to ${change.url}');
+          },
+        ),
+      )
+      ..addJavaScriptChannel('TokenResult',
+        onMessageReceived: (JavaScriptMessage message) {
+          debugPrint('Received token: ${message.message}');
+          Navigator.of(context).pop(message.message);
+        },
+      )
+      ..loadRequest(Uri.parse(PHONE_BLOCK_CONNECT_URL));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WebViewWidget(controller: _controller);
+  }
+}
 
 class RateScreen extends StatelessWidget {
   final Call call;
