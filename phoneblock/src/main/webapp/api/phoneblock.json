@@ -17,7 +17,77 @@
 	"paths": {
 		"/num/{num}": {
 			"get": {
-				"summary": "Retrieve information for the given phone number.",
+				"summary": "Checks whether the given phone number in on the blocklist.",
+				"responses": {
+					"200": {
+						"description": "Checks whether the given phone number is in the PhoneBlock database.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"phone": {
+											"type": "string"
+										},
+										"votes": {
+											"type": "integer"
+										},
+										"rating": {
+											"type": "string",
+											"enum": [
+												"A_LEGITIMATE",
+												"B_MISSED",
+												"C_PING",
+												"D_POLL",
+												"E_ADVERTISING",
+												"F_GAMBLE",
+												"G_FRAUD"
+											]
+										}
+									}
+								},
+								"example": {
+									"phone": "0123456789",
+									"votes": 42,
+									"rating": "C_POLL"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"PhoneBlockToken": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "num",
+					"in": "path",
+					"description": "Phone number to inspect",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
+				}
+			]
+		},
+		"/search/{num}": {
+			"get": {
+				"summary": "Retrieve extensive information for the given phone number.",
 				"responses": {
 					"200": {
 						"description": "Retrieves information for the given phone number from the PhoneBlock database.",
@@ -410,7 +480,7 @@
 				"scheme": "Basic"
 			},
 			"PhoneBlockToken": {
-				"description": "A PhoneBlock authorization token created for persistent login.",
+				"description": "A PhoneBlock authorization token created for API access.",
 				"type": "http",
 				"scheme": "Bearer"
 			}
