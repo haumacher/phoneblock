@@ -94,8 +94,8 @@ public class RegistrationServlet extends HttpServlet {
 	 */
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
-		LoginFilter.setAuthenticatedUser(req, login);
-		
+		LoginFilter.setSessionUser(req, login);
+
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:
 			resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");

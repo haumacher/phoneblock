@@ -18,6 +18,7 @@ public class RememberedLoginFilter extends LoginFilter {
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// Continue without login, login is optional.
 		chain.doFilter(request, response);
 	}
 	

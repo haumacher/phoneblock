@@ -17,10 +17,12 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * Servlet for search API returning the info from the web search in a machine readable form.
  */
-@WebServlet(urlPatterns = SearchApiServlet.PREFIX + "/*")
+@WebServlet(urlPatterns = SearchApiServlet.PATTERN)
 public class SearchApiServlet extends HttpServlet {
 
-	static final String PREFIX = "/api/search";
+	public static final String PREFIX = "/api/search";
+	
+	public static final String PATTERN = SearchApiServlet.PREFIX + "/*";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

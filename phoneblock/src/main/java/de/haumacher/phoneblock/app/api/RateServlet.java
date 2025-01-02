@@ -22,9 +22,11 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * Servlet that adds a rating to a phone number.
  */
-@WebServlet(urlPatterns = "/api/rate")
+@WebServlet(urlPatterns = RateServlet.PATH)
 public class RateServlet extends HttpServlet {
 	
+	public static final String PATH = "/api/rate";
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req);

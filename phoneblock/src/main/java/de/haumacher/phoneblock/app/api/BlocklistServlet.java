@@ -22,8 +22,10 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * {@link HttpServlet} serving the blocklist.
  */
-@WebServlet(urlPatterns = "/api/blocklist")
+@WebServlet(urlPatterns = BlocklistServlet.PATH)
 public class BlocklistServlet extends HttpServlet {
+	
+	public static final String PATH = "/api/blocklist";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 

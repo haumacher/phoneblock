@@ -127,7 +127,7 @@ public class OAuthLoginServlet extends HttpServlet {
 				return;
 			}
 		} else {
-			LoginFilter.setAuthenticatedUser(req, login);
+			LoginFilter.setSessionUser(req, login);
 		}
 		
 		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_PARAM);

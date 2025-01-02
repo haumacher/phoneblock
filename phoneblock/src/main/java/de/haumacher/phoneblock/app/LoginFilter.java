@@ -72,7 +72,7 @@ public abstract class LoginFilter implements Filter {
 						String userName = authorization.getUserName();
 						LOG.info("Accepted login token for user {}.", userName);
 						
-						LoginFilter.setAuthenticatedUser(req, userName);
+						setUser(req, userName);
 
 						// Update cookie to extend lifetime and invalidate old version of cookie. 
 						// This enhances security since a token can be used only once.
@@ -103,18 +103,15 @@ public abstract class LoginFilter implements Filter {
 					String userName = authorization.getUserName();
 					LOG.info("Accepted bearer token {} for user {}.", token, userName);
 					
-					setAuthenticatedUser(req, userName);
+					setUser(req, userName);
 					
 					chain.doFilter(request, response);
-				} else {
-					if (authorization == null) {
-						LOG.info("Received outdated bearer token: {}", token);
-					}
+					return;
 				}
 			} else {
 				String userName = db.basicAuth(authHeader);
 				if (userName != null) {
-					setAuthenticatedUser(req, userName);
+					setUser(req, userName);
 					chain.doFilter(request, response);
 					return;
 				}
@@ -122,6 +119,10 @@ public abstract class LoginFilter implements Filter {
 		}
 		
 		requestLogin(req, resp, chain);
+	}
+
+	protected void setUser(HttpServletRequest req, String userName) {
+		setSessionUser(req, userName);
 	}
 
 	/**
@@ -197,9 +198,16 @@ public abstract class LoginFilter implements Filter {
 	/** 
 	 * Adds the given user name to the request and session.
 	 */
-	public static final void setAuthenticatedUser(HttpServletRequest req, String userName) {
-		req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+	public static void setSessionUser(HttpServletRequest req, String userName) {
+		setRequestUser(req, userName);
 		req.getSession().setAttribute(AUTHENTICATED_USER_ATTR, userName);
+	}
+
+	/** 
+	 * Adds the given user name to the current request.
+	 */
+	public static void setRequestUser(HttpServletRequest req, String userName) {
+		req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
 	}
 
 }

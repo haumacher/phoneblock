@@ -530,18 +530,27 @@ public class DB {
 	}
 	
 	public AuthToken createLoginToken(String login, long now, String userAgent) {
-		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent);
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+			.setImplicit(true)
+			.setAccessLogin(true);
 		createAuthToken(authorization);
 		return authorization;
 	}
 
-	public AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
+	public AuthToken createAPIToken(String login, long now, String userAgent) {
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+				.setAccessDownload(true)
+				.setAccessQuery(true)
+				.setAccessRate(true);
+		createAuthToken(authorization);
+		return authorization;
+	}
+	
+	private AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
 		return AuthToken.create()
 			.setUserName(login)
 			.setCreated(now)
 			.setLastAccess(now)
-			.setImplicit(true)
-			.setAccessLogin(true)
 			.setUserAgent(nonNullUA(userAgent));
 	}
 	

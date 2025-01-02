@@ -35,7 +35,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 
 		long now = System.currentTimeMillis();
 		DB db = DBService.getInstance();
-		AuthToken loginToken = db.createLoginToken(user, now, req.getHeader("User-Agent"));
+		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
 		
 		req.setAttribute("token", loginToken.getToken());
 		req.getRequestDispatcher("/mobile/response.jsp").forward(req, resp);

@@ -99,7 +99,7 @@ public class LoginServlet extends HttpServlet {
 		String rememberValue = req.getParameter(REMEMBER_PARAM);
 		processRememberMe(req, resp, db, rememberValue, userName);
 		
-		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
+		LoginFilter.setSessionUser(req, authenticatedUser);
 		
 		redirectToLocationAfterLogin(req, resp);
 	}
@@ -120,9 +120,7 @@ public class LoginServlet extends HttpServlet {
 			String userName) {
 		boolean rememberMe = "true".equals(rememberValue);
 		if (rememberMe) {
-			AuthToken authorization = db.createAuthorizationTemplate(userName, System.currentTimeMillis(), req.getHeader("User-Agent"));
-			
-			db.createAuthToken(authorization);
+			AuthToken authorization = db.createLoginToken(userName, System.currentTimeMillis(), req.getHeader("User-Agent"));
 			
 			LoginFilter.setLoginCookie(req, resp, authorization);
 		}
