@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.app.CreateAuthTokenServlet"%>
 <%@page import="de.haumacher.phoneblock.app.EMailVerificationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory"%>
@@ -11,7 +12,7 @@
 	request.setAttribute("title", "Auf Mobilgerät anmelden");
 %>
 <head>
-<jsp:include page="../head-content.jspf"></jsp:include>
+<jsp:include page="/head-content.jspf"></jsp:include>
 </head>
 
 <body>
@@ -29,117 +30,58 @@
 
 <section class="section">
 	<div class="content">
+	
+	<h1>PhoneBlock-Account verknüpfen</h1>
+	
 	<p>
-		Hier meldest Du Dich bei PhoneBlock an, um auf Deinem Mobiltelefon die PhoneBlock-Datenbank für die Filterung von 
-		Anrufen nutzen und andere einfach vor neuen SPAM-Nummern warnen zu können. Wenn Du schon einen 
-		PhoneBlock-Zugang hast, kannst Du diesen verwenden oder ansonsten einen neuen erstellen. 
+		Hier verbindest du Deinen PhoneBlock-Account mit Deinem Mobilgerät.
 	</p>
 
-<%-- Login or register with Google --%>		
-	<nav class="panel">
-		<p class="panel-heading"><a href="<%=request.getContextPath()%>/oauth/login?force_client=<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%><%=LoginServlet.locationParam(CreateAuthTokenServlet.CREATE_TOKEN)%>">
-			<i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a>
-		</p>
-	</nav>
+	<p>
+		<b>Achtung:</b> Wenn sich diese Seite <em>nicht</em> von der PhoneBlock-App geöffnet hat, dann
+		gehe zurück oder schließe die Seite, denn Dann könnte das ein Versuch sein, Deinen 
+		PhoneBlock-Account zu stehlen.    
+	</p>
+	
+<%
+	Object login = LoginFilter.getAuthenticatedUser(request);
+%>
 
-<%-- Login or register with e-mail and code --%>		
-<%
-	Object emailMessage = request.getAttribute("emailMessage");
-	String emailClass = emailMessage != null ? "is-active" : "";
-%>
-	<nav class="panel">
-		<p class="panel-heading"><a href="#registerForm" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail registrieren</span></a></p>
-		<div id="registerForm" class="is-collapsible <%=emailClass%>">
-			<form action="<%= request.getContextPath() %><%=EMailVerificationServlet.VERIFY_MOBILE%>" method="post" enctype="application/x-www-form-urlencoded">
-	  		<div class="panel-block">
-	  		<div class="content">
-				<div class="field">
-				  <label class="label">E-Mail</label>
-				  <div class="control has-icons-left has-icons-right">
-				    <input name="email" class="input<%= emailMessage != null ? " is-danger" : "" %>" type="email" placeholder="Deine E-Mail-Adresse" value="<%= JspUtil.quote(request.getAttribute("email")) %>">
-				    <span class="icon is-small is-left">
-				      <i class="fas fa-envelope"></i>
-				    </span>
-<% if (emailMessage != null) { %>
-				    <span class="icon is-small is-right">
-				      <i class="fas fa-exclamation-triangle"></i>
-				    </span>
-<% } %>
-				  </div>
-<% if (emailMessage != null) { %>
-				  <p class="help is-danger">
-						<%= JspUtil.quote(emailMessage) %>
-				  </p>
+<% if (login == null) { %>
+
+	<p>
+		Du musst Dich zuerst bei PhoneBlock anmelden. 
+		Wenn Du noch keinen PhoneBlock-Account hast, dann kannst Du hier einen erstellen.
+		Du benötigst einen PhoneBlock-Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
+		für die Filterung von Anrufen nutzen kann.  
+	</p>
+
+	<jsp:include page="/login-forms.jspf">
+		<jsp:param name="web" value="false" />
+		<jsp:param name="locationAfterLogin" value="/mobile/login.jsp" />
+	</jsp:include>
+
 <% } else { %>
-				  <p class="help">
-					Du erhälst eine E-Mail mit einem Code, mit dem Du Dich anmelden kannst.
-				  </p>
-<% } %>
-				</div>		
-						
-				<div class="buttons is-right">
-			    	<button class="button is-link" type="submit">Registrieren</button>
-				</div>
-			</div>
-			</div>
-			</form>
+
+	<form action="<%=request.getContextPath()%><%=CreateAuthTokenServlet.CREATE_TOKEN %>" method="post">
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" type="submit">
+	          <span class="icon">
+			      <i class="fa-solid fa-link"></i>
+			  </span>
+		      <span>PhoneBlock-Account verknüpfen</span>
+		    </button>
+		  </p>
 		</div>
-	</nav>
-		
-<%-- Login with user name --%>
-<%
-	Object loginMessage = request.getAttribute("loginMessage");
-	String loginClass = emailMessage != null ? "is-active" : "";
-%>
-	<nav class="panel">
-		<p class="panel-heading"><a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit Nutzernamen anmelden</span></a></p>
-		<div id="loginForm" class="is-collapsible <%=loginClass%>">
-			<div class="panel-block">
-	  		<div class="content">
-				<form action="<%=request.getContextPath()%>/login" method="post">
-				<div class="field">
-				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" type="text" placeholder="Benutzername" name="userName">
-				    <span class="icon is-small is-left">
-				      <i class="fa-solid fa-user"></i>
-				    </span>
-				    <span class="icon is-small is-right">
-				      <i class="fas fa-check"></i>
-				    </span>
-				  </p>
-				  <p class="help">Verwende den Benutzernamen, den Du bei Deiner Registrierung erhalten hast.</p>
-				</div>
-				<div class="field">
-				  <p class="control has-icons-left">
-				    <input class="input" type="password" placeholder="PhoneBlock-Passwort" name="password">
-				    <span class="icon is-small is-left">
-				      <i class="fas fa-lock"></i>
-				    </span>
-				  </p>
-<% if (loginMessage != null) {%>
-					  <p class="help is-danger">
-						<%= JspUtil.quote(loginMessage) %>
-					  </p>
-<% } else { %>
-					  <p class="help">
-					  	Das Passwort wurde Dir nach Deiner Registrierung auf der PhoneBlock-Webseite angezeigt.
-					  </p>
+	</form>	
+	
 <% } %>
-				</div>
-				
-				<div class="field is-grouped is-grouped-right">
-				  <p class="control">
-				    <button class="button is-primary" type="submit">Anmelden</button>
-				  </p>
-				</div>
-				</form>
-			</div>
-			</div>
-		</div>
-	</nav>	
-		
+
 	</div>
 </section>
+
+<script type="text/javascript" src="<%= request.getContextPath() %>/bulma.js"></script>
 
 </body>
 </html>

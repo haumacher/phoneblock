@@ -21,6 +21,11 @@ public class CreateAuthTokenServlet extends HttpServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String user = LoginFilter.getAuthenticatedUser(req.getSession(false));
 		if (user == null) {
 			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

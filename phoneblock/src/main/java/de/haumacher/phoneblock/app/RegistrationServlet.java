@@ -95,33 +95,23 @@ public class RegistrationServlet extends HttpServlet {
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
 		LoginFilter.setAuthenticatedUser(req, login);
-		if (passwd != null) {
-			req.getSession().setAttribute(PASSWORD_ATTR, passwd);
-		}
 		
-		String location = LoginServlet.location(req);
-		if (location != null) {
-			resp.sendRedirect(req.getContextPath() + location);
-		} else {
-			if (passwd == null) {
-				// Was already registered, no automatic password-reset.
-				resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
-			} else {
-				resp.sendRedirect(req.getContextPath() + successPage(req));
+		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");
+			break;
+		case REGISTER_WEB:
+		default:
+			if (passwd != null) {
+				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
 			}
+			
+			String location = LoginServlet.location(req, passwd == null ? SettingsServlet.PATH : "/setup.jsp");
+			resp.sendRedirect(req.getContextPath() + location);
+			break;
 		}
 	}
 
-	private static String successPage(HttpServletRequest req) {
-		switch (req.getServletPath()) {
-		case REGISTER_MOBILE:
-			return "/mobile/response.jsp";
-		case REGISTER_WEB:
-		default:
-			return "/setup.jsp";
-		}
-	}
-	
 	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
 		req.setAttribute(REGISTER_ERROR_ATTR, message);
 		req.getRequestDispatcher(errorPage(req)).forward(req, resp);
