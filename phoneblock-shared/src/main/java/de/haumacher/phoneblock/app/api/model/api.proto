@@ -241,6 +241,7 @@ message NumberHistory extends AbstractNumberInfo {
 	int rMax;
 } 
 
+@Name("phone-info")
 message BlockListEntry {
 	/** The number being requested. */
 	string phone;
