@@ -44,7 +44,7 @@ public class RegisterServlet extends HttpServlet {
 		Captcha captcha = new Captcha(SecureRandomService.getInstance().getRnd());
 		String captchaImage = "data:image/png;base64," + Base64.getEncoder().encodeToString(captcha.getPng());
 		_sessions.put(session, SessionInfo.create().setCreated(System.currentTimeMillis()).setSession(session).setAnswer(captcha.getText()));
-		SchedulerService.getInstance().executor().schedule(() -> _sessions.remove(session), 15, TimeUnit.MINUTES);
+		SchedulerService.getInstance().scheduler().schedule(() -> _sessions.remove(session), 15, TimeUnit.MINUTES);
 		
 		ServletUtil.sendResult(req, resp, RegistrationChallenge.create().setSession(session).setCaptcha(captchaImage));
 	}

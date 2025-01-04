@@ -178,7 +178,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		resolveViaAddress(sipConfig);
 		
-		Scheduler scheduler = Scheduler.of(_scheduler.executor());
+		Scheduler scheduler = _scheduler;
 		
 		_sipProvider = new SipProvider(sipConfig, scheduler);
 		_portPool = portConfig.createPool();
@@ -250,7 +250,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 		
 		_instance = this;
 		
-		_scheduler.executor().schedule(this::registerBots, 10, TimeUnit.SECONDS);
+		_scheduler.scheduler().schedule(this::registerBots, 10, TimeUnit.SECONDS);
 	}
 
 	private void resolveViaAddress(SipConfig sipConfig) {

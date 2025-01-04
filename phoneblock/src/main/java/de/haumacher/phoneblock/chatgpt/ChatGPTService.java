@@ -92,7 +92,7 @@ public class ChatGPTService implements ServletContextListener {
 		
 		LOG.info("Starting ChatGPTService.");
 		
-		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heardBeat, 15, 3600, TimeUnit.SECONDS);
+		_heartBeat = _scheduler.scheduler().scheduleWithFixedDelay(this::heardBeat, 15, 3600, TimeUnit.SECONDS);
 		reschedule();
 	}
 
@@ -271,7 +271,7 @@ public class ChatGPTService implements ServletContextListener {
 		// Reset exponential back-off.
 		_delaySeconds = INITIAL_DELAY_SECONDS;
 		
-		_process = _scheduler.executor().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
+		_process = _scheduler.scheduler().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
 	}
 
 	/** 
@@ -284,7 +284,7 @@ public class ChatGPTService implements ServletContextListener {
 		}
 		
 		LOG.info("Rescheduling with " + _delaySeconds + " seconds delay.");
-		_process = _scheduler.executor().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
+		_process = _scheduler.scheduler().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
 	}
 
 }

@@ -15,7 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class DnsServer implements Runnable {
 
 	private static Logger LOG = LoggerFactory.getLogger(DnsServer.class);
 
-	private final ScheduledExecutorService _executor;
+	private final ExecutorService _executor;
 	private final ServerSocket _serverSocket;
 	
 	private Zone _onlyZone;
@@ -73,8 +73,8 @@ public class DnsServer implements Runnable {
 	private long _ttlMaster = 600;
 	private long _ttlClient = 60;
 
-	public DnsServer(ScheduledExecutorService executor, int port) throws IOException {
-		_executor = executor;
+	public DnsServer(ExecutorService executorService, int port) throws IOException {
+		_executor = executorService;
 
 		try (ServerSocket test = new ServerSocket()) {
 			LOG.info("Supported socket options: " + test.supportedOptions().stream().map(o -> o.name()).collect(Collectors.joining(", ")));

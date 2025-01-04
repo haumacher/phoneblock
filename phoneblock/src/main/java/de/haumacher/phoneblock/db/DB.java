@@ -419,7 +419,7 @@ public class DB {
 		 long millisFirst = cal.getTimeInMillis();
 		 long initialDelay = millisFirst - millisNow;
 		 
-		_tasks.add(_scheduler.executor().scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
+		_tasks.add(_scheduler.scheduler().scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
 		return cal.getTime();
 	}
 	
