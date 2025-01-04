@@ -66,7 +66,7 @@ public class MetaSearchService implements ServletContextListener {
 		
 		_instance = this;
 		
-		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heartBeat, 1, 10, TimeUnit.MINUTES);
+		_heartBeat = _scheduler.scheduler().scheduleWithFixedDelay(this::heartBeat, 1, 10, TimeUnit.MINUTES);
 	}
 	
 	private void heartBeat() {
@@ -173,7 +173,7 @@ public class MetaSearchService implements ServletContextListener {
 		
 		LOG.info("Scheduling next meta search in " + Duration.of(delay, ChronoUnit.MILLIS) + ", queue size is: " + _jobs.size());
 		
-		_task = _scheduler.executor().schedule(this::performSearch, delay, TimeUnit.MILLISECONDS);
+		_task = _scheduler.scheduler().schedule(this::performSearch, delay, TimeUnit.MILLISECONDS);
 	}
 
 	private void performSearch() {

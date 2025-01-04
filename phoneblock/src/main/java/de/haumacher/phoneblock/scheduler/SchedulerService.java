@@ -3,31 +3,41 @@
  */
 package de.haumacher.phoneblock.scheduler;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.mjsip.time.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Service providing a {@link ScheduledExecutorService}.
  */
-public class SchedulerService implements ServletContextListener {
+public class SchedulerService implements ServletContextListener, Scheduler {
+
+	/**
+	 * The default core pool size of the scheduler.
+	 */
+	public static final int CORE_POOL_SIZE = 10;
 
 	private static final Logger LOG = LoggerFactory.getLogger(SchedulerService.class);
 
-	private ScheduledExecutorService _executor;
+	private ExecutorService _executor;
+
+	private ScheduledExecutorService _scheduler;
 
 	private static SchedulerService _instance;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		LOG.info("Starting scheduler.");
-		_executor = new ScheduledThreadPoolExecutor(10);
+		_executor = Executors.newCachedThreadPool();
+		_scheduler = Executors.newScheduledThreadPool(CORE_POOL_SIZE);
 		
 		_instance = this;
 	}
@@ -65,8 +75,15 @@ public class SchedulerService implements ServletContextListener {
 	/** 
 	 * The executor.
 	 */
-	public ScheduledExecutorService executor() {
+	public ExecutorService executor() {
 		return _executor;
+	}
+	
+	/** 
+	 * The scheduler.
+	 */
+	public ScheduledExecutorService scheduler() {
+		return _scheduler;
 	}
 
 }
