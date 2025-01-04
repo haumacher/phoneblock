@@ -10,7 +10,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	}
 
 	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.BlockListEntry} type in JSON format. */
-	public static final String BLOCK_LIST_ENTRY__TYPE = "BlockListEntry";
+	public static final String BLOCK_LIST_ENTRY__TYPE = "phone-info";
 
 	/** @see #getPhone() */
 	public static final String PHONE__PROP = "phone";
@@ -191,7 +191,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	}
 
 	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.BlockListEntry} type. */
-	public static final String BLOCK_LIST_ENTRY__XML_ELEMENT = "block-list-entry";
+	public static final String BLOCK_LIST_ENTRY__XML_ELEMENT = "phone-info";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";

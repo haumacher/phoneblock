@@ -42,6 +42,11 @@ public class BlocklistServlet extends HttpServlet {
 				ServletUtil.sendError(resp, "Invalid minVotes parameter.");
 				return;
 			}
+			
+			if (minVotes < 2) {
+				ServletUtil.sendError(resp, "Parameter minVotes must be 2 or greater.");
+				return;
+			}
 		}
 		DB db = DBService.getInstance();
 		Blocklist result = db.getBlockListAPI(minVotes);

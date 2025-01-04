@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.3.1"
+		"version": "v1.3.2"
 	},
 	"servers": [
 		{
@@ -143,6 +143,17 @@
 				]
 			},
 			"parameters": [
+				{
+					"name": "minVotes",
+					"in": "query",
+					"description": "The minimum votes for a number to be added to the blocklist.",
+					"required": false,
+					"default": "4",
+					"schema": {
+						"type": "integer",
+						"minimum": 2
+					}
+				},
 				{
 					"name": "format",
 					"in": "query",
