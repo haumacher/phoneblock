@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.ab;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -316,7 +317,11 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				return null;
 			}
 			
-			return ((AAAARecord) result[0]).getAddress().getHostAddress();
+			InetAddress address = ((AAAARecord) result[0]).getAddress();
+			if (isInvalid(address)) {
+				return null;
+			}
+			return address.getHostAddress();
 		}
 		case IP4:
 			Record[] result = new Lookup(name, Type.A, DClass.IN).run();
@@ -324,7 +329,11 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				return null;
 			}
 			
-			return ((ARecord) result[0]).getAddress().getHostAddress();
+			InetAddress address = ((ARecord) result[0]).getAddress();
+			if (isInvalid(address)) {
+				return null;
+			}
+			return address.getHostAddress();
 		}
 		
 		throw new IllegalArgumentException("No such address type: " + type);
@@ -704,6 +713,15 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			return null;
 		}
 		return registration.getCustomer();
+	}
+
+	public static boolean isInvalid(InetAddress address) { 
+		return 
+				address.isAnyLocalAddress() || 
+				address.isLinkLocalAddress() || 
+				address.isLoopbackAddress() || 
+				address.isMulticastAddress() || 
+				address.isSiteLocalAddress();
 	}
 
 }

@@ -253,8 +253,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		try {
 			InetAddress[] addresses = InetAddress.getAllByName(host);
 			for (InetAddress address : addresses) {
-				if (address.isAnyLocalAddress() || address.isLinkLocalAddress() || address.isLoopbackAddress()
-						|| address.isMulticastAddress() || address.isSiteLocalAddress()) {
+				if (SipService.isInvalid(address)) {
 					// None of the potential addresses must be a local address. Otherwise "fritz.box" would be accepted.
 					return false;
 				}
@@ -265,7 +264,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 		}
 		return true;
 	}
-	
+
 	@Override
 	public Void visit(UpdateAnswerBot self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
