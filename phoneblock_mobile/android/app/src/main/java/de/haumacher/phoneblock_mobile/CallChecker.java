@@ -1,6 +1,5 @@
 package de.haumacher.phoneblock_mobile;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
@@ -25,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -125,7 +123,11 @@ public class CallChecker extends CallScreeningService {
         URL url = new URL("https://phoneblock.net/pb-test/api/num/" + number + "?format=json");
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Authorization", "Bearer: " + authToken);
+        connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
+        return new JSONObject(readTextContent(connection));
+    }
 
+    private static @NonNull String readTextContent(URLConnection connection) throws IOException {
         StringBuilder result = new StringBuilder();
         try (InputStream in = connection.getInputStream()) {
             try (InputStreamReader r = new InputStreamReader(in, StandardCharsets.UTF_8)) {
@@ -139,8 +141,7 @@ public class CallChecker extends CallScreeningService {
                 }
             }
         }
-        JSONObject json = new JSONObject(result.toString());
-        return json;
+        return result.toString();
     }
 
     private void acceptCall(@NonNull Call.Details callDetails) {
