@@ -40,6 +40,8 @@ dependencies:
   intl: ^0.20.1
   flutter_contacts: ^1.1.7+1
   webview_flutter: ^4.10.0
+  call_e_log: ^0.0.4
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:

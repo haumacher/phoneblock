@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_android/shared_preferences_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 const String PHONE_BLOCK_CONNECT_URL = 'https://phoneblock.net/pb-test/mobile/login.jsp';
@@ -31,8 +33,66 @@ class PhoneBlockApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(state),
+      home: SetupPage(),
     );
+  }
+}
+
+class SetupPage extends StatefulWidget {
+  const SetupPage({super.key});
+
+  @override
+  State<StatefulWidget> createState() {
+    return SetupState();
+  }
+}
+
+class SetupState extends State<SetupPage> {
+
+  static const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
+
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync(
+      options: const SharedPreferencesAsyncAndroidOptions(
+        backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
+        originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
+            fileName: 'de.haumacher.phoneblock_mobile.Preferences')));
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Setup PhoneBlock mobile"),),
+      body: Center(
+        child: Column(
+          children: [
+            ElevatedButton(
+                onPressed: registerPhoneBlock,
+                child: const Text("Mit PhoneBlock verbinden")),
+            ElevatedButton(
+                onPressed: requestPermission,
+                child: const Text("Berechtigung erteilen Anrufe zu filtern")),
+          ])
+      ),
+    );
+  }
+
+  void registerPhoneBlock() async {
+    String? token = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+
+    if (token != null) {
+      setAuthToken(token);
+    }
+  }
+
+  void requestPermission() async {
+    bool granted = await platform.invokeMethod("requestPermission");
+  }
+
+  void setAuthToken(String token) {
+    platform.invokeMethod("setAuthToken", token);
   }
 }
 
