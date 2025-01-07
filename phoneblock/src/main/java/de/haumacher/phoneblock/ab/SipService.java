@@ -208,7 +208,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 						if (state.booleanValue()) {
 							// Locally blocked.
 							LOG.info("Caller is on blacklist of {}: {}", botName, phoneId);
-							info = PhoneInfo.create().setPhone(phoneId).setRating(Rating.B_MISSED).setVotes(1000);
+							info = PhoneInfo.create().setPhone(phoneId).setRating(Rating.B_MISSED).setVotes(1000).setVotesWildcard(1000);
 						} else {
 							// On the exclude list.
 							LOG.info("Call form white-listed number of {}.", botName);
