@@ -50,7 +50,9 @@
 				</div>
 				
 				<p class="help">
-					 Wenn Du einen Google-Account hast, dann kannst Du Dich mit diesem bequem bei PhoneBlock anmelden.  
+					 Wenn Du einen Google-Account hast, dann kannst Du Dich mit diesem bequem bei PhoneBlock anmelden. Das erste Anmelden 
+					 mit Google legt einen PhoneBlock-Account an. In Zukunft kannst Du Dich dann entweder mit dem erzeugten PhoneBlock-Nutzernamen 
+					 oder erneut über Google anmelden.
 				</p>
 				
 				</form>
@@ -122,9 +124,10 @@
 				</div>
 				
 				<p class="help">
-					 Du erhälst einen Code an die angegebene E-Mail-Adresse, mit dem Du Dich anmelden kannst. 
-					 Wenn Du schon einen PhoneBlock-Nutzernamen und ein Passwort hast, dann kannst Du Dich auch
-					 mit diesem anmelden, siehe unten.  
+					 Du erhälst einen Code an die angegebene E-Mail-Adresse, mit dem Du Dich anmelden kannst.
+					 Das erste Anmelden mit E-Mail legt einen PhoneBlock-Account an. In Zukunft kannst Du Dich dann 
+					 mit dem erzeugten PhoneBlock-Nutzernamen oder aber über das erneute Zusenden eines Einmal-Codes  
+					 anmelden.
 				</p>
 			</div>
 			</div>
