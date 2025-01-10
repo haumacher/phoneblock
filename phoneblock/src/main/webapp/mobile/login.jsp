@@ -37,12 +37,6 @@
 		Hier verbindest du Deinen PhoneBlock-Account mit Deinem Mobilgerät.
 	</p>
 
-	<p>
-		<b>Achtung:</b> Wenn sich diese Seite <em>nicht</em> von der PhoneBlock-App geöffnet hat, dann
-		gehe zurück oder schließe die Seite, denn Dann könnte das ein Versuch sein, Deinen 
-		PhoneBlock-Account zu stehlen.    
-	</p>
-	
 <%
 	Object login = LoginFilter.getAuthenticatedUser(request);
 %>
@@ -50,10 +44,9 @@
 <% if (login == null) { %>
 
 	<p>
-		Du musst Dich zuerst bei PhoneBlock anmelden. 
-		Wenn Du noch keinen PhoneBlock-Account hast, dann kannst Du hier einen erstellen.
+		Du musst Dich zuerst bei PhoneBlock anmelden bzw. hier einen PhoneBlock-Account erstellen.
 		Du benötigst einen PhoneBlock-Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
-		für die Filterung von Anrufen nutzen kann.  
+		für die Filterung von Anrufen nutzen kann.
 	</p>
 
 	<jsp:include page="/login-forms.jspf">
