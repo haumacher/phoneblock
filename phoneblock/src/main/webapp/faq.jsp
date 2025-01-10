@@ -27,7 +27,7 @@
 			Lange Zeit lief PhoneBlock auf einem <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> auf 
 			meinem Schreibtisch und verursachte daher kaum zusätzlichen Kosten (abgesehen von meinem Internetanschluss und 
 			der Domain-Registrierung). Aufgrund von steigenden Nutzerzahlen und vor allem um eine bessere Verfügbarkeit des 
-			Dienste zu gewährleisten, ist PhoneBlock aber mittlerweile in die <a href="https://www.hetzner.com">Hetzner-Cloud</a> 
+			Dienste zu gewährleisten, ist PhoneBlock aber mittlerweile in die <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">Hetzner-Cloud</a> 
 			(Serverstandort Falkenstein, Deutschland) umgezogen. 
 		</p>
 
