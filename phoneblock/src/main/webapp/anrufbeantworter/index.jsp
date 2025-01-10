@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
@@ -7,13 +8,14 @@
 <html>
 <%
 	request.setAttribute("title", "Der PhoneBlock-Anrufbeantworter");
+	request.setAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN, "true");
 %>
 <head>
 <jsp:include page="../head-content.jspf"></jsp:include>
 </head>
 
 <body>
-<jsp:include page="../header.jspf"></jsp:include>
+<jsp:include page="/header.jspf"></jsp:include>
 
 <input type="hidden" id="context-path" value="<%=request.getContextPath()%>">
 

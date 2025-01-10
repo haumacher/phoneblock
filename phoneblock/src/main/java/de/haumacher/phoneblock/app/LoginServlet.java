@@ -58,13 +58,15 @@ public class LoginServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
+	/**
+	 * Request attribute to request keeping the current page after login.
+	 */
+	public static final String KEEP_LOCATION_AFTER_LOGIN = "keepLocationAfterLogin";
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
 			String location = location(req);
-			if (location == null) {
-				location = SettingsServlet.PATH;
-			}
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
 		}
@@ -204,7 +206,11 @@ public class LoginServlet extends HttpServlet {
 			return defaultLocation;
 		}
 		
-		return ServletUtil.currentPage(request).substring(request.getContextPath().length());
+		if (request.getAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN) != null) {
+			return ServletUtil.currentPage(request).substring(request.getContextPath().length());
+		}
+		
+		return SettingsServlet.PATH;
 	}
 
 	/**

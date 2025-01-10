@@ -8,6 +8,7 @@
 <html>
 <%
 	request.setAttribute("title", "PhoneBlock in Fritz!Box einrichten");
+	request.setAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN, "true");
 %>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>

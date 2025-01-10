@@ -46,6 +46,8 @@
 
 	DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.GERMAN);
 	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);
+	
+	request.setAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN, "true");
 %>			
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
