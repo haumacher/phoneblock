@@ -30,6 +30,8 @@ import de.haumacher.phoneblock.util.ServletUtil;
  * @see FormLoginFilter
  */
 @WebFilter(urlPatterns = {
+	CreateABServlet.PATH,
+	ListABServlet.PATH,
 	BlocklistServlet.PATH,
 	RateServlet.PATH,
 	CallReportServlet.URL_PATTERN,
@@ -54,6 +56,8 @@ public class BasicLoginFilter extends LoginFilter {
 		case RateServlet.PATH: 
 		case CallReportServlet.URL_PATTERN: 
 			return authorization.isAccessRate();
+		case CreateABServlet.PATH: 
+		case ListABServlet.PATH: 
 		case SearchApiServlet.PREFIX: 
 			return authorization.isAccessQuery();
 		case CardDavServlet.DIR_NAME: 

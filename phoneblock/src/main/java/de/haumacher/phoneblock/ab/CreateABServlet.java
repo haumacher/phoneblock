@@ -65,7 +65,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = LoginFilter.getAuthenticatedUser(req);
 		if (login == null) {
 			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Please authenticate.");
 			return;

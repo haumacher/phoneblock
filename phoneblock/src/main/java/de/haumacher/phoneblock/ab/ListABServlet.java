@@ -35,7 +35,7 @@ public class ListABServlet extends ABApiServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = LoginFilter.getAuthenticatedUser(req);
 		if (login == null) {
 			LOG.warn("Not logged in.");
 			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Not logged in.");
