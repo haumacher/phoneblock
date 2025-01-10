@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:phoneblock_answerbot_ui/Api.dart';
 import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
-import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/InfoField.dart';
 import 'package:phoneblock_answerbot_ui/TitleRow.dart';
@@ -58,7 +58,7 @@ class BotSetupState extends State<BotSetupForm> {
   Widget domainSetup(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("Anrufbeantworter einrichten"),
+        title: const TitleRow("Neuer Anrufbeantworter"),
         actions: [
           PopupMenuButton(
             itemBuilder: (BuildContext context) => [

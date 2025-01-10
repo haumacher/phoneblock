@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.haumacher.phoneblock_answerbot_ui">
    <application
-        android:label="phoneblock_answerbot_ui"
+        android:label="PhoneBlock Anrufbeantworter"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

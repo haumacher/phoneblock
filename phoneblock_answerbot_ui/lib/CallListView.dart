@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_answerbot_ui/Api.dart';
 import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
-import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
 import 'package:phoneblock_answerbot_ui/TitleRow.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
@@ -32,11 +32,9 @@ class CallListViewState extends State<CallListView> {
     requestCallList();
   }
 
-  void requestCallList() {
+  void requestCallList() async {
     http.post(Uri.parse('$basePath/ab/setup'),
-      headers: {
-        if (debugUser) 'Authorization': authHeader,
-      },
+      headers: await apiHeaders(),
       body: ListCalls(id: widget.botId).toString()
     ).then(processResponse);
   }
