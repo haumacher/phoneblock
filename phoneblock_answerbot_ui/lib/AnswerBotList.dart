@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_answerbot_ui/base_path.dart'
+  if (dart.library.html) 'package:phoneblock_answerbot_ui/base_path_web.dart';
 import 'package:phoneblock_answerbot_ui/Api.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
 import 'package:phoneblock_answerbot_ui/CallListView.dart';
@@ -14,7 +16,6 @@ import 'package:phoneblock_answerbot_ui/sendRequest.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AnswerBotList extends StatefulWidget {
   const AnswerBotList({super.key});

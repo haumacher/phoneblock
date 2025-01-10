@@ -3,10 +3,6 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
-const debugging = true;
-
-String get basePath => debugging ? "https://phoneblock.net/pb-test/" : "https://phoneblock.net/phoneblock/";
-
 Future<String?> _createAuthHeader() async {
   final prefs = await SharedPreferences.getInstance();
   var authToken = prefs.getString("auth-token");

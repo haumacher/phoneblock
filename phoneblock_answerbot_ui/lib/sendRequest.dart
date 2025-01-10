@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:phoneblock_answerbot_ui/base_path.dart'
+  if (dart.library.html) 'package:phoneblock_answerbot_ui/base_path_web.dart';
 import 'package:phoneblock_answerbot_ui/Api.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
