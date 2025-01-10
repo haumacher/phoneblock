@@ -70,8 +70,8 @@
 				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help">
 				  	Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen.
-				  	Dein Passwort wurde Dir nach Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf der Seite
-				  	ein neues Passwort erstellen lassen. Aber Vorsicht: Das alte Passwort wird dadurch ungültig. 
+				  	Dein Passwort wurde Dir nach Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf dieser Seite
+				  	ein <a href="#resetPassword">neues Passwort erstellen lassen</a>. Aber Vorsicht: Das alte Passwort wird dadurch ungültig. 
 				  </p>
 				</div>
 					
@@ -275,7 +275,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	<p>Nutze diese Funktionalität mit Bedacht. Du kannst Deine PhoneBlock-Installation damit kaputt machen!</p>
 	</div>
 		
-<nav class="panel is-warning">
+<nav class="panel is-warning" id="resetPassword">
 	<p class="panel-heading"><a href="#resetForm" data-action="collapse"><i class="fa-solid fa-eraser"></i> <span>Neues Passwort erzeugen</span></a></p>
 	<div id="resetForm" class="is-collapsible">
 		<form action="<%= request.getContextPath() %><%= ResetPasswordServlet.PATH %>" method="post" enctype="application/x-www-form-urlencoded">
