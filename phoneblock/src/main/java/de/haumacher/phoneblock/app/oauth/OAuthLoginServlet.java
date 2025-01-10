@@ -122,13 +122,15 @@ public class OAuthLoginServlet extends HttpServlet {
 				}
 			}
 			
-			if (location.isEmpty()) {
-				RegistrationServlet.startSetup(req, resp, login, passwd);
-				return;
+			if (location.isPresent()) {
+				req.setAttribute(LoginServlet.LOCATION_ATTRIBUTE, location.get());
 			}
-		} else {
-			LoginFilter.setSessionUser(req, login);
+			
+			RegistrationServlet.startSetup(req, resp, login, passwd);
+			return;
 		}
+		
+		LoginFilter.setSessionUser(req, login);
 		
 		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_PARAM);
 		if (remember.isPresent()) {
