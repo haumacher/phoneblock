@@ -42,7 +42,7 @@ public class DeleteAccountServlet extends HttpServlet {
 		}
 		
 		DBService.getInstance().deleteUser(login);
-		resp.sendRedirect(req.getContextPath() + "/logout" + "&" + Pac4jConstants.URL + "=" + req.getContextPath());
+		resp.sendRedirect(req.getContextPath() + "/logout" + "?" + Pac4jConstants.URL + "=" + req.getContextPath());
 	}
 
 	private void showSettings(HttpServletRequest req, HttpServletResponse resp) throws IOException {
