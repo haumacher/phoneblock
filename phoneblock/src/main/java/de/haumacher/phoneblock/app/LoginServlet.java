@@ -217,4 +217,29 @@ public class LoginServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * Requests a login for the current page (forwards to the login page).
+	 */
+	public static void requestLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String originalLocation = originalLocation(request);
+		LOG.info("Requesting login for resource: " + originalLocation);
+
+		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
+	}
+
+	private static String originalLocation(HttpServletRequest request) {
+		StringBuilder location = new StringBuilder();
+		location.append(request.getServletPath());
+		String pathInfo = request.getPathInfo();
+		if (pathInfo != null) {
+			location.append(pathInfo);
+		}
+		String query = request.getQueryString();
+		if (query != null) {
+			location.append('?');
+			location.append(query);
+		}
+		return location.toString();
+	}
+	
 }
