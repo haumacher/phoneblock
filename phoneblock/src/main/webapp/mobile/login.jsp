@@ -30,7 +30,6 @@
 
 <section class="section">
 	<div class="content">
-	
 	<h1>PhoneBlock-Account verknüpfen</h1>
 	
 	<p>
@@ -48,6 +47,7 @@
 		Du benötigst einen PhoneBlock-Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
 		für die Filterung von Anrufen nutzen kann.
 	</p>
+	</div>
 
 	<jsp:include page="/login-forms.jspf">
 		<jsp:param name="web" value="false" />
@@ -70,8 +70,6 @@
 	</form>	
 	
 <% } %>
-
-	</div>
 </section>
 
 <script type="text/javascript" src="<%= request.getContextPath() %>/bulma.js"></script>
