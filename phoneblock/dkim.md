@@ -13,6 +13,12 @@ uyZZsNeE5e2S1PxZyO0wQTCCzqKtNf9/9FngrQIDAQAB;s=email;t=s
 openssl pkcs8 -topk8 -nocrypt -in dkim.pem -outform der -out dkim.der
 ```
 
+## Convert to key compatible with Java
+
+```
+openssl pkcs8 -topk8 -nocrypt -in dkim.pem -outform der -out dkim.der
+```
+
 ## Extract public key
 
 ```
