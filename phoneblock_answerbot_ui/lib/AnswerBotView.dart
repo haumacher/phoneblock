@@ -65,8 +65,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -75,7 +74,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     Expanded(
                       child: Row(
                         children: [
-                          const Text('Anrufbeantworter Status'),
+                          const Text('Anrufbeantworter'),
                           if (bot.enabled) Padding(padding: const EdgeInsets.only(left: 16),
                             child: bot.registered ?
                             const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :

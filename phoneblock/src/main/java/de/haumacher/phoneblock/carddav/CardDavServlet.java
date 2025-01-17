@@ -48,7 +48,7 @@ public class CardDavServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CardDavServlet.class);
 	
-	static final String DIR_NAME = "/contacts";
+	public static final String DIR_NAME = "/contacts";
 
 	private static final String BASE_PATH = DIR_NAME + "/";
 

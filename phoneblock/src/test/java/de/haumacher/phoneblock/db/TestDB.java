@@ -70,7 +70,7 @@ class TestDB {
 	
 	@Test
 	void testAuthToken() {
-		_db.createUser("test", "test1", "user1", "User 1");
+		_db.createUser("user1", "User 1");
 
 		long time = 1000;
 		final long createTime = time;
@@ -264,8 +264,8 @@ class TestDB {
 	
 	@Test
 	void testUserManagement() throws IOException {
-		_db.addUser("none", "1", "foo@bar.com", "Mr. X", "123");
-		_db.addUser("none", "2", "baz@bar.com", "Mr. Y", "123");
+		_db.addUser("foo@bar.com", "Mr. X", "123");
+		_db.addUser("baz@bar.com", "Mr. Y", "123");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "123")));
         assertNull(_db.basicAuth(header("foo@bar.com", "321")));
@@ -446,7 +446,7 @@ class TestDB {
 	
 	@Test
 	void testRating() {
-		_db.createUser("domain", "ext-1", "user-1", "User 1");
+		_db.createUser("user-1", "User 1");
 		
 		long time = 1;
 		

@@ -36,6 +36,10 @@ public class SettingsServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
+		if (userName == null) {
+			LoginServlet.requestLogin(req, resp);
+			return;
+		}
 		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {

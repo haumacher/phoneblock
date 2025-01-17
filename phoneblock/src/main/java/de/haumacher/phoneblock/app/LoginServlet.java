@@ -27,6 +27,11 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebServlet(urlPatterns = LoginServlet.PATH)
 public class LoginServlet extends HttpServlet {
 	
+	/**
+	 * Request attribute set, if a login was not successful.
+	 */
+	public static final String LOGIN_ERROR_ATTR = "loginError";
+
 	public static final String USER_NAME_PARAM = "userName";
 
 	public static final String PASSWORD_PARAM = "password";
@@ -53,13 +58,15 @@ public class LoginServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
+	/**
+	 * Request attribute to request keeping the current page after login.
+	 */
+	public static final String KEEP_LOCATION_AFTER_LOGIN = "keepLocationAfterLogin";
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
 			String location = location(req);
-			if (location == null) {
-				location = SettingsServlet.PATH;
-			}
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
 		}
@@ -94,8 +101,15 @@ public class LoginServlet extends HttpServlet {
 		String rememberValue = req.getParameter(REMEMBER_PARAM);
 		processRememberMe(req, resp, db, rememberValue, userName);
 		
-		LoginFilter.setAuthenticatedUser(req, authenticatedUser);
+		LoginFilter.setSessionUser(req, authenticatedUser);
 		
+		redirectToLocationAfterLogin(req, resp);
+	}
+
+	/**
+	 * Redirects the current request to its final destination.
+	 */
+	public static void redirectToLocationAfterLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String location = location(req);
 		if (location == null) {
 			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
@@ -108,9 +122,7 @@ public class LoginServlet extends HttpServlet {
 			String userName) {
 		boolean rememberMe = "true".equals(rememberValue);
 		if (rememberMe) {
-			AuthToken authorization = db.createAuthorizationTemplate(userName, System.currentTimeMillis(), req.getHeader("User-Agent"));
-			
-			db.createAuthToken(authorization);
+			AuthToken authorization = db.createLoginToken(userName, System.currentTimeMillis(), req.getHeader("User-Agent"));
 			
 			LoginFilter.setLoginCookie(req, resp, authorization);
 		}
@@ -120,7 +132,7 @@ public class LoginServlet extends HttpServlet {
 	 * Redirects the client to the login page.
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
+		req.setAttribute(LOGIN_ERROR_ATTR, "Anmeldung fehlgeschlagen.");
 		req.getRequestDispatcher("/login.jsp").forward(req, resp);
 	}
 
@@ -194,7 +206,11 @@ public class LoginServlet extends HttpServlet {
 			return defaultLocation;
 		}
 		
-		return ServletUtil.currentPage(request).substring(request.getContextPath().length());
+		if (request.getAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN) != null) {
+			return ServletUtil.currentPage(request).substring(request.getContextPath().length());
+		}
+		
+		return SettingsServlet.PATH;
 	}
 
 	/**
@@ -207,4 +223,29 @@ public class LoginServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * Requests a login for the current page (forwards to the login page).
+	 */
+	public static void requestLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String originalLocation = originalLocation(request);
+		LOG.info("Requesting login for resource: " + originalLocation);
+
+		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
+	}
+
+	private static String originalLocation(HttpServletRequest request) {
+		StringBuilder location = new StringBuilder();
+		location.append(request.getServletPath());
+		String pathInfo = request.getPathInfo();
+		if (pathInfo != null) {
+			location.append(pathInfo);
+		}
+		String query = request.getQueryString();
+		if (query != null) {
+			location.append('?');
+			location.append(query);
+		}
+		return location.toString();
+	}
+	
 }

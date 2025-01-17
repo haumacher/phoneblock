@@ -33,27 +33,9 @@ public class FormLoginFilter extends LoginFilter {
 	
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-		String originalLocation = originalLocation(request);
-		LOG.info("Requesting login for resource: " + originalLocation);
-
-		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
+		LoginServlet.requestLogin(request, response);
 	}
 
-	private String originalLocation(HttpServletRequest request) {
-		StringBuilder location = new StringBuilder();
-		location.append(request.getServletPath());
-		String pathInfo = request.getPathInfo();
-		if (pathInfo != null) {
-			location.append(pathInfo);
-		}
-		String query = request.getQueryString();
-		if (query != null) {
-			location.append('?');
-			location.append(query);
-		}
-		return location.toString();
-	}
-	
 	@Override
 	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
 		return authorization.isAccessLogin();

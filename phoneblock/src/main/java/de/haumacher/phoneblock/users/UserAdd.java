@@ -36,7 +36,7 @@ public class UserAdd {
 		} else {
 			login = args[0];
 		}
-		String passwd = db.createUser(RegistrationServlet.IDENTIFIED_BY_EMAIL, login, login, login);
+		String passwd = db.createUser(login, login);
 		
 		System.out.println(passwd);
 		

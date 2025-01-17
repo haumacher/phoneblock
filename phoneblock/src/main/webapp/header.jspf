@@ -94,13 +94,6 @@
 			<div class="navbar-item">
 				<div class="buttons">
 					<% if (LoginFilter.getAuthenticatedUser(request.getSession(false)) == null) { %>
-					<a class="button is-primary" href="<%=request.getContextPath() %>/signup.jsp">
-						<span class="icon">
-							<i class="fa-solid fa-user-plus"></i>
-          				</span>
-						<strong>Sign up</strong>
-					</a>
-					
 					<a class="button is-light" href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>

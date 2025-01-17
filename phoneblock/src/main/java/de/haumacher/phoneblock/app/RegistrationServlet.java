@@ -24,18 +24,21 @@ import de.haumacher.phoneblock.db.DBService;
  */
 @WebServlet(urlPatterns = {
 	RegistrationServlet.REGISTER_WEB,
+	RegistrationServlet.REGISTER_MOBILE,
 })
 public class RegistrationServlet extends HttpServlet {
 
+	/**
+	 * Request attribute set, if registration fails.
+	 */
+	public static final String REGISTER_ERROR_ATTR = "message";
+
 	public static final String REGISTER_WEB = "/register-web";
+	
+	public static final String REGISTER_MOBILE = "/register-mobile";
 
 	private static final String PASSWORD_ATTR = "passwd";
 
-	/**
-	 * The authorization scope "email".
-	 */
-	public static final String IDENTIFIED_BY_EMAIL = "email";
-	
 	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Override
@@ -57,26 +60,33 @@ public class RegistrationServlet extends HttpServlet {
 		String email = (String) req.getSession().getAttribute("email");
 		
 		String login;
-		String passwd;
 		try {
+			String passwd;
+			
 			DB db = DBService.getInstance();
-			String extId = email.trim().toLowerCase();
-			login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+			login = db.getEmailLogin(email);
 			if (login == null) {
 				login = UUID.randomUUID().toString();
-				passwd = db.createUser(IDENTIFIED_BY_EMAIL, extId, login, email);
+				
+				String displayName = DB.toDisplayName(email);
+				
+				passwd = db.createUser(login, displayName);
 				db.setEmail(login, email);
 			} else {
-				passwd = db.resetPassword(login);
+				// No longer known.
+				passwd = null;
 			}
+			
+			String rememberValue = req.getParameter(LoginServlet.REMEMBER_PARAM);
+			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);
+
+			startSetup(req, resp, login, passwd);
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
 			sendError(req, resp, "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
 			return;
 		}
-		
-		startSetup(req, resp, login, passwd);
 	}
 
 	/** 
@@ -84,32 +94,33 @@ public class RegistrationServlet extends HttpServlet {
 	 */
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
-		LoginFilter.setAuthenticatedUser(req, login);
-		req.getSession().setAttribute(PASSWORD_ATTR, passwd);
-		
-		String location = LoginServlet.location(req);
-		if (location != null) {
+		LoginFilter.setSessionUser(req, login);
+
+		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");
+			break;
+		case REGISTER_WEB:
+		default:
+			if (passwd != null) {
+				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+			}
+			
+			String location = LoginServlet.location(req, passwd == null ? SettingsServlet.PATH : "/setup.jsp");
 			resp.sendRedirect(req.getContextPath() + location);
-		} else {
-			resp.sendRedirect(req.getContextPath() + successPage(req));
+			break;
 		}
 	}
 
-	private static String successPage(HttpServletRequest req) {
-		switch (req.getServletPath()) {
-		case REGISTER_WEB:
-		default:
-			return "/setup.jsp";
-		}
-	}
-	
 	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
-		req.setAttribute("message", message);
+		req.setAttribute(REGISTER_ERROR_ATTR, message);
 		req.getRequestDispatcher(errorPage(req)).forward(req, resp);
 	}
 
 	private String errorPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			return "/mobile/code.jsp";
 		case REGISTER_WEB:
 		default:
 			return "/signup-code.jsp";

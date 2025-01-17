@@ -27,29 +27,29 @@
 		
 		<ol>
 		<li>
-			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>.
+			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: <code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>.
 		</li>
 			
 		<li>
-			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">PhoneBlock-Anmeldung</a> erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code> <a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
+			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der PhoneBlock-Anmeldung erhalten hast<%if (login != null) {%> (<code id="login"><%= login %></code><a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
 		</li>
 			
 		<li>
-			Das Passwort wurde dir nach erfolgreicher Registrierung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
+			Das Passwort wurde dir nach der ersten Anmeldung angezeigt<% if (token != null) {%> (<code id="passwd"><%= token %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)<%}%>.
 		</li>
 		</ol>
 		
 		<p>			
 			Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
-			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
+			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">anmelden und in den Einstellungen das Passwort zurücksetzen</a>.
 		</p>
 
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
+	  			<img class="image appscreen" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
 	  		</div>
 			<div class="column is-two-fifths">
-	  			<img class="image" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-people-sync-account.png"/>
+	  			<img class="image appscreen" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-people-sync-account.png"/>
 	  		</div>
 		</div>
 		

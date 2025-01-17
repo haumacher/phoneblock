@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		}); 
 		makeSearchButton("pb-seach-button", "pb-seach-input");
 	}
+	
+	var contextPath = getContextPath();
+	if (contextPath = "/pb-test") {
+		document.body.classList.add("test-system");
+	}
 });
 
 function makeSearchButton(buttonId, inputId) {
@@ -78,10 +83,16 @@ function searchNumber(inputId) {
 
 function displayNumber(number, link) {
   var location = document.location;
-  var slashIndex = location.pathname.indexOf("/", 1);
-  var contextPath = location.pathname.substring(0, slashIndex);
+  var contextPath = getContextPath();
   var url = location.protocol + "//" + location.host + contextPath + "/nums/" + number + (link ? "?link=true" : "");
   location.assign(url);
+}
+
+function getContextPath() {
+	var slashIndex = location.pathname.indexOf("/", 1);
+	var contextPath = location.pathname.substring(0, slashIndex);
+
+	return contextPath;
 }
 
 function showaddr(target) {

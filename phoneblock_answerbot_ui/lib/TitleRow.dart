@@ -9,10 +9,12 @@ class TitleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Padding(padding: const EdgeInsets.only(right: 16),
+        Padding(padding: const EdgeInsets.only(right: 8),
             child: Image.asset('assets/images/ab-logo-appbar.png', height: 48)
         ),
-        Text(title, overflow: TextOverflow.ellipsis,)],
+        Expanded(
+            flex: 1,
+            child: Text(title, overflow: TextOverflow.ellipsis,))],
     );
   }
 }

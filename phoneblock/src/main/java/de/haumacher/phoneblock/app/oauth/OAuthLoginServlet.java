@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+import jakarta.mail.internet.AddressException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -76,13 +77,31 @@ public class OAuthLoginServlet extends HttpServlet {
 			displayName = null;
 		}
 		
-		String extId = userProfile.getId();
+		String googleId = userProfile.getId();
 		
 		Optional<Object> location = sessionStore.get(context, LoginServlet.LOCATION_ATTRIBUTE);
 		
 		DB db = DBService.getInstance();
-		String login = db.getLogin(clientName, extId);
+		String login = db.getGoogleLogin(googleId);
 		if (login == null) {
+			if (email != null && !email.isBlank()) {
+				try {
+					login = db.getEmailLogin(email);
+					if (login != null) {
+						// Link accounts.
+						db.setGoogleId(login, googleId, displayName);
+					}
+				} catch (AddressException e) {
+					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
+					
+					// Do not try again, see below.
+					email = null;
+				}
+			}
+		}
+		
+		if (login == null) {
+			// Create new account.
 			login = UUID.randomUUID().toString();
 			
 			if (displayName == null) {
@@ -93,19 +112,25 @@ public class OAuthLoginServlet extends HttpServlet {
 				}
 			}
 			
-			String passwd = db.createUser(clientName, extId, login, displayName);
-			db.setExtId(login, extId);
+			String passwd = db.createUser(login, displayName);
+			db.setGoogleId(login, googleId, null);
 			if (email != null) {
-				db.setEmail(login, email);
+				try {
+					db.setEmail(login, email);
+				} catch (AddressException e) {
+					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
+				}
 			}
 			
-			if (location.isEmpty()) {
-				RegistrationServlet.startSetup(req, resp, login, passwd);
-				return;
+			if (location.isPresent()) {
+				req.setAttribute(LoginServlet.LOCATION_ATTRIBUTE, location.get());
 			}
-		} else {
-			LoginFilter.setAuthenticatedUser(req, login);
+			
+			RegistrationServlet.startSetup(req, resp, login, passwd);
+			return;
 		}
+		
+		LoginFilter.setSessionUser(req, login);
 		
 		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_PARAM);
 		if (remember.isPresent()) {

@@ -37,18 +37,18 @@
 %>
 		
    		<ol>
-   		<li><a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Melde Dich bei PhoneBlock an.</a></li>
+   		<li><a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">Melde Dich bei PhoneBlock an.</a></li>
    		<li>Öffne "Einstellungen" > "Kontakte" > "Accounts". </li>
    		<li>Tippe auf "Account hinzufügen" - "Andere" > "CardDAV-Account hinzufügen".</li>
    		<li>Gib deine Zugangsdaten ein und tippe auf "Weiter".
    			<dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Benutzername</b></dt>
 				<dd>
 				<%if (login != null) {%>					
-				<code id="login"><%= login %></code> <a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
+				<code id="login"><%= login %></code><a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
 				<%} else {%>	
 				Wurde Dir direkt nach der Anmeldung angezeigt.
 				<%}%>
@@ -57,7 +57,7 @@
 				<dt><b>Passwort</b></dt>
 				<dd>
 				<% if (token != null) {%>
-				<code id="passwd"><%= token %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
+				<code id="passwd"><%= token %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
 				<%} else {%>
 				Wurde Dir direkt nach der Anmeldung angezeigt.
 				<%}%>
@@ -73,7 +73,7 @@
 
 		<p>			
 			Du hast die Zugangsdaten nicht mehr zur Hand? Macht nichts, einfach 
-			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">erneut registrieren</a> oder in den <a href="<%=request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> das Passwort zurücksetzen.
+			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">anmelden und in den Einstellungen das Passwort zurücksetzen</a>.
 		</p>
    		
    		<p>

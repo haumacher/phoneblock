@@ -22,14 +22,18 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * {@link HttpServlet} serving the blocklist.
  */
-@WebServlet(urlPatterns = "/api/blocklist")
+@WebServlet(urlPatterns = BlocklistServlet.PATH)
 public class BlocklistServlet extends HttpServlet {
+	
+	public static final String PATH = "/api/blocklist";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!ServletUtil.checkAuthentication(req, resp)) {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
 			return;
 		}
 		
@@ -52,7 +56,6 @@ public class BlocklistServlet extends HttpServlet {
 		Blocklist result = db.getBlockListAPI(minVotes);
 		
 		String userAgent = req.getHeader("User-Agent");
-		String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
 		LOG.info("Sending blocklist to user '" + userName + "' (agent '" + userAgent + "')");
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent);
 		

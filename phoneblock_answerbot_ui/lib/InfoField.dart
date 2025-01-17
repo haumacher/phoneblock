@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:phoneblock_answerbot_ui/Debug.dart';
 
 class InfoField extends StatefulWidget {
   final String label;
@@ -62,7 +61,7 @@ class InfoFieldState extends State<InfoField> {
                   const Icon(FontAwesomeIcons.eye),
               tooltip: shown ? "Versteckt das Passwort." : "Zeigt das Passwort an (Du kannst das Passwort mit dem Kopierknopf kopieren, ohne es vorher anzuzeigen).",
             ),
-            IconButton(
+            if (!widget.noCopy) IconButton(
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: widget.value ?? ""));
                   if (!context.mounted) return;

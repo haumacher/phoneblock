@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
 <%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
@@ -7,6 +8,7 @@
 <html>
 <%
 	request.setAttribute("title", "PhoneBlock in Fritz!Box einrichten");
+	request.setAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN, "true");
 %>
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
@@ -25,9 +27,7 @@
   		Object token = RegistrationServlet.getPassword(session);
 %>
 
-<%
-		if (token == null) {
-%>
+<% if (token == null) { %>
 		<p>
 			Für die Installation der Blockliste benötigst Du einen <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
 			Internetrouter von AVM</a> und einen PhoneBlock-Account. Es muss nicht unbedingt das neuste Modell
@@ -43,17 +43,21 @@
 			<a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworters</a> den 
 			besseren Schutz vor SPAM-Anrufen.
 		</p>
-			
+
+<%	if (login == null) { %>
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">
+			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">
 				<button class="button is-medium is-info is-fullwidth">PhoneBlock-Account erstellen</button>
 			</a>
 		  </div>
 		</div>
-<%	  		
-	  	} else {
-%>
+<% 	} else { %>
+		<p>
+			Du bist bereits als <code><%= JspUtil.quote(login) %></code> angemeldet, prima! Du kannst sofort loslegen.
+		</p>
+<% 	} %>
+<% } else { %>
 <div class="columns">
   <div class="column">
 	<div class="tile is-ancestor">
@@ -65,17 +69,17 @@
 		
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code id="login"><%= JspUtil.quote(login) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login"><%= JspUtil.quote(login) %></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -83,9 +87,7 @@
     </div>
   </div>
 </div>
-<%	  		
-	  	}
-%>
+<% } %>
 		
 		<h2>Melde Dich an Deiner FRITZ!Box an</h2>
 		
@@ -130,42 +132,52 @@
 			Jetzt benötigst Du die Anmelde-Daten Deines PhoneBlock-Accounts. 
 		</p>
 
-		<p>
-			<span class="tag is-danger">1</span> 
-			gib dem Telefonbuch, das als Sperrliste dienen soll, den Namen <code>Blocklist</code>. Du benötigst diesen 
-			Namen nochmals für den nächsten Schritt. Wähle jetzt <span class="tag is-danger">2</span> die Option 
-			<i>Telefonbuch eines Online-Anbieters nutzen</i> aus. Dann kannst Du <span class="tag is-danger">3</span>
-			den Anbieter <i>CardDAV-Anbieter</i> wählen.
-		</p>
+		<ul>
+			<li>
+				<span class="tag is-danger">1</span> 
+				gib dem Telefonbuch, das als Sperrliste dienen soll, den Namen <code>Blocklist</code>. Du benötigst diesen 
+				Namen nochmals für den nächsten Schritt.
+			</li>
 
-		<p>
-			Fast geschafft, jetzt kommen die Anmeldedaten <span class="tag is-danger">4</span>! Trage die URL
-			von des PhoneBlock-Adressbuchs in das Feld <i>Internetadresse des CardDAV-Servers</i> ein:
-		</p>
-		
-		<div class="columns">
-		  <div class="column is-8 is-offset-2">
-			<code id="url2">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
-		  </div>
-		</div>
-		
-		<p>
-			Trage den Benutzernamen <%if (login != null) {%> <code id="login2"><%= JspUtil.quote(login) %></code> <a id="login2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der
-			<a href="<%=request.getContextPath() %>/signup.jsp">Registrierung</a> erhalten hast, in das Feld 
-			<i>Benutzername</i> ein. Am besten überträgst Du ihn mit Cut&amp;Paste.
-		</p>
-		
-		<p>
-			Das Passwort<%if (token == null) {%>, 
-			das Du bei der <a href="<%=request.getContextPath() %>/signup.jsp<%= LoginServlet.locationParamFirst(request) %>">Registrierung</a> erhalten 
-			hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code> <a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld
-			<i>Passwort</i> in dem Formular in der Fritz!Box eintragen.
-		</p>
-		
-		<p>
-			Jetzt kannst Du <span class="tag is-danger">5</span> die Anlage des neuen Telefonbuchs bestätigen. Bitte beachte: Wähle <b>keines Deiner Telefone</b> 
-			bei dem Punkt "Telefon-Zuordnung" aus! Ansonsten findest Du auf Deinem Telefon nur noch SPAM-Anrufer in den Kontakten.  
-		</p>
+			<li>
+				Wähle jetzt <span class="tag is-danger">2</span> die Option 
+				<i>Telefonbuch eines Online-Anbieters nutzen</i> aus.
+			</li>
+
+			<li>
+				Dann kannst Du <span class="tag is-danger">3</span>
+				den Anbieter <i>CardDAV-Anbieter</i> wählen.
+			</li>
+
+			<li>
+				Fast geschafft, jetzt kommen die Anmeldedaten <span class="tag is-danger">4</span>. Am besten Du überträgst sie mit Cut&amp;Paste, um Tippfehler zu vermeiden!
+				
+				<ul>
+					<li>
+						Trage die URL von des PhoneBlock-Adressbuchs in das Feld <i>Internetadresse des CardDAV-Servers</i> ein:
+						<code id="url2">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
+					</li>
+
+					<li>
+						Trage den Benutzernamen <%if (login != null) {%> <code id="login2"><%= JspUtil.quote(login) %></code><a id="login2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der
+						<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">Registrierung</a> erhalten hast, in das Feld 
+						<i>Benutzername</i> ein. 
+					</li>
+
+					<li>
+						Das Passwort<%if (token == null) {%>, 
+						das Du bei der <a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">Registrierung</a> erhalten 
+						hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code><a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld
+						<i>Passwort</i> eintragen werden.
+					</li>
+				</ul>
+			</li>
+
+			<li>
+				Jetzt kannst Du <span class="tag is-danger">5</span> die Anlage des neuen Telefonbuchs bestätigen. Bitte beachte: Wähle <b>keines Deiner Telefone</b> 
+				bei dem Punkt "Telefon-Zuordnung" aus! Ansonsten findest Du auf Deinem Telefon nur noch SPAM-Anrufer in den Kontakten.  
+			</li>
+		</ul>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">

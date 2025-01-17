@@ -70,6 +70,8 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  * The database abstraction layer.
@@ -438,13 +440,13 @@ public class DB {
 	/**
 	 * Creates a new PhoneBlock user account.
 	 * @param clientName The authorization scope for the new user.
-	 * @param extId The ID in the given authorization scope.
+	 * @param googleId The ID for Google authentication.
 	 * @param login The user name (e.g. e-mail address) of the new account.
 	 * @return The randomly generated password for the account.
 	 */
-	public String createUser(String clientName, String extId, String login, String displayName) {
+	public String createUser(String login, String displayName) {
 		String passwd = createPassword(20);
-		addUser(clientName, extId, login, displayName, passwd);
+		addUser(login, displayName, passwd);
 		return passwd;
 	}
 
@@ -528,18 +530,27 @@ public class DB {
 	}
 	
 	public AuthToken createLoginToken(String login, long now, String userAgent) {
-		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent);
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+			.setImplicit(true)
+			.setAccessLogin(true);
 		createAuthToken(authorization);
 		return authorization;
 	}
 
-	public AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
+	public AuthToken createAPIToken(String login, long now, String userAgent) {
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+				.setAccessDownload(true)
+				.setAccessQuery(true)
+				.setAccessRate(true);
+		createAuthToken(authorization);
+		return authorization;
+	}
+	
+	private AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
 		return AuthToken.create()
 			.setUserName(login)
 			.setCreated(now)
 			.setLastAccess(now)
-			.setImplicit(true)
-			.setAccessLogin(true)
 			.setUserAgent(nonNullUA(userAgent));
 	}
 	
@@ -653,21 +664,25 @@ public class DB {
 	/** 
 	 * Sets the user's e-mail address.
 	 */
-	public void setEmail(String login, String email) {
+	public void setEmail(String login, String email) throws AddressException {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.setEmail(login, email);
+			users.setEmail(login, canonicalEMail(email));
 			session.commit();
 		}
 	}
 	
 	/** 
 	 * Sets the user's external ID in its OAuth authorization scope.
+	 * @param displayName 
 	 */
-	public void setExtId(String login, String extId) {
+	public void setGoogleId(String login, String googleId, String displayName) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.setExtId(login, extId);
+			users.setGoogleId(login, googleId);
+			if (displayName != null && !displayName.isBlank()) {
+				users.setDisplayName(login, displayName);
+			}
 			session.commit();
 		}
 	}
@@ -1118,14 +1133,63 @@ public class DB {
 	}
 
 	private int getMinVotes(SqlSession session, String login) {
-		int minVotes = (login == null) ? MIN_VOTES : getSettings(session, login).getMinVotes();
+		int minVotes = (login == null) ? MIN_VOTES : getUserSettingsRaw(session, login).getMinVotes();
 		return minVotes;
 	}
 
-	private DBUserSettings getSettings(SqlSession session, String login) {
+	private DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
 		Users users = session.getMapper(Users.class);
-		DBUserSettings settings = users.getSettings(login);
-		return settings;
+		return users.getSettingsRaw(login);
+	}
+
+	private DBUserSettings getUserSettings(Users users, String login) {
+		DBUserSettings result = users.getSettingsRaw(login);
+
+		// For legacy compatibility (e-mail addresses as display name).
+		result.setDisplayName(DB.toDisplayName(result.getDisplayName()));
+		
+		return result;
+	}
+
+	/**
+	 * Guesses a display name from an e-mail address.
+	 */
+	public static String toDisplayName(String email) {
+		int atIndex = email.indexOf('@');
+		if (atIndex > 0) {
+			email = email.substring(0, atIndex);
+		}
+		
+		StringBuilder result = new StringBuilder();
+		boolean first = true;
+		for (String part : email.replace('.', ' ').replace('_', ' ').split("\\s+")) {
+			if (part.length() == 0) {
+				continue;
+			}
+			
+			if (first) {
+				first = false;
+			} else {
+				result.append(' ');
+			}
+			
+			boolean firstPart = true;
+			for (String subPart : part.split("-")) {
+				if (subPart.length() == 0) {
+					continue;
+				}
+		
+				if (firstPart) {
+					firstPart = false;
+				} else {
+					result.append('-');
+				}
+				result.append(Character.toUpperCase(subPart.charAt(0)));
+				result.append(subPart.substring(1));
+			}
+		}
+		
+		return result.toString();
 	}
 	
 	/**
@@ -1311,10 +1375,10 @@ public class DB {
 	/** 
 	 * Adds the given user with the given password.
 	 */
-	public void addUser(String clientName, String extId, String login, String displayName, String passwd) {
+	public void addUser(String login, String displayName, String passwd) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.addUser(login, clientName, extId, displayName, pwhash(passwd), System.currentTimeMillis());
+			users.addUser(login, displayName, pwhash(passwd), System.currentTimeMillis());
 			session.commit();
 		}
 	}
@@ -1341,16 +1405,36 @@ public class DB {
 	}
 	
 	/** 
-	 * The user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * The local user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * 
+	 * @param googleId the user's ID in the Google OpenID provider.
 	 */
-	public String getLogin(String clientName, String extId) {
+	public String getGoogleLogin(String googleId) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			return users.getLogin(clientName, extId);
+			return users.getGoogleLogin(googleId);
 		}
 	}
 
+	/** 
+	 * The local user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * 
+	 * @param email the user's e-mail address.
+	 */
+	public String getEmailLogin(String email) throws AddressException {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			return users.getEmailLogin(canonicalEMail(email));
+		}
+	}
+
+	private String canonicalEMail(String email) throws AddressException {
+		InternetAddress address = new InternetAddress(email);
+		return address.getAddress().strip().toLowerCase();
+	}
+	
 	/** 
 	 * Sets the last access time for the given user to the given timestamp.
 	 * 
@@ -1368,7 +1452,7 @@ public class DB {
 				// This was the first access, send welcome message;
 				MailService mailService = _mailService;
 				if (mailService != null) {
-					DBUserSettings userSettings = users.getSettings(login);
+					DBUserSettings userSettings = getUserSettings(users, login);
 					users.markWelcome(userSettings.getId());
 					session.commit();
 					
@@ -1387,7 +1471,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			return users.getSettings(login);
+			return getUserSettings(users, login);
 		}
 	}
 	

@@ -45,7 +45,8 @@
 				UserSettings settings = DBService.getInstance().getSettings(userName);
 			%>
 			<p>
-				Wilkommen <%= JspUtil.quote(settings.getDisplayName()) %>.
+				Willkommen <%= JspUtil.quote(settings.getDisplayName()) %><% if (settings.getEmail() != null) { %>				
+				(<%= JspUtil.quote(settings.getEmail()) %>)<% } %>.
 			</p>
 			
 			<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>" method="post">
@@ -60,20 +61,24 @@
 
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code> <a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 <% } %>			
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code> <a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help">Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen. </p>
+				  <div class="control"><code id="login"><%= JspUtil.quote(userName) %></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help">
+				  	Diesen Wert musst du als Benutzernamen für den <a href="<%=request.getContextPath()%>/setup.jsp">Abruf der Blocklist</a> eintragen.
+				  	Dein Passwort wurde Dir nach Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf dieser Seite
+				  	ein <a href="#resetPassword">neues Passwort erstellen lassen</a>. Aber Vorsicht: Das alte Passwort wird dadurch ungültig. 
+				  </p>
 				</div>
 					
 <% if (token != null) { %>
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code> <a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help">Dieses Passwort musst Du für die <a href="<%=request.getContextPath()%>/setup.jsp">Einrichtung des Telefonbuchs</a> oder für die <a href="<%=request.getContextPath()%><%=SettingsServlet.PATH%>">Anmeldung an dieser Webseite</a> verwenden. </p>
 				  <p class="help">
 				  	Bitte notiere Dir das Passwort (oder speichere es am besten in einem <a href="https://keepass.info/">Passwort-Manager</a>), 
@@ -270,7 +275,7 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	<p>Nutze diese Funktionalität mit Bedacht. Du kannst Deine PhoneBlock-Installation damit kaputt machen!</p>
 	</div>
 		
-<nav class="panel is-warning">
+<nav class="panel is-warning" id="resetPassword">
 	<p class="panel-heading"><a href="#resetForm" data-action="collapse"><i class="fa-solid fa-eraser"></i> <span>Neues Passwort erzeugen</span></a></p>
 	<div id="resetForm" class="is-collapsible">
 		<form action="<%= request.getContextPath() %><%= ResetPasswordServlet.PATH %>" method="post" enctype="application/x-www-form-urlencoded">
