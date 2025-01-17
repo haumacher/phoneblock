@@ -154,6 +154,7 @@ public class MailServiceStarter implements ServletContextListener {
 	
 	private static RSAPrivateKey readPrivateKey(String fileName)
 			throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+		LOG.info("Reading dkim key from {}.", fileName);
 		try (InputStream derStream = new FileInputStream(new File(fileName))) {
 			byte[] privKeyBytes = new BufferedDataFetcher().fetch(derStream, true);
 			KeyFactory rsaKeyFactory = KeyFactory.getInstance("RSA");
