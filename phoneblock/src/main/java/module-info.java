@@ -51,6 +51,7 @@ module de.haumacher.phoneblock {
 	requires jakarta.servlet.jsp;
 	requires jakarta.el;
 	requires jakarta.mail;
+	requires org.simplejavamail.java_utils_mail_dkim;
 	requires de.haumacher.msgbuf;
 	requires org.apache.httpcomponents.httpcore;
 	requires org.jsoup;
@@ -64,4 +65,5 @@ module de.haumacher.phoneblock {
 	requires service;
 	requires org.tinylog.api;
 	requires jakartaee.pac4j;
+	requires utils.data.fetcher;
 }

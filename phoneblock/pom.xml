@@ -258,6 +258,12 @@
 		    <version>2.1.3</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.simplejavamail</groupId>
+			<artifactId>utils-mail-dkim</artifactId>
+			<version>3.2.1-haumacher</version>
+		</dependency>
+
 		<!-- The actual mail implementation. -->
 		<dependency>
 			<groupId>org.eclipse.angus</groupId>
