@@ -44,7 +44,7 @@ public class BasicLoginFilter extends LoginFilter {
 	
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
-		LOG.info("Requesting authentication for: {}", request.getServletPath());
+		LOG.debug("Requesting authentication for: {}", request.getServletPath());
 		ServletUtil.sendAuthenticationRequest(response);
 	}
 	
@@ -63,7 +63,7 @@ public class BasicLoginFilter extends LoginFilter {
 		case CardDavServlet.DIR_NAME: 
 			return authorization.isAccessCarddav();
 		default:
-			LOG.info("Requesting CardDAV permission for unknown resource: {} - {}", request.getServletPath(), request.getPathInfo());
+			LOG.warn("Requesting CardDAV permission for unknown resource: {} - {}", request.getServletPath(), request.getPathInfo());
 			
 			return authorization.isAccessCarddav();
 		}
