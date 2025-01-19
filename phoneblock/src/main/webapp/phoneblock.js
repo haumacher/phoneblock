@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 	
 	var contextPath = getContextPath();
-	if (contextPath = "/pb-test") {
+	if (contextPath == "/pb-test") {
 		document.body.classList.add("test-system");
 	}
 });
