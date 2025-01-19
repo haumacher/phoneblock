@@ -109,10 +109,20 @@
 
 		<h2>Kann ich PhoneBlock auf einen Android Mobiltelefon nutzen?</h2>
 		<p>
-			Ja, du kannst das PhoneBlock-Adressbuch abonieren und siehst dann gleich, ob es sich lohnt, einen Anruf
-			anzunehmen oder bei einem verpassten Anruf zurückzurufen. Spam-Anrufe direkt abweisen geht aktuell nur 
-			im Festnetz mit einer Fritz!Box. Für Android gibt es eine 
-			<a href="<%= request.getContextPath()%>/setup-android/">ausführliche Installationsanleitung</a>. 
+			Ja, hier hast Du sogar zwei Optionen: (a) Das PhoneBlock-Adressbuch abonieren, oder (b) SpamBlocker 
+			einrichten und dort die PhoneBlock-Datenbank einbinden.
+		</p>
+		<p>
+			Wenn Du das <a href="<%= request.getContextPath()%>/setup-android/">PhoneBlock-Adressbuch abonierst</a>, 
+			siehst Du einem Anruf direkt an, ob es sich lohnt, den Anruf anzunehmen oder bei einem verpassten Anruf 
+			zurückzurufen. Spam-Anrufe direkt abweisen ist darüber allerdings nicht möglich.
+		</p>
+		<p>
+			Wenn Du <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker installierst</a>, 
+			dann kannst Du dort die PhoneBlock-Datenbank einbinden. SpamBlocker kann dann bei einem Anruf die Nummer mit 
+			der PhoneBlock-Datenbank abgleichen und bei einem Treffer den Anruf direkt abweisen. 
+			<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> ist eine unabhängige App, bitte wende dich bei 
+			Problemen damit direkt an den Entwickler.
 		</p>
 		
 		<h2>Kann ich PhoneBlock auf einen iPhone nutzen?</h2>

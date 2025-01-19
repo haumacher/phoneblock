@@ -23,6 +23,14 @@
 		</p>
 		
 		<p>
+			Hierüber kannst Du SPAM-Anrufe nicht blockieren (dein Telefon klingelt trotzdem, aber Du siehst, dass es 
+			ein SPAM-Anruf ist). SPAM-Anrufe blockieren kannst Du mit der 
+			<a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">Installation von SpamBlocker</a> und
+			der Einbindung der PhoneBlock-Datenbank. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> ist 
+			eine unabhängige App, bitte wende dich bei Problemen damit direkt an den Entwickler.
+		</p>
+		
+		<p>
 			Für die Adressbuch-Synchronisation benötigst du eine App, mit der man Internet-Telefonbücher synchronisieren kann. 
 			Hierfür kannst Du z.B.   
 			"<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", 
