@@ -178,6 +178,8 @@ public class AnswerBot extends MultipleUAS {
 	
 	@Override
 	protected void onInviteReceived(SipMessage msg) {
+		LOG.debug("Received invite.\n=== Message start ===\n{}\n=== Message end ===", msg);
+		
 		ToHeader toHeader = msg.getToHeader();
 		if (toHeader == null) {
 			LOG.warn("Missing To: header, ignoring.");
