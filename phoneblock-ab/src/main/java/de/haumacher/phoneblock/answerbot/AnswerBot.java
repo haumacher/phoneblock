@@ -225,17 +225,21 @@ public class AnswerBot extends MultipleUAS {
 			String calledParty;
 			if (header != null) {
 				calledParty = header.getValue();
-				if (calledParty != null) {
-					SipURI uri = SipURI.parseAddress(calledParty);
-					if (uri != null) {
-						String calledUser = uri.getUserName();
-						if (calledUser != null && calledUser.startsWith("**9")) {
-							// Broadcast call, ignore.
-							LOG.info("Rejecting broadcast call ({}).", calledParty);
-							return rejectHandler();
-						}
-					}
-				}
+				
+				// Note: Filtering broadcast calls not work, since the P-Called-Party-ID is
+				// always **9, even if the local number of the answerbot (e.g. **621) is called.
+
+//				if (calledParty != null) {
+//					SipURI uri = SipURI.parseAddress(calledParty);
+//					if (uri != null) {
+//						String calledUser = uri.getUserName();
+//						if (calledUser != null && calledUser.startsWith("**9")) {
+//							// Broadcast call, ignore.
+//							LOG.info("Rejecting broadcast call ({}).", calledParty);
+//							return rejectHandler();
+//						}
+//					}
+//				}
 			} else {
 				calledParty = "-";
 			}
