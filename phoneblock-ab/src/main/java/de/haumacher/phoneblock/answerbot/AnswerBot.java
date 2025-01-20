@@ -226,7 +226,7 @@ public class AnswerBot extends MultipleUAS {
 			if (header != null) {
 				calledParty = header.getValue();
 				if (calledParty != null) {
-					SipURI uri = SipURI.parseSipURI(calledParty);
+					SipURI uri = SipURI.parseAddress(calledParty);
 					if (uri != null) {
 						String calledUser = uri.getUserName();
 						if (calledUser != null && calledUser.startsWith("**9")) {
