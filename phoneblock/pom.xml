@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock</artifactId>
-	<version>1.6.11</version>
+	<version>1.6.12-SNAPSHOT</version>
 	
 	<name>PhoneBlock</name>
 	<description>Ad blocker for your Fritz!Box</description>
@@ -29,7 +29,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-	  <tag>1.6.11</tag>
+	  <tag>1.6.6</tag>
   	</scm>
   	
   	<packaging>war</packaging>
