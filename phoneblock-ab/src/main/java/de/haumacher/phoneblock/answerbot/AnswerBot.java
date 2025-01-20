@@ -48,6 +48,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.header.Analyzer;
+import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
@@ -218,8 +219,27 @@ public class AnswerBot extends MultipleUAS {
 		}
 		
 		if (from.startsWith("*") || (_botConfig.hasTestPrefix() && from.startsWith(_botConfig.getTestPrefix()))) {
+			Header header = msg.getHeader("P-Called-Party-ID");
+			String calledParty;
+			if (header != null) {
+				calledParty = header.getValue();
+				if (calledParty != null) {
+					SipURI uri = SipURI.parseSipURI(calledParty);
+					if (uri != null) {
+						String calledUser = uri.getUserName();
+						if (calledUser != null && calledUser.startsWith("**9")) {
+							// Broadcast call, ignore.
+							LOG.info("Rejecting broadcast call ({})." + calledParty);
+							return rejectHandler();
+						}
+					}
+				}
+			} else {
+				calledParty = "-";
+			}
+
 			// A local test call, accept.
-			LOG.info("Accepting incoming test call from {} for {}.", from, userName);
+			LOG.info("Accepting test call from {} to {} for {}.", from, calledParty, userName);
 			return spamHandler(userName, from);
 		} else {
 			String fromLabel;
