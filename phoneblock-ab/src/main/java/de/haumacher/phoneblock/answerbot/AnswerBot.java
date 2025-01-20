@@ -231,7 +231,7 @@ public class AnswerBot extends MultipleUAS {
 						String calledUser = uri.getUserName();
 						if (calledUser != null && calledUser.startsWith("**9")) {
 							// Broadcast call, ignore.
-							LOG.info("Rejecting broadcast call ({})." + calledParty);
+							LOG.info("Rejecting broadcast call ({}).", calledParty);
 							return rejectHandler();
 						}
 					}
