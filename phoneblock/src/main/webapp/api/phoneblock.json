@@ -87,7 +87,7 @@
 		},
 		"/check": {
 			"get": {
-				"summary": "Checks a hash against the SPAM database. This API provides better privacy that the direct lookup with the phone number.",
+				"summary": "Checks a phone number hash against the SPAM database. This API provides better privacy that the direct lookup with the phone number.",
 				"responses": {
 					"200": {
 						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database.",
@@ -136,7 +136,7 @@
 				{
 					"name": "sha1",
 					"in": "query",
-					"description": "The hex-encoded SHA1 hash of the calling phone number (40 hex digits) to check for SPAM.",
+					"description": "The hex-encoded SHA1 hash (40 hex digits) of the calling phone number to check for SPAM. The number to hash must be in international format (e.g. '+4917650642602' for a German phone number). You can use the /hash API for testing and debugging your hash computation.",
 					"required": true,
 					"schema": {
 						"type": "string"
@@ -552,7 +552,7 @@
 								"schema": {
 									"type": "string"
 								},
-								"example": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+								"example": "3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC"
 							}
 						}
 					}
