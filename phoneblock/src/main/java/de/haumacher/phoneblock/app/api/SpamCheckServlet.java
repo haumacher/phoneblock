@@ -72,7 +72,7 @@ public class SpamCheckServlet extends HttpServlet {
 		
 		if (phoneId == null) {
 			// Not in the DB.
-			PhoneInfo info = PhoneInfo.create().setRating(Rating.A_LEGITIMATE);
+			PhoneInfo info = PhoneInfo.create().setPhone("unknown").setRating(Rating.A_LEGITIMATE);
 			ServletUtil.sendResult(req, resp, info);
 			return;
 		}
