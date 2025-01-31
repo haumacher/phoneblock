@@ -411,6 +411,10 @@ public class DB {
 								String phone = result.getString(1);
 								
 								PhoneNumer analyzed = NumberAnalyzer.analyze(phone);
+								if (analyzed == null) {
+									LOG.error("Invalid phone number in DB: " + phone);
+									continue;
+								}
 
 								byte[] hash = NumberAnalyzer.getPhoneHash(digest, analyzed);
 								
