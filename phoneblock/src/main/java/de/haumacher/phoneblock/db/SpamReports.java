@@ -29,6 +29,11 @@ public interface SpamReports {
 			""")
 	void addReport(String phone, byte[] hash, int votes, long now);
 	
+	@Select("""
+			select PHONE from NUMBERS where SHA1=#{hash}
+			""")
+	String resolvePhoneHash(byte[] hash);
+	
 	@Update("""
 			update NUMBERS set 
 				VOTES = VOTES + #{delta},

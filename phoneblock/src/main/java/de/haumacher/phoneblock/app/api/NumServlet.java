@@ -41,6 +41,10 @@ public class NumServlet extends HttpServlet {
 			return;
 		}
 		
+		process(req, resp, phone);
+	}
+
+	public static void process(HttpServletRequest req, HttpServletResponse resp, String phone) throws IOException {
 		PhoneNumer number = NumberAnalyzer.analyze(phone);
 		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
