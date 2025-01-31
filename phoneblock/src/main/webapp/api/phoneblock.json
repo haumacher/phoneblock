@@ -85,6 +85,76 @@
 				}
 			]
 		},
+		"/check": {
+			"get": {
+				"summary": "Checks a hash against the SPAM database. This API provides better privacy that the direct lookup with the phone number.",
+				"responses": {
+					"200": {
+						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"phone": {
+											"type": "string"
+										},
+										"votes": {
+											"type": "integer"
+										},
+										"rating": {
+											"type": "string",
+											"enum": [
+												"A_LEGITIMATE",
+												"B_MISSED",
+												"C_PING",
+												"D_POLL",
+												"E_ADVERTISING",
+												"F_GAMBLE",
+												"G_FRAUD"
+											]
+										}
+									}
+								},
+								"example": {
+									"phone": "0123456789",
+									"votes": 42,
+									"rating": "C_POLL"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"PhoneBlockToken": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "sha1",
+					"in": "query",
+					"description": "The hex-encoded SHA1 hash of the calling phone number (40 hex digits) to check for SPAM.",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
+				}
+			]
+		},
 		"/search/{num}": {
 			"get": {
 				"summary": "Retrieve extensive information for the given phone number.",
