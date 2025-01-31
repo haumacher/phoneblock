@@ -59,6 +59,7 @@ import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
@@ -197,21 +198,13 @@ public class DB {
 			}
 			
 			if (!tableNames.containsAll(TABLE_NAMES)) {
-				// Set up schema.
-		        ScriptRunner sr = new ScriptRunner(connection);
-		        sr.setAutoCommit(true);
-		        sr.setDelimiter(";");
-		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-schema.sql"), StandardCharsets.UTF_8));
+				runScript(connection, "db-schema.sql");
 			}
 			
 			else if (!tableNames.contains("NUMBERS")) {
     			LOG.info("Migrating schema to consolidated numbers.");
     			
-				// Migrate schema.
-		        ScriptRunner sr = new ScriptRunner(connection);
-		        sr.setAutoCommit(true);
-		        sr.setDelimiter(";");
-		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-migration-02.sql"), StandardCharsets.UTF_8));
+    			runScript(connection, "db-migration-02.sql");
 
     			LOG.info("Building revision ranges in numbers history.");
 
@@ -403,8 +396,50 @@ public class DB {
 		        }
 		        
 		        connection.commit();
+			} else if (!tableNames.contains("PROPERTIES")) {
+				runScript(connection, "db-migration-04.sql");
+				
+				try {
+					MessageDigest digest = NumberAnalyzer.createPhoneDigest();
+					
+					LOG.info("Computing phone hashes.");
+					try (PreparedStatement stmt = connection.prepareStatement("""
+			        	SELECT r.PHONE, r.SHA1
+	        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+						try (ResultSet result = stmt.executeQuery()) {
+							while (result.next()) {
+								String phone = result.getString(1);
+								
+								PhoneNumer analyzed = NumberAnalyzer.analyze(phone);
+
+								byte[] hash = NumberAnalyzer.getPhoneHash(digest, analyzed);
+								
+								result.updateBinaryStream(2, new ByteArrayInputStream(hash));
+								result.updateRow();
+								
+								digest.reset();
+							}
+						}
+					}
+			        connection.commit();
+
+			        LOG.info("Done computing phone hashes.");
+				} catch (Exception ex) {
+					LOG.error("Failed to compute phone hashes.", ex);
+				}
 			}
 		}
+	}
+
+	private void runScript(Connection connection, String scriptName) {
+		LOG.info("Running DB script: " + scriptName);
+
+		ScriptRunner sr = new ScriptRunner(connection);
+		sr.setAutoCommit(true);
+		sr.setDelimiter(";");
+		sr.runScript(new InputStreamReader(getClass().getResourceAsStream(scriptName), StandardCharsets.UTF_8));
+		
+		LOG.info("Finished DB script: " + scriptName);
 	}
 
 	private Date schedule(int atHour, Runnable command) {
@@ -704,7 +739,7 @@ public class DB {
 	 * @param votes The votes to add/remove for the given phone number.
 	 * @param time The current time to update the last update time to.
 	 */
-	public void processVotes(String phone, int votes, long time) {
+	public void processVotes(PhoneNumer phone, int votes, long time) {
 		if (votes == 0) {
 			return;
 		}
@@ -721,7 +756,7 @@ public class DB {
 	 * 
 	 * @return Whether an index update should be performed.
 	 */
-	public boolean processVotesAndPublish(SpamReports reports, String phone, int votes, long time) {
+	public boolean processVotesAndPublish(SpamReports reports, PhoneNumer phone, int votes, long time) {
 		boolean updateRequired = processVotes(reports, phone, votes, time);
 		if (updateRequired) {
 			_indexer.publishUpdate(phone);
@@ -732,14 +767,17 @@ public class DB {
 	/**
 	 * Updates the votes for a certain number.
 	 */
-	public boolean processVotes(SpamReports reports, String phone, int votes, long time) {
+	public boolean processVotes(SpamReports reports, PhoneNumer number, int votes, long time) {
+		String phone = NumberAnalyzer.getPhoneId(number);
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
 		
 		int rows = reports.addVote(phone, votes, time);
 		if (rows == 0) {
+			byte[] hash = NumberAnalyzer.getPhoneHash(number);
+			
 			// Number was not yet present, must be added.
-			reports.addReport(phone, votes, time);
+			reports.addReport(phone, hash, votes, time);
 			
 			if (votes > 0) {
 				updateAggregation10(reports, phone, 1, votes);
@@ -832,7 +870,9 @@ public class DB {
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
 	 */
-	public void addRating(String userName, String phone, Rating rating, String comment, long now) {
+	public void addRating(String userName, PhoneNumer number, Rating rating, String comment, long now) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		boolean updateRequired;
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -875,13 +915,13 @@ public class DB {
 				.setComment(comment)
 				.setCreated(now);
 			
-			updateRequired = addRating(reports, userComment, recordVote);
+			updateRequired = addRating(reports, number, userComment, recordVote);
 			
 			session.commit();
 		}
 		
 		if (updateRequired) {
-			_indexer.publishUpdate(phone);
+			_indexer.publishUpdate(number);
 		}
 	}
 	
@@ -898,10 +938,10 @@ public class DB {
 	 * 
 	 * @return Whether an index update is required.
 	 */
-	public boolean addRating(SpamReports reports, UserComment comment, boolean recordVote) {
+	public boolean addRating(SpamReports reports, PhoneNumer number, UserComment comment, boolean recordVote) {
 		boolean updateRequired = false;
 		
-		String phone = comment.getPhone();
+		String phone = NumberAnalyzer.getPhoneId(number);
 		Rating rating = comment.getRating();
 		String commentText = comment.getComment();
 		long created = comment.getCreated();
@@ -915,7 +955,7 @@ public class DB {
 		}
 
 		if (recordVote) {
-			updateRequired |= processVotes(reports, phone, Ratings.getVotes(rating), created);
+			updateRequired |= processVotes(reports, number, Ratings.getVotes(rating), created);
 			if (rating != Rating.B_MISSED) {
 				Rating oldRating = rating(reports, phone);
 				
@@ -1325,12 +1365,12 @@ public class DB {
 	/**
 	 * Records a search hit for the given phone number.
 	 */
-	public void addSearchHit(String phone) {
+	public void addSearchHit(PhoneNumer phone) {
 		long now = System.currentTimeMillis();
 		addSearchHit(phone, now);
 	}
 
-	void addSearchHit(String phone, long now) {
+	void addSearchHit(PhoneNumer phone, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
@@ -1343,10 +1383,13 @@ public class DB {
 	/**
 	 * Records a search hit for the given phone number.
 	 */
-	public void addSearchHit(SpamReports reports, String phone, long now) {
+	public void addSearchHit(SpamReports reports, PhoneNumer number, long now) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		int rows = reports.incSearchCount(phone, now);
 		if (rows == 0) {
-			reports.addReport(phone, 0, now);
+			byte[] hash = NumberAnalyzer.getPhoneHash(number);
+			reports.addReport(phone, hash, 0, now);
 			reports.incSearchCount(phone, now);
 		}
 		
@@ -1577,10 +1620,11 @@ public class DB {
 	 */
 	@Deprecated
 	public void deleteEntry(String principal, String phoneText) {
-		String phoneId = NumberAnalyzer.toId(phoneText);
-		if (phoneId == null) {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
 			return;
 		}
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		try (SqlSession session = openSession()) {
 			SpamReports spamreport = session.getMapper(SpamReports.class);
@@ -1597,7 +1641,7 @@ public class DB {
 			if (stateBefore == null || stateBefore.booleanValue()) {
 				// Do not add positive votes, if the number was voted positive before. This prevents vandals 
 				// from deleting the whole list by repeatedly adding numbers to the exclude list.
-				processVotesAndPublish(spamreport, phoneId, -1, System.currentTimeMillis());
+				processVotesAndPublish(spamreport, number, -1, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -1857,17 +1901,19 @@ public class DB {
 			}
 			
 			for (String phoneText : callReport.getCallers()) {
-				String phoneId = NumberAnalyzer.toId(phoneText);
-				if (phoneId == null) {
+				PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+				if (number == null) {
 					continue;
 				}
+				
+				String phoneId = NumberAnalyzer.getPhoneId(number);
 				
 				int ok = users.addCall(userId, phoneId, now);
 				if (ok == 0) {
 					users.insertCaller(userId, phoneId, now);
 				}
 				
-				processVotesAndPublish(reports, phoneId, 2, now);
+				processVotesAndPublish(reports, number, 2, now);
 			}
 			
 			session.commit();

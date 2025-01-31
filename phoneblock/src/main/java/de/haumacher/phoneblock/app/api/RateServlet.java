@@ -9,6 +9,7 @@ import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.RateRequest;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DBService;
@@ -39,14 +40,14 @@ public class RateServlet extends HttpServlet {
 
 		String phoneText = rateRequest.getPhone();
 		
-		String phoneId = NumberAnalyzer.toId(phoneText);
-		if (phoneId == null) {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
 		}
 
 		Rating rating = rateRequest.getRating();
-		DBService.getInstance().addRating(userName, phoneId, rating, rateRequest.getComment(), System.currentTimeMillis());
+		DBService.getInstance().addRating(userName, number, rating, rateRequest.getComment(), System.currentTimeMillis());
 		
 		ServletUtil.sendMessage(resp, HttpServletResponse.SC_OK, "Rating recorded.");
 	}

@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -288,19 +290,18 @@ public class NumberAnalyzer {
 	 * Creates a database ID for the given phone number, or <code>null</code> if the number is invalid. 
 	 */
 	public static String toId(String phoneText) {
+		PhoneNumer number = parsePhoneNumber(phoneText);
+		return number == null ? null : getPhoneId(number);
+	}
+
+	public static PhoneNumer parsePhoneNumber(String phoneText) {
 		String phoneNumber = normalizeNumber(phoneText);
 		if (phoneNumber.contains("*")) {
 			LOG.warn("Ignoring number with wildcard: " + phoneText);
 			return null;
 		}
 		
-		PhoneNumer number = analyze(phoneNumber);
-		if (number == null) {
-			LOG.warn("Ignoring invalid phone number: " + phoneText);
-			return null;
-		}
-		
-		return getPhoneId(number);
+		return analyze(phoneNumber);
 	}
 
 	/**
@@ -512,6 +513,29 @@ public class NumberAnalyzer {
 				break;
 			}
 			return result;
+		}
+	}
+
+	/**
+	 * Creates a hash value of the given phone number.
+	 * 
+	 * <p>
+	 * The hash value is used to provide a fast lookup for SPAM numbers when searching with advanced privacy enabled.
+	 * </p>
+	 */
+	public static byte[] getPhoneHash(PhoneNumer number) {
+		return getPhoneHash(createPhoneDigest(), number);
+	}
+	
+	public static byte[] getPhoneHash(MessageDigest digest, PhoneNumer number) {
+		return digest.digest(number.getPlus().getBytes(StandardCharsets.UTF_8));
+	}
+
+	public static MessageDigest createPhoneDigest() {
+		try {
+			return MessageDigest.getInstance("SHA1");
+		} catch (NoSuchAlgorithmException ex) {
+			throw new IllegalStateException("Cannot hash phone number.", ex);
 		}
 	}
 	

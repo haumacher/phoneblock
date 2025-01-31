@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
@@ -61,13 +62,13 @@ public class CrawlerService implements ServletContextListener {
 				public void reportCaller(String phoneText, int rating, long time) {
 					LOG.info(fmt(20, phoneText) + " " + "x*****".substring(rating));
 					
-					String phoneId = NumberAnalyzer.toId(phoneText);
-					if (phoneId == null) {
+					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+					if (number == null) {
 						return;
 					}
 
 					int votes = -(rating - 3);
-					_metaSearch.scheduleMetaSearch(votes, time, phoneId);
+					_metaSearch.scheduleMetaSearch(votes, time, number);
 				}
 				
 				private String fmt(int cols, String str) {

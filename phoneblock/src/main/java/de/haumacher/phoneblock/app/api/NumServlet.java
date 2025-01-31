@@ -51,10 +51,10 @@ public class NumServlet extends HttpServlet {
 		
 		DB db = DBService.getInstance();
 		if (!SearchServlet.isBot(req)) {
-			db.addSearchHit(phoneId);
+			db.addSearchHit(number);
 		}
 		
-		MetaSearchService.getInstance().scheduleMetaSearch(phoneId);
+		MetaSearchService.getInstance().scheduleMetaSearch(number);
 		
 		PhoneInfo info = db.getPhoneApiInfo(phoneId);
 		

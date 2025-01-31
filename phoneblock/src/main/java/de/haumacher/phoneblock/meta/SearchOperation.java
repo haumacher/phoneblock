@@ -21,7 +21,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
@@ -39,7 +41,7 @@ public class SearchOperation {
 
 	private int _votes;
 	private long _lastVote;
-	private String _phoneId;
+	private PhoneNumer _number;
 
 	private List<AbstractMetaSearch> _plugins;
 
@@ -54,11 +56,11 @@ public class SearchOperation {
 	/** 
 	 * Creates a {@link SearchOperation}.
 	 */
-	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, String phoneId) {
+	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, PhoneNumer number) {
 		_scheduler = scheduler;
 		_indexer = indexer;
 		_plugins = plugins;
-		_phoneId = phoneId;
+		_number = number;
 	}
 
 	/** 
@@ -69,13 +71,15 @@ public class SearchOperation {
 		try (SqlSession session = db.openSession()) {
 			SpamReports mapper = session.getMapper(SpamReports.class);
 
-			_comments = new ArrayList<>(mapper.getComments(_phoneId));
+			String phoneId = NumberAnalyzer.getPhoneId(_number);
+			
+			_comments = new ArrayList<>(mapper.getComments(phoneId));
 			{
-				_searchPerformed = shouldSearch(mapper, _phoneId);
+				_searchPerformed = shouldSearch(mapper, _number);
 				
 				boolean indexUpdated = false;
 				if (_searchPerformed) {
-					LOG.info("Performing meta search for: " + _phoneId);
+					LOG.info("Performing meta search for: " + _number);
 	
 					Map<String, UserComment> indexedComments = index();
 	
@@ -86,20 +90,20 @@ public class SearchOperation {
 							comment.setId(UUID.randomUUID().toString());
 							_comments.add(comment);
 							
-							db.addRating(mapper, comment, true);
+							db.addRating(mapper, _number, comment, true);
 							commentCnt++;
 							indexUpdated = true;
 						}
 					}
-					LOG.info("Found " + commentCnt + " new comments: " + _phoneId);
+					LOG.info("Found " + commentCnt + " new comments: " + _number);
 				} else {
-					LOG.info("Skipping search, still up-to-date: " + _phoneId);
+					LOG.info("Skipping search, still up-to-date: " + _number);
 				}
 				
 				boolean commit = _searchPerformed;
 				
 				if (_votes != 0) {
-					indexUpdated |= db.processVotes(mapper, _phoneId, _votes, _lastVote);
+					indexUpdated |= db.processVotes(mapper, _number, _votes, _lastVote);
 					commit = true;
 				}
 				
@@ -108,7 +112,7 @@ public class SearchOperation {
 				}
 				
 				if (indexUpdated) {
-					_indexer.publishUpdate(_phoneId);
+					_indexer.publishUpdate(_number);
 				}
 			}
 		}
@@ -135,12 +139,14 @@ public class SearchOperation {
 	 * 
 	 * @return Whether a search should be performed.
 	 */
-	private boolean shouldSearch(SpamReports db, String phoneId) {
+	private boolean shouldSearch(SpamReports db, PhoneNumer number) {
+		String phoneId = NumberAnalyzer.getPhoneId(number);
+		
 		long now = System.currentTimeMillis();
 		Long lastMetaSearch = db.getLastMetaSearch(phoneId);
 		boolean doSearch;
 		if (lastMetaSearch == null) {
-			db.insertLastMetaSearch(phoneId, now);
+			db.insertLastMetaSearch(phoneId, NumberAnalyzer.getPhoneHash(number), now);
 			doSearch = true;
 		} else if (lastMetaSearch.longValue() < now - SearchServlet.ONE_MONTH) {
 			db.setLastMetaSearch(phoneId, now);
@@ -155,9 +161,11 @@ public class SearchOperation {
 	 * Main for debugging only.
 	 */
 	private List<UserComment> doSearch() {
+		String phoneId = NumberAnalyzer.getPhoneId(_number);
+		
 		Stream<Pair<AbstractMetaSearch, Future<List<UserComment>>>> s1 = _plugins.stream().map(query -> Pair.of(query, _scheduler.executor().submit(() -> {
 			try {
-				return query.fetchComments(_phoneId);
+				return query.fetchComments(phoneId);
 			} catch (Throwable ex) {
 				return Collections.emptyList();
 			}

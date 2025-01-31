@@ -24,10 +24,10 @@ public interface SpamReports {
 	Long getLastUpdate();
 	
 	@Insert("""
-			insert into NUMBERS (PHONE, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED)
-			values (#{phone}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now})
+			insert into NUMBERS (PHONE, SHA1, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED)
+			values (#{phone}, #{hash}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now})
 			""")
-	void addReport(String phone, int votes, long now);
+	void addReport(String phone, byte[] hash, int votes, long now);
 	
 	@Update("""
 			update NUMBERS set 
@@ -359,8 +359,8 @@ public interface SpamReports {
 	@Update("update NUMBERS s set s.LASTMETA=#{lastUpdate} where s.PHONE=#{phone}")
 	int setLastMetaSearch(String phone, long lastUpdate);
 	
-	@Insert("insert into NUMBERS (PHONE, ADDED, LASTMETA) values (#{phone}, #{now}, #{now})")
-	void insertLastMetaSearch(String phone, long now);
+	@Insert("insert into NUMBERS (PHONE, SHA1, ADDED, LASTMETA) values (#{phone}, #{hash}, #{now}, #{now})")
+	void insertLastMetaSearch(String phone, byte[] hash, long now);
 	
 	@Select("SELECT PHONE FROM SUMMARY_REQUEST sr ORDER BY sr.PRIORITY LIMIT 1")
 	String topSummaryRequest();

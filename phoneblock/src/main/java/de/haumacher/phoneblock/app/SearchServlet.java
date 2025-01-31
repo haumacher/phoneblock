@@ -233,7 +233,7 @@ public class SearchServlet extends HttpServlet {
 			
 			// Note: Search for comments first, since new comments may change the state of the number.
 			if (isSeachHit) {
-				comments = MetaSearchService.getInstance().fetchComments(phone);
+				comments = MetaSearchService.getInstance().fetchComments(number);
 			} else {
 				comments = reports.getComments(phone);
 			}
@@ -243,7 +243,7 @@ public class SearchServlet extends HttpServlet {
 			long now = System.currentTimeMillis();
 			
 			if (isSeachHit) {
-				db.addSearchHit(reports, phone, now);
+				db.addSearchHit(reports, number, now);
 				commit = true;
 			}
 			
