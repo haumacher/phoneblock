@@ -404,7 +404,7 @@ public class DB {
 					
 					LOG.info("Computing phone hashes.");
 					try (PreparedStatement stmt = connection.prepareStatement("""
-			        	SELECT r.PHONE, r.SHA1
+			        	select PHONE, SHA1 from NUMBERS
 	        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 						try (ResultSet result = stmt.executeQuery()) {
 							while (result.next()) {
