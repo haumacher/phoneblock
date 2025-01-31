@@ -43,16 +43,22 @@ public class SpamCheckServlet extends HttpServlet {
 		
 		int length = encodedHash.length();
 		if (encodedHash == null || length != 40) {
-			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Not a valid hash, 40 hex digits required.");
+			ServletUtil.sendError(resp, "Not a valid hash, 40 hex digits required.");
 			return;
 		}
 		
-		byte[] hash = new byte[20];
-		int pos = 0;
-		for (int n = 0; n < length; n+=2) {
-			int msb = hex(encodedHash.charAt(n));
-			int lsb = hex(encodedHash.charAt(n + 1));
-			hash[pos++] = (byte) (msb << 4 | lsb);
+		byte[] hash;
+		try {
+			hash = new byte[20];
+			int pos = 0;
+			for (int n = 0; n < length; n+=2) {
+				int msb = hex(encodedHash.charAt(n));
+				int lsb = hex(encodedHash.charAt(n + 1));
+				hash[pos++] = (byte) (msb << 4 | lsb);
+			}
+		} catch (Exception ex) {
+			ServletUtil.sendError(resp, "Not a valid hash, 40 hex digits required: " + ex.getMessage());
+			return;
 		}
 
 		String phoneId;
