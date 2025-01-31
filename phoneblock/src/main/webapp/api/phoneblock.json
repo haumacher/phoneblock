@@ -540,6 +540,35 @@
 					}
 				]
 			}
+		},
+		"/hash": {
+			"get": {
+				"summary": "Computes the hash of a phone number compatible with the check API (for testing and debugging only).",
+				"responses": {
+					"200": {
+						"description": "Computes the encoded SHA1 hash of the given phone number.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+							}
+						}
+					}
+				}
+			},
+			"parameters": [
+				{
+					"name": "phone",
+					"in": "query",
+					"description": "The phone number to hash.",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			]
 		}
 	},
 	"components": {
