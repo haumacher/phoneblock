@@ -586,7 +586,7 @@ public class DB {
 		return authorization;
 	}
 	
-	private AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
+	public static AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
 		return AuthToken.create()
 			.setUserName(login)
 			.setCreated(now)
@@ -594,7 +594,7 @@ public class DB {
 			.setUserAgent(nonNullUA(userAgent));
 	}
 	
-	private String nonNullUA(String userAgent) {
+	private static String nonNullUA(String userAgent) {
 		return userAgent == null ? "-" : userAgent;
 	}
 

@@ -4,7 +4,9 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -116,8 +118,16 @@ public class SettingsServlet extends HttpServlet {
 			Users users = session.getMapper(Users.class);
 			Long userId = users.getUserId(userName);
 			if (userId != null) {
-				AuthToken apiKey = AuthToken.create().setAccessDownload(true).setAccessQuery(true).setAccessRate(true);
-				apiKey.setLabel(req.getParameter(API_KEY_LABEL_PARAM));
+				long now = System.currentTimeMillis();
+				AuthToken apiKey = DB.createAuthorizationTemplate(userName, now, null);
+				apiKey.setAccessDownload(true).setAccessQuery(true).setAccessRate(true);
+				String label = req.getParameter(API_KEY_LABEL_PARAM);
+				if (label == null) {
+					label = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(now)) + 
+						" - " + req.getHeader("User-Agent") + 
+						" - " + req.getRemoteAddr();
+				}
+				apiKey.setLabel(label);
 				db.createAuthToken(apiKey);
 				session.commit();
 				
