@@ -19,17 +19,19 @@
 		<h1>PhoneBlock unterstützen</h1>
 
 		<p>
-			Die Nutzung von PhoneBlock ist aktuell kostenlos, Du kannst PhoneBlock auf allen Deinen Fritz!Boxen und 
+			Die Nutzung von PhoneBlock ist kostenlos, Du kannst PhoneBlock auf allen Deinen Fritz!Boxen und 
 			Mobiltelefonen installieren, ohne dafür zu bezahlen. Allerdings ist der Betrieb von PhoneBlock keineswegs umsonst. 
-			Für Servermiete, Internetzugang und Domainregistrierung fallen laufende Kosten an. Aktuell finanziere 
-			<a href="https://github.com/haumacher">ich</a> das aus der eigenen Tasche.  
+			Für Servermiete, Internetzugang und Domainregistrierung fallen laufende Kosten an.  
+			<a href="<%=request.getContextPath()%>/impressum.jsp">Ich</a> finanziere das aus der eigenen Tasche.
 		</p>
 		
 		<p>
 			Wenn Dir PhoneBlock gefällt und es Dir hilft, lästige Plagegeister von deinem Telefonanschluss fernzuhalten, dann
-			bitte ich Dich an den Kosten von PhoneBlock zu beteiligen. Wenn viele Nutzer mitmachen, reicht ein geringer
-			Betrag aus. Schön wäre, wenn Du <b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b> als Beitrag bezahlst, 
-			die Höhe bleibt aber Dir überlassen.
+			kannst Du Dich an den Kosten von PhoneBlock zu beteiligen, oder mit einer kleinen Spende einfach "Danke" sagen. 
+			Wenn viele Nutzer mitmachen, reicht ein geringer
+			Betrag - z.B. <b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b> - aus, um die Kosten zu decken. 
+			Die Höhe bleibt aber Dir überlassen. Bei Deiner Spende handelt es sich nicht um einen "Mitgliedsbeitrag", und 
+			Du erwartest dafür keinerlei Gegenleistung.
 		</p>
 <%
 	String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
@@ -91,7 +93,7 @@
 		</div>
 		
 		<p>
-			Vielen Dank, dass Du einen Beitrag für die Nutzung von PhoneBlock leistest! 
+			Vielen Dank, dass Du Dich an den Kosten von PhoneBlock beteiligst! 
 		</p>
 		
 	</div>

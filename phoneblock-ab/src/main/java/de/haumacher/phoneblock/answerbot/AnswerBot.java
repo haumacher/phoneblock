@@ -73,6 +73,7 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.RateRequest;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.shared.PhoneHash;
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -300,10 +301,20 @@ public class AnswerBot extends MultipleUAS {
 	 */
 	protected PhoneInfo fetchPhoneInfo(CustomerOptions customerOptions, String from) {
 		try {
-			URL url = new URL("https://phoneblock.net/phoneblock/api/num/" + from + "?format=json");
+			String internationalForm = PhoneHash.toInternationalForm(from);
+			if (internationalForm == null) {
+				// Not a valid number.
+				return null;
+			}
+			
+			byte[] hashData = PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
+			String encodeHash = PhoneHash.encodeHash(hashData);
+			
+			URL url = new URL("https://phoneblock.net/phoneblock/api/check?sha1=" + encodeHash + "&format=json");
+			
 			URLConnection connection = url.openConnection();
+			addAuthorization(connection);
 			connection.addRequestProperty("accept", "application/json");
-			connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);
 			try (InputStream in = connection.getInputStream()) {
 				return PhoneInfo.readPhoneInfo(new JsonReader(new ReaderAdapter(new InputStreamReader(in))));
 			}
@@ -373,17 +384,12 @@ public class AnswerBot extends MultipleUAS {
 				URL url = new URL("https://phoneblock.net/phoneblock/api/rate?format=json");
 				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 				connection.addRequestProperty("accept", "application/json");
-				String version = "PhoneBlock-AB/" + VERSION;
-				connection.addRequestProperty("User-Agent", version);
-				String auth = _botConfig.getPhoneblockUsername() + ":" + _botConfig.getPhoneblockPassword();
-				byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
-				String authHeader = "Basic " + new String(encodedAuth);
-				connection.setRequestProperty("Authorization", authHeader);
+				addAuthorization(connection);
 				connection.setRequestMethod("POST");
 				connection.setDoOutput(true);
 				try (OutputStream out = connection.getOutputStream()) {
 					RateRequest rateRequest = RateRequest.create().setPhone(from)
-							.setRating(seconds > 1 ? Rating.B_MISSED : Rating.C_PING).setComment(version);
+							.setRating(seconds > 1 ? Rating.B_MISSED : Rating.C_PING);
 					StringW stringWriter = new StringW();
 					JsonWriter jsonWriter = new JsonWriter(stringWriter);
 					rateRequest.writeContent(jsonWriter);
@@ -405,6 +411,11 @@ public class AnswerBot extends MultipleUAS {
 				LOG.warn("Sending spam call to PhoneBlock failed: {}", ex.getMessage());
 			}
 		}
+	}
+
+	private void addAuthorization(URLConnection connection) {
+		connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);
+		connection.setRequestProperty("Authorization", "Bearer " + _botConfig.getPhoneBlockAPIKey());
 	}
 
 	/**
@@ -436,7 +447,7 @@ public class AnswerBot extends MultipleUAS {
 		
 		sipConfig.normalize();
 		botConfig.normalize();
-
+		
 		SipProvider sipProvider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		new AnswerBot(sipProvider, botConfig, (id) -> userConfig, portConfig.createPool());
 		

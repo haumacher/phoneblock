@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -36,11 +37,12 @@ public class RatingServlet extends HttpServlet {
         
 		String phoneText = req.getParameter("phone");
 		
-		String phoneId = NumberAnalyzer.toId(phoneText);
-		if (phoneId == null) {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		String ratingName = req.getParameter("rating");
 		
@@ -60,7 +62,7 @@ public class RatingServlet extends HttpServlet {
 				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
 
 				DB db = DBService.getInstance();
-				db.addRating(userName, phoneId, rating, comment, System.currentTimeMillis());
+				db.addRating(userName, number, rating, comment, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
 				

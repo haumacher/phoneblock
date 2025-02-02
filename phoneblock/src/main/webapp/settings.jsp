@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<%@page import="java.util.Date"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.text.DateFormat"%>
+<%@page import="de.haumacher.phoneblock.db.settings.AuthToken"%>
+<%@page import="de.haumacher.phoneblock.db.DBAuthToken"%>
 <%@page import="de.haumacher.phoneblock.app.PBLogoutFilter"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
 <%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
@@ -171,6 +176,122 @@
 			  </p>
 			</div>
 			</form>
+	</div>
+</section>
+
+<section class="section">
+<%
+List<? extends AuthToken> explicitTokens = (List<? extends AuthToken>) request.getAttribute("explicitTokens");
+%>
+
+	<div class="content">
+	<h2 id="myAPIKeys">Deine API-Keys</h2>
+	<p>
+		Wenn du andere Anwendungen verwendest, um Telefonnummern mit PhoneBlock zu überprüfen 
+		(z.B. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> 
+		oder <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), 
+		dann benötigst Du einen API-Key. Für das Blocklist-Telefonbuch in Deiner Fritz!Box verwendest Du einfach Deinen 
+		PhoneBlock-Nutzernamen und PhoneBlock-Passwort, hierfür benötigst Du also keinen API-Key.
+	</p>
+	
+<% if (explicitTokens.isEmpty()) { %>
+	<p>
+		Du hast noch keine API-Keys erzeugt.
+	</p>	
+<% } else { %>
+	<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>?action=deleteAPIKeys" method="post">
+	<table>
+		<tr>
+			<th>
+			</th>
+			<th>
+				Name
+			</th>
+			<th>
+				Erzeugt
+			</th>
+			<th>
+				Letzte Verwendung
+			</th>
+			<th>
+				Gerät
+			</th>
+		</tr>
+<%
+	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	for (AuthToken authToken : explicitTokens) {
+%>
+		<tr>
+			<td>
+				<input type="checkbox" name="<%=SettingsServlet.KEY_ID_PREFIX%><%= authToken.getId() %>"/>
+			</td>
+			<td>
+				<%= JspUtil.quote(authToken.getLabel()) %>
+			</td>
+			<td>
+				<%= JspUtil.quote(dateFormat.format(new Date(authToken.getCreated()))) %>
+			</td>
+			<td>
+<%
+	if (authToken.getLastAccess() == 0) {
+%>
+				Nicht verwendet.
+<%		
+	} else {
+%>
+				<%= JspUtil.quote(dateFormat.format(new Date(authToken.getLastAccess()))) %>
+<%		
+	}
+%>
+			</td>
+			<td>
+				<%= JspUtil.quote(authToken.getUserAgent()) %>
+			</td>
+		</tr>
+<%
+	}
+%>	
+	</table>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" type="submit">
+	      Markierte löschen
+	    </button>
+	  </p>
+	</div>
+	
+	</form>
+<% } %>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 id="createAPIKey">API-Key erzeugen</h2>
+
+	<form action="<%= request.getContextPath() %><%=SettingsServlet.PATH%>?action=createAPIKey" method="post">
+
+	<div class="field">
+	  <label class="label">Bemerkung für Verwendung</label>
+	  <p class="control has-icons-left">
+	    <input class="input" type="text" placeholder="Nutzung für..." name="<%=SettingsServlet.API_KEY_LABEL_PARAM%>">
+	  </p>
+	  <p class="help">
+	  Du kannst hier eine Hinweis eingeben, wofür Du den API-Key erzeugt hast, z.B. "SpamBlocker auf Omas Handy.".
+	  </p>
+	</div>
+		
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" type="submit">
+	      API-Key erzeugen
+	    </button>
+	  </p>
+	</div>
+
+	</form>
+
 	</div>
 </section>
 

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.shared.PhoneHash;
 
 /**
  * Utility for analyzing phone numbers.
@@ -288,19 +290,18 @@ public class NumberAnalyzer {
 	 * Creates a database ID for the given phone number, or <code>null</code> if the number is invalid. 
 	 */
 	public static String toId(String phoneText) {
+		PhoneNumer number = parsePhoneNumber(phoneText);
+		return number == null ? null : getPhoneId(number);
+	}
+
+	public static PhoneNumer parsePhoneNumber(String phoneText) {
 		String phoneNumber = normalizeNumber(phoneText);
 		if (phoneNumber.contains("*")) {
 			LOG.warn("Ignoring number with wildcard: " + phoneText);
 			return null;
 		}
 		
-		PhoneNumer number = analyze(phoneNumber);
-		if (number == null) {
-			LOG.warn("Ignoring invalid phone number: " + phoneText);
-			return null;
-		}
-		
-		return getPhoneId(number);
+		return analyze(phoneNumber);
 	}
 
 	/**
@@ -322,15 +323,9 @@ public class NumberAnalyzer {
 	public static PhoneNumer analyze(String phone) {
 		PhoneNumer result = PhoneNumer.create();
 		
-		String plus;
-		if (phone.startsWith("00")) {
-			plus = "+" + phone.substring(2);
-		} else if (phone.startsWith("0")) {
-			plus = "+49" + phone.substring(1);
-		} else if (phone.startsWith("+")) {
-			plus = phone;
-		} else {
-			// No valid number.
+		String plus = PhoneHash.toInternationalForm(phone);
+		if (plus == null) {
+			// Not a valid number.
 			return null;
 		}
 		result.setPlus(plus);
@@ -348,7 +343,7 @@ public class NumberAnalyzer {
 	
 		return result;
 	}
-	
+
 	/**
 	 * Creates an database ID for the given analyzed {@link PhoneNumer}.
 	 */
@@ -513,6 +508,21 @@ public class NumberAnalyzer {
 			}
 			return result;
 		}
+	}
+
+	/**
+	 * Creates a hash value of the given phone number.
+	 * 
+	 * <p>
+	 * The hash value is used to provide a fast lookup for SPAM numbers when searching with advanced privacy enabled.
+	 * </p>
+	 */
+	public static byte[] getPhoneHash(PhoneNumer number) {
+		return getPhoneHash(PhoneHash.createPhoneDigest(), number);
+	}
+	
+	public static byte[] getPhoneHash(MessageDigest digest, PhoneNumer number) {
+		return PhoneHash.getPhoneHash(digest, number.getPlus());
 	}
 	
 }

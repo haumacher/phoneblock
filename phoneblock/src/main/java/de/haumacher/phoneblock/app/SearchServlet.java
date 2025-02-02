@@ -233,17 +233,19 @@ public class SearchServlet extends HttpServlet {
 			
 			// Note: Search for comments first, since new comments may change the state of the number.
 			if (isSeachHit) {
-				comments = MetaSearchService.getInstance().fetchComments(phone);
+				comments = MetaSearchService.getInstance().fetchComments(number);
 			} else {
 				comments = reports.getComments(phone);
 			}
 			
 			boolean commit = false;
 			
-			long now = System.currentTimeMillis();
-			
+			// An explicit search from the web front-end is recorded as search, since
+			// multiple users searching for the same unknown number are an indication for a
+			// potential SPAM call.
 			if (isSeachHit) {
-				db.addSearchHit(reports, phone, now);
+				long now = System.currentTimeMillis();
+				db.addSearchHit(reports, number, now);
 				commit = true;
 			}
 			

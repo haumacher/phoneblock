@@ -9,6 +9,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
@@ -46,19 +47,33 @@ public class NumServlet extends HttpServlet {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
 		}
-		
+
+		ServletUtil.sendResult(req, resp, lookup(req, number));
+	}
+
+	static PhoneInfo lookup(HttpServletRequest req, PhoneNumer number) {
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		DB db = DBService.getInstance();
-		if (!SearchServlet.isBot(req)) {
-			db.addSearchHit(phoneId);
+		MetaSearchService.getInstance().scheduleMetaSearch(number);
+		PhoneInfo result = db.getPhoneApiInfo(phoneId);
+		
+		// Do not hand out any information for non-spam numbers, even if they have been
+		// (accidentally) recorded in the DB.
+		if (result.getVotes() == 0 && result.getVotesWildcard() == 0) {
+			result.setArchived(false);
+			result.setDateAdded(0);
+			result.setLastUpdate(0);
+			result.setRating(Rating.A_LEGITIMATE);
+			return result;
 		}
 		
-		MetaSearchService.getInstance().scheduleMetaSearch(phoneId);
+		// Only record search hits, for numbers that are suspicious to SPAM.
+		if (!SearchServlet.isBot(req)) {
+			db.addSearchHit(number);
+		}
 		
-		PhoneInfo info = db.getPhoneApiInfo(phoneId);
-		
-		ServletUtil.sendResult(req, resp, info);
+		return result;
 	}
 
 }

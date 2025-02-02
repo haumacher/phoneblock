@@ -19,6 +19,7 @@ import org.w3c.dom.Element;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.answerbot.AnswerBot;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -132,10 +133,11 @@ public class AddressResource extends Resource {
 				for (Telephone phone : card.getTelephoneNumbers()) {
 					String phoneText = phone.getText();
 					
-					String phoneId = NumberAnalyzer.toId(phoneText);
-					if (phoneId == null) {
+					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+					if (number == null) {
 						continue;
 					}
+					String phoneId = NumberAnalyzer.getPhoneId(number);
 					
 					Boolean state = blockList.getPersonalizationState(currentUser, phoneId);
 					if (state == null || !state.booleanValue()) {
@@ -145,7 +147,7 @@ public class AddressResource extends Resource {
 						blockList.removePersonalization(currentUser, phoneId);
 						blockList.addPersonalization(currentUser, phoneId);
 						
-						db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
+						db.processVotesAndPublish(spamreport, number, 2, System.currentTimeMillis());
 					}
 				}
 				

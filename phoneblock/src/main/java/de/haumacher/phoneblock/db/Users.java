@@ -40,12 +40,12 @@ public interface Users {
 	
 	@Insert("""
 			insert into TOKENS (
-				USERID, CREATED, PWHASH, 
+				USERID, LABEL, CREATED, PWHASH, 
 				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
 				LASTACCESS, USERAGENT
 			)
 			values (
-				#{userId}, #{created}, #{pwHash}, 
+				#{userId}, #{label}, #{created}, #{pwHash}, 
 				#{implicit}, #{accessQuery}, #{accessDownload}, #{accessCarddav},#{accessRate},#{accessLogin},
 				#{lastAccess}, #{userAgent}
 			)
@@ -78,6 +78,15 @@ public interface Users {
 			""")
 	void invalidateAuthToken(long id);
 	
+	/**
+	 * Delete an auth token for a given user. Note: The user ID is required to prevent a user from deleting tokens of other users. This call is done from the settings servlet.
+	 */
+	@Delete("""
+			delete from TOKENS
+			where USERID=#{userId} and ID=#{id}
+			""")
+	void deleteAuthToken(long userId, long id);
+	
 	@Delete("""
 			delete from TOKENS
 			where USERID=#{userId}
@@ -109,13 +118,24 @@ public interface Users {
 	@Select("""
 			select
 				ID, 
-				USERID, CREATED, PWHASH, 
+				USERID, LABEL, CREATED, PWHASH, 
 				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
 				LASTACCESS, USERAGENT
 			from TOKENS
 			where ID=#{id}
 			""")
 	DBAuthToken getAuthToken(long id);
+	
+	@Select("""
+			select
+				ID, 
+				USERID, LABEL, CREATED, PWHASH, 
+				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN, 
+				LASTACCESS, USERAGENT
+			from TOKENS
+			where USERID=#{userId} and not IMPLICIT
+			""")
+	List<DBAuthToken> getExplicitTokens(long userId);
 
 	@Select("select count(1) from USERS")
 	int getUserCount();

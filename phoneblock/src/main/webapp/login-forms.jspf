@@ -37,6 +37,12 @@
 				  </div>
 				</div>
 <% } %>
+
+				<div class="field">
+				  <div class="control">
+				  	Mit Deiner Anmeldung akzeptierst Du die <a href="<%=request.getContextPath()%>/usage.jsp">Nutzungsbedingungen</a>.
+				  </div>
+				</div>
 				
 				<div class="field is-grouped">
 				  <p class="control">
@@ -111,6 +117,12 @@
 				  </div>
 				</div>
 <% } %>
+
+				<div class="field">
+				  <div class="control">
+				  	Mit Deiner Anmeldung akzeptierst Du die <a href="<%=request.getContextPath()%>/usage.jsp">Nutzungsbedingungen</a>.
+				  </div>
+				</div>
 
 				<div class="field is-grouped">
 				  <p class="control">
@@ -190,6 +202,12 @@
 				  </div>
 				</div>
 <% } %>
+
+				<div class="field">
+				  <div class="control">
+				  	Mit Deiner Anmeldung akzeptierst Du die <a href="<%=request.getContextPath()%>/usage.jsp">Nutzungsbedingungen</a>.
+				  </div>
+				</div>
 				
 				<div class="field is-grouped">
 				  <p class="control">

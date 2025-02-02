@@ -27,7 +27,9 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.db.DB;
@@ -148,7 +150,7 @@ public class ChatGPTService implements ServletContextListener {
 	 * @throws Throwable If communication or anything else fails.
 	 */
 	private void doProcess() throws Throwable {
-		String phone = nextSummaryRequest();
+		PhoneNumer phone = nextSummaryRequest();
 		if (phone == null) {
 			LOG.info("No summary requests.");
 			exponentialBackoff();
@@ -162,7 +164,9 @@ public class ChatGPTService implements ServletContextListener {
 	/** 
 	 * Creates a new summary for the given number.
 	 */
-	public void createSummary(String phone) {
+	public void createSummary(PhoneNumer number) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		boolean isWhiteListed;
 		List<DBUserComment> comments;
 		
@@ -182,16 +186,17 @@ public class ChatGPTService implements ServletContextListener {
 		} else {
 			String summary = answers.get(0).getMessage().getContent();
 			
-			storeSummary(db, phone, summary);
+			storeSummary(db, number, summary);
 		}
 	}
 
-	private String nextSummaryRequest() {
+	private PhoneNumer nextSummaryRequest() {
 		DB db = _db.db();
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			return reports.topSummaryRequest();
+			String phone = reports.topSummaryRequest();
+			return NumberAnalyzer.analyze(phone);
 		}
 	}
 
@@ -249,7 +254,9 @@ public class ChatGPTService implements ServletContextListener {
 		return question;
 	}
 
-	private void storeSummary(DB db, String phone, String summary) {
+	private void storeSummary(DB db, PhoneNumer number, String summary) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
@@ -263,7 +270,7 @@ public class ChatGPTService implements ServletContextListener {
 	
 			LOG.info("Created summary for: " + phone);
 			
-			_indexer.publishUpdate(phone);
+			_indexer.publishUpdate(number);
 		}
 	}
 

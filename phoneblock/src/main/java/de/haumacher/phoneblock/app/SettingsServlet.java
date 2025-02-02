@@ -4,7 +4,9 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -15,8 +17,10 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBAuthToken;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
@@ -31,6 +35,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(urlPatterns = SettingsServlet.PATH)
 public class SettingsServlet extends HttpServlet {
 	
+	public static final String API_KEY_LABEL_PARAM = "label";
+	public static final String KEY_ID_PREFIX = "key-";
 	public static final String PATH = "/settings";
 
 	@Override
@@ -44,14 +50,17 @@ public class SettingsServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
+			
 			Long userIdOpt = users.getUserId(userName);
 			List<String> blacklist;
 			List<String> whitelist;
 			List<DBAnswerbotInfo> answerBots;
+			List<DBAuthToken> explicitTokens;
 			if (userIdOpt == null) {
 				blacklist = Collections.emptyList();
 				whitelist = Collections.emptyList();
 				answerBots = Collections.emptyList();
+				explicitTokens = Collections.emptyList();;
 			} else {
 				long userId = userIdOpt.longValue();
 				
@@ -60,11 +69,13 @@ public class SettingsServlet extends HttpServlet {
 				whitelist = blocklist.getWhiteList(userId);
 
 				answerBots = users.getAnswerBots(userId);
+				explicitTokens = users.getExplicitTokens(userId);
 			}
 			
 			req.setAttribute("blacklist", blacklist);
 			req.setAttribute("whitelist", whitelist);
 			req.setAttribute("answerBots", answerBots);
+			req.setAttribute("explicitTokens", explicitTokens);
 		}
 		
 		ServletUtil.display(req, resp, "/settings.jsp");
@@ -87,10 +98,65 @@ public class SettingsServlet extends HttpServlet {
 					updateLists(req, resp, userName);
 					return;
 					
+				case "deleteAPIKeys":
+					deleteAPIKeys(req, resp, userName);
+					return;
+					
+				case "createAPIKey":
+					createAPIKey(req, resp, userName);
+					return;
+					
 				default: 
-					resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+				forwardToSettings(req, resp);
 			}
 		}
+	}
+
+	private void createAPIKey(HttpServletRequest req, HttpServletResponse resp, String userName) throws ServletException, IOException {
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(userName);
+			if (userId != null) {
+				long now = System.currentTimeMillis();
+				AuthToken apiKey = DB.createAuthorizationTemplate(userName, now, null);
+				apiKey.setLastAccess(0);
+				apiKey.setAccessDownload(true).setAccessQuery(true).setAccessRate(true);
+				String label = req.getParameter(API_KEY_LABEL_PARAM);
+				if (label == null || label.isBlank()) {
+					label = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(now));
+				}
+				apiKey.setLabel(label);
+				db.createAuthToken(apiKey);
+				session.commit();
+				
+				req.setAttribute("apiKey", apiKey);
+				req.getRequestDispatcher("/show-api-key.jsp").forward(req, resp);
+			} else {
+				forwardToSettings(req, resp);
+			}
+		}
+	}
+
+	private void deleteAPIKeys(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(userName);
+			if (userId != null) {
+				for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+					String key = entry.getKey();
+					if (key.startsWith(KEY_ID_PREFIX)) {
+						String id = key.substring(KEY_ID_PREFIX.length());
+						
+						users.deleteAuthToken(userId.longValue(), Long.parseLong(id));
+					}
+				}
+				
+				session.commit();
+			}
+		}
+		forwardToSettings(req, resp);
 	}
 
 	private void updateLists(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
@@ -141,7 +207,7 @@ public class SettingsServlet extends HttpServlet {
 		
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
-		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+		forwardToSettings(req, resp);
 	}
 
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
@@ -191,6 +257,10 @@ public class SettingsServlet extends HttpServlet {
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
+		forwardToSettings(req, resp);
+	}
+
+	private void forwardToSettings(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 

@@ -19,6 +19,7 @@ import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
+import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -33,6 +34,7 @@ import de.haumacher.phoneblock.util.ServletUtil;
 	CreateABServlet.PATH,
 	ListABServlet.PATH,
 	BlocklistServlet.PATH,
+	SpamCheckServlet.PATH,
 	RateServlet.PATH,
 	CallReportServlet.URL_PATTERN,
 	SearchApiServlet.PATTERN,
@@ -59,6 +61,7 @@ public class BasicLoginFilter extends LoginFilter {
 		case CreateABServlet.PATH: 
 		case ListABServlet.PATH: 
 		case SearchApiServlet.PREFIX: 
+		case SpamCheckServlet.PATH: 
 			return authorization.isAccessQuery();
 		case CardDavServlet.DIR_NAME: 
 			return authorization.isAccessCarddav();
