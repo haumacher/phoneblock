@@ -41,7 +41,7 @@
 
 			<div class="field">
 			  <label class="label">API Key</label>
-			  <div class="control"><code id="apiKey"><%= JspUtil.quote(apiKey.getToken())%></code><a id="apiKey" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code id="apiKey"><%= JspUtil.quote(apiKey.getToken())%></code><a id="apiKey_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 			</div>
 		  </div>
 		</article>
