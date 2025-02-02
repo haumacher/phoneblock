@@ -7,14 +7,9 @@ import java.io.IOException;
 
 import org.apache.ibatis.session.SqlSession;
 
-import com.google.api.client.http.HttpResponse;
-
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
-import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
-import de.haumacher.phoneblock.app.api.model.SearchResult;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
@@ -39,6 +34,12 @@ public class SpamCheckServlet extends HttpServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
+			return;
+		}
+
 		String encodedHash = req.getParameter("sha1");
 		
 		int length = encodedHash.length();
