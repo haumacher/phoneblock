@@ -9,6 +9,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
@@ -60,7 +61,19 @@ public class NumServlet extends HttpServlet {
 		
 		MetaSearchService.getInstance().scheduleMetaSearch(number);
 		
-		return db.getPhoneApiInfo(phoneId);
+		PhoneInfo result = db.getPhoneApiInfo(phoneId);
+		
+		// Do not hand out any information for non-spam numbers, even if they have been
+		// (accidentally) recorded in the DB.
+		if (result.getVotes() == 0 && result.getVotesWildcard() == 0 && !result.isWhiteListed()) {
+			result.setArchived(false);
+			result.setDateAdded(0);
+			result.setLastUpdate(0);
+			result.setRating(Rating.A_LEGITIMATE);
+			return result;
+		}
+		
+		return result;
 	}
 
 }
