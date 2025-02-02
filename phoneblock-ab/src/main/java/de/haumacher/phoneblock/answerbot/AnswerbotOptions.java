@@ -44,9 +44,10 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	 */
 	String getTestPrefix();
 
-	String getPhoneblockUsername();
-
-	String getPhoneblockPassword();
+	/**
+	 * The API key for accessing the phoneblock API.
+	 */
+	String getPhoneBlockAPIKey();
 
 	boolean getSendRatings();
 }

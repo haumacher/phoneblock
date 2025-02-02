@@ -74,9 +74,5 @@ test-prefix=*
 # https://phoneblock.net/phoneblock/signup.jsp for this.
 send-rating=no
 
-# Your PhoneBlock username.
-phoneblock-username=
-
-# Your PhoneBlock password
-phoneblock-password=
-
+# Your API key for accessing the PhoneBlock API.
+phoneblock-api-key=
