@@ -120,6 +120,7 @@ public class SettingsServlet extends HttpServlet {
 			if (userId != null) {
 				long now = System.currentTimeMillis();
 				AuthToken apiKey = DB.createAuthorizationTemplate(userName, now, null);
+				apiKey.setLastAccess(0);
 				apiKey.setAccessDownload(true).setAccessQuery(true).setAccessRate(true);
 				String label = req.getParameter(API_KEY_LABEL_PARAM);
 				if (label == null || label.isBlank()) {
