@@ -107,7 +107,7 @@
 			sag bitte Bescheid, damit die Installationsanleitung angepasst werden kann.
 		</p>
 
-		<h2>Kann ich PhoneBlock auf einen Android Mobiltelefon nutzen?</h2>
+		<h2>Kann ich PhoneBlock auf einem Android Mobiltelefon nutzen?</h2>
 		<p>
 			Ja, hier hast Du sogar zwei Optionen: (a) Das PhoneBlock-Adressbuch abonieren, oder (b) SpamBlocker 
 			einrichten und dort die PhoneBlock-Datenbank einbinden.
@@ -125,7 +125,7 @@
 			Problemen damit direkt an den Entwickler.
 		</p>
 		
-		<h2>Kann ich PhoneBlock auf einen iPhone nutzen?</h2>
+		<h2>Kann ich PhoneBlock auf einem iPhone nutzen?</h2>
 		<p> 
 			Ja, mit dem iPhone geht das sogar ganz ohne Installation zusätzlicher Apps. Schau Dir hier die 
 			<a href="<%= request.getContextPath()%>/setup-iphone/">Installationsanleitung</a> an.
@@ -156,7 +156,7 @@
 		<h2 id="disposable-mail">Warum kann ich mich nicht mit einer Wegwerf-E-Mail-Adresse registrieren?</h2>
 		<p>
 			Wenn Du PhoneBlock nutzt, dann verbrauchst Du kontinuierlich Rechenkapazität und Internetbandbreite, da 
-			die Blockliste täglich aktualisiert wird. Der Betrieb von PhoneBlock verbraucht aktuell ca. 100GB 
+			die Blockliste täglich aktualisiert wird. Der Betrieb von PhoneBlock verbraucht aktuell ca. 500GB 
 			Datenvolumen pro Monat. Aktuell ist das für Dich kostenlos. Falls beim Betrieb aber irgendetwas nicht 
 			"rund" läuft, erwarte ich, dass Du ansprechbar bist, um etwaige Probleme abzustellen. Wenn Du Dich
 			mit einer Wegwerf-Adresse registrierst, ist das nicht möglich. Eine Registrierung mit einer Wegwerf-Adressse
