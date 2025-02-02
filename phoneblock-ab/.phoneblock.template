@@ -40,7 +40,7 @@ sip-user=<fill-in-here>
 # VOIP telephone created in the Fritz!Box).
 sip-passwd=<fill-in-here>
 
-# Your API key for accessing the PhoneBlock API.
+# Your API key for accessing the PhoneBlock API. Create one at https://phoneblock.net/phoneblock/settings
 phoneblock-api-key=
 
 # The format of the conversation media stord in the directories in ./conversation/*
