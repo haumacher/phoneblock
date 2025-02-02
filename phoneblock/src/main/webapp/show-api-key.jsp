@@ -1,5 +1,3 @@
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
-<%@page import="de.haumacher.phoneblock.util.ServletUtil"%>
 <%
 	AuthToken apiKey = (AuthToken) request.getAttribute("apiKey");
 	if (apiKey == null) {
@@ -7,9 +5,12 @@
 		return;
 	}
 %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="true"%>
+<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
+<%@page import="de.haumacher.phoneblock.util.ServletUtil"%>
 <%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
-<!DOCTYPE html>
 <%@page import="de.haumacher.phoneblock.db.settings.AuthToken"%>
+<!DOCTYPE html>
 <html>
 <%
 	request.setAttribute("title", "Dein neuer API key - PhoneBlock");
@@ -29,7 +30,7 @@
 
 		<article class="message is-info">
 		  <div class="message-header">
-		    <p>Dein neuer API wurde erzeugt. Bitte kopiere den Wert, denn er kann nicht mehr angezeigt werden, sobald Du diese Seite verlässt.</p>
+		    <p>Dein neuer API wurde erzeugt. Bitte kopiere den Wert, denn er kann nicht mehr angezeigt werden, sobald Du diese Seite verlÃ¤sst.</p>
 		  </div>
 
 		  <div class="message-body">
