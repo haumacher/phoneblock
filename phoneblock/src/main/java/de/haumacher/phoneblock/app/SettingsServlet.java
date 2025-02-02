@@ -107,7 +107,7 @@ public class SettingsServlet extends HttpServlet {
 					return;
 					
 				default: 
-					resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+				forwardToSettings(req, resp);
 			}
 		}
 	}
@@ -133,11 +133,13 @@ public class SettingsServlet extends HttpServlet {
 				
 				req.setAttribute("apiKey", apiKey);
 				req.getRequestDispatcher("/show-api-key.jsp").forward(req, resp);
+			} else {
+				forwardToSettings(req, resp);
 			}
 		}
 	}
 
-	private void deleteAPIKeys(HttpServletRequest req, HttpServletResponse resp, String userName) {
+	private void deleteAPIKeys(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
@@ -155,6 +157,7 @@ public class SettingsServlet extends HttpServlet {
 				session.commit();
 			}
 		}
+		forwardToSettings(req, resp);
 	}
 
 	private void updateLists(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
@@ -205,7 +208,7 @@ public class SettingsServlet extends HttpServlet {
 		
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
-		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+		forwardToSettings(req, resp);
 	}
 
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
@@ -255,6 +258,10 @@ public class SettingsServlet extends HttpServlet {
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
+		forwardToSettings(req, resp);
+	}
+
+	private void forwardToSettings(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 	}
 
