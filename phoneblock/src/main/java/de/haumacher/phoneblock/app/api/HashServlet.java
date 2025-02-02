@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.shared.PhoneHash;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -42,20 +43,9 @@ public class HashServlet extends HttpServlet {
 		}
 		
 		byte[] hash = NumberAnalyzer.getPhoneHash(phone);
+		String encodedForm = PhoneHash.encodeHash(hash);
 		
-		StringBuilder result = new StringBuilder();
-		for (int n = 0; n < hash.length; n++) {
-			char msb = hex((hash[n] >> 4) & 0x0F);
-			char lsb = hex(hash[n] & 0x0F);
-			result.append(msb);
-			result.append(lsb);
-		}
-
-		ServletUtil.sendText(resp, result.toString());
-	}
-
-	private char hex(int digit) {
-		return "0123456789ABCDEF".charAt(digit);
+		ServletUtil.sendText(resp, encodedForm);
 	}
 
 }

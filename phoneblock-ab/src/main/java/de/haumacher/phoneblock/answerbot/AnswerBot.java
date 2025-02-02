@@ -73,6 +73,7 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.RateRequest;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.shared.PhoneHash;
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -300,7 +301,17 @@ public class AnswerBot extends MultipleUAS {
 	 */
 	protected PhoneInfo fetchPhoneInfo(CustomerOptions customerOptions, String from) {
 		try {
-			URL url = new URL("https://phoneblock.net/phoneblock/api/num/" + from + "?format=json");
+			String internationalForm = PhoneHash.toInternationalForm(from);
+			if (internationalForm == null) {
+				// Not a valid number.
+				return null;
+			}
+			
+			byte[] hashData = PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
+			String encodeHash = PhoneHash.encodeHash(hashData);
+			
+			URL url = new URL("https://phoneblock.net/phoneblock/api/check?sha1=" + encodeHash + "&format=json");
+			
 			URLConnection connection = url.openConnection();
 			connection.addRequestProperty("accept", "application/json");
 			connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);

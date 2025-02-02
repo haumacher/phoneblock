@@ -71,6 +71,7 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import de.haumacher.phoneblock.shared.PhoneHash;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 
@@ -400,7 +401,7 @@ public class DB {
 				runScript(connection, "db-migration-04.sql");
 				
 				try {
-					MessageDigest digest = NumberAnalyzer.createPhoneDigest();
+					MessageDigest digest = PhoneHash.createPhoneDigest();
 					
 					LOG.info("Computing phone hashes.");
 					try (PreparedStatement stmt = connection.prepareStatement("""
