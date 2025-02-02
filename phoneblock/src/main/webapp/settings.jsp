@@ -185,12 +185,13 @@ List<? extends AuthToken> explicitTokens = (List<? extends AuthToken>) request.g
 %>
 
 	<div class="content">
-	<h2 id="myAPIKeys">Deine API keys</h2>
+	<h2 id="myAPIKeys">Deine API-Keys</h2>
 	<p>
-		Für den Zugriff auf die <a href="<%=request.getContextPath()%>/api/">PhoneBlock-API</a> benötigst Du einen 
-		API-Key. Wenn du andere Anwendungen verwendest, um Telefonnummern mit PhoneBlock zu überprüfen, dann benötigst 
-		Du so einen API-Key. Für das Blocklist-Telefonbuch in Deiner Fritz!Box benötigst Du keinen API-Key, sondern
-		Du verwendest einfach Deinen PhoneBlock-Nutzernamen und Dein PhoneBlock-Passwort.    
+		Wenn du andere Anwendungen verwendest, um Telefonnummern mit PhoneBlock zu überprüfen 
+		(z.B. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> 
+		oder <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), 
+		dann benötigst Du einen API-Key. Für das Blocklist-Telefonbuch in Deiner Fritz!Box verwendest Du einfach Deinen 
+		PhoneBlock-Nutzernamen und PhoneBlock-Passwort, hierfür benötigst Du also keinen API-Key.
 	</p>
 	
 <% if (explicitTokens.isEmpty()) { %>
