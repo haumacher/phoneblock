@@ -31,7 +31,9 @@
 		</p>
 
 		<p>
-			<strong><a href="<%= request.getContextPath() %>/datenschutz.jsp">Datenschutz – Kein Tracking, keine Werbung, keine Kekse</a></strong>
+			<strong><a href="<%= request.getContextPath() %>/datenschutz.jsp">Datenschutz – Kein Tracking, keine Werbung, keine Kekse</a></strong><br/>
+			<strong><a href="<%= request.getContextPath() %>/usage.jsp">Nutzungsbedingungen</a></strong><br/>
+			<strong><a href="<%= request.getContextPath() %>/impressum.jsp">Impressum</a></strong>
 		</p>
 	</div>
 </footer>
