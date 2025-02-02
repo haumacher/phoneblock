@@ -32,12 +32,12 @@
 		    <p>Dein neuer API wurde erzeugt. Bitte kopiere den Wert, denn er kann nicht mehr angezeigt werden, sobald Du diese Seite verlässt.</p>
 		  </div>
 
+		  <div class="message-body">
 			<div class="field">
 			  <label class="label">Bemerkung</label>
 			  <div class="control"><%= JspUtil.quote(apiKey.getLabel()) %></div>
 			</div>
-		  
-		  <div class="message-body">
+
 			<div class="field">
 			  <label class="label">API Key</label>
 			  <div class="control"><code id="apiKey"><%= JspUtil.quote(apiKey.getToken())%></code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
