@@ -122,7 +122,7 @@ public class SettingsServlet extends HttpServlet {
 				AuthToken apiKey = DB.createAuthorizationTemplate(userName, now, null);
 				apiKey.setAccessDownload(true).setAccessQuery(true).setAccessRate(true);
 				String label = req.getParameter(API_KEY_LABEL_PARAM);
-				if (label == null) {
+				if (label == null || label.isBlank()) {
 					label = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(now)) + 
 						" - " + req.getHeader("User-Agent") + 
 						" - " + req.getRemoteAddr();
