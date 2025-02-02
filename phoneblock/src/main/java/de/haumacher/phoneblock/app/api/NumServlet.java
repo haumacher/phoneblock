@@ -41,16 +41,16 @@ public class NumServlet extends HttpServlet {
 			return;
 		}
 		
-		process(req, resp, phone);
-	}
-
-	public static void process(HttpServletRequest req, HttpServletResponse resp, String phone) throws IOException {
 		PhoneNumer number = NumberAnalyzer.analyze(phone);
 		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
 		}
-		
+
+		ServletUtil.sendResult(req, resp, lookup(req, number));
+	}
+
+	static PhoneInfo lookup(HttpServletRequest req, PhoneNumer number) {
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		DB db = DBService.getInstance();
@@ -60,9 +60,7 @@ public class NumServlet extends HttpServlet {
 		
 		MetaSearchService.getInstance().scheduleMetaSearch(number);
 		
-		PhoneInfo info = db.getPhoneApiInfo(phoneId);
-		
-		ServletUtil.sendResult(req, resp, info);
+		return db.getPhoneApiInfo(phoneId);
 	}
 
 }

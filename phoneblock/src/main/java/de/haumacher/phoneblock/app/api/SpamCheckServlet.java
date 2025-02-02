@@ -7,8 +7,10 @@ import java.io.IOException;
 
 import org.apache.ibatis.session.SqlSession;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
@@ -71,14 +73,27 @@ public class SpamCheckServlet extends HttpServlet {
 			phoneId = reports.resolvePhoneHash(hash);
 		}
 		
-		if (phoneId == null) {
-			// Not in the DB.
-			PhoneInfo info = PhoneInfo.create().setPhone("unknown").setRating(Rating.A_LEGITIMATE);
-			ServletUtil.sendResult(req, resp, info);
-			return;
+		PhoneInfo info;
+		
+		PhoneNumer number = phoneId == null ? null : NumberAnalyzer.analyze(phoneId);
+		if (number == null) {
+			info = createUnknownResult();
+		} else {
+			info = NumServlet.lookup(req, number);
+			
+			if (info.getVotes() == 0 && info.getVotesWildcard() == 0) {
+				// Provide no additional information for non-SPAM numbers that have an
+				// accidental match in the DB (because they were recorded by a non-hashed
+				// lookup).
+				info = createUnknownResult();
+			}
 		}
 		
-		NumServlet.process(req, resp, phoneId);
+		ServletUtil.sendResult(req, resp, info);
+	}
+
+	private PhoneInfo createUnknownResult() {
+		return PhoneInfo.create().setPhone("unknown").setRating(Rating.A_LEGITIMATE);
 	}
 
 	private int hex(char ch) {

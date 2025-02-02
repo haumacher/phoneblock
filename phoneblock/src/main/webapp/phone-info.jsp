@@ -235,7 +235,6 @@
 		und gibt eine Bewertung für ☎ <code><%= analysis.getZeroZero()%></code> ab:
 	</p>
 
-	<p>
 	<form action="<%=request.getContextPath()%>/rating" method="post" enctype="application/x-www-form-urlencoded" accept-charset="utf-8" spellcheck="true">
 		<input type="hidden" name="phone" value="<%= info.getPhone() %>"/>
 		
@@ -310,7 +309,6 @@
 			</button>
 		</div>
 	</form>
-	</p>
 <% } %>
 
 <div class="columns">

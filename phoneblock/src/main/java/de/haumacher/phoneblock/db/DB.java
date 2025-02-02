@@ -982,7 +982,14 @@ public class DB {
 
 	public NumberInfo getPhoneInfo(SpamReports reports, String phone) {
 		DBNumberInfo result = reports.getPhoneInfo(phone);
-		return result != null ? result : NumberInfo.create().setPhone(phone);
+		if (result != null) {
+			// Do not hand out any information for non-spam numbers, even if they have been
+			// (accidentally) recorded in the DB.
+			if (result.getVotes() > 0) {
+				return result;
+			}
+		}
+		return NumberInfo.create().setPhone(phone);
 	}
 
 	/** 
