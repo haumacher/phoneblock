@@ -208,6 +208,9 @@ List<? extends AuthToken> explicitTokens = (List<? extends AuthToken>) request.g
 				Name
 			</th>
 			<th>
+				Erzeugt
+			</th>
+			<th>
 				Letzte Verwendung
 			</th>
 			<th>
@@ -224,6 +227,9 @@ List<? extends AuthToken> explicitTokens = (List<? extends AuthToken>) request.g
 			</td>
 			<td>
 				<%= JspUtil.quote(authToken.getLabel()) %>
+			</td>
+			<td>
+				<%= JspUtil.quote(dateFormat.format(new Date(authToken.getCreated()))) %>
 			</td>
 			<td>
 <%
