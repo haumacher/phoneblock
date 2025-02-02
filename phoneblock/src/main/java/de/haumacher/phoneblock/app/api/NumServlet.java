@@ -55,22 +55,22 @@ public class NumServlet extends HttpServlet {
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		DB db = DBService.getInstance();
-		if (!SearchServlet.isBot(req)) {
-			db.addSearchHit(number);
-		}
-		
 		MetaSearchService.getInstance().scheduleMetaSearch(number);
-		
 		PhoneInfo result = db.getPhoneApiInfo(phoneId);
 		
 		// Do not hand out any information for non-spam numbers, even if they have been
 		// (accidentally) recorded in the DB.
-		if (result.getVotes() == 0 && result.getVotesWildcard() == 0 && !result.isWhiteListed()) {
+		if (result.getVotes() == 0 && result.getVotesWildcard() == 0) {
 			result.setArchived(false);
 			result.setDateAdded(0);
 			result.setLastUpdate(0);
 			result.setRating(Rating.A_LEGITIMATE);
 			return result;
+		}
+		
+		// Only record search hits, for numbers that are suspicious to SPAM.
+		if (!SearchServlet.isBot(req)) {
+			db.addSearchHit(number);
 		}
 		
 		return result;
