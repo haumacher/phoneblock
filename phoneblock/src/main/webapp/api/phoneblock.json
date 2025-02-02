@@ -58,7 +58,7 @@
 				"security": [
 					{
 						"PhoneBlockUser": [],
-						"PhoneBlockToken": []
+						"APIKey": []
 					}
 				]
 			},
@@ -87,7 +87,7 @@
 		},
 		"/check": {
 			"get": {
-				"summary": "Checks a phone number hash against the SPAM database. This API provides better privacy that the direct lookup with the phone number.",
+				"summary": "Checks a phone number hash against the SPAM database. This API provides better privacy than the direct lookup with the phone number.",
 				"responses": {
 					"200": {
 						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database.",
@@ -128,7 +128,7 @@
 				"security": [
 					{
 						"PhoneBlockUser": [],
-						"PhoneBlockToken": []
+						"APIKey": []
 					}
 				]
 			},
@@ -199,7 +199,7 @@
 				"security": [
 					{
 						"PhoneBlockUser": [],
-						"PhoneBlockToken": []
+						"APIKey": []
 					}
 				]
 			},
@@ -286,7 +286,7 @@
 				"security": [
 					{
 						"PhoneBlockUser": [],
-						"PhoneBlockToken": []
+						"APIKey": []
 					}
 				]
 			},
@@ -537,7 +537,7 @@
 				"security": [
 					{
 						"PhoneBlockUser": [],
-						"PhoneBlockToken": []
+						"APIKey": []
 					}
 				]
 			}
@@ -575,12 +575,12 @@
 	"components": {
 		"securitySchemes": {
 			"PhoneBlockUser": {
-				"description": "A PhoneBlock user name and its password.",
+				"description": "A PhoneBlock user name and its password. The method of authorization is deprecated. Better use an API key.",
 				"type": "http",
 				"scheme": "Basic"
 			},
-			"PhoneBlockToken": {
-				"description": "A PhoneBlock authorization token created for API access.",
+			"APIKey": {
+				"description": "A PhoneBlock API key created for API access. You can create one from the settings page.",
 				"type": "http",
 				"scheme": "Bearer"
 			}
