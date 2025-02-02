@@ -24,6 +24,9 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getUserName() */
 	public static final String USER_NAME__PROP = "userName";
 
+	/** @see #getLabel() */
+	public static final String LABEL__PROP = "label";
+
 	/** @see #getCreated() */
 	public static final String CREATED__PROP = "created";
 
@@ -66,44 +69,49 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Identifier for the property {@link #getUserName()} in binary format. */
 	static final int USER_NAME__ID = 3;
 
+	/** Identifier for the property {@link #getLabel()} in binary format. */
+	static final int LABEL__ID = 4;
+
 	/** Identifier for the property {@link #getCreated()} in binary format. */
-	static final int CREATED__ID = 4;
+	static final int CREATED__ID = 5;
 
 	/** Identifier for the property {@link #getPwHash()} in binary format. */
-	static final int PW_HASH__ID = 5;
+	static final int PW_HASH__ID = 6;
 
 	/** Identifier for the property {@link #isImplicit()} in binary format. */
-	static final int IMPLICIT__ID = 6;
+	static final int IMPLICIT__ID = 7;
 
 	/** Identifier for the property {@link #isAccessQuery()} in binary format. */
-	static final int ACCESS_QUERY__ID = 7;
+	static final int ACCESS_QUERY__ID = 8;
 
 	/** Identifier for the property {@link #isAccessDownload()} in binary format. */
-	static final int ACCESS_DOWNLOAD__ID = 8;
+	static final int ACCESS_DOWNLOAD__ID = 9;
 
 	/** Identifier for the property {@link #isAccessCarddav()} in binary format. */
-	static final int ACCESS_CARDDAV__ID = 9;
+	static final int ACCESS_CARDDAV__ID = 10;
 
 	/** Identifier for the property {@link #isAccessRate()} in binary format. */
-	static final int ACCESS_RATE__ID = 10;
+	static final int ACCESS_RATE__ID = 11;
 
 	/** Identifier for the property {@link #isAccessLogin()} in binary format. */
-	static final int ACCESS_LOGIN__ID = 11;
+	static final int ACCESS_LOGIN__ID = 12;
 
 	/** Identifier for the property {@link #getLastAccess()} in binary format. */
-	static final int LAST_ACCESS__ID = 12;
+	static final int LAST_ACCESS__ID = 13;
 
 	/** Identifier for the property {@link #getUserAgent()} in binary format. */
-	static final int USER_AGENT__ID = 13;
+	static final int USER_AGENT__ID = 14;
 
 	/** Identifier for the property {@link #getToken()} in binary format. */
-	static final int TOKEN__ID = 14;
+	static final int TOKEN__ID = 15;
 
 	private long _id = 0L;
 
 	private long _userId = 0L;
 
 	private String _userName = "";
+
+	private String _label = "";
 
 	private long _created = 0L;
 
@@ -197,6 +205,27 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetUserName(String value) {
 		_listener.beforeSet(this, USER_NAME__PROP, value);
 		_userName = value;
+	}
+
+	/**
+	 * A user-defined label for this token (for explicitly created tokens only).
+	 */
+	public final String getLabel() {
+		return _label;
+	}
+
+	/**
+	 * @see #getLabel()
+	 */
+	public de.haumacher.phoneblock.db.settings.AuthToken setLabel(String value) {
+		internalSetLabel(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLabel()} without chain call utility. */
+	protected final void internalSetLabel(String value) {
+		_listener.beforeSet(this, LABEL__PROP, value);
+		_label = value;
 	}
 
 	/**
@@ -462,6 +491,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			ID__PROP, 
 			USER_ID__PROP, 
 			USER_NAME__PROP, 
+			LABEL__PROP, 
 			CREATED__PROP, 
 			PW_HASH__PROP, 
 			IMPLICIT__PROP, 
@@ -485,6 +515,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ID__PROP: return getId();
 			case USER_ID__PROP: return getUserId();
 			case USER_NAME__PROP: return getUserName();
+			case LABEL__PROP: return getLabel();
 			case CREATED__PROP: return getCreated();
 			case PW_HASH__PROP: return getPwHash();
 			case IMPLICIT__PROP: return isImplicit();
@@ -506,6 +537,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ID__PROP: internalSetId((long) value); break;
 			case USER_ID__PROP: internalSetUserId((long) value); break;
 			case USER_NAME__PROP: internalSetUserName((String) value); break;
+			case LABEL__PROP: internalSetLabel((String) value); break;
 			case CREATED__PROP: internalSetCreated((long) value); break;
 			case PW_HASH__PROP: internalSetPwHash((byte[]) value); break;
 			case IMPLICIT__PROP: internalSetImplicit((boolean) value); break;
@@ -541,6 +573,8 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(getUserId());
 		out.name(USER_NAME__PROP);
 		out.value(getUserName());
+		out.name(LABEL__PROP);
+		out.value(getLabel());
 		out.name(CREATED__PROP);
 		out.value(getCreated());
 		out.name(PW_HASH__PROP);
@@ -571,6 +605,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ID__PROP: setId(in.nextLong()); break;
 			case USER_ID__PROP: setUserId(in.nextLong()); break;
 			case USER_NAME__PROP: setUserName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CREATED__PROP: setCreated(in.nextLong()); break;
 			case PW_HASH__PROP: setPwHash(de.haumacher.msgbuf.json.JsonUtil.nextBinaryOptional(in)); break;
 			case IMPLICIT__PROP: setImplicit(in.nextBoolean()); break;
@@ -607,6 +642,8 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(getUserId());
 		out.name(USER_NAME__ID);
 		out.value(getUserName());
+		out.name(LABEL__ID);
+		out.value(getLabel());
 		out.name(CREATED__ID);
 		out.value(getCreated());
 		out.name(PW_HASH__ID);
@@ -660,6 +697,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ID__ID: setId(in.nextLong()); break;
 			case USER_ID__ID: setUserId(in.nextLong()); break;
 			case USER_NAME__ID: setUserName(in.nextString()); break;
+			case LABEL__ID: setLabel(in.nextString()); break;
 			case CREATED__ID: setCreated(in.nextLong()); break;
 			case PW_HASH__ID: setPwHash(in.nextBinary()); break;
 			case IMPLICIT__ID: setImplicit(in.nextBoolean()); break;

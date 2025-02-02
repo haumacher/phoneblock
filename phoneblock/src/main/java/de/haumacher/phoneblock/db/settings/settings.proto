@@ -41,6 +41,9 @@ message AuthToken {
 	/** The login name of the user that owns this token. */
 	string userName;
 	
+	/** A user-defined label for this token (for explicitly created tokens only). */
+	string label;
+	
 	/** Time when this token was created */
 	long created;
 	
