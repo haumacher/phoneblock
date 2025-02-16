@@ -108,13 +108,22 @@ public class ImapService implements ServletContextListener {
 		    		}
 		        	
 		        	// Keep watching for new messages.
-		            observer.watch(_inbox); 
+		    		startWatcher(observer);
 		        } catch (MessagingException mex) {
 		            // handle exception related to the Folder
 		        }
 		    }
 		});
-		observer.watch(_inbox);
+
+		startWatcher(observer);
+	}
+
+	private void startWatcher(IdleManager observer) {
+		try {
+			observer.watch(_inbox);
+		} catch (MessagingException ex) {
+			LOG.error("Failed to start inbox watcher.", ex);
+		}
 	}
 	
 	@Override
