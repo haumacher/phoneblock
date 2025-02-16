@@ -24,7 +24,7 @@ public interface Users {
 	String getProperty(String key);
 
 	@Insert("insert into PROPERTIES (NAME, VAL) values (#{key}, #{value})")
-	String addProperty(String key, String value);
+	void addProperty(String key, String value);
 	
 	@Update("update PROPERTIES set VAL=#{value} where NAME=#{key}")
 	int updateProperty(String key, String value);

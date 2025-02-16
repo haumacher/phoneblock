@@ -135,13 +135,7 @@ public class ImapService implements ServletContextListener {
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
-			String value = users.getProperty("imap.lastSearch");
-			long lastSearch;
-			if (value == null) {
-				lastSearch = 0;
-			} else {
-				lastSearch = Long.parseLong(value);
-			}
+			long lastSearch = DB.getLastSearch(users);
 			
 			SearchTerm query = messagePattern();
 			if (lastSearch > 0) {
@@ -164,13 +158,6 @@ public class ImapService implements ServletContextListener {
 			new FromTerm(new InternetAddress("service@paypal.de")),
 			new SubjectTerm("Du hast eine Zahlung erhalten")
 		);
-	}
-
-	private void setLastSearch(Users users, long lastSearch) {
-		int ok = users.updateProperty("imap.lastSearch", Long.toString(lastSearch));
-		if (ok == 0) {
-			users.addProperty("imap.lastSearch", Long.toString(lastSearch));
-		}
 	}
 
 	private void processMessages(List<Message> newMessages) throws AddressException {
@@ -201,7 +188,7 @@ public class ImapService implements ServletContextListener {
         }
 		
 		if (latest > 0) {
-			setLastSearch(users, latest);
+			DB.setLastSearch(users, latest);
 		}
 	}
 

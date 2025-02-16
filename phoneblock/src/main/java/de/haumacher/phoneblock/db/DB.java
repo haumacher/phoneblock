@@ -1973,6 +1973,24 @@ public class DB {
 		}
 	}
 
+	public static long getLastSearch(Users users) {
+		String value = users.getProperty("imap.lastSearch");
+		long lastSearch;
+		if (value == null) {
+			lastSearch = 0;
+		} else {
+			lastSearch = Long.parseLong(value);
+		}
+		return lastSearch;
+	}
+
+	public static void setLastSearch(Users users, long lastSearch) {
+		int ok = users.updateProperty("imap.lastSearch", Long.toString(lastSearch));
+		if (ok == 0) {
+			users.addProperty("imap.lastSearch", Long.toString(lastSearch));
+		}
+	}
+
 	public static void processContribution(Users users, MessageDetails messageDetails) {
 		DBContribution existing = users.getContribution(messageDetails.tx);
 		if (existing == null) {

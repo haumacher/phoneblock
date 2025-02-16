@@ -515,6 +515,21 @@ class TestDB {
 			assertEquals(0, users.getSettingsRaw("eeeeeeee-ffff").getCredit());
 		}
 	}
+	
+	@Test
+	public void testLastSearch() {
+		try (SqlSession tx = _db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+
+			long search0 = DB.getLastSearch(users);
+			assertEquals(0, search0);
+			
+			DB.setLastSearch(users, 1000);
+
+			long search1 = DB.getLastSearch(users);
+			assertEquals(1000, search1);
+		}
+	}
 
 	private DataSource createTestDataSource() {
 		JdbcDataSource result = new JdbcDataSource();
