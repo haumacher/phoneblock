@@ -69,17 +69,25 @@ public class ImapService implements ServletContextListener {
 				LOG.error("Failed to initialize IMAP service.", ex);
 			}
 			
-			_scheduler.scheduler().scheduleAtFixedRate(this::checkSession, 10, 60*60, TimeUnit.SECONDS);
+			if (_session != null) {
+				_scheduler.scheduler().scheduleAtFixedRate(this::checkSession, 10, 60*60, TimeUnit.SECONDS);
+			}
 		} catch (NamingException ex) {
 			LOG.error("Failed to configure IMAP service.", ex);
 		}
 	}
 
 	private void openSession() throws NoSuchProviderException, MessagingException, IOException {
-		_session = Session.getInstance(_properties);
-		_store = _session.getStore("imaps");
 		String user = _properties.getProperty("mail.imap.user");
 		String password = _properties.getProperty("mail.imap.password");
+		
+		if (user == null || password == null) {
+			LOG.warn("Do not start IMAP service, no credentials provided.");
+			return;
+		}
+		
+		_session = Session.getInstance(_properties);
+		_store = _session.getStore("imaps");
 		_store.connect(user, password);
 		
 		IdleManager observer = new IdleManager(_session, _scheduler);
