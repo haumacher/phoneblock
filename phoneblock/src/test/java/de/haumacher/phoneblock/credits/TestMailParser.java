@@ -34,7 +34,7 @@ public class TestMailParser {
 	}
 	
 	@Test
-	public void testParseWithoutMessage() throws FileNotFoundException, IOException, MessagingException, ParseException {
+	public void testParseWithoutUser() throws FileNotFoundException, IOException, MessagingException, ParseException {
 		MessageDetails details = new MailParser().parse(load("mail2.txt"));
 		
 		assertEquals("AAAAAAAAAAAAAAAA", details.sender);
@@ -45,6 +45,18 @@ public class TestMailParser {
 		assertEquals(null, details.uid);
 	}
 
+	@Test
+	public void testParseWithoutMessage() throws FileNotFoundException, IOException, MessagingException, ParseException {
+		MessageDetails details = new MailParser().parse(load("mail3.txt"));
+		
+		assertEquals("CCCCCCCCCCCC", details.sender);
+		assertEquals(new GregorianCalendar(2025, 0, 22).getTime(), details.date);
+		assertEquals(100, details.amount);
+		assertEquals("", details.msg);
+		assertEquals("77777777777777777", details.tx);
+		assertEquals(null, details.uid);
+	}
+	
 	private Message load(String resource) throws MessagingException, IOException {
 		Session session = Session.getInstance(new Properties());
 		
