@@ -13,7 +13,7 @@ public class DBUserSettings extends UserSettings {
 	/** 
 	 * Creates a {@link DBUserSettings}.
 	 */
-	public DBUserSettings(long id, String login, String displayName, String email, int minVotes, int maxLength, boolean wildcards, long lastAccess) {
+	public DBUserSettings(long id, String login, String displayName, String email, int minVotes, int maxLength, boolean wildcards, long lastAccess, int credit) {
 		setId(id);
 		setLogin(login);
 		setDisplayName(displayName);
@@ -22,6 +22,7 @@ public class DBUserSettings extends UserSettings {
 		setMaxLength(maxLength);
 		setWildcards(wildcards);
 		setLastAccess(lastAccess);
+		setCredit(credit);
 	}
 
 }

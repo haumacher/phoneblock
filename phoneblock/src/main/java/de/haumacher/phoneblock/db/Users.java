@@ -13,12 +13,22 @@ import org.apache.ibatis.annotations.Update;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.db.settings.Contribution;
 
 /**
  * Operations for user management.
  */
 public interface Users {
+	
+	@Select("select VAL from PROPERTIES p where p.NAME=#{key}")
+	String getProperty(String key);
 
+	@Insert("insert into PROPERTIES (NAME, VAL) values (#{key}, #{value})")
+	String addProperty(String key, String value);
+	
+	@Update("update PROPERTIES set VAL=#{value} where NAME=#{key}")
+	int updateProperty(String key, String value);
+	
 	@Insert("insert into USERS (LOGIN, DISPLAYNAME, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH) " + 
 			"values (#{login}, #{displayName}, #{pwhash}, #{registered}, 4, 2000)")
 	void addUser(String login, String displayName, byte[] pwhash, long registered);
@@ -38,6 +48,27 @@ public interface Users {
 	@Delete("delete from USERS where LOGIN=#{login}")
 	void deleteUser(String login);
 	
+	@Insert("""
+			insert into CONTRIBUTIONS (USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK)
+			values (#{userId}, #{sender}, #{tx}, #{amount}, #{message}, #{received}, #{acknowledged})
+			""")
+	@Options(useGeneratedKeys = true, keyColumn = "ID", keyProperty = "id")
+	void insertContribution(Contribution contribution);
+	
+	@Select("""
+			select ID, USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK
+			from CONTRIBUTIONS
+			where TX=#{tx}
+			""")
+	DBContribution getContribution(String tx);
+	
+	@Update("""
+			update USERS
+			set CREDIT=CREDIT+#{amount}
+			where ID=#{userId}
+			""")
+	void addContribution(long userId, int amount);
+
 	@Insert("""
 			insert into TOKENS (
 				USERID, LABEL, CREATED, PWHASH, 
@@ -152,6 +183,9 @@ public interface Users {
 	@Select("select ID from USERS where LOGIN=#{login}")
 	Long getUserId(String login);
 	
+	@Select("select ID from USERS where LOGIN like #{loginPattern}")
+	Long findUser(String loginPattern);
+	
 	/** 
 	 * Retrieves the user ID for the user with the given Google ID.
 	 */
@@ -164,16 +198,16 @@ public interface Users {
 	@Select("select LOGIN from USERS where EMAIL=#{email}")
 	String getEmailLogin(String email);
 
-	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where LOGIN=#{login}")
+	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where LOGIN=#{login}")
 	DBUserSettings getSettingsRaw(String login);
 	
 	@Select("select LOGIN from USERS where ID=#{userId}")
 	String getUserName(long userId);
 	
-	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS from USERS where ID=#{userId}")
+	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where ID=#{userId}")
 	DBUserSettings getSettingsById(long userId);
 	
-	@Select("select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS from USERS u "
+	@Select("select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u "
 			+ "where u.LASTACCESS < #{lastAccessBefore} "
 			+ "and (u.LASTACCESS > #{accessAfter} "
 			+ "or (u.REGISTERED > #{accessAfter} "
@@ -183,7 +217,7 @@ public interface Users {
 			+ "order by u.REGISTERED asc")
 	List<DBUserSettings> getNewInactiveUsers(long lastAccessBefore, long accessAfter, long registeredBefore);
 	
-	@Select("select u.ID, u.LOGIN u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS from USERS u "
+	@Select("select u.ID, u.LOGIN u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u "
 			+ "where not u.WELCOME "
 			+ "and u.LASTACCESS > #{accessAfter} "
 			+ "and u.REGISTERED > #{registeredAfter} "

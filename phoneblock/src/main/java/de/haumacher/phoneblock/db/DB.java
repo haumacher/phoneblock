@@ -65,7 +65,9 @@ import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
+import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.db.settings.Contribution;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
@@ -1970,5 +1972,30 @@ public class DB {
 			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
 	}
+
+	public static void processContribution(Users users, MessageDetails messageDetails) {
+		DBContribution existing = users.getContribution(messageDetails.tx);
+		if (existing == null) {
+			recordContribution(users, messageDetails);
+		}
+	}
+
+	private static void recordContribution(Users users, MessageDetails messageDetails) {
+		Long userId = messageDetails.uid == null ? null : users.findUser(messageDetails.uid + "%");
+		
+		users.insertContribution(Contribution.create()
+			.setUserId(userId)
+			.setSender(messageDetails.sender)
+			.setAmount(messageDetails.amount)
+			.setReceived(messageDetails.date.getTime())
+			.setMessage(messageDetails.msg)
+			.setTx(messageDetails.tx)
+		);
+		
+		if (userId != null) {
+			users.addContribution(userId.longValue(), messageDetails.amount);
+		}
+	}
+
 
 }

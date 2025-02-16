@@ -28,6 +28,9 @@ message UserSettings {
 	
 	/** Timestamp when the user requested the blocklist last time */
 	long lastAccess;
+	
+	/** The sum of donations done by this user in cent. */
+	int credit;
 }
 
 /** A user's authorization token. */
@@ -154,4 +157,31 @@ message AnswerBotSip extends AnswerBotSetting {
 	
     /** The number of calls accepted by this answer bot. */	
 	int callsAccepted;
+}
+
+message Contribution {
+	/** Internal ID of the contribution. */
+	long id;
+
+	/** ID of the user that donated (if known). */
+	@Nullable
+	long userId;
+
+	/** Name of the donator. */
+	string sender;
+
+	/** Transaction ID of the donation (external). */
+	string tx;
+
+	/** The amount in cent. */
+	int amount;
+
+	/** The optional message that was sent together with the donation. */
+	string `message`;
+
+	/** The date, when the donation was received. */
+	long received;
+
+	/** Whether an thank you e-mail was sent. */
+	boolean acknowledged;
 }

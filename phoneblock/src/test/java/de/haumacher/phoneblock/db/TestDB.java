@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Base64;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
+import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
@@ -480,6 +482,38 @@ class TestDB {
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
 		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), rating, comment, now);
+	}
+	
+	@Test
+	public void testContribution() {
+		_db.createUser("aaaaaaaa-bbbb", "Noname");
+		_db.createUser("cccccccc-dddd", "Egon Maier");
+		_db.createUser("eeeeeeee-ffff", "Erna Busch");
+		
+		try (SqlSession tx = _db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+			
+			DB.processContribution(users, new MessageDetails("Danke, PhoneBlock-aaaaaaaa-bbbb!", "00001", 150, new GregorianCalendar(2025, 1, 2).getTime(), "Top Secret", "aaaaaaaa-bbbb"));
+			DB.processContribution(users, new MessageDetails("Vielen Dank!", "00002", 100, new GregorianCalendar(2025, 1, 1).getTime(), "Egon Maier", "cccccccc-dddd"));
+			DB.processContribution(users, new MessageDetails("Danke (xx@y.com)", "00003", 200, new GregorianCalendar(2025, 1, 3).getTime(), "Thanks!", null));
+			
+			// Process twice.
+			DB.processContribution(users, new MessageDetails("Danke, PhoneBlock-aaaaaaaa-bbbb!", "00001", 150, new GregorianCalendar(2025, 1, 2).getTime(), "Top Secret", "aaaaaaaa-bbbb"));
+
+			tx.commit();
+			
+			DBContribution contribution1 = users.getContribution("00001");
+			DBContribution contribution2 = users.getContribution("00002");
+			DBContribution contribution3 = users.getContribution("00003");
+			
+			assertEquals(users.getUserId("aaaaaaaa-bbbb"), contribution1.getUserId());
+			assertEquals(users.getUserId("cccccccc-dddd"), contribution2.getUserId());
+			assertEquals(null, contribution3.getUserId());
+			
+			assertEquals(150, users.getSettingsRaw("aaaaaaaa-bbbb").getCredit());
+			assertEquals(100, users.getSettingsRaw("cccccccc-dddd").getCredit());
+			assertEquals(0, users.getSettingsRaw("eeeeeeee-ffff").getCredit());
+		}
 	}
 
 	private DataSource createTestDataSource() {

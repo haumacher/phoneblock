@@ -66,4 +66,5 @@ module de.haumacher.phoneblock {
 	requires org.tinylog.api;
 	requires jakartaee.pac4j;
 	requires utils.data.fetcher;
+	requires org.eclipse.angus.mail;
 }

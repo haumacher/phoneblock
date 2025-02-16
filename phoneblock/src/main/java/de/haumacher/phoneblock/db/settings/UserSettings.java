@@ -39,6 +39,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** @see #getLastAccess() */
 	public static final String LAST_ACCESS__PROP = "lastAccess";
 
+	/** @see #getCredit() */
+	public static final String CREDIT__PROP = "credit";
+
 	/** Identifier for the property {@link #getId()} in binary format. */
 	static final int ID__ID = 1;
 
@@ -63,6 +66,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** Identifier for the property {@link #getLastAccess()} in binary format. */
 	static final int LAST_ACCESS__ID = 8;
 
+	/** Identifier for the property {@link #getCredit()} in binary format. */
+	static final int CREDIT__ID = 9;
+
 	private long _id = 0L;
 
 	private String _login = "";
@@ -78,6 +84,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	private boolean _wildcards = false;
 
 	private long _lastAccess = 0L;
+
+	private int _credit = 0;
 
 	/**
 	 * Creates a {@link UserSettings} instance.
@@ -256,6 +264,27 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		_lastAccess = value;
 	}
 
+	/**
+	 * The sum of donations done by this user in cent.
+	 */
+	public final int getCredit() {
+		return _credit;
+	}
+
+	/**
+	 * @see #getCredit()
+	 */
+	public de.haumacher.phoneblock.db.settings.UserSettings setCredit(int value) {
+		internalSetCredit(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getCredit()} without chain call utility. */
+	protected final void internalSetCredit(int value) {
+		_listener.beforeSet(this, CREDIT__PROP, value);
+		_credit = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -292,7 +321,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			MIN_VOTES__PROP, 
 			MAX_LENGTH__PROP, 
 			WILDCARDS__PROP, 
-			LAST_ACCESS__PROP));
+			LAST_ACCESS__PROP, 
+			CREDIT__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -310,6 +340,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case MAX_LENGTH__PROP: return getMaxLength();
 			case WILDCARDS__PROP: return isWildcards();
 			case LAST_ACCESS__PROP: return getLastAccess();
+			case CREDIT__PROP: return getCredit();
 			default: return null;
 		}
 	}
@@ -325,6 +356,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
 			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
 			case LAST_ACCESS__PROP: internalSetLastAccess((long) value); break;
+			case CREDIT__PROP: internalSetCredit((int) value); break;
 		}
 	}
 
@@ -359,6 +391,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(isWildcards());
 		out.name(LAST_ACCESS__PROP);
 		out.value(getLastAccess());
+		out.name(CREDIT__PROP);
+		out.value(getCredit());
 	}
 
 	@Override
@@ -372,6 +406,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case MAX_LENGTH__PROP: setMaxLength(in.nextInt()); break;
 			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 			case LAST_ACCESS__PROP: setLastAccess(in.nextLong()); break;
+			case CREDIT__PROP: setCredit(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -407,6 +442,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(isWildcards());
 		out.name(LAST_ACCESS__ID);
 		out.value(getLastAccess());
+		out.name(CREDIT__ID);
+		out.value(getCredit());
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -443,6 +480,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case MAX_LENGTH__ID: setMaxLength(in.nextInt()); break;
 			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
 			case LAST_ACCESS__ID: setLastAccess(in.nextLong()); break;
+			case CREDIT__ID: setCredit(in.nextInt()); break;
 			default: in.skipValue(); 
 		}
 	}
