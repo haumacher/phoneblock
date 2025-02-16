@@ -25,11 +25,11 @@ public class TestMailParser {
 	public void testParseWithMessage() throws FileNotFoundException, IOException, MessagingException, ParseException {
 		MessageDetails details = new MailParser().parse(load("mail1.txt"));
 		
-		assertEquals("Heinz Maier", details.sender);
+		assertEquals("XXXXXXXXXXXXX", details.sender);
 		assertEquals(new GregorianCalendar(2025, 0, 27).getTime(), details.date);
-		assertEquals(1000, details.amount);
-		assertEquals("PhoneBlock-aaaaaaaa-bbbb danke!", details.msg);
-		assertEquals("00000000000000001", details.tx);
+		assertEquals(500, details.amount);
+		assertEquals("aaaaaaaa-bbbb", details.msg);
+		assertEquals("99999999999999999", details.tx);
 		assertEquals("aaaaaaaa-bbbb", details.uid);
 	}
 	
@@ -37,11 +37,11 @@ public class TestMailParser {
 	public void testParseWithoutMessage() throws FileNotFoundException, IOException, MessagingException, ParseException {
 		MessageDetails details = new MailParser().parse(load("mail2.txt"));
 		
-		assertEquals("Heinz Maier", details.sender);
-		assertEquals(new GregorianCalendar(2025, 0, 11).getTime(), details.date);
-		assertEquals(500, details.amount);
-		assertEquals("", details.msg);
-		assertEquals("00000000000000002", details.tx);
+		assertEquals("AAAAAAAAAAAAAAAA", details.sender);
+		assertEquals(new GregorianCalendar(2024, 10, 5).getTime(), details.date);
+		assertEquals(100, details.amount);
+		assertEquals("Spende Phoneblock", details.msg);
+		assertEquals("BBBBBBBBBBBBBBBBB", details.tx);
 		assertEquals(null, details.uid);
 	}
 
