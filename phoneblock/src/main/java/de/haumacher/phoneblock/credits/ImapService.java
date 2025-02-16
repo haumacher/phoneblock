@@ -61,8 +61,7 @@ public class ImapService implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
 			JNDIProperties jndi = new JNDIProperties();
-			_properties = jndi.lookupProperties("mail.imap");
-			_properties.putAll(jndi.lookupProperties("mail.imaps"));
+			_properties = jndi.lookupProperties("imap");
 			
 			try {
 				openSession();

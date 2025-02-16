@@ -53,13 +53,11 @@ public class JNDIProperties {
 				while (list.hasMore()) {
 					NameClassPair pair = list.next();
 					
-					if ("java.lang.String".equals(pair.getClassName())) {
-						String name = pair.getName();
-						String value = (String) propertyContext.lookup(name);
-						properties.setProperty(name, value);
+					String name = pair.getName();
+					Object value = propertyContext.lookup(name);
+					properties.setProperty(name, value.toString());
 
-						LOG.info("Using '{}' from JNDI: {}", name, value);
-					}
+					LOG.info("Using '{}' from JNDI: {}", name, value);
 				}
 			}
 		} catch (NamingException e) {
