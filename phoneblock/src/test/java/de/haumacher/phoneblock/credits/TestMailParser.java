@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.GregorianCalendar;
+import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 
 /**
@@ -44,8 +46,10 @@ public class TestMailParser {
 	}
 
 	private Message load(String resource) throws MessagingException, IOException {
+		Session session = Session.getInstance(new Properties());
+		
 		try (InputStream in = TestMailParser.class.getResourceAsStream(resource)) {
-			return new MimeMessage(null, in);
+			return new MimeMessage(session, in);
 		}
 	}
 	
