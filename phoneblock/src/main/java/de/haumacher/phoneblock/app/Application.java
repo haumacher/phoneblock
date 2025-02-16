@@ -26,6 +26,7 @@ import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
+import de.haumacher.phoneblock.credits.ImapService;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.dns.DnsService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
@@ -114,6 +115,7 @@ public class Application implements ServletContextListener {
 			sip = new SipService(scheduler, db, mail),
 			new ManagementService(indexer, db, gpt, sip),
 			new AddressBookCache(),
+			new ImapService(scheduler, db),
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
