@@ -21,7 +21,7 @@ public class TestMailParser {
 	
 	@Test
 	public void testParseWithMessage() throws FileNotFoundException, IOException, MessagingException, ParseException {
-		MessageDetails details = new MailParser().parse(load(TestMailParser.class.getResourceAsStream("mail1.txt")));
+		MessageDetails details = new MailParser().parse(load("mail1.txt"));
 		
 		assertEquals("Heinz Maier", details.sender);
 		assertEquals(new GregorianCalendar(2025, 0, 27).getTime(), details.date);
@@ -33,7 +33,7 @@ public class TestMailParser {
 	
 	@Test
 	public void testParseWithoutMessage() throws FileNotFoundException, IOException, MessagingException, ParseException {
-		MessageDetails details = new MailParser().parse(load(TestMailParser.class.getResourceAsStream("mail2.txt")));
+		MessageDetails details = new MailParser().parse(load("mail2.txt"));
 		
 		assertEquals("Heinz Maier", details.sender);
 		assertEquals(new GregorianCalendar(2025, 0, 11).getTime(), details.date);
@@ -43,8 +43,10 @@ public class TestMailParser {
 		assertEquals(null, details.uid);
 	}
 
-	private Message load(InputStream in) throws MessagingException {
-		return new MimeMessage(null, in);
+	private Message load(String resource) throws MessagingException, IOException {
+		try (InputStream in = TestMailParser.class.getResourceAsStream(resource)) {
+			return new MimeMessage(null, in);
+		}
 	}
 	
 }
