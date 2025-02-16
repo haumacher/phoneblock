@@ -496,6 +496,7 @@ class TestDB {
 			DB.processContribution(users, new MessageDetails("Danke, PhoneBlock-aaaaaaaa-bbbb!", "00001", 150, new GregorianCalendar(2025, 1, 2).getTime(), "Top Secret", "aaaaaaaa-bbbb"));
 			DB.processContribution(users, new MessageDetails("Vielen Dank!", "00002", 100, new GregorianCalendar(2025, 1, 1).getTime(), "Egon Maier", "cccccccc-dddd"));
 			DB.processContribution(users, new MessageDetails("Danke (xx@y.com)", "00003", 200, new GregorianCalendar(2025, 1, 3).getTime(), "Thanks!", null));
+			DB.processContribution(users, new MessageDetails("", "00004", 500, new GregorianCalendar(2025, 1, 1).getTime(), "Erna Busch", null));
 			
 			// Process twice.
 			DB.processContribution(users, new MessageDetails("Danke, PhoneBlock-aaaaaaaa-bbbb!", "00001", 150, new GregorianCalendar(2025, 1, 2).getTime(), "Top Secret", "aaaaaaaa-bbbb"));
@@ -505,14 +506,16 @@ class TestDB {
 			DBContribution contribution1 = users.getContribution("00001");
 			DBContribution contribution2 = users.getContribution("00002");
 			DBContribution contribution3 = users.getContribution("00003");
+			DBContribution contribution4 = users.getContribution("00004");
 			
 			assertEquals(users.getUserId("aaaaaaaa-bbbb"), contribution1.getUserId());
 			assertEquals(users.getUserId("cccccccc-dddd"), contribution2.getUserId());
 			assertEquals(null, contribution3.getUserId());
+			assertEquals(users.getUserId("eeeeeeee-ffff"), contribution4.getUserId());
 			
 			assertEquals(150, users.getSettingsRaw("aaaaaaaa-bbbb").getCredit());
 			assertEquals(100, users.getSettingsRaw("cccccccc-dddd").getCredit());
-			assertEquals(0, users.getSettingsRaw("eeeeeeee-ffff").getCredit());
+			assertEquals(500, users.getSettingsRaw("eeeeeeee-ffff").getCredit());
 		}
 	}
 	

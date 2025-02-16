@@ -1999,7 +1999,12 @@ public class DB {
 	}
 
 	private static void recordContribution(Users users, MessageDetails messageDetails) {
-		Long userId = messageDetails.uid == null ? null : unique(messageDetails.uid, users.findUser(messageDetails.uid + "%"));
+		Long userId;
+		if (messageDetails.uid == null) {
+			userId = unique(messageDetails.sender, users.usersWithDisplayName(messageDetails.sender));
+		} else {
+			userId = unique(messageDetails.uid, users.findUser(messageDetails.uid + "%"));
+		}
 		
 		users.insertContribution(Contribution.create()
 			.setUserId(userId)
@@ -2018,7 +2023,7 @@ public class DB {
 	private static Long unique(String uid, List<Long> users) {
 		Long result = users.size() == 1 ? users.get(0) : null;
 		if (result == null) {
-			LOG.warn("User for user ID {} not found ({} matches).", uid, users.size());
+			LOG.warn("User for user {} not found ({} matches).", uid, users.size());
 		}
 		return result;
 	}

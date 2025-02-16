@@ -186,6 +186,9 @@ public interface Users {
 	@Select("select ID from USERS where LOGIN like #{loginPattern}")
 	List<Long> findUser(String loginPattern);
 	
+	@Select("select ID from USERS where DISPLAYNAME=#{sender}")
+	List<Long> usersWithDisplayName(String sender);
+	
 	/** 
 	 * Retrieves the user ID for the user with the given Google ID.
 	 */
