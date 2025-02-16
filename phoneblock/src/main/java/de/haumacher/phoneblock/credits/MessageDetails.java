@@ -2,11 +2,7 @@ package de.haumacher.phoneblock.credits;
 
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class MessageDetails {
-	private static final Logger LOG = LoggerFactory.getLogger(MessageDetails.class);
 	
 	public final String msg;
 	public final String tx;
@@ -24,13 +20,4 @@ public class MessageDetails {
 		this.uid = uid;
 	}
 
-	public void dump() {
-		LOG.info("=== Received donation ===");
-		LOG.info("Sender:  " + sender);
-		LOG.info("User:    " + uid);
-		LOG.info("Amount:  " + amount);
-		LOG.info("Date:    " + date);
-		LOG.info("Message: " + msg);
-		LOG.info("TX:      " + tx);
-	}
 }

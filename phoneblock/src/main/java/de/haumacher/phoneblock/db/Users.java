@@ -184,7 +184,7 @@ public interface Users {
 	Long getUserId(String login);
 	
 	@Select("select ID from USERS where LOGIN like #{loginPattern}")
-	Long findUser(String loginPattern);
+	List<Long> findUser(String loginPattern);
 	
 	/** 
 	 * Retrieves the user ID for the user with the given Google ID.

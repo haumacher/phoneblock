@@ -1,14 +1,13 @@
 package de.haumacher.phoneblock.credits;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import javax.naming.NamingException;
 
 import org.apache.ibatis.session.SqlSession;
 import org.eclipse.angus.mail.imap.IdleManager;
@@ -18,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.jndi.JNDIProperties;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -60,18 +60,20 @@ public class ImapService implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
-			File propsFile = new File(".mail.properties");
-			if (propsFile.exists()) {
-				try (InputStream in = new FileInputStream(propsFile)) {
-					_properties.load(in);
-				}
+			JNDIProperties jndi = new JNDIProperties();
+			_properties = jndi.lookupProperties("mail.imap");
+			_properties.putAll(jndi.lookupProperties("mail.imaps"));
+			
+			try {
+				openSession();
+			} catch (MessagingException | IOException ex) {
+				LOG.error("Failed to initialize IMAP service.", ex);
 			}
-			openSession();
-		} catch (IOException | MessagingException ex) {
-			LOG.error("Failed to initialize IMAP service.", ex);
+			
+			_scheduler.scheduler().scheduleAtFixedRate(this::checkSession, 10, 60*60, TimeUnit.SECONDS);
+		} catch (NamingException ex) {
+			LOG.error("Failed to configure IMAP service.", ex);
 		}
-		
-		_scheduler.scheduler().scheduleAtFixedRate(this::checkSession, 1, 1, TimeUnit.HOURS);
 	}
 
 	private void openSession() throws NoSuchProviderException, MessagingException, IOException {
@@ -85,8 +87,6 @@ public class ImapService implements ServletContextListener {
 		
 		_inbox = _store.getFolder("INBOX");
 		_inbox.open(Folder.READ_ONLY);
-		
-		searchNewMessages();
 		
 		_inbox.addMessageCountListener(new MessageCountAdapter() {
 		    public void messagesAdded(MessageCountEvent e) {
@@ -154,6 +154,8 @@ public class ImapService implements ServletContextListener {
 			if (newMessages.length > 0) {
 				processMessages(users, Arrays.asList(newMessages));
 				tx.commit();
+			} else {
+				LOG.info("No new mails found.");
 			}
 		}
 	}
@@ -190,7 +192,8 @@ public class ImapService implements ServletContextListener {
         		latest = Math.max(latest, received);
 
         		MessageDetails messageDetails = _parser.parse(message);
-    			messageDetails.dump();
+
+				LOG.info("Processing donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
         		
         		DB.processContribution(users, messageDetails);
 			} catch (Exception ex) {
@@ -205,6 +208,7 @@ public class ImapService implements ServletContextListener {
 
 	private void checkSession() {
 		try {
+			LOG.info("Checking for new mails.");
 			searchNewMessages();
 		} catch (Exception ex) {
 			LOG.error("Failed to access inbox.", ex);
