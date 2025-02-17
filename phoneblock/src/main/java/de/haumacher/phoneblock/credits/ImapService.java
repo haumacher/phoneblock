@@ -102,6 +102,8 @@ public class ImapService implements ServletContextListener {
 		    		SearchTerm pattern = messagePattern();
 		    		
 		    		List<Message> matchingMessages = Arrays.stream(messages).filter(pattern::match).toList();
+		    		LOG.info("Received {} messages ({} donations).", messages.length, matchingMessages.size());
+		    		
 		    		if (!matchingMessages.isEmpty()) {
 		    			// Process messages.
 		    			processMessages(matchingMessages);
