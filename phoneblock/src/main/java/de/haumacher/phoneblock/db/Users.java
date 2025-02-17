@@ -63,6 +63,13 @@ public interface Users {
 	DBContribution getContribution(String tx);
 	
 	@Update("""
+			update CONTRIBUTIONS
+			set ACK=true
+			where TX=#{tx}
+			""")
+	int ackContribution(String tx);
+	
+	@Update("""
 			update USERS
 			set CREDIT=CREDIT+#{amount}
 			where ID=#{userId}

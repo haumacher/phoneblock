@@ -1991,14 +1991,16 @@ public class DB {
 		}
 	}
 
-	public static void processContribution(Users users, MessageDetails messageDetails) {
+	public static UserSettings processContribution(Users users, MessageDetails messageDetails) {
 		DBContribution existing = users.getContribution(messageDetails.tx);
 		if (existing == null) {
-			recordContribution(users, messageDetails);
+			return recordContribution(users, messageDetails);
+		} else {
+			return null;
 		}
 	}
 
-	private static void recordContribution(Users users, MessageDetails messageDetails) {
+	private static UserSettings recordContribution(Users users, MessageDetails messageDetails) {
 		Long userId;
 		if (messageDetails.uid == null) {
 			userId = unique(messageDetails.sender, users.usersWithDisplayName(messageDetails.sender));
@@ -2017,6 +2019,10 @@ public class DB {
 		
 		if (userId != null) {
 			users.addContribution(userId.longValue(), messageDetails.amount);
+			
+			return users.getSettingsById(userId.longValue());
+		} else {
+			return null;
 		}
 	}
 

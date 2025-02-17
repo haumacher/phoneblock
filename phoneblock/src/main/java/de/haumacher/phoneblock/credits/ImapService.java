@@ -2,6 +2,7 @@ package de.haumacher.phoneblock.credits;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -17,7 +18,9 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.jndi.JNDIProperties;
+import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -44,6 +47,7 @@ public class ImapService implements ServletContextListener {
 	private final MailParser _parser = new MailParser();
 	private final SchedulerService _scheduler;
 	private final DBService _dbService;
+	private final MailService _mailService;
 	
 	private Properties _properties = new Properties();
 	
@@ -51,10 +55,14 @@ public class ImapService implements ServletContextListener {
 	
 	private Store _store;
 	private Folder _inbox;
+
+	private boolean _sendThanks;
+
 	
-	public ImapService(SchedulerService scheduler, DBService dbService) {
+	public ImapService(SchedulerService scheduler, DBService dbService, MailService mailService) {
 		_scheduler = scheduler;
 		_dbService = dbService;
+		_mailService = mailService;
 	}
 	
 	@Override
@@ -63,6 +71,8 @@ public class ImapService implements ServletContextListener {
 		try {
 			JNDIProperties jndi = new JNDIProperties();
 			_properties = jndi.lookupProperties("imap");
+			
+			_sendThanks = "true".equals(jndi.lookupString("credits.sendmails"));
 			
 			try {
 				openSession();
@@ -153,7 +163,7 @@ public class ImapService implements ServletContextListener {
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
 
-			processMessages(users, matchingMessages);
+			processMessages(tx, users, matchingMessages);
     		updateTimestamp(users, allMessages);
 			
 			tx.commit();
@@ -167,14 +177,23 @@ public class ImapService implements ServletContextListener {
 		);
 	}
 
-	private void processMessages(Users users, List<Message> newMessages) {
+	private void processMessages(SqlSession tx, Users users, List<Message> newMessages) {
 		for (Message message : newMessages) {
         	try {
         		MessageDetails messageDetails = _parser.parse(message);
 
 				LOG.info("Processing donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
         		
-        		DB.processContribution(users, messageDetails);
+				UserSettings userSettings = DB.processContribution(users, messageDetails);
+        		
+				if (_sendThanks && userSettings != null) {
+					boolean ok = _mailService.sendThanksMail(messageDetails.sender, userSettings, messageDetails.amount);
+					if (ok) {
+						users.ackContribution(messageDetails.tx);
+					}
+				}
+				
+				tx.commit();
 			} catch (Exception ex) {
 				System.err.println("Failed to process message: " + ex.getMessage());
 			}
@@ -184,15 +203,21 @@ public class ImapService implements ServletContextListener {
 	private void updateTimestamp(Users users, List<Message> allMessages) {
 		long latest = 0;
 		for (Message message : allMessages) {
-			try {
-				long received = message.getReceivedDate().getTime();
-				latest = Math.max(latest, received);
-			} catch (MessagingException ex) {
-				LOG.error("Failed to access message.", ex);
-			}
+			long received = received(message);
+			latest = Math.max(latest, received);
 		}
 		if (latest > 0) {
 			DB.setLastSearch(users, latest);
+		}
+	}
+
+	private static long received(Message message) {
+		try {
+			Date receivedDate = message.getReceivedDate();
+			return receivedDate == null ? 0 : receivedDate.getTime();
+		} catch (MessagingException ex) {
+			LOG.error("Failed to access message.", ex);
+			return 0;
 		}
 	}
 
@@ -222,13 +247,20 @@ public class ImapService implements ServletContextListener {
 			
 			SearchTerm query = messagePattern();
 			if (lastSearch > 0) {
-				query =new AndTerm(query, 
+				query = new AndTerm(query, 
 					new ReceivedDateTerm(DateTerm.GT, new Date(lastSearch)));
 			}
 			
 			List<Message> newMessages = Arrays.asList(_inbox.search(query));
+			
+			newMessages.sort(Comparator.comparingLong(ImapService::received));
+			
 			if (newMessages.size() > 0) {
-				processMessages(users, newMessages);
+				
+				// TODO: Limit to one message for testing.
+				newMessages = newMessages.subList(0, 1);
+				
+				processMessages(tx, users, newMessages);
 	    		updateTimestamp(users, newMessages);
 				
 				tx.commit();

@@ -3,17 +3,11 @@
  */
 package de.haumacher.phoneblock.mail;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,12 +26,11 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.PasswordAuthentication;
@@ -49,7 +42,6 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMessage.RecipientType;
 import jakarta.mail.internet.MimeMultipart;
-import net.markenwerk.utils.data.fetcher.BufferedDataFetcher;
 
 /**
  * Service for sending e-mail messages.
@@ -126,7 +118,7 @@ public class MailService {
 		sendMail("PhoneBlock Anmelde-Code", address, "mail-template", variables);
 	}
 
-	public boolean sendHelpMail(DBUserSettings userSettings) {
+	public boolean sendHelpMail(UserSettings userSettings) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
 			LOG.warn("Cannot send help mail to '" + userSettings.getId() + "', no e-mail provided.");
@@ -144,7 +136,36 @@ public class MailService {
 		}
 	}
 	
-	public boolean sendDiableMail(DBUserSettings userSettings, AnswerBotSip answerbot) {
+	public boolean sendThanksMail(String donator, UserSettings userSettings, int amount) {
+		String receiver = userSettings.getEmail();
+		if (receiver == null || receiver.isBlank()) {
+			LOG.warn("Cannot send thanks mail to '" + userSettings.getId() + "', no e-mail provided.");
+			return true;
+		}
+		
+		LOG.info("Sending thanks mail to '" + receiver + "'.");
+		
+		try {
+			Map<String, String> variables = buildVariables(userSettings);
+			String attribute = "";
+			if (amount >= 2000) {
+				attribute = "unfassbar großzügige ";
+			}
+			else if (amount >= 500) {
+				attribute = "großzügige ";
+			}
+			variables.put("{attribute}", attribute);
+			variables.put("{name}", donator);
+			
+			sendMail("PhoneBlock: Deine Spende", new InternetAddress(receiver), "thanks-mail", variables);
+			return true;
+		} catch (Exception ex) {
+			LOG.error("Failed to send help mail to: " + receiver, ex);
+			return false;
+		}
+	}
+	
+	public boolean sendDiableMail(UserSettings userSettings, AnswerBotSip answerbot) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
 			LOG.warn("Cannot send answerbot disable mail to '" + userSettings.getId() + "', no e-mail provided.");
@@ -162,7 +183,7 @@ public class MailService {
 		}
 	}
 	
-	private Map<String, String> buildVariables(DBUserSettings userSettings, AnswerBotSip answerbot) {
+	private Map<String, String> buildVariables(UserSettings userSettings, AnswerBotSip answerbot) {
 		Map<String, String> variables = buildVariables(userSettings);
 		
 		variables.put("{lastSuccess}", formatDateTime(answerbot.getLastSuccess()));
@@ -175,7 +196,7 @@ public class MailService {
 	/** 
 	 * Sends a welcome mail to the given user.
 	 */
-	public void sendWelcomeMail(DBUserSettings userSettings) {
+	public void sendWelcomeMail(UserSettings userSettings) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
 			LOG.warn("Cannot send welcome mail to '" + userSettings.getId() + "', no e-mail provided.");
@@ -191,7 +212,7 @@ public class MailService {
 		}
 	}
 
-	private Map<String, String> buildVariables(DBUserSettings userSettings) {
+	private Map<String, String> buildVariables(UserSettings userSettings) {
 		Map<String, String> variables = new HashMap<>();
 		variables.put("{name}", userSettings.getDisplayName());
 		variables.put("{userName}", userSettings.getLogin());
