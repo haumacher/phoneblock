@@ -59,6 +59,8 @@ public class ImapService implements ServletContextListener {
 
 	private boolean _sendThanks;
 
+	private boolean _active;
+
 
 	public ImapService(SchedulerService scheduler, DBService dbService, MailServiceStarter mail) {
 		_scheduler = scheduler;
@@ -73,16 +75,21 @@ public class ImapService implements ServletContextListener {
 			JNDIProperties jndi = new JNDIProperties();
 			_properties = jndi.lookupProperties("imap");
 			
+			_active = "true".equals(jndi.lookupString("credits.active"));
 			_sendThanks = "true".equals(jndi.lookupString("credits.sendmails"));
 			
-			try {
-				openSession();
-			} catch (MessagingException | IOException ex) {
-				LOG.error("Failed to initialize IMAP service.", ex);
-			}
-			
-			if (_session != null) {
-				_scheduler.scheduler().scheduleAtFixedRate(this::checkSession, 10, 60*60, TimeUnit.SECONDS);
+			if (_active) {
+				try {
+					openSession();
+				} catch (MessagingException | IOException ex) {
+					LOG.error("Failed to initialize IMAP service.", ex);
+				}
+				
+				if (_session != null) {
+					_scheduler.scheduler().scheduleAtFixedRate(this::checkSession, 10, 60*60, TimeUnit.SECONDS);
+				}
+			} else {
+				LOG.info("Donation processing is deactivated.");
 			}
 		} catch (NamingException ex) {
 			LOG.error("Failed to configure IMAP service.", ex);
