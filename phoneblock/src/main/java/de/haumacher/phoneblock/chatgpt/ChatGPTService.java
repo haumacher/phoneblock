@@ -90,6 +90,7 @@ public class ChatGPTService implements ServletContextListener {
 			String apiKey = jndi.lookupString("chatgpt.secret");
 			if (apiKey == null) {
 				LOG.error("No ChatGPT api key, not starting ChatGPTService.");
+				return;
 			}
 			
 			_openai = new OpenAiService(apiKey, Duration.ofMinutes(2));
