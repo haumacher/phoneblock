@@ -97,18 +97,10 @@ public class ImapService implements ServletContextListener {
 		
 		_inbox.addMessageCountListener(new MessageCountAdapter() {
 		    public void messagesAdded(MessageCountEvent e) {
-		        Message[] messages = e.getMessages();
+		        List<Message> messages = Arrays.asList(e.getMessages());
 		        try {
-		    		SearchTerm pattern = messagePattern();
-		    		
-		    		List<Message> matchingMessages = Arrays.stream(messages).filter(pattern::match).toList();
-		    		LOG.info("Received {} messages ({} donations).", messages.length, matchingMessages.size());
-		    		
-		    		if (!matchingMessages.isEmpty()) {
-		    			// Process messages.
-		    			processMessages(matchingMessages);
-		    		}
-		        	
+		    		processMessages(messages);
+
 		        	// Keep watching for new messages.
 		    		startWatcher(observer);
 		        } catch (MessagingException mex) {
@@ -162,9 +154,11 @@ public class ImapService implements ServletContextListener {
 					new ReceivedDateTerm(DateTerm.GT, new Date(lastSearch)));
 			}
 			
-			Message[] newMessages = _inbox.search(query);
-			if (newMessages.length > 0) {
-				processMessages(users, Arrays.asList(newMessages));
+			List<Message> newMessages = Arrays.asList(_inbox.search(query));
+			if (newMessages.size() > 0) {
+				processMessages(users, newMessages);
+	    		updateTimestamp(users, newMessages);
+				
 				tx.commit();
 			} else {
 				LOG.info("No new mails found.");
@@ -179,23 +173,40 @@ public class ImapService implements ServletContextListener {
 		);
 	}
 
-	private void processMessages(List<Message> newMessages) throws AddressException {
+	private void processMessages(List<Message> allMessages) throws AddressException {
+		SearchTerm pattern = messagePattern();
+		
+		List<Message> matchingMessages = allMessages.stream().filter(pattern::match).toList();
+		LOG.info("Received {} messages ({} donations).", allMessages.size(), matchingMessages.size());
+
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
 
-			processMessages(users, newMessages);
+			processMessages(users, matchingMessages);
+    		updateTimestamp(users, allMessages);
 			
 			tx.commit();
 		}
 	}
+
+	private void updateTimestamp(Users users, List<Message> allMessages) {
+		long latest = 0;
+		for (Message message : allMessages) {
+			try {
+				long received = message.getReceivedDate().getTime();
+				latest = Math.max(latest, received);
+			} catch (MessagingException ex) {
+				LOG.error("Failed to access message.", ex);
+			}
+		}
+		if (latest > 0) {
+			DB.setLastSearch(users, latest);
+		}
+	}
 	
 	private void processMessages(Users users, List<Message> newMessages) {
-		long latest = 0;
 		for (Message message : newMessages) {
         	try {
-        		long received = message.getReceivedDate().getTime();
-        		latest = Math.max(latest, received);
-
         		MessageDetails messageDetails = _parser.parse(message);
 
 				LOG.info("Processing donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
@@ -205,10 +216,6 @@ public class ImapService implements ServletContextListener {
 				System.err.println("Failed to process message: " + ex.getMessage());
 			}
         }
-		
-		if (latest > 0) {
-			DB.setLastSearch(users, latest);
-		}
 	}
 
 	private void checkSession() {
