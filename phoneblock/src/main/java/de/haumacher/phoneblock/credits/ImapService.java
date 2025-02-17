@@ -59,6 +59,7 @@ public class ImapService implements ServletContextListener {
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		LOG.info("Starting IMAP service.");
 		try {
 			JNDIProperties jndi = new JNDIProperties();
 			_properties = jndi.lookupProperties("imap");
@@ -122,6 +123,7 @@ public class ImapService implements ServletContextListener {
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
+		LOG.info("Shutting down IMAP service.");
 		closeConnection();
 	}
 
@@ -142,6 +144,76 @@ public class ImapService implements ServletContextListener {
 		}
 	}
 	
+	private void processMessages(List<Message> allMessages) throws AddressException {
+		SearchTerm pattern = messagePattern();
+		
+		List<Message> matchingMessages = allMessages.stream().filter(pattern::match).toList();
+		LOG.info("Received {} messages ({} donations).", allMessages.size(), matchingMessages.size());
+
+		try (SqlSession tx = _dbService.db().openSession()) {
+			Users users = tx.getMapper(Users.class);
+
+			processMessages(users, matchingMessages);
+    		updateTimestamp(users, allMessages);
+			
+			tx.commit();
+		}
+	}
+
+	private AndTerm messagePattern() throws AddressException {
+		return new AndTerm(
+			new FromTerm(new InternetAddress("service@paypal.de")),
+			new SubjectTerm("Du hast eine Zahlung erhalten")
+		);
+	}
+
+	private void processMessages(Users users, List<Message> newMessages) {
+		for (Message message : newMessages) {
+        	try {
+        		MessageDetails messageDetails = _parser.parse(message);
+
+				LOG.info("Processing donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
+        		
+        		DB.processContribution(users, messageDetails);
+			} catch (Exception ex) {
+				System.err.println("Failed to process message: " + ex.getMessage());
+			}
+        }
+	}
+
+	private void updateTimestamp(Users users, List<Message> allMessages) {
+		long latest = 0;
+		for (Message message : allMessages) {
+			try {
+				long received = message.getReceivedDate().getTime();
+				latest = Math.max(latest, received);
+			} catch (MessagingException ex) {
+				LOG.error("Failed to access message.", ex);
+			}
+		}
+		if (latest > 0) {
+			DB.setLastSearch(users, latest);
+		}
+	}
+
+	private void checkSession() {
+		try {
+			LOG.info("Checking for new mails.");
+			searchNewMessages();
+		} catch (Exception ex) {
+			LOG.error("Failed to access inbox.", ex);
+			closeConnection();
+			try {
+				openSession();
+				
+				// Try again.
+				searchNewMessages();
+			} catch (MessagingException | IOException e1) {
+				LOG.error("Failed to re-open IMAP session.", e1);
+			}
+		}
+	}
+
 	void searchNewMessages() throws MessagingException {
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Users users = tx.getMapper(Users.class);
@@ -162,76 +234,6 @@ public class ImapService implements ServletContextListener {
 				tx.commit();
 			} else {
 				LOG.info("No new mails found.");
-			}
-		}
-	}
-
-	private AndTerm messagePattern() throws AddressException {
-		return new AndTerm(
-			new FromTerm(new InternetAddress("service@paypal.de")),
-			new SubjectTerm("Du hast eine Zahlung erhalten")
-		);
-	}
-
-	private void processMessages(List<Message> allMessages) throws AddressException {
-		SearchTerm pattern = messagePattern();
-		
-		List<Message> matchingMessages = allMessages.stream().filter(pattern::match).toList();
-		LOG.info("Received {} messages ({} donations).", allMessages.size(), matchingMessages.size());
-
-		try (SqlSession tx = _dbService.db().openSession()) {
-			Users users = tx.getMapper(Users.class);
-
-			processMessages(users, matchingMessages);
-    		updateTimestamp(users, allMessages);
-			
-			tx.commit();
-		}
-	}
-
-	private void updateTimestamp(Users users, List<Message> allMessages) {
-		long latest = 0;
-		for (Message message : allMessages) {
-			try {
-				long received = message.getReceivedDate().getTime();
-				latest = Math.max(latest, received);
-			} catch (MessagingException ex) {
-				LOG.error("Failed to access message.", ex);
-			}
-		}
-		if (latest > 0) {
-			DB.setLastSearch(users, latest);
-		}
-	}
-	
-	private void processMessages(Users users, List<Message> newMessages) {
-		for (Message message : newMessages) {
-        	try {
-        		MessageDetails messageDetails = _parser.parse(message);
-
-				LOG.info("Processing donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
-        		
-        		DB.processContribution(users, messageDetails);
-			} catch (Exception ex) {
-				System.err.println("Failed to process message: " + ex.getMessage());
-			}
-        }
-	}
-
-	private void checkSession() {
-		try {
-			LOG.info("Checking for new mails.");
-			searchNewMessages();
-		} catch (Exception ex) {
-			LOG.error("Failed to access inbox.", ex);
-			closeConnection();
-			try {
-				openSession();
-				
-				// Try again.
-				searchNewMessages();
-			} catch (MessagingException | IOException e1) {
-				LOG.error("Failed to re-open IMAP session.", e1);
 			}
 		}
 	}
