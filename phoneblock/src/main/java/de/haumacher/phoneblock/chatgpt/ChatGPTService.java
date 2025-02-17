@@ -16,6 +16,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.naming.NamingException;
+
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,7 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserComment;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.jndi.JNDIProperties;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
@@ -82,12 +85,15 @@ public class ChatGPTService implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
-			Properties properties = new Properties();
-			properties.load(ChatGPTService.class.getResourceAsStream("/phoneblock.properties"));
-			String apiKey = properties.getProperty("chatgpt.secret");
+			JNDIProperties jndi = new JNDIProperties();
+			
+			String apiKey = jndi.lookupString("chatgpt.secret");
+			if (apiKey == null) {
+				LOG.error("No ChatGPT api key, not starting ChatGPTService.");
+			}
 			
 			_openai = new OpenAiService(apiKey, Duration.ofMinutes(2));
-		} catch (IOException ex) {
+		} catch (NamingException ex) {
 			LOG.error("Cannot start ChatGPTService.", ex);
 			return;
 		}
