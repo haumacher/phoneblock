@@ -218,6 +218,9 @@ public class ImapService implements ServletContextListener {
 			closeConnection();
 			try {
 				openSession();
+				
+				// Try again.
+				searchNewMessages();
 			} catch (MessagingException | IOException e1) {
 				LOG.error("Failed to re-open IMAP session.", e1);
 			}
