@@ -21,6 +21,7 @@ import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.jndi.JNDIProperties;
 import de.haumacher.phoneblock.mail.MailService;
+import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -47,7 +48,7 @@ public class ImapService implements ServletContextListener {
 	private final MailParser _parser = new MailParser();
 	private final SchedulerService _scheduler;
 	private final DBService _dbService;
-	private final MailService _mailService;
+	private final MailServiceStarter _mail;
 	
 	private Properties _properties = new Properties();
 	
@@ -58,11 +59,11 @@ public class ImapService implements ServletContextListener {
 
 	private boolean _sendThanks;
 
-	
-	public ImapService(SchedulerService scheduler, DBService dbService, MailService mailService) {
+
+	public ImapService(SchedulerService scheduler, DBService dbService, MailServiceStarter mail) {
 		_scheduler = scheduler;
 		_dbService = dbService;
-		_mailService = mailService;
+		_mail = mail;
 	}
 	
 	@Override
@@ -187,9 +188,12 @@ public class ImapService implements ServletContextListener {
 				UserSettings userSettings = DB.processContribution(users, messageDetails);
         		
 				if (_sendThanks && userSettings != null) {
-					boolean ok = _mailService.sendThanksMail(messageDetails.sender, userSettings, messageDetails.amount);
-					if (ok) {
-						users.ackContribution(messageDetails.tx);
+					MailService mailService = _mail.getMailService();
+					if (mailService != null) {
+						boolean ok = mailService.sendThanksMail(messageDetails.sender, userSettings, messageDetails.amount);
+						if (ok) {
+							users.ackContribution(messageDetails.tx);
+						}
 					}
 				}
 				

@@ -50,7 +50,7 @@ public class Application implements ServletContextListener {
 	
 	private ServletContextListener[] _services;
 	
-	private static String _contextPath;
+	private static String _contextPath = "/phoneblock";
 	
 	public static String getContextPath() {
 		return _contextPath;
@@ -115,7 +115,7 @@ public class Application implements ServletContextListener {
 			sip = new SipService(scheduler, db, mail),
 			new ManagementService(indexer, db, gpt, sip),
 			new AddressBookCache(),
-			new ImapService(scheduler, db),
+			new ImapService(scheduler, db, mail),
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
