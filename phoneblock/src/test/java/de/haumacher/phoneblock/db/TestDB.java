@@ -516,6 +516,11 @@ class TestDB {
 			assertEquals(150, users.getSettingsRaw("aaaaaaaa-bbbb").getCredit());
 			assertEquals(100, users.getSettingsRaw("cccccccc-dddd").getCredit());
 			assertEquals(500, users.getSettingsRaw("eeeeeeee-ffff").getCredit());
+			
+			assertFalse(contribution1.isAcknowledged());
+			users.ackContribution("00001");
+			DBContribution contribution1a = users.getContribution("00001");
+			assertTrue(contribution1a.isAcknowledged());
 		}
 	}
 	
