@@ -267,10 +267,6 @@ public class ImapService implements ServletContextListener {
 			newMessages.sort(Comparator.comparingLong(ImapService::received));
 			
 			if (newMessages.size() > 0) {
-				
-				// TODO: Limit to one message for testing.
-				newMessages = newMessages.subList(0, 1);
-				
 				processMessages(tx, users, newMessages);
 	    		updateTimestamp(users, newMessages);
 				
