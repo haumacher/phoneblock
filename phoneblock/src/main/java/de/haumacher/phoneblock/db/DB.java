@@ -1748,16 +1748,16 @@ public class DB {
 		calendar.add(Calendar.HOUR, -1);
 		calendar.add(Calendar.DAY_OF_MONTH, -2);
 		
-		long lastAccessBefore = calendar.getTimeInMillis();
+		long twoDaysBefore = calendar.getTimeInMillis();
 
 		calendar.add(Calendar.DAY_OF_MONTH, -30);
-		long accessAfter = calendar.getTimeInMillis();
+		long oneMonthBefore = calendar.getTimeInMillis();
 		
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
 			// Users that did not update the address book for three days.
-			List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(lastAccessBefore, accessAfter, lastAccessBefore);
+			List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(twoDaysBefore, oneMonthBefore, twoDaysBefore);
 			for (DBUserSettings user : inactiveUsers) {
 				// Mark mail as send to prevent mail-bombing a user under all circumstances. Sending
 				// a support mail is not tried again, if the first attempt fails.

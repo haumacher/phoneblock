@@ -15,10 +15,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -26,6 +29,7 @@ import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -536,6 +540,56 @@ class TestDB {
 
 			long search1 = DB.getLastSearch(users);
 			assertEquals(1000, search1);
+		}
+	}
+	
+	@Test 
+	public void testInactiveUsers() {
+		byte[] passwd = new byte[] {1, 2, 3};
+		
+		try (SqlSession tx = _db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+			
+			users.addUser("user-1", "U1", passwd, 1000);
+			users.addUser("user-2a", "U2a", passwd, 2000);
+			users.addUser("user-2b", "U2b", passwd, 2000);
+			users.addUser("user-3", "U3", passwd, 3000);
+			tx.commit();
+		}
+		
+		long lastAccessBefore = 4000;
+		long accessAfter = 1000;
+		long registeredBefore = 3000;
+		
+		try (SqlSession tx = _db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+
+			{
+				List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(lastAccessBefore, accessAfter, registeredBefore);
+				Set<String> ids = inactiveUsers.stream().map(u -> u.getLogin()).collect(Collectors.toSet());
+				Assertions.assertEquals(new HashSet<>(Arrays.asList("user-2a", "user-2b")), ids);
+			}
+			
+			users.setLastAccess("user-2a", 5000, "FRITZOS_CardDAV_Client/1.0");
+			tx.commit();
+
+			{
+				List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(lastAccessBefore, accessAfter, registeredBefore);
+				Set<String> ids = inactiveUsers.stream().map(u -> u.getLogin()).collect(Collectors.toSet());
+				Assertions.assertEquals(new HashSet<>(Arrays.asList("user-2b")), ids);
+			}
+		}
+			
+		_db.createAPIToken("user-2b", 5000, "SpamBlocker");
+
+		try (SqlSession tx = _db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+		
+			{
+				List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(lastAccessBefore, accessAfter, registeredBefore);
+				Set<String> ids = inactiveUsers.stream().map(u -> u.getLogin()).collect(Collectors.toSet());
+				Assertions.assertEquals(new HashSet<>(Arrays.asList()), ids);
+			}
 		}
 	}
 

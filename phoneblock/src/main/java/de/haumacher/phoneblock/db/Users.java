@@ -217,15 +217,35 @@ public interface Users {
 	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where ID=#{userId}")
 	DBUserSettings getSettingsById(long userId);
 	
-	@Select("select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u "
-			+ "where u.LASTACCESS < #{lastAccessBefore} "
-			+ "and (u.LASTACCESS > #{accessAfter} "
-			+ "or (u.REGISTERED > #{accessAfter} "
-			+ "and u.REGISTERED < #{registeredBefore})) "
-			+ "and NOTIFIED = false "
-			+ "and (u.USERAGENT = 'FRITZOS_CardDAV_Client/1.0' or u.USERAGENT is null) "
-			+ "order by u.REGISTERED asc")
-	List<DBUserSettings> getNewInactiveUsers(long lastAccessBefore, long accessAfter, long registeredBefore);
+	/**
+	 * Finds users that have no CardDAV access since <code>lastAccessBefore</code>
+	 * and they have either recently registered or had a recent access.
+	 * 
+	 * <p>
+	 * Only report users that are not yet marked as <code>notified</code>.
+	 * </p>
+	 * 
+	 * <p>
+	 * Exclude users that do not use a Fritz!Box as device, since the update
+	 * strategy of such devices are unknown.
+	 * </p>
+	 * 
+	 * <p>
+	 * Exclude users that have created an API key, since the potentially do not use
+	 * CardDAV access at all.
+	 * </p>
+	 */
+	@Select("""
+			select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u
+			where u.LASTACCESS < #{lastAccessBefore}
+			and (u.LASTACCESS > #{registeredAfter}
+			  or (u.REGISTERED > #{registeredAfter} and u.REGISTERED < #{registeredBefore}))
+			and NOTIFIED = false
+			and (u.USERAGENT = 'FRITZOS_CardDAV_Client/1.0' or u.USERAGENT is null)
+			and (select count(1) from TOKENS t where t.USERID = u.ID and not t.IMPLICIT) = 0
+			order by u.REGISTERED asc
+			""")
+	List<DBUserSettings> getNewInactiveUsers(long lastAccessBefore, long registeredAfter, long registeredBefore);
 	
 	@Select("select u.ID, u.LOGIN u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u "
 			+ "where not u.WELCOME "
