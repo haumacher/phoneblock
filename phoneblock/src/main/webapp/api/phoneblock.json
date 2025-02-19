@@ -593,14 +593,13 @@
 								"schema": {
 									"type": "string"
 								},
-								"example": "Please provide authentication credentials."
+								"example": "Please provide login credentials."
 							}
 						}
 					}
 				},
 				"security": [
 					{
-						"PhoneBlockUser": [],
 						"APIKey": []
 					}
 				]
