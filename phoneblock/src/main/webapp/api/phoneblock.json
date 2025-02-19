@@ -597,7 +597,13 @@
 							}
 						}
 					}
-				}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"APIKey": []
+					}
+				]
 			},
 			"parameters": []
 		}

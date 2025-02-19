@@ -49,46 +49,50 @@ public abstract class LoginFilter implements Filter {
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse resp = (HttpServletResponse) response;
 		
-		// Short-cut to prevent authenticating every request.
-		HttpSession session = req.getSession(false);
-		if (session != null) {
-			String userName = LoginFilter.getAuthenticatedUser(session);
-			if (userName != null) {
-				req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
-				chain.doFilter(request, response);
-				return;
+		if (allowSessionAuth(req)) {
+			// Short-cut to prevent authenticating every request.
+			HttpSession session = req.getSession(false);
+			if (session != null) {
+				String userName = LoginFilter.getAuthenticatedUser(session);
+				if (userName != null) {
+					req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
+					chain.doFilter(request, response);
+					return;
+				}
 			}
 		}
 
 		DB db = DBService.getInstance();
 		
-		Cookie[] cookies = req.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if (LOGIN_COOKIE.equals(cookie.getName())) {
-					String token = cookie.getValue();
-					AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), true);
-					if (authorization != null && checkTokenAuthorization(req, authorization)) {
-						String userName = authorization.getUserName();
-						LOG.info("Accepted login token for user {}.", userName);
-						
-						setUser(req, userName);
-
-						// Update cookie to extend lifetime and invalidate old version of cookie. 
-						// This enhances security since a token can be used only once.
-						setLoginCookie(req, resp, authorization);
-						
-						chain.doFilter(request, response);
-						return;
-					} else {
-						if (authorization == null) {
-							LOG.info("Dropping outdated login cookie: {}", token);
+		if (allowCookieAuth(req)) {
+			Cookie[] cookies = req.getCookies();
+			if (cookies != null) {
+				for (Cookie cookie : cookies) {
+					if (LOGIN_COOKIE.equals(cookie.getName())) {
+						String token = cookie.getValue();
+						AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), true);
+						if (authorization != null && checkTokenAuthorization(req, authorization)) {
+							String userName = authorization.getUserName();
+							LOG.info("Accepted login token for user {}.", userName);
+							
+							setUser(req, userName);
+							
+							// Update cookie to extend lifetime and invalidate old version of cookie. 
+							// This enhances security since a token can be used only once.
+							setLoginCookie(req, resp, authorization);
+							
+							chain.doFilter(request, response);
+							return;
 						} else {
-							LOG.info("Login not allowed with cookie: {}", token);
+							if (authorization == null) {
+								LOG.info("Dropping outdated login cookie: {}", token);
+							} else {
+								LOG.info("Login not allowed with cookie: {}", token);
+							}
+							removeLoginCookie(req, resp);
 						}
-						removeLoginCookie(req, resp);
+						break;
 					}
-					break;
 				}
 			}
 		}
@@ -108,7 +112,7 @@ public abstract class LoginFilter implements Filter {
 					chain.doFilter(request, response);
 					return;
 				}
-			} else {
+			} else if (allowBasicAuth(req)) {
 				String userName = db.basicAuth(authHeader);
 				if (userName != null) {
 					setUser(req, userName);
@@ -119,6 +123,18 @@ public abstract class LoginFilter implements Filter {
 		}
 		
 		requestLogin(req, resp, chain);
+	}
+
+	protected boolean allowBasicAuth(HttpServletRequest req) {
+		return true;
+	}
+
+	protected boolean allowSessionAuth(HttpServletRequest req) {
+		return true;
+	}
+
+	protected boolean allowCookieAuth(HttpServletRequest req) {
+		return true;
 	}
 
 	protected void setUser(HttpServletRequest req, String userName) {
