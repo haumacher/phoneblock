@@ -103,14 +103,20 @@ public abstract class LoginFilter implements Filter {
 				String token = authHeader.substring(BEARER_AUTH.length());
 				
 				AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), false);
-				if (authorization != null && checkTokenAuthorization(req, authorization)) {
+				if (authorization != null) {
 					String userName = authorization.getUserName();
-					LOG.info("Accepted bearer token {}... for user {}.", token.substring(0, 16), userName);
 					
-					setUser(req, userName);
-					
-					chain.doFilter(request, response);
-					return;
+					if (checkTokenAuthorization(req, authorization)) {
+						LOG.info("Accepted bearer token {}... for user {}.", token.substring(0, 16), userName);
+						
+						setUser(req, userName);
+						
+						chain.doFilter(request, response);
+						return;
+					} else {
+						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.", 
+								req.getServletPath(), token.substring(0, 16), userName);
+					}
 				}
 			} else if (allowBasicAuth(req)) {
 				String userName = db.basicAuth(authHeader);
