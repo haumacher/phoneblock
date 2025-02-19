@@ -570,6 +570,36 @@
 					}
 				}
 			]
+		},
+		"/test": {
+			"get": {
+				"summary": "Checks connection and authentication. Call to this API can be used when setting up a PhoneBlock connection in a third-party app to verify the user has provided valid credentials.",
+				"responses": {
+					"200": {
+						"description": "Checks provided authentication token and returns 'ok' on success.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "ok"
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide authentication credentials."
+							}
+						}
+					}
+				}
+			},
+			"parameters": []
 		}
 	},
 	"components": {

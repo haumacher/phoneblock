@@ -181,6 +181,11 @@ public abstract class LoginFilter implements Filter {
 		}
 	}
 
+	/**
+	 * Retrieves the authenticated user from a request attribute set by a {@link LoginFilter} for the service URI.
+	 * 
+	 * @see BasicLoginFilter
+	 */
 	public static String getAuthenticatedUser(HttpServletRequest req) {
 		return (String) req.getAttribute(AUTHENTICATED_USER_ATTR);
 	}
