@@ -27,11 +27,11 @@ public class CustomerConfig implements CustomerOptions {
 	
 	@Option(name = "--sip-user",
 			usage = "User name to register at the registrar server.")
-	private String user;
+	private String sipUser;
 	
 	@Option(name = "--sip-passwd",
 			usage = "Password for the user to register at the registrar server.")
-	private String passwd;
+	private String sipPasswd;
 	
 	@Option(name = "--realm",
 			usage = "Authentication realm for registering at the registrar server.")
@@ -65,21 +65,21 @@ public class CustomerConfig implements CustomerOptions {
 	}
 
 	@Override
-	public String getUser() {
-		return user;
+	public String getSipUser() {
+		return sipUser;
 	}
 	
 	public void setUser(String user) {
-		this.user = user;
+		this.sipUser = user;
 	}
 
 	@Override
 	public String getAuthPasswd() {
-		return passwd;
+		return sipPasswd;
 	}
 	
 	public void setPasswd(String passwd) {
-		this.passwd = passwd;
+		this.sipPasswd = passwd;
 	}
 
 	@Override

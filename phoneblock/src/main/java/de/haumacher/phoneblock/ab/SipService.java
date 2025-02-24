@@ -198,7 +198,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					}
 					
 					// Find out the ID of the owning user, to look up the personalizations.
-					String botName = customerOptions.getUser();
+					String botName = customerOptions.getSipUser();
 					long userId = users.getAnswerBotUserId(botName);
 					Boolean state = blocklist.getPersonalizationState(userId, phoneId);
 					
@@ -587,10 +587,10 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 				clash.halt();
 			}
 			
-			LOG.info("Started registration for " + customerConfig.getUser() + ".");
+			LOG.info("Started registration for " + customerConfig.getSipUser() + ".");
 			client.loopRegister(customerConfig);
 		} catch (Exception ex) {
-			LOG.error("Registration for " + customerConfig.getUser() + " failed.", ex);
+			LOG.error("Registration for " + customerConfig.getSipUser() + " failed.", ex);
 		}
 	}
 	
