@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,6 +28,8 @@ import de.haumacher.phoneblock.db.Users;
  */
 @WebServlet(urlPatterns = AssignContributionServlet.PATH)
 public class AssignContributionServlet extends HttpServlet {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(AssignContributionServlet.class);
 	
 	public static final String CONTRIB_DATE = "contrib-date";
 	public static final String CONTRIB_NAME = "contrib-name";
@@ -66,9 +70,17 @@ public class AssignContributionServlet extends HttpServlet {
 
 				if (tx != null) {
 					DBContribution contribution = users.getContribution(tx.trim());
-					if (contribution.getUserId() == null) {
-						// Not yet assigned.
-						assignUser(users, contribution, userId);
+					if (contribution != null) {
+						if (contribution.getUserId() == null) {
+							// Not yet assigned.
+							assignUser(users, contribution, userId);
+							
+							session.commit();
+						} else {
+							LOG.warn("Contribution {} already assigned to {}, rejecting assign to {}.", contribution.getTx(), contribution.getUserId(), userId);
+						}
+					} else {
+						LOG.warn("Contribution {} not found, cannot assign to {}.", tx, userId);
 					}
 				} else if (name != null && date != null) {
 					String sender = name.trim().toLowerCase().replaceAll(" +", " ");
@@ -78,10 +90,16 @@ public class AssignContributionServlet extends HttpServlet {
 						if (contributions.size() == 1) {
 							DBContribution contribution = contributions.get(0);
 							assignUser(users, contribution, userId);
+							
+							session.commit();
+						} else {
+							LOG.warn("No unique contribution found for {}: name={}, date={}", userId, name, date);
 						}
 					} catch (ParseException e) {
-						// Wrong date input, ignore.
+						LOG.warn("Invalid date received from {}: date={}", userId, date);
 					}
+				} else {
+					LOG.warn("Missing information to assign contribution to {}: tx={}, name={}, date={}", userId, tx, name, date);
 				}
 			}
 		}
