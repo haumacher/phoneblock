@@ -68,7 +68,7 @@ public class AssignContributionServlet extends HttpServlet {
 			if (userIdOpt != null) {
 				long userId = userIdOpt.longValue();
 
-				if (tx != null) {
+				if (tx != null && !tx.isBlank()) {
 					DBContribution contribution = users.getContribution(tx.trim());
 					if (contribution != null) {
 						if (contribution.getUserId() == null) {
@@ -82,10 +82,10 @@ public class AssignContributionServlet extends HttpServlet {
 					} else {
 						LOG.warn("Contribution {} not found, cannot assign to {}.", tx, userId);
 					}
-				} else if (name != null && date != null) {
+				} else if (name != null && !name.isBlank() && date != null && !date.isBlank()) {
 					String sender = name.trim().toLowerCase().replaceAll(" +", " ");
 					try {
-						Date received = new SimpleDateFormat("YYYY-MM-dd").parse(date);
+						Date received = new SimpleDateFormat("yyyy-MM-dd").parse(date);
 						List<DBContribution> contributions = users.searchContribution(sender, received.getTime());
 						if (contributions.size() == 1) {
 							DBContribution contribution = contributions.get(0);
@@ -93,7 +93,8 @@ public class AssignContributionServlet extends HttpServlet {
 							
 							session.commit();
 						} else {
-							LOG.warn("No unique contribution found for {}: name={}, date={}", userId, name, date);
+							LOG.warn("No unique contribution found ({}) for {}: name={}, date={}/{}", 
+									contributions.size(), userId, name, date, received);
 						}
 					} catch (ParseException e) {
 						LOG.warn("Invalid date received from {}: date={}", userId, date);
