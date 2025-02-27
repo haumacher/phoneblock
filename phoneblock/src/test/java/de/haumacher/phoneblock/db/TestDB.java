@@ -130,89 +130,89 @@ class TestDB {
 	void testTopSearches() {
 		long now = 1000000000000000000L;
 
-		addSearchHit("00", now++);
-		addSearchHit("05", now++);
+		addSearchHit("091000000", now++);
+		addSearchHit("051000000", now++);
 
 		_db.updateHistory(30, now++);
 		
 		// Yesterday
-		addRating(null, "00", Rating.C_PING, null, now++);
-		addRating(null, "01", Rating.C_PING, null, now++);
-		addRating(null, "02", Rating.C_PING, null, now++);
-		addRating(null, "03", Rating.C_PING, null, now++);
-		addRating(null, "04", Rating.C_PING, null, now++);
-		addRating(null, "05", Rating.C_PING, null, now++);
+		addRating(null, "091000000", Rating.C_PING, null, now++);
+		addRating(null, "011000000", Rating.C_PING, null, now++);
+		addRating(null, "021000000", Rating.C_PING, null, now++);
+		addRating(null, "031000000", Rating.C_PING, null, now++);
+		addRating(null, "041000000", Rating.C_PING, null, now++);
+		addRating(null, "051000000", Rating.C_PING, null, now++);
 		
-		addSearchHit("05", now++);
-		addSearchHit("00", now++);
-		addSearchHit("00", now++);
-		addSearchHit("00", now++);
+		addSearchHit("051000000", now++);
+		addSearchHit("091000000", now++);
+		addSearchHit("091000000", now++);
+		addSearchHit("091000000", now++);
 		
-		addSearchHit("01", now++);
-		addSearchHit("02", now++);
-		addSearchHit("03", now++);
+		addSearchHit("011000000", now++);
+		addSearchHit("021000000", now++);
+		addSearchHit("031000000", now++);
 		_db.updateHistory(30, now++);
 		
 		// Today
-		addSearchHit("00", now++);
-		addSearchHit("04", now++);
-		addSearchHit("05", now++);
+		addSearchHit("091000000", now++);
+		addSearchHit("041000000", now++);
+		addSearchHit("051000000", now++);
 		
 		List<? extends SearchInfo> topSearches = _db.getTopSearches(2);
 
 		assertEquals(2, topSearches.size());
 		
-		assertEquals("05", topSearches.get(0).getPhone());
+		assertEquals("051000000", topSearches.get(0).getPhone());
 		assertEquals(2, topSearches.get(0).getCount());
 		assertEquals(3, topSearches.get(0).getTotal());
 		
-		assertEquals("00", topSearches.get(1).getPhone());
+		assertEquals("091000000", topSearches.get(1).getPhone());
 		assertEquals(4, topSearches.get(1).getCount());
 		assertEquals(5, topSearches.get(1).getTotal());
 	}
 	
 	@Test
 	void testSpamReports() {
-		assertFalse(_db.hasSpamReportFor("0123"));
+		assertFalse(_db.hasSpamReportFor("012300000"));
 
-		processVotes("0123", 2, 1000);
+		processVotes("012300000", 2, 1000);
 		
-		assertTrue(_db.hasSpamReportFor("0123"));
+		assertTrue(_db.hasSpamReportFor("012300000"));
 		
-		processVotes("0456", 1, 1001);
+		processVotes("045600000", 1, 1001);
 		
-		assertEquals(2, _db.getVotesFor("0123"));
+		assertEquals(2, _db.getVotesFor("012300000"));
 		
-		assertFalse(_db.hasSpamReportFor("0999"));
-		assertEquals(0, _db.getVotesFor("0999"));
+		assertFalse(_db.hasSpamReportFor("099900000"));
+		assertEquals(0, _db.getVotesFor("099900000"));
 		
-		processVotes("0999", -1, 1002);
-		assertEquals(-1, _db.getVotesFor("0999"));
+		processVotes("099900000", -1, 1002);
+		assertEquals(-1, _db.getVotesFor("099900000"));
 		
-		processVotes("0999", 0, 1003);
-		assertEquals(-1, _db.getVotesFor("0999"));
+		processVotes("099900000", 0, 1003);
+		assertEquals(-1, _db.getVotesFor("099900000"));
 		
-		processVotes("0123", 1, 1004);
-		assertEquals(3, _db.getVotesFor("0123"));
+		processVotes("012300000", 1, 1004);
+		assertEquals(3, _db.getVotesFor("012300000"));
 		
 		{
 			List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
 			assertEquals(2, reports.size());
-			assertEquals("0123", reports.get(0).getPhone());
-			assertEquals("0456", reports.get(1).getPhone());
+			assertEquals("012300000", reports.get(0).getPhone());
+			assertEquals("045600000", reports.get(1).getPhone());
 		}
 		
-		processVotes("0123", -1, 1005);
-		assertEquals(2, _db.getVotesFor("0123"));
+		processVotes("012300000", -1, 1005);
+		assertEquals(2, _db.getVotesFor("012300000"));
 		
-		processVotes("0123", -2, 1006);
-		assertEquals(0, _db.getVotesFor("0123"));
+		processVotes("012300000", -2, 1006);
+		assertEquals(0, _db.getVotesFor("012300000"));
 		
 		assertEquals(1006, _db.getLastSpamReport().longValue());
 		
 		List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
 		assertEquals(1, reports.size());
-		assertEquals("0456", reports.get(0).getPhone());
+		assertEquals("045600000", reports.get(0).getPhone());
 	}
 	
 	@Test
@@ -220,36 +220,36 @@ class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 			
-			blockList.addExclude(1, "0123");
-			blockList.addExclude(2, "0123");
-			blockList.addExclude(1, "0345");
-			blockList.addExclude(1, "0678");
-			blockList.addExclude(2, "0999");
+			blockList.addExclude(1, "012300000");
+			blockList.addExclude(2, "012300000");
+			blockList.addExclude(1, "034500000");
+			blockList.addExclude(1, "067800000");
+			blockList.addExclude(2, "099900000");
 			
-			assertEquals(new HashSet<>(List.of("0123", "0345", "0678")), blockList.getExcluded(1));
+			assertEquals(new HashSet<>(List.of("012300000", "034500000", "067800000")), blockList.getExcluded(1));
 			
-			blockList.removePersonalization(1, "0345");
+			blockList.removePersonalization(1, "034500000");
 			
-			assertEquals(new HashSet<>(List.of("0123", "0678")), blockList.getExcluded(1));
+			assertEquals(new HashSet<>(List.of("012300000", "067800000")), blockList.getExcluded(1));
 			
-			blockList.removePersonalization(2, "0123");
+			blockList.removePersonalization(2, "012300000");
 			
-			assertEquals(new HashSet<>(List.of("0123", "0678")), blockList.getExcluded(1));
+			assertEquals(new HashSet<>(List.of("012300000", "067800000")), blockList.getExcluded(1));
 			
-			blockList.addPersonalization(1, "0654");
-			blockList.addPersonalization(1, "0321");
-			blockList.addPersonalization(2, "0321");
-			blockList.addPersonalization(2, "0987");
+			blockList.addPersonalization(1, "065400000");
+			blockList.addPersonalization(1, "032100000");
+			blockList.addPersonalization(2, "032100000");
+			blockList.addPersonalization(2, "098700000");
 			
-			assertEquals(List.of("0321", "0654"), blockList.getPersonalizations(1));
+			assertEquals(List.of("032100000", "065400000"), blockList.getPersonalizations(1));
 			
-			blockList.removePersonalization(1, "0654");
+			blockList.removePersonalization(1, "065400000");
 			
-			assertEquals(List.of("0321"), blockList.getPersonalizations(1));
+			assertEquals(List.of("032100000"), blockList.getPersonalizations(1));
 			
-			blockList.removePersonalization(2, "0321");
+			blockList.removePersonalization(2, "032100000");
 			
-			assertEquals(List.of("0321"), blockList.getPersonalizations(1));
+			assertEquals(List.of("032100000"), blockList.getPersonalizations(1));
 		}
 	}
 
@@ -258,9 +258,9 @@ class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 
-			blockList.addExclude(1, "0123");
+			blockList.addExclude(1, "012300000");
 			try {
-				blockList.addExclude(1, "0123");
+				blockList.addExclude(1, "012300000");
 				fail("Expecting duplicate key constraint violation.");
 			} catch (PersistenceException ex) {
 				// Expected.
@@ -270,12 +270,12 @@ class TestDB {
 	
 	@Test
 	void testUserManagement() throws IOException {
-		_db.addUser("foo@bar.com", "Mr. X", "0123");
-		_db.addUser("baz@bar.com", "Mr. Y", "0123");
+		_db.addUser("foo@bar.com", "Mr. X", "012300000");
+		_db.addUser("baz@bar.com", "Mr. Y", "012300000");
 		
-		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "0123")));
+		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000")));
         assertNull(_db.basicAuth(header("foo@bar.com", "0321")));
-        assertNull(_db.basicAuth(header("xxx@bar.com", "0123")));
+        assertNull(_db.basicAuth(header("xxx@bar.com", "012300000")));
 		
 		try (SqlSession session = _db.openSession()) {
 			long userA = session.getMapper(Users.class).getUserId("foo@bar.com");
@@ -295,30 +295,30 @@ class TestDB {
 	void testRatings() {
 		long now = 1;
 		
-		addRating(null, "0123", Rating.G_FRAUD, null, now++);
-		addRating(null, "0123", Rating.B_MISSED, null, now++);
-		addRating(null, "0123", Rating.B_MISSED, null, now++);
-		addRating(null, "0123", Rating.C_PING, null, now++);
-		addRating(null, "0123", Rating.D_POLL, null, now++);
-		addRating(null, "0123", Rating.E_ADVERTISING, null, now++);
-		addRating(null, "0123", Rating.F_GAMBLE, null, now++);
+		addRating(null, "012300000", Rating.G_FRAUD, null, now++);
+		addRating(null, "012300000", Rating.B_MISSED, null, now++);
+		addRating(null, "012300000", Rating.B_MISSED, null, now++);
+		addRating(null, "012300000", Rating.C_PING, null, now++);
+		addRating(null, "012300000", Rating.D_POLL, null, now++);
+		addRating(null, "012300000", Rating.E_ADVERTISING, null, now++);
+		addRating(null, "012300000", Rating.F_GAMBLE, null, now++);
 
-		assertEquals(Rating.G_FRAUD, _db.getRating("0123"));
+		assertEquals(Rating.G_FRAUD, _db.getRating("012300000"));
 		
 		_db.updateHistory(10);
 		
-		assertEquals(Rating.G_FRAUD, _db.getRating("0123"));
+		assertEquals(Rating.G_FRAUD, _db.getRating("012300000"));
 		
-		addRating(null, "0123", Rating.E_ADVERTISING, null, now++);
+		addRating(null, "012300000", Rating.E_ADVERTISING, null, now++);
 		
-		assertEquals(Rating.E_ADVERTISING, _db.getRating("0123"));
+		assertEquals(Rating.E_ADVERTISING, _db.getRating("012300000"));
 	}
 	
 	@Test
 	void testSearchHistory() {
-		String _123 = "0123";
-		String _456 = "0456";
-		String _789 = "0789";
+		String _123 = "012300000";
+		String _456 = "045600000";
+		String _789 = "078900000";
 		
 		// A search far in the history.
 		addSearchHit(_123);
@@ -361,20 +361,20 @@ class TestDB {
 	void testSearchHistoryCleanup() {
 		long time = 1000;
 		for (int n = 0; n < 49; n++) {
-			addSearchHit("0123", time);
+			addSearchHit("012300000", time);
 			_db.updateHistory(30, time);
 			
 			time++;
 		}
-		addSearchHit("0123", time);
+		addSearchHit("012300000", time);
 		
-		List<Integer> all = _db.getSearchHistory("0123", 31);
+		List<Integer> all = _db.getSearchHistory("012300000", 31);
 		assertEquals(31, all.size());
 		assertEquals(1, all.get(31 - 1));
 		assertEquals(1, all.get(1));
 		assertEquals(50 - 30, all.get(0));
 		
-		assertEquals(7, _db.getSearchHistory("0123", 7).size());
+		assertEquals(7, _db.getSearchHistory("012300000", 7).size());
 	}
 	
 	private void addSearchHit(String phone, long now) {

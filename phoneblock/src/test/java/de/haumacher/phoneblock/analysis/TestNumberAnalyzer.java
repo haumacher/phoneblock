@@ -18,11 +18,11 @@ class TestNumberAnalyzer {
 	
 	@ParameterizedTest
 	@CsvSource({"+1684" + "123456789,Amerikanisch-Samoa",
-			"+49,Deutschland",
+			"+49" + "308154" + ",Deutschland",
 			"+49" + "704187650,Deutschland",
 			"+1" + "241" + "123456789,Vereinigte Staaten oder Kanada",
 			"+999999999,Unbekannt",
-			"+9,Unbekannt"
+			"+99956789,Unbekannt"
 	})
 	void testCountry(String phone, String label) {
 		PhoneNumer info = NumberAnalyzer.analyze(phone);
@@ -31,7 +31,7 @@ class TestNumberAnalyzer {
 	}
 
 	@ParameterizedTest
-	@CsvSource({"+49" + "7041,Mühlacker",
+	@CsvSource({"+49" + "704128,Mühlacker",
 			"+49" + "704187650,Mühlacker",
 			"+49-7041 87650,Mühlacker"
 	})
