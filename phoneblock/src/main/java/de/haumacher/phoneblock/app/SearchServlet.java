@@ -168,7 +168,8 @@ public class SearchServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String pathInfo = req.getPathInfo();
 		if (pathInfo == null || pathInfo.length() < 1) {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			req.setAttribute(NUMBER_ATTR, "");
+			ServletUtil.display(req, resp, "/no-such-number.jsp");
 			return;
 		}
 		
@@ -179,7 +180,8 @@ public class SearchServlet extends HttpServlet {
 
 		PhoneNumer number = extractNumber(query);
 		if (number == null) {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			req.setAttribute(NUMBER_ATTR, query);
+			ServletUtil.display(req, resp, "/no-such-number.jsp");
 			return;
 		}
 		
