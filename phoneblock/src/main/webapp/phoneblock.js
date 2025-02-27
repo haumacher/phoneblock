@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Initialize all input of date type.
 	if (bulmaCalendar != null) {
 		const calendars = bulmaCalendar.attach('[type="date"]', {
-			dateFormat: "YYYY-MM-DD",
+			dateFormat: "yyyy-MM-dd",
 			type: "date",
 			displayMode: "dialog"
 		});
@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		calendars.forEach(calendar => {
 			// Add listener to select event
 			calendar.on('select', date => {
+				
 				console.log(date);
 			});
 		});	

@@ -403,12 +403,12 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 <%
 List<DBContribution> contributions = (List<DBContribution>) request.getAttribute("contributions");
 %>
-	<div class="content">
+<div class="content">
 	<h2 id="<%= AssignContributionServlet.SECTION_CONTRIBUTIONS%>">Deine Spenden für den Betrieb von PhoneBlock</h2>
 	
 	<p>
 		Wenn Du eine <a href="<%= request.getContextPath() %>/support.jsp">Spende für den Betrieb von PhoneBlock</a> gemacht hast, 
-		dann wird diese (nach einiger Zeit) hier aufgelistet. 
+		dann wird diese hier (nach einiger Zeit) aufgelistet. 
 		Damit das klappt, wäre es nett, wenn Du bei der Überweisungsnachricht die ersten paar Zeichen von Deinem Nutzernamen
 		mitschicken würdest, also z.B. <code id="purpose">PhoneBlock-<%= userName.substring(0, 13)%></code><span id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></span>.
 		Beiträge über das GitHub-Sponsor-Programm können hier leider nicht aufgelistet werden. 
@@ -441,73 +441,74 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
 <% } %>	
 	</tbody>
 	</table>
+	
+	<p>
+	Vielen lieben Dank, dass Du Dich an den Kosten des Betriebs von PhoneBlock beteiligst!
+	</p>	
 <% } %>
+</div>
 
-<nav class="panel is-info" id="resetPassword">
+<nav class="panel is-info">
 	<p class="panel-heading"><a href="#contribForm" data-action="collapse"><i class="fa-solid fa-eraser"></i> <span>Zahlung vermisst?</span></a></p>
 	<div id="contribForm" class="is-collapsible">
 
-	<p>
-	Du vermisst eine Zahlung? Hier kannst Du nach einer Zahlung suchen. Wenn du mit PayPal bezahlt hast, dann 
-	gib den Transaktionscode ein. Bei einer Banküberweisung, versuche es mit Deinem vollständigen Namen (den 
-	Deine Bank als Absender verwendet) und dem Datum der Überweisung:
-	</p>
-	
-	<div class="content">
 	<form action="<%= request.getContextPath() %><%= AssignContributionServlet.PATH %>" method="post" enctype="application/x-www-form-urlencoded">
- 		<div class="panel-block">
-			<div class="field">
-			  <label class="label">Transaktionscode</label>
-			  <p class="control has-icons-left">
-			    <input class="input" type="text" placeholder="13121212H7878787W" name="<%= AssignContributionServlet.CONTRIB_TX%>">
-			    <i class="fa-solid fa-signature"></i>
-			  </p>
-			  <p class="help">
-			  Der PayPal Transaktionscode. Du findest diesen in den Details Deiner Überweisung. 
-			  </p>
-			</div>
+	<div class="panel-block">
+	<div class="content">
+		<p>
+		Du vermisst eine Zahlung? Hier kannst Du nach einer Zahlung suchen. Wenn du mit PayPal bezahlt hast, dann 
+		gib den Transaktionscode ein. Bei einer Banküberweisung, versuche es mit Deinem vollständigen Namen (den 
+		Deine Bank als Absender verwendet) und dem Datum der Überweisung:
+		</p>
+	
+		<div class="field">
+		  <label class="label">Transaktionscode</label>
+		  <p class="control has-icons-left">
+		    <input class="input" type="text" placeholder="13121212H7878787W" name="<%= AssignContributionServlet.CONTRIB_TX%>">
+		    <span class="icon is-small is-left"><i class="fa-solid fa-signature"></i></span>
+		  </p>
+		  <p class="help">
+		  Der PayPal Transaktionscode. Du findest diesen in den Details Deiner Überweisung. Bei einer Banküberweisung leer lassen.
+		  </p>
+		</div>
+	
+		<div class="field">
+		  <label class="label">Absender</label>
+		  <p class="control has-icons-left">
+		    <input class="input" type="text" placeholder="Max Mustermann" name="<%= AssignContributionServlet.CONTRIB_NAME%>">
+		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
+		  </p>
+		  <p class="help">
+		  Bei einer Banküberweisung der Name des Kontoinhabers, der die Überweisung getätigt hat. Bitte 
+		  gib auch noch das Datum der Überweisung unten an.
+		  </p>
+		</div>
+	
+		<div class="field">
+		  <label class="label">Datum</label>
+		  <p class="control has-icons-left">
+		    <input class="input" type="date" name="<%= AssignContributionServlet.CONTRIB_DATE%>">
+		  </p>
+		  <p class="help">
+		  Das Datum der Banküberweisung. Bitte gib auch oben noch den vollständigen Namen des Kontoinhabers an, der die Überweisung getätigt hat.
+		  </p>
+		</div>
+	</div>
+	</div>
 
-			<div class="field">
-			  <label class="label">Absender</label>
-			  <p class="control has-icons-left">
-			    <input class="input" type="text" placeholder="Max Mustermann" name="<%= AssignContributionServlet.CONTRIB_NAME%>">
-			    <i class="fa-regular fa-user"></i>
-			  </p>
-			  <p class="help">
-			  Bei einer Banküberweisung der Name des Kontoinhabers, der die Überweisung getätigt hat. Bitte 
-			  gib auch noch das Datum der Überweisung unten an.
-			  </p>
-			</div>
-
-			<div class="field">
-			  <label class="label">Datum</label>
-			  <p class="control has-icons-left">
-			    <input class="input" type="date" name="<%= AssignContributionServlet.CONTRIB_DATE%>">
-			    <i class="fa-solid fa-calendar"></i>
-			  </p>
-			  <p class="help">
-			  Das Datum der Banküberweisung. Bitte gib auch oben noch den vollständigen Namen des Kontoinhabers an, der die Überweisung getätigt hat.
-			  </p>
-			</div>
-  		</div>
-  	
- 		<div class="panel-block">
+	<div class="panel-block">
 		<button class="button is-medium is-primary" type="submit">
 		    <span class="icon">
 				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
 			<span>Beitrag suchen</span>
 		</button>
- 		</div>
-	</form>
 	</div>
 
+	</form>
   	</div>
 </nav>
 
-	
-	
-	</div>
 </section>
 
 <section class="section">

@@ -231,7 +231,7 @@
 		<dependency>
 		    <groupId>org.webjars.npm</groupId>
 		    <artifactId>bulma-calendar</artifactId>
-		    <version>6.1.18</version>
+		    <version>6.1.19</version>
 		</dependency>
 		
 		<dependency>
