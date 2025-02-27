@@ -18,6 +18,7 @@ import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBAuthToken;
+import de.haumacher.phoneblock.db.DBContribution;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -56,11 +57,13 @@ public class SettingsServlet extends HttpServlet {
 			List<String> whitelist;
 			List<DBAnswerbotInfo> answerBots;
 			List<DBAuthToken> explicitTokens;
+			List<DBContribution> contributions;
 			if (userIdOpt == null) {
 				blacklist = Collections.emptyList();
 				whitelist = Collections.emptyList();
 				answerBots = Collections.emptyList();
-				explicitTokens = Collections.emptyList();;
+				explicitTokens = Collections.emptyList();
+				contributions = Collections.emptyList();
 			} else {
 				long userId = userIdOpt.longValue();
 				
@@ -70,12 +73,15 @@ public class SettingsServlet extends HttpServlet {
 
 				answerBots = users.getAnswerBots(userId);
 				explicitTokens = users.getExplicitTokens(userId);
+
+				contributions = users.getContributions(userId);
 			}
 			
 			req.setAttribute("blacklist", blacklist);
 			req.setAttribute("whitelist", whitelist);
 			req.setAttribute("answerBots", answerBots);
 			req.setAttribute("explicitTokens", explicitTokens);
+			req.setAttribute("contributions", contributions);
 		}
 		
 		ServletUtil.display(req, resp, "/settings.jsp");

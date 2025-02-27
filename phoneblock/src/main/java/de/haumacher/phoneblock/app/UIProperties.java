@@ -15,6 +15,7 @@ public class UIProperties {
 
 	public final static String BULMA_PATH = getWebJarPath("org.webjars.npm", "bulma");
 	public final static String BULMA_COLLAPSIBLE_PATH = getWebJarPath("org.webjars.npm", "github-com-creativebulma-bulma-collapsible");
+	public final static String BULMA_CALENDAR_PATH = getWebJarPath("org.webjars.npm", "bulma-calendar");
 	public final static String FA_PATH = getWebJarPath("org.webjars", "font-awesome");
 	public final static String JQUERY_PATH = getWebJarPath("org.webjars", "jquery");
 	public final static String CHARTJS_PATH = getWebJarPath("org.webjars", "chartjs");

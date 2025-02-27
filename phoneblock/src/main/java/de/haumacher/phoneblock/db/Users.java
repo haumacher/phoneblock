@@ -62,12 +62,34 @@ public interface Users {
 			""")
 	DBContribution getContribution(String tx);
 	
+	@Select("""
+			select ID, USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK
+			from CONTRIBUTIONS
+			where REGEXP_REPLACE(TRIM(LOWER(SENDER)), ' +', ' ')=#{sender} and RECEIVED=#{received}
+			""")
+	List<DBContribution> searchContribution(String sender, long received);
+
+	
+	@Select("""
+			select ID, USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK
+			from CONTRIBUTIONS
+			where USER_ID=#{userId}
+			""")
+	List<DBContribution> getContributions(long userId);
+
 	@Update("""
 			update CONTRIBUTIONS
 			set ACK=true
 			where TX=#{tx}
 			""")
 	int ackContribution(String tx);
+	
+	@Update("""
+			update CONTRIBUTIONS
+			set USER_ID=#{userId}
+			where TX=#{tx} and USER_ID is null
+			""")
+	int assignContributionUser(String tx, long userId);
 	
 	@Update("""
 			update USERS

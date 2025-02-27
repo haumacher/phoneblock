@@ -60,6 +60,23 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (contextPath == "/pb-test") {
 		document.body.classList.add("test-system");
 	}
+	
+	// Initialize all input of date type.
+	if (bulmaCalendar != null) {
+		const calendars = bulmaCalendar.attach('[type="date"]', {
+			dateFormat: "YYYY-MM-DD",
+			type: "date",
+			displayMode: "dialog"
+		});
+		
+		// Loop on each calendar initialized
+		calendars.forEach(calendar => {
+			// Add listener to select event
+			calendar.on('select', date => {
+				console.log(date);
+			});
+		});	
+	}
 });
 
 function makeSearchButton(buttonId, inputId) {

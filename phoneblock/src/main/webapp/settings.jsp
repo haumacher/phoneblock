@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.UIProperties"%>
+<%@page import="de.haumacher.phoneblock.app.AssignContributionServlet"%>
+<%@page import="java.text.NumberFormat"%>
+<%@page import="de.haumacher.phoneblock.db.settings.Contribution"%>
+<%@page import="de.haumacher.phoneblock.db.DBContribution"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.text.DateFormat"%>
@@ -23,6 +28,10 @@
 <head>
 <link rel="canonical" href="https://phoneblock.net/phoneblock/" />
 <jsp:include page="head-content.jspf"></jsp:include>
+
+<link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.BULMA_CALENDAR_PATH %>/dist/css/bulma-calendar.min.css">
+<script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.BULMA_CALENDAR_PATH %>/dist/js/bulma-calendar.min.js"></script>
+
 </head>
 
 <%
@@ -387,6 +396,106 @@ List<String> whitelist = (List<String>) request.getAttribute("whitelist");
 	</div>
 	
 	</form>
+	</div>
+</section>
+
+<section class="section">
+<%
+List<DBContribution> contributions = (List<DBContribution>) request.getAttribute("contributions");
+%>
+	<div class="content">
+	<h2 id="<%= AssignContributionServlet.SECTION_CONTRIBUTIONS%>">Deine Spenden für den Betrieb von PhoneBlock</h2>
+	
+	<p>
+		Wenn Du eine <a href="<%= request.getContextPath() %>/support.jsp">Spende für den Betrieb von PhoneBlock</a> gemacht hast, 
+		dann wird diese (nach einiger Zeit) hier aufgelistet. 
+		Damit das klappt, wäre es nett, wenn Du bei der Überweisungsnachricht die ersten paar Zeichen von Deinem Nutzernamen
+		mitschicken würdest, also z.B. <code id="purpose">PhoneBlock-<%= userName.substring(0, 13)%></code><span id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></span>.
+		Beiträge über das GitHub-Sponsor-Programm können hier leider nicht aufgelistet werden. 
+	</p>
+	
+<% if (contributions.isEmpty()) { %>
+	<p>
+		Keine Spendenbeiträge gefunden.
+	</p>
+<% } else { %>
+	<table class="table">
+	<thead>
+	<tr>
+	<th>Datum</th>
+	<th>Nachricht</th>
+	<th>Betrag</th>
+	<th>Transaktionsnummer</th>
+	</tr>
+	</thead>
+<% DateFormat dateFormat = DateFormat.getDateInstance(); %>
+<% NumberFormat amountFormat = NumberFormat.getCurrencyInstance(); %>
+	<tbody>
+<% for (Contribution contribution : contributions) { %>
+	<tr>
+	<th><%= JspUtil.quote(dateFormat.format(new Date(contribution.getReceived()))) %></th>
+	<th><%= JspUtil.quote(contribution.getMessage()) %></th>
+	<th><%= JspUtil.quote(amountFormat.format(contribution.getAmount() / 100.0)) %>
+	<th><%= JspUtil.quote(contribution.getTx()) %></th>
+	</tr>
+<% } %>	
+	</tbody>
+	</table>
+<% } %>
+	
+	<p>
+	Du vermisst eine Zahlung? Hier kannst Du nach einer Zahlung suchen. Wenn du mit PayPal bezahlt hast, dann 
+	gib den Transaktionscode ein. Bei einer Banküberweisung, versuche es mit Deinem vollständigen Namen (den 
+	Deine Bank als Absender verwendet) und dem Datum der Überweisung:
+	</p>
+	
+	<form action="<%= request.getContextPath() %><%= AssignContributionServlet.PATH %>" method="post" enctype="application/x-www-form-urlencoded">
+ 		<div class="panel-block">
+			<div class="field">
+			  <label class="label">Transaktionscode</label>
+			  <p class="control has-icons-left">
+			    <input class="input" type="text" placeholder="13121212H7878787W" name="<%= AssignContributionServlet.CONTRIB_TX%>">
+			    <i class="fa-solid fa-signature"></i>
+			  </p>
+			  <p class="help">
+			  Der PayPal Transaktionscode. Du findest diesen in den Details Deiner Überweisung. 
+			  </p>
+			</div>
+
+			<div class="field">
+			  <label class="label">Absender</label>
+			  <p class="control has-icons-left">
+			    <input class="input" type="text" placeholder="Max Mustermann" name="<%= AssignContributionServlet.CONTRIB_NAME%>">
+			    <i class="fa-regular fa-user"></i>
+			  </p>
+			  <p class="help">
+			  Bei einer Banküberweisung der Name des Kontoinhabers, der die Überweisung getätigt hat. Bitte 
+			  gib auch noch das Datum der Überweisung unten an.
+			  </p>
+			</div>
+
+			<div class="field">
+			  <label class="label">Datum</label>
+			  <p class="control has-icons-left">
+			    <input class="input" type="date" name="<%= AssignContributionServlet.CONTRIB_DATE%>">
+			    <i class="fa-solid fa-calendar"></i>
+			  </p>
+			  <p class="help">
+			  Das Datum der Banküberweisung. Bitte gib auch oben noch den vollständigen Namen des Kontoinhabers an, der die Überweisung getätigt hat.
+			  </p>
+			</div>
+  		</div>
+  	
+ 		<div class="panel-block">
+		<button class="button is-medium is-fullwidth is-danger" type="submit">
+		    <span class="icon">
+				<i class="fa-solid fa-magnifying-glass-dollar"></i>
+		    </span>
+			<span>Beitrag suchen</span>
+		</button>
+ 		</div>
+ 		</form>
+	
 	</div>
 </section>
 
