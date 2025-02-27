@@ -12,6 +12,10 @@ public class PhoneHash {
 	public static String toInternationalForm(String phone) {
 		String plus;
 		if (phone.startsWith("00")) {
+			if (phone.startsWith("000")) {
+				// Not a phone number.
+				return null;
+			}
 			plus = "+" + phone.substring(2);
 		} else if (phone.startsWith("0")) {
 			plus = "+49" + phone.substring(1);
