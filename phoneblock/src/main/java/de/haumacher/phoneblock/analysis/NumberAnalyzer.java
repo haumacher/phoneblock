@@ -336,6 +336,12 @@ public class NumberAnalyzer {
 		}
 		
 		PrefixInfo info = findInfo(plus);
+		
+		if (info.getCountryCode() == null || plus.charAt(info.getCountryCode().length()) == '0') {
+			// A city code cannot start with a zero.
+			return null;
+		}
+		
 		result.setCountryCode(info.getCountryCode());
 		result.setCountry(info.getCountry());
 		result.setCityCode(info.getCityCode());

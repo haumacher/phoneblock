@@ -21,8 +21,6 @@ class TestNumberAnalyzer {
 			"+49" + "308154" + ",Deutschland",
 			"+49" + "704187650,Deutschland",
 			"+1" + "241" + "123456789,Vereinigte Staaten oder Kanada",
-			"+999999999,Unbekannt",
-			"+99956789,Unbekannt"
 	})
 	void testCountry(String phone, String label) {
 		PhoneNumer info = NumberAnalyzer.analyze(phone);
