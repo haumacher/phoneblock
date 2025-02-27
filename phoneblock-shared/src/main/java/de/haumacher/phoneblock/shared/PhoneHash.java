@@ -25,6 +25,12 @@ public class PhoneHash {
 			// No valid number.
 			return null;
 		}
+		
+		if (plus.length() <= 8) {
+			// Most likely no valid phone number.
+			return null;
+		}
+		
 		return plus;
 	}
 
