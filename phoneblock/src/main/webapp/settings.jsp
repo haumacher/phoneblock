@@ -424,8 +424,8 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
 	<tr>
 	<th>Datum</th>
 	<th>Nachricht</th>
-	<th>Betrag</th>
 	<th>Transaktionsnummer</th>
+	<th>Betrag</th>
 	</tr>
 	</thead>
 <% DateFormat dateFormat = DateFormat.getDateInstance(); %>
@@ -435,20 +435,25 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
 	<tr>
 	<th><%= JspUtil.quote(dateFormat.format(new Date(contribution.getReceived()))) %></th>
 	<th><%= JspUtil.quote(contribution.getMessage()) %></th>
-	<th><%= JspUtil.quote(amountFormat.format(contribution.getAmount() / 100.0)) %>
 	<th><%= JspUtil.quote(contribution.getTx()) %></th>
+	<th><%= JspUtil.quote(amountFormat.format(contribution.getAmount() / 100.0)) %>
 	</tr>
 <% } %>	
 	</tbody>
 	</table>
 <% } %>
-	
+
+<nav class="panel is-info" id="resetPassword">
+	<p class="panel-heading"><a href="#contribForm" data-action="collapse"><i class="fa-solid fa-eraser"></i> <span>Zahlung vermisst?</span></a></p>
+	<div id="contribForm" class="is-collapsible">
+
 	<p>
 	Du vermisst eine Zahlung? Hier kannst Du nach einer Zahlung suchen. Wenn du mit PayPal bezahlt hast, dann 
 	gib den Transaktionscode ein. Bei einer Banküberweisung, versuche es mit Deinem vollständigen Namen (den 
 	Deine Bank als Absender verwendet) und dem Datum der Überweisung:
 	</p>
 	
+	<div class="content">
 	<form action="<%= request.getContextPath() %><%= AssignContributionServlet.PATH %>" method="post" enctype="application/x-www-form-urlencoded">
  		<div class="panel-block">
 			<div class="field">
@@ -487,14 +492,20 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
   		</div>
   	
  		<div class="panel-block">
-		<button class="button is-medium is-fullwidth is-danger" type="submit">
+		<button class="button is-medium is-primary" type="submit">
 		    <span class="icon">
 				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
 			<span>Beitrag suchen</span>
 		</button>
  		</div>
- 		</form>
+	</form>
+	</div>
+
+  	</div>
+</nav>
+
+	
 	
 	</div>
 </section>
