@@ -71,14 +71,7 @@ public class AssignContributionServlet extends HttpServlet {
 				if (tx != null && !tx.isBlank()) {
 					DBContribution contribution = users.getContribution(tx.trim());
 					if (contribution != null) {
-						if (contribution.getUserId() == null) {
-							// Not yet assigned.
-							assignUser(users, contribution, userId);
-							
-							session.commit();
-						} else {
-							LOG.warn("Contribution {} already assigned to {}, rejecting assign to {}.", contribution.getTx(), contribution.getUserId(), userId);
-						}
+						tryAssignContribution(session, users, contribution, userId);
 					} else {
 						LOG.warn("Contribution {} not found, cannot assign to {}.", tx, userId);
 					}
@@ -89,9 +82,8 @@ public class AssignContributionServlet extends HttpServlet {
 						List<DBContribution> contributions = users.searchContribution(sender, received.getTime());
 						if (contributions.size() == 1) {
 							DBContribution contribution = contributions.get(0);
-							assignUser(users, contribution, userId);
 							
-							session.commit();
+							tryAssignContribution(session, users, contribution, userId);
 						} else {
 							LOG.warn("No unique contribution found ({}) for {}: name={}, date={}/{}", 
 									contributions.size(), userId, name, date, received);
@@ -106,6 +98,16 @@ public class AssignContributionServlet extends HttpServlet {
 		}
 		
 		showSettings(req, resp);
+	}
+
+	private void tryAssignContribution(SqlSession session, Users users, DBContribution contribution, long userId) {
+		if (contribution.getUserId() == null) {
+			// Not yet assigned.
+			assignUser(users, contribution, userId);
+			session.commit();
+		} else {
+			LOG.warn("Contribution {} already assigned to {}, rejecting assign to {}.", contribution.getTx(), contribution.getUserId(), userId);
+		}
 	}
 
 	private void assignUser(Users users, DBContribution contribution, long userId) {
