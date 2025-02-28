@@ -110,7 +110,7 @@
 
 		<div class="fritzbox-position">
 			<a href="<%=request.getContextPath()%>/link/fritzbox"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
-				src="<%=request.getContextPath() %>/fritzbox.png" />
+				src="<%=request.getContextPath() %>/assets/img/fritzbox.png" />
 			</a>
 		</div>
 		
