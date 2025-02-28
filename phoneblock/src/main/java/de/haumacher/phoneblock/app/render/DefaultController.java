@@ -63,9 +63,10 @@ public class DefaultController implements WebController {
         ctx.setVariable("deps", DEPS);
         ctx.setVariable("contextPath", request.getContextPath());
 
+        String prefix = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        String suffix = path.startsWith("/") ? prefix.substring(1) : prefix;
         
-        String suffix = path.startsWith("/content/") ? path.substring("/content/".length()) : path;
-		String template = suffix.isEmpty() ? "index" : suffix;
+        String template = suffix.isEmpty() ? "index" : suffix;
 
         LOG.info("Serving template {} for {}.", template, path);
         
