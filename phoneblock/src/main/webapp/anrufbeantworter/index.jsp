@@ -109,7 +109,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="DynDNS einrichten" src="app/01-create-answerbot.png"/>
+	  			<img class="image appscreen" alt="DynDNS einrichten" src="<%=request.getContextPath() %>/assets/img/ab/app/01-create-answerbot.png"/>
 	  		</div>
 		</div>
 		
@@ -130,7 +130,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="DynDNS einrichten" src="app/02-enable-dyndns.png"/>
+	  			<img class="image appscreen" alt="DynDNS einrichten" src="<%=request.getContextPath() %>/assets/img/ab/app/02-enable-dyndns.png"/>
 	  		</div>
 		</div>
 		
@@ -140,7 +140,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="DynDNS einrichten" src="app/03-create-dyndns-account.png"/>
+	  			<img class="image appscreen" alt="DynDNS einrichten" src="<%=request.getContextPath() %>/assets/img/ab/app/03-create-dyndns-account.png"/>
 	  		</div>
 		</div>
 		
@@ -175,7 +175,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" src="setup/02-configure-dyndns.png"/>
+	  			<img class="image" alt="DynDNS einrichten" src="<%=request.getContextPath() %>/assets/img/ab/setup/02-configure-dyndns.png"/>
 	  		</div>
 		</div>
 		
@@ -187,7 +187,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" src="app/04-copy-dyndns-settings.png"/>
+	  			<img class="image" alt="DynDNS einrichten" src="<%=request.getContextPath() %>/assets/img/ab/app/04-copy-dyndns-settings.png"/>
 	  		</div>
 		</div>
 		
@@ -214,7 +214,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Gerät einrichten" src="setup/03-create-new-device.png"/>
+	  			<img class="image" alt="Gerät einrichten" src="<%=request.getContextPath() %>/assets/img/ab/setup/03-create-new-device.png"/>
 	  		</div>
 		</div>
 		
@@ -228,7 +228,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Gerät erstellen" src="setup/04-create-phone.png"/>
+	  			<img class="image" alt="Gerät erstellen" src="<%=request.getContextPath() %>/assets/img/ab/setup/04-create-phone.png"/>
 	  		</div>
 		</div>
 
@@ -241,7 +241,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="IP-Telefon erstellen" src="setup/05-choose-ip-phone.png"/>
+	  			<img class="image" alt="IP-Telefon erstellen" src="<%=request.getContextPath() %>/assets/img/ab/setup/05-choose-ip-phone.png"/>
 	  		</div>
 		</div>
 
@@ -255,7 +255,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Benutzerdaten" src="app/05-copy-sip-settings.png"/>
+	  			<img class="image" alt="Benutzerdaten" src="<%=request.getContextPath() %>/assets/img/ab/app/05-copy-sip-settings.png"/>
 	  		</div>
 		</div>
 		
@@ -270,7 +270,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Ausgehende Gespräche" src="setup/07-choose-local-number.png"/>
+	  			<img class="image" alt="Ausgehende Gespräche" src="<%=request.getContextPath() %>/assets/img/ab/setup/07-choose-local-number.png"/>
 	  		</div>
 		</div>
 
@@ -284,7 +284,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Geschützte Nummern" src="setup/08-numbers-to-protect.png"/>
+	  			<img class="image" alt="Geschützte Nummern" src="<%=request.getContextPath() %>/assets/img/ab/setup/08-numbers-to-protect.png"/>
 	  		</div>
 		</div>
 
@@ -297,7 +297,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Einstellungen prüfen" src="setup/10-check-settings.png"/>
+	  			<img class="image" alt="Einstellungen prüfen" src="<%=request.getContextPath() %>/assets/img/ab/setup/10-check-settings.png"/>
 	  		</div>
 		</div>
 
@@ -311,7 +311,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Anrufbeantworter bearbeiten" src="setup/09-edit-phone.png"/>
+	  			<img class="image" alt="Anrufbeantworter bearbeiten" src="<%=request.getContextPath() %>/assets/img/ab/setup/09-edit-phone.png"/>
 	  		</div>
 		</div>
 
@@ -326,10 +326,10 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Ausgehende Anrufe verhindern" src="setup/11-prevent-call.png"/>
+	  			<img class="image" alt="Ausgehende Anrufe verhindern" src="<%=request.getContextPath() %>/assets/img/ab/setup/11-prevent-call.png"/>
 	  		</div>
 			<div class="column">
-	  			<img class="image" alt="Bestätigen" src="setup/12-confirm.png"/>
+	  			<img class="image" alt="Bestätigen" src="<%=request.getContextPath() %>/assets/img/ab/setup/12-confirm.png"/>
 	  		</div>
 		</div>
 
@@ -343,7 +343,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Zugriff aus dem Internet" src="setup/13-allow-internet-access.png"/>
+	  			<img class="image" alt="Zugriff aus dem Internet" src="<%=request.getContextPath() %>/assets/img/ab/setup/13-allow-internet-access.png"/>
 	  		</div>
 		</div>
 		
@@ -356,7 +356,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="Zugriff aus dem Internet" src="app/06-register-answerbot.png"/>
+	  			<img class="image appscreen" alt="Zugriff aus dem Internet" src="<%=request.getContextPath() %>/assets/img/ab/app/06-register-answerbot.png"/>
 	  		</div>
 		</div>
 		
@@ -367,7 +367,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="Anrufbeantworter verbunden" src="app/10-answerbot-activated.png"/>
+	  			<img class="image appscreen" alt="Anrufbeantworter verbunden" src="<%=request.getContextPath() %>/assets/img/ab/app/10-answerbot-activated.png"/>
 	  		</div>
 		</div>
 		
@@ -383,7 +383,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Anrufbeantworter verbunden" src="setup/14-answerbot-local-number.png"/>
+	  			<img class="image" alt="Anrufbeantworter verbunden" src="<%=request.getContextPath() %>/assets/img/ab/setup/14-answerbot-local-number.png"/>
 	  		</div>
 		</div>
 		
