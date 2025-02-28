@@ -46,10 +46,10 @@
 
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image appscreen" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/07-people-sync-add.png"/>
+	  			<img class="image appscreen" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/assets/img/peoplesync/07-people-sync-add.png"/>
 	  		</div>
 			<div class="column is-two-fifths">
-	  			<img class="image appscreen" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/setup-android/08-people-sync-account.png"/>
+	  			<img class="image appscreen" alt="Adressbuch hinzufügen" src="<%=request.getContextPath() %>/assets/img/peoplesync/08-people-sync-account.png"/>
 	  		</div>
 		</div>
 		
