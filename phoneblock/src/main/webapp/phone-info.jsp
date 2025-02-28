@@ -343,7 +343,7 @@
 	<div id="ratings-data" ratings-labels="<%=labels.toString()%>" ratings-dataset="<%=data.toString()%>" ratings-backgroundColor="<%=backgroundColor.toString()%>" ratings-borderColor="<%=borderColor.toString()%>">
 	</div>
 	<canvas id="ratings" width="400" height="200" aria-label="Anzahl Bewertungen" role="img"></canvas>
-	<script type="text/javascript" src="<%= request.getContextPath() %>/phone-info-ratings.js"></script>
+	<script type="text/javascript" src="<%= request.getContextPath() %>/assets/js/phone-info-ratings.js"></script>
 <% } else { %>
 	<p>
 		Es gibt bisher noch keine Bewertungen, sei der erste, der eine seine Einschätzung teilt!
@@ -378,7 +378,7 @@
 	<div id="searches-data" searches-labels="<%=labels.toString()%>" searches-dataset="<%=data.toString()%>">
 	</div>
 	<canvas id="searches" width="400" height="200" aria-label="Suchanfragen in der letzten Woche" role="img"></canvas>
-	<script type="text/javascript" src="<%= request.getContextPath() %>/phone-info-searches.js"></script>
+	<script type="text/javascript" src="<%= request.getContextPath() %>/assets/js/phone-info-searches.js"></script>
 <% } else {%>
 	<p>Es gibt keine Suchanfragen für diese Nummer.</p>
 <% } %>
