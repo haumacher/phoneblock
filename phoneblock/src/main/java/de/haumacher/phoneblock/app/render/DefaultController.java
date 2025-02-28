@@ -3,6 +3,8 @@ package de.haumacher.phoneblock.app.render;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +28,7 @@ public class DefaultController implements WebController {
 	private static final Map<String, Object> DEPS;
 	
 	static {
-		PROPS = new HashMap<>();
-		PROPS.put("version", "PhoneBlock " + UIProperties.VERSION);
-		PROPS.put("timestamp", "Version " + UIProperties.VERSION);
+		PROPS = toModel(UIProperties.APP_PROPERTIES);
 
 		DEPS = new HashMap<>();
 		DEPS.put("bulma", UIProperties.BULMA_PATH);
@@ -47,6 +47,7 @@ public class DefaultController implements WebController {
         HttpServletRequest request = (HttpServletRequest) webExchange.getNativeRequestObject();
 		String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
         ctx.setVariable("userName", userName);
+        ctx.setVariable("supporterId", userName == null ? null : "PhoneBlock-" + userName.substring(0, 13));
         ctx.setVariable("loggedIn", Boolean.valueOf(userName != null));
         ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, LoginServlet.location(request));
         ctx.setVariable("currentPage", ServletUtil.currentPage(request));
@@ -69,6 +70,39 @@ public class DefaultController implements WebController {
         LOG.info("Serving template {} for {}.", template, path);
         
         templateEngine.process(template, ctx, writer);
+	}
+
+	
+	/**
+	 * Converts {@link Properties} with '.'-structured keys to nested maps. 
+	 */
+	static Map<String, Object> toModel(Properties appProperties) {
+		Map<String, Object> result = new HashMap<>();
+		
+		for (Entry<Object, Object> entry : appProperties.entrySet()) {
+			String key = (String) entry.getKey();
+			
+			Map<String, Object> parent = result;
+			String last = null;
+			for (String part : key.split("\\.")) {
+				if (last != null) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> inner = (Map<String, Object>) parent.get(last);
+					if (inner == null) {
+						inner = new HashMap<>();
+					}
+					parent.put(last, inner);
+					
+					parent = inner;
+				}
+				
+				last = part;
+			}
+			
+			parent.put(last, entry.getValue());
+		}
+		
+		return result;
 	}
 
 }

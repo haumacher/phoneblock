@@ -1,6 +1,7 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -24,8 +25,6 @@ public class UIProperties {
 	public final static String SWAGGER_PATH = getWebJarPath("org.webjars.npm", "swagger-ui-dist");
 
 	public static final Properties APP_PROPERTIES;
-	public  static final String VERSION;
-	public  static final String TIMESTAMP;
 	
 	static {
     	APP_PROPERTIES = new Properties();
@@ -34,9 +33,6 @@ public class UIProperties {
 		} catch (IOException ex) {
 			LOG.error("Failed to read configuration properties.", ex);
 		}
-    	
-    	VERSION = APP_PROPERTIES.getProperty("project.version");
-    	TIMESTAMP = APP_PROPERTIES.getProperty("maven.build.timestamp");
 	}
 
 	private static String getWebJarPath(String groupId, String artifactId) {
@@ -47,7 +43,11 @@ public class UIProperties {
 		String version;
 		try {
 			Properties properties = new Properties();
-			properties.load(UIProperties.class.getResourceAsStream("/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties"));
+			try (InputStream in = UIProperties.class.getResourceAsStream("/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties")) {
+				if (in != null) {
+					properties.load(in);
+				}
+			}
 			version = properties.getProperty("version");
 			LOG.info("Using '" + artifactId + "' version: " + version);
 		} catch (IOException e) {

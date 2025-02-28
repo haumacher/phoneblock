@@ -1,20 +1,14 @@
-<!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
-<%
-	request.setAttribute("keywords", "Telefonterror, Telefonspam, angerufen, Werbung, Hotline");
-%>
+<!DOCTYPE>
 <html>
-<head>
-<jsp:include page="head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{fragments/page :: head}"></head>
 
 <body>
-<jsp:include page="header.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/assets/img/animation.svg">
+			<img alt="PhoneBlock Logo" th:src="@{/assets/img/animation.svg}">
 		</div>
 
 		<h1>Unerwünschte Anrufer automatisch abweisen</h1>
@@ -28,26 +22,17 @@
 			genau das was Du brauchst!
 		</p>
 
-<%
-	String userAgent = request.getHeader("User-Agent");
-	boolean android = userAgent != null && userAgent.toLowerCase().contains("android");
-	boolean iphone = userAgent != null && userAgent.toLowerCase().contains("iPhone");
-	String setupAndroidClass = android ? "is-primary" : "is-info";
-	String setupIphoneBoxClass = iphone ? "is-primary" : "is-info";
-	String setupFritzBoxClass = (android || iphone) ? "is-info" : "is-primary";
-%>
-
 		<div class="columns">
 		  <div class="column is-one-quarter">
-			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
+			<a class="button is-medium is-primary is-fullwidth" th:href="@{/anrufbeantworter/}">
 			    <span class="icon">
-					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
+					<img th:src="@{/anrufbeantworter/logo/ab-logo-white.svg}"/>
 			    </span>
 				<span>Anrufbeantworter</span>			
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup.jsp">
+			<a class="button is-medium is-fullwidth" th:href="@{/setup.jsp}">
 			    <span class="icon">
 					<i class="fa-solid fa-phone"></i>
 			    </span>
@@ -55,7 +40,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a class="button is-medium <%= setupAndroidClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-android/">
+			<a class="button is-medium is-fullwidth" th:href="@{/setup-android/}">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
@@ -63,7 +48,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a class="button is-medium <%= setupIphoneBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/setup-iphone/">
+			<a class="button is-medium is-fullwidth" th:href="@{/setup-iphone/}">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
 			    </span>
@@ -77,7 +62,7 @@
 		<p>
 			PhoneBlock ist eine von der PhoneBlock-Community gepflegte
 			Liste mit Telefonnummern, die unter Spamverdacht stehen. 
-			Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a>
+			Der <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworter</a>
 			nimmt dann Gespräche von Anrufern auf der Sperrliste an, so dass Dein Telefon 
 			bei diesen Anrufen stumm bleibt. 
 		</p>
@@ -85,17 +70,17 @@
 		<p>
 			Alternativ kannst Du die 
 			Sperrliste auch als Telefonbuch in Deinen Internet-Router "FRITZ!Box" 
-			importieren und Anrufe von Nummern aus diesem <a href="<%=request.getContextPath()%>/setup.jsp">speziellen Telefonbuch</a> blockiern. 
+			importieren und Anrufe von Nummern aus diesem <a th:href="@{/setup.jsp}">speziellen Telefonbuch</a> blockiern. 
 			Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
 			aktualisiert die Sperrliste jede Nacht automatisch. Sobald eine Nummer in diese Sperrliste
 			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
-			automatisch ab. Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">Anrufbeantworter</a> ist allerdings die 
+			automatisch ab. Der <a th:href="@{/anrufbeantworter/}">Anrufbeantworter</a> ist allerdings die 
 			bessere Lösung, weil ein Telefonbuch in der Größe beschränkt ist und nicht alle Nummern der Blockliste aufnehmen kann.
 		</p>
 
 		<p>Erhältst Du trotzdem noch einen unerwünschten Anruf, weil die
 			Nummer noch nicht in die Sperrliste aufgenommen ist, kannst Du die
-			<a href="<%=request.getContextPath()%>/block.jsp">Nummer ganz einfach in Deiner FRITZ!Box sperren</a>. 
+			<a th:href="@{/block.jsp}">Nummer ganz einfach in Deiner FRITZ!Box sperren</a>. 
 			Hierzu machst Du für den unerwünschten 
 			Anrufer einen Eintrag im PhoneBlock-Adressbuch direkt in Deiner Fritz!Box. 
 			Sobald Du das getan hast, aktualisiert Deine FrizBox die
@@ -103,26 +88,26 @@
 			von dieser neuen Nummer blitzen bei allen anderen ebenfalls sofort
 			ab. Das ist zwar ein klein wenig aufwendiger, als die Nummer in Deinem Fritz!Phone direkt 
 			zu sperren, aber hat den Vorteil, dass Du damit die ganze PhoneBlock-Community vor 
-			<a href="<%=request.getContextPath()%>/status.jsp">weiteren Spam-Anrufen</a> schützt. 
+			<a th:href="@{/status.jsp}">weiteren Spam-Anrufen</a> schützt. 
 		</p>
 
 		<h2>Was sind die Vorausetzungen?</h2>
 
 		<div class="fritzbox-position">
-			<a href="<%=request.getContextPath()%>/link/fritzbox"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
-				src="<%=request.getContextPath() %>/assets/img/fritzbox.png" />
+			<a th:href="@{/link/fritzbox}"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
+				th:src="@{/assets/img/fritzbox.png}" />
 			</a>
 		</div>
 		
 		<p>
-			PhoneBlock kann unerwünschte Anrufe entweder am <a href="<%=request.getContextPath()%>/setup.jsp">"Festnetzanschluss"</a> in
-			Zusammenspiel mit einem <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
-			Internetrouter von AVM</a> blockieren, oder auf Deinem <a href="<%=request.getContextPath()%>/setup-android/">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
+			PhoneBlock kann unerwünschte Anrufe entweder am <a th:href="@{/setup.jsp}">"Festnetzanschluss"</a> in
+			Zusammenspiel mit einem <a th:href="@{/link/fritzbox}">"FRITZ!Box"
+			Internetrouter von AVM</a> blockieren, oder auf Deinem <a th:href="@{/setup-android/}">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
 		</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			  <input type="hidden" id="context-path" value="<%=request.getContextPath()%>">
+			  <input type="hidden" id="context-path" th:value="@{}">
 			<a id="search-fritzbox" class="button is-medium is-info is-fullwidth" href="#">
 				<span class="icon is-small is-left">
 					<i class="fa-solid fa-magnifying-glass"></i>
@@ -140,14 +125,14 @@
 
 	<div class="tile is-ancestor">
 		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/login.jsp">
+			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
 				<p class="title">Klar zum Loslegen?</p>
 				<p class="subtitle">PhoneBlock-Account erstellen!</p>
 			</a>
 		</div>
 
 		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/faq.jsp">
+			<a class="tile is-child notification is-info" th:href="@{/faq.jsp}">
 				<p class="title">Noch Fragen?</p>
 				<p class="subtitle">Check die FAQ!</p>
 			</a>
@@ -155,6 +140,6 @@
 	</div>
 </section>
 
-<jsp:include page="footer.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>
