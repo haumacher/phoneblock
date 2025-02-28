@@ -24,11 +24,11 @@
 
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image appscreen" alt="Installiere PeopleSync" src="<%=request.getContextPath() %>/setup-android/03-people-sync-install.png"/>
+	  			<img class="image appscreen" alt="Installiere PeopleSync" src="<%=request.getContextPath() %>/assets/img/peoplesync/03-people-sync-install.png"/>
 	  		</div>
 		
 			<div class="column is-two-fifths">
-				<img class="image appscreen" alt="Öffne PeopleSync" src="<%=request.getContextPath() %>/setup-android/04-people-sync-open.png"/>
+				<img class="image appscreen" alt="Öffne PeopleSync" src="<%=request.getContextPath() %>/assets/img/peoplesync/04-people-sync-open.png"/>
 			</div>
 		</div>
 		
