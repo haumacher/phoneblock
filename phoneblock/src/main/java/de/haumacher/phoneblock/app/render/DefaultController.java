@@ -55,13 +55,8 @@ public class DefaultController implements WebController {
         ctx.setVariable("description", "Werbeanrufe mit Deiner Fritz!Box automatisch blockieren. PhoneBlock jetzt kostenlos installieren.");
         ctx.setVariable("keywords", "");
         
-    	String path = (String) request.getAttribute("path");
-    	if (path == null) {
-    		path = request.getServletPath();
-    		if (path.endsWith("index.html")) {
-    			path = path.substring(0, path.length() - "index.html".length());
-    		}
-    	}
+		String path = request.getServletPath();
+    		
         ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + path);
         ctx.setVariable("props", PROPS);
         ctx.setVariable("deps", DEPS);
@@ -69,7 +64,7 @@ public class DefaultController implements WebController {
 
         
         String suffix = path.startsWith("/content/") ? path.substring("/content/".length()) : path;
-		String template = suffix.isEmpty() ? "home" : suffix;
+		String template = suffix.isEmpty() ? "index" : suffix;
 
         LOG.info("Serving template {} for {}.", template, path);
         
