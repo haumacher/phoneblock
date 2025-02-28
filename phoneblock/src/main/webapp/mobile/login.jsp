@@ -72,7 +72,7 @@
 <% } %>
 </section>
 
-<script type="text/javascript" src="<%= request.getContextPath() %>/bulma.js"></script>
+<script type="text/javascript" src="<%= request.getContextPath() %>/assets/js/bulma.js"></script>
 
 </body>
 </html>
