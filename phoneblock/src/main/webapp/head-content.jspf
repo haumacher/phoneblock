@@ -60,8 +60,8 @@
 
 <link rel="alternate" type="application/rss+xml" title="PhoneBlock Updates" href="https://news.phoneblock.net/feed" />
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/phoneblock-style.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/phoneblock-style.css">
 
 <script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.JQUERY_PATH %>/jquery.min.js"></script>
-<script type="text/javascript" src="<%=request.getContextPath() %>/phoneblock.js?v=4"></script>
+<script type="text/javascript" src="<%=request.getContextPath() %>/assets/js/phoneblock.js?v=4"></script>
 <script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.BULMA_COLLAPSIBLE_PATH %>/js/bulma-collapsible.min.js"></script>

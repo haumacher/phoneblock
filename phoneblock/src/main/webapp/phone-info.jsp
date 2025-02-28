@@ -56,7 +56,7 @@
 <script type="text/javascript" src="<%=request.getContextPath() %><%=UIProperties.CHARTJS_PATH %>/dist/chart.umd.js"></script>
 <% } %>
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/phone-info.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/phone-info.css">
 </head>
 
 <body>
