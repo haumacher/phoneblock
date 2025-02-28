@@ -58,7 +58,7 @@
 <link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.BULMA_COLLAPSIBLE_PATH %>/css/bulma-collapsible.min.css">
 <link rel="stylesheet" href="<%= request.getContextPath() %><%=UIProperties.FA_PATH %>/css/all.min.css">
 
-<link rel="alternate" type="application/rss+xml" title="PhoneBlock Updates" href="https://rss.app/feeds/2BQDpMNxPek9Yal2.xml" />
+<link rel="alternate" type="application/rss+xml" title="PhoneBlock Updates" href="https://news.phoneblock.net/feed" />
 
 <link rel="stylesheet" href="<%= request.getContextPath() %>/phoneblock-style.css">
 

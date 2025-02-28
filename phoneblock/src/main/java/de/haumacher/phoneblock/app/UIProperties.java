@@ -6,6 +6,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory;
+
 /**
  * Paths for dependencies included as web jars.
  */
@@ -20,6 +22,22 @@ public class UIProperties {
 	public final static String JQUERY_PATH = getWebJarPath("org.webjars", "jquery");
 	public final static String CHARTJS_PATH = getWebJarPath("org.webjars", "chartjs");
 	public final static String SWAGGER_PATH = getWebJarPath("org.webjars.npm", "swagger-ui-dist");
+
+	public static final Properties APP_PROPERTIES;
+	public  static final String VERSION;
+	public  static final String TIMESTAMP;
+	
+	static {
+    	APP_PROPERTIES = new Properties();
+    	try {
+			APP_PROPERTIES.load(PhoneBlockConfigFactory.class.getResourceAsStream("/phoneblock.properties"));
+		} catch (IOException ex) {
+			LOG.error("Failed to read configuration properties.", ex);
+		}
+    	
+    	VERSION = APP_PROPERTIES.getProperty("project.version");
+    	TIMESTAMP = APP_PROPERTIES.getProperty("maven.build.timestamp");
+	}
 
 	private static String getWebJarPath(String groupId, String artifactId) {
 		return "/webjars/" + artifactId + "/" + getVersion(groupId, artifactId);
