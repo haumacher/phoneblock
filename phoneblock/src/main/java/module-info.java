@@ -47,7 +47,8 @@ module de.haumacher.phoneblock {
 	requires java.sql;
 	requires java.xml;
 	requires java.net.http;
-	requires jakarta.servlet;
+	requires transitive jakarta.servlet;
+	requires thymeleaf;
 	requires jakarta.servlet.jsp;
 	requires jakarta.el;
 	requires jakarta.mail;

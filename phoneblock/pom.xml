@@ -74,6 +74,12 @@
 			<artifactId>phoneblock-ab</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>3.1.3.RELEASE</version>
+		</dependency>
 	
 		<dependency>
 		    <groupId>dnsjava</groupId>
@@ -442,6 +448,10 @@
 					            <resource>
 					                <directory>src/main/webapp</directory>
 					                <filtering>true</filtering>
+					            </resource>
+					            <resource>
+					                <directory>src/main/templates</directory>
+					                <targetPath>WEB-INF/templates</targetPath>
 					            </resource>
 					            <resource>
 					                <directory>../phoneblock_answerbot_ui/build/web</directory>

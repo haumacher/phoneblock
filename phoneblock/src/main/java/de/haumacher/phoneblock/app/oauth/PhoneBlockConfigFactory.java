@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.LoginServlet;
+import de.haumacher.phoneblock.app.UIProperties;
 
 /**
  * {@link ConfigFactory} for authenticating with external services.
@@ -42,12 +43,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
 	
     @Override
     public Config build(final Object... parameters) {
-    	Properties properties = new Properties();
-    	try {
-			properties.load(PhoneBlockConfigFactory.class.getResourceAsStream("/phoneblock.properties"));
-		} catch (IOException ex) {
-			LOG.error("Failed to read configuration properties.", ex);
-		}
+    	Properties properties = UIProperties.APP_PROPERTIES;
     	
     	String contextPath = Application.getContextPath();
     	if (contextPath == null) {
