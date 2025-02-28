@@ -122,7 +122,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufliste der Fritz!Box" src="<%=request.getContextPath() %>/02-navigate-to-addressbooks.png"/>
+			<img class="image" alt="Anrufliste der Fritz!Box" src="<%=request.getContextPath() %>/assets/img/setup/02-navigate-to-addressbooks.png"/>
 		  </div>
 		</div>
 		
@@ -181,7 +181,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Neues Adressbuch anlegen" src="<%=request.getContextPath() %>/03-add-address-book.png"/>
+			<img class="image" alt="Neues Adressbuch anlegen" src="<%=request.getContextPath() %>/assets/img/setup/03-add-address-book.png"/>
 		  </div>
 		</div>
 
@@ -195,7 +195,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Abgerufene Blocklist anzeigen" src="<%=request.getContextPath() %>/04-check-blocklist.png"/>
+			<img class="image" alt="Abgerufene Blocklist anzeigen" src="<%=request.getContextPath() %>/assets/img/setup/04-check-blocklist.png"/>
 		  </div>
 		</div>
 
@@ -213,7 +213,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Neue Rufsperre hinzufügen" src="<%=request.getContextPath() %>/05-add-blocklist.png"/>
+			<img class="image" alt="Neue Rufsperre hinzufügen" src="<%=request.getContextPath() %>/assets/img/setup/05-add-blocklist.png"/>
 		  </div>
 		</div>
 		
@@ -224,7 +224,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" src="<%=request.getContextPath() %>/06-create-blocklist.png"/>
+			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" src="<%=request.getContextPath() %>/assets/img/setup/06-create-blocklist.png"/>
 		  </div>
 		</div>
 		
