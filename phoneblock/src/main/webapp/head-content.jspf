@@ -38,7 +38,7 @@
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:site" content="@bhaumacher" />
 <meta name="twitter:creator" content="@bhaumacher" />
-<meta name="twitter:image" content="<%=request.getContextPath() %>/app-preview.png" />
+<meta name="twitter:image" content="<%=request.getContextPath() %>/assets/img/app-preview.png" />
 
 <meta name="og:title" content="<%= JspUtil.quote(title) %>" />
 <%if ("/".equals(path) || path.isEmpty()) { %>
@@ -49,7 +49,7 @@
 <link rel="canonical" href="https://phoneblock.net<%= request.getContextPath() %><%= path %>" />
 <%} %>
 <meta name="og:description" content="<%= JspUtil.quote(description) %>" />
-<meta name="og:image" content="<%=request.getContextPath() %>/app-preview.png" />
+<meta name="og:image" content="<%=request.getContextPath() %>/assets/img/app-preview.png" />
 <meta name="og:type" content="website" />
 <meta name="og:locale" content="de_DE" />
 <meta name="og:site_name" content="PhoneBlock">

@@ -87,7 +87,7 @@ public class MailServiceImpl implements MailService {
 		String contextPath = Application.getContextPath();
 		String baseUrl = HOME_PAGE + contextPath;
 		
-		_appLogoSvg = baseUrl + "/app-logo.svg";
+		_appLogoSvg = baseUrl + "/assets/img/app-logo.svg";
 		_settings = baseUrl + SettingsServlet.PATH;
 		_app = baseUrl + "/ab/";
 		_support = baseUrl + "/support.jsp";
