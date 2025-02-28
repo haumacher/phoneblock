@@ -153,7 +153,7 @@ function checkFritzBox(contextPath, button) {
 		button.classList.add("is-primary");
 		button.textContent = "Gefunden, leg los!"
 		document.getElementById("search-fritzbox").href="setup.jsp";
-		document.getElementById("fritzbox").src = contextPath + "/fritzbox-found.png";
+		document.getElementById("fritzbox").src = contextPath + "/assets/img/fritzbox-found.png";
 	}
 	image.onerror = function() {
 		button.classList.remove("is-loading");
@@ -161,7 +161,7 @@ function checkFritzBox(contextPath, button) {
 		button.classList.add("is-danger");
 		button.textContent = "Nicht gefunden, was tun?";
 		document.getElementById("search-fritzbox").href="no-fritzbox.jsp";
-		document.getElementById("fritzbox").src = contextPath + "/fritzbox-not-found.png";
+		document.getElementById("fritzbox").src = contextPath + "/assets/img/fritzbox-not-found.png";
 	}
 	
 	image.src = "http://fritz.box/favicon.ico";
