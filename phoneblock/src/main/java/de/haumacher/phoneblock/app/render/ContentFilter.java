@@ -42,8 +42,49 @@ public class ContentFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		
+		HttpServletRequest httpRequest = (HttpServletRequest)request;
+		HttpServletResponse httpResponse = (HttpServletResponse) response;
+		
+		String path = httpRequest.getServletPath();
+		
+		// Excluded paths.
+		if (path.startsWith("/fragments") || 
+			path.startsWith("/ab") || 
+			path.startsWith("/assets") ||
+			path.startsWith("/api")
+		) {
+			chain.doFilter(httpRequest, httpResponse);
+			return;
+		}
+		
+		// Canonicalize requested path.
+		if (path.endsWith("index.html")) {
+			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - "index.html".length());
+			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			return;
+		}
+		if (path.endsWith("index.jsp")) {
+			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - "index.jsp".length());
+			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			return;
+		}
+
+		// Ensure that old-style JSP resources are still resolvable.
+		if (path.endsWith(".jsp")) {
+			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - ".jsp".length());
+			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			return;
+		}
+		
+		// All pages are directories.
+		if (!path.endsWith("/")) {
+			String canonical = httpRequest.getContextPath() + path + "/";
+			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			return;
+		}
 	
-		if (!process((HttpServletRequest)request, (HttpServletResponse) response)) {
+		if (!process(httpRequest, httpResponse)) {
 			chain.doFilter(request, response);
 		}
 	}
