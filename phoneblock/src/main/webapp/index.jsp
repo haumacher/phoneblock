@@ -14,7 +14,7 @@
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock Logo" src="animation.svg">
+			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/assets/img/animation.svg">
 		</div>
 
 		<h1>Unerwünschte Anrufer automatisch abweisen</h1>

@@ -12,13 +12,13 @@
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:site" content="@bhaumacher" />
 	<meta name="twitter:creator" content="@bhaumacher" />
-	<meta name="twitter:image" th:content="@{/app-preview.png}" />
+	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}" />
 	
 	<meta name="og:title" th:content="${title}" />
 	<meta name="og:url" th:content="${canonical}" />
 	<link rel="canonical" th:href="${canonical}" />
 	<meta th:if="${description}" name="og:description" th:content="${description}" />
-	<meta name="og:image" th:content="@{/app-preview.png}" />
+	<meta name="og:image" th:content="@{/assets/img/app-preview.png}" />
 	<meta name="og:type" content="website" />
 	<meta name="og:locale" content="de_DE" />
 	<meta name="og:site_name" content="PhoneBlock">
@@ -40,7 +40,7 @@
 <section th:fragment="header" class="hero is-small is-primary">
 	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" th:src="@{/app-logo.svg}" class="logo-image">
+			<img alt="PhoneBlock Logo" th:src="@{/assets/img/app-logo.svg}" class="logo-image">
 			<a th:href="@{/}">PhoneBlock</a>
 		</p>
 		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
