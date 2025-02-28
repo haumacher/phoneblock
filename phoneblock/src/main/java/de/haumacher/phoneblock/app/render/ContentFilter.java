@@ -59,26 +59,26 @@ public class ContentFilter implements Filter {
 		// Canonicalize requested path.
 		if (path.endsWith("index.html")) {
 			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - "index.html".length());
-			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			httpResponse.sendRedirect(canonical);
 			return;
 		}
 		if (path.endsWith("index.jsp")) {
 			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - "index.jsp".length());
-			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			httpResponse.sendRedirect(canonical);
 			return;
 		}
 
 		// Ensure that old-style JSP resources are still resolvable.
 		if (path.endsWith(".jsp")) {
 			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - ".jsp".length()) + "/";
-			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			httpResponse.sendRedirect(canonical);
 			return;
 		}
 		
 		// All pages are directories.
 		if (!path.endsWith("/")) {
 			String canonical = httpRequest.getContextPath() + path + "/";
-			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
+			httpResponse.sendRedirect(canonical);
 			return;
 		}
 	
