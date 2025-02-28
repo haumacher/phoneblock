@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
+<!DOCTYPE>
 <html>
-<%
-	request.setAttribute("title", "Fragen und Antworten zu PhoneBlock");
-%>
-<head>
-<jsp:include page="head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{fragments/page :: head(title='Fragen und Antworten zu PhoneBlock')}"></head>
 
 <body>
-<jsp:include page="header.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -20,7 +13,7 @@
 		<p>
 			Ja, aktuell musst Du für die Nutzung von PhoneBlock nichts bezahlen. Allerdings verursacht der Betrieb von PhoneBlock
 			mittlerweile laufende Kosten für Servermiete, Internetzugang, Domainregistrierung. Um diese zu decken, wäre es schön, 
-			wenn Du <b><a href="<%=request.getContextPath()%>/support.jsp">eine kleine Spende leisten</a></b> könntest.
+			wenn Du <b><a th:href="@{/support.jsp}">eine kleine Spende leisten</a></b> könntest.
 		</p>
 		
 		<p>
@@ -35,22 +28,22 @@
 			als Cloud-Guthaben gutgeschrieben.
 		</p>
 
-		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" href="<%=request.getContextPath()%>/link/tellows">tellows Anrufschutz</a>"?</h2>
+		<h2>Was ist der Unterschied zwischen PhoneBlock und dem "<a target="_blank" th:href="@{/link/tellows}">tellows Anrufschutz</a>"?</h2>
 		<p>
-			Der <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kennt keine 
+			Der <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworter</a> kennt keine 
 			Größenbeschränkung des Sperrlisten-Telefonbuchs. Er nimmt das Gespräch für alle Nummern, die auf der 
 			Sperrliste stehen, an. Es ist keine nächtliche Aktualisierung der Blockliste in Deiner Fritz!Box notwendig, 
 			Die Blockliste ist immer aktuell.
 		</p>
 		
 		<p>  
-			Den <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
+			Den <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
 			VOIP-fähigen Internetrouter installieren, auch dann wenn das CardDAV-Protokoll für Internet-Telefonbücher von Deinem 
 			Router nicht unterstützt wird. 
 		</p>
 		
 		<p>
-			Bei beiden Angeboten kannst Du die <a href="<%=request.getContextPath()%>/setup.jsp">Blockliste als Internet-Telefonbuch</a>, 
+			Bei beiden Angeboten kannst Du die <a th:href="@{/setup.jsp}">Blockliste als Internet-Telefonbuch</a>, 
 			in Deiner Fritz!Box einrichten 
 			und die Nummern in diesem Telefonbuch sperren. PhoneBlock bietet Dir darüber hinaus aber die Möglichkeit
 			Deine Blocklist zu personalisieren und ist zudem auch noch kostenlos (siehe oben).
@@ -63,7 +56,7 @@
 			Nummer auf die Blocklist aufgenommen hat, von der Du aber angerufen werden möchtest. Z.B. kann ganz leicht
 			eine Nummer z.B. von einem Internet-Anbieter auf die Blocklist geraten, wenn sich viele Leute von 
 			Rückrufen von dieser Nummer genervt fühlen, Du aber auf einen Rückruf wartest. Das wird auch ganz schön in 
-			diesem <a target="_blank" href="<%=request.getContextPath()%>/link/tellows-problems">YouTube-Video</a> erklärt. 
+			diesem <a target="_blank" th:href="@{/link/tellows-problems}">YouTube-Video</a> erklärt. 
 			Mit PhoneBlock kannst Du Deine Blocklist anpassen, Nummern, die Du selbst darauf gesetzt hast, bleiben 
 			gesperrt und Nummern, die Du zu Deiner Whitelist hinzugefügt hast, werden sicher bei Dir nicht blockiert.
 		</p>
@@ -77,7 +70,7 @@
 			PhoneBlock-Anrufbeantworter meldest Du wie ein Internettelefon an Deine Fritz!Box an und er geht immer ran,
 			wenn eine SPAM-Nummer anruft, so schnell, dass dein Telefon nicht oder nur ganz kurz klingelt.
 			Aktuell ist der PhoneBlock-Anrufbeantworter erst auf einem Test-System verfügbar, das eine separate Anmeldung
-			erfordert: <a href="<%=request.getContextPath()%>/anrufbeantworter/">Zum Anrufbeantworter-Testsystem</a>. Wenn Du 
+			erfordert: <a th:href="@{/anrufbeantworter/}">Zum Anrufbeantworter-Testsystem</a>. Wenn Du 
 			Den Anrufbeantworter erfolgreich installieren konntest - oder Probleme dabei hattest, gibt bitte eine Rückmeldung,
 			damit das neue Werkzeug möglichst bald allgemein verfügbar wird.
 		</li>
@@ -92,7 +85,7 @@
 		<h2>Ich habe keine Fritz!Box, kann ich PhoneBlock trotzdem nutzen?</h2>
 		
 		<p>  
-			Den <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
+			Den <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworter</a> kannst Du in jeden
 			VOIP-fähigen Internetrouter installieren, auch dann wenn das CardDAV-Protokoll für Internet-Telefonbücher von Deinem 
 			Router nicht unterstützt wird. Installiere den Anrufbeantworter als normales VOIP-Telefon, das sich über 
 			Internet an Deiner Box anmeldet.
@@ -113,7 +106,7 @@
 			einrichten und dort die PhoneBlock-Datenbank einbinden.
 		</p>
 		<p>
-			Wenn Du das <a href="<%= request.getContextPath()%>/setup-android/">PhoneBlock-Adressbuch abonierst</a>, 
+			Wenn Du das <a th:href="@{/setup-android/}">PhoneBlock-Adressbuch abonierst</a>, 
 			siehst Du einem Anruf direkt an, ob es sich lohnt, den Anruf anzunehmen oder bei einem verpassten Anruf 
 			zurückzurufen. Spam-Anrufe direkt abweisen ist darüber allerdings nicht möglich.
 		</p>
@@ -128,7 +121,7 @@
 		<h2>Kann ich PhoneBlock auf einem iPhone nutzen?</h2>
 		<p> 
 			Ja, mit dem iPhone geht das sogar ganz ohne Installation zusätzlicher Apps. Schau Dir hier die 
-			<a href="<%= request.getContextPath()%>/setup-iphone/">Installationsanleitung</a> an.
+			<a th:href="@{/setup-iphone/}">Installationsanleitung</a> an.
 		</p>
 
 		<h2 id="Error26">Meine FritzBox! meldet "Fehler 26" bei der Einrichtung</h2>
@@ -176,14 +169,14 @@
 		<h2>Ich erhalte trotz PhoneBlock immer noch Spam-Anrufe, was tun?</h2>
 		<p>
 			Es gibt ständig neue Spam-Nummern, daher kann PhoneBlock keinen 100%igen Schutz bieten. 
-			<a href="<%=request.getContextPath()%>/block.jsp">Trage  den
+			<a th:href="@{/block.jsp}">Trage  den
 			neuen unerwünschten Anrufer in die Blocklist ein</a> und hilf damit auch anderen, den Quälgeist 
 			schnell los zu werden!  
 		</p>
 
 		<h2>Eine Nummer wird fälschlicherweise blockiert, was tun?</h2>
 		<p>
-			Kein Problem, öffne <a href="<%= request.getContextPath() + SettingsServlet.PATH %>#whitelist">Deine Einstellungen</a> 
+			Kein Problem, öffne <a th:href="@{/settings/#whitelist}">Deine Einstellungen</a> 
 			und füge die Nummer zu Deiner White-List hinzu. Deine White-List ist eine Liste von Telefonnummern, die Du 
 			von der Sperrung ausgenommen hast. Sie landen nie auf Deiner Blocklist, auch wenn sich ganz viele andere 
 			von Anrufen dieser Nummer genervt fühlen und sie blockieren. 
@@ -197,7 +190,7 @@
 			dieser Nummer genervt wirst. Aufgrund der komprimierten Speicherung von vielen Nummern in einem Kontakt, 
 			kann man leider auf dieselbe Art und Weise keine Nummer aus der persönlichen Sperrliste löschen. 
 			Stattdessen musst Du Dich in so einem Fall hier auf der Seite mit Deinen Zugangsdaten anmelden und die 
-			Nummer in <a href="<%= request.getContextPath() + SettingsServlet.PATH %>#blacklist">Deinen Einstellungen</a> 
+			Nummer in <a th:href="@{/settings/#blacklist}">Deinen Einstellungen</a> 
 			aus der  "Black-List" löschen. Beim nächsten Synchronisationslauf sollte die Nummer dann auch wieder aus
 			der Blockliste Deiner Fritz!Box verschwinden. 
 		</p>
@@ -234,7 +227,7 @@
 		
 		<h2>Ich finde PhoneBlock toll, kann ich eine Spende machen?</h2>
 		<p>
-			Ja, wenn Dir PhoneBlock gefällt, dann kannst Du Dich gerne mit einer <a href="<%=request.getContextPath()%>/support.jsp">kleinen Spende</a> 
+			Ja, wenn Dir PhoneBlock gefällt, dann kannst Du Dich gerne mit einer <a th:href="@{/support.jsp}">kleinen Spende</a> 
 			an den laufenden Kosten für Servermiete, Domain-Registrierung, Internetzugang usw. beteiligen.
 		</p>
 		
@@ -247,7 +240,7 @@
 
 		<h2>Ich habe einen Wunsch, was PhoneBlock unbedingt können sollte, wo kann ich den äußern?</h2>
 		<p>
-			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" href="<%=request.getContextPath()%>/link/issues">PhoneBlock Projekt-Seite</a> 
+			Wenn Du einen GitHub-Account hast, kannst Du auf der <a target="_blank" th:href="@{/link/issues}">PhoneBlock Projekt-Seite</a> 
 			ein Ticket öffnen und den Wunsch beschreiben. Gerne kannst Du den Vorschlag aber auch mit mir per E-Mail 
 			diskutieren: <code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>
 		</p>
@@ -255,23 +248,23 @@
 		<h2>Wie kann ich PhoneBlock wieder deinstallieren?</h2>
 		<p>
 			Du benötigst PhoneBlock nicht mehr, oder bist nicht damit zufrieden? Schade, vielleicht kannst Du ja 
-			<a target="_blank" href="<%=request.getContextPath()%>/link/issues">einen Verbesserungsvorschlag machen</a>?
+			<a target="_blank" th:href="@{/link/issues}">einen Verbesserungsvorschlag machen</a>?
 		</p>
 		
 		<p>
 			Zum Deinstallieren gehst Du genau wie bei der Installation nur rückwärts vor. Je nachdem wie Du PhoneBlock installiert hast 
-			(als <a href="<%=request.getContextPath()%>/setup.jsp">Telefonbuch</a> oder als 
-			<a href="<%=request.getContextPath()%>/anrufbeantworter/">Anrufbeantworter</a>, oder beides), must Du die entsprechenden 
+			(als <a th:href="@{/setup.jsp}">Telefonbuch</a> oder als 
+			<a th:href="@{/anrufbeantworter/}">Anrufbeantworter</a>, oder beides), must Du die entsprechenden 
 			Einstellungen wieder löschen. Beim Telefonbuch: Die Rufsperre (oder die Rufumleitung) löschen, welche sich auf alle Anrufe 
 			aus dem PhoneBlock-Telefonbuch bezieht. Anschließend kannst Du das PhoneBlock-Telefonbuch löschen. Beim Anrufbeantworter: 
 			Das Telefoniegerät "PhoneBlock" löschen und anschließend die DynIP-Freigabe deaktivieren (wenn Du nicht einen separaten 
 			DynIP-Dienst verwendet hast). Anschließend solltest Du noch Deinen PhoneBlock-Account in den 
-			<a href="<%= request.getContextPath() + SettingsServlet.PATH %>">Einstellungen</a> löschen.
+			<a th:href="@{/settings/}">Einstellungen</a> löschen.
 		</p>
 
 		<h2>Meine Frage wird hier nicht beantwortet, wer hilft?</h2>
 		<p>
-			Schreib doch einen Kommentar auf auf der <a target="_blank" href="<%=request.getContextPath()%>/link/facebook">Facebook-Seite von PhoneBlock</a>, 
+			Schreib doch einen Kommentar auf auf der <a target="_blank" th:href="@{/link/facebook}">Facebook-Seite von PhoneBlock</a>, 
 			dann können alle die Frage lesen. 
 			Gerne kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>
@@ -287,14 +280,14 @@
 	
 	<div class="tile is-ancestor">
 		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" href="<%=request.getContextPath() %>/login.jsp">
+			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
 				<p class="title">Klar zum Loslegen?</p>
 				<p class="subtitle">PhoneBlock-Account erstellen!</p>
 			</a>
 		</div>
 
 		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" href="<%=request.getContextPath() %>/setup.jsp">
+			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
 				<p class="title">Wie einrichten?</p>
 				<p class="subtitle">Check die Installationsanleitung!</p>
 			</a>
@@ -302,6 +295,6 @@
 	</div>
 </section>
 
-<jsp:include page="footer.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

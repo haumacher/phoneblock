@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
+<!DOCTYPE>
 <html>
-<%
-	request.setAttribute("title", "Datenschutz - PhoneBlock");
-%>
-<head>
-<jsp:include page="head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{fragments/page :: head}"></head>
 
 <body>
-	<jsp:include page="header.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: header}"></div>
 
 	<section class="section">
 		<div class="content">
@@ -53,7 +46,7 @@
 			<h2>Account-Löschung</h2>
 			<p>
 				Du kannst Deinen PhoneBlock-Account jederzeit in den 
-				<a href="<%=request.getContextPath()%><%=SettingsServlet.PATH%>">Einstellungen</a> 
+				<a th:href="@{/settings/}">Einstellungen</a> 
 				wieder löschen. Mit Löschung deines Accounts werden deine bei PhoneBlock
 				gespeicherten Daten gelöscht. 
 			</p>
@@ -68,7 +61,7 @@
 
 			<h2>Anrufbeantworter</h2>
 			<p>
-				Bei der Verwendung des <a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworters</a>
+				Bei der Verwendung des <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworters</a>
 				muss PhoneBlock dauerhaft die IP-Adresse Deiner Fritz!Box speichern, um den Anrufbeantworter 
 				dort anzumelden und die Registrierung aufrecht zu erhalten. Hierfür hast Du entweder 
 				den Host-Namen Deiner Fritz!Box hinterlegt, oder den DynDNS-Dienst von PhoneBlock in Deiner
@@ -88,6 +81,6 @@
 		</div>
 	</section>
 
-	<jsp:include page="footer.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

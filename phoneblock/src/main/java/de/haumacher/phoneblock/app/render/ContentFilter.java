@@ -8,7 +8,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.WebApplicationTemplateResolver;
 import org.thymeleaf.web.IWebApplication;
-import org.thymeleaf.web.IWebExchange;
 import org.thymeleaf.web.IWebRequest;
 import org.thymeleaf.web.servlet.IServletWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
@@ -24,8 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @WebFilter(urlPatterns = {
-	"/content",
-	"/content/*",
+	"/*",
 })
 public class ContentFilter implements Filter {
 
@@ -72,7 +70,7 @@ public class ContentFilter implements Filter {
 
 		// Ensure that old-style JSP resources are still resolvable.
 		if (path.endsWith(".jsp")) {
-			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - ".jsp".length());
+			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - ".jsp".length()) + "/";
 			httpResponse.sendRedirect(canonical, HttpServletResponse.SC_MOVED_PERMANENTLY);
 			return;
 		}
