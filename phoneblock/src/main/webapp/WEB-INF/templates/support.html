@@ -1,4 +1,4 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html>
 <head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
 
@@ -37,10 +37,10 @@
 					<p class="subtitle">
 						Nutze "Geld an Freunde senden", PayPal berechnet ansonsten absurde Gebühren, bei 1€ kommen nur 60Ct an.
 					</p>
-					<p th:if="${loggedIn}" class="subtitle">
+					<p th:unless="${loggedIn}" class="subtitle">
 						Gib bitte die ersten paar Zeichen deines Nutzernamens mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
 					</p>
-					<p th:unless="${loggedIn}" class="subtitle">
+					<p th:if="${loggedIn}" class="subtitle">
 						Bitte gibt <code id="purpose" th:text="${supporterId}"></code><span id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></span> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
 					</p>
 				</a>

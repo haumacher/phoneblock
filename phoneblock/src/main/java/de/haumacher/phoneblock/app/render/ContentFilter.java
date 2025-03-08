@@ -1,20 +1,29 @@
 package de.haumacher.phoneblock.app.render;
 
 import java.io.IOException;
-import java.io.Writer;
 
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.WebApplicationTemplateResolver;
 import org.thymeleaf.web.IWebApplication;
-import org.thymeleaf.web.IWebRequest;
-import org.thymeleaf.web.servlet.IServletWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
+import de.haumacher.phoneblock.app.AssignContributionServlet;
+import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
+import de.haumacher.phoneblock.app.DeleteAccountServlet;
+import de.haumacher.phoneblock.app.EMailVerificationServlet;
+import de.haumacher.phoneblock.app.ExternalLinkServlet;
+import de.haumacher.phoneblock.app.LoginServlet;
+import de.haumacher.phoneblock.app.RatingServlet;
+import de.haumacher.phoneblock.app.RegistrationServlet;
+import de.haumacher.phoneblock.app.ResetPasswordServlet;
+import de.haumacher.phoneblock.app.SearchServlet;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -26,15 +35,19 @@ import jakarta.servlet.http.HttpServletResponse;
 	"/*",
 })
 public class ContentFilter implements Filter {
-
-	private JakartaServletWebApplication _application;
-	private ITemplateEngine templateEngine;
+	
+	private TemplateRenderer _renderer;
 
 	public void init(final FilterConfig filterConfig) throws ServletException {
-	    this._application = JakartaServletWebApplication.buildApplication(filterConfig.getServletContext());
+	    ServletContext servletContext = filterConfig.getServletContext();
+	    
+		JakartaServletWebApplication application = JakartaServletWebApplication.buildApplication(servletContext);
 	    
 	    // We will see later how the TemplateEngine object is built and configured
-	    this.templateEngine = buildTemplateEngine(this._application);
+	    ITemplateEngine templateEngine = buildTemplateEngine(application);
+
+	    _renderer = new TemplateRenderer(application, templateEngine);
+	    _renderer.install(servletContext);
 	}
 
 	@Override
@@ -50,7 +63,20 @@ public class ContentFilter implements Filter {
 		if (path.startsWith("/fragments") || 
 			path.startsWith("/ab") || 
 			path.startsWith("/assets") ||
-			path.startsWith("/api")
+			path.startsWith("/webjars") ||
+			path.startsWith("/api") ||
+			path.startsWith(AssignContributionServlet.PATH) ||
+			path.startsWith(CreateAuthTokenServlet.CREATE_TOKEN) ||
+			path.startsWith(DeleteAccountServlet.PATH) ||
+			path.startsWith(EMailVerificationServlet.LOGIN_WEB) ||
+			path.startsWith(EMailVerificationServlet.LOGIN_MOBILE) ||
+			path.startsWith(ExternalLinkServlet.LINK_PREFIX) ||
+			path.startsWith(LoginServlet.PATH) ||
+			path.startsWith(RatingServlet.PATH) ||
+			path.startsWith(RegistrationServlet.REGISTER_WEB) ||
+			path.startsWith(RegistrationServlet.REGISTER_MOBILE) ||
+			path.startsWith(ResetPasswordServlet.PATH) ||
+			path.startsWith(SearchServlet.NUMS_PREFIX)
 		) {
 			chain.doFilter(httpRequest, httpResponse);
 			return;
@@ -95,34 +121,7 @@ public class ContentFilter implements Filter {
 	private boolean process(HttpServletRequest request, HttpServletResponse response)
 	        throws ServletException {
 	    try {
-	        final IServletWebExchange webExchange = _application.buildExchange(request, response);
-	        final IWebRequest webRequest = webExchange.getRequest();
-
-	        /*
-	         * Query controller/URL mapping and obtain the controller
-	         * that will process the request. If no controller is available,
-	         * return false and let other filters/servlets process the request.
-	         */
-	        WebController controller = ControllerMappings.resolveControllerForRequest(webRequest);
-
-	        /*
-	         * Write the response headers
-	         */
-	        response.setContentType("text/html;charset=UTF-8");
-	        response.setHeader("Pragma", "no-cache");
-	        response.setHeader("Cache-Control", "no-cache");
-	        response.setDateHeader("Expires", 0);
-
-	        /*
-	         * Obtain the response writer
-	         */
-	        final Writer writer = response.getWriter();
-
-	        /*
-	         * Execute the controller and process view template,
-	         * writing the results to the response writer. 
-	         */
-	        controller.process(webExchange, this.templateEngine, writer);
+	        _renderer.process(request, response);
 	        return true;
 	    } catch (Exception e) {
 	        try {
@@ -134,7 +133,7 @@ public class ContentFilter implements Filter {
 	    }
 	    
 	}
-	
+
 	private static ITemplateEngine buildTemplateEngine(final IWebApplication application) {
 	    // Templates will be resolved as application (ServletContext) resources.
 	    final WebApplicationTemplateResolver templateResolver = new WebApplicationTemplateResolver(application);
@@ -155,6 +154,8 @@ public class ContentFilter implements Filter {
 
 	    TemplateEngine templateEngine = new TemplateEngine();
 	    templateEngine.setTemplateResolver(templateResolver);
+	    IDialect pbDialect = new PBDialect();
+		templateEngine.addDialect(pbDialect);
 
 	    return templateEngine;
 

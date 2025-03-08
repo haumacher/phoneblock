@@ -1,18 +1,9 @@
-<%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
-<%@page import="de.haumacher.phoneblock.app.EMailVerificationServlet"%>
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
-<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
-<%@page import="de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory"%>
-<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 
-<%
-	boolean forWeb = "true".equals(request.getParameter("web"));
-
-	String location = LoginServlet.location(request, SettingsServlet.PATH);
-	String locationParam = LoginServlet.locationParam(location);
-	String locationParamFirst = LoginServlet.locationParamFirst(location);
-%>
-	
+<th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading">
 			<a href="#googleLogin" data-action="collapse"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a>
@@ -20,27 +11,23 @@
 		<div id="googleLogin" class="is-collapsible">
 			<div class="panel-block">
 	  		<div class="content">
-				<form action="<%=request.getContextPath()%>/oauth/login" method="get">
+				<form th:action="@{/oauth/login}" method="get">
 
-			    <input type="hidden" name="force_client" value="<%=PhoneBlockConfigFactory.GOOGLE_CLIENT%>">
-<% if (location != null) { %>
-			    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
-<% } %>
-<% if (forWeb) { %>
+			    <input type="hidden" name="force_client" th:value="${googleClient}">
+			    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
 	
-				<div class="field">
+				<div th:if="${web}" class="field">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input type="checkbox" name="<%=LoginServlet.REMEMBER_PARAM%>" value="true"/>
-					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a href="<%=request.getContextPath()%>/datenschutz.jsp">Cookie</a>)</span>
+					  <input type="checkbox" th:name="${rememberParam}" value="true"/>
+					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
-<% } %>
 
 				<div class="field">
 				  <div class="control">
-				  	Mit Deiner Anmeldung akzeptierst Du die <a href="<%=request.getContextPath()%>/usage.jsp">Nutzungsbedingungen</a>.
+				  	Mit Deiner Anmeldung akzeptierst Du die <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a>.
 				  </div>
 				</div>
 				
@@ -67,60 +54,45 @@
 		</div>
 	</nav>
 
-<%
-	Object emailMessage = request.getAttribute(EMailVerificationServlet.VERIFY_ERROR_ATTR);
-	boolean emailError = emailMessage != null;
-	String emailActive = emailError ? "is-active" : "";
-	String inputClass = emailError ? "input is-danger" : "input";
-%>
 	<nav class="panel">
 		<p class="panel-heading"><a href="#emailLogin" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail anmelden</span></a></p>
-		<div id="emailLogin" class="is-collapsible <%=emailActive%>">
-			<form action="<%= request.getContextPath() %><%= forWeb ? EMailVerificationServlet.LOGIN_WEB : EMailVerificationServlet.LOGIN_MOBILE%>" method="post" enctype="application/x-www-form-urlencoded">
+		<div id="emailLogin" th:class="'is-collapsible' + (${emailMessage} ? ' is-active' : '')">
+			<form th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')" method="post" enctype="application/x-www-form-urlencoded">
 	  		<div class="panel-block">
 	  		<div class="content">
-<% if (location != null) { %>
-			    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
-<% } %>
+			    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
 				<div class="field">
 					<label class="label">E-Mail</label>
 					<div class="control has-icons-left has-icons-right">
 					    <input name="email" 
-					    	class="<%= inputClass %>" 
+					    	th:class="'input' + (${emailMessage} ? ' is-danger' : '')" 
 					    	type="email" 
 					    	placeholder="Deine E-Mail-Adresse" 
-					    	value="<%= JspUtil.quote(request.getAttribute("email")) %>"
+					    	th:value="${email}"
 					    />
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
-<% if (emailError) { %>
-					    <span class="icon is-small is-right">
+					    <span th:if="${emailMessage}" class="icon is-small is-right">
 					      <i class="fas fa-exclamation-triangle"></i>
 					    </span>
-<% } %>
 					</div>
-<% if (emailError) { %>
-					<p class="help is-danger">
-						<%= JspUtil.quote(request.getAttribute("message")) %>
+					<p th:if="${emailMessage}" class="help is-danger" th:text="${emailMessage}">
 					</p>
-<% } %>
 				</div>
 
-<% if (forWeb) { %>
-				<div class="field">
+				<div th:if="${web}" class="field">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input type="checkbox" name="<%=LoginServlet.REMEMBER_PARAM%>" value="true"/>
-					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a href="<%=request.getContextPath()%>/datenschutz.jsp">Cookie</a>)</span>
+					  <input type="checkbox" th:name="${rememberParam}" value="true"/>
+					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
-<% } %>
 
 				<div class="field">
 				  <div class="control">
-				  	Mit Deiner Anmeldung akzeptierst Du die <a href="<%=request.getContextPath()%>/usage.jsp">Nutzungsbedingungen</a>.
+				  	Mit Deiner Anmeldung akzeptierst Du die <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a>.
 				  </div>
 				</div>
 
@@ -147,25 +119,18 @@
 		</div>
 	</nav>
 	
-<%
-	boolean loginError = request.getAttribute(LoginServlet.LOGIN_ERROR_ATTR) != null;
-	String userActive = loginError ? "is-active" : "";
-%>
-
 	<nav class="panel">
 		<p class="panel-heading">
 			<a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit PhoneBlock-Nutzernamen anmelden</span></a>
 		</p>
-		<div id="loginForm" class="is-collapsible <%=userActive%>">
+		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
-				<form action="<%=request.getContextPath()%><%=LoginServlet.PATH %>" method="post">
-<% if (location != null) { %>
-			    <input type="hidden" name="<%=LoginServlet.LOCATION_ATTRIBUTE%>" value="<%= JspUtil.quote(location) %>">
-<% } %>
+				<form th:action="${contextPath} + ${loginAction}" method="post">
+			    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" type="text" placeholder="Benutzername" name="<%=LoginServlet.USER_NAME_PARAM%>">
+				    <input class="input" type="text" placeholder="Benutzername" th:name="${userNameParam}">
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -177,35 +142,30 @@
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" type="<%=LoginServlet.PASSWORD_PARAM%>" placeholder="PhoneBlock-Passwort" name="password">
+				    <input class="input" type="password" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}">
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
-<% if (loginError) {%>
-					  <p class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
-<% } else { %>
-					  <p class="help">
+					  <p th:if="${loginError}" class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
+					  <p th:unless="${loginError}" class="help">
 					  	Das Passwort wurde Dir nach der ersten Anmeldung angezeigt. Wenn Du das Passwort nicht mehr zur Hand hast, 
 					  	dann melde Dich einfach mit Google oder Deiner E-Mail-Adresse an, siehe oben.
 					  </p>
-<% } %>
 				</div>
 
-<% if (forWeb) { %>
-				<div class="field">
+				<div th:if="${web}" class="field">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input type="checkbox" name="<%=LoginServlet.REMEMBER_PARAM%>" value="true"/>
-					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a href="<%=request.getContextPath()%>/datenschutz.jsp">Cookie</a>)</span>
+					  <input type="checkbox" th:name="${rememberParam}" value="true"/>
+					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
-<% } %>
 
 				<div class="field">
 				  <div class="control">
-				  	Mit Deiner Anmeldung akzeptierst Du die <a href="<%=request.getContextPath()%>/usage.jsp">Nutzungsbedingungen</a>.
+				  	Mit Deiner Anmeldung akzeptierst Du die <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a>.
 				  </div>
 				</div>
 				
@@ -224,3 +184,7 @@
 			</div>
 		</div>
 	</nav>	
+</th:block>
+
+</body>
+</html>

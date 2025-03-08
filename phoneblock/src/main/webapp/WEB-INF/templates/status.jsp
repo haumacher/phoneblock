@@ -47,7 +47,7 @@ request.setAttribute("title", "Telefonnummern aktueller Werbeanrufer - PhoneBloc
 		  <div class="column is-one-quarter">
 			<a class="button is-medium <%= setupFritzBoxClass %> is-fullwidth" href="<%=request.getContextPath()%>/anrufbeantworter/">
 			    <span class="icon">
-					<img src="<%=request.getContextPath()%>/anrufbeantworter/logo/ab-logo-white.svg"/>
+					<img src="<%=request.getContextPath()%>/assets/img/ab/logo/ab-logo-white.svg"/>
 			    </span>
 				<span>Anrufbeantworter</span>			
 			</a>

@@ -26,9 +26,10 @@ import jakarta.servlet.http.HttpSession;
 /**
  * Servlet accepting ratings from the web UI.
  */
-@WebServlet(urlPatterns = "/rating")
+@WebServlet(urlPatterns = RatingServlet.PATH)
 public class RatingServlet extends HttpServlet {
 	
+	public static final String PATH = "/rating";
 	private static final Logger LOG = LoggerFactory.getLogger(RatingServlet.class);
 
 	@Override

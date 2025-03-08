@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chartDataElement = document.getElementById('searches-data');
 
     // get data
-    const labels = chartDataElement.getAttribute('searches-labels').split(",");
-    const dataset = chartDataElement.getAttribute('searches-dataset').split(",");
+    const labels = chartDataElement.getAttribute('data-labels').split(",");
+    const dataset = chartDataElement.getAttribute('data-data').split(",");
 
     // make chart
     new Chart(document.getElementById('searches').getContext('2d'), {

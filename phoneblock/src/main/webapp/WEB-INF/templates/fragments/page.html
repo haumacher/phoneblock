@@ -1,6 +1,7 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html>
 <head th:fragment="head">
+<th:block th:fragment="headContent">
 	<title th:text="${title}"></title>
 	
 	<meta http-equiv="content-type" content="text/html;charset=utf-8">
@@ -34,6 +35,7 @@
 	<script type="text/javascript" th:src="|${contextPath}${deps.jquery}/jquery.min.js|"></script>
 	<script type="text/javascript" th:src="@{/assets/js/phoneblock.js(v=5)}"></script>
 	<script type="text/javascript" th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|"></script>
+</th:block>
 </head>
 
 <body>
@@ -104,7 +106,7 @@
 
 		<div class="navbar-end">
 			<a class="navbar-item" title="Answerbot App" th:href="@{/ab/}" target="_blank">
-				<img th:src="@{/anrufbeantworter/logo/ab-logo-appbar.svg}" width="20px" height="20px"/>
+				<img th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px" height="20px"/>
 		    </a>
 
 			<a class="navbar-item" title="Zur News-Seite" href="https://news.phoneblock.net" target="_blank">
@@ -119,19 +121,19 @@
       			
 			<div class="navbar-item">
 				<div class="buttons">
-					<a th:if="${loggedIn}" class="button is-light" th:href="@{/login.jsp(locationAfterLogin=${locationAfterLogin})}">
+					<a th:unless="${loggedIn}" class="button is-light" th:href="@{/login.jsp(location=${location})}">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
 						<strong>Log in</strong>
 					</a>
-					<a th:unless="${loggedIn}" class="button is-primary" th:href="@{/settings}">
+					<a th:if="${loggedIn}" class="button is-primary" th:href="@{/settings}">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>
 						<strong>Settings</strong>
 					</a>
-					<a th:unless="${loggedIn}" class="button is-light" th:href="@{/logout(url=${currentPage})}">
+					<a th:if="${loggedIn}" class="button is-light" th:href="@{/logout(url=${currentPage})}">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>
@@ -147,7 +149,8 @@
 
 <!-- Some content -->
 
-<section th:fragment="footer" class="section">
+<th:block th:fragment="footer">
+<section class="section">
 	<div class="content">
 		<h2>Beteilige Dich!</h2>
 		
@@ -180,6 +183,8 @@
 	</div>
 </footer>
 
-<script type="text/javascript" src="{/assets/js/bulma.js}"></script>
+<script type="text/javascript" th:src="@{/assets/js/bulma.js}"></script>
+</th:block>
+
 </body>
 </html>

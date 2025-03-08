@@ -1,4 +1,4 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html>
 <head th:replace="~{fragments/page :: head}"></head>
 
@@ -26,7 +26,7 @@
 		  <div class="column is-one-quarter">
 			<a class="button is-medium is-primary is-fullwidth" th:href="@{/anrufbeantworter/}">
 			    <span class="icon">
-					<img th:src="@{/anrufbeantworter/logo/ab-logo-white.svg}"/>
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 			    </span>
 				<span>Anrufbeantworter</span>			
 			</a>
@@ -107,7 +107,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			  <input type="hidden" id="context-path" th:value="@{}">
+			  <input type="hidden" id="context-path" th:value="@{/}">
 			<a id="search-fritzbox" class="button is-medium is-info is-fullwidth" href="#">
 				<span class="icon is-small is-left">
 					<i class="fa-solid fa-magnifying-glass"></i>

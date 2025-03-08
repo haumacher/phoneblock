@@ -1,35 +1,17 @@
 <!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
-<%@page import="de.haumacher.phoneblock.app.RegistrationServlet"%>
-<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
-<%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
-<%
-	request.setAttribute("title", "PhoneBlock in Fritz!Box einrichten");
-	request.setAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN, "true");
-%>
-<head>
-<jsp:include page="head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{fragments/page :: head}"></head>
 
 <body>
-<jsp:include page="header.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: header(login=true)}"></div>
 
 <section class="section">
 	<div class="content">
 		<h1>Installation als Telefonbuch</h1>
-		
-<%
-		HttpSession session = request.getSession(false);
-  		Object login = LoginFilter.getAuthenticatedUser(session);
-  		Object token = RegistrationServlet.getPassword(session);
-%>
 
-<% if (token == null) { %>
+<th:block th:unless="${token}">
 		<p>
-			Für die Installation der Blockliste benötigst Du einen <a href="<%=request.getContextPath()%>/link/fritzbox">"FRITZ!Box"
+			Für die Installation der Blockliste benötigst Du einen <a th:href="@{/link/fritzbox}">"FRITZ!Box"
 			Internetrouter von AVM</a> und einen PhoneBlock-Account. Es muss nicht unbedingt das neuste Modell
 			sein, aber Du solltest prüfen, ob das aktuelle FRITZ!OS darauf
 			installiert ist (07.29 oder neuer). Ist dies nicht der Fall, prüfe
@@ -40,25 +22,23 @@
 		<p>
 			Beachte: Aufgrund technischer Beschränkungen der Fritz!Box kann nicht die gesamte Blockliste in ein
 			Telefonbuch geladen werden. Daher bietet die Einrichtung eines 
-			<a href="<%=request.getContextPath()%>/anrufbeantworter/">PhoneBlock-Anrufbeantworters</a> den 
+			<a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworters</a> den 
 			besseren Schutz vor SPAM-Anrufen.
 		</p>
-
-<%	if (login == null) { %>
-		<div class="columns">
+		
+		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">
+			<a th:href="@{/login.jsp(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth">PhoneBlock-Account erstellen</button>
 			</a>
 		  </div>
 		</div>
-<% 	} else { %>
-		<p>
-			Du bist bereits als <code><%= JspUtil.quote(login) %></code> angemeldet, prima! Du kannst sofort loslegen.
+		<p th:if="${login}">
+			Du bist bereits als <code th:text="${userName}"></code> angemeldet, prima! Du kannst sofort loslegen.
 		</p>
-<% 	} %>
-<% } else { %>
-<div class="columns">
+</th:block>
+
+<div class="columns" th:if="${token}">
   <div class="column">
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
@@ -69,17 +49,17 @@
 		
 				<div class="field">
 				  <label class="label">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Benutzername</label>
-				  <div class="control"><code id="login"><%= JspUtil.quote(login) %></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a id="login_" title="In die Zwischenablage kopieren." class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label">Passwort</label>
-				  <div class="control"><code id="passwd"><%= JspUtil.quote(token) %></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,7 +67,6 @@
     </div>
   </div>
 </div>
-<% } %>
 		
 		<h2>Melde Dich an Deiner FRITZ!Box an</h2>
 		
@@ -122,7 +101,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufliste der Fritz!Box" src="<%=request.getContextPath() %>/assets/img/setup/02-navigate-to-addressbooks.png"/>
+			<img class="image" alt="Anrufliste der Fritz!Box" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
 		  </div>
 		</div>
 		
@@ -155,19 +134,19 @@
 				<ul>
 					<li>
 						Trage die URL von des PhoneBlock-Adressbuchs in das Feld <i>Internetadresse des CardDAV-Servers</i> ein:
-						<code id="url2">https://phoneblock.net<%=request.getContextPath() %>/contacts/</code><a id="url2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
+						<code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a id="url2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>
 					</li>
 
 					<li>
-						Trage den Benutzernamen <%if (login != null) {%> <code id="login2"><%= JspUtil.quote(login) %></code><a id="login2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a><%} %>, den Du bei der
-						<a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">Registrierung</a> erhalten hast, in das Feld 
+						Trage den Benutzernamen <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a id="login2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></th:block>, den Du bei der
+						<a th:href="@{/login.jsp(location='/settings')}">Registrierung</a> erhalten hast, in das Feld 
 						<i>Benutzername</i> ein. 
 					</li>
 
 					<li>
-						Das Passwort<%if (token == null) {%>, 
-						das Du bei der <a href="<%=request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(SettingsServlet.PATH) %>">Registrierung</a> erhalten 
-						hast, <%} else  {%> <code id="passwd2"><%= JspUtil.quote(token) %></code><a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,<%}%> muss Du jetzt noch in das Feld
+						Das Passwort<th:block th:unless="${token}">, 
+						das Du bei der <a th:href="@{/login.jsp(location='/settings')}">Registrierung</a> erhalten 
+						hast, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a id="passwd2_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>,</th:block> muss Du jetzt noch in das Feld
 						<i>Passwort</i> eintragen werden.
 					</li>
 				</ul>
@@ -181,7 +160,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Neues Adressbuch anlegen" src="<%=request.getContextPath() %>/assets/img/setup/03-add-address-book.png"/>
+			<img class="image" alt="Neues Adressbuch anlegen" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
 		  </div>
 		</div>
 
@@ -195,7 +174,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Abgerufene Blocklist anzeigen" src="<%=request.getContextPath() %>/assets/img/setup/04-check-blocklist.png"/>
+			<img class="image" alt="Abgerufene Blocklist anzeigen" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
 		  </div>
 		</div>
 
@@ -213,7 +192,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Neue Rufsperre hinzufügen" src="<%=request.getContextPath() %>/assets/img/setup/05-add-blocklist.png"/>
+			<img class="image" alt="Neue Rufsperre hinzufügen" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
 		  </div>
 		</div>
 		
@@ -224,7 +203,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" src="<%=request.getContextPath() %>/assets/img/setup/06-create-blocklist.png"/>
+			<img class="image" alt="Anrufer mit Telefonnummer in der Blocklist sperren" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
 		  </div>
 		</div>
 		
@@ -236,12 +215,12 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a href="<%=request.getContextPath() %>/block.jsp"><button class="button is-medium is-primary is-fullwidth">Rufnummer sperren</button></a>
+			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth">Rufnummer sperren</button></a>
 		  </div>
 		</div>
 	</div>
 </section>
 
-<jsp:include page="footer.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

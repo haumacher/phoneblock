@@ -1,16 +1,9 @@
 <!DOCTYPE html>
-<%@page import="de.haumacher.phoneblock.app.SettingsServlet"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
 <html>
-<%
-	request.setAttribute("title", "Rufnummer sperren - PhoneBlock");
-%>
-<head>
-<jsp:include page="head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{fragments/page :: head(title='Rufnummer sperren - PhoneBlock')}"></head>
 
 <body>
-<jsp:include page="header.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -38,7 +31,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img class="image" alt="Anrufliste der Fritz!Box" src="<%=request.getContextPath() %>/assets/img/block/07-spam-caller.png"/>
+			<img class="image" alt="Anrufliste der Fritz!Box" th:src="@{/assets/img/block/07-spam-caller.png}"/>
 		  </div>
 		</div>
 		
@@ -99,7 +92,7 @@
 	
 	<div class="columns">
 	  <div class="column is-8 is-offset-2">
-		<img class="image" alt="Anruf als unerwünscht markieren" src="<%=request.getContextPath() %>/assets/img/block/08-mark-as-spam.png"/>
+		<img class="image" alt="Anruf als unerwünscht markieren" th:src="@{/assets/img/block/08-mark-as-spam.png}"/>
 	  </div>
 	</div>
 	
@@ -109,7 +102,7 @@
 	
 	<div class="columns">
 	  <div class="column is-8 is-offset-2">
-		<img class="image" alt="Neuen Eintrag in der Blocklist anlegen" src="<%=request.getContextPath() %>/assets/img/block/09-create-entry-create.png"/>
+		<img class="image" alt="Neuen Eintrag in der Blocklist anlegen" th:src="@{/assets/img/block/09-create-entry-create.png}"/>
 	  </div>
 	</div>
 	
@@ -130,12 +123,12 @@
 		<b>Wichtig:</b> Du darfst existierende Einträge der Blocklist <b>nicht bearbeiten</b> (keine Nummern hinzufügen, keine 
 		Nummern löschen), PhoneBlock verwirft sonst Deine Änderungen bei der nächsten Synchronisierung. Wenn Du eine 
 		Nummer aus der Blocklist löschen möchtest, dann füge stattdessen einen Eintrag zu Deiner 
-		<a href="<%=request.getContextPath() + SettingsServlet.PATH%>#whitelist">Whitelist in den Einstellungen</a> hinzu.  
+		<a th:href="@{/settings/#whitelist}">Whitelist in den Einstellungen</a> hinzu.  
 	</p>
 
 	<div class="columns">
 	  <div class="column is-8 is-offset-2">
-		<img class="image" alt="Neuen Eintrag in der Blockliste übernehmen" src="<%=request.getContextPath() %>/assets/img/block/10-add-entry-save.png"/>
+		<img class="image" alt="Neuen Eintrag in der Blockliste übernehmen" th:src="@{/assets/img/block/10-add-entry-save.png}"/>
 	  </div>
 	</div>
 	
@@ -145,6 +138,6 @@
 </div>
 </section>
 
-<jsp:include page="footer.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html>
 <head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
 
@@ -19,9 +19,9 @@
 		</p>
 
 		<ul>
-			<li>Empfänger: <code id="receiver">${props.bank.receiver}</code><a id="receiver_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
-			<li>Kontonummer: <code id="account">${props.bank.account}</code><a id="account_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
-			<li>BIC: <code id="bic">${props.bank.bic}</code><a id="bic_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>Empfänger: <code id="receiver" th:text="${props.bank.receiver}"></code><a id="receiver_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>Kontonummer: <code id="account" th:text="${props.bank.account}"></code><a id="account_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li>BIC: <code id="bic" th:text="${props.bank.bic}"></code><a id="bic_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
 			<li>Verwendungszweck: <code id="purpose" th:text="${supporterId}"></code><a id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
 		</ul>
 		
