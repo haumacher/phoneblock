@@ -90,9 +90,4 @@ public class ServletUtil {
 		return currentPage;
 	}
 
-	public static void display(HttpServletRequest req, HttpServletResponse resp, String page) throws ServletException, IOException {
-		req.setAttribute(CURRENT_PAGE, req.getRequestURI());
-		req.getRequestDispatcher(page).forward(req, resp);
-	}
-
 }

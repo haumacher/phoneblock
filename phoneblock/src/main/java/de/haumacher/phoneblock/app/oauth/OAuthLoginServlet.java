@@ -132,7 +132,7 @@ public class OAuthLoginServlet extends HttpServlet {
 		
 		LoginFilter.setSessionUser(req, login);
 		
-		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_PARAM);
+		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_ME_PARAM);
 		if (remember.isPresent()) {
 			LoginServlet.processRememberMe(req, resp, db, (String) remember.get(), login);
 		}

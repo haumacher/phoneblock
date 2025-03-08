@@ -194,7 +194,11 @@ public abstract class LoginFilter implements Filter {
 	}
 
 	private static void removeLoginCookie(HttpServletRequest request, HttpServletResponse response) {
-		for (Cookie cookie : request.getCookies()) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+			return;
+		}
+		for (Cookie cookie : cookies) {
 			if (LOGIN_COOKIE.equals(cookie.getName())) {
 				Cookie removal = new Cookie(LOGIN_COOKIE, "");
 				removal.setMaxAge(0);
