@@ -79,11 +79,9 @@ public class MailServiceStarter implements ServletContextListener {
 					while (list.hasMore()) {
 						NameClassPair pair = list.next();
 						
-						if ("java.lang.String".equals(pair.getClassName())) {
-							String name = pair.getName();
-							String value = (String) propertyContext.lookup(name);
-							properties.setProperty(name, value);
-						}
+						String name = pair.getName();
+						Object value = propertyContext.lookup(name);
+						properties.setProperty(name, value.toString());
 					}
 				}
 			}
@@ -92,12 +90,8 @@ public class MailServiceStarter implements ServletContextListener {
 		} catch (NamingException ex) {
 			LOG.info("No JNDI mail configuration: " + ex.getMessage());
 
-			user = getProperty("user");        
-			password = getProperty("password");
-			if (user == null && password == null) {
-				LOG.warn("No mail property configuration, mail service not available.");
-				return;
-			}
+			user = getProperty("smtp.user");        
+			password = getProperty("smtp.password");
 
 			Properties systemProperties = System.getProperties();
 			for (String property : systemProperties.stringPropertyNames()) {
@@ -111,10 +105,17 @@ public class MailServiceStarter implements ServletContextListener {
 			
 			signature = readMailSignatureProperties();
 		}
-
-		_mailService = new MailService(user, password, signature, properties);
-		_mailService.startUp();
 		
+		if (user == null && password == null) {
+			LOG.warn("No smtp configuration, mail service not available.");
+		} else if ("true".equals(properties.get("smtp.test-only"))) {
+			_mailService = DummyMailService.INSTANCE;
+			_mailService.startUp();
+		} else {
+			_mailService = new MailServiceImpl(user, password, signature, properties);
+			_mailService.startUp();
+		}
+
 		INSTANCE = _mailService;
 	}
 
@@ -125,7 +126,7 @@ public class MailServiceStarter implements ServletContextListener {
 			String signingKeyFile = (String) envCtx.lookup("smtp/signingKey");
 			return createMailSignature(signingSelector, signingDomain, signingKeyFile);
 		} catch (Exception ex) {
-			LOG.warn("No mail signature configured in JNDI.", ex);
+			LOG.warn("No mail signature configured in JNDI.");
 			return null;
 		}
 	}
@@ -137,7 +138,7 @@ public class MailServiceStarter implements ServletContextListener {
 			String signingKeyFile = getProperty("signingKey");
 			return createMailSignature(signingSelector, signingDomain, signingKeyFile);
 		} catch (Exception ex) {
-			LOG.warn("No mail signature configured in properties.", ex);
+			LOG.warn("No mail signature configured in properties.");
 			return null;
 		}
 	}
