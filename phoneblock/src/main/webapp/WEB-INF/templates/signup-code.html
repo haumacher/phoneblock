@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Dein PhoneBlock Einrichtungscode')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title">Code eingeben</h1>
+	        <p class="subtitle">E-Mail-Adresse bestätigen.</p>
+	        <div class="content">
+				<p>
+					<div>Eine E-Mail wurde an die Adresse <code th:text="${email}"></code> gesendet.</div> 
+					<div>Bitte schau in Deiner Mailbox nach und gib den Code hier ein.</div> 
+				</p>
+				<form th:action="@{/register-web}" method="post" enctype="application/x-www-form-urlencoded">
+					<div class="field">
+					  <label class="label">Code</label>
+					  <div class="control has-icons-left has-icons-right">
+					    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
+					    <input th:if="${rememberMe}" type="hidden" name="rememberMe" th:value="${rememberMe}">
+
+					    <input name="code" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" placeholder="Bestätigungscode" value="">
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-barcode"></i>
+					    </span>
+					    <span th:if="${errorMessage}" class="icon is-small is-right">
+					      <i class="fas fa-exclamation-triangle"></i>
+						</span>
+					  </div>
+						<p th:if="${errorMessage}" class="help is-danger">
+							<span th:text="${errorMessage}"></span>
+							<a th:href="|${contextPath}${restartPage}?location=${location}|">Nochmal probieren</a>.								
+						</p>
+						<p th:unless="${errorMessage}" class="help is-info">
+							Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!
+							<a th:href="|${contextPath}${restartPage}?location=${location}|">Nochmal probieren</a>.								
+						</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" type="submit">Anmelden</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

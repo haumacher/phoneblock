@@ -22,6 +22,8 @@ import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.Type;
 
+import de.haumacher.phoneblock.app.render.ContentFilter;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
@@ -44,7 +46,7 @@ public class EMailVerificationServlet extends HttpServlet {
 	/**
 	 * Request attribute set, if e-mail verification failed.
 	 */
-	public static final String VERIFY_ERROR_ATTR = "message";
+	public static final String VERIFY_ERROR_ATTR = "emailMessage";
 	
 	public static final String LOGIN_WEB = "/login-web";
 	
@@ -135,13 +137,14 @@ public class EMailVerificationServlet extends HttpServlet {
 		session.setAttribute("email", email);
 		session.setAttribute("code", code);
 		req.setAttribute(RESTART_PAGE_ATTR, failurePage(req));
-		req.getRequestDispatcher(successPage(req)).forward(req, resp);
+		
+		TemplateRenderer.getInstance(req).process(successPage(req), req, resp);
 	}
 
 	private void sendFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
 		req.setAttribute(VERIFY_ERROR_ATTR, message);
-		req.getRequestDispatcher(failurePage(req)).forward(req, resp);
+		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
 	}
 
 	/**
@@ -150,20 +153,20 @@ public class EMailVerificationServlet extends HttpServlet {
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case LOGIN_MOBILE: 
-			return "/mobile/login.jsp";
+			return "mobile-login";
 		case LOGIN_WEB: 
 		default:
-			return "/login.jsp";
+			return "login";
 		}
 	}
 
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 			case LOGIN_MOBILE: 
-				return "/mobile/code.jsp";
+				return "mobile-code";
 			case LOGIN_WEB: 
 			default:
-				return "/signup-code.jsp"; 
+				return "signup-code"; 
 		}
 	}
 

@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -39,7 +40,7 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * Request parameter that makes the login persistent, if its value is <code>true</code>.
 	 */
-	public static final String REMEMBER_PARAM = "remember";
+	public static final String REMEMBER_ME_PARAM = "rememberMe";
 
 	/**
 	 * Request attribute that save the original location that was requested before login.
@@ -52,9 +53,9 @@ public class LoginServlet extends HttpServlet {
 	 * The value is transmitted in the login request as additional parameter.
 	 * </p>
 	 */
-	public static final String LOCATION_ATTRIBUTE = "locationAfterLogin";
+	public static final String LOCATION_ATTRIBUTE = "location";
 	
-	public static final String PATH = "/login";
+	public static final String PATH = "/check-login";
 
 	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
@@ -70,7 +71,7 @@ public class LoginServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
 		}
-		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+		TemplateRenderer.getInstance(req).process("/login", req, resp);
 	}
 	
 	@Override
@@ -98,7 +99,7 @@ public class LoginServlet extends HttpServlet {
 			return;
 		}
 
-		String rememberValue = req.getParameter(REMEMBER_PARAM);
+		String rememberValue = req.getParameter(REMEMBER_ME_PARAM);
 		processRememberMe(req, resp, db, rememberValue, userName);
 		
 		LoginFilter.setSessionUser(req, authenticatedUser);

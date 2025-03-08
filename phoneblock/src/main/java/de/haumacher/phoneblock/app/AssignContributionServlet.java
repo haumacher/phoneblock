@@ -39,7 +39,7 @@ public class AssignContributionServlet extends HttpServlet {
 	 */
 	public static final String PATH = "/assign-contribution";
 	
-	public static final String SECTION_CONTRIBUTIONS = "contributions";
+	public static final String SECTION_CONTRIBUTIONS = "sec-contributions";
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

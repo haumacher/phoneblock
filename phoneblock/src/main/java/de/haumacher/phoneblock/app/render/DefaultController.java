@@ -1,7 +1,10 @@
 package de.haumacher.phoneblock.app.render;
 
+import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -14,18 +17,27 @@ import org.thymeleaf.web.servlet.IServletWebExchange;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
+import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.UIProperties;
+import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 public class DefaultController implements WebController {
 	
+	static final String RENDER_TEMPLATE = "renderTemplate";
+
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultController.class);
 
 	public static final WebController INSTANCE = new DefaultController();
 	
 	private static final Map<String, Object> PROPS;
 	private static final Map<String, Object> DEPS;
+
+	private static final List<RatingDisplay> RATINGS = Arrays.asList(Rating.values()).stream()
+		.map(r -> new RatingDisplay(r))
+		.toList();
 	
 	static {
 		PROPS = toModel(UIProperties.APP_PROPERTIES);
@@ -41,12 +53,33 @@ public class DefaultController implements WebController {
 	}
 
 	@Override
-	public void process(IServletWebExchange webExchange, ITemplateEngine templateEngine, Writer writer) {
+	public void process(IServletWebExchange webExchange, ITemplateEngine templateEngine, Writer writer) throws IOException {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
         
         HttpServletRequest request = (HttpServletRequest) webExchange.getNativeRequestObject();
-		String userName = LoginFilter.getAuthenticatedUser(request.getSession(false));
+        fillContext(ctx, request);
+
+        String template = (String) request.getAttribute(RENDER_TEMPLATE);
+        if (template == null) {
+        	String path = request.getServletPath();
+        	String prefix = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        	String suffix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
+        	
+        	template = suffix.isEmpty() ? "index" : suffix;
+
+        	LOG.debug("Serving template {} for {}.", template, path);
+        }
+        
+        templateEngine.process(template, ctx, writer);
+	}
+
+	protected void fillContext(WebContext ctx, HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		String userName = LoginFilter.getAuthenticatedUser(session);
+  		String token = RegistrationServlet.getPassword(session);
+		
         ctx.setVariable("userName", userName);
+        ctx.setVariable("token", token);
         ctx.setVariable("supporterId", userName == null ? null : "PhoneBlock-" + userName.substring(0, 13));
         ctx.setVariable("loggedIn", Boolean.valueOf(userName != null));
         ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, LoginServlet.location(request));
@@ -56,21 +89,21 @@ public class DefaultController implements WebController {
         ctx.setVariable("description", "Werbeanrufe mit Deiner Fritz!Box automatisch blockieren. PhoneBlock jetzt kostenlos installieren.");
         ctx.setVariable("keywords", "");
         
-		String path = request.getServletPath();
-    		
-        ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + path);
+		ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
         ctx.setVariable("props", PROPS);
         ctx.setVariable("deps", DEPS);
         ctx.setVariable("contextPath", request.getContextPath());
-
-        String prefix = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-        String suffix = path.startsWith("/") ? prefix.substring(1) : prefix;
         
-        String template = suffix.isEmpty() ? "index" : suffix;
-
-        LOG.info("Serving template {} for {}.", template, path);
-        
-        templateEngine.process(template, ctx, writer);
+    	String userAgent = request.getHeader("User-Agent");
+    	userAgent = userAgent == null ? "" : userAgent.toLowerCase();
+    	boolean android = userAgent.contains("android");
+    	boolean iphone = userAgent.contains("iPhone");
+    	
+    	ctx.setVariable("android", Boolean.valueOf(android));
+		ctx.setVariable("iphone", Boolean.valueOf(iphone));
+		ctx.setVariable("fritzbox", Boolean.valueOf(!android && !iphone));
+		
+		ctx.setVariable("ratings", RATINGS);
 	}
 
 	

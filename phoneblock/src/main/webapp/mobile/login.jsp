@@ -51,7 +51,7 @@
 
 	<jsp:include page="/login-forms.jspf">
 		<jsp:param name="web" value="false" />
-		<jsp:param name="locationAfterLogin" value="/mobile/login.jsp" />
+		<jsp:param name="location" value="/mobile/login.jsp" />
 	</jsp:include>
 
 <% } else { %>
