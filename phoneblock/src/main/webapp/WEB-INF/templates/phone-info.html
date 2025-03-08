@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+<th:block th:replace="~{fragments/page :: headContent}"></th:block>
+
+<script type="text/javascript" th:src="@{/{path}/dist/chart.umd.js(path=${deps.chartjs})}"></script>
+<link rel="stylesheet" th:href="@{/assets/css/phone-info.css}"/>
+</head>
+
+<body>
+<div th:replace="~{fragments/page :: header(login=true)}"></div>
+
+<section class="section">
+<div class="content">
+	<h1>Rufnummer ☎ <th:block th:text="${info.phone}"/></h1>
+
+	<p>
+		<th:block th:if="${info.votes} &lt;= 0">
+			<th:block th:if="${info.whiteListed}">
+				<span class="tag is-info is-success"><i class="fa-solid fa-star"></i> Auf der weißen Liste</span>
+			</th:block>
+			<th:block th:unless="${info.whiteListed}">
+				<th:block th:if="${info.votesWildcard > 0}">
+					<span class="tag is-info is-warning">Nummernblock mit Spamverdacht</span>
+					<span th:if="${rating} != 'B_MISSED' &amp;&amp; ${rating} != 'A_LEGITIMATE'" 
+						class="|tag is-info ${ratingCssClass}|" th:text="${ratingLabel}"></span>
+				</th:block>
+				<span th:unless="${info.votesWildcard > 0}" class="tag is-info is-success">Keine Beschwerden</span>
+			</th:block>
+		</th:block>
+		
+		<th:block th:unless="${info.votes} &lt;= 0">
+			<span th:unless="${blocked}" class="tag is-info is-warning">Beschwerde liegt vor</span>
+			<span th:if="${blocked}" class="tag is-info is-danger">Blockiert</span>
+
+			<span th:if="${rating} != 'B_MISSED'" th:class="|tag is-info ${ratingCssClass}|" th:text="${ratingLabel}"></span>
+		</th:block>
+	</p>
+
+<article th:class="'message' + ${info.whiteListed} ? 'is-success' : (${blocked} ? 'is-danger' : 'is-warning')">
+  <div class="message-header">
+    <p>Information zur Rufnummer <th:block th:text="${info.phone}"/></p>
+  </div>
+  <div class="message-body">
+	<p th:if="${summary}" th:text="${summary}"></p>
+
+	<p th:if="${defaultSummary}" th:text="${defaultSummary}"></p>
+  
+	<ul>
+		<li>
+			Alternative Schreibweisen: 
+			<th:block th:if="${number.shortcut}">
+				<code th:text="${number.shortcut}"></code>, 
+			</th:block>
+			<code th:text="${number.plus}"></code>, 
+			<code th:text="${number.zeroZero}"></code>
+		</li>
+		<li>
+			Land: <th:block th:text="${number.country}"/> (<code th:text="${number.countryCode}"></code>)
+		</li>
+
+		<li th:if="${number.city}">
+			Stadt: <th:block th:text="${number.city}"/> (<code th:text="${number.cityCode}"></code>)
+		</li>
+
+		<li th:if="${info.votes} > 0">
+			Stimmen für Sperrung: <th:block th:text="${info.votes}"/>
+		</li>
+		
+		<li th:if="${info.votesWildcard} > ${info.votes}">
+			Stimmen für Sperrung des Nummernblocks: <th:block th:text="${info.votesWildcard}"/>
+		</li>
+		
+		<li th:if="${info.votes} > 0 or ${info.votesWildcard} > 0">
+			Letzte Beschwerde vom: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"/>
+		</li>
+
+		<li th:if="${info.dateAdded} > 0">
+			Nummer aktiv seit: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"/>
+		</li>
+	</ul>
+  </div>
+</article>
+
+	<p>
+		Unerwünschte Telefonanrufe kannst Du <em>automatisch blockieren</em>, wenn Du PhoneBlock installierst: 
+	</p>
+	
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			    <span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
+			    </span>
+				<span>Anrufbeantworter</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span>Fritz!Box Telefonbuch</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span>Für Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span>Für iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+<th:block th:if="${relatedNumbers.size > 0}">
+	<p>Die Nummer ☎ <th:block th:text="${info.phone}"/> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
+	
+	<blockquote class="related-numbers">
+		<span th:each="related : ${relatedNumbers}">
+			<a th:href="@{/nums/{other}(other=${related})}" data-onclick="showNumber">☎ <th:block th:text="${related}"/></a>
+		</span>
+	</blockquote>
+</th:block>	
+
+	<h2>Schreib eine Bewertung für <th:block th:text="${info.phone}"/></h2>
+	
+	<div th:if="${thanks}" id="thanks" class="notification is-info">
+	  Danke für Deine Bewertung, Du hilfst damit anderen, die ebenfalls angerufen werden. 
+	</div>
+	
+<th:block th:unless="${thanks}">
+	<p>
+		Du wurdest von ☎ <code><th:block th:text="${info.phone}"/></code> angerufen? 
+		Sag anderen, was sie von ☎ <code><th:block th:text="${number.plus}"/></code> zu erwarten haben.
+		Wenn Du Dich von Anrufen von ☎ <code><th:block th:text="${info.phone}"/></code> belästigt fühlst, 
+		<a th:href="@{/setup.jsp}">installiere PhoneBlock</a> 
+		und gibt eine Bewertung für ☎ <code><th:block th:text="${number.zeroZero}"/></code> ab:
+	</p>
+
+	<form th:action="@{/rating}" method="post" enctype="application/x-www-form-urlencoded" accept-charset="utf-8" spellcheck="true">
+		<input type="hidden" name="phone" th:value="${info.phone}"/>
+		
+		<div class="buttons">
+		  	<label th:each="rating : ${ratings}" th:class="|button is-rounded ${rating.cssClass}|">
+		  		<input type="radio" name="rating" th:value="${rating}"/>
+			    <span class="icon">
+					<i th:class="${rating.iconClass}"></i>
+			    </span>
+				<span th:text="${rating.label}"></span>
+	  		</label>
+		</div>
+
+		<p>			
+		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"></textarea>
+		</p>
+		
+		<p>
+		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a th:href="@{/login.jsp(location=${currentPage})}">melde Dich vorher an</a>!
+		</p>
+		
+		<div class="buttons">
+			<button name="send" type="submit" class="button is-rounded is-primary">
+			    <span class="icon">
+					<i class="fas fa-paper-plane"></i>
+			    </span>
+				<span>Abschicken</span>
+			</button>
+		</div>
+	</form>
+</th:block>
+
+<div class="columns">
+	<div class="column is-half">
+	<div th:if="${ratings}">
+		<canvas id="ratings" width="400" height="200" aria-label="Anzahl Bewertungen" role="img"></canvas>
+		<div id="ratings-data">
+		{
+	        type: 'bar',
+	        data: {
+	            labels: <th:block th:text="${ratingLabels}"/>,
+	            datasets: [{
+	                label: 'Anzahl Bewertungen',
+	                data: <th:block th:text="${ratingData}"/>,
+	                backgroundColor: <th:block th:text="${ratingBackground}"/>,
+	                borderColor: <th:block th:text="${ratingBorder}"/>,
+	                borderWidth: 1
+	            }]
+	        },
+	        options: {
+	            scales: {
+	                y: {
+	                    beginAtZero: true
+	                }
+	            }
+	        }
+	    }
+		</div>
+		<script type="text/javascript" th:src="@{/assets/js/phone-info-ratings.js}"></script>
+	</div>
+	<p th:unless="${ratings}">
+		Es gibt bisher noch keine Bewertungen, sei der erste, der eine seine Einschätzung teilt!
+	</p>
+	</div>
+
+	<div class="column is-half">
+	<div th:if="${searches}" id="searches-data" th:data-labels="${searchLabels}" th:data-data="${searchData}">
+		<canvas id="searches" width="400" height="200" aria-label="Suchanfragen in der letzten Woche" role="img"></canvas>
+		<script type="text/javascript" th:src="@{/assets/js/phone-info-searches.js}"></script>
+	</div>
+	<p th:unless="${searches}">Es gibt keine Suchanfragen für diese Nummer.</p>
+	</div>
+</div>
+
+<th:block th:if="${comments.size > 0}">
+	<h2>Kommentare zu <th:block th:text="${number.plus}"/></h2>
+	
+	<th:block th:each="comment,commentIt : ${comments}">
+	
+	<input type="hidden" id="votePath" th:value="@{/api/commentVote}"/>
+<div class="box">
+  <article class="media">
+    <div class="media-left">
+      <figure class="image is-64x64">
+		<i th:if="${#converters.isPositive(comment.rating)}" class="fa-solid fa-star"></i>
+		<i th:unless="${#converters.isPositive(comment.rating)}" class="fa-solid fa-triangle-exclamation"></i>
+      </figure>
+    </div>
+    <div class="media-content">
+      <div class="content">
+        <p class="commentHeader">
+		  <strong>☎ <th:block th:text="${comment.phone}"/></strong>
+          <small>
+          <a th:if="${comment.service}" target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}"></a>
+		  <span th:unless="${comment.service}">PhoneBlock</span>
+		  </small>
+		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
+        </p>
+        <p class="commentText" th:text="${comment.comment}">
+        </p>
+      </div>
+            
+      <nav class="level is-mobile">
+        <div class="level-left">
+          <a class="level-item thumbs-up commentVote" aria-label="Guter Hinweis" title="Guter Hinweis!" href="#" th:data-comment-id="${comment.id}" th:data-vote-up-id="'up-' + ${commentIt.current}" th:data-vote-down-id="'down-' + ${commentIt.current}">
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-up"></i>
+            </span>
+            <span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
+          </a>
+          <a class="level-item thumbs-down commentVote" aria-label="Unsinn" title="Unsinn!" href="#" th:data-comment-id="${comment.id}" th:data-vote-up-id="'up-' + ${commentIt.current}" th:data-vote-down-id="'down-' + ${commentIt.current}">
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-down"></i>
+            </span>
+			<span th:id="'down-' + ${commentIt.current}" th:text="${comment.down}"></span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </article>
+</div>
+	
+	</th:block>
+</th:block>
+
+	<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+		<a th:if="${prev}" class="pagination-previous" data-onclick="showNumber" th:href="@{/nums/{num}(num=${prev})}">Vorherige Nummer</a>
+		<a th:if="${next}" class="pagination-next" data-onclick="showNumber" th:href="@{/nums/{num}(num=${next})}">Nächste Nummer</a>
+	</nav>
+</div>
+</section>
+
+<section class="section">
+
+<div th:if="${android}" class="tile is-ancestor">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/setup-android/}">
+			<p class="title">PhoneBlock für Android</p>
+			<p class="subtitle">Noch nicht installiert? Dann los!</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title">PhoneBlock für Fritz!Box</p>
+			<p class="subtitle">Werbeanrufe auf dem Festnetz ausschalten!</p>
+		</a>
+	</div>
+</div>
+
+<div th:if="${iphone}" class="tile is-ancestor">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/setup-ipone/}">
+			<p class="title">PhoneBlock für iPhobe</p>
+			<p class="subtitle">Noch nicht installiert? Dann los!</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title">PhoneBlock für Fritz!Box</p>
+			<p class="subtitle">Werbeanrufe auf dem Festnetz ausschalten!</p>
+		</a>
+	</div>
+</div>
+
+<div th:if="${fritzbox}" class="tile is-ancestor">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/login.jsp(location='/setup.jsp')}">
+			<p class="title">PhoneBlock installieren</p>
+			<p class="subtitle">Account erstellen und einrichten!</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title">Installation überprüfen</p>
+			<p class="subtitle">Check die Installationsanleitung!</p>
+		</a>
+	</div>
+</div>
+
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

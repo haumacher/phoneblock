@@ -8,15 +8,15 @@ package de.haumacher.phoneblock.db;
  */
 public class Statistics {
 	
+	private final String _state;
 	private final int _cnt;
-	private final int _confidence;
 	
 	/** 
 	 * Creates a {@link Statistics}.
 	 */
-	public Statistics(int cnt, int contidence) {
+	public Statistics(String state, int cnt) {
+		_state = state;
 		_cnt = cnt;
-		_confidence = contidence;
 	}
 
 	/**
@@ -27,10 +27,9 @@ public class Statistics {
 	}
 	
 	/**
-	 * The confidence level of the spam report: 0 - reported, 1 - confirmed, 2 - certain
+	 * The state of the number, either <code>01-reported</code>, or <code>02-blocked</code>.
 	 */
-	public int getConfidence() {
-		return _confidence;
+	public String getState() {
+		return _state;
 	}
-
 }

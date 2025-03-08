@@ -4,9 +4,12 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,7 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchResult;
 import de.haumacher.phoneblock.app.api.model.UserComment;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBNumberInfo;
@@ -87,7 +91,7 @@ public class SearchServlet extends HttpServlet {
 	
 	public static final long ONE_MONTH = ONE_DAY * 30;
 
-	static final String NUMS_PREFIX = "/nums";
+	public static final String NUMS_PREFIX = "/nums";
 	
 	private static final Pattern BOT_PATTERN = Pattern.compile(
 			or("Googlebot"
@@ -169,7 +173,7 @@ public class SearchServlet extends HttpServlet {
 		String pathInfo = req.getPathInfo();
 		if (pathInfo == null || pathInfo.length() < 1) {
 			req.setAttribute(NUMBER_ATTR, "");
-			ServletUtil.display(req, resp, "/no-such-number.jsp");
+			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
 		
@@ -181,7 +185,7 @@ public class SearchServlet extends HttpServlet {
 		PhoneNumer number = extractNumber(query);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
-			ServletUtil.display(req, resp, "/no-such-number.jsp");
+			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
 		
@@ -360,17 +364,35 @@ public class SearchServlet extends HttpServlet {
 			req.setAttribute(THANKS_ATTR, Boolean.TRUE);
 		}
 		
-		String status = status(searchResult.getInfo().getVotes());
+		PhoneInfo info = searchResult.getInfo();
+		String status = status(info.getVotes());
 		
-		String defaultSummary = defaultSummary(req, searchResult.getInfo());
+		String defaultSummary = defaultSummary(req, info);
 		
 		String summary;
 		String description;
 		if (isEmpty(searchResult.getAiSummary())) {
 			summary = null;
-			description = defaultSimpleSummary(searchResult.getInfo());
+			description = defaultSimpleSummary(info);
 		} else {
 			description = summary = JspUtil.quote(searchResult.getAiSummary());
+		}
+
+		// Limit to 10 comments.
+		if (searchResult.getComments().size() > 10) {
+			searchResult.setComments(searchResult.getComments().subList(0, 10));
+		}
+		
+		// Shorten comments from meta search.
+		for (UserComment comment : searchResult.getComments()) {
+			if (comment.getService() != null && comment.getComment().length() > 280) {
+				comment.setComment(comment.getComment().substring(0, 277) + "...");
+			}
+
+			// Normalize votes.
+        	int up = Math.max(0, comment.getUp() - comment.getDown());
+          	int down = Math.max(0, comment.getDown() - comment.getUp());
+          	comment.setUp(up).setDown(down);
 		}
 		
 		req.setAttribute(COMMENTS_ATTR, searchResult.getComments());
@@ -378,15 +400,17 @@ public class SearchServlet extends HttpServlet {
 		// The canonical path of this page.
 		req.setAttribute(PATH_ATTR, req.getServletPath() + '/' + searchResult.getPhoneId());
 		
-		req.setAttribute(INFO_ATTR, searchResult.getInfo());
+		req.setAttribute(INFO_ATTR, info);
 		req.setAttribute(NUMBER_ATTR, searchResult.getNumber());
 		req.setAttribute(PREV_ATTR, searchResult.getPrev());
 		req.setAttribute(NEXT_ATTR, searchResult.getNext());
 		req.setAttribute(SUMMARY_ATTR, summary);
 		req.setAttribute(DEFAULT_SUMMARY_ATTR, defaultSummary);
 		req.setAttribute(RATING_ATTR, searchResult.getTopRating());
-		req.setAttribute(RATINGS_ATTR, searchResult.getRatings());
-		req.setAttribute(SEARCHES_ATTR, searchResult.getSearches());
+		Map<Rating, Integer> ratings = searchResult.getRatings();
+		req.setAttribute(RATINGS_ATTR, ratings);
+		List<Integer> searches = searchResult.getSearches();
+		req.setAttribute(SEARCHES_ATTR, searches);
 		req.setAttribute(RELATED_NUMBERS_ATTR, searchResult.getRelatedNumbers());
 		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
 		req.setAttribute(DESCRIPTION_ATTR, description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
@@ -417,7 +441,67 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		req.setAttribute(KEYWORDS_ATTR, keywords.toString());
-		ServletUtil.display(req, resp, "/phone-info.jsp");
+		
+		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
+		req.setAttribute("ratingLabel", Ratings.getLabel(searchResult.getTopRating()));
+		req.setAttribute("blocked", info.getVotes() >= DB.MIN_VOTES && !info.isArchived());
+		
+		// Create ratings chart
+		StringBuilder ratingLabels = new StringBuilder();
+		StringBuilder ratingData = new StringBuilder();
+		StringBuilder ratingBackground = new StringBuilder();
+		StringBuilder ratingBorder = new StringBuilder();
+
+		boolean firstRating = true;
+		for (Rating r : Rating.values()) {
+			if (r == Rating.B_MISSED) {
+				continue;
+			}
+			if (firstRating) {
+				firstRating = false;
+			} else {
+				ratingLabels.append(',');
+				ratingData.append(',');
+				ratingBackground.append('|');
+				ratingBorder.append('|');
+			}
+			ratingLabels.append(Ratings.getLabel(r));
+			ratingData.append(ratings.getOrDefault(r, 0));
+			String rgb = Ratings.getRGB(r);
+			ratingBackground.append("rgba(").append(rgb).append(", 0.2)");
+			ratingBorder.append("rgba(").append(rgb).append(", 1)");
+		}
+		req.setAttribute("ratingLabels", ratingLabels.toString());
+		req.setAttribute("ratingData", ratingData.toString());
+		req.setAttribute("ratingBackground", ratingBackground.toString());
+		req.setAttribute("ratingBorder", ratingBorder.toString());
+		
+		// Create search chart
+		SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.");
+		Calendar date = new GregorianCalendar();
+		date.add(Calendar.DAY_OF_MONTH, -(searches.size() - 1));
+
+		StringBuilder searchLabels = new StringBuilder();
+		StringBuilder searchData = new StringBuilder();
+
+		boolean first = true;
+
+		for (Integer r : searches) {
+			if (first) {
+				first = false;
+			} else {
+				searchLabels.append(',');
+				searchData.append(',');
+			}
+			searchLabels.append(fmt.format(date.getTime()));
+			date.add(Calendar.DAY_OF_MONTH, 1);
+			searchData.append(r);
+		}
+
+		req.setAttribute("searchLabels", searchLabels.toString());
+		req.setAttribute("searchData", searchData.toString());
+		
+		TemplateRenderer.getInstance(req).process("/phone-info", req, resp);
 	}
 
 	private static boolean isEmpty(String aiSummary) {

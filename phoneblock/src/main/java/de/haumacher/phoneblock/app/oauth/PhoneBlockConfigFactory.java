@@ -77,11 +77,11 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
         			ctx.sessionStore().set(ctx.webContext(), LoginServlet.LOCATION_ATTRIBUTE, location);
         		}
         		
-        		Optional<String> rememberHandle = ctx.webContext().getRequestParameter(LoginServlet.REMEMBER_PARAM);
+        		Optional<String> rememberHandle = ctx.webContext().getRequestParameter(LoginServlet.REMEMBER_ME_PARAM);
         		if (rememberHandle.isPresent()) {
         			String remember = rememberHandle.get();
         			LOG.info("Saving requested remember-me status during OAuth authentication: " + remember);
-        			ctx.sessionStore().set(ctx.webContext(), LoginServlet.REMEMBER_PARAM, remember);
+        			ctx.sessionStore().set(ctx.webContext(), LoginServlet.REMEMBER_ME_PARAM, remember);
         		}
         		
         		super.save(ctx);

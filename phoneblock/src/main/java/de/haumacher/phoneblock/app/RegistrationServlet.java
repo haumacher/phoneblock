@@ -31,7 +31,7 @@ public class RegistrationServlet extends HttpServlet {
 	/**
 	 * Request attribute set, if registration fails.
 	 */
-	public static final String REGISTER_ERROR_ATTR = "message";
+	public static final String REGISTER_ERROR_ATTR = "errorMessage";
 
 	public static final String REGISTER_WEB = "/register-web";
 	
@@ -77,7 +77,7 @@ public class RegistrationServlet extends HttpServlet {
 				passwd = null;
 			}
 			
-			String rememberValue = req.getParameter(LoginServlet.REMEMBER_PARAM);
+			String rememberValue = req.getParameter(LoginServlet.REMEMBER_ME_PARAM);
 			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);
 
 			startSetup(req, resp, login, passwd);

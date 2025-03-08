@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 	
 	// Initialize all input of date type.
-	if (bulmaCalendar != null) {
+	if ('bulmaCalendar' in window) {
 		const calendars = bulmaCalendar.attach('[type="date"]', {
 			dateFormat: "yyyy-MM-dd",
 			type: "date",

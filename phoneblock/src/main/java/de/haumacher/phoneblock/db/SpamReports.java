@@ -299,10 +299,10 @@ public interface SpamReports {
 	List<String> getBlockList(int minVotes);
 	
 	@Select("""
-			SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM NUMBERS s
-			where ACTIVE
-			GROUP BY confidence 
-			ORDER BY confidence DESC
+			SELECT CASE WHEN s.VOTES < #{minVotes} THEN 'reported' ELSE 'blocked' END state, COUNT(1) cnt FROM NUMBERS s
+			where s.ACTIVE and s.VOTES > 0
+			GROUP BY state
+			ORDER BY state
 			""")
 	List<Statistics> getStatistics(int minVotes);
 	

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Impressum')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1>Impressum</h1>
+
+		<p>
+			PhoneBlock ist ein <a href="https://github.com/haumacher/phoneblock">privates Projekt</a>, 
+			das Dir bei der digitalen Selbstverteidigung gegen Telefonterror und unerwünschte Werbeanrufe
+			helfen kann. PhoneBlock ist weder ein Produkt noch eine kommerzielle Dienstleistung im
+			Sinne des <a href="https://www.gesetze-im-internet.de/ddg/__5.html">Digitale-Dienste-Gesetzes</a>. 
+		</p>
+		
+		<p>
+			Diese Webseite betreibe ich (Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;) 
+			als Privatperson zu meinem persönlichen Vergnügen und aus technologischem Interesse. 
+			Ich ermögliche Dir die kostenlose Nutzung der Software und stelle Dir die dafür notwendigen 
+			Server-Kapazitäten ebenfalls unentgeltlich zur Verfügung. Wenn Du Dich an den Betriebskosten beteiligen, 
+			oder einfach nur "Danke" sagen möchtest, dann kannst Du gerne eine 
+			<a th:href="@{/support.jsp}">kleinen Betrag "spenden"</a>. 
+			Du tust dies aber ohne die Erwartung jedweder Gegenleistung.
+		</p>
+		
+		<p>
+			Die Software hinter dieser Webseite wurde von Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;
+			und anderen entwickelt. Bei Fragen, die nicht schon in der <a th:href="@{/faq.jsp}">FAQ</a> 
+			und den <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a> 
+			beantwortet werden, darfst du Dich gerne an mich (<button class="showaddr">...</button>) wenden. 
+			Allerdings wünsche ich weder Telefonanrufe noch Besuche, weswegen hier E-Mail 
+			als ausschließliche Kontaktmöglichkeit ausreichen muss. Bei Problemen, z.B. wenn Deine 
+			Telefonnummer versehentlich auf die Blockliste geraten ist, helfe ich gerne umgehend und unkompliziert.  
+		</p>
+
+		</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
