@@ -536,6 +536,7 @@
 					</connectors>
 					<webApp>
 						<contextPath>/phoneblock</contextPath>
+						<jettyEnvXml>${project.basedir}/src/test/jetty/jetty-env.xml</jettyEnvXml>
 					</webApp>
 				</configuration>
 				
@@ -543,6 +544,11 @@
 					<dependency>
 					    <groupId>org.eclipse.jetty.ee10</groupId>
 					    <artifactId>jetty-ee10-servlets</artifactId>
+					    <version>${jetty.version}</version>
+					</dependency>
+					<dependency>
+					    <groupId>org.eclipse.jetty.ee10</groupId>
+					    <artifactId>jetty-ee10-jndi</artifactId>
 					    <version>${jetty.version}</version>
 					</dependency>
 				</dependencies>
