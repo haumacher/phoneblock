@@ -1996,6 +1996,7 @@ public class DB {
 		if (existing == null) {
 			return recordContribution(users, messageDetails);
 		} else {
+			LOG.info("Skipping already recorded donation from {}.", messageDetails.sender);
 			return null;
 		}
 	}
@@ -2007,6 +2008,8 @@ public class DB {
 		} else {
 			userId = unique(messageDetails.uid, users.findUser(messageDetails.uid + "%"));
 		}
+		
+		LOG.info("Recording donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
 		
 		users.insertContribution(Contribution.create()
 			.setUserId(userId)

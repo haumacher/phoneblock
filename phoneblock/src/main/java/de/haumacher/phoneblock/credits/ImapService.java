@@ -189,8 +189,6 @@ public class ImapService implements ServletContextListener {
         	try {
         		MessageDetails messageDetails = _parser.parse(message);
 
-				LOG.info("Processing donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
-        		
 				UserSettings userSettings = DB.processContribution(users, messageDetails);
         		
 				if (_sendThanks && userSettings != null) {
