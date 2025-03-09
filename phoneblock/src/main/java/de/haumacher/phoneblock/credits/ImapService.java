@@ -29,8 +29,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
-import jakarta.mail.event.MessageCountAdapter;
-import jakarta.mail.event.MessageCountEvent;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.search.AndTerm;
@@ -109,26 +107,27 @@ public class ImapService implements ServletContextListener {
 		_store = _session.getStore("imaps");
 		_store.connect(user, password);
 		
-		IdleManager observer = new IdleManager(_session, _scheduler);
-		
 		_inbox = _store.getFolder("INBOX");
 		_inbox.open(Folder.READ_ONLY);
 		
-		_inbox.addMessageCountListener(new MessageCountAdapter() {
-		    public void messagesAdded(MessageCountEvent e) {
-		        List<Message> messages = Arrays.asList(e.getMessages());
-		        try {
-		    		processMessages(messages);
-
-		        	// Keep watching for new messages.
-		    		startWatcher(observer);
-		        } catch (MessagingException mex) {
-		            // handle exception related to the Folder
-		        }
-		    }
-		});
-
-		startWatcher(observer);
+// Watching inbox seems not to work
+		
+//		_inbox.addMessageCountListener(new MessageCountAdapter() {
+//		    public void messagesAdded(MessageCountEvent e) {
+//		        List<Message> messages = Arrays.asList(e.getMessages());
+//		        try {
+//		    		processMessages(messages);
+//
+//		        	// Keep watching for new messages.
+//		    		startWatcher(observer);
+//		        } catch (MessagingException mex) {
+//		            // handle exception related to the Folder
+//		        }
+//		    }
+//		});
+//
+//		IdleManager observer = new IdleManager(_session, _scheduler);
+//		startWatcher(observer);
 	}
 
 	private void startWatcher(IdleManager observer) {
@@ -258,13 +257,19 @@ public class ImapService implements ServletContextListener {
 			
 			SearchTerm query = messagePattern();
 			if (lastSearch > 0) {
+				// Note: IMAP date query has granularity day. Therefore, when using GT
+				// comparison, messages are skipped if received the same day after a search.
+				// When using GE comparison, messages are repeatedly found in each search and
+				// must be skipped manually.
 				query = new AndTerm(query, 
-					new ReceivedDateTerm(DateTerm.GT, new Date(lastSearch)));
+					new ReceivedDateTerm(DateTerm.GE, new Date(lastSearch)));
 			}
 			
-			List<Message> newMessages = Arrays.asList(_inbox.search(query));
-			
-			newMessages.sort(Comparator.comparingLong(ImapService::received));
+			Message[] result = _inbox.search(query);
+			List<Message> newMessages = Arrays.stream(result)
+					.filter(m -> received(m) > lastSearch)
+					.sorted(Comparator.comparingLong(ImapService::received))
+					.toList();
 			
 			if (newMessages.size() > 0) {
 				processMessages(tx, users, newMessages);
