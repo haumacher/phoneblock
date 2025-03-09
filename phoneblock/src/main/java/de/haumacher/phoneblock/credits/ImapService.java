@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBContribution;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.jndi.JNDIProperties;
@@ -189,19 +191,10 @@ public class ImapService implements ServletContextListener {
         	try {
         		MessageDetails messageDetails = _parser.parse(message);
 
-				UserSettings userSettings = DB.processContribution(users, messageDetails);
-        		
-				if (_sendThanks && userSettings != null) {
-					MailService mailService = _mail.getMailService();
-					if (mailService != null) {
-						boolean ok = mailService.sendThanksMail(messageDetails.sender, userSettings, messageDetails.amount);
-						if (ok) {
-							users.ackContribution(messageDetails.tx);
-						}
-					}
+				boolean ok = DB.processContribution(users, messageDetails);
+				if (ok) {
+					tx.commit();
 				}
-				
-				tx.commit();
 			} catch (Exception ex) {
 				System.err.println("Failed to process message: " + ex.getMessage());
 			}
@@ -233,6 +226,8 @@ public class ImapService implements ServletContextListener {
 		try {
 			LOG.info("Checking for new mails.");
 			searchNewMessages();
+			
+			sendThanksMessages();
 		} catch (Exception ex) {
 			LOG.error("Failed to access inbox.", ex);
 			closeConnection();
@@ -243,6 +238,36 @@ public class ImapService implements ServletContextListener {
 				searchNewMessages();
 			} catch (MessagingException | IOException e1) {
 				LOG.error("Failed to re-open IMAP session.", e1);
+			}
+		}
+	}
+
+	private void sendThanksMessages() {
+		if (!_sendThanks) {
+			return;
+		}
+		
+		MailService mailService = _mail.getMailService();
+		if (mailService == null) {
+			return;
+		}
+		
+		try (SqlSession tx = _dbService.db().openSession()) {
+			Users users = tx.getMapper(Users.class);
+
+			List<DBContribution> contributions = users.getContributionsToAcknowledge();
+			for (DBContribution contribution : contributions) {
+				DBUserSettings userSettings = users.getSettingsById(contribution.getUserId());
+				if (userSettings == null) {
+					LOG.warn("Cannot find user settings for {}.", contribution.getUserId());
+					continue;
+				}
+				
+				boolean ok = mailService.sendThanksMail(contribution.getSender(), userSettings, contribution.getAmount());
+				if (ok) {
+					users.ackContribution(contribution.getId());
+					tx.commit();
+				}
 			}
 		}
 	}

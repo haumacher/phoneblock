@@ -63,6 +63,13 @@ public interface Users {
 	DBContribution getContribution(String tx);
 	
 	@Select("""
+			SELECT ID, USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK 
+			FROM CONTRIBUTIONS c 
+			WHERE NOT c.ACK AND NOT c.USER_ID IS NULL ;
+			""")
+	List<DBContribution> getContributionsToAcknowledge();
+
+	@Select("""
 			select ID, USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK
 			from CONTRIBUTIONS
 			where REGEXP_REPLACE(TRIM(LOWER(SENDER)), ' +', ' ')=#{sender} and RECEIVED=#{received}
@@ -80,9 +87,9 @@ public interface Users {
 	@Update("""
 			update CONTRIBUTIONS
 			set ACK=true
-			where TX=#{tx}
+			where ID=#{id}
 			""")
-	int ackContribution(String tx);
+	int ackContribution(long id);
 	
 	@Update("""
 			update CONTRIBUTIONS

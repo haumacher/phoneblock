@@ -522,7 +522,7 @@ class TestDB {
 			assertEquals(500, users.getSettingsRaw("eeeeeeee-ffff").getCredit());
 			
 			assertFalse(contribution1.isAcknowledged());
-			users.ackContribution("00001");
+			users.ackContribution(contribution1.getId());
 			DBContribution contribution1a = users.getContribution("00001");
 			assertTrue(contribution1a.isAcknowledged());
 		}
