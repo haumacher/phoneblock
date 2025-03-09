@@ -33,7 +33,6 @@ public class AssignContributionServlet extends HttpServlet {
 	
 	public static final String CONTRIB_DATE = "contrib-date";
 	public static final String CONTRIB_NAME = "contrib-name";
-	public static final String CONTRIB_TX = "contrib-tx";
 	
 	/**
 	 * URL path where to reach the {@link AssignContributionServlet}.
@@ -55,7 +54,6 @@ public class AssignContributionServlet extends HttpServlet {
 			return;
 		}
 		
-		String tx = req.getParameter(CONTRIB_TX);
 		String name = req.getParameter(CONTRIB_NAME);
 		String date = req.getParameter(CONTRIB_DATE);
 		
@@ -68,15 +66,8 @@ public class AssignContributionServlet extends HttpServlet {
 			if (userIdOpt != null) {
 				long userId = userIdOpt.longValue();
 
-				if (tx != null && !tx.isBlank()) {
-					DBContribution contribution = users.getContribution(tx.trim());
-					if (contribution != null) {
-						tryAssignContribution(session, users, contribution, userId);
-					} else {
-						LOG.warn("Contribution {} not found, cannot assign to {}.", tx, userId);
-					}
-				} else if (name != null && !name.isBlank() && date != null && !date.isBlank()) {
-					String sender = name.trim().toLowerCase().replaceAll(" +", " ");
+				if (name != null && !name.isBlank() && date != null && !date.isBlank()) {
+					String sender = name.strip().toLowerCase().replaceAll("\\s+", " ");
 					try {
 						Date received = new SimpleDateFormat("yyyy-MM-dd").parse(date);
 						List<DBContribution> contributions = users.searchContribution(sender, received.getTime());
@@ -92,7 +83,7 @@ public class AssignContributionServlet extends HttpServlet {
 						LOG.warn("Invalid date received from {}: date={}", userId, date);
 					}
 				} else {
-					LOG.warn("Missing information to assign contribution to {}: tx={}, name={}, date={}", userId, tx, name, date);
+					LOG.warn("Missing information to assign contribution to {}: tx={}, name={}, date={}", userId, name, date);
 				}
 			}
 		}

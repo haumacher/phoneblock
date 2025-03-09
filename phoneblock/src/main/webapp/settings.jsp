@@ -424,7 +424,6 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
 	<tr>
 	<th>Datum</th>
 	<th>Nachricht</th>
-	<th>Transaktionsnummer</th>
 	<th>Betrag</th>
 	</tr>
 	</thead>
@@ -435,7 +434,6 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
 	<tr>
 	<th><%= JspUtil.quote(dateFormat.format(new Date(contribution.getReceived()))) %></th>
 	<th><%= JspUtil.quote(contribution.getMessage()) %></th>
-	<th><%= JspUtil.quote(contribution.getTx()) %></th>
 	<th><%= JspUtil.quote(amountFormat.format(contribution.getAmount() / 100.0)) %>
 	</tr>
 <% } %>	
@@ -456,21 +454,9 @@ List<DBContribution> contributions = (List<DBContribution>) request.getAttribute
 	<div class="panel-block">
 	<div class="content">
 		<p>
-		Du vermisst eine Zahlung? Hier kannst Du nach einer Zahlung suchen. Wenn du mit PayPal bezahlt hast, dann 
-		gib den Transaktionscode ein. Bei einer Banküberweisung, versuche es mit Deinem vollständigen Namen (den 
-		Deine Bank als Absender verwendet) und dem Datum der Überweisung:
+		Du vermisst eine Zahlung? Hier kannst Du nach einer Zahlung suchen. Gib Deinem vollständigen Namen (den 
+		Deine Bank/PayPal als Absender verwendet) und das Datum der Überweisung an:
 		</p>
-	
-		<div class="field">
-		  <label class="label">Transaktionscode</label>
-		  <p class="control has-icons-left">
-		    <input class="input" type="text" placeholder="13121212H7878787W" name="<%= AssignContributionServlet.CONTRIB_TX%>">
-		    <span class="icon is-small is-left"><i class="fa-solid fa-signature"></i></span>
-		  </p>
-		  <p class="help">
-		  Der PayPal Transaktionscode. Du findest diesen in den Details Deiner Überweisung. Bei einer Banküberweisung leer lassen.
-		  </p>
-		</div>
 	
 		<div class="field">
 		  <label class="label">Absender</label>
