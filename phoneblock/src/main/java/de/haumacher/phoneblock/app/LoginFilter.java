@@ -107,7 +107,7 @@ public abstract class LoginFilter implements Filter {
 					String userName = authorization.getUserName();
 					
 					if (checkTokenAuthorization(req, authorization)) {
-						LOG.info("Accepted bearer token {}... for user {}.", token.substring(0, 16), userName);
+						LOG.info("Accepted bearer token {}...({}) for user {}.", token.substring(0, 16), token, authorization.getId(), userName);
 						
 						setUser(req, userName);
 						
