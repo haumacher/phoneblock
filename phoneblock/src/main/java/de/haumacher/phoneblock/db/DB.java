@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.db;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,8 +50,6 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.msgbuf.binary.OctetDataReader;
-import de.haumacher.msgbuf.binary.OctetDataWriter;
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
@@ -82,7 +79,7 @@ import jakarta.mail.internet.InternetAddress;
  */
 public class DB {
 
-	private static final String TOKEN_VERSION = "pbt_";
+	static final String TOKEN_VERSION = "pbt_";
 
 	private static final int MAX_COMMENT_LENGTH = 8192;
 
@@ -550,19 +547,7 @@ public class DB {
 	}
 
 	private String createToken(AuthToken template, byte[] secret) throws IOError {
-		try {
-			ByteArrayOutputStream tokenStream = new ByteArrayOutputStream();
-			OctetDataWriter writer = new OctetDataWriter(tokenStream);
-			writer.beginObject();
-			writer.name(1);
-			writer.value(template.getId());
-			writer.name(2);
-			writer.value(secret);
-			writer.endObject();
-			return TOKEN_VERSION + Base64.getEncoder().withoutPadding().encodeToString(tokenStream.toByteArray());
-		} catch (IOException ex) {
-			throw new IOError(ex);
-		}
+		return TokenInfo.createToken(template.getId(), secret);
 	}
 
 	private byte[] createSecret() {
@@ -606,27 +591,19 @@ public class DB {
 		}
 		
 		try {
-			byte[] tokenBytes = Base64.getDecoder().decode(token.substring(TOKEN_VERSION.length()));
-			ByteArrayInputStream in = new ByteArrayInputStream(tokenBytes);
-			OctetDataReader reader = new OctetDataReader(in);
-			reader.beginObject();
-			reader.nextName();
-			long id = reader.nextLong();
-			reader.nextName();
-			byte[] secret = reader.nextBinary();
-			reader.endObject();
-
+			TokenInfo tokenInfo = TokenInfo.parse(token);
+			
 			try (SqlSession session = openSession()) {
 				Users users = session.getMapper(Users.class);
 				
-				DBAuthToken result = users.getAuthToken(id);
+				DBAuthToken result = users.getAuthToken(tokenInfo.id);
 				if (result == null) {
 					LOG.info("Outdated authorization token received: {}", token);
 					return null;
 				}
 				
 				byte[] expectedHash = result.getPwHash();
-				byte[] digest = sha256().digest(secret);
+				byte[] digest = sha256().digest(tokenInfo.secret);
 				
 				if (!Arrays.equals(digest, expectedHash)) {
 					LOG.info("Invalid authorization token received for user {}: {}", result.getUserId(), token);
@@ -642,7 +619,7 @@ public class DB {
 				if (now - result.getLastAccess() > RATE_LIMIT_MS) {
 					users.updateAuthToken(result.getId(), now, userAgent);
 					result.setLastAccess(now);
-
+			
 					if (renew) {
 						LOG.info("Renewing autorization token for user {}.", result.getUserName());
 						renewToken(users, result);
