@@ -5,6 +5,8 @@ import java.io.IOException;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +16,17 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @WebFilter(urlPatterns = "/*")
 public class RememberedLoginFilter extends LoginFilter {
+	
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+		if (BasicLoginFilter.matches(((HttpServletRequest) request).getServletPath())) {
+			// Prevent duplicate checking.
+			chain.doFilter(request, response);
+		} else {
+			super.doFilter(request, response, chain);
+		}
+	}
 
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

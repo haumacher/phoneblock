@@ -4,18 +4,17 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import de.haumacher.phoneblock.ab.CreateABServlet;
 import de.haumacher.phoneblock.ab.ListABServlet;
-import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
@@ -25,6 +24,10 @@ import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Filter enforcing HTTP login.
@@ -45,6 +48,13 @@ import de.haumacher.phoneblock.util.ServletUtil;
 public class BasicLoginFilter extends LoginFilter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BasicLoginFilter.class);
+
+	private static final String[] RAW_PATHS = BasicLoginFilter.class.getAnnotation(WebFilter.class).urlPatterns();
+	private static final Set<String> PATHS = Arrays.stream(RAW_PATHS).map(p -> p.endsWith("/*") ? p.substring(0, p.length() - 2) : p).collect(Collectors.toSet());
+	
+	public static boolean matches(String servletPath) {
+		return PATHS.contains(servletPath);
+	}
 	
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
