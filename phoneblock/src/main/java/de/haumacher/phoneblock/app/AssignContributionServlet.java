@@ -77,13 +77,13 @@ public class AssignContributionServlet extends HttpServlet {
 							tryAssignContribution(session, users, contribution, userId);
 						} else {
 							LOG.warn("No unique contribution found ({}) for {}: name={}, date={}/{}", 
-									contributions.size(), userId, name, date, received);
+									contributions.size(), userName, name, date, received);
 						}
 					} catch (ParseException e) {
-						LOG.warn("Invalid date received from {}: date={}", userId, date);
+						LOG.warn("Invalid date received from {}: date={}", userName, date);
 					}
 				} else {
-					LOG.warn("Missing information to assign contribution to {}: tx={}, name={}, date={}", userId, name, date);
+					LOG.warn("Missing information to assign contribution to {}: name={}, date={}", userName, name, date);
 				}
 			}
 		}
