@@ -97,6 +97,8 @@ public class ImapService implements ServletContextListener {
 	}
 
 	private void openSession() throws NoSuchProviderException, MessagingException, IOException {
+		LOG.info("Opening IMAP session.");
+
 		String user = _properties.getProperty("mail.imap.user");
 		String password = _properties.getProperty("mail.imap.password");
 		
@@ -147,6 +149,7 @@ public class ImapService implements ServletContextListener {
 	}
 
 	private void closeConnection() {
+		LOG.info("Closing IMAP session.");
 		if (_inbox != null) {
 			try {
 				_inbox.close(false);
@@ -226,10 +229,7 @@ public class ImapService implements ServletContextListener {
 		try {
 			LOG.info("Checking for new mails.");
 			searchNewMessages();
-			
-			sendThanksMessages();
 		} catch (Exception ex) {
-			LOG.error("Failed to access inbox.", ex);
 			closeConnection();
 			try {
 				openSession();
@@ -240,6 +240,8 @@ public class ImapService implements ServletContextListener {
 				LOG.error("Failed to re-open IMAP session.", e1);
 			}
 		}
+
+		sendThanksMessages();
 	}
 
 	private void sendThanksMessages() {
