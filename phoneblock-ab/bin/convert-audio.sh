@@ -1,17 +1,11 @@
 #!/bin/bash
 
-# Prüfen, ob ein Ordner als Parameter übergeben wurde
-if [ -z "$1" ]; then
-    echo "Bitte einen Ordner als Parameter angeben."
-    exit 1
-fi
-
-INPUT_DIR="$1"
+for INPUT_DIR in "$@" ; do
 
 # Prüfen, ob der angegebene Ordner existiert
 if [ ! -d "$INPUT_DIR" ]; then
     echo "Der Ordner '$INPUT_DIR' existiert nicht."
-    exit 1
+    continue
 fi
 
 OUTPUT_DIR="${INPUT_DIR}/PCMA"
@@ -30,6 +24,8 @@ for file in "$INPUT_DIR"/*.{mp3,flac,wav,m4a,ogg}; do
 
     # Konvertierung mit ffmpeg
     ffmpeg -y -loglevel quiet -i "$file" -c:a pcm_alaw -ar 8000 -ac 1 "$output_file"
+done
+
 done
 
 echo "Konvertierung abgeschlossen."
