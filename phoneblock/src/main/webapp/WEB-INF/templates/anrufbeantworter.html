@@ -1,19 +1,19 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter', login=true)}"></head>
+<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter', login=true)}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock-Anrufbeantworter-Logo" th:src="@{/assets/img/ab/logo/ab-logo.svg}">
+			<img alt="PhoneBlock-Anrufbeantworter-Logo" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
 		</div>
 	
-		<h1>Installation als Anrufbeantworter</h1>
+		<h1 data-tx="t0001">Installation als Anrufbeantworter</h1>
 		
-		<p>
+		<p data-tx="t0002">
 			PhoneBlock bietet Dir einen intelligenten Anrufbeantworter an, der automatisch nur dann 
 			das Gespräch annimmt, wenn die Nummer des Anrufers in der <a th:href="@{/status.jsp}">SPAM-Datenbank von PhoneBlock</a> 
 			gelistet ist. Genauso wie für die <a th:href="@{/setup.jsp}">Einrichtung der Blockliste</a> benötigst Du hierfür kein 
@@ -24,33 +24,33 @@
 			<a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">hier nachlesen</a>.
 		</p>
 		
-		<p>
+		<p data-tx="t0003">
 			Mit folgenden Schritten kommst Du zu Deinem PhoneBlock-Anrufbeantworter:
 		</p>
 		
 		<ol>
-			<li><a href="#register">Bei PhoneBlock anmelden</a></li>
-			<li><a href="#create">Anrufbeantworter erstellen</a></li>
-			<li><a href="#dyndns">DynDNS in der Fritz!Box einrichten</a></li>
-			<li><a href="#sip">Telefoniegerät in der Fritz!Box einrichten</a></li>
-			<li><a href="#enable">PhoneBlock-Anrufbeantworter einschalten</a></li>
-			<li><a href="#test">Anrufbeantworter testen</a></li>
+			<li><a data-tx="t0004" href="#register">Bei PhoneBlock anmelden</a></li>
+			<li><a data-tx="t0005" href="#create">Anrufbeantworter erstellen</a></li>
+			<li><a data-tx="t0006" href="#dyndns">DynDNS in der Fritz!Box einrichten</a></li>
+			<li><a data-tx="t0007" href="#sip">Telefoniegerät in der Fritz!Box einrichten</a></li>
+			<li><a data-tx="t0008" href="#enable">PhoneBlock-Anrufbeantworter einschalten</a></li>
+			<li><a data-tx="t0009" href="#test">Anrufbeantworter testen</a></li>
 		</ol>
 		
-		 <p>
+		 <p data-tx="t0010">
 		 	Die Anleitung führt Dich Schritt für Schritt durch die Einrichtung. Die Konfiguration 
 		 	in der Fritz!Box ist nicht ganz einfach, aber wenn Du Dich genau an das hier beschriebene
 		 	Vorgehen hälst, kann eigentlich nichts schief gehen. 
 		 </p>
 		 
-		<h2 id="register">Schritt 1: Bei PhoneBlock anmelden</h2>
+		<h2 data-tx="t0011" id="register">Schritt 1: Bei PhoneBlock anmelden</h2>
 
-		<p>
+		<p data-tx="t0012">
 			Ab hier benötigst Du drei Browser-Fenster (oder Reiter). Eines für diese Anleitung, eines für die PhoneBlock-Anrufbeantworter-App 
 			und eines für die Konfigurationsoberfläche Deiner Fritz!Box. 
 		</p>
 		
-		<p th:if="${loggedIn}">
+		<p data-tx="t0013" th:if="${loggedIn}">
 		Als erstes musst Du Dich bei PhoneBlock registrieren bzw. anmelden, um mit der Einrichtung zu beginnen.
 		</p>
 		
@@ -58,87 +58,87 @@
 		  <div class="column is-half is-offset-one-quarter">
 			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
-					<i class="fa-solid fa-right-to-bracket"></i>
+					<i class="fa-solid fa-right-to-bracket"/>
 			    </span>
-				<span>Anmelden</span>			
+				<span data-tx="t0014">Anmelden</span>			
 			</a>
 		  </div>
 		</div>
-		<p unless:if="${loggedIn}">
-		Du bist als <code th:text="${userName}"></code> angemeldet, prima, gleich zum nächsten Schritt! 
+		<p data-tx="t0015" unless:if="${loggedIn}">
+		Du bist als <code th:text="${userName}"/> angemeldet, prima, gleich zum nächsten Schritt! 
 		</p>
 		
-		<h2 id="create">Schritt 2: Anrufbeantworter erstellen</h2>
+		<h2 data-tx="t0016" id="create">Schritt 2: Anrufbeantworter erstellen</h2>
 		
-		<p>
-			Wenn Du hier klickst öffnet sich Fenster mit der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">PhoneBlock-Anrufbeantworter-App</a>.
+		<p data-tx="t0017">
+			Wenn Du hier klickst öffnet sich Fenster mit der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock-Anrufbeantworter-App</a>.
 			Beim ersten Öffnen ist die Liste Deiner Anrufbeantworter leer und unten rechts befindet sich ein Knopf, 
 			mit dem Du Dir einen Anrufbeantworter erstellen kannst. Drücke diesen Plus-Knopf.
 		</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-primary is-fullwidth showAB" th:href="@{/ab/}" target="phoneblock-ab">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
 			    <span class="icon">
-					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+					<i class="fa-solid fa-arrow-up-right-from-square"/>
 			    </span>
-				<span>App öffnen</span>			
+				<span data-tx="t0018">App öffnen</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="DynDNS einrichten" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 id="dyndns">Schritt 4: DynDNS einrichten</h2>
+		<h2 data-tx="t0019" id="dyndns">Schritt 4: DynDNS einrichten</h2>
 		
-		<p>
+		<p data-tx="t0020">
 			Über "DynDNS" teilt Deine Fritz!Box PhoneBlock ihre IP-Adresse mit. Das ist notwendig, damit der 
 			PhoneBlock-Anrufbeantworter Deine Fritz!Box findet um sich dort anzumelden.
 		</p>
 		
-		<h3>PhoneBlock-DynDNS aktivieren</h3>
+		<h3 data-tx="t0021">PhoneBlock-DynDNS aktivieren</h3>
 		
-		<p>
-			Aktiviere in der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
+		<p data-tx="t0022">
+			Aktiviere in der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a>
 			den Schalter "PhoneBlock-DynDNS verwenden" (Wenn Du Dich gut auskennst und bereits einen anderen DynDNS-Provider verwendest, kannst Du auch direkt
 			den Host-Namen deiner Fritz!Box eintragen).
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="DynDNS einrichten" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p>
+		<p data-tx="t0023">
 			Auf der Folgeseite bestätige mit "DynDNS aktivieren". 
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="DynDNS einrichten" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
 	  		</div>
 		</div>
 		
-		<p>
+		<p data-tx="t0024">
 			Jetzt erhälst Du Zugangsdaten für das PhoneBlock-DynDNS, die Du 
 			in Deine Fritz!Box eintragen kannst (siehe weiter unten). 
 		</p>
 
-		<h3>Anmeldedaten in der Fritz!Box eintragen</h3>
+		<h3 data-tx="t0025">Anmeldedaten in der Fritz!Box eintragen</h3>
 		
-		<p>
-			Dieser Link <a href="http://fritz.box" target="fritzbox" class="showFB">öffnet ein Fenster für Deine Fritz!Box</a>.
+		<p data-tx="t0026">
+			Dieser Link <a class="showFB" href="http://fritz.box" target="fritzbox">öffnet ein Fenster für Deine Fritz!Box</a>.
 			Melde dich dort mit Deinem Fritz!Box-Kennwort an. Wenn Du das noch nie getan hast, dann findest Du 
 			das Kennwort auf der Unterseite der Fritz!Box. 
 		</p>
 		
-		<p>
-			In Deiner <a href="http://fritz.box" target="fritzbox" class="showFB">Fritz!Box</a> navigiere in der Seitenleiste zu "Internet &gt; Freigaben" und wähle
+		<p data-tx="t0027">
+			In Deiner <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> navigiere in der Seitenleiste zu "Internet &gt; Freigaben" und wähle
 			den Reiter "DynDNS".
 		</p>
 
@@ -146,61 +146,61 @@
 		  <div class="column is-half is-offset-one-quarter">
 			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
 			    <span class="icon">
-					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+					<i class="fa-solid fa-arrow-up-right-from-square"/>
 			    </span>
-				<span>Fritz!Box öffnen</span>			
+				<span data-tx="t0028">Fritz!Box öffnen</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  			<img alt="DynDNS einrichten" class="image" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p>
-			Kopiere aus der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a> die Daten für
-			"Update-Url", "Domainname", "Benutzername" und "Kennwort" und trage sie in Deiner <a href="http://fritz.box" target="fritzbox" class="showFB">Fritz!Box</a>
+		<p data-tx="t0029">
+			Kopiere aus der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a> die Daten für
+			"Update-Url", "Domainname", "Benutzername" und "Kennwort" und trage sie in Deiner <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>
 			ein. Und bestätige mit "Übernehmen" (Punkt 5 im Bild unten). 
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="DynDNS einrichten" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  			<img alt="DynDNS einrichten" class="image" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
 	  		</div>
 		</div>
 		
-		<h3>DynDNS überprüfen</h3>
+		<h3 data-tx="t0030">DynDNS überprüfen</h3>
 
-		<p>
-			Gehe jetzt zurück zu der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a> und
+		<p data-tx="t0031">
+			Gehe jetzt zurück zu der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a> und
 			lass die Einstellungen überprüfen (Punkt 6 im Bild oben).
 			Wenn PhoneBlock Deine Fritz!Box gefunden hat, kommst zu zur nächsten Seite mit den Zugangsdaten für den eigentlichen Anrufbeantworter.
 		</p>
 		
-		<h2 id="sip">Schritt 4: Anrufbeantworter in der Fritz!Box einrichten</h2>
+		<h2 data-tx="t0032" id="sip">Schritt 4: Anrufbeantworter in der Fritz!Box einrichten</h2>
 		
-		<p>
+		<p data-tx="t0033">
 			Jetzt wird der Anrufbeantworter als Telefoniegerät in der Fritz!Box eingerichtet. Öffne hierzu wieder 
-			Deine <a href="http://fritz.box" target="fritzbox" class="showFB">Fritz!Box-Oberfläche</a>.
+			Deine <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box-Oberfläche</a>.
 		</p>
 
-		<h3>Telefoniegerät einrichten</h3>
+		<h3 data-tx="t0034">Telefoniegerät einrichten</h3>
 
-		<p>
-			Navigiere in der Seitenleiste zu "Telefonie > Telefoniegeräte" und klicke den Knopf "Neues Gerät einrichten".
+		<p data-tx="t0035">
+			Navigiere in der Seitenleiste zu "Telefonie &gt; Telefoniegeräte" und klicke den Knopf "Neues Gerät einrichten".
 		</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Gerät einrichten" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  			<img alt="Gerät einrichten" class="image" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
 	  		</div>
 		</div>
 		
-		<h3>Art des Gerätes wählen</h3>
+		<h3 data-tx="t0036">Art des Gerätes wählen</h3>
 
-		<p>
+		<p data-tx="t0037">
 			Wähle die Option "Telefon (mit und ohne Anrufbeantworter)" und Klicke auf "Weiter". Hinweis: Wähle <b>nicht</b> die 
 			an sich naheliegende Option "Anrufbeantworter", da man hiermit nur Anrufbeantworter konfigurieren kann, die in der 
 			Fritz!Box fest eingebaut sind.  
@@ -208,40 +208,40 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Gerät erstellen" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
+	  			<img alt="Gerät erstellen" class="image" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
 	  		</div>
 		</div>
 
-		<h3>IP-Telefon konfigurieren</h3>
+		<h3 data-tx="t0038">IP-Telefon konfigurieren</h3>
 
-		<p>
+		<p data-tx="t0039">
 			Auf der Seite "Telefon anschließen" wähle die Option "LAN/WLAN (IP-Telefon)" und gibt dem neuen Gerät den Namen 
 			"PhoneBlock" im Text-Feld unten. Klicke danach auf "Weiter".
 		</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="IP-Telefon erstellen" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  			<img alt="IP-Telefon erstellen" class="image" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
 	  		</div>
 		</div>
 
-		<h3>Zugangsdaten übernehmen</h3>
+		<h3 data-tx="t0040">Zugangsdaten übernehmen</h3>
 
-		<p>
+		<p data-tx="t0041">
 			Auf der nächsten Seite "Einstellungen im IP-Telefon übernehmen" wirst Du nach "Benutzername" und "Kennwort" gefragt. 
-			Kopiere hier die entsprechenden Daten, die Dir in der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
+			Kopiere hier die entsprechenden Daten, die Dir in der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a>
 			angezeigt werden. Klicke auf "Weiter". 
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Benutzerdaten" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  			<img alt="Benutzerdaten" class="image" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
 	  		</div>
 		</div>
 		
-		<h3>Einstellungen für ausgehende Gespräche</h3>
+		<h3 data-tx="t0042">Einstellungen für ausgehende Gespräche</h3>
 
-		<p>
+		<p data-tx="t0043">
 			Auf der Seite "Telefon für ausgehende Gespräche einrichten" kannst Du einfach "Weiter" klicken. 
 			Der PhoneBlock-Anrufbeantworter benötigt keine Rufnummer für ausgehende Gespräche, weil er nie aktiv Gespräche führt. 
 			Wir deaktivieren diese Rufnummer in einem späteren Schritt, damit Deine Anrufbeantworter auch wirklich keine
@@ -250,13 +250,13 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Ausgehende Gespräche" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  			<img alt="Ausgehende Gespräche" class="image" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
 	  		</div>
 		</div>
 
-		<h3>Zu schützende Nummern auswählen</h3>
+		<h3 data-tx="t0044">Zu schützende Nummern auswählen</h3>
 
-		<p>
+		<p data-tx="t0045">
 			Auf der Seite "Telefon-Einstellungen für ankommende Gespräche einrichten" solltest Du die Standardeinstellung 
 			"alle Anrufe annehmen" belassen. Wenn Du nur bestimmte Nummern vor SPAM-Anrufen schützen möchtest, kannst Du hier
 			auch die Nummern auswählen, für die der Anrufbeantworter überhaupt einen Anruf zu sehen bekommt. Klicke auf "Weiter".
@@ -264,26 +264,26 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Geschützte Nummern" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  			<img alt="Geschützte Nummern" class="image" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
 	  		</div>
 		</div>
 
-		<h3>Konfiguration bestätigen</h3>
+		<h3 data-tx="t0046">Konfiguration bestätigen</h3>
 
-		<p>
+		<p data-tx="t0047">
 			Du kommst jetzt auf die Zusammenfassungsseite "Einstellungen übernehmen". Du kannst die vorgenommenen Einstellungen 
 			nochmal überprüfen und mit "Übernehmen" bestätigen.
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Einstellungen prüfen" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  			<img alt="Einstellungen prüfen" class="image" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
 	  		</div>
 		</div>
 
-		<h3>Gerät fertig konfigurieren</h3>
+		<h3 data-tx="t0048">Gerät fertig konfigurieren</h3>
 
-		<p>
+		<p data-tx="t0049">
 			Du bist zurück in der "Geräteübersicht". Hier solltest Du jetzt Deinen neuen Anrufbeantworter "PhoneBlock" in 
 			der Liste sehen. Bevor Du den Anrufbeantworter aber einschalten kannst, müssen noch weitere Einstellungen vorgenommen werden. 
 			Klicke hierzu auf den Bearbeiten-Stift am Ende der PhoneBlock-Zeile.
@@ -291,13 +291,13 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Anrufbeantworter bearbeiten" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  			<img alt="Anrufbeantworter bearbeiten" class="image" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
 	  		</div>
 		</div>
 
-		<h3>Ausgehende Anrufe unterbinden</h3>
+		<h3 data-tx="t0050">Ausgehende Anrufe unterbinden</h3>
 
-		<p>
+		<p data-tx="t0051">
 			In dem Auswahlfeld "Ausgehende Anrufe" kannst Du jetzt den letzten leeren Eintrag wählen, um sicherzustellen, dass
 			Dein Anrufbeantworter nicht selbständig Gespräche führen kann. Klicke <b>nicht</b> auf den Übernehmen-Knopf unten, 
 			sondern auf den zweiten Reiter "Anmeldedaten". Jetzt wirst Du gefragt, ob du die Änderungen speichern möchtest. 
@@ -306,54 +306,54 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image" alt="Ausgehende Anrufe verhindern" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  			<img alt="Ausgehende Anrufe verhindern" class="image" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
 	  		</div>
 			<div class="column">
-	  			<img class="image" alt="Bestätigen" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  			<img alt="Bestätigen" class="image" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
 	  		</div>
 		</div>
 
-		<h3>Anmeldung aus dem Internet erlauben</h3>
+		<h3 data-tx="t0052">Anmeldung aus dem Internet erlauben</h3>
 
-		<p>
+		<p data-tx="t0053">
 			Im Reiter "Anmeldedaten" musst Du jetzt noch die Option "Anmeldung aus dem Internet erlauben" aktivieren und das Kennwort 
-			erneut aus der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a> kopieren und in das Feld "Kennwort" eintragen.
+			erneut aus der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a> kopieren und in das Feld "Kennwort" eintragen.
 			Klicke erst dann auf den Knopf "Übernehmen".
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Zugriff aus dem Internet" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  			<img alt="Zugriff aus dem Internet" class="image" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 id="enable">Schritt 5: Anrufbeantworter einschalten</h2>
+		<h2 data-tx="t0054" id="enable">Schritt 5: Anrufbeantworter einschalten</h2>
 		
-		<p>
-			Die Konfiguration Deines Anrufbeantworters ist jetzt abgeschlossen. Wechsele zurück in die <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
+		<p data-tx="t0055">
+			Die Konfiguration Deines Anrufbeantworters ist jetzt abgeschlossen. Wechsele zurück in die <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a>
 			und schalte Deinen neuen Anrufbeantworter ein.
 		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="Zugriff aus dem Internet" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  			<img alt="Zugriff aus dem Internet" class="image appscreen" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<p>
-			Gratuliere, wenn alles geklappt hat, sollte der Anrufbeantworter in der <a th:href="@{/ab/}" target="phoneblock-ab" class="showAB">Anrufbeantworter-App</a>
+		<p data-tx="t0056">
+			Gratuliere, wenn alles geklappt hat, sollte der Anrufbeantworter in der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Anrufbeantworter-App</a>
 			jetzt grün als "eingeschaltet" angezeigt werden. Die nächsten unliebsamen Anrufer können in Zukunft mit PhoneBlock diskutieren.
 		</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image appscreen" alt="Anrufbeantworter verbunden" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  			<img alt="Anrufbeantworter verbunden" class="image appscreen" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 id="test">Schritt 6: Anrufbeantworter testen</h2>
+		<h2 data-tx="t0057" id="test">Schritt 6: Anrufbeantworter testen</h2>
 
-		<p>
+		<p data-tx="t0058">
 			Wenn Du ausprobieren willst, wie ein Gespräch mit dem nicht ganz alltäglichen PhoneBlock-Anrufbeantworter abläuft, kannst Du ihn 
 			von einem direkt an der Fritz!Box angeschlossenen Telefon (z.B. einem DECT-Schnurlostelefon) über die <b>interne Nummer</b> des Anrufbeantworters anrufen. 
 			Solche Test-Anrufe nimmter der Anrufbeantworter immer entgegen. <b>Wichtig:</b> Das funktioniert <b>nur</b> über die interne Nummer des 
@@ -363,12 +363,12 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img class="image" alt="Anrufbeantworter verbunden" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  			<img alt="Anrufbeantworter verbunden" class="image" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
 	  		</div>
 		</div>
 		
 	</div>
 </section>
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

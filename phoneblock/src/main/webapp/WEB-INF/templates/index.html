@@ -1,19 +1,19 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head}"></head>
+<head th:replace="~{fragments/page :: head}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock Logo" th:src="@{/assets/img/animation.svg}">
+			<img alt="PhoneBlock Logo" th:src="@{/assets/img/animation.svg}"/>
 		</div>
 
-		<h1>Unerwünschte Anrufer automatisch abweisen</h1>
+		<h1 data-tx="t0001">Unerwünschte Anrufer automatisch abweisen</h1>
 
-		<p>
+		<p data-tx="t0002">
 			Ist Deine Telefonnummer auch zwielichtigen Addresshändlern in die
 			Hände gefallen und Du erhältst ständig lästige Anrufe, die Deine
 			Stromrechnung "optimieren", Dir eine Beratung für eine Solaranlage
@@ -28,38 +28,38 @@
 			    <span class="icon">
 					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 			    </span>
-				<span>Anrufbeantworter</span>			
+				<span data-tx="t0003">Anrufbeantworter</span>			
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup.jsp}">
 			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
+					<i class="fa-solid fa-phone"/>
 			    </span>
-				<span>Fritz!Box Telefonbuch</span>			
+				<span data-tx="t0004">Fritz!Box Telefonbuch</span>			
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
 			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
+					<i class="fa-solid fa-mobile-screen"/>
 			    </span>
-				<span>Für Android</span>
+				<span data-tx="t0005">Für Android</span>
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
 			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
+					<i class="fa-brands fa-apple"/>
 			    </span>
-				<span>Für iPhone</span>
+				<span data-tx="t0006">Für iPhone</span>
 			</a>
 		  </div>
 		</div>
 
-		<h2>Wie funktioniert PhoneBlock?</h2>
+		<h2 data-tx="t0007">Wie funktioniert PhoneBlock?</h2>
 
-		<p>
+		<p data-tx="t0008">
 			PhoneBlock ist eine von der PhoneBlock-Community gepflegte
 			Liste mit Telefonnummern, die unter Spamverdacht stehen. 
 			Der <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworter</a>
@@ -67,7 +67,7 @@
 			bei diesen Anrufen stumm bleibt. 
 		</p>
 		
-		<p>
+		<p data-tx="t0009">
 			Alternativ kannst Du die 
 			Sperrliste auch als Telefonbuch in Deinen Internet-Router "FRITZ!Box" 
 			importieren und Anrufe von Nummern aus diesem <a th:href="@{/setup.jsp}">speziellen Telefonbuch</a> blockiern. 
@@ -78,7 +78,7 @@
 			bessere Lösung, weil ein Telefonbuch in der Größe beschränkt ist und nicht alle Nummern der Blockliste aufnehmen kann.
 		</p>
 
-		<p>Erhältst Du trotzdem noch einen unerwünschten Anruf, weil die
+		<p data-tx="t0010">Erhältst Du trotzdem noch einen unerwünschten Anruf, weil die
 			Nummer noch nicht in die Sperrliste aufgenommen ist, kannst Du die
 			<a th:href="@{/block.jsp}">Nummer ganz einfach in Deiner FRITZ!Box sperren</a>. 
 			Hierzu machst Du für den unerwünschten 
@@ -91,15 +91,14 @@
 			<a th:href="@{/status.jsp}">weiteren Spam-Anrufen</a> schützt. 
 		</p>
 
-		<h2>Was sind die Vorausetzungen?</h2>
+		<h2 data-tx="t0011">Was sind die Vorausetzungen?</h2>
 
 		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img id="fritzbox" width="200" alt="AVM Fritz!Box 7590"
-				th:src="@{/assets/img/fritzbox.png}" />
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
 			</a>
 		</div>
 		
-		<p>
+		<p data-tx="t0012">
 			PhoneBlock kann unerwünschte Anrufe entweder am <a th:href="@{/setup.jsp}">"Festnetzanschluss"</a> in
 			Zusammenspiel mit einem <a th:href="@{/link/fritzbox}">"FRITZ!Box"
 			Internetrouter von AVM</a> blockieren, oder auf Deinem <a th:href="@{/setup-android/}">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
@@ -107,17 +106,17 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			  <input type="hidden" id="context-path" th:value="@{/}">
-			<a id="search-fritzbox" class="button is-medium is-info is-fullwidth" href="#">
+			  <input id="context-path" th:value="@{/}" type="hidden"/>
+			<a class="button is-medium is-info is-fullwidth" href="#" id="search-fritzbox">
 				<span class="icon is-small is-left">
-					<i class="fa-solid fa-magnifying-glass"></i>
+					<i class="fa-solid fa-magnifying-glass"/>
 				</span>
-				<span>Fritz!Box suchen</span>
+				<span data-tx="t0013">Fritz!Box suchen</span>
 			</a>
 		  </div>
 		</div>
 
-		<p>
+		<p data-tx="t0014">
 			Du bist nicht sicher, ob Du eine Fritz!Box hast? Wenn Du Dich gerade zu Hause im WLan befindest, dann drück
 			den Such-Button oben. PhoneBlock versucht dann, eine Fritz!Box in Deiner Nähe zu finden.
 		</p>
@@ -126,20 +125,20 @@
 	<div class="tile is-ancestor">
 		<div class="tile is-parent is-6">
 			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title">Klar zum Loslegen?</p>
-				<p class="subtitle">PhoneBlock-Account erstellen!</p>
+				<p class="title" data-tx="t0015">Klar zum Loslegen?</p>
+				<p class="subtitle" data-tx="t0016">PhoneBlock-Account erstellen!</p>
 			</a>
 		</div>
 
 		<div class="tile is-parent is-6 ">
 			<a class="tile is-child notification is-info" th:href="@{/faq.jsp}">
-				<p class="title">Noch Fragen?</p>
-				<p class="subtitle">Check die FAQ!</p>
+				<p class="title" data-tx="t0017">Noch Fragen?</p>
+				<p class="subtitle" data-tx="t0018">Check die FAQ!</p>
 			</a>
 		</div>
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

@@ -1,36 +1,36 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 	<div class="content">
-		<h1>Per Banküberweisung spenden</h1>
+		<h1 data-tx="t0001">Per Banküberweisung spenden</h1>
 
-		<p>
+		<p data-tx="t0002">
 			Vielen Dank, dass Du Dich an den Kosten von PhoneBlock beteiligst. Wenn viele mitmachen, reicht ein kleiner Betrag reicht aus, z.B. 
 			<b>1€ pro Jahr</b> oder <b>0,01€ pro abgefangenem Spam-Anruf</b>, Du kannst die Höhe Deines Beitrages aber selbst wählen.
 		</p>
 		
-		<p>
+		<p data-tx="t0003">
 			Bitte nutze die folgenden Kontodaten für Deine Überweisung:
 		</p>
 
 		<ul>
-			<li>Empfänger: <code id="receiver" th:text="${props.bank.receiver}"></code><a id="receiver_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
-			<li>Kontonummer: <code id="account" th:text="${props.bank.account}"></code><a id="account_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
-			<li>BIC: <code id="bic" th:text="${props.bank.bic}"></code><a id="bic_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
-			<li>Verwendungszweck: <code id="purpose" th:text="${supporterId}"></code><a id="purpose_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0004">Empfänger: <code id="receiver" th:text="${props.bank.receiver}"/><a class="copyToClipboard" href="#" id="receiver_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
+			<li data-tx="t0005">Kontonummer: <code id="account" th:text="${props.bank.account}"/><a class="copyToClipboard" href="#" id="account_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
+			<li data-tx="t0006">BIC: <code id="bic" th:text="${props.bank.bic}"/><a class="copyToClipboard" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
+			<li data-tx="t0007">Verwendungszweck: <code id="purpose" th:text="${supporterId}"/><a class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
 		</ul>
 		
-		<p>
+		<p data-tx="t0008">
 			Vielen Dank, dass Du einen Beitrag für die Nutzung von PhoneBlock leistest! 
 		</p>
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

@@ -1,29 +1,29 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='PhoneBlock Anmeldung')}"></head>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Anmeldung')}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 	<div class="content">
-		<h1>Anmeldung</h1>
+		<h1 data-tx="t0001">Anmeldung</h1>
 	</div>
 	
 	<div class="content">
-		<p>
+		<p data-tx="t0002">
 			Um PhoneBlock als <a th:href="@{/setup.jsp}">Blocklisten-Telefonbuch</a>, 
 			oder <a th:href="@{/anrufbeantworter/}">intelligenten Anrufbeantworter</a> einzurichten, 
 			musst Du Dich zuvor hier anmelden.
 		</p>
 
-		<p> 
+		<p data-tx="t0003"> 
 			Nach der Anmeldung kannst Du in den <a th:href="@{/settings}">PhoneBlock-Einstellungen</a>
 			 z.B. festlegen, ab welcher Konfidenz eine Telefonnummer zu Deiner
 			Blocklist hinzugefügt wird oder welche Länge Deine Blocklist höchstens haben darf.
 		</p>
 
-		<p>
+		<p data-tx="t0004">
 			 Auch die Verwaltung Deiner <a th:href="@{/ab/}">PhoneBlock-Anrufbeantworter</a>
 			 erfordert eine Anmeldung.
 		</p> 
@@ -33,6 +33,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

@@ -1,24 +1,24 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='PhoneBlock Nutzungsbedingungen')}"></head>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Nutzungsbedingungen')}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 	<div class="content">
-		<h1>Nutzungsbedingungen</h1>
+		<h1 data-tx="t0001">Nutzungsbedingungen</h1>
 		
-		<p>
+		<p data-tx="t0002">
 			PhoneBlock kann Dir bei der digitalen Selbstverteidigung gegen Telefonterror und unerwünschte 
 			Werbeanrufe helfen. PhoneBlock ist <a th:href="@{/impressum.jsp}">mein</a> 
 			privates <a href="https://github.com/haumacher/phoneblock">Projekt</a> und ich lasse Dich gerne 
 			unentgeldlich daran teilhaben.
 		</p>
 		
-		<h2>Haftungsausschluss</h2>
+		<h2 data-tx="t0003">Haftungsausschluss</h2>
 		
-		<p>
+		<p data-tx="t0004">
 			Die Nutzung von PhoneBlock erfolgt ausschließlich und ausdrücklich
 			auf eigene Gefahr. Du bist Dir bei der Nutzung bewusst, dass durch
 			einen Fehler in der Software, oder durch möglicherweise böswilliges
@@ -26,9 +26,9 @@
 			könnte, von der du vielleich angerufen werden willst.
 		</p>
 		
-		<h2>Kommerzieller Einsatz</h2>
+		<h2 data-tx="t0005">Kommerzieller Einsatz</h2>
 		
-		<p>
+		<p data-tx="t0006">
 			Ich rate davon ab, PhoneBlock an einem geschäftlichen Telefonanschluss 
 			einzusetzen. Wenn Du das trotzdem tun möchtest, dann trägst Du auch 
 			hierbei das alleinige Risiko für alle daraus möglicherweise resultierenden 
@@ -40,9 +40,9 @@
 			Telefonanschluss von dem Anrufbeantworter "veräppeln" zu lassen.
 		</p>
 		
-		<h2>Betrieb des PhoneBlock-Servers</h2>
+		<h2 data-tx="t0007">Betrieb des PhoneBlock-Servers</h2>
 		
-		<p>
+		<p data-tx="t0008">
 			PhoneBlock steht Dir unentgeldlich zur Verfügung. Der Betrieb einer 
 			Webanwendung ist aber nicht kostenlos. Wenn Dir PhoneBlock hilft, kannst Du Dich
 			gerne in Form einer <a th:href="@{/support.jsp}">kleinen Spende</a>
@@ -53,6 +53,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

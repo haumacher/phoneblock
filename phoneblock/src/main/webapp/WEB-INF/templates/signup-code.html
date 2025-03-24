@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Dein PhoneBlock Einrichtungscode')}"></head>
+<head th:replace="~{fragments/page :: head(title='Dein PhoneBlock Einrichtungscode')}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 <div class="content">
@@ -13,40 +13,40 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title">Code eingeben</h1>
-	        <p class="subtitle">E-Mail-Adresse bestätigen.</p>
+	        <h1 class="title" data-tx="t0001">Code eingeben</h1>
+	        <p class="subtitle" data-tx="t0002">E-Mail-Adresse bestätigen.</p>
 	        <div class="content">
 				<p>
-					<div>Eine E-Mail wurde an die Adresse <code th:text="${email}"></code> gesendet.</div> 
-					<div>Bitte schau in Deiner Mailbox nach und gib den Code hier ein.</div> 
+					<div data-tx="t0003">Eine E-Mail wurde an die Adresse <code th:text="${email}"/> gesendet.</div> 
+					<div data-tx="t0004">Bitte schau in Deiner Mailbox nach und gib den Code hier ein.</div> 
 				</p>
-				<form th:action="@{/register-web}" method="post" enctype="application/x-www-form-urlencoded">
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-web}">
 					<div class="field">
-					  <label class="label">Code</label>
+					  <label class="label" data-tx="t0005">Code</label>
 					  <div class="control has-icons-left has-icons-right">
-					    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
-					    <input th:if="${rememberMe}" type="hidden" name="rememberMe" th:value="${rememberMe}">
+					    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+					    <input name="rememberMe" th:if="${rememberMe}" th:value="${rememberMe}" type="hidden"/>
 
-					    <input name="code" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" placeholder="Bestätigungscode" value="">
+					    <input name="code" placeholder="Bestätigungscode" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value=""/>
 					    <span class="icon is-small is-left">
-					      <i class="fa-solid fa-barcode"></i>
+					      <i class="fa-solid fa-barcode"/>
 					    </span>
-					    <span th:if="${errorMessage}" class="icon is-small is-right">
-					      <i class="fas fa-exclamation-triangle"></i>
+					    <span class="icon is-small is-right" th:if="${errorMessage}">
+					      <i class="fas fa-exclamation-triangle"/>
 						</span>
 					  </div>
-						<p th:if="${errorMessage}" class="help is-danger">
-							<span th:text="${errorMessage}"></span>
+						<p class="help is-danger" data-tx="t0006" th:if="${errorMessage}">
+							<span th:text="${errorMessage}"/>
 							<a th:href="|${contextPath}${restartPage}?location=${location}|">Nochmal probieren</a>.								
 						</p>
-						<p th:unless="${errorMessage}" class="help is-info">
+						<p class="help is-info" data-tx="t0007" th:unless="${errorMessage}">
 							Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!
 							<a th:href="|${contextPath}${restartPage}?location=${location}|">Nochmal probieren</a>.								
 						</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" type="submit">Anmelden</button>
+				    	<button class="button is-link" data-tx="t0008" type="submit">Anmelden</button>
 					</div>
 				</form>
 	        </div>
@@ -59,6 +59,6 @@
 </div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

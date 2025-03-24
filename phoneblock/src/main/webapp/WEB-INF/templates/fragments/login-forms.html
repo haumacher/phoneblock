@@ -1,32 +1,32 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head></head>
+<head/>
 <body>
 
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading">
-			<a href="#googleLogin" data-action="collapse"><i class="fa-brands fa-google"></i> <span>Mit Google anmelden</span></a>
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"/> <span data-tx="t0001">Mit Google anmelden</span></a>
 		</p>
-		<div id="googleLogin" class="is-collapsible">
+		<div class="is-collapsible" id="googleLogin">
 			<div class="panel-block">
 	  		<div class="content">
-				<form th:action="@{/oauth/login}" method="get">
+				<form method="get" th:action="@{/oauth/login}">
 
-			    <input type="hidden" name="force_client" th:value="${googleClient}">
-			    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
+			    <input name="force_client" th:value="${googleClient}" type="hidden"/>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 	
-				<div th:if="${web}" class="field">
+				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input type="checkbox" th:name="${rememberParam}" value="true"/>
-					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0002">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control">
+				  <div class="control" data-tx="t0003">
 				  	Mit Deiner Anmeldung akzeptierst Du die <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a>.
 				  </div>
 				</div>
@@ -35,14 +35,14 @@
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
 			          <span class="icon">
-					      <i class="fa-solid fa-right-to-bracket"></i>
+					      <i class="fa-solid fa-right-to-bracket"/>
 					  </span>
-				      <span>Weiter zu Google</span>
+				      <span data-tx="t0004">Weiter zu Google</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help">
+				<p class="help" data-tx="t0005">
 					 Wenn Du einen Google-Account hast, dann kannst Du Dich mit diesem bequem bei PhoneBlock anmelden. Das erste Anmelden 
 					 mit Google legt einen PhoneBlock-Account an. In Zukunft kannst Du Dich dann entweder mit dem erzeugten PhoneBlock-Nutzernamen 
 					 oder erneut über Google anmelden.
@@ -55,43 +55,38 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading"><a href="#emailLogin" data-action="collapse"><i class="fas fa-envelope"></i> <span>Mit E-Mail anmelden</span></a></p>
+		<p class="panel-heading"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"/> <span data-tx="t0006">Mit E-Mail anmelden</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + (${emailMessage} ? ' is-active' : '')">
-			<form th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')" method="post" enctype="application/x-www-form-urlencoded">
+			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
 	  		<div class="content">
-			    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 				<div class="field">
-					<label class="label">E-Mail</label>
+					<label class="label" data-tx="t0007">E-Mail</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input name="email" 
-					    	th:class="'input' + (${emailMessage} ? ' is-danger' : '')" 
-					    	type="email" 
-					    	placeholder="Deine E-Mail-Adresse" 
-					    	th:value="${email}"
-					    />
+					    <input name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
 					    <span class="icon is-small is-left">
-					      <i class="fas fa-envelope"></i>
+					      <i class="fas fa-envelope"/>
 					    </span>
-					    <span th:if="${emailMessage}" class="icon is-small is-right">
-					      <i class="fas fa-exclamation-triangle"></i>
+					    <span class="icon is-small is-right" th:if="${emailMessage}">
+					      <i class="fas fa-exclamation-triangle"/>
 					    </span>
 					</div>
-					<p th:if="${emailMessage}" class="help is-danger" th:text="${emailMessage}">
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}">
 					</p>
 				</div>
 
-				<div th:if="${web}" class="field">
+				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input type="checkbox" th:name="${rememberParam}" value="true"/>
-					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0008">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control">
+				  <div class="control" data-tx="t0009">
 				  	Mit Deiner Anmeldung akzeptierst Du die <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a>.
 				  </div>
 				</div>
@@ -100,14 +95,14 @@
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
 			          <span class="icon">
-					      <i class="fa-solid fa-right-to-bracket"></i>
+					      <i class="fa-solid fa-right-to-bracket"/>
 					  </span>
-				      <span>Code anfordern</span>
+				      <span data-tx="t0010">Code anfordern</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help">
+				<p class="help" data-tx="t0011">
 					 Du erhälst einen Code an die angegebene E-Mail-Adresse, mit dem Du Dich anmelden kannst.
 					 Das erste Anmelden mit E-Mail legt einen PhoneBlock-Account an. In Zukunft kannst Du Dich dann 
 					 mit dem erzeugten PhoneBlock-Nutzernamen oder aber über das erneute Zusenden eines Einmal-Codes  
@@ -121,50 +116,50 @@
 	
 	<nav class="panel">
 		<p class="panel-heading">
-			<a href="#loginForm" data-action="collapse"><i class="fas fa-user"></i> <span>Mit PhoneBlock-Nutzernamen anmelden</span></a>
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"/> <span data-tx="t0012">Mit PhoneBlock-Nutzernamen anmelden</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
-				<form th:action="${contextPath} + ${loginAction}" method="post">
-			    <input th:if="${location}" type="hidden" name="location" th:value="${location}">
+				<form method="post" th:action="${contextPath} + ${loginAction}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" type="text" placeholder="Benutzername" th:name="${userNameParam}">
+				    <input class="input" placeholder="Benutzername" th:name="${userNameParam}" type="text"/>
 				    <span class="icon is-small is-left">
-				      <i class="fa-solid fa-user"></i>
+				      <i class="fa-solid fa-user"/>
 				    </span>
 				    <span class="icon is-small is-right">
-				      <i class="fas fa-check"></i>
+				      <i class="fas fa-check"/>
 				    </span>
 				  </p>
-				  <p class="help">Verwende den Benutzernamen, den Du bei Deiner Anmeldung mit Google oder E-Mail-Adresse erhalten hast.</p>
+				  <p class="help" data-tx="t0013">Verwende den Benutzernamen, den Du bei Deiner Anmeldung mit Google oder E-Mail-Adresse erhalten hast.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" type="password" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}">
+				    <input class="input" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"/>
 				    <span class="icon is-small is-left">
-				      <i class="fas fa-lock"></i>
+				      <i class="fas fa-lock"/>
 				    </span>
 				  </p>
-					  <p th:if="${loginError}" class="help is-danger">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
-					  <p th:unless="${loginError}" class="help">
+					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
+					  <p class="help" data-tx="t0015" th:unless="${loginError}">
 					  	Das Passwort wurde Dir nach der ersten Anmeldung angezeigt. Wenn Du das Passwort nicht mehr zur Hand hast, 
 					  	dann melde Dich einfach mit Google oder Deiner E-Mail-Adresse an, siehe oben.
 					  </p>
 				</div>
 
-				<div th:if="${web}" class="field">
+				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input type="checkbox" th:name="${rememberParam}" value="true"/>
-					  <span>Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0016">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control">
+				  <div class="control" data-tx="t0017">
 				  	Mit Deiner Anmeldung akzeptierst Du die <a th:href="@{/usage.jsp}">Nutzungsbedingungen</a>.
 				  </div>
 				</div>
@@ -173,9 +168,9 @@
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
 			          <span class="icon">
-					      <i class="fa-solid fa-right-to-bracket"></i>
+					      <i class="fa-solid fa-right-to-bracket"/>
 					  </span>
-				      <span>Anmelden</span>
+				      <span data-tx="t0018">Anmelden</span>
 				    </button>
 				  </p>
 				</div>

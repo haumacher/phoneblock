@@ -1,145 +1,141 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
 <head th:fragment="head">
 <th:block th:fragment="headContent">
-	<title th:text="${title}"></title>
+	<title th:text="${title}"/>
 	
-	<meta http-equiv="content-type" content="text/html;charset=utf-8">
-	<meta http-equiv='content-language' content='de-DE'>
+	<meta content="text/html;charset=utf-8" http-equiv="content-type"/>
+	<meta content="de-DE" http-equiv="content-language"/>
 	
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta th:if="${description}" name="description" th:content="${description}">
-	<meta th:if="${keywords}" name="keywords" th:content="${keywords}">
-	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:site" content="@bhaumacher" />
-	<meta name="twitter:creator" content="@bhaumacher" />
-	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}" />
+	<meta content="width=device-width, initial-scale=1" name="viewport"/>
+	<meta name="description" th:content="${description}" th:if="${description}"/>
+	<meta name="keywords" th:content="${keywords}" th:if="${keywords}"/>
+	<meta content="summary" name="twitter:card"/>
+	<meta content="@bhaumacher" name="twitter:site"/>
+	<meta content="@bhaumacher" name="twitter:creator"/>
+	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"/>
 	
-	<meta name="og:title" th:content="${title}" />
-	<meta name="og:url" th:content="${canonical}" />
-	<link rel="canonical" th:href="${canonical}" />
-	<meta th:if="${description}" name="og:description" th:content="${description}" />
-	<meta name="og:image" th:content="@{/assets/img/app-preview.png}" />
-	<meta name="og:type" content="website" />
-	<meta name="og:locale" content="de_DE" />
-	<meta name="og:site_name" content="PhoneBlock">
+	<meta name="og:title" th:content="${title}"/>
+	<meta name="og:url" th:content="${canonical}"/>
+	<link rel="canonical" th:href="${canonical}"/>
+	<meta name="og:description" th:content="${description}" th:if="${description}"/>
+	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"/>
+	<meta content="website" name="og:type"/>
+	<meta content="de_DE" name="og:locale"/>
+	<meta content="PhoneBlock" name="og:site_name"/>
 	
-	<link rel="stylesheet" th:href="|${contextPath}${deps.bulma}/css/bulma.min.css|">
-	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCollapsible}/css/bulma-collapsible.min.css|">
-	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCalendar}/dist/css/bulma-calendar.min.css|">
-	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|">
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulma}/css/bulma.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCollapsible}/css/bulma-collapsible.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCalendar}/dist/css/bulma-calendar.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"/>
 	
-	<link rel="alternate" type="application/rss+xml" title="PhoneBlock Updates" href="https://news.phoneblock.net/feed" />
+	<link href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"/>
 	
-	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}">
+	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"/>
 	
-	<script type="text/javascript" th:src="|${contextPath}${deps.jquery}/jquery.min.js|"></script>
-	<script type="text/javascript" th:src="@{/assets/js/phoneblock.js(v=5)}"></script>
-	<script type="text/javascript" th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|"></script>
-	<script type="text/javascript" th:src="|${contextPath}${deps.bulmaCalendar}/dist/js/bulma-calendar.min.js|"></script>
+	<script th:src="|${contextPath}${deps.jquery}/jquery.min.js|" type="text/javascript"/>
+	<script th:src="@{/assets/js/phoneblock.js(v=5)}" type="text/javascript"/>
+	<script th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|" type="text/javascript"/>
+	<script th:src="|${contextPath}${deps.bulmaCalendar}/dist/js/bulma-calendar.min.js|" type="text/javascript"/>
 </th:block>
 </head>
 
 <body>
-<section th:fragment="header" class="hero is-small is-primary">
+<section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" th:src="@{/assets/img/app-logo.svg}" class="logo-image">
-			<a th:href="@{/}">PhoneBlock</a>
+			<img alt="PhoneBlock Logo" class="logo-image" th:src="@{/assets/img/app-logo.svg}"/>
+			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
 		</p>
-		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
-		<a th:href="@{/link/github}" target="_blank">
-			<img alt="Fork me on GitHub" width="149" height="149" class="github-image"
-				th:src="@{/assets/forkme.png}" />
+		<p class="subtitle" data-tx="t0002">Der Spam-Filter fürs Telefon</p>
+		<a target="_blank" th:href="@{/link/github}">
+			<img alt="Fork me on GitHub" class="github-image" height="149" th:src="@{/assets/forkme.png}" width="149"/>
 		</a>
 	</div>
   <div class="hero-foot">
-  <nav class="navbar" role="navigation" aria-label="main navigation">
+  <nav aria-label="main navigation" class="navbar" role="navigation">
 	<div class="navbar-brand">
 		<div class="navbar-item"> 
 		<div class="control has-icons-left has-icons-right">
-		  <input id="pb-seach-input" class="input is-rounded" type="tel" placeholder="Telefonnummer untersuchen">
+		  <input class="input is-rounded" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"/>
 		  <span class="icon is-small is-left">
-		    <i class="fas fa-phone"></i>
+		    <i class="fas fa-phone"/>
 		  </span>
 		  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
-		    <i class="fas fa-search"></i>
+		    <i class="fas fa-search"/>
 		  </span>
 		</div>
 		</div>
 
-		<a role="button" class="navbar-burger" aria-label="menu"
-			aria-expanded="false" data-target="navbarBasicExample"> <span
-			aria-hidden="true"></span> <span aria-hidden="true"></span> <span
-			aria-hidden="true"></span>
+		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" role="button"> <span aria-hidden="true"/> <span aria-hidden="true"/> <span aria-hidden="true"/>
 		</a>
 	</div>
-	<div id="navbarBasicExample" class="navbar-menu">
+	<div class="navbar-menu" id="navbarBasicExample">
 		<div class="navbar-start">
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" href="#">Installation</a>
+				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Installation</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" th:href="@{/anrufbeantworter/}">Anrufbeantworter</a>
-					<a class="navbar-item" th:href="@{/setup.jsp}">Blocklisten-Telefonbuch</a>
-					<a class="navbar-item" th:href="@{/setup-android/}">Android</a>
-					<a class="navbar-item" th:href="@{/setup-iphone/}">iPhone</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">Anrufbeantworter</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup.jsp}">Blocklisten-Telefonbuch</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">Android</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" th:href="@{/faq.jsp}">FAQ</a>
-			<a class="navbar-item" th:href="@{/status.jsp}">Status</a>
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq.jsp}">FAQ</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status.jsp}">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default">More</a>
+				<a class="navbar-link prevent-default" data-tx="t0010">More</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" th:href="@{/support.jsp}">An PhoneBlock spenden</a>
-					<hr class="navbar-divider">
-					<a class="navbar-item" th:href="@{/api/}">API für Entwickler</a>
-					<a class="navbar-item" th:href="@{/link/github}" target="_blank">GitHub Project</a>
-					<a class="navbar-item" th:href="@{/block.jsp}">Rufsperre hinzufügen</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support.jsp}">An PhoneBlock spenden</a>
+					<hr class="navbar-divider"/>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">API für Entwickler</a>
+					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub Project</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block.jsp}">Rufsperre hinzufügen</a>
 					
-					<hr class="navbar-divider">
-					<a class="navbar-item" th:href="@{/link/new-issue}" target="_blank">Fehler melden</a>
+					<hr class="navbar-divider"/>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Fehler melden</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" title="Answerbot App" th:href="@{/ab/}" target="_blank">
-				<img th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px" height="20px"/>
+			<a class="navbar-item" target="_blank" th:href="@{/ab/}" title="Answerbot App">
+				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
 		    </a>
 
-			<a class="navbar-item" title="Zur News-Seite" href="https://news.phoneblock.net" target="_blank">
-				<img th:src="@{/assets/no-facebook.svg}" width="20px" height="20px"/>
+			<a class="navbar-item" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
+				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
 		    </a>
       			
-			<a class="navbar-item" title="RSS-Feed" href="https://news.phoneblock.net/feed" target="_blank">
+			<a class="navbar-item" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
 				<span class="icon">
-			    	<i class="fa-solid fa-rss"></i>
+			    	<i class="fa-solid fa-rss"/>
 		        </span>
 		    </a>
       			
 			<div class="navbar-item">
 				<div class="buttons">
-					<a th:unless="${loggedIn}" class="button is-light" th:href="@{/login.jsp(location=${location})}">
+					<a class="button is-light" th:href="@{/login.jsp(location=${location})}" th:unless="${loggedIn}">
 						<span class="icon">
-							<i class="fa-solid fa-right-to-bracket"></i>
+							<i class="fa-solid fa-right-to-bracket"/>
           				</span>
-						<strong>Log in</strong>
+						<strong data-tx="t0016">Log in</strong>
 					</a>
-					<a th:if="${loggedIn}" class="button is-primary" th:href="@{/settings}">
+					<a class="button is-primary" th:href="@{/settings}" th:if="${loggedIn}">
 						<span class="icon">
-							<i class="fa-solid fa-user"></i>
+							<i class="fa-solid fa-user"/>
           				</span>
-						<strong>Settings</strong>
+						<strong data-tx="t0017">Settings</strong>
 					</a>
-					<a th:if="${loggedIn}" class="button is-light" th:href="@{/logout(url=${currentPage})}">
+					<a class="button is-light" th:href="@{/logout(url=${currentPage})}" th:if="${loggedIn}">
 						<span class="icon">
-							<i class="fa-solid fa-right-from-bracket"></i>
+							<i class="fa-solid fa-right-from-bracket"/>
           				</span>
-						<strong>Log out</strong>
+						<strong data-tx="t0018">Log out</strong>
 					</a>
 				</div>
 			</div>
@@ -154,9 +150,9 @@
 <th:block th:fragment="footer">
 <section class="section">
 	<div class="content">
-		<h2>Beteilige Dich!</h2>
+		<h2 data-tx="t0019">Beteilige Dich!</h2>
 		
-		<p>
+		<p data-tx="t0020">
 		Wenn Dir PhoneBlock gefällt, bitte hilf mit, es bekannt zu machen, und teile es mit Deinen Freunden. Je mehr 
 		Leute mitmachen, desto geringer die Chance, dass Dich trotzdem noch ein Werbeanruf trifft!
 		</p>
@@ -165,27 +161,27 @@
   
 <footer class="footer">
 	<div class="content has-text-centered">
-		<p>
-			<strong th:title="${props.maven.build.timestamp}" th:text="|PhoneBlock ${props.project.version}|"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. 
+		<p data-tx="t0021">
+			<strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"/> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. 
 			The source code is licensed under <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. The
 			website content is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY
 			NC SA 4.0</a>.
 		</p>
 		
-		<p>
+		<p data-tx="t0022">
 			<strong>FRITZ!Box</strong> und <strong>FRITZ!OS</strong> sind eingetragene Warenzeichen von 
-			<a th:href="@{/link/avm}" target="_blank">AVM</a>. <strong>PhoneBlock</strong> steht hierzu in keiner Beziehung.
+			<a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> steht hierzu in keiner Beziehung.
 		</p>
 
 		<p>
-			<strong><a th:href="@{/datenschutz.jsp}">Datenschutz – Kein Tracking, keine Werbung, keine Kekse</a></strong><br/>
-			<strong><a th:href="@{/usage.jsp}">Nutzungsbedingungen</a></strong><br/>
-			<strong><a th:href="@{/impressum.jsp}">Impressum</a></strong>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz.jsp}">Datenschutz – Kein Tracking, keine Werbung, keine Kekse</a></strong><br/>
+			<strong><a data-tx="t0024" th:href="@{/usage.jsp}">Nutzungsbedingungen</a></strong><br/>
+			<strong><a data-tx="t0025" th:href="@{/impressum.jsp}">Impressum</a></strong>
 		</p>
 	</div>
 </footer>
 
-<script type="text/javascript" th:src="@{/assets/js/bulma.js}"></script>
+<script th:src="@{/assets/js/bulma.js}" type="text/javascript"/>
 </th:block>
 
 </body>
