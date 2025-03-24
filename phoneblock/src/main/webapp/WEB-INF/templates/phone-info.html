@@ -182,7 +182,7 @@
 	<div class="column is-half">
 	<div th:if="${ratings}">
 		<canvas id="ratings" width="400" height="200" aria-label="Anzahl Bewertungen" role="img"></canvas>
-		<div id="ratings-data">
+		<code id="ratings-data">
 		{
 	        type: 'bar',
 	        data: {
@@ -203,7 +203,7 @@
 	            }
 	        }
 	    }
-		</div>
+		</code>
 		<script type="text/javascript" th:src="@{/assets/js/phone-info-ratings.js}"></script>
 	</div>
 	<p th:unless="${ratings}">
