@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head}"></head>
+<head th:replace="~{fragments/page :: head}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 	<section class="section">
 		<div class="content">
-			<h1>Diese Seite kann nicht im Browser angezeigt werden</h1>
+			<h1 data-tx="t0001">Diese Seite kann nicht im Browser angezeigt werden</h1>
 
-			<p>
+			<p data-tx="t0002">
 				Deinen Addressbuch-Link, den Du bei der <a th:href="@{/login.jsp}">Anmeldung</a>
 				erhalten hast, musst Du wie in der <a th:href="@{/setup.jsp}">Installationsanleitung</a> 
 				beschrieben zusammen mit Deiner
@@ -22,18 +22,16 @@
 
 			<div class="tile is-ancestor">
 				<div class="tile is-parent is-6">
-					<a class="tile is-child notification is-primary"
-						th:href="@{/login.jsp(location='/settings')}">
-						<p class="title">Anmeldedaten vergessen?</p>
-						<p class="subtitle">Einfach nochmal registrieren und Passwort zurücksetzen!</p>
+					<a class="tile is-child notification is-primary" th:href="@{/login.jsp(location='/settings')}">
+						<p class="title" data-tx="t0003">Anmeldedaten vergessen?</p>
+						<p class="subtitle" data-tx="t0004">Einfach nochmal registrieren und Passwort zurücksetzen!</p>
 					</a>
 				</div>
 
 				<div class="tile is-parent is-6 ">
-					<a class="tile is-child notification is-info"
-						th:href="@{/setup.jsp}">
-						<p class="title">Noch Fragen?</p>
-						<p class="subtitle">Check die Installationsanleitung!</p>
+					<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+						<p class="title" data-tx="t0005">Noch Fragen?</p>
+						<p class="subtitle" data-tx="t0006">Check die Installationsanleitung!</p>
 					</a>
 				</div>
 			</div>
@@ -41,6 +39,6 @@
 		</div>
 	</section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>

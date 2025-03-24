@@ -1,37 +1,37 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Dein neuer API key - PhoneBlock')}"></head>
+<head th:replace="~{fragments/page :: head(title='Dein neuer API key - PhoneBlock')}"/>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header}"/>
 
 <section class="section">
 	<div class="content">
-		<h1>Neuer API Key</h1>
+		<h1 data-tx="t0001">Neuer API Key</h1>
 		
-		<form th:action="@{/settings#myAPIKeys}" method="get">
+		<form method="get" th:action="@{/settings#myAPIKeys}">
 
 		<article class="message is-info">
 		  <div class="message-header">
-		    <p>Dein neuer API wurde erzeugt. Bitte kopiere den Wert, denn er kann nicht mehr angezeigt werden, sobald Du diese Seite verlässt.</p>
+		    <p data-tx="t0002">Dein neuer API wurde erzeugt. Bitte kopiere den Wert, denn er kann nicht mehr angezeigt werden, sobald Du diese Seite verlässt.</p>
 		  </div>
 
 		  <div class="message-body">
 			<div class="field">
-			  <label class="label">Bemerkung</label>
-			  <div class="control" th:text="${apiKey.label}"></div>
+			  <label class="label" data-tx="t0003">Bemerkung</label>
+			  <div class="control" th:text="${apiKey.label}"/>
 			</div>
 
 			<div class="field">
-			  <label class="label">API Key</label>
-			  <div class="control"><code id="apiKey" th:text="${apiKey.token}"></code><a id="apiKey_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a></div>
+			  <label class="label" data-tx="t0004">API Key</label>
+			  <div class="control"><code id="apiKey" th:text="${apiKey.token}"/><a class="copyToClipboard" href="#" id="apiKey_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></div>
 			</div>
 		  </div>
 		</article>
 		
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" type="submit">
+		    <button class="button is-primary" data-tx="t0005" type="submit">
 		      Weiter
 		    </button>
 		  </p>
@@ -41,6 +41,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"></div>
+<div th:replace="~{fragments/page :: footer}"/>
 </body>
 </html>
