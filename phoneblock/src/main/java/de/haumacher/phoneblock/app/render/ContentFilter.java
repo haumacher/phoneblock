@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.WebApplicationTemplateResolver;
+import org.thymeleaf.templateresource.ITemplateResource;
 import org.thymeleaf.web.IWebApplication;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
@@ -155,7 +157,34 @@ public class ContentFilter implements Filter {
 
 	private static ITemplateEngine buildTemplateEngine(final IWebApplication application) {
 	    // Templates will be resolved as application (ServletContext) resources.
-	    final WebApplicationTemplateResolver templateResolver = new WebApplicationTemplateResolver(application);
+	    final WebApplicationTemplateResolver templateResolver = new WebApplicationTemplateResolver(application) {
+	    	@Override
+	    	protected ITemplateResource computeTemplateResource(IEngineConfiguration configuration,
+	    			String ownerTemplate, String template, String resourceName, String characterEncoding,
+	    			Map<String, Object> templateResolutionAttributes) {
+	    		return super.computeTemplateResource(configuration, ownerTemplate, template, resourceName, characterEncoding,
+	    				templateResolutionAttributes);
+	    	}
+	    	
+	    	@Override
+	    	protected String computeResourceName(IEngineConfiguration configuration, String ownerTemplate,
+	    			String template, String prefix, String suffix, boolean forceSuffix,
+	    			Map<String, String> templateAliases, Map<String, Object> templateResolutionAttributes) {
+	    		
+	    		// Allow to resolve template references relative to the calling template.
+	    		if (ownerTemplate != null) {
+	    			if (!template.startsWith("/")) {
+	    				int dirSep = ownerTemplate.lastIndexOf('/');
+	    				if (dirSep >= 0) {
+	    					template = ownerTemplate.substring(0, dirSep + 1) + template;
+	    				}
+	    			}
+	    		}
+	    		
+	    		return super.computeResourceName(configuration, ownerTemplate, template, prefix, suffix, forceSuffix, templateAliases,
+	    				templateResolutionAttributes);
+	    	}
+	    };
 
 	    // HTML is the default mode, but we will set it anyway for better understanding of code
 	    templateResolver.setTemplateMode(TemplateMode.HTML);
