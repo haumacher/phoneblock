@@ -1,0 +1,207 @@
+<html>
+<head th:replace="~{fragments/page :: head(title='Telefonnummern aktueller Werbeanrufer - PhoneBlock schafft Ruhe')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+	<h1 data-tx="t0001">Current reports of unwanted callers</h1>
+	
+	<p data-tx="t0002">You can block unwanted phone calls <em>automatically</em> if you install PhoneBlock.</p>
+	
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			    <span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
+			    </span>
+				<span data-tx="t0003">Answering machine</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup.jsp}">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span data-tx="t0004">Fritz!Box phone book</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span data-tx="t0005">For Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span data-tx="t0006">For iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+	<p data-tx="t0007">With PhoneBlock, your phone remains silent when you receive such calls. Several numbers are added every day. Share the <a th:href="@{/}">PhoneBlock page</a> on FaceBook, for example, so that as many people as possible can join in and end the phone terror.</p>
+	
+	<th:block th:if="${searches.size &gt; 0}">
+		<h2 data-tx="t0008">Current search queries</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th data-tx="t0009">Phone number</th>
+					<th data-tx="t0010" title="Anzahl an Suchanfragen nach dieser Nummer seit gestern">Today and yesterday</th>
+					<th data-tx="t0011" title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Total</th>
+					<th data-tx="t0012">Last request</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="report : ${searches}">
+					<td>
+						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+					</td>
+					
+					<td th:text="${report.count}"></td>
+					<td th:text="${report.total}"></td>
+					<td th:text="${report.lastSearch &gt; 0 ? #dates.format(#converters.fromEpoch(report.lastSearch)) : '-'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</th:block>
+
+	<th:block th:if="${reports.size &gt; 0}">
+		<h2 data-tx="t0014">Spam reports of the last hour</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th data-tx="t0015">Phone number</th>
+					<th data-tx="t0016" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confidence</th>
+					<th data-tx="t0017">Reported</th>
+					<th data-tx="t0018" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Active since</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="report : ${reports}">
+					<td>
+						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+					</td>
+					
+					<td th:text="${report.votes}"></td>
+					<td data-tx="t0020"><th:block th:text="${(now - report.updated) / 1000 / 60}"></th:block> minutes ago</td>
+					
+					<td th:text="${report.added &gt; 0 ? #dates.format(#converters.fromEpoch(report.added)) : '-'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</th:block>
+
+	<th:block th:if="${newlyBlocked.size &gt; 0}">
+		<h2 data-tx="t0021">Newest entries in the block list</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th data-tx="t0022">Phone number</th>
+					<th data-tx="t0023" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confidence</th>
+					<th data-tx="t0024">Last complaint</th>
+					<th data-tx="t0025" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Active since</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="report : ${newlyBlocked}">
+					<td>
+						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+					</td>
+					
+					<td th:text="${report.votes}"></td>
+					<td th:text="${#dates.format(#converters.fromEpoch(report.updated))}"></td>
+					<td th:text="${report.added &gt; 0 ? #dates.format(#converters.fromEpoch(report.added)) : '-'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</th:block>
+
+	<th:block th:if="${topSpammers.size &gt; 0}">
+		<h2 data-tx="t0027">Current top spammers</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th data-tx="t0028">Phone number</th>
+					<th data-tx="t0029" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confidence</th>
+					<th data-tx="t0030">Last complaint</th>
+					<th data-tx="t0031" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Active since</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="report : ${topSpammers}">
+					<td>
+						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+					</td>
+					
+					<td th:text="${report.votes}"></td>
+					<td th:text="${#dates.format(#converters.fromEpoch(report.updated))}"></td>
+					<td th:text="${report.added &gt; 0 ? #dates.format(#converters.fromEpoch(report.added)) : '-'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</th:block>
+
+	<th:block th:if="${topSearches.size &gt; 0}">
+		<h2 data-tx="t0033">Most searched numbers</h2> 
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th data-tx="t0034">Phone number</th>
+					<th data-tx="t0035" title="Anzahl an Suchanfragen nach dieser Nummer">Search queries</th>
+					<th data-tx="t0036" title="Anzahl der SPAM-Votes for diese Nummer">Votes</th>
+					<th data-tx="t0037">Last request</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="report : ${topSearches}">
+					<td>
+						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+					</td>
+					
+					<td th:text="${report.searches}"></td>
+					<td th:text="${report.votes}"></td>
+					<td th:text="${report.lastSearch &gt; 0 ? #dates.format(#converters.fromEpoch(report.lastSearch)) : '-'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</th:block>
+
+	<h2 data-tx="t0039">PhoneBlock database</h2>
+
+	<p data-tx="t0040">Known SPAM numbers: <th:block th:text="${statistics['02-blocked']}"></th:block> active numbers on the blocklist, <th:block th:text="${statistics['01-reported']}"></th:block> numbers with complaints. Total <th:block th:text="${status.totalVotes}"></th:block> user reports, <th:block th:text="${status.archivedReports}"></th:block> inactive numbers with suspected spam.</p>
+
+</div>
+
+<div class="tile is-ancestor">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/}">
+			<p class="title" data-tx="t0041">No PhoneBlock yet?</p>
+			<p class="subtitle" data-tx="t0042">How to get rid of phone terror!</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title" data-tx="t0043">Any questions?</p>
+			<p class="subtitle" data-tx="t0044">Check the installation instructions!</p>
+		</a>
+	</div>
+</div>
+
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

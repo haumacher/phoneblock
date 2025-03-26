@@ -1,0 +1,22 @@
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Impressum')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Pie de imprenta</h1>
+
+		<p data-tx="t0002">PhoneBlock es un <a href="https://github.com/haumacher/phoneblock">proyecto privado</a> que puede ayudarle en la autodefensa digital contra el terror telefónico y las llamadas publicitarias no deseadas. PhoneBlock no es un producto ni un servicio comercial en el sentido de la <a href="https://www.gesetze-im-internet.de/ddg/__5.html">Ley de Servicios Digitales</a>.</p>
+		
+		<p data-tx="t0003">Yo (Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;) opero este sitio web como persona privada para mi placer personal y por interés tecnológico. Hago posible que usted utilice el software de forma gratuita y también le proporciono la capacidad de servidor necesaria de forma gratuita. Si desea contribuir a los costes de funcionamiento o simplemente decir "gracias", le invito a "donar" una <a th:href="@{/support.jsp}">pequeña cantidad</a>. No obstante, hágalo sin esperar nada a cambio.</p>
+		
+		<p data-tx="t0004">El software que hay detrás de este sitio web ha sido desarrollado por Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt; y otros. Si tiene alguna pregunta que no esté ya respondida en las <a th:href="@{/faq.jsp}">FAQ</a> y las <a th:href="@{/usage.jsp}">Condiciones de uso</a>, no dude en ponerse en contacto conmigo (<button class="showaddr">...</button>). Sin embargo, no deseo recibir llamadas telefónicas ni visitas, por lo que el correo electrónico es la única opción de contacto. En caso de problemas, por ejemplo si su número de teléfono se ha añadido accidentalmente a la lista de bloqueo, estaré encantado de ayudarle inmediatamente y sin complicaciones.</p>
+
+		</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

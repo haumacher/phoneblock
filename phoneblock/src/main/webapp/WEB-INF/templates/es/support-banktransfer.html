@@ -1,0 +1,28 @@
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Donar por transferencia bancaria</h1>
+
+		<p data-tx="t0002">Gracias por contribuir a los costes de PhoneBlock. Si participan muchas personas, bastará con una pequeña cantidad, por ejemplo <b>1? al año</b> o <b>0,01? por llamada de spam interceptada</b>, pero tú mismo puedes elegir la cantidad de tu contribución.</p>
+		
+		<p data-tx="t0003">Utilice los siguientes datos bancarios para realizar la transferencia:</p>
+
+		<ul>
+			<li data-tx="t0004">Receptor: <code id="receiver" th:text="${props.bank.receiver}"></code><a class="copyToClipboard" href="#" id="receiver_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0005">Número de cuenta: <code id="account" th:text="${props.bank.account}"></code><a class="copyToClipboard" href="#" id="account_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0006">BIC: <code id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0007">Uso previsto: <code id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+		</ul>
+		
+		<p data-tx="t0008">¡Gracias por contribuir al uso de PhoneBlock!</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

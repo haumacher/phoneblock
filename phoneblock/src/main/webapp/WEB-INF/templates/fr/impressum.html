@@ -1,0 +1,22 @@
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Impressum')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Mentions légales</h1>
+
+		<p data-tx="t0002">PhoneBlock est un <a href="https://github.com/haumacher/phoneblock">projet privé</a> qui peut t'aider à te défendre numériquement contre le terrorisme téléphonique et les appels publicitaires non sollicités. PhoneBlock n'est ni un produit ni un service commercial au sens de la <a href="https://www.gesetze-im-internet.de/ddg/__5.html">Loi sur les services numériques</a>.</p>
+		
+		<p data-tx="t0003">J'exploite ce site web (Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;) en tant que personne privée pour mon plaisir personnel et par intérêt technologique. Je te permets d'utiliser gratuitement le logiciel et je mets également gratuitement à ta disposition les capacités de serveur nécessaires à cet effet. Si tu souhaites participer aux frais d'exploitation ou simplement dire "merci", tu peux volontiers "faire un don" d'un <a th:href="@{/support.jsp}">petit montant </a>. Mais tu le fais sans attendre de contrepartie.</p>
+		
+		<p data-tx="t0004">Le logiciel derrière ce site web a été développé par Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt; et d'autres. Si tu as des questions auxquelles tu ne trouves pas de réponse dans la <a th:href="@{/faq.jsp}">FAQ</a> et les <a th:href="@{/usage.jsp}">Conditions d'utilisation</a>, tu peux volontiers t'adresser à moi (<button class="showaddr">...</button>). Je ne souhaite toutefois pas recevoir d'appels téléphoniques ni de visites, c'est pourquoi le courrier électronique doit suffire ici comme moyen de contact exclusif. En cas de problème, par exemple si ton numéro de téléphone se retrouve par mégarde sur la liste noire, je serai heureux de t'aider immédiatement et sans complication.</p>
+
+		</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
