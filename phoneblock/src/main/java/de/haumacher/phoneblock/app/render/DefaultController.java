@@ -3,8 +3,11 @@ package de.haumacher.phoneblock.app.render;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -12,6 +15,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.ITemplateEngine;
+import org.thymeleaf.TemplateSpec;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.servlet.IServletWebExchange;
 
@@ -26,6 +30,13 @@ import jakarta.servlet.http.HttpSession;
 
 public class DefaultController implements WebController {
 	
+	private static final LocaleMap LOCALES = new LocaleMap("en-US", "de", "es", "fr");
+	
+	/**
+	 * Template resolution attribute specifying the requested language.
+	 */
+	public static final String LANG_ATTR = "lang";
+
 	static final String RENDER_TEMPLATE = "renderTemplate";
 
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultController.class);
@@ -63,14 +74,50 @@ public class DefaultController implements WebController {
         if (template == null) {
         	String path = request.getServletPath();
         	String prefix = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-        	String suffix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
-        	
-        	template = suffix.isEmpty() ? "index" : suffix;
+        	template = prefix.isEmpty() ? "/index" : prefix;
 
         	LOG.debug("Serving template {} for {}.", template, path);
         }
         
-        templateEngine.process(template, ctx, writer);
+        String lang = selectLanguage(request);
+		// Note: Template is required to start with "/".
+		String i18nTemplate = "/" + lang + template;
+        
+		templateEngine.process(i18nTemplate, ctx, writer);
+	}
+
+	private String selectLanguage(HttpServletRequest request) {
+		String lang = request.getParameter("lang");
+        if (lang == null) {
+        	HttpSession session = request.getSession(false);
+        	if (session != null) {
+        		lang = (String) session.getAttribute("lang");
+        	}
+        	if (lang == null) {
+        		Enumeration<Locale> locales = request.getLocales();
+        		while (locales.hasMoreElements()) {
+        			Locale locale = locales.nextElement();
+        			lang = LOCALES.getSupportedLocale(locale);
+        			if (lang != null) {
+        				break;
+        			}
+        		}
+        		if (lang == null) {
+        			lang = LOCALES.getDefaultLocale();
+        		}
+        	}
+        } else {
+        	// Normalize value.
+        	Locale locale = new Locale(lang);
+			lang = LOCALES.getSupportedLocale(locale);
+    		if (lang == null) {
+    			lang = LOCALES.getDefaultLocale();
+    		}
+
+			// Remember requested language.
+        	request.getSession().setAttribute("lang", lang);
+        }
+		return lang;
 	}
 
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
