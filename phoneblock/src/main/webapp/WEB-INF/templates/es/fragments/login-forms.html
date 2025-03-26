@@ -1,0 +1,166 @@
+<html>
+<head></head>
+<body>
+
+<th:block th:fragment="forms(web)">
+	<nav class="panel">
+		<p class="panel-heading">
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Iniciar sesión con Google</span></a>
+		</p>
+		<div class="is-collapsible" id="googleLogin">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="get" th:action="@{/oauth/login}">
+
+			    <input name="force_client" th:value="${googleClient}" type="hidden"></input>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+	
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0002">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0003">Al registrarse, acepta las <a th:href="@{/usage.jsp}">Condiciones de uso</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0004">Continuar con Google</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0005">Si tienes una cuenta de Google, puedes utilizarla para iniciar sesión cómodamente en PhoneBlock. La primera vez que inicie sesión con Google, se creará una cuenta PhoneBlock. En el futuro, puede iniciar sesión con el nombre de usuario PhoneBlock creado o de nuevo a través de Google.</p>
+				
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>
+
+	<nav class="panel">
+		<p class="panel-heading"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Conectarse con el correo electrónico</span></a></p>
+		<div id="emailLogin" th:class="'is-collapsible' + (${emailMessage} ? ' is-active' : '')">
+			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
+	  		<div class="panel-block">
+	  		<div class="content">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+				<div class="field">
+					<label class="label" data-tx="t0007">correo electrónico</label>
+					<div class="control has-icons-left has-icons-right">
+					    <input name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
+					    <span class="icon is-small is-left">
+					      <i class="fas fa-envelope"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${emailMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}">
+					</p>
+				</div>
+
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0008">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0009">Al registrarse, acepta las <a th:href="@{/usage.jsp}">Condiciones de uso</a>.</div>
+				</div>
+
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0010">Solicitar código</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0011">Recibirá un código en la dirección de correo electrónico que haya introducido, que podrá utilizar para iniciar sesión. El primer inicio de sesión con correo electrónico crea una cuenta PhoneBlock. En el futuro, podrá iniciar sesión con el nombre de usuario PhoneBlock generado o enviando de nuevo un código de un solo uso.</p>
+			</div>
+			</div>
+			</form>
+		</div>
+	</nav>
+	
+	<nav class="panel">
+		<p class="panel-heading">
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Iniciar sesión con el nombre de usuario PhoneBlock</span></a>
+		</p>
+		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="post" th:action="${contextPath} + ${loginAction}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+				<div class="field">
+				  <p class="control has-icons-left has-icons-right">
+				    <input class="input" placeholder="Benutzername" th:name="${userNameParam}" type="text"></input>
+				    <span class="icon is-small is-left">
+				      <i class="fa-solid fa-user"></i>
+				    </span>
+				    <span class="icon is-small is-right">
+				      <i class="fas fa-check"></i>
+				    </span>
+				  </p>
+				  <p class="help" data-tx="t0013">Utiliza el nombre de usuario que recibiste al registrarte en Google o tu dirección de correo electrónico.</p>
+				</div>
+				<div class="field">
+				  <p class="control has-icons-left">
+				    <input class="input" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"></input>
+				    <span class="icon is-small is-left">
+				      <i class="fas fa-lock"></i>
+				    </span>
+				  </p>
+					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Los datos de acceso no coinciden, por favor, compruebe las entradas e inténtelo de nuevo.</p>
+					  <p class="help" data-tx="t0015" th:unless="${loginError}">La contraseña se le mostró después del primer inicio de sesión. Si ya no tiene la contraseña a mano, simplemente inicie sesión con Google o su dirección de correo electrónico, véase más arriba.</p>
+				</div>
+
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0016">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0017">Al registrarse, acepta las <a th:href="@{/usage.jsp}">Condiciones de uso</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0018">Conectarse</span>
+				    </button>
+				  </p>
+				</div>
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>	
+</th:block>
+
+</body>
+</html>

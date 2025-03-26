@@ -1,0 +1,124 @@
+<html>
+<head th:replace="~{fragments/page :: head(title='Fragen und Antworten zu PhoneBlock')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Questions and answers about PhoneBlock</h1>
+
+		<h2 data-tx="t0002">Is PhoneBlock free of charge?</h2>
+		<p data-tx="t0003">Yes, you currently don't have to pay anything to use PhoneBlock. However, the operation of PhoneBlock now incurs running costs for server rental, Internet access and domain registration. To cover these costs, it would be nice if you could make <b><a th:href="@{/support.jsp}">a small donation</a></b>.</p>
+		
+		<p data-tx="t0004">For a long time, PhoneBlock ran on a <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> on my desk and therefore caused hardly any additional costs (apart from my internet connection and domain registration). However, due to increasing user numbers and above all to ensure better availability of the service, PhoneBlock has now moved to the <a href="https://www.hetzner.com/">Hetzner Cloud</a> (server location Falkenstein, Germany). With <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">this link you will receive 20? Cloud credit from Hetzner as a gift</a> - and if you actually use it and pay for it, PhoneBlock will be credited with the first 10? you spend as Cloud credit.</p>
+
+		<h2 data-tx="t0005">What is the difference between PhoneBlock and "<a target="_blank" th:href="@{/link/tellows}">tellows do not disturb</a>"?</h2>
+		<p data-tx="t0006">The <a th:href="@{/anrufbeantworter/}">PhoneBlock answering machine</a> has no size limit for the blacklist phonebook. It accepts the call for all numbers on the block list. It is not necessary to update the block list in your Fritz!Box every night, the block list is always up to date.</p>
+		
+		<p data-tx="t0007">You can install the <a th:href="@{/anrufbeantworter/}">PhoneBlock answering machine</a> in any VOIP-capable Internet router, even if your router does not support the CardDAV protocol for Internet telephone directories.</p>
+		
+		<p data-tx="t0008">With both offers, you can set up the <a th:href="@{/setup.jsp}">blocklist as an Internet phonebook</a> in your Fritz!Box and block the numbers in this phonebook. PhoneBlock also offers you the option of personalizing your blocklist and is also free of charge (see above).</p>
+		
+		<p data-tx="t0009">You can add numbers to your personalized blocklist yourself and, more importantly, exclude numbers from blocking (see also "A number is blocked by mistake, what to do?" below). This is interesting if PhoneBlock has added a number to the blocklist that you would like to be called by. For example, a number, e.g. from an Internet provider, can easily end up on the blocklist if many people feel annoyed by callbacks from this number, but you are waiting for a callback. This is also explained very well in this <a target="_blank" th:href="@{/link/tellows-problems}">YouTube video</a>. With PhoneBlock you can customize your blocklist, numbers that you have put on it yourself will remain blocked and numbers that you have added to your whitelist will certainly not be blocked.</p>
+
+		<h2 data-tx="t0010">My Fritz! box does not yet support CardDAV, can I still use PhoneBlock?</h2>
+		<p data-tx="t0011">Yes, there are two possibilities:</p>
+		<ol>
+		<li data-tx="t0012">Use the PhoneBlock answering machine (currently still in beta testing) instead of the phone book. You register the PhoneBlock answering machine to your Fritz!Box like an Internet phone and it always answers when a SPAM number calls, so quickly that your phone doesn't ring or only rings very briefly. The PhoneBlock answering machine is currently only available on a test system that requires a separate registration: <a th:href="@{/anrufbeantworter/}">To the answering machine test system</a>. If you were able to install the answering machine successfully - or had problems doing so - please let us know so that the new tool can become generally available as soon as possible.</li>
+		<li data-tx="t0013">Use the <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> tool to load the blocklist into your Fritz! However, you will need a PC on which you can install the program. SpamBlockUp can also use the PhoneBlock blocklist and load it into your Fritz! For details, please contact the author of this program. PhoneBlock is not related to SpamBlockUp.</li>
+		</ol>
+
+		<h2 data-tx="t0014">I don't have a Fritz! box, can I still use PhoneBlock?</h2>
+		
+		<p data-tx="t0015">You can install the <a th:href="@{/anrufbeantworter/}">PhoneBlock answering machine</a> in any VOIP-capable Internet router, even if your router does not support the CardDAV protocol for Internet phone books. Install the answering machine as a normal VOIP telephone that logs on to your box via the Internet.</p>
+		
+		<p data-tx="t0016">In order to import the block list as a phone book, your Internet router/telephone system must be able to subscribe to a phone book via the <code>CardDAV</code> protocol and automatically reject all calls from a number in a specific phone book (or forward them to the answering machine). To find out whether this is possible with your telephone system, please refer to the manual or ask your telephone provider. If you have successfully installed the blocklist in another router, please let us know so that the installation instructions can be adapted.</p>
+
+		<h2 data-tx="t0017">Can I use PhoneBlock on an Android cell phone?</h2>
+		<p data-tx="t0018">Yes, you even have two options here: (a) subscribe to the PhoneBlock address book, or (b) set up SpamBlocker and integrate the PhoneBlock database there.</p>
+		<p data-tx="t0019">If you subscribe to the <a th:href="@{/setup-android/}">PhoneBlock address book</a>, you can see directly from a call whether it is worth answering the call or calling back if you miss a call. However, it is not possible to reject spam calls directly.</p>
+		<p data-tx="t0020">If you install <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, you can integrate the PhoneBlock database there. SpamBlocker can then compare the number with the PhoneBlock database when a call is received and reject the call directly if it is a match. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is an independent app, please contact the developer directly if you have any problems with it.</p>
+		
+		<h2 data-tx="t0021">Can I use PhoneBlock on an iPhone?</h2>
+		<p data-tx="t0022">Yes, with the iPhone you can even do this without installing any additional apps. Take a look at the <a th:href="@{/setup-iphone/}">installation instructions</a> here.</p>
+
+		<h2 data-tx="t0023" id="Error26">My FritzBox! reports "Error 26" during setup</h2>
+		
+		<p data-tx="t0024">It is unclear where this error comes from and what it means. However, users report that the following steps help to set up PhoneBlock anyway:</p>
+		
+		<ol>
+			<li data-tx="t0025">Completely remove the phone book again</li>
+			<li data-tx="t0026">Reboot the box and check whether the phone book has really been removed. If not, repeat the removal.</li>
+			<li data-tx="t0027">Recreate the phone book. Make sure that you have really copied the address of the server correctly. Make sure that there are no spaces at the beginning or end of the user name and password.</li>
+		</ol>
+		
+		<p data-tx="t0028">Please note: If you change the password for your PhoneBlock access, it is not enough to set the new password in the phonebook settings. The Fritz!Box seems to have a problem updating access data. Instead, delete the phone book and set it up again.</p>
+
+		<h2 data-tx="t0029" id="disposable-mail">Why can't I register with a disposable e-mail address?</h2>
+		<p data-tx="t0030">If you use PhoneBlock, you will continuously consume computing capacity and Internet bandwidth, as the block list is updated daily. The operation of PhoneBlock currently consumes approx. 500GB of data volume per month. This is currently free of charge for you. However, if something does not run "smoothly" during operation, I expect you to be available to resolve any problems. If you register with a disposable address, this is not possible. Registering with a disposable address would be just as good as not registering at all.</p>
+
+		<h2 data-tx="t0031">When is a number blocked by PhoneBlock?</h2>
+		<p data-tx="t0032">If you add a number to the blocklist yourself, calls from this number will be blocked for you immediately. However, other subscribers to the PhoneBlock blocklist will not immediately receive this number in their blocklist. The new number will only be distributed to all subscribers once at least three subscribers have also blocked the number. The exact rules as to when a number is added to the blocklist and when it is removed from it are still being adapted. However, one thing is certain: a number that you have added to the blocklist yourself will remain blocked for you in any case.</p>
+		
+		<h2 data-tx="t0033">I still receive spam calls despite PhoneBlock, what can I do?</h2>
+		<p data-tx="t0034">There are always new spam numbers, so PhoneBlock cannot offer 100% protection. <a th:href="@{/block.jsp}">Add the new unwanted caller to the blocklist</a> and help others to get rid of the pest quickly!</p>
+
+		<h2 data-tx="t0035">A number is blocked by mistake, what should I do?</h2>
+		<p data-tx="t0036">No problem, open <a th:href="@{/settings/#whitelist}">Your settings</a> and add the number to your whitelist. Your whitelist is a list of phone numbers that you have exempted from blocking. They never end up on your blocklist, even if many others feel annoyed by calls from this number and block them.</p>
+
+		<h2 data-tx="t0037">Help, I accidentally added a number to the block list!</h2>
+		<p data-tx="t0038">If you create a new "contact" in the blocklist phone book in your Fritz!Box, your Fritz!Box informs the PhoneBlock server and it interprets this as a complaint about this number. In addition, the number is then added to your personal blocklist so that you are no longer bothered by this number. Due to the compressed storage of many numbers in a contact, it is unfortunately not possible to delete a number from the personal block list in the same way. Instead, you have to log in here on the site with your access data and delete the number from the blacklist in <a th:href="@{/settings/#blacklist}">Your settings</a>. The number should then disappear from the block list of your Fritz!Box during the next synchronization run.</p>
+
+		<h2 data-tx="t0039">I am afraid that PhoneBlock will block numbers that I need, what can I do?</h2>
+		<p data-tx="t0040">With PhoneBlock you don't necessarily have to block numbers. You have the following options:</p>
+		<ol>
+			<li data-tx="t0041">Instead of blocking, set up a forwarding to your answering machine. If someone calls who really wants something from you, they will leave a message and you can call them back.</li>
+			<li data-tx="t0042">Leave out the installation step with the blocking completely. Just set up the PhoneBlock phone book in your Fritz! Then you will see "SPAM: 03016637169", for example, on the phone display when you make a call. You can then decide whether to answer the call because you are waiting for a callback or whether you want to push the caller away.</li>
+		</ol>
+
+		<h2 data-tx="t0043">Do I have to update the phone book manually?</h2>
+		<p data-tx="t0044">No, this happens automatically every night. Your Fritz! box contacts the PhoneBlock server every night and compares the numbers in the blocklist with the blocklist phonebook. This means that your blocklist is always up to date. If the blocklist is not retrieved from your Fritz!Box for a longer period of time (for whatever reason), PhoneBlock will send you an e-mail so that you can check the configuration before your blocklist becomes outdated.</p>
+
+		<h2 data-tx="t0045">When exactly will the block list be updated?</h2>
+		<p data-tx="t0046">This is decided by your Fritz! If you don't explicitly press the "Update" button on the blocklist phonebook, your Fritz! box dices a time between 0 and 6 a.m. for the update. This is cleverly done by AVM, because the calls are distributed relatively evenly throughout the night, thus limiting the server load.</p>
+		
+		<h2 data-tx="t0047">I think PhoneBlock is great, can I make a donation?</h2>
+		<p data-tx="t0048">Yes, if you like PhoneBlock, you are welcome to make a <a th:href="@{/support.jsp}">small donation</a> towards the running costs for server rental, domain registration, Internet access, etc.</p>
+		
+		<p data-tx="t0049">But it is also important that PhoneBlock becomes better known. So if you can't or don't want to donate, then post links to the PhoneBlock page in forums, on FaceBook, in comments to magazine articles, in your blog or wherever else you think it's appropriate. Only if the spread of PhoneBlock grows faster will the project have an effect against the outrageous telephone terror that is raging in the German telephone network.</p>
+
+		<h2 data-tx="t0050">I have a wish that PhoneBlock should definitely be able to do, where can I express it?</h2>
+		<p data-tx="t0051">If you have a GitHub account, you can open a ticket on the <a target="_blank" th:href="@{/link/issues}">PhoneBlock project page</a> and describe your request. You are also welcome to discuss the proposal with me by email: <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code></p>
+		
+		<h2 data-tx="t0052">How can I uninstall PhoneBlock again?</h2>
+		<p data-tx="t0053">You no longer need PhoneBlock or are not satisfied with it? Too bad, maybe you can <a target="_blank" th:href="@{/link/issues}">make a suggestion for improvement</a>?</p>
+		
+		<p data-tx="t0054">To uninstall, proceed in the same way as for the installation, only backwards. Depending on how you installed PhoneBlock (as <a th:href="@{/setup.jsp}">Phonebook</a> or as <a th:href="@{/anrufbeantworter/}">Answering Machine</a>, or both), you must delete the corresponding settings. For the phonebook: Delete the call blocking (or call forwarding), which applies to all calls from the PhoneBlock phonebook. You can then delete the PhoneBlock phonebook. For the answering machine: Delete the "PhoneBlock" telephony device and then deactivate the DynIP release (if you have not used a separate DynIP service). You should then delete your PhoneBlock account in the <a th:href="@{/settings/}">settings</a>.</p>
+
+		<h2 data-tx="t0055">My question is not answered here, who can help?</h2>
+		<p data-tx="t0056">Why don't you write a comment on the <a target="_blank" th:href="@{/link/facebook}">Facebook page of PhoneBlock</a>, then everyone can read the question. You are also welcome to send me a personal message by e-mail: <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code></p>
+
+
+	</div>
+	
+	<div class="tile is-ancestor">
+		<div class="tile is-parent is-6">
+			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
+				<p class="title" data-tx="t0057">Ready to get started?</p>
+				<p class="subtitle" data-tx="t0058">Create a PhoneBlock account!</p>
+			</a>
+		</div>
+
+		<div class="tile is-parent is-6 ">
+			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+				<p class="title" data-tx="t0059">How to set it up?</p>
+				<p class="subtitle" data-tx="t0060">Check the installation instructions!</p>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
