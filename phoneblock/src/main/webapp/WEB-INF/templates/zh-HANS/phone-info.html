@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<th:block th:replace="~{fragments/page :: headContent}"></th:block>
+
+<script th:src="@{/{path}/dist/chart.umd.js(path=${deps.chartjs})}" type="text/javascript"></script>
+<link rel="stylesheet" th:href="@{/assets/css/phone-info.css}"></link>
+</head>
+
+<body>
+<div th:replace="~{fragments/page :: header(login=true)}"></div>
+
+<section class="section">
+<div class="content">
+	<h1 data-tx="t0001">电话号码 ☎ <th:block th:text="${info.phone}"></th:block></h1>
+
+	<p>
+		<th:block th:if="${info.votes} &lt;= 0">
+			<th:block th:if="${info.whiteListed}">
+				<span class="tag is-info is-success" data-tx="t0002"><i class="fa-solid fa-star"></i> 在白名单上</span>
+			</th:block>
+			<th:block th:unless="${info.whiteListed}">
+				<th:block th:if="${info.votesWildcard &gt; 0}">
+					<span class="tag is-info is-warning" data-tx="t0003">疑似垃圾邮件的数字键盘</span>
+					<span class="|tag is-info ${ratingCssClass}|" th:if="${rating} != 'B_MISSED' &amp;&amp; ${rating} != 'A_LEGITIMATE'" th:text="${ratingLabel}"></span>
+				</th:block>
+				<span class="tag is-info is-success" data-tx="t0004" th:unless="${info.votesWildcard &gt; 0}">无投诉</span>
+			</th:block>
+		</th:block>
+		
+		<th:block th:unless="${info.votes} &lt;= 0">
+			<span class="tag is-info is-warning" data-tx="t0005" th:unless="${blocked}">已提出申诉</span>
+			<span class="tag is-info is-danger" data-tx="t0006" th:if="${blocked}">受阻</span>
+
+			<span th:class="|tag is-info ${ratingCssClass}|" th:if="${rating} != 'B_MISSED'" th:text="${ratingLabel}"></span>
+		</th:block>
+	</p>
+
+<article th:class="'message' + ${info.whiteListed} ? 'is-success' : (${blocked} ? 'is-danger' : 'is-warning')">
+  <div class="message-header">
+    <p data-tx="t0007">关于呼叫号码 <th:block th:text="${info.phone}"></th:block> 的信息</p>
+  </div>
+  <div class="message-body">
+	<p th:if="${summary}" th:text="${summary}"></p>
+
+	<p th:if="${defaultSummary}" th:text="${defaultSummary}"></p>
+  
+	<ul>
+		<li data-tx="t0008">其他拼写：<th:block th:if="${number.shortcut}"> <code th:text="${number.shortcut}"></code>, </th:block> <code th:text="${number.plus}"></code>, <code th:text="${number.zeroZero}"></code></li>
+		<li data-tx="t0009">国家：<th:block th:text="${number.country}"></th:block> (<code th:text="${number.countryCode}"></code>)</li>
+
+		<li data-tx="t0010" th:if="${number.city}">城市：<th:block th:text="${number.city}"></th:block> (<code th:text="${number.cityCode}"></code>)</li>
+
+		<li data-tx="t0011" th:if="${info.votes} &gt; 0">赞成封杀的票数：<th:block th:text="${info.votes}">&lt;/x1</th:block></li>
+		
+		<li data-tx="t0012" th:if="${info.votesWildcard} &gt; ${info.votes}">锁定数字键盘的投票：<th:block th:text="${info.votesWildcard}"></th:block></li>
+		
+		<li data-tx="t0013" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">最后投诉来自<th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
+
+		<li data-tx="t0014" th:if="${info.dateAdded} &gt; 0">开始活动的编号：<th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
+	</ul>
+  </div>
+</article>
+
+	<p data-tx="t0015">如果安装了 PhoneBlock，您可以自动阻止不需要的电话<em></em>：</p>
+	
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			    <span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
+			    </span>
+				<span data-tx="t0016">答录机</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span data-tx="t0017">弗里茨！盒子电话簿</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span data-tx="t0018">适用于安卓系统</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span data-tx="t0019">适用于 iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+<th:block th:if="${relatedNumbers.size &gt; 0}">
+	<p data-tx="t0020">数字 ☎ <th:block th:text="${info.phone}"></th:block> 可能与数据库中的下列数字属于同一连接：</p>
+	
+	<blockquote class="related-numbers">
+		<span th:each="related : ${relatedNumbers}">
+			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
+		</span>
+	</blockquote>
+</th:block>	
+
+	<h2 data-tx="t0022">为 <th:block th:text="${info.phone}"></th:block> 写评论</h2>
+	
+	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">感谢您的评价，您正在帮助其他同样受到召唤的人。</div>
+	
+<th:block th:unless="${thanks}">
+	<p data-tx="t0024">你被☎ <code><th:block th:text="${info.phone}"></th:block></code>召唤过吗？请告诉他人对☎ <code><th:block th:text="${number.plus}"></th:block></code>的期待。如果你被来自☎ <code><th:block th:text="${info.phone}"></th:block></code>的电话打扰，<a th:href="@{/setup.jsp}">安装PhoneBlock</a>并给☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>留言评论：</p>
+
+	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
+		<input name="phone" th:value="${info.phone}" type="hidden"></input>
+		
+		<div class="buttons">
+		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">
+		  		<input name="rating" th:value="${rating}" type="radio"></input>
+			    <span class="icon">
+					<i th:class="${rating.iconClass}"></i>
+			    </span>
+				<span th:text="${rating.label}"></span>
+	  		</label>
+		</div>
+
+		<p>			
+		<textarea class="textarea is-primary" name="comment" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"></textarea>
+		</p>
+		
+		<p data-tx="t0025">为确保您的评级对您的拦截列表产生直接影响，<a th:href="@{/login.jsp(location=${currentPage})}">请先登录</a>！</p>
+		
+		<div class="buttons">
+			<button class="button is-rounded is-primary" name="send" type="submit">
+			    <span class="icon">
+					<i class="fas fa-paper-plane"></i>
+			    </span>
+				<span data-tx="t0026">发送</span>
+			</button>
+		</div>
+	</form>
+</th:block>
+
+<div class="columns">
+	<div class="column is-half">
+	<div th:if="${ratings}">
+		<canvas aria-label="Anzahl Bewertungen" height="200" id="ratings" role="img" width="400"></canvas>
+		<code id="ratings-data">
+		{
+	        type: 'bar',
+	        data: {
+	            labels: <th:block th:text="${ratingLabels}"></th:block>,
+	            datasets: [{
+	                label: 'Anzahl Bewertungen',
+	                data: <th:block th:text="${ratingData}"></th:block>,
+	                backgroundColor: <th:block th:text="${ratingBackground}"></th:block>,
+	                borderColor: <th:block th:text="${ratingBorder}"></th:block>,
+	                borderWidth: 1
+	            }]
+	        },
+	        options: {
+	            scales: {
+	                y: {
+	                    beginAtZero: true
+	                }
+	            }
+	        }
+	    }
+		</code>
+		<script th:src="@{/assets/js/phone-info-ratings.js}" type="text/javascript"></script>
+	</div>
+	<p data-tx="t0027" th:unless="${ratings}">目前还没有评论，请率先分享！</p>
+	</div>
+
+	<div class="column is-half">
+	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
+		<canvas aria-label="Suchanfragen in der letzten Woche" height="200" id="searches" role="img" width="400"></canvas>
+		<script th:src="@{/assets/js/phone-info-searches.js}" type="text/javascript"></script>
+	</div>
+	<p data-tx="t0028" th:unless="${searches}">该号码没有搜索查询。</p>
+	</div>
+</div>
+
+<th:block th:if="${comments.size &gt; 0}">
+	<h2 data-tx="t0029">关于 <th:block th:text="${number.plus}"></th:block> 的评论</h2>
+	
+	<th:block th:each="comment,commentIt : ${comments}">
+	
+	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"></input>
+<div class="box">
+  <article class="media">
+    <div class="media-left">
+      <figure class="image is-64x64">
+		<i class="fa-solid fa-star" th:if="${#converters.isPositive(comment.rating)}"></i>
+		<i class="fa-solid fa-triangle-exclamation" th:unless="${#converters.isPositive(comment.rating)}"></i>
+      </figure>
+    </div>
+    <div class="media-content">
+      <div class="content">
+        <p class="commentHeader">
+		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"></th:block></strong>
+          <small>
+          <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
+		  <span data-tx="t0031" th:unless="${comment.service}">PhoneBlock</span>
+		  </small>
+		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
+        </p>
+        <p class="commentText" th:text="${comment.comment}">
+        </p>
+      </div>
+            
+      <nav class="level is-mobile">
+        <div class="level-left">
+          <a aria-label="Guter Hinweis" class="level-item thumbs-up commentVote" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Guter Hinweis!">
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-up"></i>
+            </span>
+            <span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
+          </a>
+          <a aria-label="Unsinn" class="level-item thumbs-down commentVote" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Unsinn!">
+            <span class="icon">
+              <i class="fa-solid fa-thumbs-down"></i>
+            </span>
+			<span th:id="'down-' + ${commentIt.current}" th:text="${comment.down}"></span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </article>
+</div>
+	
+	</th:block>
+</th:block>
+
+	<nav aria-label="pagination" class="pagination is-centered" role="navigation">
+		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">前一个号码</a>
+		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">下一个号码</a>
+	</nav>
+</div>
+</section>
+
+<section class="section">
+
+<div class="tile is-ancestor" th:if="${android}">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/setup-android/}">
+			<p class="title" data-tx="t0034">安卓版 PhoneBlock</p>
+			<p class="subtitle" data-tx="t0035">还没安装？那就安装吧！</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title" data-tx="t0036">用于 Fritz!Box 的 PhoneBlock</p>
+			<p class="subtitle" data-tx="t0037">关闭固定电话上的广告电话！</p>
+		</a>
+	</div>
+</div>
+
+<div class="tile is-ancestor" th:if="${iphone}">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/setup-ipone/}">
+			<p class="title" data-tx="t0038">针对 iPhobe 的 PhoneBlock</p>
+			<p class="subtitle" data-tx="t0039">还没安装？那就安装吧！</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title" data-tx="t0040">用于 Fritz!Box 的 PhoneBlock</p>
+			<p class="subtitle" data-tx="t0041">关闭固定电话上的广告电话！</p>
+		</a>
+	</div>
+</div>
+
+<div class="tile is-ancestor" th:if="${fritzbox}">
+	<div class="tile is-parent is-6">
+		<a class="tile is-child notification is-primary" th:href="@{/login.jsp(location='/setup.jsp')}">
+			<p class="title" data-tx="t0042">安装 PhoneBlock</p>
+			<p class="subtitle" data-tx="t0043">创建并设置一个账户！</p>
+		</a>
+	</div>
+
+	<div class="tile is-parent is-6 ">
+		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+			<p class="title" data-tx="t0044">检查安装</p>
+			<p class="subtitle" data-tx="t0045">查看安装说明！</p>
+		</a>
+	</div>
+</div>
+
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Fragen und Antworten zu PhoneBlock')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">关于 PhoneBlock 的问题和答案</h1>
+
+		<h2 data-tx="t0002">PhoneBlock 是免费的吗？</h2>
+		<p data-tx="t0003">是的，目前使用 PhoneBlock 无需支付任何费用。但是，PhoneBlock 的运行现在需要支付服务器租用、互联网接入和域名注册的运行成本。为了支付这些费用，您最好能进行<b><a th:href="@{/support.jsp}">小额捐款</a></b>。</p>
+		
+		<p data-tx="t0004">长期以来，PhoneBlock 一直在我桌上的<a href="https://www.raspberrypi.com/">Raspberry PI 4</a>上运行，因此几乎没有增加任何成本（除了网络连接和域名注册）。不过，由于用户数量不断增加，尤其是为了确保服务的可用性，PhoneBlock 现已转移到 <a href="https://www.hetzner.com/">Hetzner Cloud</a>（服务器地点：德国法尔肯施泰因）。通过<a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">此链接，您将收到来自 Hetzner 的 20 欧元云信用额度作为礼物</a>--如果您实际使用并支付了费用，PhoneBlock 将把您花费的前 10 欧元作为云信用额度记入您的账户。</p>
+
+		<h2 data-tx="t0005">PhoneBlock 和"<a target="_blank" th:href="@{/link/tellows}">请勿打扰</a>"有什么区别？</h2>
+		<p data-tx="t0006"><a th:href="@{/anrufbeantworter/}">PhoneBlock 应答机</a>不识别黑名单电话簿的大小限制。它会接受黑名单上所有号码的呼叫。无需每晚更新 Fritz!Box 中的黑名单，黑名单始终是最新的。</p>
+		
+		<p data-tx="t0007">即使您的路由器不支持用于互联网电话簿的 CardDAV 协议，您也可以在任何支持 VOIP 的互联网路由器上安装 <a th:href="@{/anrufbeantworter/}">PhoneBlock 应答机</a>。</p>
+		
+		<p data-tx="t0008">通过这两项服务，您可以在 Fritz!Box 中将 <a th:href="@{/setup.jsp}"> 封锁列表设置为 Internet 电话簿</a>，并封锁该电话簿中的号码。PhoneBlock 还提供个性化拦截列表选项，而且也是免费的（见上文）。</p>
+		
+		<p data-tx="t0009">您可以自己添加号码到个性化拦截列表，更重要的是，您还可以排除被拦截的号码（另见下文 "一个号码被错误拦截，怎么办？）如果 PhoneBlock 在拦截列表中添加了您希望被呼叫的号码，这就很有意思了。例如，如果许多人对来自互联网提供商的号码的回拨感到厌烦，而你却在等待回拨，那么这个号码就很容易被添加到拦截列表中。在这个 <a target="_blank" th:href="@{/link/tellows-problems}">YouTube 视频</a>中也有很好的解释。通过 PhoneBlock，您可以自定义您的拦截列表，您自己添加到列表中的号码将继续被拦截，而您添加到白名单中的号码肯定不会被拦截。</p>
+
+		<h2 data-tx="t0010">我的 Fritz！盒子还不支持 CardDAV，我还能使用 PhoneBlock 吗？</h2>
+		<p data-tx="t0011">是的，有两种可能性：</p>
+		<ol>
+		<li data-tx="t0012">使用 PhoneBlock 应答机（目前仍处于测试阶段）代替电话簿。您可以将 PhoneBlock 应答机像网络电话一样注册到您的 Fritz!Box 中，当 SPAM 号码来电时，它总是会迅速应答，以至于您的电话不会响起或只响起很短的时间。目前，PhoneBlock 应答机只能在测试系统中使用，需要单独注册：<a th:href="@{/anrufbeantworter/}">进入应答机测试系统</a>。如果您成功安装了电话答录机，或在安装过程中遇到问题，请告知我们，以便尽快普及这一新工具。</li>
+		<li data-tx="t0013">使用 <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> 工具将拦截列表加载到您的 Fritz 中！不过，您需要一台可以安装该程序的电脑。SpamBlockUp 还可以使用 PhoneBlock 封锁列表并将其加载到您的 Fritz 中！有关详细信息，请联系该程序的作者。PhoneBlock 与 SpamBlockUp 无关。</li>
+		</ol>
+
+		<h2 data-tx="t0014">我没有 Fritz！盒子，我还能使用 PhoneBlock 吗？</h2>
+		
+		<p data-tx="t0015">您可以在任何支持 VOIP 的互联网路由器上安装 <a th:href="@{/anrufbeantworter/}">PhoneBlock 应答机</a>，即使您的路由器不支持用于互联网电话簿的 CardDAV 协议。将应答机安装为普通的 VOIP 电话，通过互联网登录到您的路由器。</p>
+		
+		<p data-tx="t0016">为了将拦截列表导入电话簿，您的互联网路由器/电话系统必须能够通过 <code>CardDAV</code> 协议订阅电话簿，并自动拒绝来自特定电话簿中号码的所有来电（或将其转发到答录机）。如需了解您的电话系统是否可以这样做，请参阅手册或咨询电话供应商。如果您已经在其他路由器上成功安装了拦截列表，请告知我们，以便修改安装说明。</p>
+
+		<h2 data-tx="t0017">我可以在安卓手机上使用 PhoneBlock 吗？</h2>
+		<p data-tx="t0018">是的，你甚至有两个选择：(a) 订阅 PhoneBlock 地址簿，或 (b) 设置 SpamBlocker 并在其中集成 PhoneBlock 数据库。</p>
+		<p data-tx="t0019">如果您订阅了 <a th:href="@{/setup-android/}">PhoneBlock 地址簿</a>，您就可以直接从通话中了解是否值得接听来电，或者在错过来电时回拨。但是，无法直接拒绝垃圾电话。</p>
+		<p data-tx="t0020">如果您安装了 <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>，就可以在其中集成 PhoneBlock 数据库。这样，当接到来电时，SpamBlocker 就可以将号码与 PhoneBlock 数据库进行比较，如果匹配，则直接拒绝来电。<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> 是一款独立应用程序，如果您在使用过程中遇到任何问题，请直接联系开发人员。</p>
+		
+		<h2 data-tx="t0021">我可以在 iPhone 上使用 PhoneBlock 吗？</h2>
+		<p data-tx="t0022">是的，在 iPhone 上，您甚至可以在不安装任何其他应用程序的情况下做到这一点。请点击此处查看<a th:href="@{/setup-iphone/}">安装说明</a>。</p>
+
+		<h2 data-tx="t0023" id="Error26">我的 FritzBox 在设置过程中报告 "错误 26</h2>
+		
+		<p data-tx="t0024">目前还不清楚这个错误的来源和含义。不过，用户报告说，无论如何，以下步骤都有助于设置 PhoneBlock：</p>
+		
+		<ol>
+			<li data-tx="t0025">再次完全删除电话簿</li>
+			<li data-tx="t0026">重新启动盒子，检查电话簿是否真的被删除。如果没有，请重复删除操作。</li>
+			<li data-tx="t0027">重新创建电话簿。确保正确复制了服务器地址。确保用户名和密码开头或结尾没有空格。</li>
+		</ol>
+		
+		<p data-tx="t0028">请注意：如果您更改了 PhoneBlock 访问密码，仅在电话簿设置中设置新密码是不够的。Fritz！盒子在更新访问数据时似乎会出现问题。请删除电话簿并重新设置。</p>
+
+		<h2 data-tx="t0029" id="disposable-mail">为什么不能使用一次性电子邮件地址注册？</h2>
+		<p data-tx="t0030">如果您使用 PhoneBlock，您将持续消耗计算能力和互联网带宽，因为拦截列表每天都在更新。目前，PhoneBlock 的运行每月消耗约 500GB 的数据量。这对您来说是免费的。但是，如果在运行过程中出现 "不顺利 "的情况，我希望您能与我们联系，以便解决任何问题。如果您使用一次性地址注册，则无法做到这一点。用一次性地址注册和不注册一样。</p>
+
+		<h2 data-tx="t0031">什么情况下号码会被 PhoneBlock 屏蔽？</h2>
+		<p data-tx="t0032">如果您自己将一个号码添加到拦截列表中，来自该号码的呼叫将立即被拦截。但是，PhoneBlock 封锁名单的其他用户不会立即在他们的封锁名单中收到这个号码。只有在至少有三个用户也阻止了该号码后，新号码才会发送给所有用户。关于一个号码何时被添加到屏蔽列表以及何时从列表中删除的确切规则仍在最后确定中。不过，有一点是肯定的：无论如何，您自己添加到封锁名单中的号码将继续为您封锁。</p>
+		
+		<h2 data-tx="t0033">尽管有 PhoneBlock，我还是会收到垃圾电话，我该怎么办？</h2>
+		<p data-tx="t0034">垃圾电话号码层出不穷，因此 PhoneBlock 无法提供 100% 的保护。<a th:href="@{/block.jsp}">将新的骚扰电话添加到拦截列表</a>，帮助他人快速摆脱骚扰！</p>
+
+		<h2 data-tx="t0035">号码被错误屏蔽，我该怎么办？</h2>
+		<p data-tx="t0036">没问题，打开<a th:href="@{/settings/#whitelist}">您的设置</a>，将号码添加到白名单。白名单是您排除在拦截范围之外的电话号码列表。即使很多人对这个号码打来的电话感到厌烦并对其进行拦截，它们也不会出现在您的拦截列表中。</p>
+
+		<h2 data-tx="t0037">救命，我不小心在拦截列表中添加了一个号码！</h2>
+		<p data-tx="t0038">如果您在 Fritz！Box 的拦截列表电话簿中创建了新的 "联系人"，您的 Fritz！Box 会通知 PhoneBlock 服务器，并将此解释为对该号码的投诉。此外，该号码会被添加到您的个人拦截列表中，这样您就不会再受到该号码的骚扰。遗憾的是，由于在联系人中压缩存储了许多号码，因此无法以同样的方式从个人拦截列表中删除号码。相反，您必须使用您的访问数据登录网站，并在 <a th:href="@{/settings/#blacklist}">您的设置</a>中将该号码从黑名单中删除。这样，在下次同步运行时，该号码就会从 Fritz!Box 的拦截列表中消失。</p>
+
+		<h2 data-tx="t0039">我担心 PhoneBlock 会屏蔽我需要的号码，我该怎么办？</h2>
+		<p data-tx="t0040">使用 PhoneBlock，您不一定要屏蔽号码。您有以下选项：</p>
+		<ol>
+			<li data-tx="t0041">与其屏蔽电话，不如将电话转接到答录机上。如果有人打电话来真的想从你这里得到什么，他们会留言，你可以给他们回电话。</li>
+			<li data-tx="t0042">完全省去安装屏蔽的步骤。只需在 Fritz 中设置 PhoneBlock 电话簿！例如，当您接听电话时，电话显示屏上将显示 "SPAM: 03016637169"。然后，您就可以决定是否接听电话，因为您正在等待回电，或者是否将来电者推开。</li>
+		</ol>
+
+		<h2 data-tx="t0043">我必须手动更新电话簿吗？</h2>
+		<p data-tx="t0044">不，这每晚都会自动进行。您的 Fritz！盒子每晚都会与 PhoneBlock 服务器进行联系，并将拦截列表中的号码与拦截列表电话簿进行同步。因此，您的拦截列表始终是最新的。如果您的Fritz！Box在较长时间内（无论出于何种原因）没有检索到拦截列表，PhoneBlock会向您发送电子邮件，以便您在拦截列表过时之前检查配置。</p>
+
+		<h2 data-tx="t0045">拦截列表具体何时更新？</h2>
+		<p data-tx="t0046">这由您的 Fritz 决定！如果您没有明确按下拦截列表电话簿上的 "更新 "按钮，您的 Fritz! 框会在凌晨 0 点到 6 点之间选择一个时间进行更新。AVM 的这一做法非常巧妙，因为这意味着呼叫会在整个晚上相对均匀地分布，而服务器的负荷仍然有限。</p>
+		
+		<h2 data-tx="t0047">我认为 PhoneBlock 非常好，我能捐款吗？</h2>
+		<p data-tx="t0048">是的，如果您喜欢PhoneBlock，欢迎您进行<a th:href="@{/support.jsp}">小额捐赠</a>，用于支付服务器租用、域名注册、互联网接入等运行费用。</p>
+		
+		<p data-tx="t0049">但同样重要的是，让 PhoneBlock 更广为人知。因此，如果您不能或不想捐款，请在论坛、FaceBook、杂志文章评论、博客或其他您认为合适的地方发布 PhoneBlock 页面的链接。只有 PhoneBlock 的传播速度越来越快，该项目才能对德国电话网络中肆虐的电话恐怖产生影响。</p>
+
+		<h2 data-tx="t0050">我有一个愿望，PhoneBlock 一定可以实现，在哪里可以表达呢？</h2>
+		<p data-tx="t0051">如果您有 GitHub 账户，可以在 <a target="_blank" th:href="@{/link/issues}">PhoneBlock 项目页面</a>上开票并描述您的请求。也欢迎您通过电子邮件与我讨论提案：<code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code></p>
+		
+		<h2 data-tx="t0052">如何再次卸载 PhoneBlock？</h2>
+		<p data-tx="t0053">您不再需要 PhoneBlock 或对它不满意？太遗憾了，也许您可以<a target="_blank" th:href="@{/link/issues}">提出改进建议</a>？</p>
+		
+		<p data-tx="t0054">卸载的步骤与安装相同，只是要倒过来。根据您安装 PhoneBlock 的方式（作为 <a th:href="@{/setup.jsp}">Phonebook</a> 或作为 <a th:href="@{/anrufbeantworter/}">Answering Machine</a> 或两者），您必须删除相应的设置。对于电话簿：删除适用于 PhoneBlock 电话簿中所有呼叫的呼叫阻断（或呼叫转移）。然后可以删除 PhoneBlock 电话簿。电话答录机：删除 "PhoneBlock "电话设备，然后停用 DynIP 版本（如果没有使用单独的 DynIP 服务）。然后在 <a th:href="@{/settings/}">settings</a> 中删除 PhoneBlock 帐户。</p>
+
+		<h2 data-tx="t0055">这里没有回答我的问题，谁能帮帮我？</h2>
+		<p data-tx="t0056">您为什么不在 PhoneBlock 的 <a target="_blank" th:href="@{/link/facebook}">Facebook 页面</a>上写评论，这样每个人都能看到这个问题。我们也欢迎您通过电子邮件给我发送个人信息：<code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code> 。</p>
+
+
+	</div>
+	
+	<div class="tile is-ancestor">
+		<div class="tile is-parent is-6">
+			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
+				<p class="title" data-tx="t0057">准备好开始了吗？</p>
+				<p class="subtitle" data-tx="t0058">创建 PhoneBlock 账户！</p>
+			</a>
+		</div>
+
+		<div class="tile is-parent is-6 ">
+			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+				<p class="title" data-tx="t0059">如何设置？</p>
+				<p class="subtitle" data-tx="t0060">查看安装说明！</p>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
