@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head}"/>
+<head th:replace="~{fragments/page :: head}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"/>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock Logo" th:src="@{/assets/img/animation.svg}"/>
+			<img alt="PhoneBlock Logo" th:src="@{/assets/img/animation.svg}"></img>
 		</div>
 
 		<h1 data-tx="t0001">Unerwünschte Anrufer automatisch abweisen</h1>
@@ -26,7 +26,7 @@
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
 			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
 			    </span>
 				<span data-tx="t0003">Anrufbeantworter</span>			
 			</a>
@@ -34,7 +34,7 @@
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup.jsp}">
 			    <span class="icon">
-					<i class="fa-solid fa-phone"/>
+					<i class="fa-solid fa-phone"></i>
 			    </span>
 				<span data-tx="t0004">Fritz!Box Telefonbuch</span>			
 			</a>
@@ -42,7 +42,7 @@
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
 			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"/>
+					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
 				<span data-tx="t0005">Für Android</span>
 			</a>
@@ -50,7 +50,7 @@
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
 			    <span class="icon">
-					<i class="fa-brands fa-apple"/>
+					<i class="fa-brands fa-apple"></i>
 			    </span>
 				<span data-tx="t0006">Für iPhone</span>
 			</a>
@@ -94,7 +94,7 @@
 		<h2 data-tx="t0011">Was sind die Vorausetzungen?</h2>
 
 		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"></img>
 			</a>
 		</div>
 		
@@ -106,10 +106,10 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			  <input id="context-path" th:value="@{/}" type="hidden"/>
+			  <input id="context-path" th:value="@{/}" type="hidden"></input>
 			<a class="button is-medium is-info is-fullwidth" href="#" id="search-fritzbox">
 				<span class="icon is-small is-left">
-					<i class="fa-solid fa-magnifying-glass"/>
+					<i class="fa-solid fa-magnifying-glass"></i>
 				</span>
 				<span data-tx="t0013">Fritz!Box suchen</span>
 			</a>
@@ -139,6 +139,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"/>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Dein neuer API key - PhoneBlock')}"/>
+<head th:replace="~{fragments/page :: head(title='Dein neuer API key - PhoneBlock')}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"/>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -19,12 +19,12 @@
 		  <div class="message-body">
 			<div class="field">
 			  <label class="label" data-tx="t0003">Bemerkung</label>
-			  <div class="control" th:text="${apiKey.label}"/>
+			  <div class="control" th:text="${apiKey.label}"></div>
 			</div>
 
 			<div class="field">
 			  <label class="label" data-tx="t0004">API Key</label>
-			  <div class="control"><code id="apiKey" th:text="${apiKey.token}"/><a class="copyToClipboard" href="#" id="apiKey_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></div>
+			  <div class="control"><code id="apiKey" th:text="${apiKey.token}"></code><a class="copyToClipboard" href="#" id="apiKey_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 			</div>
 		  </div>
 		</article>
@@ -41,6 +41,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"/>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

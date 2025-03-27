@@ -1,25 +1,25 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head/>
+<head></head>
 <body>
 
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading">
-			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"/> <span data-tx="t0001">Mit Google anmelden</span></a>
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Mit Google anmelden</span></a>
 		</p>
 		<div class="is-collapsible" id="googleLogin">
 			<div class="panel-block">
 	  		<div class="content">
 				<form method="get" th:action="@{/oauth/login}">
 
-			    <input name="force_client" th:value="${googleClient}" type="hidden"/>
-			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="force_client" th:value="${googleClient}" type="hidden"></input>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
 	
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
 					  <span data-tx="t0002">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
@@ -35,7 +35,7 @@
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
 			          <span class="icon">
-					      <i class="fa-solid fa-right-to-bracket"/>
+					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
 				      <span data-tx="t0004">Weiter zu Google</span>
 				    </button>
@@ -55,21 +55,21 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"/> <span data-tx="t0006">Mit E-Mail anmelden</span></a></p>
+		<p class="panel-heading"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Mit E-Mail anmelden</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + (${emailMessage} ? ' is-active' : '')">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
 	  		<div class="content">
-			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
 				<div class="field">
 					<label class="label" data-tx="t0007">E-Mail</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <input name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
 					    <span class="icon is-small is-left">
-					      <i class="fas fa-envelope"/>
+					      <i class="fas fa-envelope"></i>
 					    </span>
 					    <span class="icon is-small is-right" th:if="${emailMessage}">
-					      <i class="fas fa-exclamation-triangle"/>
+					      <i class="fas fa-exclamation-triangle"></i>
 					    </span>
 					</div>
 					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}">
@@ -79,7 +79,7 @@
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
 					  <span data-tx="t0008">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
@@ -95,7 +95,7 @@
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
 			          <span class="icon">
-					      <i class="fa-solid fa-right-to-bracket"/>
+					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
 				      <span data-tx="t0010">Code anfordern</span>
 				    </button>
@@ -116,30 +116,30 @@
 	
 	<nav class="panel">
 		<p class="panel-heading">
-			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"/> <span data-tx="t0012">Mit PhoneBlock-Nutzernamen anmelden</span></a>
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Mit PhoneBlock-Nutzernamen anmelden</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
 				<form method="post" th:action="${contextPath} + ${loginAction}">
-			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" placeholder="Benutzername" th:name="${userNameParam}" type="text"/>
+				    <input class="input" placeholder="Benutzername" th:name="${userNameParam}" type="text"></input>
 				    <span class="icon is-small is-left">
-				      <i class="fa-solid fa-user"/>
+				      <i class="fa-solid fa-user"></i>
 				    </span>
 				    <span class="icon is-small is-right">
-				      <i class="fas fa-check"/>
+				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
 				  <p class="help" data-tx="t0013">Verwende den Benutzernamen, den Du bei Deiner Anmeldung mit Google oder E-Mail-Adresse erhalten hast.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"/>
+				    <input class="input" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"></input>
 				    <span class="icon is-small is-left">
-				      <i class="fas fa-lock"/>
+				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
 					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Die Anmeldedaten stimmen nicht überein, bitte überprüfe die Eingaben und versuche es noch einmal.</p>
@@ -152,7 +152,7 @@
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
 					  <span data-tx="t0016">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
@@ -168,7 +168,7 @@
 				  <p class="control">
 				    <button class="button is-primary" type="submit">
 			          <span class="icon">
-					      <i class="fa-solid fa-right-to-bracket"/>
+					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
 				      <span data-tx="t0018">Anmelden</span>
 				    </button>

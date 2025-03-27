@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Persönliche Einstellungen - PhoneBlock')}"/>
+<head th:replace="~{fragments/page :: head(title='Persönliche Einstellungen - PhoneBlock')}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"/>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section" th:unless="${userName}">
 	<div class="content">
@@ -19,8 +19,8 @@
 	<div class="content">
 		<h1 data-tx="t0003">Einstellungen</h1>
 			<p data-tx="t0004">
-				Willkommen <th:block th:text="${settings.displayName}"/>
-				<th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"/>)</th:block>.
+				Willkommen <th:block th:text="${settings.displayName}"></th:block>
+				<th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.
 			</p>
 			
 			<form method="post" th:action="@{/update-settings}">
@@ -33,12 +33,12 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"/><a class="copyToClipboard" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></div>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Benutzername</label>
-				  <div class="control"><code id="login" th:text="${userName}"/><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></div>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">
 				  	Diesen Wert musst du als Benutzernamen für den <a th:href="@{/setup.jsp}">Abruf der Blocklist</a> eintragen.
 				  </p>
@@ -46,7 +46,7 @@
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">Passwort</label>
-				  <div class="control"><code id="passwd" th:text="${token}"/><a class="copyToClipboard" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></div>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">Dieses Passwort musst Du für die <a th:href="@{/setup.jsp}">Einrichtung des Telefonbuchs</a> oder für die Anmeldung an dieser Webseite verwenden. </p>
 				  <p class="help" data-tx="t0011">
 				  	Bitte notiere Dir das Passwort (oder speichere es am besten in einem <a href="https://keepass.info/">Passwort-Manager</a>), 
@@ -58,7 +58,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Benutzername</label>
-			  <div class="control"><code id="login" th:text="${userName}"/><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></div>
+			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">
 			  	Diesen Wert musst du als Benutzernamen für den <a th:href="@{/setup.jsp}">Abruf der Blocklist</a> eintragen.
 			  	Dein Passwort wurde Dir bei Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf dieser Seite
@@ -80,7 +80,7 @@
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
-			      <i class="fas fa-ruler-vertical"/>
+			      <i class="fas fa-ruler-vertical"></i>
 			    </span>
 			  </div>
 			  <p class="help" data-tx="t0021">Wenn Du Probleme beim Update der Blocklist hast, kannst Du hier die Größe Deiner Blocklist reduzieren. 
@@ -112,7 +112,7 @@
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
-			      <i class="fas fa-phone-volume"/>
+			      <i class="fas fa-phone-volume"></i>
 			    </span>
 			  </div>
 			  <p class="help" data-tx="t0028">
@@ -124,7 +124,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029">
-			    <input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/>
+			    <input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input>
 				Nummern mit "*" zusammenfassen
 			  </label>
 			  <p class="help" data-tx="t0030">Wenn Du dies Option auswählst, werden in Deiner Blocklist nebeneinander liegende Nummern 
@@ -178,15 +178,15 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
 			</td>
-			<td th:text="${authToken.label}"/>
-			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"/>
+			<td th:text="${authToken.label}"></td>
+			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
 			<td>
 				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">Nicht verwendet.</th:block>
-				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"/>
+				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
 			</td>
-			<td th:text="${authToken.userAgent}"/>
+			<td th:text="${authToken.userAgent}"></td>
 		</tr>
 	</table>
 	
@@ -211,7 +211,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Bemerkung für Verwendung</label>
 	  <p class="control has-icons-left">
-	    <input class="input" name="apikey-label" placeholder="Nutzung für..." type="text"/>
+	    <input class="input" name="apikey-label" placeholder="Nutzung für..." type="text"></input>
 	  </p>
 	  <p class="help" data-tx="t0044">
 	  Du kannst hier eine Hinweis eingeben, wofür Du den API-Key erzeugt hast, z.B. "SpamBlocker auf Omas Handy.".
@@ -247,7 +247,7 @@
 	<p data-tx="t0048">Diese Nummern hast Du explizit gesperrt. Eine versehentlich eingetragene Sperre kannst Du hier aufheben:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"/>
+			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -280,7 +280,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"/>
+			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -302,7 +302,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Ausnahme hinzufügen</label>
 	  <p class="control has-icons-left">
-	    <input class="input" name="add-wl" placeholder="Neue Ausnahme" type="tel"/>
+	    <input class="input" name="add-wl" placeholder="Neue Ausnahme" type="tel"></input>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">
@@ -331,7 +331,7 @@
 		Wenn Du eine <a th:href="@{/support.jsp}">Spende für den Betrieb von PhoneBlock</a> gemacht hast, 
 		dann wird diese hier (nach einiger Zeit) aufgelistet. 
 		Damit das klappt, wäre es nett, wenn Du bei der Überweisungsnachricht die ersten paar Zeichen von Deinem Nutzernamen
-		mitschicken würdest, also z.B. <code id="purpose" th:text="${supporterId}"/><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></span>.
+		mitschicken würdest, also z.B. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>.
 		Beiträge über das GitHub-Sponsor-Programm können hier leider nicht aufgelistet werden. 
 	</p>
 	
@@ -350,9 +350,9 @@
 	</thead>
 	<tbody>
 		<tr th:each="contribution : ${contributions}">
-			<th th:text="${#dates.format(#converters.fromEpoch(contribution.received))}"/>
-			<th th:text="${contribution.message}"/>
-			<th th:text="${'€ ' + #numbers.formatDecimal(contribution.amount / 100.0,1,'POINT',2,'COMMA')}"/>
+			<th th:text="${#dates.format(#converters.fromEpoch(contribution.received))}"></th>
+			<th th:text="${contribution.message}"></th>
+			<th th:text="${'€ ' + #numbers.formatDecimal(contribution.amount / 100.0,1,'POINT',2,'COMMA')}"></th>
 		</tr>
 	</tbody>
 	</table>
@@ -364,7 +364,7 @@
 </div>
 
 <nav class="panel is-info">
-	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"/> <span data-tx="t0065">Zahlung vermisst?</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">Zahlung vermisst?</span></a></p>
 	<div class="is-collapsible" id="contribForm">
 
 	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
@@ -378,8 +378,8 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Absender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-name" placeholder="Max Mustermann" type="text"/>
-		    <span class="icon is-small is-left"><i class="fa-regular fa-user"/></span>
+		    <input class="input" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">
 			  Bei einer Banküberweisung der Name des Kontoinhabers, der die Überweisung getätigt hat. Bitte 
@@ -390,7 +390,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">Datum</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"/>
+		    <input class="input" name="contrib-date" type="date"></input>
 		  </p>
 		  <p class="help" data-tx="t0070">
 			  Das Datum der Banküberweisung. Bitte gib auch oben noch den vollständigen Namen des Kontoinhabers an, der die Überweisung getätigt hat.
@@ -402,7 +402,7 @@
 	<div class="panel-block">
 		<button class="button is-medium is-primary" type="submit">
 		    <span class="icon">
-				<i class="fa-solid fa-magnifying-glass-dollar"/>
+				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
 			<span data-tx="t0071">Beitrag suchen</span>
 		</button>
@@ -421,7 +421,7 @@
 	</div>
 		
 <nav class="panel is-warning" id="resetPassword">
-	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"/> <span data-tx="t0074">Neues Passwort erzeugen</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">Neues Passwort erzeugen</span></a></p>
 	<div class="is-collapsible" id="resetForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
@@ -437,7 +437,7 @@
   		<div class="panel-block">
 			<button class="button is-medium is-fullwidth is-danger" type="submit">
 			    <span class="icon">
-					<i class="fa-solid fa-eraser"/>
+					<i class="fa-solid fa-eraser"></i>
 			    </span>
 				<span data-tx="t0076">Passwort zurücksetzen</span>
 			</button>
@@ -447,7 +447,7 @@
 </nav>
 
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"/> <span data-tx="t0077">An allen Geräten abmelden</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">An allen Geräten abmelden</span></a></p>
 	<div class="is-collapsible" id="logoutForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
   		<div class="panel-block">
@@ -464,7 +464,7 @@
   		<div class="panel-block">
 			<button class="button is-medium is-fullwidth is-danger" type="submit">
 			    <span class="icon">
-					<i class="fa-solid fa-right-from-bracket"/>
+					<i class="fa-solid fa-right-from-bracket"></i>
 			    </span>
 				<span data-tx="t0079">Überall abmelden</span>
 			</button>
@@ -474,7 +474,7 @@
 </nav>
 	
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"/> <span data-tx="t0080">Account löschen</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">Account löschen</span></a></p>
 	<div class="is-collapsible" id="quitForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
   		<div class="panel-block">
@@ -489,7 +489,7 @@
   		<div class="panel-block">
 			<button class="button is-medium is-fullwidth is-danger" type="submit">
 			    <span class="icon">
-					<i class="fa-solid fa-power-off"/>
+					<i class="fa-solid fa-power-off"></i>
 			    </span>
 				<span data-tx="t0082">Zugang löschen, keine weitere Sicherheitsabfrage!</span>
 			</button>
@@ -500,6 +500,6 @@
 
 </section>
 
-<div th:replace="~{fragments/page :: footer}"/>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>
