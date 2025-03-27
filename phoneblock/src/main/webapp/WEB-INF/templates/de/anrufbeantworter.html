@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter', login=true)}"/>
+<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter', login=true)}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"/>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock-Anrufbeantworter-Logo" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+			<img alt="PhoneBlock-Anrufbeantworter-Logo" th:src="@{/assets/img/ab/logo/ab-logo.svg}"></img>
 		</div>
 	
 		<h1 data-tx="t0001">Installation als Anrufbeantworter</h1>
@@ -58,14 +58,14 @@
 		  <div class="column is-half is-offset-one-quarter">
 			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
-					<i class="fa-solid fa-right-to-bracket"/>
+					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
 				<span data-tx="t0014">Anmelden</span>			
 			</a>
 		  </div>
 		</div>
 		<p data-tx="t0015" unless:if="${loggedIn}">
-		Du bist als <code th:text="${userName}"/> angemeldet, prima, gleich zum nächsten Schritt! 
+		Du bist als <code th:text="${userName}"></code> angemeldet, prima, gleich zum nächsten Schritt! 
 		</p>
 		
 		<h2 data-tx="t0016" id="create">Schritt 2: Anrufbeantworter erstellen</h2>
@@ -80,7 +80,7 @@
 		  <div class="column is-half is-offset-one-quarter">
 			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
 			    <span class="icon">
-					<i class="fa-solid fa-arrow-up-right-from-square"/>
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
 				<span data-tx="t0018">App öffnen</span>			
 			</a>
@@ -89,7 +89,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"></img>
 	  		</div>
 		</div>
 		
@@ -110,7 +110,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"></img>
 	  		</div>
 		</div>
 		
@@ -120,7 +120,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  			<img alt="DynDNS einrichten" class="image appscreen" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"></img>
 	  		</div>
 		</div>
 		
@@ -146,7 +146,7 @@
 		  <div class="column is-half is-offset-one-quarter">
 			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
 			    <span class="icon">
-					<i class="fa-solid fa-arrow-up-right-from-square"/>
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
 				<span data-tx="t0028">Fritz!Box öffnen</span>			
 			</a>
@@ -155,7 +155,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="DynDNS einrichten" class="image" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  			<img alt="DynDNS einrichten" class="image" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"></img>
 	  		</div>
 		</div>
 		
@@ -167,7 +167,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="DynDNS einrichten" class="image" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  			<img alt="DynDNS einrichten" class="image" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"></img>
 	  		</div>
 		</div>
 		
@@ -194,7 +194,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Gerät einrichten" class="image" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  			<img alt="Gerät einrichten" class="image" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"></img>
 	  		</div>
 		</div>
 		
@@ -208,7 +208,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Gerät erstellen" class="image" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
+	  			<img alt="Gerät erstellen" class="image" th:src="@{/assets/img/ab/setup/04-create-phone.png}"></img>
 	  		</div>
 		</div>
 
@@ -221,7 +221,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="IP-Telefon erstellen" class="image" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  			<img alt="IP-Telefon erstellen" class="image" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"></img>
 	  		</div>
 		</div>
 
@@ -235,7 +235,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Benutzerdaten" class="image" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  			<img alt="Benutzerdaten" class="image" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"></img>
 	  		</div>
 		</div>
 		
@@ -250,7 +250,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Ausgehende Gespräche" class="image" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  			<img alt="Ausgehende Gespräche" class="image" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"></img>
 	  		</div>
 		</div>
 
@@ -264,7 +264,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Geschützte Nummern" class="image" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  			<img alt="Geschützte Nummern" class="image" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"></img>
 	  		</div>
 		</div>
 
@@ -277,7 +277,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Einstellungen prüfen" class="image" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  			<img alt="Einstellungen prüfen" class="image" th:src="@{/assets/img/ab/setup/10-check-settings.png}"></img>
 	  		</div>
 		</div>
 
@@ -291,7 +291,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Anrufbeantworter bearbeiten" class="image" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  			<img alt="Anrufbeantworter bearbeiten" class="image" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"></img>
 	  		</div>
 		</div>
 
@@ -306,10 +306,10 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img alt="Ausgehende Anrufe verhindern" class="image" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  			<img alt="Ausgehende Anrufe verhindern" class="image" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"></img>
 	  		</div>
 			<div class="column">
-	  			<img alt="Bestätigen" class="image" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  			<img alt="Bestätigen" class="image" th:src="@{/assets/img/ab/setup/12-confirm.png}"></img>
 	  		</div>
 		</div>
 
@@ -323,7 +323,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Zugriff aus dem Internet" class="image" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  			<img alt="Zugriff aus dem Internet" class="image" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"></img>
 	  		</div>
 		</div>
 		
@@ -336,7 +336,7 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Zugriff aus dem Internet" class="image appscreen" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  			<img alt="Zugriff aus dem Internet" class="image appscreen" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"></img>
 	  		</div>
 		</div>
 		
@@ -347,7 +347,7 @@
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Anrufbeantworter verbunden" class="image appscreen" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  			<img alt="Anrufbeantworter verbunden" class="image appscreen" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"></img>
 	  		</div>
 		</div>
 		
@@ -363,12 +363,12 @@
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Anrufbeantworter verbunden" class="image" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  			<img alt="Anrufbeantworter verbunden" class="image" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"></img>
 	  		</div>
 		</div>
 		
 	</div>
 </section>
-<div th:replace="~{fragments/page :: footer}"/>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

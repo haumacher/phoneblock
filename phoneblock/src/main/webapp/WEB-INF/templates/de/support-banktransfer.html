@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"/>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"/>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -19,10 +19,10 @@
 		</p>
 
 		<ul>
-			<li data-tx="t0004">Empfänger: <code id="receiver" th:text="${props.bank.receiver}"/><a class="copyToClipboard" href="#" id="receiver_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
-			<li data-tx="t0005">Kontonummer: <code id="account" th:text="${props.bank.account}"/><a class="copyToClipboard" href="#" id="account_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
-			<li data-tx="t0006">BIC: <code id="bic" th:text="${props.bank.bic}"/><a class="copyToClipboard" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
-			<li data-tx="t0007">Verwendungszweck: <code id="purpose" th:text="${supporterId}"/><a class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></a></li>
+			<li data-tx="t0004">Empfänger: <code id="receiver" th:text="${props.bank.receiver}"></code><a class="copyToClipboard" href="#" id="receiver_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0005">Kontonummer: <code id="account" th:text="${props.bank.account}"></code><a class="copyToClipboard" href="#" id="account_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0006">BIC: <code id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0007">Verwendungszweck: <code id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
 		</ul>
 		
 		<p data-tx="t0008">
@@ -31,6 +31,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"/>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

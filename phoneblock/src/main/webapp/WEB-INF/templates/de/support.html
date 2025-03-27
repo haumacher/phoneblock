@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"/>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"/>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -30,7 +30,7 @@
 				<a class="tile is-child notification is-primary" href="http://paypal.me/phoneblock" target="_blank">
 					<div class="title">
 					    <span class="icon">
-							<i class="fa-brands fa-paypal"/>
+							<i class="fa-brands fa-paypal"></i>
 					    </span>
 						<span data-tx="t0004">Mit PayPal spenden</span>			
 					</div>
@@ -41,7 +41,7 @@
 						Gib bitte die ersten paar Zeichen deines Nutzernamens mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
 					</p>
 					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">
-						Bitte gibt <code id="purpose" th:text="${supporterId}"/><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"/></span> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
+						Bitte gibt <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
 					</p>
 				</a>
 			</div>
@@ -52,7 +52,7 @@
 				<a class="tile is-child notification is-info" href="https://github.com/sponsors/haumacher" target="_blank">
 					<p class="title">
 					    <span class="icon">
-							<i class="fa-brands fa-github"/>
+							<i class="fa-brands fa-github"></i>
 					    </span>
 						<span data-tx="t0008">Werde Sponsor bei GitHub</span>
 					</p>
@@ -66,7 +66,7 @@
 				<a class="tile is-child notification is-info" th:href="@{/support-banktransfer.jsp}">
 					<p class="title">
 					    <span class="icon">
-							<i class="fa-solid fa-building-columns"/>
+							<i class="fa-solid fa-building-columns"></i>
 					    </span>
 						<span data-tx="t0010">Per Bank-Überweisung spenden</span>
 					</p>
@@ -84,6 +84,6 @@
 	</div>
 </section>
 
-<div th:replace="~{fragments/page :: footer}"/>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>
