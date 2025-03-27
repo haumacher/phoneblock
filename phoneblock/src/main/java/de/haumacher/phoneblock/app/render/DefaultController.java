@@ -30,7 +30,7 @@ import jakarta.servlet.http.HttpSession;
 
 public class DefaultController implements WebController {
 	
-	private static final LocaleMap LOCALES = new LocaleMap("en-US", "de", "es", "fr");
+	private static final LocaleMap LOCALES = new LocaleMap("en-US", "de", "es", "fr", "zh-HANS");
 	
 	/**
 	 * Template resolution attribute specifying the requested language.

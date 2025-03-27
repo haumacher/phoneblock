@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">隐私政策</h1>
+
+			<h2 data-tx="t0002">IP 地址</h2>
+			<p data-tx="t0003">当您访问本网站时，您的计算机 IP 地址会暂时保存在日志文件中，用于错误分析，并在 14 天后自动删除。未经注册，本网站不会收集访问者的任何个人数据，也不包含广告或第三方跟踪器。</p>
+
+			<h2 data-tx="t0004">电子邮件</h2>
+			<p data-tx="t0005">当您注册PhoneBlock账户时，您所提供的电子邮件地址将被储存用于用户认证。该电子邮件地址不会被传递给第三方。电子邮件只会发送到指定的地址，用于认证或PhoneBlock的操作。</p>
+
+			<h2 data-tx="t0006">曲奇</h2>
+			<p data-tx="t0007">在与PhoneBlock网站进行某些交互时，例如在注册和评估电话号码时，会设置一个技术上必要的会话cookie。</p>
+			<p data-tx="t0008">如果您在登录时激活了 "保持我在此设备上登录 "功能，PhoneBlock将设置一个持久cookie，以便网站在您下次访问时识别您，这样您就可以自动登录，而无需重新输入密码或重复谷歌登录过程。如果您点击 "注销 "按钮，该cookie将被删除，您必须在下次访问时重新登录。</p>
+
+			<h2 data-tx="t0009">删除账户</h2>
+			<p data-tx="t0010">你可以随时在<a th:href="@{/settings/}">设置</a>中删除你的PhoneBlock账户。删除你的账户后，你存储在PhoneBlock中的数据也将被删除。</p>
+			
+			<h2 data-tx="t0011">电话号码</h2>
+			<p data-tx="t0012">如果您的电话号码被错误地添加到拦截列表中，您当然可以要求将其删除。请向 <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code> 发送电子邮件。</p>
+
+			<h2 data-tx="t0013">答录机</h2>
+			<p data-tx="t0014">使用<a th:href="@{/anrufbeantworter/}">PhoneBlock应答机</a>时，PhoneBlock必须永久保存Fritz！Box的IP地址，以便在此注册应答机并保持注册状态。为此，您必须存储 Fritz!Box 的主机名或在 Fritz.Box 中安装 PhoneBlock 的 DynDNS 服务！</p>
+			
+			<p data-tx="t0015">Fritz!Box 的来电将显示在已注册的应答机上。来电者的电话号码将被传送到 PhoneBlock 应答机。该电话号码用于与垃圾邮件电话号码数据库进行比较。只有当电话号码包含在垃圾邮件数据库中时，应答机才会接受呼叫并将呼叫保存在应答机的呼叫列表中。在所有其他情况下，PhoneBlock 不会存储任何有关呼叫的数据。</p>
+			
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

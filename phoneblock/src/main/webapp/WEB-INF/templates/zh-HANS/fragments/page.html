@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head th:fragment="head">
+<th:block th:fragment="headContent">
+	<title th:text="${title}"></title>
+	
+	<meta content="text/html;charset=utf-8" http-equiv="content-type"></meta>
+	<meta content="de-DE" http-equiv="content-language"></meta>
+	
+	<meta content="width=device-width, initial-scale=1" name="viewport"></meta>
+	<meta name="description" th:content="${description}" th:if="${description}"></meta>
+	<meta name="keywords" th:content="${keywords}" th:if="${keywords}"></meta>
+	<meta content="summary" name="twitter:card"></meta>
+	<meta content="@bhaumacher" name="twitter:site"></meta>
+	<meta content="@bhaumacher" name="twitter:creator"></meta>
+	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"></meta>
+	
+	<meta name="og:title" th:content="${title}"></meta>
+	<meta name="og:url" th:content="${canonical}"></meta>
+	<link rel="canonical" th:href="${canonical}"></link>
+	<meta name="og:description" th:content="${description}" th:if="${description}"></meta>
+	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"></meta>
+	<meta content="website" name="og:type"></meta>
+	<meta content="de_DE" name="og:locale"></meta>
+	<meta content="PhoneBlock" name="og:site_name"></meta>
+	
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulma}/css/bulma.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCollapsible}/css/bulma-collapsible.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCalendar}/dist/css/bulma-calendar.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"></link>
+	
+	<link href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"></link>
+	
+	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"></link>
+	
+	<script th:src="|${contextPath}${deps.jquery}/jquery.min.js|" type="text/javascript"></script>
+	<script th:src="@{/assets/js/phoneblock.js(v=5)}" type="text/javascript"></script>
+	<script th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|" type="text/javascript"></script>
+	<script th:src="|${contextPath}${deps.bulmaCalendar}/dist/js/bulma-calendar.min.js|" type="text/javascript"></script>
+</th:block>
+</head>
+
+<body>
+<section class="hero is-small is-primary" th:fragment="header">
+	<div class="hero-body">
+		<p class="title">
+			<img alt="PhoneBlock Logo" class="logo-image" th:src="@{/assets/img/app-logo.svg}"></img>
+			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
+		</p>
+		<p class="subtitle" data-tx="t0002">手机垃圾邮件过滤器</p>
+		<a target="_blank" th:href="@{/link/github}">
+			<img alt="Fork me on GitHub" class="github-image" height="149" th:src="@{/assets/forkme.png}" width="149"></img>
+		</a>
+	</div>
+  <div class="hero-foot">
+  <nav aria-label="main navigation" class="navbar" role="navigation">
+	<div class="navbar-brand">
+		<div class="navbar-item"> 
+		<div class="control has-icons-left has-icons-right">
+		  <input class="input is-rounded" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"></input>
+		  <span class="icon is-small is-left">
+		    <i class="fas fa-phone"></i>
+		  </span>
+		  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
+		    <i class="fas fa-search"></i>
+		  </span>
+		</div>
+		</div>
+
+		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		</a>
+	</div>
+	<div class="navbar-menu" id="navbarBasicExample">
+		<div class="navbar-start">
+			<div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link prevent-default" data-tx="t0003" href="#">安装</a>
+
+				<div class="navbar-dropdown">
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">答录机</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup.jsp}">Blocklist 电话簿</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">安卓</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
+				</div>
+			</div>
+
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq.jsp}">常见问题</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status.jsp}">现状</a>
+
+			<div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link prevent-default" data-tx="t0010">更多信息</a>
+
+				<div class="navbar-dropdown">
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support.jsp}">为 PhoneBlock 捐款</a>
+					<hr class="navbar-divider"></hr>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">面向开发人员的应用程序接口</a>
+					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub 项目</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block.jsp}">添加呼叫限制</a>
+					
+					<hr class="navbar-divider"></hr>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">报告错误</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="navbar-end">
+			<a class="navbar-item" target="_blank" th:href="@{/ab/}" title="Answerbot App">
+				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"></img>
+		    </a>
+
+			<a class="navbar-item" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
+				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"></img>
+		    </a>
+      			
+			<a class="navbar-item" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
+				<span class="icon">
+			    	<i class="fa-solid fa-rss"></i>
+		        </span>
+		    </a>
+      			
+			<div class="navbar-item">
+				<div class="buttons">
+					<a class="button is-light" th:href="@{/login.jsp(location=${location})}" th:unless="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-right-to-bracket"></i>
+          				</span>
+						<strong data-tx="t0016">登录</strong>
+					</a>
+					<a class="button is-primary" th:href="@{/settings}" th:if="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-user"></i>
+          				</span>
+						<strong data-tx="t0017">设置</strong>
+					</a>
+					<a class="button is-light" th:href="@{/logout(url=${currentPage})}" th:if="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-right-from-bracket"></i>
+          				</span>
+						<strong data-tx="t0018">退出登录</strong>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+</div>  
+</section>
+
+
+
+<th:block th:fragment="footer">
+<section class="section">
+	<div class="content">
+		<h2 data-tx="t0019">参与其中</h2>
+		
+		<p data-tx="t0020">如果您喜欢 PhoneBlock，请帮助传播并与您的朋友分享。参与的人越多，您收到广告电话的几率就越小！</p>
+	</div>
+</section>
+  
+<footer class="footer">
+	<div class="content has-text-centered">
+		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 年，作者：<a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>。源代码采用 <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a> 许可。网站内容采用 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a> 进行许可。</p>
+		
+		<p data-tx="t0022"><strong>FRITZ！Box</strong>和<strong>FRITZ！OS</strong>是<a target="_blank" th:href="@{/link/avm}">AVM</a>的注册商标。<strong>PhoneBlock</strong>与此无关。</p>
+
+		<p>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz.jsp}">数据保护--无跟踪、无广告、无饼干</a></strong><br></br>
+			<strong><a data-tx="t0024" th:href="@{/usage.jsp}">使用条款</a></strong><br></br>
+			<strong><a data-tx="t0025" th:href="@{/impressum.jsp}">版本说明</a></strong>
+		</p>
+	</div>
+</footer>
+
+<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+</th:block>
+
+</body>
+</html>
