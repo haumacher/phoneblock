@@ -83,7 +83,7 @@ public class ContentFilter implements Filter {
 			path.startsWith("/ab") || 
 			path.startsWith("/assets") ||
 			path.startsWith("/webjars") ||
-			path.startsWith("/api") ||
+			(path.startsWith("/api/") && !path.equals("/api/")) ||
 			path.startsWith(AssignContributionServlet.PATH) ||
 			path.startsWith(CreateAuthTokenServlet.CREATE_TOKEN) ||
 			path.startsWith(DeleteAccountServlet.PATH) ||
@@ -97,7 +97,9 @@ public class ContentFilter implements Filter {
 			path.startsWith(RegistrationServlet.REGISTER_MOBILE) ||
 			path.startsWith(ResetPasswordServlet.PATH) ||
 			path.startsWith(SearchServlet.NUMS_PREFIX)  ||
-			path.equals("/sitemap.jsp")
+			path.equals("/sitemap.jsp") ||
+			path.endsWith(".js") || 
+			path.endsWith(".json") 
 		) {
 			chain.doFilter(httpRequest, httpResponse);
 			return;
