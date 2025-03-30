@@ -453,6 +453,10 @@ public class SearchServlet extends HttpServlet {
 		StringBuilder ratingBorder = new StringBuilder();
 
 		boolean firstRating = true;
+		ratingLabels.append('[');
+		ratingData.append('[');
+		ratingBackground.append('[');
+		ratingBorder.append('[');
 		for (Rating r : Rating.values()) {
 			if (r == Rating.B_MISSED) {
 				continue;
@@ -462,15 +466,29 @@ public class SearchServlet extends HttpServlet {
 			} else {
 				ratingLabels.append(',');
 				ratingData.append(',');
-				ratingBackground.append('|');
-				ratingBorder.append('|');
+				ratingBackground.append(',');
+				ratingBorder.append(',');
 			}
+			ratingLabels.append('"');
 			ratingLabels.append(Ratings.getLabel(r));
+			ratingLabels.append('"');
+
 			ratingData.append(ratings.getOrDefault(r, 0));
+
 			String rgb = Ratings.getRGB(r);
+			ratingBackground.append('"');
 			ratingBackground.append("rgba(").append(rgb).append(", 0.2)");
+			ratingBackground.append('"');
+
+			ratingBorder.append('"');
 			ratingBorder.append("rgba(").append(rgb).append(", 1)");
+			ratingBorder.append('"');
 		}
+		ratingLabels.append(']');
+		ratingData.append(']');
+		ratingBackground.append(']');
+		ratingBorder.append(']');
+		
 		req.setAttribute("ratingLabels", ratingLabels.toString());
 		req.setAttribute("ratingData", ratingData.toString());
 		req.setAttribute("ratingBackground", ratingBackground.toString());
@@ -486,17 +504,24 @@ public class SearchServlet extends HttpServlet {
 
 		boolean first = true;
 
-		for (Integer r : searches) {
+		searchLabels.append('[');
+		searchData.append('[');
+		for (Integer cnt : searches) {
 			if (first) {
 				first = false;
 			} else {
 				searchLabels.append(',');
 				searchData.append(',');
 			}
+			searchLabels.append('"');
 			searchLabels.append(fmt.format(date.getTime()));
+			searchLabels.append('"');
 			date.add(Calendar.DAY_OF_MONTH, 1);
-			searchData.append(r);
+			
+			searchData.append(cnt);
 		}
+		searchLabels.append(']');
+		searchData.append(']');
 
 		req.setAttribute("searchLabels", searchLabels.toString());
 		req.setAttribute("searchData", searchData.toString());
