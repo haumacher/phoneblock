@@ -469,20 +469,14 @@ public class SearchServlet extends HttpServlet {
 				ratingBackground.append(',');
 				ratingBorder.append(',');
 			}
-			ratingLabels.append('"');
-			ratingLabels.append(Ratings.getLabel(r));
-			ratingLabels.append('"');
+			jsString(ratingLabels, Ratings.getLabel(r));
 
 			ratingData.append(ratings.getOrDefault(r, 0));
 
 			String rgb = Ratings.getRGB(r);
-			ratingBackground.append('"');
-			ratingBackground.append("rgba(").append(rgb).append(", 0.2)");
-			ratingBackground.append('"');
+			jsString(ratingBackground, "rgba(" + rgb + ", 0.2)");
 
-			ratingBorder.append('"');
-			ratingBorder.append("rgba(").append(rgb).append(", 1)");
-			ratingBorder.append('"');
+			jsString(ratingBorder, "rgba(" + rgb + ", 1)");
 		}
 		ratingLabels.append(']');
 		ratingData.append(']');
@@ -513,9 +507,7 @@ public class SearchServlet extends HttpServlet {
 				searchLabels.append(',');
 				searchData.append(',');
 			}
-			searchLabels.append('"');
-			searchLabels.append(fmt.format(date.getTime()));
-			searchLabels.append('"');
+			jsString(searchLabels, fmt.format(date.getTime()));
 			date.add(Calendar.DAY_OF_MONTH, 1);
 			
 			searchData.append(cnt);
@@ -527,6 +519,12 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("searchData", searchData.toString());
 		
 		TemplateRenderer.getInstance(req).process("/phone-info", req, resp);
+	}
+
+	private static void jsString(StringBuilder js, String txt) {
+		js.append('"');
+		js.append(txt.replace("\"", "\\\""));
+		js.append('"');
 	}
 
 	private static boolean isEmpty(String aiSummary) {
