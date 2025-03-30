@@ -208,7 +208,7 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		if (request.getAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN) != null) {
-			return ServletUtil.currentPage(request).substring(request.getContextPath().length());
+			return ServletUtil.currentPage(request);
 		}
 		
 		return SettingsServlet.PATH;

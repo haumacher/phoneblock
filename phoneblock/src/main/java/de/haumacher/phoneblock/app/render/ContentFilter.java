@@ -1,8 +1,12 @@
 package de.haumacher.phoneblock.app.render;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.ITemplateEngine;
@@ -80,6 +84,7 @@ public class ContentFilter implements Filter {
 		
 		// Excluded paths.
 		if (path.startsWith("/fragments") || 
+			path.startsWith("/link") || 
 			path.startsWith("/ab") || 
 			path.startsWith("/assets") ||
 			path.startsWith("/webjars") ||
@@ -107,32 +112,63 @@ public class ContentFilter implements Filter {
 		
 		// Canonicalize requested path.
 		if (path.endsWith("index.html")) {
-			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - "index.html".length());
-			httpResponse.sendRedirect(canonical);
+			StringBuilder canonical = canonical(httpRequest);
+			canonical.append(path, 0, path.length() - "index.html".length());
+			appendParams(canonical, request);
+			httpResponse.sendRedirect(canonical.toString());
 			return;
 		}
 		if (path.endsWith("index.jsp")) {
-			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - "index.jsp".length());
-			httpResponse.sendRedirect(canonical);
+			StringBuilder canonical = canonical(httpRequest);
+			canonical.append(path, 0, path.length() - "index.jsp".length());
+			appendParams(canonical, request);
+			httpResponse.sendRedirect(canonical.toString());
 			return;
 		}
 
 		// Ensure that old-style JSP resources are still resolvable.
 		if (path.endsWith(".jsp")) {
-			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - ".jsp".length()) + "/";
-			httpResponse.sendRedirect(canonical);
+			StringBuilder canonical = canonical(httpRequest);
+			canonical.append(path, 0, path.length() - ".jsp".length());
+			appendParams(canonical, request);
+			httpResponse.sendRedirect(canonical.toString());
 			return;
 		}
 		
 		// All pages are directories.
 		if (path.endsWith("/") && path.length() > 1) {
-			String canonical = httpRequest.getContextPath() + path.substring(0, path.length() - 1);
-			httpResponse.sendRedirect(canonical);
+			StringBuilder canonical = canonical(httpRequest);
+			canonical.append(path, 0, path.length() - 1);
+			appendParams(canonical, request);
+			httpResponse.sendRedirect(canonical.toString());
 			return;
 		}
 	
 		if (!process(httpRequest, httpResponse)) {
 			chain.doFilter(request, response);
+		}
+	}
+
+	private static StringBuilder canonical(HttpServletRequest httpRequest) {
+		StringBuilder canonical = new StringBuilder();
+		canonical.append(httpRequest.getContextPath());
+		return canonical;
+	}
+
+	private static void appendParams(StringBuilder canonical, ServletRequest request) {
+		boolean first = true;
+		for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+			for (String value : entry.getValue()) {
+				if (first) {
+					canonical.append('?');
+					first = false;
+				} else {
+					canonical.append('&');
+				}
+				canonical.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
+				canonical.append('=');
+				canonical.append(URLEncoder.encode(value, StandardCharsets.UTF_8));
+			}
 		}
 	}
 

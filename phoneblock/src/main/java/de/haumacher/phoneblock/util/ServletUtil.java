@@ -85,7 +85,8 @@ public class ServletUtil {
 	public static String currentPage(HttpServletRequest req) {
 		String currentPage = (String) req.getAttribute(CURRENT_PAGE);
 		if (currentPage == null) {
-			currentPage = req.getRequestURI();
+			String requestURI = req.getRequestURI();
+			currentPage = requestURI.substring(req.getContextPath().length());
 		}
 		return currentPage;
 	}
