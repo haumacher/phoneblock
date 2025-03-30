@@ -14,36 +14,58 @@
 	<h1 data-tx="t0001">Rufnummer ☎ <th:block th:text="${info.phone}"></th:block></h1>
 
 	<p>
-		<th:block th:if="${info.votes} &lt;= 0">
-			<th:block th:if="${info.whiteListed}">
-				<span class="tag is-info is-success" data-tx="t0002"><i class="fa-solid fa-star"></i> Auf der weißen Liste</span>
-			</th:block>
-			<th:block th:unless="${info.whiteListed}">
-				<th:block th:if="${info.votesWildcard &gt; 0}">
-					<span class="tag is-info is-warning" data-tx="t0003">Nummernblock mit Spamverdacht</span>
-					<span class="|tag is-info ${ratingCssClass}|" th:if="${rating} != 'B_MISSED' &amp;&amp; ${rating} != 'A_LEGITIMATE'" th:text="${ratingLabel}"></span>
-				</th:block>
-				<span class="tag is-info is-success" data-tx="t0004" th:unless="${info.votesWildcard &gt; 0}">Keine Beschwerden</span>
-			</th:block>
+		<th:block th:switch="${state}">
+		<span th:case="'whitelisted'" class="tag is-info is-success" data-tx="t0002"><i class="fa-solid fa-star"></i> Auf der weißen Liste</span>
+		<span th:case="'legitimate'" class="tag is-info is-success" data-tx="t0004">Keine Beschwerden</span>
+		<span th:case="'wildcard'" class="tag is-info is-warning" data-tx="t0003">Nummernblock mit Spamverdacht</span>
+		<span th:case="'suspicious'" class="tag is-info is-warning" data-tx="t0005">Beschwerde liegt vor</span>
+		<span th:case="'archived'" class="tag is-info is-warning">Alte Beschwerden</span>
+		<span th:case="'blocked'" class="tag is-info is-danger" data-tx="t0006">Blockiert</span>
 		</th:block>
 		
-		<th:block th:unless="${info.votes} &lt;= 0">
-			<span class="tag is-info is-warning" data-tx="t0005" th:unless="${blocked}">Beschwerde liegt vor</span>
-			<span class="tag is-info is-danger" data-tx="t0006" th:if="${blocked}">Blockiert</span>
-
-			<span th:class="|tag is-info ${ratingCssClass}|" th:if="${rating} != 'B_MISSED'" th:text="${ratingLabel}"></span>
-		</th:block>
+		<span th:class="|tag is-info ${ratingCssClass}|" th:if="${info.votes &gt; 0 and rating.name != 'B_MISSED' and rating.name != 'A_LEGITIMATE'}" th:text="${ratingLabel}"></span>
 	</p>
 
-<article th:class="|message ${info.whiteListed ? 'is-success' : (blocked ? 'is-danger' : 'is-warning')}|">
+<article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
 	<p data-tx="t0007">Information zur Rufnummer <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-	<p th:if="${summary}" th:text="${summary}"></p>
+  	<p th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	
+  	<th:block th:switch="${state}">
+  	<p th:case="'whitelisted'">
+		Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. 
+		Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.  	
+  	</p>
+  	<p th:case="'legitimate'">
+  		Die Telefonnummer ist nicht in der <a th:href="@{/status.jsp}">PhoneBlock-Datenbank</a> enthalten. 
+  		Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprechen.
+	</p>
+  	<p th:case="'wildcard'">
+  		Die Telefonnummer selbst ist nicht in der <a th:href="@{/status.jsp}">PhoneBlock-Datenbank</a> enthalten. 
+  		Die Nummer ☎ <code th:text="${info.phone}"></code> stammt aber aus einem Nummernblock mit Spam-Verdacht.
+  		<th:block th:if="${info.votesWildcard == 1}">
+		Es spricht eine Stimme für die Sperrung des Nummernblocks.
+		</th:block>
+  		<th:block th:if="${info.votesWildcard &gt; 1}">
+		Es sprechen <th:block th:text="${info.votesWildcard}"/> Stimmen für die Sperrung des Nummernblocks.
+		</th:block>
+  	</p>
+  	<p th:case="'suspicious'">
+  		Es gibt bereits <th:block th:text="${info.votes}"></th:block> Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprechen.
+  		Die Nummer wird aber noch nicht blockiert.
+	</p>  	
+  	<p th:case="'archived'">
+  		Es gibt zwar <th:block th:text="${info.votes}"></th:block> alte Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprachen.
+  		Die Nummer wird aber nicht mehr blockiert.
+  	</p>
+  	<p th:case="'blocked'">
+		Die Telefonnummer ☎ <code th:text="${info.phone}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status.jsp}">unerwünschten Telefonanrufen</a>.
+		<th:block th:text="${info.votes}"></th:block> Stimmen sprechen sich für eine Sperrung der Nummer aus.
+  	</p>
+  	</th:block>
 
-	<p th:if="${defaultSummary}" th:text="${defaultSummary}"></p>
-  
 	<ul>
 		<li data-tx="t0008">
 			Alternative Schreibweisen: 

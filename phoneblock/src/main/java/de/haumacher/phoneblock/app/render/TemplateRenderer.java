@@ -1,7 +1,6 @@
 package de.haumacher.phoneblock.app.render;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
+import de.haumacher.phoneblock.app.render.controller.PhoneInfoController;
 import de.haumacher.phoneblock.app.render.controller.SettingsController;
 import de.haumacher.phoneblock.app.render.controller.StatusController;
 import jakarta.servlet.ServletContext;
@@ -28,6 +28,7 @@ public class TemplateRenderer {
         controllersByURL.put("/login", new LoginController());
         controllersByURL.put("/status", new StatusController());
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
+        controllersByURL.put("/phone-info", new PhoneInfoController());
     }
     
 	private JakartaServletWebApplication _application;

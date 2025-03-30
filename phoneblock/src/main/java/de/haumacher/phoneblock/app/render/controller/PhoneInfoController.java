@@ -11,5 +11,4 @@ public class PhoneInfoController extends DefaultController {
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);
 	}
-
 }
