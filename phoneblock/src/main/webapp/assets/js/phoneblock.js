@@ -129,10 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	let links = document.querySelectorAll('.showaddr');
 	links.forEach(function (link) {
 		link.addEventListener('click', function (event) {
+			event.preventDefault();
 			const result = showaddr(event.target)
-			if (!result) {
-				event.preventDefault();
-			}
 		});
 	});
 });
@@ -176,10 +174,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	let link = document.getElementById('search-fritzbox');
 	if (link) {
 		link.addEventListener('click', function (event) {
+			event.preventDefault();
 			const result = checkFritzBox(getContextBasePath(), this);
-			if (!result) {
-				event.preventDefault();
-			}
 		});
 	}
 });
@@ -194,12 +190,10 @@ document.addEventListener('DOMContentLoaded', function () {
 	let links = document.querySelectorAll('.copyToClipboard');
 	links.forEach(function (link) {
 		link.addEventListener('click', function (event) {
+			event.preventDefault();
 			const idSource = link.id;
 			const id = idSource.substring(0, idSource.indexOf("_"))
 			const result = copyToClipboard(id)
-			if (!result) {
-				event.preventDefault();
-			}
 		});
 	});
 });
