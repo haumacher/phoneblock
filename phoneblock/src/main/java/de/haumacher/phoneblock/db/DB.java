@@ -1159,7 +1159,7 @@ public class DB {
 		return result;
 	}
 
-	private int getMinVotes(SqlSession session, String login) {
+	public int getMinVotes(SqlSession session, String login) {
 		int minVotes = (login == null) ? MIN_VOTES : getUserSettingsRaw(session, login).getMinVotes();
 		return minVotes;
 	}

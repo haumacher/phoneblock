@@ -57,6 +57,13 @@ public enum Rating implements de.haumacher.msgbuf.data.ProtocolEnum {
 	public String protocolName() {
 		return _protocolName;
 	}
+	
+	/**
+	 * For access from template.
+	 */
+	public String getName() {
+		return name();
+	}
 
 	/** Looks up a {@link Rating} constant by it's protocol name. */
 	public static Rating valueOfProtocol(String protocolName) {

@@ -53,8 +53,6 @@ public class SearchServlet extends HttpServlet {
 
 	public static final String THANKS_ATTR = "thanks";
 
-	public static final String DESCRIPTION_ATTR = "description";
-
 	public static final String TITLE_ATTR = "title";
 
 	public static final String RELATED_NUMBERS_ATTR = "relatedNumbers";
@@ -64,8 +62,6 @@ public class SearchServlet extends HttpServlet {
 	public static final String RATINGS_ATTR = "ratings";
 
 	public static final String RATING_ATTR = "rating";
-
-	public static final String DEFAULT_SUMMARY_ATTR = "defaultSummary";
 
 	public static final String SUMMARY_ATTR = "summary";
 
@@ -196,14 +192,30 @@ public class SearchServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
 			return;
 		}
+
+		DB db = DBService.getInstance();
 		
-		SearchResult searchResult = analyze(number, isSeachHit);
-		sendResult(req, resp, searchResult);
+		SearchResult searchResult;
+		int minVotes;
+		try (SqlSession session = db.openSession()) {
+			String userName = LoginFilter.getAuthenticatedUser(req);
+			minVotes = db.getMinVotes(session, userName);
+
+			searchResult = analyzeDb(db, session, number, isSeachHit);
+		}
+		
+		sendResult(req, resp, searchResult, minVotes);
 	}
 
 	public static SearchResult analyze(String query) {
 		PhoneNumer number = extractNumber(query);
-		return number == null ? null : analyze(number, true);
+		if (number == null) {
+			return null;
+		}
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			return analyzeDb(db, session, number, true);
+		}
 	}
 
 	private static PhoneNumer extractNumber(String query) {
@@ -219,9 +231,11 @@ public class SearchServlet extends HttpServlet {
 		return number;
 	}
 
-	private static SearchResult analyze(PhoneNumer number, boolean isSeachHit) {
+	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, boolean isSeachHit) {
+		SpamReports reports = session.getMapper(SpamReports.class);
+		
 		String phone = NumberAnalyzer.getPhoneId(number);
-
+		
 		NumberInfo numberInfo;
 		PhoneInfo info;
 		List<Integer> searches;
@@ -233,88 +247,83 @@ public class SearchServlet extends HttpServlet {
 		
 		List<? extends UserComment> comments;
 		
-		DB db = DBService.getInstance();
-		try (SqlSession session = db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
+		// Note: Search for comments first, since new comments may change the state of the number.
+		if (isSeachHit) {
+			comments = MetaSearchService.getInstance().fetchComments(number);
+		} else {
+			comments = reports.getComments(phone);
+		}
+		
+		boolean commit = false;
+		
+		// An explicit search from the web front-end is recorded as search, since
+		// multiple users searching for the same unknown number are an indication for a
+		// potential SPAM call.
+		if (isSeachHit) {
+			long now = System.currentTimeMillis();
+			db.addSearchHit(reports, number, now);
+			commit = true;
+		}
+		
+		numberInfo = db.getPhoneInfo(reports, phone);
+		
+		if (reports.isWhiteListed(phone)) {
+			info = PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
 			
-			// Note: Search for comments first, since new comments may change the state of the number.
-			if (isSeachHit) {
-				comments = MetaSearchService.getInstance().fetchComments(number);
+			numberInfo.setCalls(0);
+			numberInfo.setVotes(0);
+			numberInfo.setRatingPing(0);
+			numberInfo.setRatingPoll(0);
+			numberInfo.setRatingAdvertising(0);
+			numberInfo.setRatingGamble(0);
+			numberInfo.setRatingFraud(0);
+			
+			relatedNumbers = Collections.emptyList();
+		} else {
+			AggregationInfo aggregation10 = db.getAggregation10(reports, phone);
+			AggregationInfo aggregation100 = db.getAggregation100(reports, phone);
+			
+			info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
+			
+			if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
+				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phone.length());
+				
+				if (comments.isEmpty()) {
+					comments = reports.getAllComments(aggregation100.getPrefix(), phone.length());
+				}
+				
+				if (info.getRating() == Rating.B_MISSED) {
+					DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix(), phone.length());
+					info.setRating(DB.rating(aggregateInfo));
+				}
 			} else {
-				comments = reports.getComments(phone);
-			}
-			
-			boolean commit = false;
-			
-			// An explicit search from the web front-end is recorded as search, since
-			// multiple users searching for the same unknown number are an indication for a
-			// potential SPAM call.
-			if (isSeachHit) {
-				long now = System.currentTimeMillis();
-				db.addSearchHit(reports, number, now);
-				commit = true;
-			}
-			
-			numberInfo = db.getPhoneInfo(reports, phone);
-			
-			if (reports.isWhiteListed(phone)) {
-				info = PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
-				
-				numberInfo.setCalls(0);
-				numberInfo.setVotes(0);
-				numberInfo.setRatingPing(0);
-				numberInfo.setRatingPoll(0);
-				numberInfo.setRatingAdvertising(0);
-				numberInfo.setRatingGamble(0);
-				numberInfo.setRatingFraud(0);
-				
-				relatedNumbers = Collections.emptyList();
-			} else {
-				AggregationInfo aggregation10 = db.getAggregation10(reports, phone);
-				AggregationInfo aggregation100 = db.getAggregation100(reports, phone);
-				
-				info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
-				
-				if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
-					relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phone.length());
-					
+				if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
+					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phone.length());
+
 					if (comments.isEmpty()) {
-						comments = reports.getAllComments(aggregation100.getPrefix(), phone.length());
+						comments = reports.getAllComments(aggregation10.getPrefix(), phone.length());
 					}
-					
+
 					if (info.getRating() == Rating.B_MISSED) {
-						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix(), phone.length());
+						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix(), phone.length());
 						info.setRating(DB.rating(aggregateInfo));
 					}
 				} else {
-					if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
-						relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phone.length());
-
-						if (comments.isEmpty()) {
-							comments = reports.getAllComments(aggregation10.getPrefix(), phone.length());
-						}
-
-						if (info.getRating() == Rating.B_MISSED) {
-							DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix(), phone.length());
-							info.setRating(DB.rating(aggregateInfo));
-						}
-					} else {
-						relatedNumbers = Collections.emptyList();
-					}
+					relatedNumbers = Collections.emptyList();
 				}
-			}
-			
-			searches = db.getSearchHistory(reports, phone, 7);
-			aiSummary = reports.getSummary(phone);
-			
-			prev = reports.getPrevPhone(phone);
-			next = reports.getNextPhone(phone);
-			
-			if (commit) {
-				session.commit();
 			}
 		}
 		
+		searches = db.getSearchHistory(reports, phone, 7);
+		aiSummary = reports.getSummary(phone);
+		
+		prev = reports.getPrevPhone(phone);
+		next = reports.getNextPhone(phone);
+		
+		if (commit) {
+			session.commit();
+		}
+
 		// Ensure that equal number of positive and negative comments are shown (white-listed numbers are an exception).
 		List<UserComment> positive = comments.stream().filter(c -> c.getRating() == Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
 		List<UserComment> negative = comments.stream().filter(c -> c.getRating() != Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
@@ -358,26 +367,15 @@ public class SearchServlet extends HttpServlet {
 				.setRatings(ratings);
 	}
 
-	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult) throws ServletException, IOException {
+	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult, int minVotes) throws ServletException, IOException {
 		String ratingAttribute = RatingServlet.ratingAttribute(searchResult.getPhoneId());
 		if (getSessionAttribute(req, ratingAttribute) != null) {
 			req.setAttribute(THANKS_ATTR, Boolean.TRUE);
 		}
 		
 		PhoneInfo info = searchResult.getInfo();
-		String status = status(info.getVotes());
+		String status = status(info.getVotes(), minVotes);
 		
-		String defaultSummary = defaultSummary(req, info);
-		
-		String summary;
-		String description;
-		if (isEmpty(searchResult.getAiSummary())) {
-			summary = null;
-			description = defaultSimpleSummary(info);
-		} else {
-			description = summary = JspUtil.quote(searchResult.getAiSummary());
-		}
-
 		// Limit to 10 comments.
 		if (searchResult.getComments().size() > 10) {
 			searchResult.setComments(searchResult.getComments().subList(0, 10));
@@ -401,11 +399,10 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(PATH_ATTR, req.getServletPath() + '/' + searchResult.getPhoneId());
 		
 		req.setAttribute(INFO_ATTR, info);
+		req.setAttribute("searchResult", searchResult);
 		req.setAttribute(NUMBER_ATTR, searchResult.getNumber());
 		req.setAttribute(PREV_ATTR, searchResult.getPrev());
 		req.setAttribute(NEXT_ATTR, searchResult.getNext());
-		req.setAttribute(SUMMARY_ATTR, summary);
-		req.setAttribute(DEFAULT_SUMMARY_ATTR, defaultSummary);
 		req.setAttribute(RATING_ATTR, searchResult.getTopRating());
 		Map<Rating, Integer> ratings = searchResult.getRatings();
 		req.setAttribute(RATINGS_ATTR, ratings);
@@ -413,7 +410,6 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(SEARCHES_ATTR, searches);
 		req.setAttribute(RELATED_NUMBERS_ATTR, searchResult.getRelatedNumbers());
 		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
-		req.setAttribute(DESCRIPTION_ATTR, description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
 		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
@@ -444,7 +440,27 @@ public class SearchServlet extends HttpServlet {
 		
 		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
 		req.setAttribute("ratingLabel", Ratings.getLabel(searchResult.getTopRating()));
-		req.setAttribute("blocked", info.getVotes() >= DB.MIN_VOTES && !info.isArchived());
+		
+  		String state = info.isWhiteListed() ? 
+  			"whitelisted" : 
+  			(
+  				info.getVotes() <= 0 ? 
+  				(
+  					info.getVotesWildcard() <= 0 ? 
+  						"legitimate" : 
+  						"wildcard"
+  				) : (
+  					info.getVotes() < minVotes ? 
+  						"suspicious" : 
+  						(
+  							info.isArchived() ? 
+  								"archived" : 
+  								"blocked"
+  						)
+  				)
+  			);
+		
+		req.setAttribute("state", state);
 		
 		// Create ratings chart
 		StringBuilder ratingLabels = new StringBuilder();
@@ -527,63 +543,6 @@ public class SearchServlet extends HttpServlet {
 		js.append('"');
 	}
 
-	private static boolean isEmpty(String aiSummary) {
-		return aiSummary == null || aiSummary.isBlank();
-	}
-
-	private String defaultSummary(HttpServletRequest req, PhoneInfo info) {
-		int votes = info.getVotes();
-		if (info.isWhiteListed()) {
-			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.";
-		}
-		if (votes <= 0) {
-			int votesWildcard = info.getVotesWildcard();
-			if (votesWildcard <= 0) {
-				return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
-						"/\">PhoneBlock</a>-Datenbank enthalten. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
-						info.getPhone() + "</code> sprechen.";
-			} else {
-				return "Die Telefonnummer selbst ist nicht in der <a href=\"" + req.getContextPath() +
-						"/\">PhoneBlock</a>-Datenbank enthalten. Die Nummer ☎ <code>" + info.getPhone() + "</code> stammt aber aus einem Nummernblock mit Spam-Verdacht. " +  
-						"Es sprechen " + votesText(votesWildcard) + " für die Sperrung des Nummernblocks.";
-			}
-		} else if (votes < DB.MIN_VOTES) {
-			return "Es gibt bereits " + votesText(votes) 
-					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
-		} else if (info.isArchived()) {
-			return "Es gibt " + votesText(votes) 
-					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber nicht mehr blockiert.";
-		} else {
-			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> ist eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
-					+ "/status.jsp\">unerwünschten Telefonanrufen</a>. " + votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
-		}
-	}
-
-	private String votesText(int votes) {
-		return votes == 1 ? "eine Stimme" : votes + " Stimmen";
-	}
-
-	private String defaultSimpleSummary(PhoneInfo info) {
-		int votes = info.getVotes();
-		if (votes <= 0) {
-			int votesWildcard = info.getVotesWildcard();
-			if (votesWildcard <= 0) {
-				return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
-			} else {
-				return "Die Telefonnummer ☎ " + info.getPhone() + " stammt aber aus einem Nummernblock mit Spam-Verdacht.";
-			}
-		} else if (votes < DB.MIN_VOTES) {
-			return "Es gibt bereits " + votesText(votes) 
-					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber noch nicht blockiert.";
-		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
-			return "Es gibt " + votesText(votes) 
-					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber nicht mehr blockiert.";
-		} else {
-			return "Die Telefonnummer ☎ " + info.getPhone() + " ist eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
-					votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
-		}
-	}
-	
 	/** 
 	 * Whether the request is from a known bot.
 	 */
@@ -604,10 +563,10 @@ public class SearchServlet extends HttpServlet {
 		return session.getAttribute(attribute);
 	}
 
-	private String status(int votes) {
+	private String status(int votes, int minVotes) {
 		if (votes <= 0) {
 			return "Keine Beschwerden";
-		} else if (votes < DB.MIN_VOTES) {
+		} else if (votes < minVotes) {
 			return "Spamverdacht";
 		} else {
 			return "Blockiert";
