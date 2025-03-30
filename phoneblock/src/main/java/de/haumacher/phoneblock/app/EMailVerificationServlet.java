@@ -153,20 +153,20 @@ public class EMailVerificationServlet extends HttpServlet {
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case LOGIN_MOBILE: 
-			return "mobile-login";
+			return "/mobile-login";
 		case LOGIN_WEB: 
 		default:
-			return "login";
+			return "/login";
 		}
 	}
 
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 			case LOGIN_MOBILE: 
-				return "mobile-code";
+				return "/mobile-code";
 			case LOGIN_WEB: 
 			default:
-				return "signup-code"; 
+				return "/signup-code"; 
 		}
 	}
 
