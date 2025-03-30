@@ -3,8 +3,7 @@
 <head>
 <th:block th:replace="~{fragments/page :: headContent}"></th:block>
 
-<script th:src="@{/{path}/dist/chart.umd.js(path=${deps.chartjs})}" type="text/javascript"></script>
-<link rel="stylesheet" th:href="@{/assets/css/phone-info.css}"></link>
+<script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>
 
 <body>
@@ -38,7 +37,7 @@
 
 <article th:class="|message ${info.whiteListed ? 'is-success' : (blocked ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
-    <p data-tx="t0007">Information zur Rufnummer <th:block th:text="${info.phone}"></th:block></p>
+	<p data-tx="t0007">Information zur Rufnummer <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
 	<p th:if="${summary}" th:text="${summary}"></p>
@@ -88,33 +87,33 @@
 		<div class="columns">
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
-			    <span class="icon">
+				<span class="icon">
 					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
-			    </span>
+				</span>
 				<span data-tx="t0016">Anrufbeantworter</span>			
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
-			    <span class="icon">
+				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
-			    </span>
+				</span>
 				<span data-tx="t0017">Fritz!Box Telefonbuch</span>			
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
-			    <span class="icon">
+				<span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
+				</span>
 				<span data-tx="t0018">Für Android</span>
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
-			    <span class="icon">
+				<span class="icon">
 					<i class="fa-brands fa-apple"></i>
-			    </span>
+				</span>
 				<span data-tx="t0019">Für iPhone</span>
 			</a>
 		  </div>
@@ -151,9 +150,9 @@
 		<div class="buttons">
 		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">
 		  		<input name="rating" th:value="${rating}" type="radio"></input>
-			    <span class="icon">
+				<span class="icon">
 					<i th:class="${rating.iconClass}"></i>
-			    </span>
+				</span>
 				<span th:text="${rating.label}"></span>
 	  		</label>
 		</div>
@@ -168,9 +167,9 @@
 		
 		<div class="buttons">
 			<button class="button is-rounded is-primary" name="send" type="submit">
-			    <span class="icon">
+				<span class="icon">
 					<i class="fas fa-paper-plane"></i>
-			    </span>
+				</span>
 				<span data-tx="t0026">Abschicken</span>
 			</button>
 		</div>
@@ -181,28 +180,28 @@
 	<div class="column is-half">
 	<div th:if="${ratings}">
 		<canvas aria-label="Anzahl Bewertungen" height="200" id="ratings" role="img" width="400"></canvas>
-		<code id="ratings-data">
+		<pre class="chartjs-data" id="ratings-data">
 		{
-	        type: 'bar',
-	        data: {
-	            labels: <th:block th:text="${ratingLabels}"></th:block>,
-	            datasets: [{
-	                label: 'Anzahl Bewertungen',
-	                data: <th:block th:text="${ratingData}"></th:block>,
-	                backgroundColor: <th:block th:text="${ratingBackground}"></th:block>,
-	                borderColor: <th:block th:text="${ratingBorder}"></th:block>,
-	                borderWidth: 1
-	            }]
-	        },
-	        options: {
-	            scales: {
-	                y: {
-	                    beginAtZero: true
-	                }
-	            }
-	        }
-	    }
-		</code>
+			"type": "bar",
+			"data": {
+				"labels": <th:block th:text="${ratingLabels}"></th:block>,
+				"datasets": [{
+					"label": "Anzahl Bewertungen",
+					"data": <th:block th:text="${ratingData}"></th:block>,
+					"backgroundColor": <th:block th:text="${ratingBackground}"></th:block>,
+					"borderColor": <th:block th:text="${ratingBorder}"></th:block>,
+					"borderWidth": 1
+				}]
+			},
+			"options": {
+				"scales": {
+					"y": {
+						"beginAtZero": true
+					}
+				}
+			}
+		}
+		</pre>
 		<script th:src="@{/assets/js/phone-info-ratings.js}" type="text/javascript"></script>
 	</div>
 	<p data-tx="t0027" th:unless="${ratings}">
@@ -213,6 +212,28 @@
 	<div class="column is-half">
 	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
 		<canvas aria-label="Suchanfragen in der letzten Woche" height="200" id="searches" role="img" width="400"></canvas>
+		<pre class="chartjs-data" id="searches-data">
+		{
+			"type": "line",
+			"data": {
+				"labels": <th:block th:text="${searchLabels}"></th:block>,
+				"datasets": [{
+					"label": "Suchanfragen in der letzten Woche",
+					"data": <th:block th:text="${searchData}"></th:block>,
+					"fill": false,
+					"borderColor": "rgb(75, 192, 192)",
+					"tension": 0.1
+				}]
+			},
+			"options": {
+				"scales": {
+					"y": {
+						"beginAtZero": true
+					}
+				}
+			}
+		}
+		</pre>
 		<script th:src="@{/assets/js/phone-info-searches.js}" type="text/javascript"></script>
 	</div>
 	<p data-tx="t0028" th:unless="${searches}">Es gibt keine Suchanfragen für diese Nummer.</p>
@@ -227,43 +248,43 @@
 	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"></input>
 <div class="box">
   <article class="media">
-    <div class="media-left">
-      <figure class="image is-64x64">
+	<div class="media-left">
+	  <figure class="image is-64x64">
 		<i class="fa-solid fa-star" th:if="${#converters.isPositive(comment.rating)}"></i>
 		<i class="fa-solid fa-triangle-exclamation" th:unless="${#converters.isPositive(comment.rating)}"></i>
-      </figure>
-    </div>
-    <div class="media-content">
-      <div class="content">
-        <p class="commentHeader">
+	  </figure>
+	</div>
+	<div class="media-content">
+	  <div class="content">
+		<p class="commentHeader">
 		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"></th:block></strong>
-          <small>
-          <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
+		  <small>
+		  <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
 		  <span data-tx="t0031" th:unless="${comment.service}">PhoneBlock</span>
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
-        </p>
-        <p class="commentText" th:text="${comment.comment}">
-        </p>
-      </div>
-            
-      <nav class="level is-mobile">
-        <div class="level-left">
-          <a aria-label="Guter Hinweis" class="level-item thumbs-up commentVote" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Guter Hinweis!">
-            <span class="icon">
-              <i class="fa-solid fa-thumbs-up"></i>
-            </span>
-            <span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
-          </a>
-          <a aria-label="Unsinn" class="level-item thumbs-down commentVote" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Unsinn!">
-            <span class="icon">
-              <i class="fa-solid fa-thumbs-down"></i>
-            </span>
+		</p>
+		<p class="commentText" th:text="${comment.comment}">
+		</p>
+	  </div>
+			
+	  <nav class="level is-mobile">
+		<div class="level-left">
+		  <a aria-label="Guter Hinweis" class="level-item thumbs-up commentVote" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Guter Hinweis!">
+			<span class="icon">
+			  <i class="fa-solid fa-thumbs-up"></i>
+			</span>
+			<span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
+		  </a>
+		  <a aria-label="Unsinn" class="level-item thumbs-down commentVote" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Unsinn!">
+			<span class="icon">
+			  <i class="fa-solid fa-thumbs-down"></i>
+			</span>
 			<span th:id="'down-' + ${commentIt.current}" th:text="${comment.down}"></span>
-          </a>
-        </div>
-      </nav>
-    </div>
+		  </a>
+		</div>
+	  </nav>
+	</div>
   </article>
 </div>
 	
