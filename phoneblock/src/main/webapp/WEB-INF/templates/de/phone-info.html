@@ -36,7 +36,7 @@
 		</th:block>
 	</p>
 
-<article th:class="'message' + ${info.whiteListed} ? 'is-success' : (${blocked} ? 'is-danger' : 'is-warning')">
+<article th:class="|message ${info.whiteListed ? 'is-success' : (blocked ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
     <p data-tx="t0007">Information zur Rufnummer <th:block th:text="${info.phone}"></th:block></p>
   </div>
