@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<th:block th:replace="~{fragments/page :: headContent}"></th:block>
+<link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|" />
+</head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section id="swagger-ui" class="section">
+</section>
+
+<script th:src="|${contextPath}${deps.swagger}/swagger-ui-bundle.js|"></script>
+<script type="text/javascript" th:src="@{/assets/js/api.js}"></script>
+<input type="hidden" id="context-path" th:value="${contextPath}">
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
