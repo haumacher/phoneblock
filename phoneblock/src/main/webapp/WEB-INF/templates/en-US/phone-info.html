@@ -12,7 +12,7 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">Phone number ? <th:block th:text="${info.phone}"></th:block></h1>
+	<h1 data-tx="t0001">Phone number ☎ <th:block th:text="${info.phone}"></th:block></h1>
 
 	<p>
 		<th:block th:if="${info.votes} &lt;= 0">
@@ -100,11 +100,11 @@
 		</div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
-	<p data-tx="t0020">The number ? <th:block th:text="${info.phone}"></th:block> could belong to the same connection as the following numbers in the database:</p>
+	<p data-tx="t0020">The number ☎ <th:block th:text="${info.phone}"></th:block> could belong to the same connection as the following numbers in the database:</p>
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
-			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">? <th:block th:text="${related}"></th:block></a>
+			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
 		</span>
 	</blockquote>
 </th:block>	
@@ -114,7 +114,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Thank you for your rating, you are helping others who are also called.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">You were called by ? <code><th:block th:text="${info.phone}"></th:block></code> call you? Tell others what to expect from ? <code><th:block th:text="${number.plus}"></th:block></code> have to expect. If you are bothered by calls from ? <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">install PhoneBlock</a> and give a rating for ? <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Have you been called by ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Tell others what to expect from ☎ <code><th:block th:text="${number.plus}"></th:block></code>. If you are bothered by calls from ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">install PhoneBlock</a> and give a rating for ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"></input>
@@ -203,7 +203,7 @@
     <div class="media-content">
       <div class="content">
         <p class="commentHeader">
-		  <strong data-tx="t0030">? <th:block th:text="${comment.phone}"></th:block></strong>
+		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"></th:block></strong>
           <small>
           <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
 		  <span data-tx="t0031" th:unless="${comment.service}">PhoneBlock</span>
