@@ -6,14 +6,21 @@ package de.haumacher.phoneblock.app;
 import java.io.IOException;
 
 import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.DClass;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.MXRecord;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.Type;
 
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
@@ -55,7 +62,54 @@ public class EMailVerificationServlet extends HttpServlet {
 			sendFailure(req, resp, "Die E-Mail darf nicht leer sein.");
 			return;
 		}
+
+		req.setAttribute("email", email);
+
+		String captcha = req.getParameter("captcha");
+		if (captcha == null || captcha.trim().isEmpty()) {
+			sendFailure(req, resp, "Du musst den Sicherheitscode eingeben.");
+			return;
+		}
+
+		HttpSession session = req.getSession();
+		String captchaExpected = (String) session.getAttribute("captcha");
+		session.removeAttribute("captcha");
+		if (!captcha.trim().equals(captchaExpected)) {
+			sendFailure(req, resp, "Der Sicherheitscode stimmt nicht überein.");
+			return;
+		}
 		
+    	try {
+			InternetAddress address = new InternetAddress(email.trim());
+			
+			String plainAddress = address.getAddress();
+			int atIndex = plainAddress.indexOf('@');
+			if (atIndex <= 0) {
+				req.removeAttribute("email");
+				sendFailure(req, resp, "Die E-Mail-Adresse enthält keinen Nutzernamen.");
+				return;
+			}
+			String domain = plainAddress.substring(atIndex + 1);
+			Record[] result = new Lookup(domain, Type.MX, DClass.IN).run();
+			if (result == null || result.length == 0) {
+				req.removeAttribute("email");
+				sendFailure(req, resp, "Keine gültige E-Mail-Domain: " + domain);
+				return;
+			}
+			
+			MXRecord mx = (MXRecord) result[0];
+			String mxHost = mx.getTarget().toString(true);
+			if (".".equals(mxHost)) {
+				req.removeAttribute("email");
+				sendFailure(req, resp, "Die Domain kann keine E-Mails empfangen: " + domain);
+				return;
+			}
+		} catch (AddressException ex) {
+			req.removeAttribute("email");
+			sendFailure(req, resp, "Die E-Mail-Adresse ist nicht gültig: " + ex.getMessage());
+			return;
+		}
+    	
 		String code = DBService.getInstance().generateVerificationCode();
 		
 		// End verification code to email address.
@@ -78,9 +132,8 @@ public class EMailVerificationServlet extends HttpServlet {
 			return;
 		}
 		
-		req.getSession().setAttribute("email", email);
-		req.getSession().setAttribute("code", code);
-		req.setAttribute("email", email);
+		session.setAttribute("email", email);
+		session.setAttribute("code", code);
 		req.setAttribute(RESTART_PAGE_ATTR, failurePage(req));
 		req.getRequestDispatcher(successPage(req)).forward(req, resp);
 	}

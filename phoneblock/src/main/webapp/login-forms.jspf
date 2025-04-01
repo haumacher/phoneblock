@@ -1,3 +1,6 @@
+<%@page import="java.util.Base64"%>
+<%@page import="de.haumacher.phoneblock.random.SecureRandomService"%>
+<%@page import="de.haumacher.phoneblock.captcha.Captcha"%>
 <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <%@page import="de.haumacher.phoneblock.app.EMailVerificationServlet"%>
 <%@page import="de.haumacher.phoneblock.util.JspUtil"%>
@@ -105,6 +108,26 @@
 						<%= JspUtil.quote(request.getAttribute("message")) %>
 					</p>
 <% } %>
+				</div>
+				
+				<div>
+					<label class="label">Sicherheitscode</label>
+<%
+	Captcha captcha = new Captcha(SecureRandomService.getInstance().getRnd());
+	request.getSession().setAttribute("captcha", captcha.getText());
+%>
+					<img alt="Captcha" src="data:image/png;base64, <%= Base64.getEncoder().encodeToString(captcha.getPng())%>"/>
+
+					<div class="control has-icons-left has-icons-right">
+					    <input name="captcha" 
+					    	class="input" 
+					    	type="text" 
+					    	placeholder="Text im Bild oben" 
+					    />
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-key"></i>
+					    </span>
+					</div>
 				</div>
 
 <% if (forWeb) { %>
