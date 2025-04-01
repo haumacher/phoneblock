@@ -32,9 +32,11 @@ public class Captcha {
 	private static final int MIN_HEIGHT = 20;
 	private static final int MAX_WIDTH = 60;
 	private static final int MAX_HEIGHT = 40;
-	private static final float HUE_RESERVE = 0.2f;
-	private static final float HUE_RANGE = 0.1f;
+	private static final float HUE_RESERVE = 0.3f;
+	private static final float HUE_RANGE = 0.2f;
 
+	private boolean HARD = false;
+	
 	private final Random _rnd;
 	
 	private float _textHue;
@@ -108,7 +110,7 @@ public class Captcha {
 		graphics.fillRect(0, 0, WIDTH, HEIGHT);
 		AffineTransform initial = graphics.getTransform();
 		
-		for (int n = 0, cnt = 20; n < cnt; n++) {
+		for (int n = 0, cnt = 60; n < cnt; n++) {
 			graphics.setColor(randomColor());
 			int x = _rnd.nextInt(WIDTH) - MIN_WIDTH;
 			int y = _rnd.nextInt(HEIGHT) - MIN_HEIGHT;
@@ -135,23 +137,47 @@ public class Captcha {
 
 		FontMetrics fontMetrics = graphics.getFontMetrics();
 		int textWidth = fontMetrics.stringWidth(_text);
+		{
+			int x = 10;
+			int gap = (WIDTH - 2*x - textWidth) / (_text.length() - 1);
+			for (int n = 0, cnt = _text.length(); n < cnt; n++) {
+				graphics.setColor(getColor(_textHue - HUE_RANGE + _rnd.nextFloat() * HUE_RANGE * 2, 0.7f + _rnd.nextFloat() * 0.2f));
+				
+				char ch = _text.charAt(n);
+				int yOffset = _rnd.nextInt(20) - 10;
+				int charWidth = fontMetrics.charWidth(ch);
+				
+				graphics.transform(AffineTransform.getRotateInstance(
+						(_rnd.nextFloat() * 80 - 40) / 360 * (2 * Math.PI), x + charWidth / 2, HEIGHT / 2 + yOffset));
+				
+				graphics.drawString(Character.toString(ch), x, HEIGHT - 15 + yOffset);
+				x += charWidth + gap;
+				
+				graphics.setTransform(initial);
+			}
+		}
 		
-		int x = 10;
-		int gap = (WIDTH - 2*x - textWidth) / (_text.length() - 1);
-		for (int n = 0, cnt = _text.length(); n < cnt; n++) {
-			graphics.setColor(getColor(_textHue - HUE_RANGE + _rnd.nextFloat() * HUE_RANGE * 2));
-			
-			char ch = _text.charAt(n);
-			int yOffset = _rnd.nextInt(20) - 10;
-			int charWidth = fontMetrics.charWidth(ch);
-			
-			graphics.transform(AffineTransform.getRotateInstance(
-				(_rnd.nextFloat() * 40 - 20) / 360 * (2 * Math.PI), x + charWidth / 2, HEIGHT / 2 + yOffset));
-			
-			graphics.drawString(Character.toString(ch), x, HEIGHT - 15 + yOffset);
-			x += charWidth + gap;
-			
-			graphics.setTransform(initial);
+		if (HARD) {
+			int x = 10;
+			int gap = (WIDTH - 2*x - textWidth) / (_text.length() - 1);
+			for (int n = 0, cnt = _text.length(); n < cnt; n++) {
+				graphics.setColor(randomColor());
+
+				char ch = _text.charAt(n);
+				int y = HEIGHT / 2;
+				int charWidth = fontMetrics.charWidth(ch);
+
+				int w = 5;
+				int h = MIN_HEIGHT + _rnd.nextInt(MAX_HEIGHT - MIN_HEIGHT);
+				
+				graphics.transform(AffineTransform.getRotateInstance(_rnd.nextFloat() * Math.PI, x + charWidth / 2, y));
+				
+				graphics.fillRect(x + charWidth / 2 - w/2, y - h/2, w, h);
+
+				x += charWidth + gap;
+				
+				graphics.setTransform(initial);
+			}
 		}
 		
 		ByteArrayOutputStream pngBuffer = new ByteArrayOutputStream();
@@ -177,7 +203,7 @@ public class Captcha {
 		while (true) {
 			hue = _rnd.nextFloat();
 			if (_innerRange) {
-				if (hue <= _hueReservedStop || hue >= _hueReservedStart) {
+				if (hue >= _hueReservedStart || hue <= _hueReservedStop) {
 					continue;
 				}
 			} else {
@@ -188,11 +214,11 @@ public class Captcha {
 			
 			break;
 		}
-		return getColor(hue);
+		return getColor(hue, 0.6f + _rnd.nextFloat() * 0.2f);
 	}
 
-	private Color getColor(float hue) {
-		return Color.getHSBColor(hue, 1.0f, 0.8f + _rnd.nextFloat() * 0.2f);
+	private Color getColor(float hue, float saturation) {
+		return Color.getHSBColor(hue, saturation, 0.8f + _rnd.nextFloat() * 0.2f);
 	}
 
 	/**

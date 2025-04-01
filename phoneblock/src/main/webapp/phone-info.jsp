@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<%@page import="de.haumacher.phoneblock.app.RatingServlet"%>
+<%@page import="de.haumacher.phoneblock.app.api.RateServlet"%>
+<%@page import="java.util.Base64"%>
+<%@page import="de.haumacher.phoneblock.random.SecureRandomService"%>
+<%@page import="de.haumacher.phoneblock.captcha.Captcha"%>
+<%@page import="de.haumacher.phoneblock.app.LoginFilter"%>
 <%@page import="de.haumacher.phoneblock.app.SearchServlet"%>
 <%@page import="de.haumacher.phoneblock.app.api.model.PhoneInfo"%>
 <%@page import="de.haumacher.phoneblock.app.LoginServlet"%>
@@ -48,6 +54,8 @@
 	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.GERMAN);
 	
 	request.setAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN, "true");
+	
+	String userName = LoginFilter.getAuthenticatedUser(request);
 %>			
 <head>
 <jsp:include page="head-content.jspf"></jsp:include>
@@ -222,7 +230,7 @@
 
 <% } %>	
 
-	<h2>Schreib eine Bewertung für <%= info.getPhone() %></h2>
+	<h2 id="writeRating">Schreib eine Bewertung für <%= info.getPhone() %></h2>
 	
 <% if (thanks) { %>
 	<div id="thanks" class="notification is-info">
@@ -237,10 +245,23 @@
 
 	<form action="<%=request.getContextPath()%>/rating" method="post" enctype="application/x-www-form-urlencoded" accept-charset="utf-8" spellcheck="true">
 		<input type="hidden" name="phone" value="<%= info.getPhone() %>"/>
-		
+
+<%
+HttpSession session = request.getSession(false);
+String ratingName = session == null ? null : (String) session.getAttribute(RatingServlet.RATING_ATTR);
+String comment = session == null ? null : (String) session.getAttribute(RatingServlet.COMMENT_ATTR);
+String captchaError = session == null ? null : (String) session.getAttribute(RatingServlet.CAPTCHA_ERROR_ATTR);
+if (session != null) {
+	session.removeAttribute(RatingServlet.CAPTCHA_ERROR_ATTR);
+	session.removeAttribute(RatingServlet.RATING_ATTR);
+	session.removeAttribute(RatingServlet.COMMENT_ATTR);
+}
+%>		
 		<div class="buttons">
 		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.A_LEGITIMATE)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.A_LEGITIMATE%>">
+		  		<input type="radio" name="rating" value="<%=Rating.A_LEGITIMATE%>"
+		  			<% if (Rating.A_LEGITIMATE.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-check"></i>
 			    </span>
@@ -248,7 +269,9 @@
 	  		</label>
 	  		
 		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.B_MISSED)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.B_MISSED%>" checked="checked">
+		  		<input type="radio" name="rating" value="<%=Rating.B_MISSED%>"
+		  			<% if (ratingName == null || Rating.E_ADVERTISING.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-circle-question"></i>
 			    </span>
@@ -256,35 +279,45 @@
 	  		</label>
 	  		
 		  	<label class="button is-rounded <%=Ratings.getCssClass(Rating.C_PING)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.C_PING%>">
+		  		<input type="radio" name="rating" value="<%=Rating.C_PING%>"
+		  			<% if (Rating.C_PING.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-table-tennis-paddle-ball"></i>
 			    </span>
 		  		<span>Direkt aufgelegt</span>
 	  		</label>
 			<label class="button is-rounded <%=Ratings.getCssClass(Rating.D_POLL)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.D_POLL%>">
+		  		<input type="radio" name="rating" value="<%=Rating.D_POLL%>"
+		  			<% if (Rating.D_POLL.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-person-chalkboard"></i>
 			    </span>
 				<span>Umfrage</span>
 			</label>
 			<label class="button is-rounded <%=Ratings.getCssClass(Rating.E_ADVERTISING)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.E_ADVERTISING%>">
+		  		<input type="radio" name="rating" value="<%=Rating.E_ADVERTISING%>"
+		  			<% if (Rating.E_ADVERTISING.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-ban"></i>
 			    </span>
 				<span>Werbung</span>
 			</label>
 			<label class="button is-rounded <%=Ratings.getCssClass(Rating.F_GAMBLE)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.F_GAMBLE%>">
+		  		<input type="radio" name="rating" value="<%=Rating.F_GAMBLE%>"
+		  			<% if (Rating.F_GAMBLE.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-dice"></i>
 			    </span>
 				<span>Gewinnspiel</span>
 			</label>
 			<label class="button is-rounded <%=Ratings.getCssClass(Rating.G_FRAUD)%>">
-		  		<input type="radio" name="rating" value="<%=Rating.G_FRAUD%>">
+		  		<input type="radio" name="rating" value="<%=Rating.G_FRAUD%>"
+		  			<% if (Rating.G_FRAUD.name().equals(ratingName)) {%>checked="checked"<%}%>
+		  		>
 			    <span class="icon">
 					<i class="fa-solid fa-bomb"></i>
 			    </span>
@@ -293,12 +326,39 @@
 		</div>
 
 		<p>			
-		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"></textarea>
+		<textarea name="comment" class="textarea is-primary" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"><%= JspUtil.quote(comment) %></textarea>
 		</p>
-		
+
+<% if (userName == null) { %>		
 		<p>
 		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a href="<%= request.getContextPath() %>/login.jsp<%= LoginServlet.locationParamFirst(request) %>">melde Dich vorher an</a>!
 		</p>
+
+		<p>
+			<label class="label">Sicherheitscode</label>
+<%
+	Captcha captcha = new Captcha(SecureRandomService.getInstance().getRnd());
+	request.getSession().setAttribute("captcha", captcha.getText());
+%>
+			<img alt="Captcha" src="data:image/png;base64, <%= Base64.getEncoder().encodeToString(captcha.getPng())%>"/>
+
+			<div class="control has-icons-left has-icons-right">
+			    <input name="captcha" 
+			    	class="input" 
+			    	type="text" 
+			    	placeholder="Text im Bild oben" 
+			    />
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-key"></i>
+			    </span>
+			</div>
+<% if (captchaError != null) {%>
+					<p class="help is-danger">
+						<%= JspUtil.quote(captchaError) %>
+					</p>
+<% } %>
+		</p>
+<% } %>
 		
 		<div class="buttons">
 			<button name="send" type="submit" class="button is-rounded is-primary">
