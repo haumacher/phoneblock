@@ -450,10 +450,6 @@
 					                <filtering>true</filtering>
 					            </resource>
 					            <resource>
-					                <directory>src/main/templates</directory>
-					                <targetPath>WEB-INF/templates</targetPath>
-					            </resource>
-					            <resource>
 					                <directory>../phoneblock_answerbot_ui/build/web</directory>
 					                <targetPath>ab</targetPath>
 					            </resource>
