@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
-<head>
-<jsp:include page="../head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{../fragments/page :: head}"></head>
 
 <body>
-<jsp:include page="../header.jspf"></jsp:include>
+<div th:replace="~{../fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -24,23 +20,23 @@
 
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image appscreen" alt="Installiere PeopleSync" src="<%=request.getContextPath() %>/assets/img/peoplesync/03-people-sync-install.png"/>
+	  			<img class="image appscreen" alt="Installiere PeopleSync" th:src="@{/assets/img/peoplesync/03-people-sync-install.png}"/>
 	  		</div>
 		
 			<div class="column is-two-fifths">
-				<img class="image appscreen" alt="Öffne PeopleSync" src="<%=request.getContextPath() %>/assets/img/peoplesync/04-people-sync-open.png"/>
+				<img class="image appscreen" alt="Öffne PeopleSync" th:src="@{/assets/img/peoplesync/04-people-sync-open.png}"/>
 			</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/">
+		  <a class="button" th:href="@{/setup-android}">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/05-people-sync-accept.jsp">
+		  <a class="button is-primary" th:href="@{/setup-android/05-people-sync-accept}">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>
@@ -49,7 +45,6 @@
 		</p>
 	</div>
 </section>
-
-<jsp:include page="../footer.jspf"></jsp:include>
+<div th:replace="~{../fragments/page :: footer}"></div>
 </body>
 </html>

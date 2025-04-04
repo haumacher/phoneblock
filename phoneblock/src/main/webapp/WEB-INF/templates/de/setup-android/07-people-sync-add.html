@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1>Android-Installation</h1>
+		
+		<h2>Schritt 4: Füge ein Adressbuch hinzu und gib die PhoneBlock-Account-Daten an</h2>
+		
+		<ol>
+		<li>
+			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: 
+			<code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a id="url_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>.
+		</li>
+			
+		<li>
+			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der PhoneBlock-Anmeldung erhalten 
+			hast<th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)</th:block>.
+		</li>
+			
+		<li>
+			Das Passwort wurde dir nach der ersten Anmeldung 
+			angezeigt<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a id="passwd_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)</th:block>.
+		</li>
+		</ol>
+		
+		<p>			
+			Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
+			<a th:href="@{/login(location='/settings')}">anmelden und in den Einstellungen das Passwort zurücksetzen</a>.
+		</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img class="image appscreen" alt="Adressbuch hinzufügen" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img class="image appscreen" alt="Adressbuch hinzufügen" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span>Zurück</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span>Weiter</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

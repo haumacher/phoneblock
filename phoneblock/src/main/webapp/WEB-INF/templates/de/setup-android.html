@@ -1,16 +1,9 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
-<%
-	request.setAttribute("title", "PhoneBlock in Android Mobiltelefon einrichten");
-%>
-<head>
-<jsp:include page="../head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock in Android Mobiltelefon einrichten')}"></head>
 
 <body>
-<jsp:include page="../header.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -42,11 +35,11 @@
 		
 		<div class="columns">
 			<div class="column">
-	  			<img class="image appscreen" alt="Öffne Playstore" src="<%=request.getContextPath() %>/assets/img/peoplesync/01-home.png"/>
+	  			<img class="image appscreen" alt="Öffne Playstore" th:src="@{/assets/img/peoplesync/01-home.png}"/>
 	  		</div>
 		
 			<div class="column">
-				<img class="image appscreen" alt="Suche nach PeopleSync" src="<%=request.getContextPath() %>/assets/img/peoplesync/02-playstore.png"/>
+				<img class="image appscreen" alt="Suche nach PeopleSync" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
 			</div>
 		</div>
 		
@@ -58,7 +51,7 @@
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/setup-android/03-people-sync-install.jsp">
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
 		    <span>Weiter</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>
@@ -68,6 +61,6 @@
 	</div>
 </section>
 
-<jsp:include page="../footer.jspf"></jsp:include>
+<div th:replace="~{fragments/page :: footer}"></div>
 </body>
 </html>

@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8" session="false"%>
-<%@page import="de.haumacher.phoneblock.util.JspUtil"%>
 <html>
-<head>
-<jsp:include page="../head-content.jspf"></jsp:include>
-</head>
+<head th:replace="~{../fragments/page :: head}"></head>
 
 <body>
-<jsp:include page="../header.jspf"></jsp:include>
+<div th:replace="~{../fragments/page :: header}"></div>
 
 <section class="section">
 	<div class="content">
@@ -22,19 +18,19 @@
 		
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img class="image appscreen" alt="Konto ist eingerichtet" src="<%=request.getContextPath() %>/assets/img/peoplesync/11-spam-contacts.png"/>
+	  			<img class="image appscreen" alt="Konto ist eingerichtet" th:src="@{/assets/img/peoplesync/11-spam-contacts.png}"/>
 	  		</div>
 		</div>
 		
 		<p class="buttons is-centered">
-		  <a class="button" href="<%=request.getContextPath() %>/setup-android/09-people-sync-account-finished.jsp">
+		  <a class="button" th:href="@{/setup-android/09-people-sync-account-finished}">
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-left"></i>
 		    </span>
 		    <span>Zurück</span>
 		  </a>
 		  
-		  <a class="button is-primary" href="<%=request.getContextPath() %>/status.jsp">
+		  <a class="button is-primary" th:href="@{/status}">
 		    <span>Fertig</span>
 		    <span class="icon">
 		      <i class="fa-solid fa-caret-right"></i>
@@ -44,6 +40,6 @@
 	</div>
 </section>
 
-<jsp:include page="../footer.jspf"></jsp:include>
+<div th:replace="~{../fragments/page :: footer}"></div>
 </body>
 </html>
