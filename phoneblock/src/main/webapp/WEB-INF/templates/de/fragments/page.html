@@ -131,7 +131,7 @@
           				</span>
 						<strong data-tx="t0017">Settings</strong>
 					</a>
-					<a class="button is-light" th:href="@{/logout(url=${currentPage})}" th:if="${loggedIn}">
+					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>

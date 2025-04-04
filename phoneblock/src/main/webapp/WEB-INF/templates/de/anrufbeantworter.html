@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter', login=true)}"></head>
+<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter')}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header}"></div>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
 
 <section class="section">
 	<div class="content">

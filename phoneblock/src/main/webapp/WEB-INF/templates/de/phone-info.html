@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<div th:replace="~{fragments/page :: header(login=true)}"></div>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
 
 <section class="section">
 <div class="content">

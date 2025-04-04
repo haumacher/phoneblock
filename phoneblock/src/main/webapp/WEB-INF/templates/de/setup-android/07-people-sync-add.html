@@ -18,7 +18,7 @@
 		</li>
 			
 		<li>
-			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der PhoneBlock-Anmeldung erhalten 
+			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a th:href="@{/login(location=${currentPage})}">PhoneBlock-Anmeldung</a> erhalten 
 			hast<th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a id="login_" title="In die Zwischenablage kopieren." href="#" class="copyToClipboard"><i class="fa-solid fa-copy"></i></a>)</th:block>.
 		</li>
 			
@@ -29,8 +29,8 @@
 		</ol>
 		
 		<p>			
-			Du hast die Daten nicht mehr zur Hand? Macht nichts, einfach 
-			<a th:href="@{/login(location='/settings')}">anmelden und in den Einstellungen das Passwort zurücksetzen</a>.
+			Du hast die Anmelde-Daten nicht mehr zur Hand? Macht nichts, einfach anmelden und 
+			<a th:href="@{/login(location='/settings')}">in den Einstellungen das Passwort zurücksetzen</a>.
 		</p>
 
 		<div class="columns">
