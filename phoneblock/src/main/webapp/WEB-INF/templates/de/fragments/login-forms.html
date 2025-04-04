@@ -56,7 +56,7 @@
 
 	<nav class="panel">
 		<p class="panel-heading"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Mit E-Mail anmelden</span></a></p>
-		<div id="emailLogin" th:class="'is-collapsible' + (${emailMessage} ? ' is-active' : '')">
+		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
 	  		<div class="content">
@@ -72,10 +72,30 @@
 					      <i class="fas fa-exclamation-triangle"></i>
 					    </span>
 					</div>
-					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}">
-					</p>
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}"></p>
 				</div>
 
+				<div>
+					<label class="label">Sicherheitscode</label>
+
+					<img alt="Captcha" th:src="${captchaSrc}"/>
+
+					<div class="control has-icons-left has-icons-right">
+					    <input name="captcha" 
+					    	th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" 
+					    	type="text" 
+					    	placeholder="Text im Bild oben" 
+					    />
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-key"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${captchaMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${captchaMessage}" th:text="${captchaMessage}"></p>
+				</div>
+				
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">

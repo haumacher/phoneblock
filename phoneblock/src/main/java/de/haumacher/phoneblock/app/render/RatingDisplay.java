@@ -23,6 +23,10 @@ public class RatingDisplay {
 		return getLabel();
 	}
 
+	public String getName() {
+		return _rating.name();
+	}
+
 	public String getIconClass() {
 		return switch (_rating) {
 		case A_LEGITIMATE -> "fa-solid fa-check";

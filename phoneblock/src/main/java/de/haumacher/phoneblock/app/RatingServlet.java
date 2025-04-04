@@ -29,8 +29,8 @@ public class RatingServlet extends HttpServlet {
 	public static final String PATH = "/rating";
 	private static final Logger LOG = LoggerFactory.getLogger(RatingServlet.class);
 	public static final String CAPTCHA_ERROR_ATTR = "captchaError";
-	public static final String RATING_ATTR = "enteredRating";
-	public static final String COMMENT_ATTR = "enteredComment";
+	public static final String ENTERED_RATING_ATTR = "enteredRating";
+	public static final String ENTERED_COMMENT_ATTR = "enteredComment";
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -96,8 +96,8 @@ public class RatingServlet extends HttpServlet {
 			throws ServletException, IOException {
 		HttpSession session = req.getSession();
 		session.setAttribute(CAPTCHA_ERROR_ATTR, message);
-		session.setAttribute(RATING_ATTR, rating);
-		session.setAttribute(COMMENT_ATTR, comment);
+		session.setAttribute(ENTERED_RATING_ATTR, rating);
+		session.setAttribute(ENTERED_COMMENT_ATTR, comment);
 		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "/?link=true#writeRating" );
 	}
 

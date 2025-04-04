@@ -151,7 +151,7 @@
 	</blockquote>
 </th:block>	
 
-	<h2 data-tx="t0022">Schreib eine Bewertung für <th:block th:text="${info.phone}"></th:block></h2>
+	<h2 id="writeRating" data-tx="t0022">Schreib eine Bewertung für <th:block th:text="${info.phone}"></th:block></h2>
 	
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">
 	  Danke für Deine Bewertung, Du hilfst damit anderen, die ebenfalls angerufen werden. 
@@ -171,7 +171,7 @@
 		
 		<div class="buttons">
 		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">
-		  		<input name="rating" th:value="${rating}" type="radio"></input>
+		  		<input name="rating" th:value="${rating}" type="radio" th:checked="${#strings.equals(rating.name, enteredRating)}"></input>
 				<span class="icon">
 					<i th:class="${rating.iconClass}"></i>
 				</span>
@@ -180,12 +180,34 @@
 		</div>
 
 		<p>			
-		<textarea class="textarea is-primary" name="comment" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!"></textarea>
+		<textarea class="textarea is-primary" name="comment" placeholder="Dein Bericht - Keine Beleidigungen, keine Schimpfwörter!" th:text="${enteredComment}"></textarea>
 		</p>
 		
+		<th:block th:unless="${userName}">		
 		<p data-tx="t0025">
 		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a th:href="@{/login.jsp(location=${currentPage})}">melde Dich vorher an</a>!
 		</p>
+		
+		<p>
+			<label class="label">Sicherheitscode</label>
+
+			<img alt="Captcha" th:src="${captchaSrc}"/>
+
+			<div class="control has-icons-left has-icons-right">
+			    <input name="captcha" 
+			    	class="input" 
+			    	type="text" 
+			    	placeholder="Text im Bild oben" 
+			    />
+ 
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-key"></i>
+			    </span>
+			</div>
+ 
+			<p th:if="${captchaError}" class="help is-danger" th:text="${captchaError}"></p>
+		</p>
+		</th:block>
 		
 		<div class="buttons">
 			<button class="button is-rounded is-primary" name="send" type="submit">

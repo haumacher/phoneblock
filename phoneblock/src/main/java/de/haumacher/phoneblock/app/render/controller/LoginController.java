@@ -2,6 +2,7 @@ package de.haumacher.phoneblock.app.render.controller;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Base64;
 
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -12,6 +13,8 @@ import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory;
 import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.captcha.Captcha;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -41,6 +44,15 @@ public class LoginController extends DefaultController {
 		ctx.setVariable("rememberParam", LoginServlet.REMEMBER_ME_PARAM);
 		ctx.setVariable("userNameParam", LoginServlet.USER_NAME_PARAM);
 		ctx.setVariable("passwordParam", LoginServlet.PASSWORD_PARAM);
+		
+		addCaptcha(ctx, request);
+	}
+
+	public static void addCaptcha(WebContext ctx, HttpServletRequest request) {
+		Captcha captcha = new Captcha(SecureRandomService.getInstance().getRnd());
+		request.getSession().setAttribute("captcha", captcha.getText());
+		
+		ctx.setVariable("captchaSrc", "data:image/png;base64, " + Base64.getEncoder().encodeToString(captcha.getPng()));
 	}
 
 }
