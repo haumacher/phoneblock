@@ -24,10 +24,11 @@
 			Die Höhe bleibt aber Dir überlassen. Bei Deiner Spende handelt es sich nicht um einen "Mitgliedsbeitrag", und 
 			Du erwartest dafür keinerlei Gegenleistung.
 		</p>
-
-		<div class="tile is-ancestor">
-			<div class="tile is-parent is-12">
-				<a class="tile is-child notification is-primary" href="http://paypal.me/phoneblock" target="_blank">
+		
+		<div class="columns">
+			<div class="column is-full">
+				<a class="card" href="http://paypal.me/phoneblock" target="_blank">
+				  <div class="card-content has-background-primary">
 					<div class="title">
 					    <span class="icon">
 							<i class="fa-brands fa-paypal"></i>
@@ -43,13 +44,15 @@
 					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">
 						Bitte gibt <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span> mit als Nachricht ein, damit ich die Zahlung zuordnen kann.
 					</p>
+				  </div>
 				</a>
 			</div>
 		</div>
-		
-		<div class="tile is-ancestor">
-			<div class="tile is-parent is-6 ">
-				<a class="tile is-child notification is-info" href="https://github.com/sponsors/haumacher" target="_blank">
+
+		<div class="columns">
+			<div class="column is-half">
+				<a class="card" href="https://github.com/sponsors/haumacher" target="_blank">
+				  <div class="card-content has-background-info">
 					<p class="title">
 					    <span class="icon">
 							<i class="fa-brands fa-github"></i>
@@ -59,11 +62,12 @@
 					<p class="subtitle" data-tx="t0009">
 						Du kannst einmalig oder regelmäßig spenden.
 					</p>
+				  </div>
 				</a>
 			</div>
-			
-			<div class="tile is-parent is-6 ">
-				<a class="tile is-child notification is-info" th:href="@{/support-banktransfer.jsp}">
+			<div class="column is-half">
+				<a class="card" th:href="@{/support-banktransfer.jsp}">
+				  <div class="card-content has-background-info">
 					<p class="title">
 					    <span class="icon">
 							<i class="fa-solid fa-building-columns"></i>
@@ -73,10 +77,11 @@
 					<p class="subtitle" data-tx="t0011">
 						Du musst Dich anmelden, um die Kontodaten zu sehen. 
 					</p>
+				  </div>
 				</a>
 			</div>
 		</div>
-		
+				
 		<p data-tx="t0012">
 			Vielen Dank, dass Du Dich an den Kosten von PhoneBlock beteiligst! 
 		</p>

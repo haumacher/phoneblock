@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
@@ -230,8 +231,17 @@ public class LoginServlet extends HttpServlet {
 	public static void requestLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String originalLocation = originalLocation(request);
 		LOG.info("Requesting login for resource: " + originalLocation);
+		
+		// Forward language
+		String langSpec;
+		String langParam = request.getParameter(DefaultController.LANG_ATTR);
+		if (langParam != null) {
+			langSpec = "&" + DefaultController.LANG_ATTR + "=" + URLEncoder.encode(langParam, StandardCharsets.UTF_8);
+		} else {
+			langSpec = "";
+		}
 
-		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
+		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true) + langSpec);
 	}
 
 	private static String originalLocation(HttpServletRequest request) {

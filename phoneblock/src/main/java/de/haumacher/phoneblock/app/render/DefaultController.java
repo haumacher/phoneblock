@@ -1,5 +1,7 @@
 package de.haumacher.phoneblock.app.render;
 
+import static de.haumacher.phoneblock.app.render.Language.lang;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -30,8 +33,45 @@ import jakarta.servlet.http.HttpSession;
 
 public class DefaultController implements WebController {
 	
-	private static final LocaleMap LOCALES = new LocaleMap("en-US", "de", "es", "fr", "zh-HANS");
+	private static final Language[] LANGUAGES = {
+		lang("ar"     , "arab"  , "Arabic"                ),
+	    lang("bg"     , "bg"    , "Bulgarian"             ),
+	    lang("cs"     , "cz"    , "Czech"                 ),
+	    lang("da"     , "dk"    , "Danish"                ),
+	    lang("de"     , "de"    , "German"                ),
+	    lang("el"     , "gr"    , "Greek"                 ),
+	    lang("en-GB"  , "gb"    , "English (British)"     ),
+	    lang("en-US"  , "us"    , "English (American)"    ),
+	    lang("es"     , "es"    , "Spanish"               ),
+	    lang("et"     , "et"    , "Estonian"              ),
+	    lang("fi"     , "fi"    , "Finnish"               ),
+	    lang("fr"     , "fr"    , "French"                ),
+	    lang("hu"     , "hu"    , "Hungarian"             ),
+	    lang("id"     , "id"    , "Indonesian"            ),
+	    lang("it"     , "it"    , "Italian"               ),
+	    lang("ja"     , "jp"    , "Japanese"              ),
+	    lang("ko"     , "kr"    , "Korean"                ),
+	    lang("lt"     , "lt"    , "Lithuanian"            ),
+	    lang("lv"     , "lv"    , "Latvian"               ),
+	    lang("nb"     , "no"    , "Norwegian Bokmål"      ),
+	    lang("nl"     , "nl"    , "Dutch"                 ),
+	    lang("pl"     , "pl"    , "Polish"                ),
+	    lang("pt-BR"  , "br"    , "Portuguese (Brazilian)"),
+	    lang("pt-PT"  , "pt"    , "Portuguese"            ),
+	    lang("ro"     , "ro"    , "Romanian"              ),
+	    lang("ru"     , "ru"    , "Russian"               ),
+	    lang("sk"     , "sk"    , "Slovak"                ),
+	    lang("sl"     , "sl"    , "Slovenian"             ),
+	    lang("sv"     , "sv"    , "Swedish"               ),
+	    lang("tr"     , "tr"    , "Turkish"               ),
+	    lang("uk"     , "ua"    , "Ukrainian"             ),
+	    lang("zh-HANS", "cn"    , "Chinese"               ),
+	};
 	
+	private static final Map<String, Language> LANG_BY_CODE = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.locale, l -> l));
+
+	private static final LocaleMap LOCALES = new LocaleMap("en-US", "de", "es", "fr", "zh-HANS");
+
 	/**
 	 * Template resolution attribute specifying the requested language.
 	 */
@@ -61,6 +101,7 @@ public class DefaultController implements WebController {
 		DEPS.put("fontawesome", UIProperties.FA_PATH);
 		DEPS.put("jquery", UIProperties.JQUERY_PATH);
 		DEPS.put("swagger", UIProperties.SWAGGER_PATH);
+		DEPS.put("flags", UIProperties.FLAGS_PATH);
 	}
 
 	@Override
@@ -80,6 +121,9 @@ public class DefaultController implements WebController {
         }
         
         String lang = selectLanguage(request);
+
+        request.setAttribute("currentLang", LANG_BY_CODE.get(lang));
+        
 		// Note: Template is required to start with "/".
 		String i18nTemplate = "/" + lang + template;
         
@@ -151,6 +195,7 @@ public class DefaultController implements WebController {
 		ctx.setVariable("fritzbox", Boolean.valueOf(!android && !iphone));
 		
 		ctx.setVariable("ratings", RATINGS);
+		ctx.setVariable("languages", LANGUAGES);
 	}
 
 	

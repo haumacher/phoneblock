@@ -28,6 +28,7 @@
 	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCollapsible}/css/bulma-collapsible.min.css|"></link>
 	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCalendar}/dist/css/bulma-calendar.min.css|"></link>
 	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.flags}/css/flag-icons.min.css|"></link>
 	
 	<link href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"></link>
 	
@@ -43,10 +44,27 @@
 <body>
 <section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
-		<p class="title">
+		<div class="title">
 			<img alt="PhoneBlock Logo" class="logo-image" th:src="@{/assets/img/app-logo.svg}"></img>
 			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
-		</p>
+			
+			<div class="dropdown is-hoverable">
+			  <div class="dropdown-trigger">
+			    <button class="button lang-select" aria-haspopup="true" aria-controls="dropdown-menu">
+			      <span th:class="|fi fi-${currentLang.flag}|"></span>
+			      <span class="icon is-small">
+			        <i class="fas fa-angle-down" aria-hidden="true"></i>
+			      </span>
+			    </button>
+			  </div>
+			  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+			    <div class="dropdown-content">
+			      <a th:each="lang : ${languages}" th:href="|?lang=${lang.locale}|" class="dropdown-item"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.name}"></span></a>
+			    </div>
+			  </div>
+			</div>			
+		</div>
+
 		<p class="subtitle" data-tx="t0002">Der Spam-Filter fürs Telefon</p>
 		<a target="_blank" th:href="@{/link/github}">
 			<img alt="Fork me on GitHub" class="github-image" height="149" th:src="@{/assets/forkme.png}" width="149"></img>
@@ -125,7 +143,7 @@
           				</span>
 						<strong data-tx="t0016">Log in</strong>
 					</a>
-					<a class="button is-primary" th:href="@{/settings}" th:if="${loggedIn}">
+					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>
@@ -145,6 +163,67 @@
 </div>  
 </section>
 
+<section class="section" th:fragment="actions">
+	<div class="grid is-col-min-15" th:if="${android}">
+		<div class="cell">
+			<a class="card" th:href="@{/setup-android/}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0034">PhoneBlock für Android</p>
+				<p class="subtitle" data-tx="t0035">Noch nicht installiert? Dann los!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0036">PhoneBlock für Fritz!Box</p>
+				<p class="subtitle" data-tx="t0037">Werbeanrufe auf dem Festnetz ausschalten!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+
+	<div class="grid is-col-min-15" th:if="${iphone}">
+		<div class="cell">
+			<a class="card" th:href="@{/setup-ipone/}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0038">PhoneBlock für iPhone</p>
+				<p class="subtitle" data-tx="t0039">Noch nicht installiert? Dann los!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0040">PhoneBlock für Fritz!Box</p>
+				<p class="subtitle" data-tx="t0041">Werbeanrufe auf dem Festnetz ausschalten!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+
+	<div class="grid is-col-min-15" th:if="${fritzbox}">
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0040">PhoneBlock für Fritz!Box</p>
+				<p class="subtitle" data-tx="t0041">Werbeanrufe auf dem Festnetz ausschalten!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/setup-android/}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0034">PhoneBlock für Android</p>
+				<p class="subtitle" data-tx="t0035">Noch nicht installiert? Dann los!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+</section>
 
 
 <th:block th:fragment="footer">

@@ -5,7 +5,7 @@
 
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
-		<p class="panel-heading">
+		<p class="panel-heading has-background-grey-lighter">
 			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Mit Google anmelden</span></a>
 		</p>
 		<div class="is-collapsible" id="googleLogin">
@@ -55,7 +55,7 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Mit E-Mail anmelden</span></a></p>
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Mit E-Mail anmelden</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
@@ -135,7 +135,7 @@
 	</nav>
 	
 	<nav class="panel">
-		<p class="panel-heading">
+		<p class="panel-heading has-background-grey-lighter">
 			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Mit PhoneBlock-Nutzernamen anmelden</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">

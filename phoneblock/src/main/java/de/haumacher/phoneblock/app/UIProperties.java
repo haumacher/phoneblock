@@ -23,6 +23,7 @@ public class UIProperties {
 	public final static String JQUERY_PATH = getWebJarPath("org.webjars", "jquery");
 	public final static String CHARTJS_PATH = getWebJarPath("org.webjars", "chartjs");
 	public final static String SWAGGER_PATH = getWebJarPath("org.webjars.npm", "swagger-ui-dist");
+	public final static String FLAGS_PATH = getWebJarPath("org.webjars.npm", "flag-icons");
 
 	public static final Properties APP_PROPERTIES;
 	

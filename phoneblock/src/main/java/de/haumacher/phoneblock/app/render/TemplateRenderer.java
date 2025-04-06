@@ -11,6 +11,7 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.app.render.controller.PhoneInfoController;
+import de.haumacher.phoneblock.app.render.controller.RequireLoginController;
 import de.haumacher.phoneblock.app.render.controller.SettingsController;
 import de.haumacher.phoneblock.app.render.controller.StatusController;
 import jakarta.servlet.ServletContext;
@@ -29,6 +30,7 @@ public class TemplateRenderer {
         controllersByURL.put("/status", new StatusController());
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
         controllersByURL.put("/phone-info", new PhoneInfoController());
+        controllersByURL.put("/support-banktransfer", new RequireLoginController());
     }
     
 	private JakartaServletWebApplication _application;

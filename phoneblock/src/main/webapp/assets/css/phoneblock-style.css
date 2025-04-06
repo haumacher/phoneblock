@@ -11,11 +11,21 @@ body.test-system {
 }
 
 .navbar-dropdown {
-    background-color:#00d1b2;
+    background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
 }
 
 .hero.is-primary .navbar-item, .hero.is-primary .navbar-link {
-    color: rgba(255,255,255);
+    background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
+	color: rgba(255,255,255);
+}
+
+.navbar-dropdown a.navbar-item:not(.is-active, .is-selected) {
+    background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
+	color: rgba(255,255,255);
+}
+
+.hero.is-primary .button.lang-select {
+	background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l))
 }
 
 /* Reduce spacing around rating images */
@@ -157,3 +167,9 @@ body.test-system {
 .level-item {
     padding-right: 1rem;
 }
+
+/* Fix z-order issue in bulma.css, see https://github.com/jgthms/bulma/pull/3978 */
+.dropdown-menu {
+	z-index: 35;
+}
+

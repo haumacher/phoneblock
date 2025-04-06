@@ -269,26 +269,10 @@
 			Gerne kannst Du mir auch eine persönliche Nachricht per E-Mail zukommen lassen: 
 			<code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>
 		</p>
-
-
-	</div>
-	
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title" data-tx="t0057">Klar zum Loslegen?</p>
-				<p class="subtitle" data-tx="t0058">PhoneBlock-Account erstellen!</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-				<p class="title" data-tx="t0059">Wie einrichten?</p>
-				<p class="subtitle" data-tx="t0060">Check die Installationsanleitung!</p>
-			</a>
-		</div>
 	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

@@ -193,26 +193,11 @@
 		<th:block th:text="${statistics['02-blocked']}"></th:block> aktive Nummern auf der Blocklist, <th:block th:text="${statistics['01-reported']}"></th:block> Nummern mit Beschwerden. 
 		Insgesamt <th:block th:text="${status.totalVotes}"></th:block> User-Reports, <th:block th:text="${status.archivedReports}"></th:block> inaktive Nummern mit Spam-Verdacht.
 	</p>
-
-</div>
-
-<div class="tile is-ancestor">
-	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" th:href="@{/}">
-			<p class="title" data-tx="t0041">Noch kein PhoneBlock?</p>
-			<p class="subtitle" data-tx="t0042">So wirst du den Telefonterror los!</p>
-		</a>
-	</div>
-
-	<div class="tile is-parent is-6 ">
-		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-			<p class="title" data-tx="t0043">Noch Fragen?</p>
-			<p class="subtitle" data-tx="t0044">Check die Installationsanleitung!</p>
-		</a>
-	</div>
 </div>
 
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

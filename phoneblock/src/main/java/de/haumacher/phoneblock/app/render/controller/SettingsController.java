@@ -23,21 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-public class SettingsController extends DefaultController {
-	
-	@Override
-	public void process(TemplateRenderer renderer, HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
-
-		HttpSession httpSession = request.getSession(false);
-		String userName = LoginFilter.getAuthenticatedUser(httpSession);
-		if (userName == null) {
-			LoginServlet.requestLogin(request, response);
-			return;
-		}
-		
-		super.process(renderer, request, response);
-	}
+public class SettingsController extends RequireLoginController {
 	
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
