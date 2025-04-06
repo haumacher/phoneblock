@@ -59,7 +59,7 @@
 			  </div>
 			  <div class="dropdown-menu" id="dropdown-menu" role="menu">
 			    <div class="dropdown-content">
-			      <a th:each="lang : ${languages}" th:href="|?lang=${lang.locale}|" class="dropdown-item"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.name}"></span></a>
+			      <a th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|" class="dropdown-item"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
 			    </div>
 			  </div>
 			</div>			

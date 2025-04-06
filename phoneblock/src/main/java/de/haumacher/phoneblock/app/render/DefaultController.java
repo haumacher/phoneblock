@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.Properties;
+import java.util.Locale.LanguageRange;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +69,9 @@ public class DefaultController implements WebController {
 	    lang("zh-HANS", "cn"    , "Chinese"               ),
 	};
 	
-	private static final Map<String, Language> LANG_BY_CODE = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.locale, l -> l));
-
-	private static final LocaleMap LOCALES = new LocaleMap("en-US", "de", "es", "fr", "zh-HANS");
+	private static final Map<String, Language> LANG_BY_TAG = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.tag, l -> l));
+	private static final Map<Locale, Language> LANG_BY_LOCALE = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> Locale.forLanguageTag(l.tag), l -> l));
+	private static final String DEFAULT_LANG = LANGUAGES[0].tag;
 
 	/**
 	 * Template resolution attribute specifying the requested language.
@@ -122,7 +123,7 @@ public class DefaultController implements WebController {
         
         String lang = selectLanguage(request);
 
-        request.setAttribute("currentLang", LANG_BY_CODE.get(lang));
+        request.setAttribute("currentLang", LANG_BY_TAG.get(lang));
         
 		// Note: Template is required to start with "/".
 		String i18nTemplate = "/" + lang + template;
@@ -136,32 +137,38 @@ public class DefaultController implements WebController {
         	HttpSession session = request.getSession(false);
         	if (session != null) {
         		lang = (String) session.getAttribute("lang");
-        	}
-        	if (lang == null) {
-        		Enumeration<Locale> locales = request.getLocales();
-        		while (locales.hasMoreElements()) {
-        			Locale locale = locales.nextElement();
-        			lang = LOCALES.getSupportedLocale(locale);
-        			if (lang != null) {
-        				break;
-        			}
-        		}
-        		if (lang == null) {
-        			lang = LOCALES.getDefaultLocale();
+        		if (lang != null) {
+        			return lang;
         		}
         	}
+        	
+    		// Use browser default
+    		List<LanguageRange> acceptLanguage = LanguageRange.parse(request.getHeader("Accept-Language"));
+    		Locale locale = Locale.lookup(acceptLanguage, LANG_BY_LOCALE.keySet());
+    		if (locale == null) {
+    			lang = DEFAULT_LANG;
+    		} else {
+    			lang = LANG_BY_LOCALE.get(locale).tag;
+    		}
+    		
+    		if (session != null) {
+    			// Remember to make next lookup more efficient.
+    			session.setAttribute("lang", lang);
+    		}
         } else {
         	// Normalize value.
-        	Locale locale = new Locale(lang);
-			lang = LOCALES.getSupportedLocale(locale);
-    		if (lang == null) {
-    			lang = LOCALES.getDefaultLocale();
-    		}
+        	Language language = LANG_BY_TAG.get(lang);
+        	if (language == null) {
+        		lang = DEFAULT_LANG;
+        	} else {
+        		lang = language.tag;
+        	}
 
-			// Remember requested language.
+    		// Remember requested language.
         	request.getSession().setAttribute("lang", lang);
         }
-		return lang;
+
+        return lang;
 	}
 
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
