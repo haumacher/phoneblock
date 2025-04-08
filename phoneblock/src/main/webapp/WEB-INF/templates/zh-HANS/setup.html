@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/page :: head}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header(login=true)}"></div>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
 
 <section class="section">
 	<div class="content">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">CardDAV 服务器的互联网地址</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">用户名</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">暗号</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -78,7 +78,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Anrufliste der Fritz!Box" class="image" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"></img>
+			<img alt="Fritz!Box 通话清单" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"></img>
 		  </div>
 		</div>
 		
@@ -94,11 +94,11 @@
 			<li data-tx="t0023">然后可以选择 <span class="tag is-danger">3</span> 提供商 <i>CardDAV 提供商</i>。</li>
 
 			<li data-tx="t0024">差不多完成了，现在是登录数据 <span class="tag is-danger">4</span>。最好用剪贴法传输，以避免输入错误！<ul>
-					<li> 在 <i>Internet address of the CardDAV server</i> 字段中输入 PhoneBlock 地址簿的 URL： <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> 在 <i>Internet address of the CardDAV server</i> 字段中输入 PhoneBlock 地址簿的 URL： <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> 在 <i>Username</i> 字段中输入您在 <a th:href="@{/login.jsp(location='/settings')}">registration</a> 时收到的用户名 <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>。</li>
+					<li> 在 <i>Username</i> 字段中输入您在 <a th:href="@{/login.jsp(location='/settings')}">registration</a> 时收到的用户名 <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>。</li>
 
-					<li>现在必须在 <i>密码</i>字段中输入您在<a th:href="@{/login.jsp(location='/settings')}">注册</a>时收到的密码<th:block th:unless="${token}">，</th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>, </th:block> 。</li>
+					<li>现在必须在 <i>密码</i>字段中输入您在<a th:href="@{/login.jsp(location='/settings')}">注册</a>时收到的密码<th:block th:unless="${token}">，</th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>, </th:block> 。</li>
 				    &lt;/x2</ul></li>
 
 			<li data-tx="t0025">现在您可以确认 <span class="tag is-danger">5</span> 新电话簿的创建。请注意在 "电话分配 "下选择 <b>"无电话"</b>！否则您只能在手机联系人中找到垃圾邮件呼叫者。</li>
@@ -106,7 +106,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Neues Adressbuch anlegen" class="image" th:src="@{/assets/img/setup/03-add-address-book.png}"></img>
+			<img alt="创建新地址簿" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"></img>
 		  </div>
 		</div>
 
@@ -116,7 +116,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Abgerufene Blocklist anzeigen" class="image" th:src="@{/assets/img/setup/04-check-blocklist.png}"></img>
+			<img alt="显示检索到的拦截列表" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"></img>
 		  </div>
 		</div>
 
@@ -128,7 +128,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Neue Rufsperre hinzufügen" class="image" th:src="@{/assets/img/setup/05-add-blocklist.png}"></img>
+			<img alt="添加新的呼叫限制" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"></img>
 		  </div>
 		</div>
 		
@@ -136,7 +136,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Anrufer mit Telefonnummer in der Blocklist sperren" class="image" th:src="@{/assets/img/setup/06-create-blocklist.png}"></img>
+			<img alt="阻止拦截列表中电话号码的来电者" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"></img>
 		  </div>
 		</div>
 		

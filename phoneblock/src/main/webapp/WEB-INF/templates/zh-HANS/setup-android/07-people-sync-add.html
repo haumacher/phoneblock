@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">安装安卓系统</h1>
+		
+		<h2 data-tx="t0002">步骤 4：添加通讯录并输入 PhoneBlock 账户数据</h2>
+		
+		<ol>
+		<li data-tx="t0003">选择 "使用 URL 和用户名登录 "选项，然后输入 PhoneBlock 地址簿的地址作为 "基本 URL"：<code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>。</li>
+			
+		<li data-tx="t0004">在 "用户名 "中，输入您在 <a th:href="@{/login(location=${currentPage})}">PhoneBlock 注册</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0002" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block> 时收到的用户名。</li>
+			
+		<li data-tx="t0005">密码已在第一次登录<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block> 后显示给您。</li>
+		</ol>
+		
+		<p data-tx="t0006">您手头没有登录信息？没关系，只需登录并在设置中<a th:href="@{/login(location='/settings')}">重新设置密码</a>即可。</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="添加地址簿" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}">安装安卓系统</img>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="添加地址簿" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}">步骤 4：添加通讯录并输入 PhoneBlock 账户数据</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0007">返回</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span data-tx="t0008">更多</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

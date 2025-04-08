@@ -99,26 +99,10 @@
 
 		<h2 data-tx="t0055">My question is not answered here, who can help?</h2>
 		<p data-tx="t0056">Why don't you write a comment on the <a target="_blank" th:href="@{/link/facebook}">Facebook page of PhoneBlock</a>, then everyone can read the question. You are also welcome to send me a personal message by e-mail: <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code></p>
-
-
-	</div>
-	
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title" data-tx="t0057">Ready to get started?</p>
-				<p class="subtitle" data-tx="t0058">Create a PhoneBlock account!</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-				<p class="title" data-tx="t0059">How to set it up?</p>
-				<p class="subtitle" data-tx="t0060">Check the installation instructions!</p>
-			</a>
-		</div>
 	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

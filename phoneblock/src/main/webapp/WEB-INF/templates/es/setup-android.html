@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock in Android Mobiltelefon einrichten')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Instalación en Android</h1>
+		
+		<p data-tx="t0002">La instalación añade la libreta de direcciones de PhoneBlock a tus contactos. Si recibes una llamada de un número de spam, se mostrará inmediatamente, por ejemplo, "SPAM: 03016637169". También puedes ver inmediatamente en las llamadas perdidas que no merece la pena devolver la llamada sin tener que buscar primero el número en Google.</p>
+		
+		<p data-tx="t0003">No puede usar esto para bloquear llamadas SPAM (su teléfono seguirá sonando, pero verá que es una llamada SPAM). Puede bloquear las llamadas SPAM <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">instalando SpamBlocker</a> e integrando la base de datos PhoneBlock. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> es una app independiente, por favor contacta directamente con el desarrollador si tienes algún problema con ella.</p>
+		
+		<p data-tx="t0004">Para sincronizar la agenda de direcciones, necesitas una app con la que puedas sincronizar las agendas telefónicas de Internet. Puede utilizar "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", por ejemplo, o "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Las instrucciones aquí están escritas para "PeopleSync", pero el procedimiento con "DAVx⁵" es muy similar:</p>
+		
+		<h2 data-tx="t0005">Paso 1: Abre Playstore y busca "PeopleSync".</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Abrir Playstore" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/01-home.png}">Instalación en Android</img>
+	  		</div>
+		
+			<div class="column">
+				<img alt="Buscar PeopleSync" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/02-playstore.png}">La instalación añade la libreta de direcciones de PhoneBlock a tus contactos. Si recibes una llamada de un número de spam, se mostrará inmediatamente, por ejemplo, "SPAM: 03016637169". También puedes ver inmediatamente en las llamadas perdidas que no merece la pena devolver la llamada sin tener que buscar primero el número en Google.</img>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">Volver</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">Más información en</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

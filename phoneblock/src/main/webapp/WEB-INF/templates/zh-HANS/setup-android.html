@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock in Android Mobiltelefon einrichten')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">安装安卓系统</h1>
+		
+		<p data-tx="t0002">安装程序会将 PhoneBlock 地址簿添加到您的通讯录中。如果您接到垃圾号码打来的电话，它会立即显示出来，例如 "SPAM: 03016637169"。您还可以在未接来电中立即看到不值得回拨的号码，而无需先谷歌这个号码。</p>
+		
+		<p data-tx="t0003">您不能用它来阻止垃圾邮件电话（您的手机仍然会响，但您会看到这是一个垃圾邮件电话）。您可以通过 <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/"> 安装 SpamBlocker</a> 并整合 PhoneBlock 数据库来阻止垃圾邮件电话。<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a>是一款独立应用程序，如果您在使用过程中遇到任何问题，请直接联系开发人员。</p>
+		
+		<p data-tx="t0004">要同步地址簿，您需要一个可以同步互联网电话簿的应用程序。例如，您可以使用"<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>"或"<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>"。这里的说明是针对 "PeopleSync "编写的，但使用 "DAVx⁵"的步骤非常相似：</p>
+		
+		<h2 data-tx="t0005">步骤 1：打开 Playstore，搜索 "PeopleSync</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="打开 Playstore" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/01-home.png}">安装安卓系统</img>
+	  		</div>
+		
+			<div class="column">
+				<img alt="搜索 PeopleSync" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/02-playstore.png}">安装程序会将 PhoneBlock 地址簿添加到您的通讯录中。如果您接到垃圾号码打来的电话，它会立即显示出来，例如 "SPAM: 03016637169"。您还可以在未接来电中立即看到不值得回拨的号码，而无需先谷歌这个号码。</img>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">返回</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">更多</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

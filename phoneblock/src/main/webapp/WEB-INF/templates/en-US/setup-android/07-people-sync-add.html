@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android installation</h1>
+		
+		<h2 data-tx="t0002">Step 4: Add an address book and enter the PhoneBlock account data</h2>
+		
+		<ol>
+		<li data-tx="t0003">Select the option "Log in with URL and user name" and enter the address of the PhoneBlock address book as the "Base URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+			
+		<li data-tx="t0004">For "User name", enter the user name that you received when you <a th:href="@{/login(location=${currentPage})}">registered with PhoneBlock</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0002" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+			
+		<li data-tx="t0005">The password was displayed to you after the first login<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		</ol>
+		
+		<p data-tx="t0006">You no longer have your login details to hand? Never mind, simply log in and <a th:href="@{/login(location='/settings')}">reset the password</a> in the settings.</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Add address book" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}">Android installation</img>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="Add address book" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}">Step 4: Add an address book and enter the PhoneBlock account data</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0007">Back</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span data-tx="t0008">Next</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

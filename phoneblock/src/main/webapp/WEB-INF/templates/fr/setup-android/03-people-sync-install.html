@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Installation d'Android</h1>
+		
+		<h2 data-tx="t0002">Étape 2 : Installe et ouvre "PeopleSync".</h2>
+
+		<p data-tx="t0003"><a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a> n'a d'ailleurs aucun lien avec PhoneBlock. L'application permet uniquement d'accéder à un carnet d'adresses Internet via le protocole CardDAV sous Android. Si tu as des problèmes avec cette application, adresse-toi directement à son fabricant.</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Installe PeopleSync" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/03-people-sync-install.png}">Installation d'Android</img>
+	  		</div>
+		
+			<div class="column is-two-fifths">
+				<img alt="Ouvre PeopleSync" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/04-people-sync-open.png}">Étape 2 : Installe et ouvre "PeopleSync".</img>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Retour</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span data-tx="t0005">Continuer</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

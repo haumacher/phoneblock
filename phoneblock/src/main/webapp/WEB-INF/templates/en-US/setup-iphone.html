@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock auf iPhone einrichten')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">iPhone installation</h1>
+		
+		<p data-tx="t0002">The installation adds the PhoneBlock address book to your contacts. If you receive a call from a spam number, this will be displayed immediately, e.g. "SPAM: 03016637169". You can also see immediately in the missed calls that it is not worth calling back without first googling the number.</p>
+
+		<p data-tx="t0003">The installation runs in the following steps:</p>
+		
+   		<ol>
+   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Register with PhoneBlock.</a></li>
+   		<li data-tx="t0005">Open "Settings" &gt; "Contacts" &gt; "Accounts".</li>
+   		<li data-tx="t0006">Tap on "Add account" - "Other" &gt; "Add CardDAV account".</li>
+   		<li data-tx="t0007">Enter your access data and tap on "Next". <dl>
+				<dt><b>Server</b></dt>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+
+				<dt><b>User name</b></dt>
+				<dd>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Log in</a> to see your user name.</span>
+				</dd>
+
+				<dt><b>Password</b></dt>
+				<dd>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span th:unless="${token}">Was shown to you directly after the first login, you can <a th:href="@{/settings}">generate a new one in the settings</a> </span>
+				</dd>
+
+				<dt><b>Description</b></dt>
+				<dd>PhoneBlock</dd>		
+   			         </dl></li>
+   		<li data-tx="t0008">Activate "Contacts" and tap on "Save".</li>
+		<li data-tx="t0009">Now you will see calls with "SPAM: ..." in your contact book and when they ring. You can then see straight away whether it is worth answering or calling back.</li>
+   		</ol>
+
+		<p data-tx="t0010">You no longer have your access data to hand? Never mind, simply <a th:href="@{/settings}">reset the password</a> in the settings.</p>
+   		
+   		<p data-tx="t0011">You can also find <a th:href="@{/link/carddav-install}">instructions with pictures</a> elsewhere. In this guide, you only need to use the PhoneBlock access data in the step where the server, user name and password are entered (see above).</p>
+   		
+   		<p data-tx="t0012">If you only use PhoneBlock on the iPhone, you can also increase the number of entries <a th:href="@{/settings}">in the settings</a>. If there are any problems with this, please let us know (see <a th:href="@{/faq}">FAQ</a>).</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -8,7 +8,7 @@
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock Logo" th:src="@{/assets/img/animation.svg}"></img>
+			<img alt="Logo PhoneBlock" data-tx="t0015" th:src="@{/assets/img/animation.svg}"></img>
 		</div>
 
 		<h1 data-tx="t0001">Rejeter automatiquement les appels indésirables</h1>
@@ -61,7 +61,7 @@
 		<h2 data-tx="t0011">Quelles sont les conditions préalables ?</h2>
 
 		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"></img>
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"></img>
 			</a>
 		</div>
 		
@@ -81,23 +81,9 @@
 
 		<p data-tx="t0014">Tu n'es pas sûr d'avoir une Fritz!Box ? Si tu te trouves chez toi en wifi, appuie sur le bouton de recherche ci-dessus. PhoneBlock essaie alors de trouver une Fritz!Box près de chez toi.</p>
 	</div>
-
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title" data-tx="t0015">Prêt à partir ?</p>
-				<p class="subtitle" data-tx="t0016">Créer un compte PhoneBlock !</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/faq.jsp}">
-				<p class="title" data-tx="t0017">Des questions ?</p>
-				<p class="subtitle" data-tx="t0018">Vérifie la FAQ !</p>
-			</a>
-		</div>
-	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

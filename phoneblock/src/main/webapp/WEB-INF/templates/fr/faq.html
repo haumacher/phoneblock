@@ -78,7 +78,7 @@
 			<li data-tx="t0042">Laisse tomber l'étape d'installation avec le blocage. Configure seulement le répertoire téléphonique PhoneBlock dans ta Fritz!Box. Lors d'un appel, l'écran du téléphone affichera par exemple "SPAM : 03016637169". Tu peux alors décider si tu réponds parce que tu attends justement un rappel ou si tu repousses l'appelant.</li>
 		</ol>
 
-		<h2 data-tx="t0043">Dois-je mettre à jour le répertoire manuellement ?</h2>
+		<h2 data-tx="t0043">Dois-je mettre à jour manuellement l'annuaire téléphonique ?</h2>
 		<p data-tx="t0044">Non, cela se fait automatiquement chaque nuit. Ta Fritz!Box contacte chaque nuit le serveur PhoneBlock et compare les numéros de la liste de blocage avec le répertoire téléphonique de la liste de blocage. Ta liste de blocage reste donc toujours à jour. Si, pendant une période prolongée (quelle qu'en soit la raison), la liste de blocage n'est plus consultée par ta Fritz!Box, PhoneBlock t'envoie un e-mail afin que tu puisses vérifier la configuration avant que ta liste de blocage ne devienne obsolète.</p>
 
 		<h2 data-tx="t0045">Quand exactement la liste de blocage sera-t-elle mise à jour ?</h2>
@@ -99,26 +99,10 @@
 
 		<h2 data-tx="t0055">Ma question ne trouve pas de réponse ici, qui peut m'aider ?</h2>
 		<p data-tx="t0056">Écris donc un commentaire sur la page <a target="_blank" th:href="@{/link/facebook}">Facebook de PhoneBlock</a>, ainsi tout le monde pourra lire la question. Tu peux aussi m'envoyer un message personnel par e-mail : <code>Bernhard Haumacher &lt;<button class="showaddr">...</button>&gt;</code>.</p>
-
-
-	</div>
-	
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title" data-tx="t0057">Prêt à partir ?</p>
-				<p class="subtitle" data-tx="t0058">Créer un compte PhoneBlock !</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-				<p class="title" data-tx="t0059">Comment s'installer ?</p>
-				<p class="subtitle" data-tx="t0060">Vérifie les instructions d'installation !</p>
-			</a>
-		</div>
 	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/page :: head}"></head>
 
 <body>
-<div th:replace="~{fragments/page :: header(login=true)}"></div>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
 
 <section class="section">
 	<div class="content">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Internet address of the CardDAV server</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">User name</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">password</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -78,7 +78,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Anrufliste der Fritz!Box" class="image" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"></img>
+			<img alt="Fritz!Box call list" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"></img>
 		  </div>
 		</div>
 		
@@ -94,11 +94,11 @@
 			<li data-tx="t0023">Then you can select <span class="tag is-danger">3</span> the provider <i>CardDAV provider</i>.</li>
 
 			<li data-tx="t0024">Almost done, now come the login data <span class="tag is-danger">4</span>. It is best to transfer them with Cut&amp;Paste to avoid typing errors! <ul>
-					<li> Enter the URL of the PhoneBlock address book in the field <i>Internet address of the CardDAV server</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> Enter the URL of the PhoneBlock address book in the field <i>Internet address of the CardDAV server</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Enter the user name <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> that you received during <a th:href="@{/login.jsp(location='/settings')}">registration</a> in the field <i>Username</i>. </li>
+					<li> Enter the user name <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> that you received during <a th:href="@{/login.jsp(location='/settings')}">registration</a> in the field <i>Username</i>. </li>
 
-					<li>The password<th:block th:unless="${token}"> that you received during <a th:href="@{/login.jsp(location='/settings')}">registration</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> must now be entered in the <i>Password</i> field. </li>
+					<li>The password<th:block th:unless="${token}"> that you received during <a th:href="@{/login.jsp(location='/settings')}">registration</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> must now be entered in the <i>Password</i> field. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Now you can confirm <span class="tag is-danger">5</span> the creation of the new phone book. Please note: Select <b>none of your phones</b> under "Phone assignment"! Otherwise you will only find SPAM callers in the contacts on your phone.</li>
@@ -106,7 +106,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Neues Adressbuch anlegen" class="image" th:src="@{/assets/img/setup/03-add-address-book.png}"></img>
+			<img alt="Create new address book" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"></img>
 		  </div>
 		</div>
 
@@ -116,7 +116,7 @@
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Abgerufene Blocklist anzeigen" class="image" th:src="@{/assets/img/setup/04-check-blocklist.png}"></img>
+			<img alt="Show retrieved blocklist" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"></img>
 		  </div>
 		</div>
 
@@ -128,7 +128,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Neue Rufsperre hinzufügen" class="image" th:src="@{/assets/img/setup/05-add-blocklist.png}"></img>
+			<img alt="Add new call barring" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"></img>
 		  </div>
 		</div>
 		
@@ -136,7 +136,7 @@
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Anrufer mit Telefonnummer in der Blocklist sperren" class="image" th:src="@{/assets/img/setup/06-create-blocklist.png}"></img>
+			<img alt="Block callers with a phone number in the blocklist" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"></img>
 		  </div>
 		</div>
 		

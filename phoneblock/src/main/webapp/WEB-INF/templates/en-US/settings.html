@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Internet address of the CardDAV server</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">User name</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">You must enter this value as the user name for <a th:href="@{/setup.jsp}">calling up the blocklist</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">password</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">You must use this password to <a th:href="@{/setup.jsp}">set up the phone book</a> or to log in to this website.</p>
 				  <p class="help" data-tx="t0011">Please make a note of the password (or save it in a <a href="https://keepass.info/">password manager</a>), as it will only be displayed until you log out or your session expires.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">User name</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">You must enter this value as the user name for <a th:href="@{/setup.jsp}">retrieving the blocklist</a>. Your password was displayed when you first logged in. If you no longer remember it, you can create a <a href="#resetPassword">new password</a> at the bottom of this page. But be careful: the old password will become invalid.</p>
 			</div>
 
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Remark for use</label>
 	  <p class="control has-icons-left">
-	    <input class="input" name="apikey-label" placeholder="Nutzung für..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Use for..." type="text"></input>
 	  </p>
 	  <p class="help" data-tx="t0044">You can enter a note here about what you generated the API key for, e.g. "SpamBlocker on grandma's cell phone.".</p>
 	</div>
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Add exception</label>
 	  <p class="control has-icons-left">
-	    <input class="input" name="add-wl" placeholder="Neue Ausnahme" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="New exception" type="tel"></input>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">You can enter one or more telephone numbers here, separated by commas, in any format: 07041-123456789, +49171123456789, 0034 123456789</p>
@@ -256,7 +256,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Your donations for the operation of PhoneBlock</h2>
 	
-	<p data-tx="t0059">If you have made a <a th:href="@{/support.jsp}">donation for the operation of PhoneBlock</a>, it will be listed here (after some time). For this to work, it would be nice if you could include the first few characters of your username in the transfer message, e.g. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Unfortunately, contributions via the GitHub sponsor program cannot be listed here.</p>
+	<p data-tx="t0059">If you have made a <a th:href="@{/support.jsp}">donation for the operation of PhoneBlock</a>, it will be listed here (after some time). For this to work, it would be nice if you could include the first few characters of your username in the transfer message, e.g. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Unfortunately, contributions via the GitHub sponsor program cannot be listed here.</p>
 	
 	<p data-tx="t0060" th:unless="${contributions}">No donations found.</p>
 	
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Sender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">In the case of a bank transfer, the name of the account holder who made the transfer. Please also state the date of the transfer below.</p>

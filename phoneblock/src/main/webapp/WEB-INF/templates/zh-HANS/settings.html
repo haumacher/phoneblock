@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">CardDAV 服务器的互联网地址</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">用户名</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">您必须输入此值作为用户名，以便<a th:href="@{/setup.jsp}">调用拦截列表</a>。</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">暗号</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">您必须使用此密码才能<a th:href="@{/setup.jsp}">设置电话簿</a>或登录本网站。</p>
 				  <p class="help" data-tx="t0011">请记下密码（或将其保存在<a href="https://keepass.info/">密码管理器</a>中），因为密码只会在您注销或会话过期前显示。</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">用户名</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">您必须输入此值作为用户名，以便<a th:href="@{/setup.jsp}">检索拦截列表</a>。你的密码在首次登录时就已显示。如果你不再记得它，可以在本页底部创建一个 <a href="#resetPassword">新密码</a>。但请注意：旧密码将失效。</p>
 			</div>
 
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">使用说明</label>
 	  <p class="control has-icons-left">
-	    <input class="input" name="apikey-label" placeholder="Nutzung für..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="用于..." type="text"></input>
 	  </p>
 	  <p class="help" data-tx="t0044">您可以在此处输入备注，说明生成 API 密钥的用途，例如 "奶奶手机上的垃圾邮件拦截器"。</p>
 	</div>
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">添加例外情况</label>
 	  <p class="control has-icons-left">
-	    <input class="input" name="add-wl" placeholder="Neue Ausnahme" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="新例外" type="tel"></input>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">您可以在此处输入一个或多个电话号码，中间用逗号隔开，格式不限：07041-123456789、+49171123456789、0034 123456789</p>
@@ -256,7 +256,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">您为 PhoneBlock 运营所做的捐赠</h2>
 	
-	<p data-tx="t0059">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support.jsp}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献无法在此列出。</p>
+	<p data-tx="t0059">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support.jsp}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献无法在此列出。</p>
 	
 	<p data-tx="t0060" th:unless="${contributions}">未找到捐赠。</p>
 	
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">发件人</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="马克斯-穆斯特曼" type="text"></input>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">如果是银行转账，请注明转账账户持有人的姓名。还请在下方注明转账日期。</p>

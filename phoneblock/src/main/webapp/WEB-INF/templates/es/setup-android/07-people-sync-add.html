@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Instalación en Android</h1>
+		
+		<h2 data-tx="t0002">Paso 4: Añadir una libreta de direcciones e introducir los datos de la cuenta PhoneBlock</h2>
+		
+		<ol>
+		<li data-tx="t0003">Seleccione la opción "Iniciar sesión con URL y nombre de usuario" e introduzca la dirección de la agenda de PhoneBlock como "URL base": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+			
+		<li data-tx="t0004">Para "Nombre de usuario", introduzca el nombre de usuario que recibió cuando <a th:href="@{/login(location=${currentPage})}">Registro de bloqueo de teléfono</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0002" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+			
+		<li data-tx="t0005">La contraseña se te mostró tras el primer inicio de sesión<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		</ol>
+		
+		<p data-tx="t0006">¿Ya no tienes a mano tus datos de acceso? No importa, sólo tienes que conectarte y <a th:href="@{/login(location='/settings')}">restablecer la contraseña</a> en los ajustes.</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Añadir libreta de direcciones" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}">Instalación en Android</img>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="Añadir libreta de direcciones" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}">Paso 4: Añadir una libreta de direcciones e introducir los datos de la cuenta PhoneBlock</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0007">Volver</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span data-tx="t0008">Más información en</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

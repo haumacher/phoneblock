@@ -99,26 +99,10 @@
 
 		<h2 data-tx="t0055">这里没有回答我的问题，谁能帮帮我？</h2>
 		<p data-tx="t0056">您为什么不在 PhoneBlock 的 <a target="_blank" th:href="@{/link/facebook}">Facebook 页面</a>上写评论，这样每个人都能看到这个问题。我们也欢迎您通过电子邮件给我发送个人信息：<code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code> 。</p>
-
-
-	</div>
-	
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title" data-tx="t0057">准备好开始了吗？</p>
-				<p class="subtitle" data-tx="t0058">创建 PhoneBlock 账户！</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-				<p class="title" data-tx="t0059">如何设置？</p>
-				<p class="subtitle" data-tx="t0060">查看安装说明！</p>
-			</a>
-		</div>
 	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

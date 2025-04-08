@@ -55,8 +55,8 @@
 			<thead>
 				<tr>
 					<th data-tx="t0009">电话号码</th>
-					<th data-tx="t0010" title="Anzahl an Suchanfragen nach dieser Nummer seit gestern">今天和昨天</th>
-					<th data-tx="t0011" title="Insgesammt gestellte Suchanfragen nach dieser Nummer">总计</th>
+					<th data-tx="t0010" title="自昨天起该号码的搜索次数">今天和昨天</th>
+					<th data-tx="t0011" title="该号码的搜索查询总数">总计</th>
 					<th data-tx="t0012">最后一次查询</th>
 				</tr>
 			</thead>
@@ -81,9 +81,9 @@
 			<thead>
 				<tr>
 					<th data-tx="t0015">电话号码</th>
-					<th data-tx="t0016" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">信心</th>
+					<th data-tx="t0016" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
 					<th data-tx="t0017">已报告</th>
-					<th data-tx="t0018" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">活跃至今</th>
+					<th data-tx="t0018" title="首次报告号码的日期。">活跃至今</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -108,9 +108,9 @@
 			<thead>
 				<tr>
 					<th data-tx="t0022">电话号码</th>
-					<th data-tx="t0023" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">信心</th>
+					<th data-tx="t0023" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
 					<th data-tx="t0024">最后投诉</th>
-					<th data-tx="t0025" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">活跃至今</th>
+					<th data-tx="t0025" title="首次报告号码的日期。">活跃至今</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -134,9 +134,9 @@
 			<thead>
 				<tr>
 					<th data-tx="t0028">电话号码</th>
-					<th data-tx="t0029" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">信心</th>
+					<th data-tx="t0029" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
 					<th data-tx="t0030">最后投诉</th>
-					<th data-tx="t0031" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">活跃至今</th>
+					<th data-tx="t0031" title="首次报告号码的日期。">活跃至今</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -160,8 +160,8 @@
 			<thead>
 				<tr>
 					<th data-tx="t0034">电话号码</th>
-					<th data-tx="t0035" title="Anzahl an Suchanfragen nach dieser Nummer">搜索查询</th>
-					<th data-tx="t0036" title="Anzahl der SPAM-Votes for diese Nummer">投票</th>
+					<th data-tx="t0035" title="该号码的搜索次数">搜索查询</th>
+					<th data-tx="t0036" title="该号码的垃圾邮件投票数">投票</th>
 					<th data-tx="t0037">最后一次查询</th>
 				</tr>
 			</thead>
@@ -182,26 +182,11 @@
 	<h2 data-tx="t0039">PhoneBlock 数据库</h2>
 
 	<p data-tx="t0040">已知垃圾邮件号码：<th:block th:text="${statistics['02-blocked']}"></th:block> blocklist 上的活动号码，<th:block th:text="${statistics['01-reported']}"></th:block>有投诉的号码。总计<th:block th:text="${status.totalVotes}"></th:block>用户报告，<th:block th:text="${status.archivedReports}"></th:block>疑似垃圾邮件的非活动号码。</p>
-
-</div>
-
-<div class="tile is-ancestor">
-	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" th:href="@{/}">
-			<p class="title" data-tx="t0041">还没有 PhoneBlock？</p>
-			<p class="subtitle" data-tx="t0042">如何摆脱电话恐怖</p>
-		</a>
-	</div>
-
-	<div class="tile is-parent is-6 ">
-		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-			<p class="title" data-tx="t0043">有问题吗？</p>
-			<p class="subtitle" data-tx="t0044">查看安装说明！</p>
-		</a>
-	</div>
 </div>
 
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

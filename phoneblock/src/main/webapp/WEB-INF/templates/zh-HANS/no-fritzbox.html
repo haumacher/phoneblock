@@ -17,23 +17,9 @@
 			<li data-tx="t0005">您的网络路由器不同。也许它也可以与 PhoneBlock 一起使用，请查看 <a th:href="@{/faq.jsp}">FAQ</a>！</li>
 		</ul>
 	</div>
-
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/faq.jsp}">
-				<p class="title" data-tx="t0006">什么也没找到？</p>
-				<p class="subtitle" data-tx="t0007">查看常见问题列表！</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-				<p class="title" data-tx="t0008">无论如何都要试一试？</p>
-				<p class="subtitle" data-tx="t0009">查看安装说明！</p>
-			</a>
-		</div>
-	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

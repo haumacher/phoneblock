@@ -55,8 +55,8 @@
 			<thead>
 				<tr>
 					<th data-tx="t0009">Phone number</th>
-					<th data-tx="t0010" title="Anzahl an Suchanfragen nach dieser Nummer seit gestern">Today and yesterday</th>
-					<th data-tx="t0011" title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Total</th>
+					<th data-tx="t0010" title="Number of searches for this number since yesterday">Today and yesterday</th>
+					<th data-tx="t0011" title="Total search queries for this number">Total</th>
 					<th data-tx="t0012">Last request</th>
 				</tr>
 			</thead>
@@ -81,9 +81,9 @@
 			<thead>
 				<tr>
 					<th data-tx="t0015">Phone number</th>
-					<th data-tx="t0016" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confidence</th>
+					<th data-tx="t0016" title="The larger the number, the more certain PhoneBlock is that the number is a source of unwanted calls.">Confidence</th>
 					<th data-tx="t0017">Reported</th>
-					<th data-tx="t0018" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Active since</th>
+					<th data-tx="t0018" title="Date from which the number was first reported.">Active since</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -108,9 +108,9 @@
 			<thead>
 				<tr>
 					<th data-tx="t0022">Phone number</th>
-					<th data-tx="t0023" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confidence</th>
+					<th data-tx="t0023" title="The larger the number, the more certain PhoneBlock is that the number is a source of unwanted calls.">Confidence</th>
 					<th data-tx="t0024">Last complaint</th>
-					<th data-tx="t0025" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Active since</th>
+					<th data-tx="t0025" title="Date from which the number was first reported.">Active since</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -134,9 +134,9 @@
 			<thead>
 				<tr>
 					<th data-tx="t0028">Phone number</th>
-					<th data-tx="t0029" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confidence</th>
+					<th data-tx="t0029" title="The larger the number, the more certain PhoneBlock is that the number is a source of unwanted calls.">Confidence</th>
 					<th data-tx="t0030">Last complaint</th>
-					<th data-tx="t0031" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Active since</th>
+					<th data-tx="t0031" title="Date from which the number was first reported.">Active since</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -160,8 +160,8 @@
 			<thead>
 				<tr>
 					<th data-tx="t0034">Phone number</th>
-					<th data-tx="t0035" title="Anzahl an Suchanfragen nach dieser Nummer">Search queries</th>
-					<th data-tx="t0036" title="Anzahl der SPAM-Votes for diese Nummer">Votes</th>
+					<th data-tx="t0035" title="Number of searches for this number">Search queries</th>
+					<th data-tx="t0036" title="Number of SPAM votes for this number">Votes</th>
 					<th data-tx="t0037">Last request</th>
 				</tr>
 			</thead>
@@ -182,26 +182,11 @@
 	<h2 data-tx="t0039">PhoneBlock database</h2>
 
 	<p data-tx="t0040">Known SPAM numbers: <th:block th:text="${statistics['02-blocked']}"></th:block> active numbers on the blocklist, <th:block th:text="${statistics['01-reported']}"></th:block> numbers with complaints. Total <th:block th:text="${status.totalVotes}"></th:block> user reports, <th:block th:text="${status.archivedReports}"></th:block> inactive numbers with suspected spam.</p>
-
-</div>
-
-<div class="tile is-ancestor">
-	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" th:href="@{/}">
-			<p class="title" data-tx="t0041">No PhoneBlock yet?</p>
-			<p class="subtitle" data-tx="t0042">How to get rid of phone terror!</p>
-		</a>
-	</div>
-
-	<div class="tile is-parent is-6 ">
-		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-			<p class="title" data-tx="t0043">Any questions?</p>
-			<p class="subtitle" data-tx="t0044">Check the installation instructions!</p>
-		</a>
-	</div>
 </div>
 
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

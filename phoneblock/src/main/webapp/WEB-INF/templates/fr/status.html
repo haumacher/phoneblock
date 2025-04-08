@@ -55,15 +55,15 @@
 			<thead>
 				<tr>
 					<th data-tx="t0009">Numéro d'appel</th>
-					<th data-tx="t0010" title="Anzahl an Suchanfragen nach dieser Nummer seit gestern">Aujourd'hui et hier</th>
-					<th data-tx="t0011" title="Insgesammt gestellte Suchanfragen nach dieser Nummer">Total</th>
+					<th data-tx="t0010" title="Nombre de recherches sur ce numéro depuis hier">Aujourd'hui et hier</th>
+					<th data-tx="t0011" title="Total des recherches effectuées pour ce numéro">Total</th>
 					<th data-tx="t0012">Dernière demande</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${searches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${report.phone}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.count}"></td>
@@ -81,15 +81,15 @@
 			<thead>
 				<tr>
 					<th data-tx="t0015">Numéro d'appel</th>
-					<th data-tx="t0016" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confiance</th>
+					<th data-tx="t0016" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
 					<th data-tx="t0017">Rapporte</th>
-					<th data-tx="t0018" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Actif depuis</th>
+					<th data-tx="t0018" title="Date à partir de laquelle le numéro a été signalé pour la première fois.">Actif depuis</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${reports}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${report.phone}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -108,15 +108,15 @@
 			<thead>
 				<tr>
 					<th data-tx="t0022">Numéro d'appel</th>
-					<th data-tx="t0023" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confiance</th>
+					<th data-tx="t0023" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
 					<th data-tx="t0024">Dernière plainte</th>
-					<th data-tx="t0025" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Actif depuis</th>
+					<th data-tx="t0025" title="Date à partir de laquelle le numéro a été rapporté pour la première fois.">Actif depuis</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${newlyBlocked}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${report.phone}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -134,15 +134,15 @@
 			<thead>
 				<tr>
 					<th data-tx="t0028">Numéro d'appel</th>
-					<th data-tx="t0029" title="Je größer die Zahl, desto sicherer ist PhoneBlock, dass die Rufnummer ein Quelle von unerwünschten Anrufen ist.">Confiance</th>
+					<th data-tx="t0029" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
 					<th data-tx="t0030">Dernière plainte</th>
-					<th data-tx="t0031" title="Datum, ab dem die Nummer zum ersten Mal berichtet wurde.">Actif depuis</th>
+					<th data-tx="t0031" title="Date à partir de laquelle le numéro a été rapporté pour la première fois.">Actif depuis</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${topSpammers}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${report.phone}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -160,15 +160,15 @@
 			<thead>
 				<tr>
 					<th data-tx="t0034">Numéro d'appel</th>
-					<th data-tx="t0035" title="Anzahl an Suchanfragen nach dieser Nummer">Demandes de recherche</th>
-					<th data-tx="t0036" title="Anzahl der SPAM-Votes for diese Nummer">Votes</th>
+					<th data-tx="t0035" title="Nombre de recherches effectuées sur ce numéro">Demandes de recherche</th>
+					<th data-tx="t0036" title="Nombre de votes SPAM pour ce numéro">Votes</th>
 					<th data-tx="t0037">Dernière demande</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${topSearches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}">? <th:block th:text="${report.phone}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${report.phone}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.searches}"></td>
@@ -182,26 +182,11 @@
 	<h2 data-tx="t0039">Base de données PhoneBlock</h2>
 
 	<p data-tx="t0040">Numéros de SPAM connus : <th:block th:text="${statistics['02-blocked']}"></th:block> numéros actifs sur la liste de blocage, <th:block th:text="${statistics['01-reported']}"></th:block> numéros avec plaintes. Au total <th:block th:text="${status.totalVotes}"></th:block> rapports d'utilisateurs, <th:block th:text="${status.archivedReports}"></th:block> numéros inactifs soupçonnés de spam.</p>
-
-</div>
-
-<div class="tile is-ancestor">
-	<div class="tile is-parent is-6">
-		<a class="tile is-child notification is-primary" th:href="@{/}">
-			<p class="title" data-tx="t0041">Pas encore de PhoneBlock ?</p>
-			<p class="subtitle" data-tx="t0042">Voici comment te débarrasser du harcèlement téléphonique !</p>
-		</a>
-	</div>
-
-	<div class="tile is-parent is-6 ">
-		<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-			<p class="title" data-tx="t0043">Des questions ?</p>
-			<p class="subtitle" data-tx="t0044">Vérifie les instructions d'installation !</p>
-		</a>
-	</div>
 </div>
 
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

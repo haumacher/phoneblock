@@ -12,10 +12,11 @@
 		<p data-tx="t0002">PhoneBlock 可免费使用，您可以在所有 Fritz！盒子和手机上安装 PhoneBlock 而无需付费。然而，PhoneBlock 的运行绝非免费。服务器租用、互联网接入和域名注册都需要持续支付费用。<a th:href="@{/impressum.jsp}">我</a>自掏腰包。</p>
 		
 		<p data-tx="t0003">如果您喜欢 PhoneBlock，而且它能帮您远离电话连接中的恼人害虫，那么您可以为 PhoneBlock 的费用出一份力，或者干脆用小额捐款来表达 "感谢"。如果许多用户都加入进来，那么小额捐款--例如<b>每年1欧元</b>或<b>每拦截一个垃圾电话0.01欧元</b>--就足以支付费用。金额由您决定。您的捐款不是 "会员费"，也不期望得到任何回报。</p>
-
-		<div class="tile is-ancestor">
-			<div class="tile is-parent is-12">
-				<a class="tile is-child notification is-primary" href="http://paypal.me/phoneblock" target="_blank">
+		
+		<div class="columns">
+			<div class="column is-full">
+				<a class="card" href="http://paypal.me/phoneblock" target="_blank">
+				  <div class="card-content has-background-primary">
 					<div class="title">
 					    <span class="icon">
 							<i class="fa-brands fa-paypal"></i>
@@ -24,14 +25,16 @@
 					</div>
 					<p class="subtitle" data-tx="t0005">使用 "给朋友汇款"，否则 PayPal 会收取荒唐的费用，1 欧元只需 60Ct 到账。</p>
 					<p class="subtitle" data-tx="t0006" th:unless="${loggedIn}">请输入您用户名的前几个字符作为信息，以便我分配付款。</p>
-					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">请输入 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，以便我分配付款。</p>
+					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">请输入 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0013" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，以便我分配付款。</p>
+				  </div>
 				</a>
 			</div>
 		</div>
-		
-		<div class="tile is-ancestor">
-			<div class="tile is-parent is-6 ">
-				<a class="tile is-child notification is-info" href="https://github.com/sponsors/haumacher" target="_blank">
+
+		<div class="columns">
+			<div class="column is-half">
+				<a class="card" href="https://github.com/sponsors/haumacher" target="_blank">
+				  <div class="card-content has-background-info">
 					<p class="title">
 					    <span class="icon">
 							<i class="fa-brands fa-github"></i>
@@ -39,11 +42,12 @@
 						<span data-tx="t0008">成为 GitHub 的赞助商</span>
 					</p>
 					<p class="subtitle" data-tx="t0009">您可以一次性捐款，也可以定期捐款。</p>
+				  </div>
 				</a>
 			</div>
-			
-			<div class="tile is-parent is-6 ">
-				<a class="tile is-child notification is-info" th:href="@{/support-banktransfer.jsp}">
+			<div class="column is-half">
+				<a class="card" th:href="@{/support-banktransfer.jsp}">
+				  <div class="card-content has-background-info">
 					<p class="title">
 					    <span class="icon">
 							<i class="fa-solid fa-building-columns"></i>
@@ -51,10 +55,11 @@
 						<span data-tx="t0010">通过银行转账捐款</span>
 					</p>
 					<p class="subtitle" data-tx="t0011">您必须登录才能查看账户详情。</p>
+				  </div>
 				</a>
 			</div>
 		</div>
-		
+				
 		<p data-tx="t0012">感谢您为 PhoneBlock 捐款！</p>
 		
 	</div>

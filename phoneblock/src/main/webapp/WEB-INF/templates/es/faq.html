@@ -21,9 +21,9 @@
 		
 		<p data-tx="t0008">Con ambas ofertas, puede configurar la <a th:href="@{/setup.jsp}">lista de bloqueo como una agenda de Internet</a> en su Fritz!Box y bloquear los números de esta agenda. PhoneBlock también le ofrece la posibilidad de personalizar su lista de bloqueo y también es gratuito (véase más arriba).</p>
 		
-		<p data-tx="t0009">Usted mismo puede añadir números a su lista de bloqueo personalizada y, lo que es más importante, también puede excluir números de ser bloqueados (ver también "Un número es bloqueado por error, ¿qué hacer?" más abajo). Esto es interesante si PhoneBlock ha añadido a la lista de bloqueo un número por el que le gustaría que le llamaran. Por ejemplo, un número de un proveedor de Internet puede fácilmente terminar en la lista de bloqueados si muchas personas se sienten molestas por las devoluciones de llamadas de este número, pero usted está esperando una devolución de llamada. Esto también se explica muy bien en este <a target="_blank" th:href="@{/link/tellows-problems}">vídeo de YouTube</a>. Con PhoneBlock puedes personalizar tu lista de bloqueo, los números que tú mismo hayas puesto en ella permanecerán bloqueados y los números que hayas añadido a tu lista blanca desde luego no serán bloqueados.</p>
+		<p data-tx="t0009">Usted mismo puede añadir números a su lista de bloqueo personalizada y, lo que es más importante, también puede excluir números de ser bloqueados (ver también "Un número es bloqueado por error, ¿qué hacer?" más abajo). Esto es interesante si PhoneBlock ha añadido a la lista de bloqueo un número por el que le gustaría que le llamaran. Por ejemplo, un número de un proveedor de internet puede fácilmente terminar en la lista de bloqueados si mucha gente se siente molesta por las devoluciones de llamadas de este número, pero usted está esperando una devolución de llamada. Esto también se explica muy bien en este <a target="_blank" th:href="@{/link/tellows-problems}">vídeo de YouTube</a>. Con PhoneBlock puedes personalizar tu lista de bloqueo, los números que tú mismo hayas puesto en ella permanecerán bloqueados y los números que hayas añadido a tu lista blanca desde luego no serán bloqueados.</p>
 
-		<h2 data-tx="t0010">Mi caja Fritz! aún no soporta CardDAV, ¿puedo utilizar PhoneBlock?</h2>
+		<h2 data-tx="t0010">Mi Fritz! box todavía no soporta CardDAV, ¿puedo utilizar PhoneBlock?</h2>
 		<p data-tx="t0011">Sí, hay dos posibilidades:</p>
 		<ol>
 		<li data-tx="t0012">Utiliza el contestador automático PhoneBlock (actualmente todavía en pruebas beta) en lugar de la agenda telefónica. Usted registra el contestador automático PhoneBlock en su Fritz!Box como un teléfono de Internet y siempre contesta cuando llama un número SPAM, tan rápidamente que su teléfono no suena o sólo suena muy brevemente. El contestador automático PhoneBlock actualmente sólo está disponible en un sistema de prueba que requiere un registro por separado: <a th:href="@{/anrufbeantworter/}">Al sistema de prueba del contestador automático</a>. Si ha podido instalar el contestador automático con éxito - o ha tenido problemas al hacerlo - por favor háganoslo saber para que la nueva herramienta pueda estar disponible de forma general lo antes posible.</li>
@@ -99,26 +99,10 @@
 
 		<h2 data-tx="t0055">Mi pregunta no tiene respuesta aquí, ¿quién puede ayudarme?</h2>
 		<p data-tx="t0056">Por qué no escribes un comentario en la página de <a target="_blank" th:href="@{/link/facebook}">Facebook de PhoneBlock</a>, así todo el mundo podrá leer la pregunta. También puedes enviarme un mensaje personal por correo electrónico: <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code>.</p>
-
-
-	</div>
-	
-	<div class="tile is-ancestor">
-		<div class="tile is-parent is-6">
-			<a class="tile is-child notification is-primary" th:href="@{/login.jsp}">
-				<p class="title" data-tx="t0057">¿Listo para empezar?</p>
-				<p class="subtitle" data-tx="t0058">Crear una cuenta PhoneBlock</p>
-			</a>
-		</div>
-
-		<div class="tile is-parent is-6 ">
-			<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
-				<p class="title" data-tx="t0059">¿Cómo se instala?</p>
-				<p class="subtitle" data-tx="t0060">Compruebe las instrucciones de instalación.</p>
-			</a>
-		</div>
 	</div>
 </section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>
