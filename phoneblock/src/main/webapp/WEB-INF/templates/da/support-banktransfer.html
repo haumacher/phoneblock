@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Donér via bankoverførsel</h1>
+
+		<p data-tx="t0002">Tak, fordi du vil bidrage til omkostningerne ved PhoneBlock. Hvis mange deltager, er et lille beløb tilstrækkeligt, f.eks. <b>1€ pr. år</b> eller <b>0,01€ pr. opsnappet spamopkald</b>, men du kan selv vælge, hvor stort dit bidrag skal være.</p>
+		
+		<p data-tx="t0003">Brug venligst følgende kontooplysninger til din bankoverførsel:</p>
+
+		<ul>
+			<li data-tx="t0004">Modtager: <code id="receiver" th:text="${props.bank.receiver}"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="receiver_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+			<li data-tx="t0005">Kontonummer: <code id="account"><span class="token" th:text="${#strings.substring(props.bank.account,0,4)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,4,8)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,8,12)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,12,16)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,16,20)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,20)}"></span></code><a class="copyToClipboard" data-tx="t0002" href="#" id="account_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+			<li data-tx="t0006">BIC: <code id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+			<li data-tx="t0007">Tilsigtet brug: <code id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" data-tx="t0004" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+		</ul>
+		
+		<p data-tx="t0008">Tak, fordi du bidrager til brugen af PhoneBlock!</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

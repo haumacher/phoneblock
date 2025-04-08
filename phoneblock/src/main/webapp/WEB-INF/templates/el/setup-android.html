@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock in Android Mobiltelefon einrichten')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Εγκατάσταση Android</h1>
+		
+		<p data-tx="t0002">Η εγκατάσταση προσθέτει το βιβλίο διευθύνσεων του PhoneBlock στις επαφές σας. Εάν λάβετε μια κλήση από έναν αριθμό spam, αυτό θα εμφανίζεται αμέσως, π.χ. "SPAM: 03016637169". Μπορείτε επίσης να δείτε αμέσως στις αναπάντητες κλήσεις ότι δεν αξίζει να καλέσετε ξανά, χωρίς να χρειαστεί να γκουγκλάρετε πρώτα τον αριθμό.</p>
+		
+		<p data-tx="t0003">Δεν μπορείτε να το χρησιμοποιήσετε για να μπλοκάρετε κλήσεις SPAM (το τηλέφωνό σας θα εξακολουθεί να χτυπάει, αλλά θα βλέπετε ότι πρόκειται για κλήση SPAM). Μπορείτε να μπλοκάρετε τις κλήσεις SPAM με την <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">εγκατάσταση του SpamBlocker</a> και την ενσωμάτωση της βάσης δεδομένων PhoneBlock. Το <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> είναι μια ανεξάρτητη εφαρμογή, παρακαλούμε επικοινωνήστε απευθείας με τον προγραμματιστή αν έχετε οποιοδήποτε πρόβλημα με αυτήν.</p>
+		
+		<p data-tx="t0004">Για το συγχρονισμό του καταλόγου διευθύνσεων, χρειάζεστε μια εφαρμογή με την οποία μπορείτε να συγχρονίσετε τους τηλεφωνικούς καταλόγους του Διαδικτύου. Μπορείτε να χρησιμοποιήσετε το "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", για παράδειγμα, ή το "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Οι οδηγίες εδώ είναι γραμμένες για το "PeopleSync", αλλά η διαδικασία με το "DAVx⁵" είναι πολύ παρόμοια:</p>
+		
+		<h2 data-tx="t0005">Βήμα 1: Ανοίξτε το Playstore και αναζητήστε το "PeopleSync".</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Άνοιγμα του Playstore" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/01-home.png}">Εγκατάσταση Android</img>
+	  		</div>
+		
+			<div class="column">
+				<img alt="Αναζήτηση για το PeopleSync" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/02-playstore.png}">Η εγκατάσταση προσθέτει το βιβλίο διευθύνσεων του PhoneBlock στις επαφές σας. Εάν λάβετε μια κλήση από έναν αριθμό spam, αυτό θα εμφανίζεται αμέσως, π.χ. "SPAM: 03016637169". Μπορείτε επίσης να δείτε αμέσως στις αναπάντητες κλήσεις ότι δεν αξίζει να καλέσετε ξανά, χωρίς να χρειαστεί να γκουγκλάρετε πρώτα τον αριθμό.</img>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">Πίσω</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">Περαιτέρω</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

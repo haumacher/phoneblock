@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="Λογότυπο PhoneBlock" data-tx="t0015" th:src="@{/assets/img/animation.svg}"></img>
+		</div>
+
+		<h1 data-tx="t0001">Αυτόματη απόρριψη ανεπιθύμητων καλούντων</h1>
+
+		<p data-tx="t0002">Μήπως και ο δικός σας τηλεφωνικός αριθμός έχει πέσει στα χέρια ύποπτων εμπόρων διευθύνσεων και λαμβάνετε συνεχώς ενοχλητικές κλήσεις που θέλουν να "βελτιστοποιήσουν" τον λογαριασμό του ηλεκτρικού σας ρεύματος, να σας δώσουν συμβουλές για ένα ηλιακό σύστημα, να σας ανακοινώσουν άλλο ένα μεγάλο βραβείο ή να σας προσφέρουν άλλα "προνόμια"; Τότε το <b>PhoneBlock</b> είναι ακριβώς αυτό που χρειάζεστε!</p>
+
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			    <span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
+			    </span>
+				<span data-tx="t0003">Τηλεφωνητής</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup.jsp}">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span data-tx="t0004">Fritz!Box τηλεφωνικός κατάλογος</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span data-tx="t0005">Για Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span data-tx="t0006">Για iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0007">Πώς λειτουργεί το PhoneBlock;</h2>
+
+		<p data-tx="t0008">Το PhoneBlock είναι ένας κατάλογος που συντηρείται από την κοινότητα PhoneBlock με τηλεφωνικούς αριθμούς για τους οποίους υπάρχουν υποψίες ότι είναι ανεπιθύμητα μηνύματα. Ο <a th:href="@{/anrufbeantworter/}">Αντιφωνητής PhoneBlock</a> δέχεται στη συνέχεια κλήσεις από καλούντες που περιλαμβάνονται στη λίστα αποκλεισμού, έτσι ώστε το τηλέφωνό σας να παραμένει σιωπηλό για αυτές τις κλήσεις.</p>
+		
+		<p data-tx="t0009">Εναλλακτικά, μπορείτε επίσης να εισαγάγετε τη μαύρη λίστα ως τηλεφωνικό κατάλογο στο δρομολογητή σας "FRITZ!Box" στο Internet και να αποκλείσετε κλήσεις από αριθμούς που περιλαμβάνονται σε αυτόν τον <a th:href="@{/setup.jsp}">ειδικό τηλεφωνικό κατάλογο</a>. Δεν χρειάζεται πλέον να μπλοκάρετε χειροκίνητα σειρές αριθμών, επειδή το Fritz!Box σας ενημερώνει αυτόματα τη λίστα αποκλεισμένων κλήσεων κάθε βράδυ. Μόλις ένας αριθμός προστεθεί σε αυτή τη μαύρη λίστα, το FRITZ!Box σας απορρίπτει αυτόματα τους καλούντες με αυτόν τον αριθμό. Ωστόσο, ο <a th:href="@{/anrufbeantworter/}">απαντητής</a> είναι η καλύτερη λύση, επειδή ο τηλεφωνικός κατάλογος έχει περιορισμένο μέγεθος και δεν μπορεί να χωρέσει όλους τους αριθμούς στη λίστα αποκλεισμού.</p>
+
+		<p data-tx="t0010">Εάν εξακολουθείτε να λαμβάνετε μια ανεπιθύμητη κλήση επειδή ο αριθμός δεν έχει ακόμη προστεθεί στη λίστα αποκλεισμένων κλήσεων, μπορείτε εύκολα να αποκλείσετε τον <a th:href="@{/block.jsp}">αριθμό στο FRITZ!Box</a>. Για να το κάνετε αυτό, κάντε μια καταχώρηση για τον ανεπιθύμητο καλούντα στο βιβλίο διευθύνσεων PhoneBlock απευθείας στο Fritz! Μόλις το κάνετε αυτό, το FrizBox σας θα ενημερώσει τη λίστα αποκλεισμού για όλα τα μέλη της κοινότητας PhoneBlock και οι κλήσεις από αυτόν τον νέο αριθμό θα μπλοκαριστούν επίσης αμέσως για όλους τους άλλους. Αυτό είναι λίγο πιο χρονοβόρο από το να μπλοκάρετε απευθείας τον αριθμό στο Fritz!Phone σας, αλλά έχει το πλεονέκτημα ότι προστατεύετε ολόκληρη την κοινότητα PhoneBlock από <a th:href="@{/status.jsp}">περισσότερες κλήσεις spam</a>.</p>
+
+		<h2 data-tx="t0011">Ποιες είναι οι απαιτήσεις;</h2>
+
+		<div class="fritzbox-position">
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"></img>
+			</a>
+		</div>
+		
+		<p data-tx="t0012">Το PhoneBlock μπορεί να μπλοκάρει τις ανεπιθύμητες κλήσεις είτε στο <a th:href="@{/setup.jsp}">"σταθερό τηλέφωνο"</a> σε συνδυασμό με έναν <a th:href="@{/link/fritzbox}">"FRITZ!Box" δρομολογητή Internet από την AVM</a>, είτε να εμφανίζει απευθείας στο <a th:href="@{/setup-android/}">κινητό σας τηλέφωνο</a> εάν ένας καλούντας είναι δυνητικά ανεπιθύμητος.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			  <input id="context-path" th:value="@{/}" type="hidden"></input>
+			<a class="button is-medium is-info is-fullwidth" href="#" id="search-fritzbox">
+				<span class="icon is-small is-left">
+					<i class="fa-solid fa-magnifying-glass"></i>
+				</span>
+				<span data-tx="t0013">Αναζήτηση Fritz!Box</span>
+			</a>
+		  </div>
+		</div>
+
+		<p data-tx="t0014">Δεν είστε σίγουροι αν έχετε κουτί Fritz! Αν βρίσκεστε στο σπίτι σας στο WLan, τότε πατήστε το κουμπί αναζήτησης παραπάνω. Το PhoneBlock θα προσπαθήσει στη συνέχεια να βρει ένα κουτί Fritz! στη γειτονιά σας.</p>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Nutzungsbedingungen')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Warunki użytkowania</h1>
+		
+		<p data-tx="t0002">PhoneBlock może pomóc w cyfrowej samoobronie przed terrorem telefonicznym i niechcianymi połączeniami reklamowymi. PhoneBlock jest <a th:href="@{/impressum.jsp}">moim</a> prywatnym <a href="https://github.com/haumacher/phoneblock">projektem</a> i cieszę się, że mogę pozwolić ci uczestniczyć w nim bezpłatnie.</p>
+		
+		<h2 data-tx="t0003">Zastrzeżenie</h2>
+		
+		<p data-tx="t0004">Użytkownik korzysta z PhoneBlock wyłącznie na własne ryzyko. Korzystając z PhoneBlock, użytkownik jest świadomy, że błąd w oprogramowaniu lub ewentualne złośliwe dodanie numerów do listy blokowania może zablokować numer, z którego użytkownik może chcieć uzyskać połączenie.</p>
+		
+		<h2 data-tx="t0005">Zastosowanie komercyjne</h2>
+		
+		<p data-tx="t0006">Odradzam korzystanie z PhoneBlock na firmowym połączeniu telefonicznym. Jeśli mimo wszystko chcesz to zrobić, ponosisz wyłączne ryzyko za wszelkie szkody, które mogą z tego wyniknąć. Aby zminimalizować ryzyko użytkowania, zalecam, aby nie blokować numerów na liście blokowanych, a jedynie przekierowywać je na automatyczną sekretarkę. Zdecydowanie odradzam również korzystanie z automatycznej sekretarki PhoneBlock w środowisku komercyjnym - w żadnym wypadku nie chcesz ryzykować, że potencjalny klient na Twojej linii telefonicznej zostanie "oszukany" przez automatyczną sekretarkę.</p>
+		
+		<h2 data-tx="t0007">Działanie serwera PhoneBlock</h2>
+		
+		<p data-tx="t0008">PhoneBlock jest dostępny bezpłatnie. Jednak działanie aplikacji internetowej nie jest bezpłatne. Jeśli PhoneBlock Ci pomaga, możesz przyczynić się do pokrycia kosztów operacyjnych w formie <a th:href="@{/support.jsp}">małej darowizny</a>. Nie oczekujesz jednak niczego w zamian.</p>
+		
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

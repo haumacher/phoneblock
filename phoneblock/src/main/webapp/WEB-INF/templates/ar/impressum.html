@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Impressum')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">بصمة</h1>
+
+		<p data-tx="t0002">PhoneBlock هو <a href="https://github.com/haumacher/phoneblock"> مشروع خاص  يمكن أن يساعدك في الدفاع الرقمي الذاتي ضد الإرهاب الهاتفي والمكالمات الإعلانية غير المرغوب فيها. PhoneBlock ليس منتجًا ولا خدمة تجارية بالمعنى المقصود في قانون الخدمات الرقمية <a href="https://www.gesetze-im-internet.de/ddg/__5.html">.</a></a></p>
+		
+		<p data-tx="t0003">أنا (بيرنهارد هاوماخر &lt;<button class="showaddr">&gt;... </button>&gt;) أقوم بتشغيل هذا الموقع الإلكتروني بصفتي الشخصية من أجل متعتي الشخصية وبدافع المصلحة التكنولوجية. وأتيح لك استخدام البرنامج مجانًا وأوفر لك أيضًا سعة الخادم اللازمة مجانًا. إذا كنت ترغب في المساهمة في تكاليف التشغيل أو ببساطة أن تقول "شكرًا لك"، فيمكنك "التبرع" بمبلغ صغير <a th:href="@{/support.jsp}">. ومع ذلك، يمكنك القيام بذلك دون توقع أي شيء في المقابل.</a></p>
+		
+		<p data-tx="t0004">تم تطوير البرنامج وراء هذا الموقع من قبل بيرنهارد هاوماخر <button class="showaddr">... وآخرين. إذا كانت لديك أي أسئلة لم تتم الإجابة عليها بالفعل في <a th:href="@{/faq.jsp}"> الأسئلة  و <a th:href="@{/usage.jsp}"> شروط الاستخدام ، فلا تتردد في الاتصال بي (<button class="showaddr">...). ومع ذلك، لا أرغب في تلقي مكالمات هاتفية أو زيارات، ولهذا السبب فإن البريد الإلكتروني هو خيار الاتصال الوحيد. في حالة وجود مشاكل، على سبيل المثال، إذا تمت إضافة رقم هاتفك عن طريق الخطأ إلى قائمة الحظر، فسيسعدني مساعدتك على الفور وبدون تعقيدات.</button></a></a></button></p>
+
+		</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Anmeldung')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">التسجيل</h1>
+	</div>
+	
+	<div class="content">
+		<p data-tx="t0002">لإعداد PhoneBlock كـ <a th:href="@{/setup.jsp}"> دليل هاتف قائمة الحظر، أو <a th:href="@{/anrufbeantworter/}"> جهاز الرد الآلي الذكي، يجب عليك أولاً التسجيل هنا.</a></a></p>
+
+		<p data-tx="t0003">بعد تسجيل الدخول، يمكنك أن تحدد في <a th:href="@{/settings}"> إعدادات حظر الهاتف</a>، على سبيل المثال، مستوى الثقة الذي يُضاف منه رقم الهاتف إلى قائمة الحظر الخاصة بك أو الحد الأقصى لطول قائمة الحظر الخاصة بك.</p>
+
+		<p data-tx="t0004">تتطلب إدارة <a th:href="@{/ab/}"> جهاز الرد الآلي الخاص بك PhoneBlock</a> أيضًا التسجيل.</p> 
+	</div>
+
+	<div th:replace="~{fragments/login-forms :: forms(web=true)}">
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

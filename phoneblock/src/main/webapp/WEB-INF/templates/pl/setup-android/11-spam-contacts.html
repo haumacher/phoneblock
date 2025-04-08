@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Instalacja w systemie Android</h1>
+		
+		<h2 data-tx="t0002">Gotowe, lista blokad zostanie wprowadzona do kontaktów.</h2>
+		
+		<p data-tx="t0003">Otwórz swoje kontakty. Pod literą "S" znajdziesz długą listę numerów spamowych, na które nie powinieneś odpowiadać ani oddzwaniać.</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Konto jest skonfigurowane" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/11-spam-contacts.png}">Instalacja w systemie Android</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Powrót</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/status}">
+		    <span data-tx="t0005">Zakończony</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

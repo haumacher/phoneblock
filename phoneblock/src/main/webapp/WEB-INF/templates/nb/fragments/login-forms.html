@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+
+<th:block th:fragment="forms(web)">
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Logg inn med Google</span></a>
+		</p>
+		<div class="is-collapsible" id="googleLogin">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="get" th:action="@{/oauth/login}">
+
+			    <input name="force_client" th:value="${googleClient}" type="hidden"></input>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+	
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0002">Forbli innlogget på denne enheten (setter en <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0003">Ved å registrere deg godtar du <a th:href="@{/usage.jsp}">Bruksvilkårene</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0004">Fortsett til Google</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0005">Hvis du har en Google-konto, kan du bruke den til å logge på PhoneBlock på en enkel måte. Første gang du logger på med Google, opprettes det en PhoneBlock-konto. I fremtiden kan du enten logge inn med det PhoneBlock-brukernavnet du har opprettet, eller på nytt via Google.</p>
+				
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>
+
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Logg inn med e-post</span></a></p>
+		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
+			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
+	  		<div class="panel-block">
+	  		<div class="content">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+				<div class="field">
+					<label class="label" data-tx="t0007">e-post</label>
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0020" name="email" placeholder="E-postadressen din" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
+					    <span class="icon is-small is-left">
+					      <i class="fas fa-envelope"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${emailMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}"></p>
+				</div>
+
+				<div>
+					<label class="label" data-tx="t0019">Sikkerhetskode</label>
+
+					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"></img>
+
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0022" name="captcha" placeholder="Tekst i bildet over" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"></input>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-key"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${captchaMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${captchaMessage}" th:text="${captchaMessage}"></p>
+				</div>
+				
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0008">Forbli innlogget på denne enheten (setter en <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0009">Ved å registrere deg godtar du <a th:href="@{/usage.jsp}">Bruksvilkårene</a>.</div>
+				</div>
+
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0010">Forespørselskode</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0011">Du vil motta en kode til e-postadressen du har oppgitt, som du kan bruke til å logge inn med. Den første innloggingen med e-post oppretter en PhoneBlock-konto. I fremtiden kan du logge inn med det genererte PhoneBlock-brukernavnet eller ved å sende en engangskode på nytt.</p>
+			</div>
+			</div>
+			</form>
+		</div>
+	</nav>
+	
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Logg inn med PhoneBlock-brukernavn</span></a>
+		</p>
+		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="post" th:action="${contextPath} + ${loginAction}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+				<div class="field">
+				  <p class="control has-icons-left has-icons-right">
+				    <input class="input" data-tx="t0023" placeholder="Brukernavn" th:name="${userNameParam}" type="text"></input>
+				    <span class="icon is-small is-left">
+				      <i class="fa-solid fa-user"></i>
+				    </span>
+				    <span class="icon is-small is-right">
+				      <i class="fas fa-check"></i>
+				    </span>
+				  </p>
+				  <p class="help" data-tx="t0013">Bruk brukernavnet du fikk da du registrerte deg hos Google, eller e-postadressen din.</p>
+				</div>
+				<div class="field">
+				  <p class="control has-icons-left">
+				    <input class="input" data-tx="t0024" placeholder="PhoneBlock-passord" th:name="${passwordParam}" type="password"></input>
+				    <span class="icon is-small is-left">
+				      <i class="fas fa-lock"></i>
+				    </span>
+				  </p>
+					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Innloggingsopplysningene stemmer ikke overens, vennligst sjekk oppføringene og prøv på nytt.</p>
+					  <p class="help" data-tx="t0015" th:unless="${loginError}">Passordet ble vist til deg etter første innlogging. Hvis du ikke lenger har passordet tilgjengelig, kan du logge inn med Google eller e-postadressen din, se ovenfor.</p>
+				</div>
+
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0016">Forbli innlogget på denne enheten (setter en <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0017">Ved å registrere deg godtar du <a th:href="@{/usage.jsp}">Bruksvilkårene</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0018">Logg inn</span>
+				    </button>
+				  </p>
+				</div>
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>	
+</th:block>
+
+</body>
+</html>

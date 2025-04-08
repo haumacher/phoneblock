@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head th:fragment="head">
+<th:block th:fragment="headContent">
+	<title th:text="${title}"></title>
+	
+	<meta content="text/html;charset=utf-8" http-equiv="content-type"></meta>
+
+	<meta http-equiv="content-language" th:content="${currentLang.tag}"></meta>
+	<link rel="alternate" th:each="lang : ${languages}" th:href="|https://phoneblock.net${contextPath}${currentPage}?lang=${lang.tag}|" th:hreflang="${lang.tag}" th:unless="${lang == currentLang}"></link>	
+	
+	<meta content="width=device-width, initial-scale=1" name="viewport"></meta>
+	<meta name="description" th:content="${description}" th:if="${description}"></meta>
+	<meta name="keywords" th:content="${keywords}" th:if="${keywords}"></meta>
+	<meta content="summary" name="twitter:card"></meta>
+	<meta content="@bhaumacher" name="twitter:site"></meta>
+	<meta content="@bhaumacher" name="twitter:creator"></meta>
+	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"></meta>
+	
+	<meta name="og:title" th:content="${title}"></meta>
+	<meta name="og:url" th:content="${canonical}"></meta>
+	<link rel="canonical" th:href="${canonical}"></link>
+	<meta name="og:description" th:content="${description}" th:if="${description}"></meta>
+	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"></meta>
+	<meta content="website" name="og:type"></meta>
+	<meta content="de_DE" name="og:locale"></meta>
+	<meta content="PhoneBlock" name="og:site_name"></meta>
+	
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulma}/css/bulma.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCollapsible}/css/bulma-collapsible.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCalendar}/dist/css/bulma-calendar.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"></link>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.flags}/css/flag-icons.min.css|"></link>
+	
+	<link data-tx="t0042" href="https://news.phoneblock.net/feed" rel="alternate" title="تحديثات PhoneBlock" type="application/rss+xml"></link>
+	
+	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"></link>
+	
+	<script th:src="|${contextPath}${deps.jquery}/jquery.min.js|" type="text/javascript"></script>
+	<script th:src="@{/assets/js/phoneblock.js(v=5)}" type="text/javascript"></script>
+	<script th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|" type="text/javascript"></script>
+	<script th:src="|${contextPath}${deps.bulmaCalendar}/dist/js/bulma-calendar.min.js|" type="text/javascript"></script>
+</th:block>
+</head>
+
+<body>
+<section class="hero is-small is-primary" th:fragment="header">
+	<div class="hero-body">
+		<div class="title">
+			<img alt="شعار فون بلوك" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"></img>
+			<a data-tx="t0001" th:href="@{/}">فون بلوك</a>
+			
+			<div class="dropdown is-hoverable">
+			  <div class="dropdown-trigger">
+			    <button aria-controls="dropdown-menu" aria-haspopup="true" class="button lang-select">
+			      <span th:class="|fi fi-${currentLang.flag}|"></span>
+			      <span class="icon is-small">
+			        <i aria-hidden="true" class="fas fa-angle-down"></i>
+			      </span>
+			    </button>
+			  </div>
+			  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+			    <div class="dropdown-content">
+			      <a class="dropdown-item" th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
+			    </div>
+			  </div>
+			</div>			
+		</div>
+
+		<p class="subtitle" data-tx="t0002">فلتر الرسائل غير المرغوب فيها لهاتفك</p>
+		<a target="_blank" th:href="@{/link/github}">
+			<img alt="أنشئ لي شوكة على GitHub" class="github-image" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"></img>
+		</a>
+	</div>
+  <div class="hero-foot">
+  <nav aria-label="main navigation" class="navbar" role="navigation">
+	<div class="navbar-brand">
+		<div class="navbar-item"> 
+		<div class="control has-icons-left has-icons-right">
+		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="التحقيق في رقم الهاتف" type="tel"></input>
+		  <span class="icon is-small is-left">
+		    <i class="fas fa-phone"></i>
+		  </span>
+		  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
+		    <i class="fas fa-search"></i>
+		  </span>
+		</div>
+		</div>
+
+		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		</a>
+	</div>
+	<div class="navbar-menu" id="navbarBasicExample">
+		<div class="navbar-start">
+			<div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link prevent-default" data-tx="t0003" href="#">التركيب</a>
+
+				<div class="navbar-dropdown">
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">جهاز الرد الآلي</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup.jsp}">دليل هاتف بلوك ليست</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">أندرويد</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">آيفون</a>
+				</div>
+			</div>
+
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq.jsp}">الأسئلة الشائعة</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status.jsp}">الحالة</a>
+
+			<div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link prevent-default" data-tx="t0010">المزيد</a>
+
+				<div class="navbar-dropdown">
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support.jsp}">تبرع إلى PhoneBlock</a>
+					<hr class="navbar-divider"></hr>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">واجهة برمجة تطبيقات للمطورين</a>
+					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">مشروع GitHub</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block.jsp}">إضافة حظر المكالمات</a>
+					
+					<hr class="navbar-divider"></hr>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">الإبلاغ عن خطأ</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="navbar-end">
+			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="تطبيق Answerbot">
+				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"></img>
+		    </a>
+
+			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="إلى صفحة الأخبار">
+				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"></img>
+		    </a>
+      			
+			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="موجز RSS">
+				<span class="icon">
+			    	<i class="fa-solid fa-rss"></i>
+		        </span>
+		    </a>
+      			
+			<div class="navbar-item">
+				<div class="buttons">
+					<a class="button is-light" th:href="@{/login.jsp(location=${location})}" th:unless="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-right-to-bracket"></i>
+          				</span>
+						<strong data-tx="t0016">تسجيل الدخول</strong>
+					</a>
+					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-user"></i>
+          				</span>
+						<strong data-tx="t0017">الإعدادات</strong>
+					</a>
+					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-right-from-bracket"></i>
+          				</span>
+						<strong data-tx="t0018">تسجيل الخروج</strong>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+</div>  
+</section>
+
+<section class="section" th:fragment="actions">
+	<div class="grid is-col-min-15" th:if="${android}">
+		<div class="cell">
+			<a class="card" th:href="@{/setup-android/}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0034">فون بلوك للأندرويد</p>
+				<p class="subtitle" data-tx="t0035">لم يتم تثبيته بعد؟ إذاً قم بذلك!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0036">فون بلوك لفريتز! بوكس</p>
+				<p class="subtitle" data-tx="t0037">أوقف المكالمات الإعلانية على الخط الأرضي</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+
+	<div class="grid is-col-min-15" th:if="${iphone}">
+		<div class="cell">
+			<a class="card" th:href="@{/setup-ipone/}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0038">فون بلوك للآيفون</p>
+				<p class="subtitle" data-tx="t0039">لم يتم تثبيته بعد؟ إذاً قم بذلك!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0040">فون بلوك لفريتز! بوكس</p>
+				<p class="subtitle" data-tx="t0041">أوقف المكالمات الإعلانية على الخط الأرضي</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+
+	<div class="grid is-col-min-15" th:if="${fritzbox}">
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0040">فون بلوك لفريتز! بوكس</p>
+				<p class="subtitle" data-tx="t0041">أوقف المكالمات الإعلانية على الخط الأرضي</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/setup-android/}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0034">فون بلوك للأندرويد</p>
+				<p class="subtitle" data-tx="t0035">لم يتم تثبيته بعد؟ إذاً قم بذلك!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+</section>
+
+
+<th:block th:fragment="footer">
+<section class="section">
+	<div class="content">
+		<h2 data-tx="t0019">شارك معنا!</h2>
+		
+		<p data-tx="t0020">إذا كنت تحب PhoneBlock، يرجى المساعدة في نشر الخبر ومشاركته مع أصدقائك. فكلما زاد عدد الأشخاص المشاركين، قلت فرصة تلقيك لمكالمة إعلانية!</p>
+	</div>
+</section>
+  
+<footer class="footer">
+	<div class="content has-text-centered">
+		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 بواسطة <a href="https://haumacher.de" target="_blank">برنهارد هوماخر</a>. الكود المصدري مرخص بموجب <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. محتوى الموقع الإلكتروني مرخص بموجب <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
+		
+		<p data-tx="t0022"><strong>FRITZ!Box</strong> و<strong>FITZ!OS</strong> علامتان تجاريتان مسجلتان لـ <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> لا علاقة لها بذلك.</p>
+
+		<p>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz.jsp}">حماية البيانات - لا تتبع ولا إعلانات ولا بسكويت</a></strong><br></br>
+			<strong><a data-tx="t0024" th:href="@{/usage.jsp}">شروط الاستخدام</a></strong><br></br>
+			<strong><a data-tx="t0025" th:href="@{/impressum.jsp}">بصمة</a></strong>
+		</p>
+	</div>
+</footer>
+
+<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+</th:block>
+
+</body>
+</html>

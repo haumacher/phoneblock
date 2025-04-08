@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="PhoneBlock antwoordapparaat logo" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"></img>
+		</div>
+	
+		<h1 data-tx="t0001">Installatie als antwoordapparaat</h1>
+		
+		<p data-tx="t0002">PhoneBlock biedt u een intelligent antwoordapparaat dat automatisch alleen opneemt als het nummer van de beller voorkomt in de <a th:href="@{/status.jsp}">SPAM database</a> van PhoneBlock. Net als voor het <a th:href="@{/setup.jsp}">instellen van de blokkadelijst</a> heeft u hiervoor geen eigen apparaat of computer nodig. U maakt hier op de website een PhoneBlock-antwoordapparaat aan en registreert het via internet op uw Fritz!Box of een andere VOIP-geschikte internetrouter. Hoe het PhoneBlock antwoordapparaat precies werkt, leest u <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">hier</a>.</p>
+		
+		<p data-tx="t0003">De volgende stappen brengen u naar uw PhoneBlock antwoordapparaat:</p>
+		
+		<ol>
+			<li><a data-tx="t0004" href="#register">Registreren bij PhoneBlock</a></li>
+			<li><a data-tx="t0005" href="#create">Antwoordapparaat maken</a></li>
+			<li><a data-tx="t0006" href="#dyndns">DynDNS instellen in de Fritz!Box</a></li>
+			<li><a data-tx="t0007" href="#sip">Het telefoontoestel instellen in de Fritz!</a></li>
+			<li><a data-tx="t0008" href="#enable">PhoneBlock antwoordapparaat inschakelen</a></li>
+			<li><a data-tx="t0009" href="#test">Antwoordapparaat testen</a></li>
+		</ol>
+		
+		 <p data-tx="t0010">De instructies leiden je stap voor stap door de installatie. De configuratie in de Fritz!Box is niet eenvoudig, maar als je de hier beschreven procedure precies volgt, kan er niets misgaan.</p>
+		 
+		<h2 data-tx="t0011" id="register">Stap 1: Registreren bij PhoneBlock</h2>
+
+		<p data-tx="t0012">Vanaf hier hebt u drie browservensters (of tabbladen) nodig. Eén voor deze handleiding, één voor de PhoneBlock-beantwoorderapp en één voor de configuratie-interface van uw Fritz!</p>
+		
+		<p data-tx="t0013" th:if="${loggedIn}">Eerst moet u zich registreren of aanmelden bij PhoneBlock om de installatie te starten.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			    <span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+			    </span>
+				<span data-tx="t0014">Inloggen</span>			
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0015" unless:if="${loggedIn}">Je bent ingelogd als <code th:text="${userName}"></code>, geweldig, laten we naar de volgende stap gaan!</p>
+		
+		<h2 data-tx="t0016" id="create">Stap 2: Antwoordapparaat maken</h2>
+		
+		<p data-tx="t0017">Als je hier klikt, wordt er een venster geopend met de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock antwoordapparaat app</a>. Als je deze voor de eerste keer opent, is de lijst met je antwoordapparaten leeg en is er rechtsonder een knop waarmee je een antwoordapparaat kunt maken. Druk op deze plusknop.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0018">App openen</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="DynDNS instellen" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0019" id="dyndns">Stap 4: DynDNS instellen</h2>
+		
+		<p data-tx="t0020">Via "DynDNS" geeft uw Fritz! box zijn IP-adres door aan PhoneBlock. Dit is nodig zodat het PhoneBlock antwoordapparaat uw Fritz!</p>
+		
+		<h3 data-tx="t0021">PhoneBlock DynDNS activeren</h3>
+		
+		<p data-tx="t0022">Activeer de schakelaar "Use PhoneBlock DynDNS" in de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat-app</a> (als je de weg weet en al een andere DynDNS-provider gebruikt, kun je ook rechtstreeks de hostnaam van je Fritz!Box invoeren).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="DynDNS instellen" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0023">Bevestig op de volgende pagina met "DynDNS activeren".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="DynDNS instellen" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0024">U ontvangt nu toegangsgegevens voor de PhoneBlock DynDNS, die u kunt invoeren in uw Fritz!Box (zie hieronder).</p>
+
+		<h3 data-tx="t0025">Voer aanmeldingsgegevens in de Fritz!Box in</h3>
+		
+		<p data-tx="t0026">Deze link <a class="showFB" href="http://fritz.box" target="fritzbox">opent een venster voor je Fritz!Box</a>. Log daar in met je Fritz!Box wachtwoord. Als je dit nog nooit eerder hebt gedaan, vind je het wachtwoord onderaan de Fritz!</p>
+		
+		<p data-tx="t0027">Navigeer in je <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> naar "Internet &gt; Aandelen" in de zijbalk en selecteer het tabblad "DynDNS".</p>
+
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0028">Open Fritz!Box</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="DynDNS instellen" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0029">Kopieer de gegevens voor "Update url", "Domeinnaam", "Gebruikersnaam" en "Wachtwoord" van de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat-app</a> en voer ze in je <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> in. En bevestig met "Toepassen" (punt 5 in de afbeelding hieronder).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="DynDNS instellen" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0030">Controleer DynDNS</h3>
+
+		<p data-tx="t0031">Ga nu terug naar de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat-app</a> en controleer de instellingen (punt 6 in bovenstaande afbeelding). Als PhoneBlock uw Fritz!Box heeft gevonden, komt u op de volgende pagina met de toegangsgegevens voor het eigenlijke antwoordapparaat.</p>
+		
+		<h2 data-tx="t0032" id="sip">Stap 4: Het antwoordapparaat instellen in de Fritz!</h2>
+		
+		<p data-tx="t0033">Het antwoordapparaat is nu ingesteld als telefonieapparaat in de Fritz! Om dit te doen, open je de <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box interface</a> opnieuw.</p>
+
+		<h3 data-tx="t0034">Het telefoonapparaat instellen</h3>
+
+		<p data-tx="t0035">Navigeer naar "Telefonie &gt; Telefonieapparaten" in de zijbalk en klik op de knop "Nieuw apparaat instellen".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Apparaat instellen" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0036">Selecteer type apparaat</h3>
+
+		<p data-tx="t0037">Selecteer de optie "Telefoon (met en zonder antwoordapparaat)" en klik op "Volgende". Opmerking: Selecteer <b>niet</b> de voor de hand liggende optie "Antwoordapparaat", omdat deze alleen kan worden gebruikt om antwoordapparaten te configureren die permanent zijn geïnstalleerd in de Fritz!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Apparaat maken" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0038">De IP-telefoon configureren</h3>
+
+		<p data-tx="t0039">Selecteer op de pagina "Telefoon verbinden" de optie "LAN/WLAN (IP-telefoon)" en geef het nieuwe apparaat de naam "PhoneBlock" in het tekstveld eronder. Klik vervolgens op "Volgende".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="IP-telefoon aanmaken" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040">Toegangsgegevens overdragen</h3>
+
+		<p data-tx="t0041">Op de volgende pagina "Instellingen toepassen in IP-telefoon" wordt gevraagd om "Gebruikersnaam" en "Wachtwoord". Kopieer hier de overeenkomstige gegevens die worden weergegeven in de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat app&lt;/x1 Klik op "Volgende".</a></p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Gebruikersgegevens" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0042">Instellingen voor uitgaande gesprekken</h3>
+
+		<p data-tx="t0043">Op de pagina "Telefoon instellen voor uitgaande gesprekken" kunt u gewoon op "Volgende" klikken. Het PhoneBlock antwoordapparaat heeft geen telefoonnummer nodig voor uitgaande gesprekken omdat het nooit actief belt. We zullen dit nummer in een latere stap deactiveren zodat je antwoordapparaat echt niet kan bellen.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Uitgaande gesprekken" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0044">Te beschermen nummers selecteren</h3>
+
+		<p data-tx="t0045">Op de pagina "Telefooninstellingen voor inkomende oproepen instellen" moet je de standaardinstelling "Alle oproepen accepteren" laten staan. Als je alleen bepaalde nummers wilt beschermen tegen SPAM-oproepen, kun je ook de nummers selecteren waarvoor het antwoordapparaat überhaupt een oproep te zien krijgt. Klik op "Volgende".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Beschermde nummers" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0046">Configuratie bevestigen</h3>
+
+		<p data-tx="t0047">Je komt nu op de overzichtspagina "Instellingen toepassen". Je kunt de instellingen die je hebt gemaakt nogmaals controleren en ze bevestigen met "Toepassen".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Instellingen controleren" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0048">De configuratie van het apparaat voltooien</h3>
+
+		<p data-tx="t0049">U bent terug in het "Apparatenoverzicht". Je zou nu je nieuwe antwoordapparaat "PhoneBlock" in de lijst moeten zien staan. Voordat je het antwoordapparaat kunt inschakelen, moet je echter verdere instellingen uitvoeren. Klik hiervoor op het bewerkingspotlood aan het einde van de regel PhoneBlock.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Antwoordapparaat bewerken" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050">Uitgaande gesprekken stoppen</h3>
+
+		<p data-tx="t0051">In het selectieveld "Uitgaande gesprekken" kunt u nu de laatste lege vermelding selecteren om ervoor te zorgen dat uw antwoordapparaat niet zelfstandig kan bellen. Klik <b>niet</b> op de knop Toepassen onderaan, maar op het tweede tabblad "Inloggegevens". Er wordt nu gevraagd of u de wijzigingen wilt opslaan. Klik in deze dialoog op "Toepassen".</p>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Uitgaande gesprekken voorkomen" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"></img>
+	  		</div>
+			<div class="column">
+	  			<img alt="Bevestig" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0052">Aanmelden vanaf het internet toestaan</h3>
+
+		<p data-tx="t0053">In het tabblad "Inloggegevens" moet je nu de optie "Inlog vanaf internet toestaan" activeren en het wachtwoord opnieuw kopiëren uit de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat-app</a> en invoeren in het veld "Wachtwoord". Klik dan pas op de knop "Toepassen".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Toegang via internet" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0054" id="enable">Stap 5: Het antwoordapparaat inschakelen</h2>
+		
+		<p data-tx="t0055">De configuratie van je antwoordapparaat is nu voltooid. Ga terug naar de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat app</a> en zet je nieuwe antwoordapparaat aan.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Toegang via internet" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0056">Gefeliciteerd, als alles goed is gegaan, wordt het antwoordapparaat nu groen weergegeven als "ingeschakeld" in de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">antwoordapparaat-app</a>. De volgende onaangename bellers kun je voortaan met PhoneBlock bespreken.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Antwoordapparaat aangesloten" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0057" id="test">Stap 6: Het antwoordapparaat testen</h2>
+
+		<p data-tx="t0058">Als u wilt uitproberen hoe een gesprek met het niet alledaagse PhoneBlock antwoordapparaat werkt, kunt u het bellen vanaf een telefoon die rechtstreeks op de Fritz!Box is aangesloten (bijvoorbeeld een draadloze DECT-telefoon) via het <b>interne nummer</b> van het antwoordapparaat. Het antwoordapparaat accepteert dergelijke testoproepen altijd. <b>Belangrijk:</b> Dit werkt <b>alleen</b> via het interne nummer van het antwoordapparaat (begint meestal met "**"). Je kunt het interne nummer vinden in het apparaatoverzicht van je Fritz!Box in de regel "PhoneBlock". Waarom probeer je niet een fotovoltaïsch systeem voor hem te schatten? Veel plezier!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Antwoordapparaat aangesloten" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"></img>
+	  		</div>
+		</div>
+		
+	</div>
+</section>
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

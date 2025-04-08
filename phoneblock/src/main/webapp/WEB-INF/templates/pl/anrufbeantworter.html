@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="Logo automatycznej sekretarki PhoneBlock" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"></img>
+		</div>
+	
+		<h1 data-tx="t0001">Instalacja jako automatyczna sekretarka</h1>
+		
+		<p data-tx="t0002">PhoneBlock oferuje inteligentną automatyczną sekretarkę, która automatycznie odbiera połączenia tylko wtedy, gdy numer dzwoniącego znajduje się w <a th:href="@{/status.jsp}">bazie danych spamu</a> PhoneBlock. Podobnie jak w przypadku <a th:href="@{/setup.jsp}">konfiguracji listy blokowania</a>, nie potrzebujesz do tego własnego urządzenia ani komputera. Tworzysz automatyczną sekretarkę PhoneBlock tutaj na stronie internetowej i rejestrujesz ją przez Internet na swoim Fritz!Box lub innym routerze internetowym obsługującym VOIP. Możesz dowiedzieć się dokładnie, jak działa automatyczna sekretarka PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">tutaj</a>.</p>
+		
+		<p data-tx="t0003">Poniższe kroki prowadzą do automatycznej sekretarki PhoneBlock:</p>
+		
+		<ol>
+			<li><a data-tx="t0004" href="#register">Zarejestruj się w PhoneBlock</a></li>
+			<li><a data-tx="t0005" href="#create">Tworzenie automatycznej sekretarki</a></li>
+			<li><a data-tx="t0006" href="#dyndns">Konfiguracja DynDNS w Fritz!Box</a></li>
+			<li><a data-tx="t0007" href="#sip">Konfiguracja urządzenia telefonicznego w aplikacji Fritz!</a></li>
+			<li><a data-tx="t0008" href="#enable">Włącz automatyczną sekretarkę PhoneBlock</a></li>
+			<li><a data-tx="t0009" href="#test">Test automatycznej sekretarki</a></li>
+		</ol>
+		
+		 <p data-tx="t0010">Instrukcje poprowadzą użytkownika krok po kroku przez proces konfiguracji. Konfiguracja Fritz!Box nie jest łatwa, ale jeśli będziesz dokładnie przestrzegać opisanej tutaj procedury, nic nie może pójść źle.</p>
+		 
+		<h2 data-tx="t0011" id="register">Krok 1: Rejestracja w PhoneBlock</h2>
+
+		<p data-tx="t0012">Od tego momentu potrzebne będą trzy okna przeglądarki (lub karty). Jedno dla tego przewodnika, jedno dla aplikacji automatycznej sekretarki PhoneBlock i jedno dla interfejsu konfiguracyjnego Fritz!</p>
+		
+		<p data-tx="t0013" th:if="${loggedIn}">Po pierwsze, musisz zarejestrować się lub zalogować do PhoneBlock, aby rozpocząć konfigurację.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			    <span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+			    </span>
+				<span data-tx="t0014">Zaloguj się</span>			
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0015" unless:if="${loggedIn}">Jesteś zalogowany jako <code th:text="${userName}"></code>, świetnie, przejdźmy do następnego kroku!</p>
+		
+		<h2 data-tx="t0016" id="create">Krok 2: Utwórz automatyczną sekretarkę</h2>
+		
+		<p data-tx="t0017">Kliknięcie tutaj otwiera okno z aplikacją automatycznej sekretarki <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock</a>. Po pierwszym otwarciu lista automatycznych sekretarek jest pusta, a w prawym dolnym rogu znajduje się przycisk, za pomocą którego można utworzyć automatyczną sekretarkę. Naciśnij ten przycisk plus.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0018">Otwórz aplikację</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfiguracja DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0019" id="dyndns">Krok 4: Konfiguracja DynDNS</h2>
+		
+		<p data-tx="t0020">Poprzez "DynDNS" Fritz! Box informuje PhoneBlock o swoim adresie IP. Jest to konieczne, aby automatyczna sekretarka PhoneBlock mogła znaleźć skrzynkę Fritz!</p>
+		
+		<h3 data-tx="t0021">Aktywacja PhoneBlock DynDNS</h3>
+		
+		<p data-tx="t0022">Aktywuj przełącznik "Use PhoneBlock DynDNS" w aplikacji <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine</a> (jeśli znasz się na rzeczy i korzystasz już z innego dostawcy DynDNS, możesz również bezpośrednio wprowadzić nazwę hosta swojego Fritz!Box).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfiguracja DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0023">Na następnej stronie potwierdź przyciskiem "Activate DynDNS".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfiguracja DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0024">Otrzymasz teraz dane dostępu do PhoneBlock DynDNS, które możesz wprowadzić do swojego Fritz!Box (patrz poniżej).</p>
+
+		<h3 data-tx="t0025">Wprowadź dane logowania w polu Fritz!Box</h3>
+		
+		<p data-tx="t0026">Ten link <a class="showFB" href="http://fritz.box" target="fritzbox">otwiera okno Fritz!Box</a>. Zaloguj się tam za pomocą hasła Fritz!Box. Jeśli nigdy wcześniej tego nie robiłeś, hasło znajdziesz na dole okna Fritz!</p>
+		
+		<p data-tx="t0027">W <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> przejdź do "Internet &gt; Shares" na pasku bocznym i wybierz zakładkę "DynDNS".</p>
+
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0028">Otwórz Fritz!Box</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfiguracja DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0029">Skopiuj dane dla "Update url", "Domain name", "User name" i "Password" z <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> i wprowadź je do <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Następnie potwierdź przyciskiem "Zastosuj" (punkt 5 na poniższym obrazku).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfiguracja DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0030">Sprawdź DynDNS</h3>
+
+		<p data-tx="t0031">Teraz wróć do aplikacji <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine</a> i sprawdź ustawienia (punkt 6 na powyższym obrazku). Jeśli PhoneBlock znalazł Fritz!Box, zostaniesz przeniesiony do następnej strony z danymi dostępu do rzeczywistej automatycznej sekretarki.</p>
+		
+		<h2 data-tx="t0032" id="sip">Krok 4: Konfiguracja automatycznej sekretarki w urządzeniu Fritz!</h2>
+		
+		<p data-tx="t0033">Automatyczna sekretarka jest teraz skonfigurowana jako urządzenie telefoniczne w interfejsie Fritz! Aby to zrobić, otwórz ponownie interfejs <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
+
+		<h3 data-tx="t0034">Konfiguracja urządzenia telefonicznego</h3>
+
+		<p data-tx="t0035">Przejdź do "Telefonia &gt; Urządzenia telefonii" na pasku bocznym i kliknij przycisk "Skonfiguruj nowe urządzenie".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfiguracja urządzenia" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0036">Wybierz typ urządzenia</h3>
+
+		<p data-tx="t0037">Wybierz opcję "Telefon (z automatyczną sekretarką i bez)" i kliknij "Dalej". Uwaga: Nie <b>nie</b> wybieraj oczywistej opcji "Automatyczna sekretarka", ponieważ może ona być używana tylko do konfigurowania automatycznych sekretarek, które są na stałe zainstalowane w Fritz!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Utwórz urządzenie" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0038">Konfigurowanie telefonu IP</h3>
+
+		<p data-tx="t0039">Na stronie "Connect phone" wybierz opcję "LAN/WLAN (IP phone)" i nadaj nowemu urządzeniu nazwę "PhoneBlock" w polu tekstowym poniżej. Następnie kliknij "Next".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Tworzenie telefonu IP" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040">Przesyłanie danych dostępu</h3>
+
+		<p data-tx="t0041">Na następnej stronie "Zastosuj ustawienia w telefonie IP" zostaniesz poproszony o podanie "Nazwy użytkownika" i "Hasła". Skopiuj tutaj odpowiednie dane, które są wyświetlane w <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplikacji automatycznej sekretarki&lt;/x1 Kliknij "Dalej".</a></p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Dane użytkownika" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0042">Ustawienia połączeń wychodzących</h3>
+
+		<p data-tx="t0043">Na stronie "Skonfiguruj telefon do połączeń wychodzących" możesz po prostu kliknąć "Dalej". Automatyczna sekretarka PhoneBlock nie potrzebuje numeru telefonu do połączeń wychodzących, ponieważ nigdy aktywnie nie wykonuje połączeń. Dezaktywujemy ten numer w późniejszym kroku, aby automatyczna sekretarka naprawdę nie mogła wykonywać żadnych połączeń.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Połączenia wychodzące" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0044">Wybierz numery, które mają być chronione</h3>
+
+		<p data-tx="t0045">Na stronie "Konfiguracja ustawień telefonu dla połączeń przychodzących" należy pozostawić domyślne ustawienie "Akceptuj wszystkie połączenia". Jeśli chcesz chronić tylko niektóre numery przed połączeniami SPAM, możesz również wybrać numery, dla których automatyczna sekretarka będzie w ogóle widzieć połączenie. Kliknij przycisk "Dalej".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Numery chronione" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0046">Potwierdź konfigurację</h3>
+
+		<p data-tx="t0047">Nastąpi teraz przejście do strony podsumowania "Zastosuj ustawienia". Możesz ponownie sprawdzić wprowadzone ustawienia i potwierdzić je przyciskiem "Zastosuj".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Sprawdź ustawienia" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0048">Zakończenie konfiguracji urządzenia</h3>
+
+		<p data-tx="t0049">Jesteś z powrotem w "Przeglądzie urządzeń". Na liście powinna być teraz widoczna nowa automatyczna sekretarka "PhoneBlock". Zanim jednak będzie można włączyć automatyczną sekretarkę, należy dokonać dalszych ustawień. Aby to zrobić, kliknij ołówek edycji na końcu wiersza PhoneBlock.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Edycja automatycznej sekretarki" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050">Zatrzymywanie połączeń wychodzących</h3>
+
+		<p data-tx="t0051">W polu wyboru "Połączenia wychodzące" można teraz wybrać ostatni pusty wpis, aby automatyczna sekretarka nie mogła samodzielnie wykonywać połączeń. Nie <b></b> klikaj przycisku Zastosuj poniżej, ale na drugiej karcie "Dane logowania". Zostaniesz zapytany, czy chcesz zapisać zmiany. Kliknij "Zastosuj" w tym oknie dialogowym.</p>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Zapobieganie połączeniom wychodzącym" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"></img>
+	  		</div>
+			<div class="column">
+	  			<img alt="Potwierdzenie" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0052">Zezwalaj na logowanie z Internetu</h3>
+
+		<p data-tx="t0053">W zakładce "Dane logowania" należy teraz aktywować opcję "Zezwalaj na logowanie z Internetu" i ponownie skopiować hasło z aplikacji <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine</a> i wpisać je w polu "Hasło". Dopiero wtedy kliknij przycisk "Zastosuj".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Dostęp z Internetu" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0054" id="enable">Krok 5: Włącz automatyczną sekretarkę</h2>
+		
+		<p data-tx="t0055">Konfiguracja automatycznej sekretarki została zakończona. Wróć do aplikacji <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">automatyczna sekretarka</a> i włącz nową automatyczną sekretarkę.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Dostęp z Internetu" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0056">Gratulacje, jeśli wszystko poszło dobrze, automatyczna sekretarka powinna być teraz wyświetlana na zielono jako "włączona" w aplikacji <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">automatyczna sekretarka</a>. Następni nieprzyjemni rozmówcy mogą w przyszłości dyskutować z PhoneBlock.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Podłączona automatyczna sekretarka" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0057" id="test">Krok 6: Przetestuj automatyczną sekretarkę</h2>
+
+		<p data-tx="t0058">Jeśli chcesz wypróbować, jak działa połączenie z nie do końca codzienną automatyczną sekretarką PhoneBlock, możesz zadzwonić do niej z telefonu podłączonego bezpośrednio do Fritz!Box (np. telefonu bezprzewodowego DECT) za pośrednictwem <b>numeru wewnętrznego</b> automatycznej sekretarki. Automatyczna sekretarka zawsze akceptuje takie połączenia testowe. <b>Ważne:</b> Działa to <b>tylko</b> za pośrednictwem numeru wewnętrznego automatycznej sekretarki (zwykle zaczyna się od "**"). Numer wewnętrzny można znaleźć w wierszu "PhoneBlock" w przeglądzie urządzenia Fritz! Może spróbujesz oszacować dla niego system fotowoltaiczny? Miłej zabawy!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Podłączona automatyczna sekretarka" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"></img>
+	  		</div>
+		</div>
+		
+	</div>
+</section>
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

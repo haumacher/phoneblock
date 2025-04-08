@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<th:block th:replace="~{fragments/page :: headContent}"></th:block>
+
+<script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+<div class="content">
+	<h1 data-tx="t0001">Numer telefonu ☎ <th:block th:text="${info.phone}"></th:block></h1>
+
+	<p>
+		<th:block th:switch="${state}">
+		<span class="tag is-info is-success" data-tx="t0002" th:case="'whitelisted'"><i class="fa-solid fa-star"></i> Na białej liście</span>
+		<span class="tag is-info is-success" data-tx="t0004" th:case="'legitimate'">Brak skarg</span>
+		<span class="tag is-info is-warning" data-tx="t0003" th:case="'wildcard'">Podkładka numeryczna z podejrzanym spamem</span>
+		<span class="tag is-info is-warning" data-tx="t0005" th:case="'suspicious'">Skarga została złożona</span>
+		<span class="tag is-info is-warning" data-tx="t0034" th:case="'archived'">Stare skargi</span>
+		<span class="tag is-info is-danger" data-tx="t0006" th:case="'blocked'">Zablokowany</span>
+		</th:block>
+		
+		<span th:class="|tag is-info ${ratingCssClass}|" th:if="${info.votes &gt; 0 and rating.name != 'B_MISSED' and rating.name != 'A_LEGITIMATE'}" th:text="${ratingLabel}"></span>
+	</p>
+
+<article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
+  <div class="message-header">
+	<p data-tx="t0007">Informacje o numerze połączenia <th:block th:text="${info.phone}"></th:block></p>
+  </div>
+  <div class="message-body">
+  	<p th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	
+  	<th:block th:switch="${state}">
+  	<p data-tx="t0035" th:case="'whitelisted'">Numer telefonu znajduje się na białej liście i nie może zostać zablokowany przez PhoneBlock. Jeśli nadal czujesz się nękany przez ten numer, ustaw prywatną blokadę dla tego numeru.</p>
+  	<p data-tx="t0036" th:case="'legitimate'">Numer telefonu nie znajduje się w bazie danych <a th:href="@{/status.jsp}">PhoneBlock</a>. Jak dotąd nie ma głosów za zablokowaniem ☎ <code th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Sam numer telefonu nie znajduje się w bazie danych <a th:href="@{/status.jsp}">PhoneBlock</a>. Jednak numer ☎ <code th:text="${info.phone}"></code> pochodzi z bloku numerów z podejrzeniem spamu. <th:block th:if="${info.votesWildcard == 1}"> Głosowano za zablokowaniem bloku numerów. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Jest <th:block th:text="${info.votesWildcard}"></th:block> głosów za zablokowaniem bloku numerów. </th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">Są już <th:block th:text="${info.votes}"></th:block> głosy za zablokowaniem ☎ <code th:text="${info.phone}"></code>. Jednak numer nie został jeszcze zablokowany.</p>  	
+  	<p data-tx="t0039" th:case="'archived'">Istnieją <th:block th:text="${info.votes}"></th:block> stare głosy, które przemawiały za zablokowaniem ☎ <code th:text="${info.phone}"></code>. Jednak numer nie jest już zablokowany.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Numer telefonu ☎ <code th:text="${info.phone}"></code> jest wielokrotnie zgłaszanym źródłem <a th:href="@{/status.jsp}">niepożądanych połączeń telefonicznych</a>. <th:block th:text="${info.votes}"></th:block> Głosy opowiadają się za zablokowaniem numeru.</p>
+  	</th:block>
+
+	<ul>
+		<li data-tx="t0008">Alternatywne pisownie: <th:block th:if="${number.shortcut}"> <code th:text="${number.shortcut}"></code>, </th:block> <code th:text="${number.plus}"></code>, <code th:text="${number.zeroZero}"></code>.</li>
+		<li data-tx="t0009">Kraj: <th:block th:text="${number.country}"></th:block> (<code th:text="${number.countryCode}"></code>)</li>
+
+		<li data-tx="t0010" th:if="${number.city}">Miasto: <th:block th:text="${number.city}"></th:block> (<code th:text="${number.cityCode}"></code>)</li>
+
+		<li data-tx="t0011" th:if="${info.votes} &gt; 0">Głosy za zablokowaniem: <th:block th:text="${info.votes}"></th:block></li>
+		
+		<li data-tx="t0012" th:if="${info.votesWildcard} &gt; ${info.votes}">Głosy za zablokowaniem klawiatury numerycznej: <th:block th:text="${info.votesWildcard}"></th:block></li>
+		
+		<li data-tx="t0013" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Ostatnia skarga od: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
+
+		<li data-tx="t0014" th:if="${info.dateAdded} &gt; 0">Liczba aktywnych od: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
+	</ul>
+  </div>
+</article>
+
+	<p data-tx="t0015">Po zainstalowaniu aplikacji PhoneBlock można <em>automatycznie</em> blokować niechciane połączenia telefoniczne:</p>
+	
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+				<span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
+				</span>
+				<span data-tx="t0016">Automatyczna sekretarka</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+				<span class="icon">
+					<i class="fa-solid fa-phone"></i>
+				</span>
+				<span data-tx="t0017">Książka telefoniczna Fritz!Box</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+				<span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+				</span>
+				<span data-tx="t0018">Dla systemu Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+				<span class="icon">
+					<i class="fa-brands fa-apple"></i>
+				</span>
+				<span data-tx="t0019">Dla iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+<th:block th:if="${relatedNumbers.size &gt; 0}">
+	<p data-tx="t0020">Liczba ☎ <th:block th:text="${info.phone}"></th:block> może należeć do tego samego połączenia, co następujące liczby w bazie danych:</p>
+	
+	<blockquote class="related-numbers">
+		<span th:each="related : ${relatedNumbers}">
+			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
+		</span>
+	</blockquote>
+</th:block>	
+
+	<h2 data-tx="t0022" id="writeRating">Napisz opinię o <th:block th:text="${info.phone}"></th:block></h2>
+	
+	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Dziękuję za ocenę, pomagasz innym, którzy również są powołani.</div>
+	
+<th:block th:unless="${thanks}">
+	<p data-tx="t0024">Czy zostałeś wezwany przez ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Powiedz innym, czego mogą oczekiwać od ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Jeśli przeszkadzają Ci połączenia z ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">zainstaluj PhoneBlock</a> i zostaw opinię o ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+
+	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
+		<input name="phone" th:value="${info.phone}" type="hidden"></input>
+		
+		<div class="buttons">
+		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">
+		  		<input name="rating" th:checked="${#strings.equals(rating.name, enteredRating)}" th:value="${rating}" type="radio"></input>
+				<span class="icon">
+					<i th:class="${rating.iconClass}"></i>
+				</span>
+				<span th:text="${rating.label}"></span>
+	  		</label>
+		</div>
+
+		<p>			
+		<textarea class="textarea is-primary" data-tx="t0042" name="comment" placeholder="Twój raport - bez obelg i przekleństw!" th:text="${enteredComment}"></textarea>
+		</p>
+		
+		<th:block th:unless="${userName}">		
+		<p data-tx="t0025">Aby upewnić się, że ocena ma natychmiastowy wpływ na listę bloków, <a th:href="@{/login.jsp(location=${currentPage})}">zaloguj się najpierw</a>!</p>
+		
+		<p>
+			<label class="label" data-tx="t0041">Kod bezpieczeństwa</label>
+
+			<img alt="Captcha" data-tx="t0043" th:src="${captchaSrc}"></img>
+
+			<div class="control has-icons-left has-icons-right">
+			    <input class="input" data-tx="t0044" name="captcha" placeholder="Tekst na powyższym obrazku" type="text"></input>
+ 
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-key"></i>
+			    </span>
+			</div>
+ 
+			<p class="help is-danger" th:if="${captchaError}" th:text="${captchaError}"></p>
+		</p>
+		</th:block>
+		
+		<div class="buttons">
+			<button class="button is-rounded is-primary" name="send" type="submit">
+				<span class="icon">
+					<i class="fas fa-paper-plane"></i>
+				</span>
+				<span data-tx="t0026">Wyślij</span>
+			</button>
+		</div>
+	</form>
+</th:block>
+
+<div class="columns">
+	<div class="column is-half">
+	<div th:if="${ratings}">
+		<canvas aria-label="Anzahl Bewertungen" height="200" id="ratings" role="img" width="400"></canvas>
+		<pre class="chartjs-data" id="ratings-data">
+		{
+			"type": "bar",
+			"data": {
+				"labels": <th:block th:text="${ratingLabels}"></th:block>,
+				"datasets": [{
+					"label": "Anzahl Bewertungen",
+					"data": <th:block th:text="${ratingData}"></th:block>,
+					"backgroundColor": <th:block th:text="${ratingBackground}"></th:block>,
+					"borderColor": <th:block th:text="${ratingBorder}"></th:block>,
+					"borderWidth": 1
+				}]
+			},
+			"options": {
+				"scales": {
+					"y": {
+						"beginAtZero": true
+					}
+				}
+			}
+		}
+		</pre>
+		<script th:src="@{/assets/js/phone-info-ratings.js}" type="text/javascript"></script>
+	</div>
+	<p data-tx="t0027" th:unless="${ratings}">Nie ma jeszcze żadnych opinii, bądź pierwszym, który się nimi podzieli!</p>
+	</div>
+
+	<div class="column is-half">
+	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
+		<canvas aria-label="Suchanfragen in der letzten Woche" height="200" id="searches" role="img" width="400"></canvas>
+		<pre class="chartjs-data" id="searches-data">
+		{
+			"type": "line",
+			"data": {
+				"labels": <th:block th:text="${searchLabels}"></th:block>,
+				"datasets": [{
+					"label": "Suchanfragen in der letzten Woche",
+					"data": <th:block th:text="${searchData}"></th:block>,
+					"fill": false,
+					"borderColor": "rgb(75, 192, 192)",
+					"tension": 0.1
+				}]
+			},
+			"options": {
+				"scales": {
+					"y": {
+						"beginAtZero": true
+					}
+				}
+			}
+		}
+		</pre>
+		<script th:src="@{/assets/js/phone-info-searches.js}" type="text/javascript"></script>
+	</div>
+	<p data-tx="t0028" th:unless="${searches}">Dla tego numeru nie ma żadnych zapytań.</p>
+	</div>
+</div>
+
+<th:block th:if="${comments.size &gt; 0}">
+	<h2 data-tx="t0029">Komentarze do <th:block th:text="${number.plus}"></th:block></h2>
+	
+	<th:block th:each="comment,commentIt : ${comments}">
+	
+	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"></input>
+<div class="box">
+  <article class="media">
+	<div class="media-left">
+	  <figure class="image is-64x64">
+		<i class="fa-solid fa-star" th:if="${#converters.isPositive(comment.rating)}"></i>
+		<i class="fa-solid fa-triangle-exclamation" th:unless="${#converters.isPositive(comment.rating)}"></i>
+	  </figure>
+	</div>
+	<div class="media-content">
+	  <div class="content">
+		<p class="commentHeader">
+		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"></th:block></strong>
+		  <small>
+		  <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
+		  <span data-tx="t0031" th:unless="${comment.service}">PhoneBlock</span>
+		  </small>
+		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
+		</p>
+		<p class="commentText" th:text="${comment.comment}">
+		</p>
+	  </div>
+			
+	  <nav class="level is-mobile">
+		<div class="level-left">
+		  <a aria-label="Guter Hinweis" class="level-item thumbs-up commentVote" data-tx="t0045" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Dobra rada!">
+			<span class="icon">
+			  <i class="fa-solid fa-thumbs-up"></i>
+			</span>
+			<span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
+		  </a>
+		  <a aria-label="Unsinn" class="level-item thumbs-down commentVote" data-tx="t0046" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Nonsens!">
+			<span class="icon">
+			  <i class="fa-solid fa-thumbs-down"></i>
+			</span>
+			<span th:id="'down-' + ${commentIt.current}" th:text="${comment.down}"></span>
+		  </a>
+		</div>
+	  </nav>
+	</div>
+  </article>
+</div>
+	
+	</th:block>
+</th:block>
+
+	<nav aria-label="pagination" class="pagination is-centered" role="navigation">
+		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Poprzedni numer</a>
+		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Następny numer</a>
+	</nav>
+</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

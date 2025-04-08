@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Dein PhoneBlock Einrichtungscode')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001">Wprowadź kod</h1>
+	        <p class="subtitle" data-tx="t0002">Potwierdź adres e-mail.</p>
+	        <div class="content">
+				<p>
+					<div data-tx="t0003">Wiadomość e-mail została wysłana na adres <code th:text="${email}"></code>.</div> 
+					<div data-tx="t0004">Sprawdź swoją skrzynkę pocztową i wprowadź kod tutaj.</div> 
+				</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-web}">
+					<div class="field">
+					  <label class="label" data-tx="t0005">Kod</label>
+					  <div class="control has-icons-left has-icons-right">
+					    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+					    <input name="rememberMe" th:if="${rememberMe}" th:value="${rememberMe}" type="hidden"></input>
+
+					    <input data-tx="t0001" name="code" placeholder="Kod potwierdzenia" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value="">Wprowadź kod</input>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-barcode"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${errorMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+						</span>
+					  </div>
+						<p class="help is-danger" data-tx="t0006" th:if="${errorMessage}"><span th:text="${errorMessage}"></span> <a th:href="|${contextPath}${restartPage}?location=${location}|">Spróbuj ponownie</a>.</p>
+						<p class="help is-info" data-tx="t0007" th:unless="${errorMessage}">Nie otrzymano wiadomości e-mail? Sprawdź folder spamu! <a th:href="|${contextPath}${restartPage}?location=${location}|">Spróbuj ponownie</a>.</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" data-tx="t0008" type="submit">Zaloguj się</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

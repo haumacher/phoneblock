@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Anmeldung')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Реєстрація</h1>
+	</div>
+	
+	<div class="content">
+		<p data-tx="t0002">Щоб налаштувати PhoneBlock як <a th:href="@{/setup.jsp}">телефонну книгу з блокуванням</a> або <a th:href="@{/anrufbeantworter/}">інтелектуальний автовідповідач</a>, ви повинні спочатку зареєструватися тут.</p>
+
+		<p data-tx="t0003">Після входу в систему ви можете визначити в налаштуваннях <a th:href="@{/settings}">PhoneBlock</a>, наприклад, рівень довіри, з яким номер телефону додається до вашого списку блокування, або максимальну довжину вашого списку блокування.</p>
+
+		<p data-tx="t0004">Керування автовідповідачем <a th:href="@{/ab/}">PhoneBlock</a> також потребує реєстрації.</p> 
+	</div>
+
+	<div th:replace="~{fragments/login-forms :: forms(web=true)}">
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

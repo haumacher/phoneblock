@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Geen Fritz! doos gevonden</h1>
+
+		<p data-tx="t0002">De zoektocht heeft geen Fritz gevonden! Hier kunnen verschillende redenen voor zijn.</p>
+		
+		<ul>
+			<li data-tx="t0003">Je bent niet aangemeld bij het WLAN, is "mobiele data" actief?</li>
+			<li data-tx="t0004">Uw Fritz!Box heeft niet de standaardconfiguratie met naam <code>fritz.box</code> en adres <code>192.168.178.1</code>?</li>
+			<li data-tx="t0005">Je hebt een andere internetrouter. Misschien werkt het ook met PhoneBlock, controleer de <a th:href="@{/faq.jsp}">FAQ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

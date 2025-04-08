@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-installatie</h1>
+		
+		<h2 data-tx="t0002">Stap 2: Installeer en open "PeopleSync".</h2>
+
+		<p data-tx="t0003"><a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a> is overigens niet gerelateerd aan PhoneBlock. De app biedt alleen toegang tot een internetadresboek via het CardDAV-protocol onder Anroid. Dus als je problemen hebt met deze app, neem dan rechtstreeks contact op met de fabrikant.</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="PeopleSync installeren" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/03-people-sync-install.png}">Android-installatie</img>
+	  		</div>
+		
+			<div class="column is-two-fifths">
+				<img alt="PeopleSync openen" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/04-people-sync-open.png}">Stap 2: Installeer en open "PeopleSync".</img>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Terug</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span data-tx="t0005">Verder</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

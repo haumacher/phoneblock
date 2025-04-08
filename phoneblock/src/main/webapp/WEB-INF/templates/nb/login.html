@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Anmeldung')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Registrering</h1>
+	</div>
+	
+	<div class="content">
+		<p data-tx="t0002">For å konfigurere PhoneBlock som en <a th:href="@{/setup.jsp}">blokkeringsliste-telefonbok</a> eller <a th:href="@{/anrufbeantworter/}">intelligent telefonsvarer</a>, må du først registrere deg her.</p>
+
+		<p data-tx="t0003">Etter at du har logget inn, kan du i <a th:href="@{/settings}">PhoneBlock-innstillingene</a> definere for eksempel konfidensnivået for når et telefonnummer skal legges til i blokkeringslisten, eller maksimal lengde på blokkeringslisten.</p>
+
+		<p data-tx="t0004">Administrasjon av <a th:href="@{/ab/}">PhoneBlock-telefonsvareren</a> krever også registrering.</p> 
+	</div>
+
+	<div th:replace="~{fragments/login-forms :: forms(web=true)}">
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-installasjon</h1>
+		
+		<h2 data-tx="t0002">Trinn 3: Angi PeopleSync-autorisasjoner</h2>
+		
+		<p data-tx="t0003">PeopleSync krever en rekke autorisasjoner for at synkroniseringen og den automatiske oppdateringen av blokkeringslisten skal fungere som den skal.</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Autorisasjoner" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/05-people-sync-accept.png}">Android-installasjon</img>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="Synkroniseringsintervaller" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/06-people-sync-sync.png}">Trinn 3: Angi PeopleSync-autorisasjoner</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/03-people-sync-install}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Tilbake</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/07-people-sync-add}">
+		    <span data-tx="t0005">Videre</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

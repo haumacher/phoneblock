@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock in Android Mobiltelefon einrichten')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">تثبيت أندرويد</h1>
+		
+		<p data-tx="t0002">يضيف التثبيت دفتر عناوين PhoneBlock إلى جهات الاتصال الخاصة بك. إذا تلقيت مكالمة من رقم غير مرغوب فيه، فسيتم عرض ذلك على الفور، على سبيل المثال "SPAM: 03016637169". يمكنك أيضًا أن ترى على الفور في المكالمات الفائتة أنه لا يستحق معاودة الاتصال دون الحاجة إلى البحث عن الرقم على Google أولاً.</p>
+		
+		<p data-tx="t0003">لا يمكنك استخدام هذا لحظر مكالمات الرسائل الاقتحامية (سيظل هاتفك يرن، لكنك سترى أنها مكالمة اقتحامية). يمكنك حظر مكالمات الرسائل الاقتحامية عن طريق <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/"> تثبيت SpamBlocker</a> ودمج قاعدة بيانات PhoneBlock. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> هو تطبيق مستقل، يُرجى الاتصال بالمطور مباشرةً إذا واجهتك أي مشاكل معه.</p>
+		
+		<p data-tx="t0004">لمزامنة دفتر العناوين، أنت بحاجة إلى تطبيق يمكن استخدامه لمزامنة دفاتر هواتف الإنترنت. يمكنك استخدام "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>"، على سبيل المثال، أو "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵⁵⁵⁵". الإرشادات هنا مكتوبة ل "PeopleSync"، ولكن الإجراء مع "DAVx⁵" مشابه جدًا:</a></p>
+		
+		<h2 data-tx="t0005">الخطوة 1: افتح متجر Playstore وابحث عن "PeopleSync"</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="افتح متجر Playstore" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/01-home.png}">تثبيت أندرويد</img>
+	  		</div>
+		
+			<div class="column">
+				<img alt="البحث عن PeopleSync" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/02-playstore.png}">يضيف التثبيت دفتر عناوين PhoneBlock إلى جهات الاتصال الخاصة بك. إذا تلقيت مكالمة من رقم غير مرغوب فيه، فسيتم عرض ذلك على الفور، على سبيل المثال "SPAM: 03016637169". يمكنك أيضًا أن ترى على الفور في المكالمات الفائتة أنه لا يستحق معاودة الاتصال دون الحاجة إلى البحث عن الرقم على Google أولاً.</img>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">رجوع</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">المزيد</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

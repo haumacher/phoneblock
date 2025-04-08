@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Δωρεά με τραπεζικό έμβασμα</h1>
+
+		<p data-tx="t0002">Σας ευχαριστούμε για τη συνεισφορά σας στο κόστος του PhoneBlock. Αν συμμετέχουν πολλοί άνθρωποι, αρκεί ένα μικρό ποσό, π.χ. <b>1€ ανά έτος</b> ή <b>0,01€ ανά αναχαιτισμένη κλήση spam</b>, αλλά μπορείτε να επιλέξετε μόνοι σας το ποσό της συνεισφοράς σας.</p>
+		
+		<p data-tx="t0003">Παρακαλούμε χρησιμοποιήστε τα ακόλουθα στοιχεία λογαριασμού για το τραπεζικό σας έμβασμα:</p>
+
+		<ul>
+			<li data-tx="t0004">Δέκτης: <code id="receiver" th:text="${props.bank.receiver}"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="receiver_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0005">Αριθμός λογαριασμού: <code id="account"><span class="token" th:text="${#strings.substring(props.bank.account,0,4)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,4,8)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,8,12)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,12,16)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,16,20)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,20)}"></span></code><a class="copyToClipboard" data-tx="t0002" href="#" id="account_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0006">BIC: <code id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0007">Προβλεπόμενη χρήση: <code id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" data-tx="t0004" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
+		</ul>
+		
+		<p data-tx="t0008">Σας ευχαριστούμε που συμβάλλετε στη χρήση του PhoneBlock!</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

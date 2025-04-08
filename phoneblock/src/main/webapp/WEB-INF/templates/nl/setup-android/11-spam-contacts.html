@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-installatie</h1>
+		
+		<h2 data-tx="t0002">Gereed, de blokkadelijst wordt opgenomen in uw contactpersonen</h2>
+		
+		<p data-tx="t0003">Open je contacten. Onder de letter "S" vind je een lange lijst met spamnummers die je beter niet kunt beantwoorden of terugbellen.</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Account is ingesteld" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/11-spam-contacts.png}">Android-installatie</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Terug</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/status}">
+		    <span data-tx="t0005">Afgewerkt</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

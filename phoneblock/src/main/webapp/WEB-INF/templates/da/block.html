@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Rufnummer sperren - PhoneBlock')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Bloker telefonnummer</h1>
+	
+		<p data-tx="t0002">Endnu en plageånd er sluppet gennem PhoneBlock-nettet? Irriterende, men ikke noget problem, du slipper af med ham på ingen tid. For at gøre dette skal du blot tilføje nummeret på ballademageren til "Blokeringslisten". For at gøre dette skal du logge ind på din Fritz! boks.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a href="http://fritz.box" target="_blank"><button class="button is-medium is-primary is-fullwidth" data-tx="t0003">Log ind på FRITZ!Box</button></a>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0004">Vis opkaldslisten</h2>
+		
+		<p data-tx="t0005">I brugergrænsefladen på din FRITZ!Box kan du se alle de seneste opkald. Hvis alt er gået godt, vil listen se ud som vist nedenfor. Et uønsket opkald er blevet genkendt, markeret som spam, og opkaldet er blevet afvist (opkaldet vises med et rødt X).</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Fritz!Box opkaldsliste" class="image" data-tx="t0021" th:src="@{/assets/img/block/07-spam-caller.png}"></img>
+		  </div>
+		</div>
+		
+		<p data-tx="t0006">I dette tilfælde er der ikke noget at gøre. Den uønskede opkalder er allerede på "blokeringslisten" og kan ikke længere forstyrre dig.</p>
+		
+		<h2 data-tx="t0007">Ny "Blokliste"-post</h2>
+		
+		<p data-tx="t0008">Hvis den generende person har et nyt telefonnummer, eller en ny telefonterrorist har startet sin virksomhed, kan et uønsket opkald stadig nå frem til dig. I så fald kan du tilføje en ny post til "Blokeringslisten" her.</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<div class="tile is-ancestor">
+		      <div class="tile is-parent">
+		      	<article class="tile is-child notification is-danger">
+			        <p class="title" data-tx="t0009">Hør efter!</p>
+			        <p class="subtitle" data-tx="t0010">Indtast ikke nogen personlige fjender!</p>
+			        <div class="content">
+			          <p data-tx="t0011">En post i "BlockList" blokerer opkaldet, ikke kun for dig, men for alle medlemmer af PhoneBlock-fællesskabet! Så hvis du ikke længere ønsker at modtage opkald fra din svigermor, skal du indtaste hendes nummer i den lokale opkaldsblokeringsliste i din FRITZ!Box, men ikke i PhoneBlocks "Blocklist"!</p>
+			          
+			          <p data-tx="t0012">Din konto bliver uigenkaldeligt blokeret uden advarsel i tilfælde af en lovovertrædelse!</p>
+			        </div>
+			  	</article>
+			  </div>
+			</div>
+	    </div>
+	 </div>
+	 
+	 <p data-tx="t0013">Så du er sikker på, at du har modtaget et reklameopkald, som du ikke har bestilt, og som du er sikker på, at ingen andre ønsker at modtage? Så gør det - bloker nummeret...</p>
+		
+	<p data-tx="t0014">Et nummer blokeres ved at oprette en ny telefonbogspost i telefonbogen med navnet "Blocklist". Din FRITZ!Box vil uploade denne nye post til PhoneBlock-serveren, og alle andre tilsluttede medlemmer af PhoneBlock-fællesskabet vil også modtage denne post i deres blokeringsliste. For at lave en ny telefonbogspost skal du klikke på bogsymbolet i slutningen af linjen med nummeret på det uønskede opkald.</p>
+	
+	<p data-tx="t0015">Vælg nu telefonbogen "Blocklist":</p>
+	
+	<div class="columns">
+	  <div class="column is-8 is-offset-2">
+		<img alt="Marker opkald som uønsket" class="image" data-tx="t0022" th:src="@{/assets/img/block/08-mark-as-spam.png}"></img>
+	  </div>
+	</div>
+	
+	<p data-tx="t0016">Klik på "Næste", og vælg "Opret ny":</p>
+	
+	<div class="columns">
+	  <div class="column is-8 is-offset-2">
+		<img alt="Opret en ny post i bloklisten" class="image" data-tx="t0023" th:src="@{/assets/img/block/09-create-entry-create.png}"></img>
+	  </div>
+	</div>
+	
+	<p data-tx="t0017">På det næste skærmbillede skal du indtaste et navn efter eget valg og klikke på "OK". Efter synkronisering med PhoneBlock-serveren vil navnet blive erstattet af "SPAM: telefonnummer", så du behøver ikke at anstrenge dig for at indtaste noget pænt her:</p>
+	
+	<p data-tx="t0018"><b>Vigtigt:</b> Du kan kun indtaste <b>et nummer</b> pr. telefonbogspost i bloklisten. PhoneBlock sorterer derefter telefonnummeret i den korrekte blok. Et nummer, du indtaster, må <b>ikke indeholde et jokertegn ("*")</b>. Wildcard-numre genereres kun af PhoneBlock selv, hvis der er mange klager over telefonnumre, der ligger tæt på hinanden.</p>
+	
+	<p data-tx="t0019"><b>Vigtigt:</b> Du må <b>ikke redigere</b> eksisterende poster i blokeringslisten (tilføj ikke numre, slet ikke numre), ellers vil PhoneBlock kassere dine ændringer under den næste synkronisering. Hvis du vil slette et nummer fra blokeringslisten, skal du i stedet tilføje en post til din <a th:href="@{/settings/#whitelist}">hvidliste i indstillingerne</a>.</p>
+
+	<div class="columns">
+	  <div class="column is-8 is-offset-2">
+		<img alt="Accepter ny post på blokeringslisten" class="image" data-tx="t0024" th:src="@{/assets/img/block/10-add-entry-save.png}"></img>
+	  </div>
+	</div>
+	
+	<p data-tx="t0020">Færdig! Du har reddet dig selv og hele PhoneBlock-fællesskabet fra endnu en smerte i røven, tak!</p>
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

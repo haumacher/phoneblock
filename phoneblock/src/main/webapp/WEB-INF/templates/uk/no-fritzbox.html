@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Фріца не знайдено! Коробку не знайдено!</h1>
+
+		<p data-tx="t0002">Пошук не знайшов Фріца! Причин може бути декілька.</p>
+		
+		<ul>
+			<li data-tx="t0003">Ви не ввійшли в бездротову мережу, чи активна функція "мобільні дані"?</li>
+			<li data-tx="t0004">Ваш Fritz!Box не має стандартної конфігурації з назвою <code>fritz.box</code> та адресою <code>192.168.178.1</code>?</li>
+			<li data-tx="t0005">У вас інший інтернет-маршрутизатор. Можливо, він також може працювати з PhoneBlock, перевірте <a th:href="@{/faq.jsp}">ЗАПИТАННЯ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Installatie als telefoongids</h1>
+
+<th:block th:unless="${token}">
+		<p data-tx="t0002">Om de blokkadelijst te installeren, hebt u een <a th:href="@{/link/fritzbox}">"FRITZ!Box"-internetrouter van AVM</a> en een PhoneBlock-account nodig. Het hoeft niet per se het nieuwste model te zijn, maar u moet wel controleren of het nieuwste FRITZ!OS erop geïnstalleerd is (07.29 of nieuwer). Als dit niet het geval is, controleer dan aan de hand van de volgende installatie-instructies of uw versie al de nodige opties biedt.</p>
+		
+		<p data-tx="t0003">Opmerking: Vanwege technische beperkingen van de Fritz!Box kan de volledige blokkadelijst niet in een telefoonboek worden geladen. Daarom biedt het instellen van een <a th:href="@{/anrufbeantworter/}">PhoneBlock antwoordapparaat</a> een betere bescherming tegen SPAM-oproepen.</p>
+		
+		<div class="columns" th:unless="${login}">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/login.jsp(location='/setup')}">
+				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Een PhoneBlock-account aanmaken</button>
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0005" th:if="${login}">Je bent al geregistreerd als <code th:text="${userName}"></code>, geweldig! Je kunt meteen aan de slag.</p>
+</th:block>
+
+<div class="columns" th:if="${token}">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <p class="title" data-tx="t0006">Uw inloggegevens</p>
+	        <p class="subtitle" data-tx="t0007">Je hebt de volgende gegevens nodig voor de installatie.</p>
+	        <div class="content">
+		
+				<div class="field">
+				  <label class="label" data-tx="t0008">Internetadres van de CardDAV-server</label>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0009">Gebruikersnaam</label>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0010">wachtwoord</label>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+			</div>
+		</article>
+	  </div>
+    </div>
+  </div>
+</div>
+		
+		<h2 data-tx="t0011">Log in op je FRITZ!Box</h2>
+		
+		<p data-tx="t0012">Om dit te laten werken, moet u thuis in uw WLAN zijn of moet uw computer via een kabel rechtstreeks met de FRITZ!Box zijn verbonden. De FRITZ!Box vraagt u eerst om uw wachtwoord. Als u zich nog nooit hebt aangemeld, vindt u dit wachtwoord aan de onderkant van het apparaat.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a href="http://fritz.box" target="_blank">
+				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013">Aanmelden bij FRITZ!Box</button>
+			</a>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0014">Een nieuw "Blocklist" telefoonboek maken</h2>
+		
+		<p data-tx="t0015">Om je FRITZ!Box spamoproepen te laten blokkeren, heeft hij een eigen telefoonboek nodig waarin alle nummers van ongewenste bellers worden ingevoerd. Noem dit telefoonboek "Blocklist". Voor deze</p>
+		
+		<ol>
+			<li data-tx="t0016">Navigeer eerst naar de sectie "Telefonie",</li>
+			<li data-tx="t0017">selecteer het menu-item "Telefoonboek" en</li>
+			<li data-tx="t0018">Klik vervolgens op de link "Nieuw telefoonboek".</li>
+		</ol>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Fritz!Box oproeplijst" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"></img>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0019">Voer de inloggegevens van uw PhoneBlock-account in</h2>
+		
+		<p data-tx="t0020">Nu hebt u de inloggegevens van uw PhoneBlock-account nodig.</p>
+
+		<ul>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Geef het telefoonboek dat als blokkadelijst moet worden gebruikt de naam <code>Blokkadelijst</code>. Je hebt deze naam weer nodig voor de volgende stap.</li>
+
+			<li data-tx="t0022">Selecteer nu <span class="tag is-danger">2</span> de optie <i>Telefoonboek van een online aanbieder gebruiken</i>.</li>
+
+			<li data-tx="t0023">Dan kun je <span class="tag is-danger">3</span> de provider <i>CardDAV selecteren</i>.</li>
+
+			<li data-tx="t0024">Bijna klaar, nu de aanmeldingsgegevens <span class="tag is-danger">4</span>. Je kunt ze het beste overzetten met Cut&amp;Paste om typefouten te voorkomen! <ul>
+					<li>Voer de URL van het PhoneBlock-adresboek in het veld <i>Internetadres van de CardDAV-server</i> in: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
+
+					<li>Voer de gebruikersnaam <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> in die u tijdens de <a th:href="@{/login.jsp(location='/settings')}">registratie</a> hebt ontvangen in het veld <i>Gebruikersnaam</i>. </li>
+
+					<li>Het wachtwoord<th:block th:unless="${token}"> dat u tijdens de <a th:href="@{/login.jsp(location='/settings')}">registratie</a> hebt ontvangen, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> moet nu worden ingevoerd in het veld <i>Wachtwoord</i>. </li>
+				    </ul></li>
+
+			<li data-tx="t0025">Nu kunt u <span class="tag is-danger">5</span> het aanmaken van het nieuwe telefoonboek bevestigen. Let op: Selecteer <b>geen van je telefoons</b> onder "Telefoontoewijzing"! Anders vind je alleen SPAM bellers in de contacten op je telefoon.</li>
+		</ul>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Nieuw adresboek maken" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"></img>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0026">Controleer of uw "Blocklist" is aangemaakt</h2>
+		
+		<p data-tx="t0027">Als alles goed is gegaan, heeft uw FRITZ!Box alle nummers uit de PhoneBlock-blokkeringslijst geladen. U zou nu een nieuw telefoonboek "Blocklist" moeten hebben in het gedeelte "Telephony / Phonebook" (Telefonie / Telefoonboek). Als u het tabblad "Blocklist" selecteert, kunt u alle nummers van huidige spambellers zien.</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Toon opgehaalde blokkadelijst" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"></img>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0028">Laat de FRITZ!Box oproepen van de "Blocklist" weigeren</h2>
+		
+		<p data-tx="t0029">In het gedeelte "Telefonie / Gespreksafhandeling" kunt u nu het nieuwe telefoonboek "Blocklist" opgeven als het te blokkeren telefoonnummerbereik.</p>			
+		
+		<p data-tx="t0030">Scroll naar beneden naar het sub-item "Bereiken voor bloknummers" en klik op de knop "Bereik toevoegen".</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Nieuwe oproepblokkering toevoegen" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"></img>
+		  </div>
+		</div>
+		
+		<p data-tx="t0031">Selecteer in het nieuwe scherm de optie "Telefoonboek" in de selectie voor "Gebied" en selecteer het nieuw aangemaakte telefoonboek "Blocklist" als het te blokkeren "Telefoonboek".</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Blokkeer bellers met een telefoonnummer in de blokkadelijst" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"></img>
+		  </div>
+		</div>
+		
+		<p data-tx="t0032">Perfect! Je hebt de set-up gedaan. Uw telefoon zou nu veel minder vaak over moeten gaan vanwege een ongewenste beller. En als dat toch gebeurt, kunt u de onruststoker eenvoudig het zwijgen opleggen voor u en de hele PhoneBlock-community:</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Telefoonnummer blokkeren</button></a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

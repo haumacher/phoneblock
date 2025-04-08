@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">تثبيت أندرويد</h1>
+		
+		<h2 data-tx="t0002">الخطوة 7: الاشتراك في قائمة الحظر</h2>
+		
+		<p data-tx="t0003">حدد حسابك الذي تم إنشاؤه حديثاً وقم بتفعيل دفتر العناوين "Blocklist". اضغط الآن على زر المزامنة.</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="تم إعداد الحساب" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/09-people-sync-account-finished.png}">تثبيت أندرويد</img>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="اشترك في قائمة الحظر" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/10-people-sync-subscribe.png}">الخطوة 7: الاشتراك في قائمة الحظر</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/07-people-sync-add}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">رجوع</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/11-spam-contacts}">
+		    <span data-tx="t0005">المزيد</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

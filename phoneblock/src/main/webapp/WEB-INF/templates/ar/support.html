@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock unterstützen')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">دعم PhoneBlock</h1>
+
+		<p data-tx="t0002">PhoneBlock مجاني للاستخدام، ويمكنك تثبيت PhoneBlock على جميع صناديق Fritz! والهواتف المحمولة دون الحاجة إلى دفع ثمنها. ومع ذلك، فإن تشغيل PhoneBlock ليس مجانيًا بأي حال من الأحوال. هناك تكاليف مستمرة لاستئجار الخادم والوصول إلى الإنترنت وتسجيل النطاق. &lt;أنا أمول ذلك من جيبي الخاص.</p>
+		
+		<p data-tx="t0003">إذا أعجبك PhoneBlock وساعدك في إبعاد الآفات المزعجة عن اتصالك الهاتفي، فيمكنك المساهمة في تكاليف PhoneBlock، أو ببساطة قل "شكرًا" بتبرع صغير. إذا انضم العديد من المستخدمين، فإن مبلغًا صغيرًا - على سبيل المثال <b> 1 يورو سنويًا  أو <b> 0.01 يورو لكل مكالمة مزعجة تم اعتراضها  - يكفي لتغطية التكاليف. المبلغ متروك لك. تبرعك ليس "رسوم عضوية" ولا تتوقع أي شيء في المقابل.</b></b></p>
+		
+		<div class="columns">
+			<div class="column is-full">
+				<a class="card" href="http://paypal.me/phoneblock" target="_blank">
+				  <div class="card-content has-background-primary">
+					<div class="title">
+					    <span class="icon">
+							<i class="fa-brands fa-paypal"></i>
+					    </span>
+						<span data-tx="t0004">تبرع باستخدام PayPal</span>			
+					</div>
+					<p class="subtitle" data-tx="t0005">استخدم "إرسال الأموال إلى الأصدقاء"، وإلا فإن PayPal يفرض رسومًا سخيفة، حيث يصل 1 يورو فقط 60 سنتًا.</p>
+					<p class="subtitle" data-tx="t0006" th:unless="${loggedIn}">يُرجى إدخال الأحرف القليلة الأولى من اسم المستخدم الخاص بك كرسالة حتى أتمكن من تخصيص الدفعة.</p>
+					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">يُرجى إدخال <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0013" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span> كرسالة حتى أتمكن من تخصيص المبلغ.</p>
+				  </div>
+				</a>
+			</div>
+		</div>
+
+		<div class="columns">
+			<div class="column is-half">
+				<a class="card" href="https://github.com/sponsors/haumacher" target="_blank">
+				  <div class="card-content has-background-info">
+					<p class="title">
+					    <span class="icon">
+							<i class="fa-brands fa-github"></i>
+					    </span>
+						<span data-tx="t0008">كن راعياً في GitHub</span>
+					</p>
+					<p class="subtitle" data-tx="t0009">يمكنك التبرع لمرة واحدة أو بشكل منتظم.</p>
+				  </div>
+				</a>
+			</div>
+			<div class="column is-half">
+				<a class="card" th:href="@{/support-banktransfer.jsp}">
+				  <div class="card-content has-background-info">
+					<p class="title">
+					    <span class="icon">
+							<i class="fa-solid fa-building-columns"></i>
+					    </span>
+						<span data-tx="t0010">التبرع عن طريق التحويل المصرفي</span>
+					</p>
+					<p class="subtitle" data-tx="t0011">يجب عليك تسجيل الدخول للاطلاع على تفاصيل الحساب.</p>
+				  </div>
+				</a>
+			</div>
+		</div>
+				
+		<p data-tx="t0012">شكراً لك على مساهمتك في تكاليف PhoneBlock!</p>
+		
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

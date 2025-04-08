@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+
+<th:block th:fragment="forms(web)">
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Συνδεθείτε με το Google</span></a>
+		</p>
+		<div class="is-collapsible" id="googleLogin">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="get" th:action="@{/oauth/login}">
+
+			    <input name="force_client" th:value="${googleClient}" type="hidden"></input>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+	
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0002">Μείνετε συνδεδεμένοι σε αυτή τη συσκευή (θέτει ένα <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0003">Με την εγγραφή σας, αποδέχεστε τους <a th:href="@{/usage.jsp}">Όρους χρήσης</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0004">Συνεχίστε στο Google</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0005">Αν έχετε λογαριασμό Google, μπορείτε να τον χρησιμοποιήσετε για να συνδεθείτε εύκολα στο PhoneBlock. Την πρώτη φορά που θα συνδεθείτε με τη Google, δημιουργείται ένας λογαριασμός PhoneBlock. Στο μέλλον, μπορείτε να συνδεθείτε είτε με το όνομα χρήστη PhoneBlock που δημιουργήθηκε είτε ξανά μέσω της Google.</p>
+				
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>
+
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Σύνδεση με e-mail</span></a></p>
+		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
+			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
+	  		<div class="panel-block">
+	  		<div class="content">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+				<div class="field">
+					<label class="label" data-tx="t0007">e-mail</label>
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0020" name="email" placeholder="Η διεύθυνση ηλεκτρονικού ταχυδρομείου σας" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
+					    <span class="icon is-small is-left">
+					      <i class="fas fa-envelope"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${emailMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}"></p>
+				</div>
+
+				<div>
+					<label class="label" data-tx="t0019">Κωδικός ασφαλείας</label>
+
+					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"></img>
+
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0022" name="captcha" placeholder="Κείμενο στην παραπάνω εικόνα" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"></input>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-key"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${captchaMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${captchaMessage}" th:text="${captchaMessage}"></p>
+				</div>
+				
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0008">Μείνετε συνδεδεμένοι σε αυτή τη συσκευή (θέτει ένα <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0009">Με την εγγραφή σας, αποδέχεστε τους <a th:href="@{/usage.jsp}">Όρους χρήσης</a>.</div>
+				</div>
+
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0010">Κωδικός αίτησης</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0011">Θα λάβετε έναν κωδικό στη διεύθυνση ηλεκτρονικού ταχυδρομείου που δηλώσατε, τον οποίο μπορείτε να χρησιμοποιήσετε για να συνδεθείτε. Η πρώτη σύνδεση με e-mail δημιουργεί έναν λογαριασμό PhoneBlock. Στο μέλλον, μπορείτε στη συνέχεια να συνδεθείτε με το δημιουργημένο όνομα χρήστη PhoneBlock ή αποστέλλοντας ξανά έναν κωδικό μιας χρήσης.</p>
+			</div>
+			</div>
+			</form>
+		</div>
+	</nav>
+	
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Συνδεθείτε με το όνομα χρήστη του PhoneBlock</span></a>
+		</p>
+		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="post" th:action="${contextPath} + ${loginAction}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+				<div class="field">
+				  <p class="control has-icons-left has-icons-right">
+				    <input class="input" data-tx="t0023" placeholder="Όνομα χρήστη" th:name="${userNameParam}" type="text"></input>
+				    <span class="icon is-small is-left">
+				      <i class="fa-solid fa-user"></i>
+				    </span>
+				    <span class="icon is-small is-right">
+				      <i class="fas fa-check"></i>
+				    </span>
+				  </p>
+				  <p class="help" data-tx="t0013">Χρησιμοποιήστε το όνομα χρήστη που λάβατε κατά την εγγραφή σας στη Google ή τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.</p>
+				</div>
+				<div class="field">
+				  <p class="control has-icons-left">
+				    <input class="input" data-tx="t0024" placeholder="Κωδικός πρόσβασης PhoneBlock" th:name="${passwordParam}" type="password"></input>
+				    <span class="icon is-small is-left">
+				      <i class="fas fa-lock"></i>
+				    </span>
+				  </p>
+					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Τα στοιχεία σύνδεσης δεν ταιριάζουν, παρακαλούμε ελέγξτε τις καταχωρήσεις και προσπαθήστε ξανά.</p>
+					  <p class="help" data-tx="t0015" th:unless="${loginError}">Ο κωδικός πρόσβασης σας εμφανίστηκε μετά την πρώτη σύνδεση. Αν δεν έχετε πλέον τον κωδικό πρόσβασης, απλώς συνδεθείτε με το Google ή τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας, βλέπε παραπάνω.</p>
+				</div>
+
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <span data-tx="t0016">Μείνετε συνδεδεμένοι σε αυτή τη συσκευή (θέτει ένα <a th:href="@{/datenschutz.jsp}">cookie</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0017">Με την εγγραφή σας, αποδέχεστε τους <a th:href="@{/usage.jsp}">Όρους χρήσης</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0018">Συνδεθείτε</span>
+				    </button>
+				  </p>
+				</div>
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>	
+</th:block>
+
+</body>
+</html>

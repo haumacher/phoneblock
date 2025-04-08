@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock Nutzungsbedingungen')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Villkor för användning</h1>
+		
+		<p data-tx="t0002">PhoneBlock kan hjälpa dig med ditt digitala självförsvar mot telefonterror och oönskade reklamsamtal. PhoneBlock är <a th:href="@{/impressum.jsp}">mitt</a> privata <a href="https://github.com/haumacher/phoneblock">projekt</a> och jag låter dig gärna delta i det kostnadsfritt.</p>
+		
+		<h2 data-tx="t0003">Ansvarsfriskrivning</h2>
+		
+		<p data-tx="t0004">Användningen av PhoneBlock sker uteslutande och uttryckligen på egen risk. När du använder PhoneBlock är du medveten om att ett fel i programvaran eller ett eventuellt skadligt införande av nummer i blockeringslistan kan blockera ett nummer som du kanske vill bli uppringd från.</p>
+		
+		<h2 data-tx="t0005">Kommersiell användning</h2>
+		
+		<p data-tx="t0006">Jag avråder från att använda PhoneBlock på en telefonanslutning för företag. Om du ändå vill göra det, bär du ensam risken för eventuella skador som kan uppstå. För att minimera risken för användning rekommenderar jag att du inte blockerar nummer på blockeringslistan, utan endast vidarekopplar dem till din telefonsvarare. Jag avråder också starkt från att använda PhoneBlocks telefonsvarare i en kommersiell miljö - du vill under inga omständigheter riskera att en potentiell kund på din telefonlinje "luras" av telefonsvararen.</p>
+		
+		<h2 data-tx="t0007">Drift av PhoneBlock-servern</h2>
+		
+		<p data-tx="t0008">PhoneBlock är tillgängligt för dig kostnadsfritt. Driften av en webbapplikation är dock inte kostnadsfri. Om PhoneBlock hjälper dig är du välkommen att bidra till driftskostnaderna i form av en <a th:href="@{/support.jsp}">liten donation</a>. Du gör dock detta utan att förvänta dig något i gengäld.</p>
+		
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+	<h1 data-tx="t0001">رقم الهاتف ☎ ☎ <span th:text="${number}"></span> غير موجود</h1>
+
+	<p data-tx="t0002">الرقم الذي تبحث عنه ليس رقم هاتف. يرجى تصحيح بحثك والمحاولة مرة أخرى!</p>
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

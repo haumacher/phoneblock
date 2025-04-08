@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Instalacja jako książka telefoniczna</h1>
+
+<th:block th:unless="${token}">
+		<p data-tx="t0002">Aby zainstalować listę blokad, potrzebny jest router internetowy <a th:href="@{/link/fritzbox}">"FRITZ!Box" firmy AVM</a> i konto PhoneBlock. Nie musi to być najnowszy model, ale należy sprawdzić, czy jest na nim zainstalowany najnowszy FRITZ!OS (07.29 lub nowszy). Jeśli tak nie jest, skorzystaj z poniższych instrukcji instalacji, aby sprawdzić, czy Twoja wersja oferuje już niezbędne opcje.</p>
+		
+		<p data-tx="t0003">Uwaga: Ze względu na ograniczenia techniczne Fritz!Box, cała lista blokad nie może zostać załadowana do książki telefonicznej. Dlatego skonfigurowanie automatycznej sekretarki <a th:href="@{/anrufbeantworter/}">PhoneBlock</a> zapewnia lepszą ochronę przed połączeniami SPAM.</p>
+		
+		<div class="columns" th:unless="${login}">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/login.jsp(location='/setup')}">
+				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Utwórz konto PhoneBlock</button>
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0005" th:if="${login}">Jesteś już zarejestrowany jako <code th:text="${userName}"></code>, świetnie! Możesz zacząć od razu.</p>
+</th:block>
+
+<div class="columns" th:if="${token}">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <p class="title" data-tx="t0006">Dane logowania</p>
+	        <p class="subtitle" data-tx="t0007">Do instalacji potrzebne będą następujące dane.</p>
+	        <div class="content">
+		
+				<div class="field">
+				  <label class="label" data-tx="t0008">Adres internetowy serwera CardDAV</label>
+				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0009">Nazwa użytkownika</label>
+				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0010">hasło</label>
+				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+			</div>
+		</article>
+	  </div>
+    </div>
+  </div>
+</div>
+		
+		<h2 data-tx="t0011">Zaloguj się do swojego FRITZ!Box</h2>
+		
+		<p data-tx="t0012">Aby to zadziałało, użytkownik musi znajdować się w domu w sieci WLAN lub komputer musi być podłączony bezpośrednio do urządzenia FRITZ!Box za pomocą kabla. Urządzenie FRITZ!Box poprosi najpierw o podanie hasła. Jeśli nigdy wcześniej się nie logowałeś, hasło znajdziesz na spodzie urządzenia.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a href="http://fritz.box" target="_blank">
+				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013">Zaloguj się do FRITZ!Box</button>
+			</a>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0014">Utwórz nową książkę telefoniczną "Blocklist"</h2>
+		
+		<p data-tx="t0015">Aby urządzenie FRITZ!Box mogło blokować połączenia spamowe, potrzebuje ono własnej książki telefonicznej, do której wpisywane są wszystkie numery niechcianych rozmówców. Tę książkę telefoniczną należy nazwać "Blocklist". W tym celu</p>
+		
+		<ol>
+			<li data-tx="t0016">Najpierw przejdź do sekcji "Telefonia",</li>
+			<li data-tx="t0017">wybierz pozycję menu "Książka telefoniczna" i</li>
+			<li data-tx="t0018">a następnie kliknij łącze "Nowa książka telefoniczna".</li>
+		</ol>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Lista połączeń Fritz!Box" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"></img>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0019">Wprowadź dane logowania do swojego konta PhoneBlock.</h2>
+		
+		<p data-tx="t0020">Teraz potrzebne są dane logowania do konta PhoneBlock.</p>
+
+		<ul>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Nadaj książce telefonicznej, która ma być używana jako lista blokowania, nazwę <code>Lista blokowania</code>. Nazwa ta będzie ponownie potrzebna w następnym kroku.</li>
+
+			<li data-tx="t0022">Teraz wybierz <span class="tag is-danger">2</span> opcję <i>Użyj książki telefonicznej dostawcy online</i>.</li>
+
+			<li data-tx="t0023">Następnie można wybrać <span class="tag is-danger">3</span> dostawcę <i>dostawcę CardDAV</i>.</li>
+
+			<li data-tx="t0024">Prawie gotowe, teraz dane logowania <span class="tag is-danger">4</span>. Najlepiej przenieść je za pomocą Cut&amp;Paste, aby uniknąć błędów podczas wpisywania! <ul>
+					<li>W polu <i>Adres internetowy serwera CardDAV</i> wpisz adres URL książki adresowej PhoneBlock: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
+
+					<li>W polu <i>Nazwa użytkownika</i> wpisz nazwę użytkownika <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> otrzymaną podczas <a th:href="@{/login.jsp(location='/settings')}">rejestracji</a>. </li>
+
+					<li>Hasło<th:block th:unless="${token}"> otrzymane podczas <a th:href="@{/login.jsp(location='/settings')}">rejestracji</a>,</th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> należy teraz wprowadzić w polu <i>Hasło</i>. </li>
+				    </ul>.</li>
+
+			<li data-tx="t0025">Teraz można potwierdzić <span class="tag is-danger">5</span> utworzenie nowej książki telefonicznej. Uwaga: Wybierz <b>żadnego ze swoich telefonów</b> w sekcji "Przypisanie telefonu"! W przeciwnym razie w kontaktach w telefonie będą znajdować się tylko osoby dzwoniące ze spamem.</li>
+		</ul>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Utwórz nową książkę adresową" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"></img>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0026">Sprawdź, czy Twoja "Lista bloków" została utworzona.</h2>
+		
+		<p data-tx="t0027">Jeśli wszystko przebiegło pomyślnie, urządzenie FRITZ!Box załadowało wszystkie numery z listy blokowej PhoneBlock. W sekcji "Telephony / Phonebook" (Telefonia / Książka telefoniczna) powinna teraz znajdować się nowa książka telefoniczna "Blocklist" (Lista blokowanych numerów). Po wybraniu zakładki "Blocklist" (Lista blokowanych numerów) można wyświetlić wszystkie numery aktualnych spamerów.</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Pokaż pobraną listę bloków" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"></img>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0028">Niech FRITZ!Box odrzuca połączenia z "Listy blokowanych połączeń".</h2>
+		
+		<p data-tx="t0029">W sekcji "Telefonia / Obsługa połączeń" można teraz określić nową książkę telefoniczną "Blocklist" jako zakres numerów telefonów do zablokowania.</p>			
+		
+		<p data-tx="t0030">Przewiń w dół do podpunktu "Blokuj zakresy numerów" i kliknij przycisk "Dodaj zakres".</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Dodaj nową blokadę połączeń" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"></img>
+		  </div>
+		</div>
+		
+		<p data-tx="t0031">Na nowym ekranie wybierz opcję "Phone book" (Książka telefoniczna) w wyborze "Area" (Obszar) i wybierz nowo utworzoną książkę telefoniczną "Blocklist" (Lista zablokowanych) jako "Phone book" (Książka telefoniczna) do zablokowania.</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Blokowanie rozmówców z numerem telefonu na liście blokowanych połączeń" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"></img>
+		  </div>
+		</div>
+		
+		<p data-tx="t0032">Doskonale! Dokonałeś konfiguracji. Twój telefon powinien teraz dzwonić znacznie rzadziej z powodu niechcianego rozmówcy. A jeśli tak się stanie, możesz łatwo uciszyć sprawcę kłopotów dla siebie i całej społeczności PhoneBlock:</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Zablokuj numer telefonu</button></a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

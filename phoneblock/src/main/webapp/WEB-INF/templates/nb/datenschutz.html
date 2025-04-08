@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Retningslinjer for personvern</h1>
+
+			<h2 data-tx="t0002">IP-adresse</h2>
+			<p data-tx="t0003">Når du besøker dette nettstedet, lagres IP-adressen til datamaskinen din midlertidig i en loggfil for feilanalyseformål og slettes automatisk etter 14 dager. Uten registrering samler ikke dette nettstedet inn personopplysninger fra besøkende, og det inneholder verken reklame eller tredjepartssporere.</p>
+
+			<h2 data-tx="t0004">e-post</h2>
+			<p data-tx="t0005">Når du registrerer deg for en PhoneBlock-konto, vil e-postadressen du oppgir, bli lagret for brukerautentisering. E-postadressen vil ikke bli gitt videre til tredjeparter. E-post vil kun bli sendt til den angitte adressen for autentisering eller for drift av PhoneBlock.</p>
+
+			<h2 data-tx="t0006">Informasjonskapsler</h2>
+			<p data-tx="t0007">En teknisk nødvendig øktinformasjonskapsel settes under noen interaksjoner med PhoneBlock-nettstedet, f.eks. under registrering og evaluering av telefonnumre.</p>
+			<p data-tx="t0008">Hvis du aktiverer funksjonen "Hold meg innlogget på denne enheten" når du logger inn, vil PhoneBlock sette en vedvarende informasjonskapsel som nettstedet gjenkjenner deg med ved neste besøk, slik at du automatisk blir innlogget uten å måtte skrive inn passordet ditt på nytt eller gjenta innloggingsprosessen fra Google. Hvis du klikker på "Logg ut"-knappen, slettes denne informasjonskapselen, og du må logge inn på nytt ved neste besøk.</p>
+
+			<h2 data-tx="t0009">Sletting av konto</h2>
+			<p data-tx="t0010">Du kan når som helst slette PhoneBlock-kontoen din i <a th:href="@{/settings/}">innstillinger</a>. Når du sletter kontoen din, slettes dataene dine som er lagret hos PhoneBlock.</p>
+			
+			<h2 data-tx="t0011">Telefonnumre</h2>
+			<p data-tx="t0012">Hvis telefonnummeret ditt har blitt lagt til i sperrelisten ved en feil, kan du selvfølgelig be om at det blir slettet. Skriv en e-post til <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code>.</p>
+
+			<h2 data-tx="t0013">Telefonsvarer</h2>
+			<p data-tx="t0014">Når du bruker <a th:href="@{/anrufbeantworter/}">PhoneBlock-telefonsvareren</a>, må PhoneBlock lagre IP-adressen til Fritz!Boxen din permanent for å kunne registrere telefonsvareren der og opprettholde registreringen. For å gjøre dette har du enten lagret vertsnavnet til Fritz!Boxen eller installert DynDNS-tjenesten fra PhoneBlock i Fritz!</p>
+			
+			<p data-tx="t0015">Innkommende anrop til Fritz!Box vises til en registrert telefonsvarer. Telefonnummeret til den som ringer overføres til PhoneBlock-telefonsvareren. Dette telefonnummeret brukes til å sammenligne det med databasen over SPAM-telefonnumre. Bare hvis telefonnummeret finnes i SPAM-databasen, vil telefonsvareren godta anropet og lagre det i telefonsvarerens anropsliste. I alle andre tilfeller lagres ingen data om samtalen i PhoneBlock.</p>
+			
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

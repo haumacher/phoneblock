@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Δεν βρέθηκε κουτί Fritz!</h1>
+
+		<p data-tx="t0002">Η αναζήτηση δεν βρήκε έναν Fritz! Μπορεί να υπάρχουν διάφοροι λόγοι γι' αυτό.</p>
+		
+		<ul>
+			<li data-tx="t0003">Δεν έχετε συνδεθεί στο WLAN, είναι ενεργά τα "δεδομένα κινητής τηλεφωνίας";</li>
+			<li data-tx="t0004">Το Fritz!Box σας δεν έχει την τυπική διαμόρφωση με όνομα <code>fritz.box</code> και διεύθυνση <code>192.168.178.1</code>;</li>
+			<li data-tx="t0005">Έχετε διαφορετικό δρομολογητή διαδικτύου. Ίσως μπορεί επίσης να λειτουργήσει με το PhoneBlock, ελέγξτε το <a th:href="@{/faq.jsp}">FAQ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

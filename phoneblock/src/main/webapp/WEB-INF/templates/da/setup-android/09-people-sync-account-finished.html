@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-installation</h1>
+		
+		<h2 data-tx="t0002">Trin 7: Abonner på bloklisten</h2>
+		
+		<p data-tx="t0003">Vælg din nyoprettede konto, og aktiver adressebogen "Blocklist". Tryk nu på synkroniseringsknappen.</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Kontoen er oprettet" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/09-people-sync-account-finished.png}">Android-installation</img>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="Abonner på bloklisten" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/10-people-sync-subscribe.png}">Trin 7: Abonner på bloklisten</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/07-people-sync-add}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Tilbage</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/11-spam-contacts}">
+		    <span data-tx="t0005">Yderligere</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

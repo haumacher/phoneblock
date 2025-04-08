@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Встановлення Android</h1>
+		
+		<h2 data-tx="t0002">Готово, блок-лист додано до ваших контактів</h2>
+		
+		<p data-tx="t0003">Відкрийте свої контакти. Під літерою "S" ви знайдете довгий список спам-номерів, на які не варто відповідати або передзвонювати.</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Обліковий запис створено" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/11-spam-contacts.png}">Встановлення Android</img>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Назад</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/status}">
+		    <span data-tx="t0005">Готово.</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

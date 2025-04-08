@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='Der PhoneBlock-Anrufbeantworter')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="Логотип автовідповідача PhoneBlock" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"></img>
+		</div>
+	
+		<h1 data-tx="t0001">Встановлення як автовідповідач</h1>
+		
+		<p data-tx="t0002">PhoneBlock пропонує вам інтелектуальний автовідповідач, який автоматично відповість на дзвінок, тільки якщо номер абонента внесено до <a th:href="@{/status.jsp}">Бази даних спаму</a> PhoneBlock. Як і для <a th:href="@{/setup.jsp}">налаштування списку блокування</a>, для цього вам не потрібен власний пристрій або комп'ютер. Ви створюєте автовідповідач PhoneBlock тут, на сайті, і реєструєте його через Інтернет на своєму Fritz!Box або іншому інтернет-маршрутизаторі з підтримкою VOIP. Про те, як саме працює автовідповідач PhoneBlock, ви можете дізнатися <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">тут</a>.</p>
+		
+		<p data-tx="t0003">Наступні кроки приведуть вас до автовідповідача PhoneBlock:</p>
+		
+		<ol>
+			<li><a data-tx="t0004" href="#register">Зареєструйтеся в PhoneBlock</a></li>
+			<li><a data-tx="t0005" href="#create">Створення автовідповідача</a></li>
+			<li><a data-tx="t0006" href="#dyndns">Налаштування DynDNS у Fritz!Box</a></li>
+			<li><a data-tx="t0007" href="#sip">Налаштування пристрою телефонії у Fritz!</a></li>
+			<li><a data-tx="t0008" href="#enable">Увімкніть автовідповідач PhoneBlock</a></li>
+			<li><a data-tx="t0009" href="#test">Тестовий автовідповідач</a></li>
+		</ol>
+		
+		 <p data-tx="t0010">Інструкції проведуть вас крок за кроком через процес налаштування. Конфігурація у Fritz!Box не є простою, але якщо ви точно дотримуєтесь описаної тут процедури, нічого не може піти не так.</p>
+		 
+		<h2 data-tx="t0011" id="register">Крок 1: Зареєструйтеся в PhoneBlock</h2>
+
+		<p data-tx="t0012">Звідси вам знадобляться три вікна (або вкладки) браузера. Одне для цього посібника, одне для програми автовідповідача PhoneBlock і одне для інтерфейсу налаштування вашого Fritz!</p>
+		
+		<p data-tx="t0013" th:if="${loggedIn}">По-перше, вам потрібно зареєструватися або увійти в PhoneBlock, щоб почати налаштування.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			    <span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+			    </span>
+				<span data-tx="t0014">Увійдіть в систему</span>			
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0015" unless:if="${loggedIn}">Ви увійшли як <code th:text="${userName}"></code>, чудово, переходимо до наступного кроку!</p>
+		
+		<h2 data-tx="t0016" id="create">Крок 2: Створіть автовідповідач</h2>
+		
+		<p data-tx="t0017">Натиснувши тут, відкриється вікно з програмою автовідповідача <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock</a>. Коли ви відкриваєте його вперше, список ваших автовідповідачів порожній, а внизу праворуч є кнопка, за допомогою якої ви можете створити автовідповідач. Натисніть цю кнопку з плюсом.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0018">Відкрийте додаток</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Налаштування DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0019" id="dyndns">Крок 4: Налаштування DynDNS</h2>
+		
+		<p data-tx="t0020">Через "DynDNS" ваш Fritz! box повідомляє PhoneBlock свою IP-адресу. Це необхідно для того, щоб автовідповідач PhoneBlock міг знайти ваш Fritz!</p>
+		
+		<h3 data-tx="t0021">Активувати PhoneBlock DynDNS</h3>
+		
+		<p data-tx="t0022">Активуйте перемикач "Використовувати PhoneBlock DynDNS" у програмі автовідповідача (якщо ви знаєте, як це зробити, і вже користуєтеся іншим провайдером DynDNS, ви також можете ввести ім'я хоста вашого Fritz!Box безпосередньо).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Налаштування DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0023">На наступній сторінці підтвердіть "Активувати DynDNS".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Налаштування DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0024">Тепер ви отримаєте дані доступу до PhoneBlock DynDNS, які ви можете ввести у вашому Fritz!Box (див. нижче).</p>
+
+		<h3 data-tx="t0025">Введіть дані для входу у Fritz!Box</h3>
+		
+		<p data-tx="t0026">Це посилання <a class="showFB" href="http://fritz.box" target="fritzbox">відкриває вікно для вашого Fritz!Box</a>. Увійдіть туди за допомогою свого пароля до Fritz!Box. Якщо ви ніколи не робили цього раніше, ви знайдете пароль на нижній частині Fritz!</p>
+		
+		<p data-tx="t0027">У вашому <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> перейдіть до "Інтернет &gt; Спільні ресурси" на бічній панелі і виберіть вкладку "DynDNS".</p>
+
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0028">Відкрий Фріц! Коробку</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Налаштування DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0029">Скопіюйте дані для "URL для оновлення", "Доменне ім'я", "Ім'я користувача" та "Пароль" з програми <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Автовідповідач</a> і введіть їх у ваш <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. І підтвердьте вибір натисканням кнопки "Застосувати" (пункт 5 на зображенні нижче).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Налаштування DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0030">Перевірте DynDNS</h3>
+
+		<p data-tx="t0031">Тепер поверніться до програми <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">автовідповідач</a> і перевірте налаштування (пункт 6 на малюнку вище). Якщо PhoneBlock знайшов ваш Fritz!Box, ви перейдете на наступну сторінку з даними доступу до автовідповідача.</p>
+		
+		<h2 data-tx="t0032" id="sip">Крок 4: Налаштування автовідповідача у Fritz!</h2>
+		
+		<p data-tx="t0033">Автовідповідач тепер налаштовано як телефонний пристрій у Fritz! Для цього знову відкрийте інтерфейс <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
+
+		<h3 data-tx="t0034">Налаштування пристрою телефонії</h3>
+
+		<p data-tx="t0035">Перейдіть до "Телефонія &gt; Пристрої телефонії" на бічній панелі та натисніть кнопку "Налаштувати новий пристрій".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Налаштування пристрою" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0036">Виберіть тип пристрою</h3>
+
+		<p data-tx="t0037">Виберіть опцію "Телефон (з автовідповідачем і без)" і натисніть "Далі". Примітка: Не вибирайте <b>не</b> очевидну опцію "Автовідповідач", оскільки вона може бути використана лише для налаштування автовідповідачів, які постійно встановлені у Fritz!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Створити пристрій" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0038">Налаштування IP-телефону</h3>
+
+		<p data-tx="t0039">На сторінці "Підключити телефон" виберіть опцію "LAN/WLAN (IP-телефон)" і дайте новому пристрою ім'я "PhoneBlock" у текстовому полі нижче. Потім натисніть "Далі".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Створіть IP-телефон" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040">Передача даних доступу</h3>
+
+		<p data-tx="t0041">На наступній сторінці "Застосувати налаштування в IP-телефоні" вам буде запропоновано ввести "Ім'я користувача" та "Пароль". Скопіюйте сюди відповідні дані, які відображаються в додатку <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Автовідповідач&lt;/x1 Натисніть на кнопку "Далі".</a></p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Дані користувача" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"></img>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0042">Налаштування вихідних дзвінків</h3>
+
+		<p data-tx="t0043">На сторінці "Налаштування телефону для вихідних дзвінків" ви можете просто натиснути "Далі". Автовідповідачу PhoneBlock не потрібен номер телефону для вихідних дзвінків, оскільки він ніколи не здійснює активних дзвінків. На наступному кроці ми деактивуємо цей номер, щоб автовідповідач дійсно не міг здійснювати жодних дзвінків.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Вихідні дзвінки" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0044">Виберіть номери для захисту</h3>
+
+		<p data-tx="t0045">На сторінці "Налаштування налаштувань телефону для вхідних дзвінків" слід залишити значення за замовчуванням "Приймати всі дзвінки". Якщо ви хочете захистити тільки певні номери від спам-дзвінків, ви також можете вибрати номери, для яких автовідповідач взагалі не буде бачити дзвінки. Натисніть "Далі".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Захищені номери" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0046">Підтвердити конфігурацію</h3>
+
+		<p data-tx="t0047">Ви потрапите на підсумкову сторінку "Застосувати налаштування". Ви можете ще раз перевірити зроблені налаштування і підтвердити їх, натиснувши "Застосувати".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Перевірте налаштування" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0048">Завершення налаштування пристрою</h3>
+
+		<p data-tx="t0049">Ви повернулися в "Огляд пристроїв". Тепер ви повинні побачити ваш новий автовідповідач "PhoneBlock" у списку. Однак, перш ніж ви зможете увімкнути автовідповідач, вам потрібно виконати додаткові налаштування. Для цього натисніть на олівець для редагування в кінці рядка PhoneBlock.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Редагувати автовідповідач" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050">Припинення вихідних дзвінків</h3>
+
+		<p data-tx="t0051">У полі вибору "Вихідні дзвінки" тепер ви можете вибрати останній порожній запис, щоб автовідповідач не міг самостійно здійснювати дзвінки. Не натискайте <b>не</b> кнопку "Застосувати" внизу, а перейдіть на другу вкладку "Дані для входу". Тепер вас запитають, чи хочете ви зберегти зміни. У цьому діалозі натисніть "Застосувати".</p>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Заборона вихідних дзвінків" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"></img>
+	  		</div>
+			<div class="column">
+	  			<img alt="Підтвердити" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"></img>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0052">Дозволити вхід з Інтернету</h3>
+
+		<p data-tx="t0053">У вкладці "Дані для входу" тепер необхідно активувати опцію "Дозволити вхід з Інтернету" і знову скопіювати пароль з програми <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">автовідповідача</a> і ввести його в поле "Пароль". Тільки після цього натисніть на кнопку "Застосувати".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Доступ з Інтернету" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0054" id="enable">Крок 5: Увімкніть автовідповідач</h2>
+		
+		<p data-tx="t0055">Налаштування автовідповідача завершено. Поверніться до програми <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">автовідповідач</a> і увімкніть новий автовідповідач.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Доступ з Інтернету" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"></img>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0056">Вітаємо, якщо все пройшло добре, автовідповідач тепер повинен відображатися зеленим кольором як "увімкнений" у додатку <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">автовідповідач</a>. Наступних неприємних абонентів ви зможете обговорити з PhoneBlock у майбутньому.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Автовідповідач підключено" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"></img>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0057" id="test">Крок 6: Перевірте автовідповідач</h2>
+
+		<p data-tx="t0058">Якщо ви хочете спробувати, як працює не зовсім звичайний автовідповідач PhoneBlock, ви можете зателефонувати на нього з телефону, підключеного безпосередньо до Fritz!Box (наприклад, бездротового телефону стандарту DECT), через <b>внутрішній номер</b> автовідповідача. Автовідповідач завжди приймає такі тестові дзвінки. <b>Важливо:</b> Це працює <b>лише</b> через внутрішній номер автовідповідача (зазвичай починається з "**"). Ви можете знайти внутрішній номер в огляді пристрою вашого Fritz!Box у рядку "PhoneBlock". Чому б вам не спробувати оцінити фотоелектричну систему для нього? Бажаємо успіху!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Автовідповідач підключено" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"></img>
+	  		</div>
+		</div>
+		
+	</div>
+</section>
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Ingen Fritz! boks fundet</h1>
+
+		<p data-tx="t0002">Søgningen fandt ikke en Fritz! Det kan der være flere grunde til.</p>
+		
+		<ul>
+			<li data-tx="t0003">Du er ikke logget ind på WLAN, er "mobildata" aktivt?</li>
+			<li data-tx="t0004">Din Fritz!Box har ikke standardkonfigurationen med navnet <code>fritz.box</code> og adressen <code>192.168.178.1</code>?</li>
+			<li data-tx="t0005">Du har en anden internetrouter. Måske kan det også fungere med PhoneBlock, tjek <a th:href="@{/faq.jsp}">FAQ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

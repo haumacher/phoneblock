@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title='PhoneBlock auf iPhone einrichten')}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Instalacja iPhone'a</h1>
+		
+		<p data-tx="t0002">Instalacja powoduje dodanie książki adresowej PhoneBlock do kontaktów. Jeśli otrzymasz połączenie z numeru spamowego, zostanie to natychmiast wyświetlone, np. "SPAM: 03016637169". Możesz również natychmiast zobaczyć w nieodebranych połączeniach, że nie warto oddzwaniać bez konieczności wcześniejszego wygooglowania numeru.</p>
+
+		<p data-tx="t0003">Instalacja przebiega w następujących krokach:</p>
+		
+   		<ol>
+   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Zarejestruj się w PhoneBlock.</a></li>
+   		<li data-tx="t0005">Otwórz "Ustawienia" &gt; "Kontakty" &gt; "Konta".</li>
+   		<li data-tx="t0006">Stuknij w "Dodaj konto" - "Inne" &gt; "Dodaj konto CardDAV".</li>
+   		<li data-tx="t0007">Wprowadź dane dostępu i dotknij "Dalej". <dl>
+				<dt><b>Serwer</b></dt>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakty/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+
+				<dt><b>Nazwa użytkownika</b></dt>
+				<dd>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Zaloguj się</a> aby zobaczyć swoją nazwę użytkownika.</span>
+				</dd>
+
+				<dt><b>Hasło</b></dt>
+				<dd>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span th:unless="${token}">Wyświetlone bezpośrednio po pierwszym logowaniu, możesz <a th:href="@{/settings}">wygenerować nowe w ustawieniach</a> </span>
+				</dd>
+
+				<dt><b>Opis</b></dt>
+				<dd>Blokada telefonu</dd>		
+   			         </dl>.</li>
+   		<li data-tx="t0008">Aktywuj "Kontakty" i dotknij "Zapisz".</li>
+		<li data-tx="t0009">Teraz będziesz widzieć połączenia z "SPAM: ..." w książce kontaktów i kiedy zadzwonią. Dzięki temu można od razu sprawdzić, czy warto odebrać połączenie lub oddzwonić.</li>
+   		</ol>
+
+		<p data-tx="t0010">Nie masz już pod ręką swoich danych dostępowych? Nieważne, wystarczy <a th:href="@{/settings}">zresetować hasło</a> w ustawieniach.</p>
+   		
+   		<p data-tx="t0011">Można również znaleźć <a th:href="@{/link/carddav-install}">instrukcje z obrazkami</a> gdzie indziej. W tym przewodniku wystarczy użyć danych dostępu PhoneBlock w kroku, w którym wprowadzany jest serwer, nazwa użytkownika i hasło (patrz wyżej).</p>
+   		
+   		<p data-tx="t0012">Jeśli używasz PhoneBlock tylko na iPhonie, możesz również zwiększyć liczbę wpisów <a th:href="@{/settings}">w ustawieniach</a>. Jeśli wystąpią jakiekolwiek problemy, prosimy o poinformowanie nas o tym (patrz <a th:href="@{/faq}">FAQ</a>).</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
