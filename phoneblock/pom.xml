@@ -453,7 +453,7 @@
 					        <webResources>
 					            <resource>
 					                <directory>src/main/webapp</directory>
-					                <filtering>true</filtering>
+					                <filtering>false</filtering>
 					            </resource>
 					            <resource>
 					                <directory>../phoneblock_answerbot_ui/build/web</directory>
