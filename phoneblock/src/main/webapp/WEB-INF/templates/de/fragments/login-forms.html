@@ -64,7 +64,7 @@
 				<div class="field">
 					<label class="label" data-tx="t0007">E-Mail</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
+					    <input data-tx="t0020" name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
@@ -76,16 +76,12 @@
 				</div>
 
 				<div>
-					<label class="label">Sicherheitscode</label>
+					<label class="label" data-tx="t0019">Sicherheitscode</label>
 
-					<img alt="Captcha" th:src="${captchaSrc}"/>
+					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"></img>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input name="captcha" 
-					    	th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" 
-					    	type="text" 
-					    	placeholder="Text im Bild oben" 
-					    />
+					    <input data-tx="t0022" name="captcha" placeholder="Text im Bild oben" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"></input>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>
@@ -145,7 +141,7 @@
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" placeholder="Benutzername" th:name="${userNameParam}" type="text"></input>
+				    <input class="input" data-tx="t0023" placeholder="Benutzername" th:name="${userNameParam}" type="text"></input>
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -157,7 +153,7 @@
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"></input>
+				    <input class="input" data-tx="t0024" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"></input>
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>

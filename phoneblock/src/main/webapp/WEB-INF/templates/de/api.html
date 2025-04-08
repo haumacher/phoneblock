@@ -3,18 +3,18 @@
 
 <head>
 <th:block th:replace="~{fragments/page :: headContent}"></th:block>
-<link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|" />
+<link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|"></link>
 </head>
 
 <body>
 <div th:replace="~{fragments/page :: header}"></div>
 
-<section id="swagger-ui" class="section">
+<section class="section" id="swagger-ui">
 </section>
 
 <script th:src="|${contextPath}${deps.swagger}/swagger-ui-bundle.js|"></script>
-<script type="text/javascript" th:src="@{/assets/js/api.js}"></script>
-<input type="hidden" id="context-path" th:value="${contextPath}">
+<script th:src="@{/assets/js/api.js}" type="text/javascript"></script>
+<input id="context-path" th:value="${contextPath}" type="hidden"></input>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

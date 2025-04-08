@@ -5,7 +5,9 @@
 	<title th:text="${title}"></title>
 	
 	<meta content="text/html;charset=utf-8" http-equiv="content-type"></meta>
-	<meta content="de-DE" http-equiv="content-language"></meta>
+
+	<meta http-equiv="content-language" th:content="${currentLang.tag}"></meta>
+	<link rel="alternate" th:each="lang : ${languages}" th:href="|https://phoneblock.net${contextPath}${currentPage}?lang=${lang.tag}|" th:hreflang="${lang.tag}" th:unless="${lang == currentLang}"></link>	
 	
 	<meta content="width=device-width, initial-scale=1" name="viewport"></meta>
 	<meta name="description" th:content="${description}" th:if="${description}"></meta>
@@ -30,7 +32,7 @@
 	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"></link>
 	<link rel="stylesheet" th:href="|${contextPath}${deps.flags}/css/flag-icons.min.css|"></link>
 	
-	<link href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"></link>
+	<link data-tx="t0042" href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"></link>
 	
 	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"></link>
 	
@@ -45,21 +47,21 @@
 <section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
 		<div class="title">
-			<img alt="PhoneBlock Logo" class="logo-image" th:src="@{/assets/img/app-logo.svg}"></img>
+			<img alt="PhoneBlock Logo" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"></img>
 			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
 			
 			<div class="dropdown is-hoverable">
 			  <div class="dropdown-trigger">
-			    <button class="button lang-select" aria-haspopup="true" aria-controls="dropdown-menu">
+			    <button aria-controls="dropdown-menu" aria-haspopup="true" class="button lang-select">
 			      <span th:class="|fi fi-${currentLang.flag}|"></span>
 			      <span class="icon is-small">
-			        <i class="fas fa-angle-down" aria-hidden="true"></i>
+			        <i aria-hidden="true" class="fas fa-angle-down"></i>
 			      </span>
 			    </button>
 			  </div>
 			  <div class="dropdown-menu" id="dropdown-menu" role="menu">
 			    <div class="dropdown-content">
-			      <a th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|" class="dropdown-item"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
+			      <a class="dropdown-item" th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
 			    </div>
 			  </div>
 			</div>			
@@ -67,7 +69,7 @@
 
 		<p class="subtitle" data-tx="t0002">Der Spam-Filter fürs Telefon</p>
 		<a target="_blank" th:href="@{/link/github}">
-			<img alt="Fork me on GitHub" class="github-image" height="149" th:src="@{/assets/forkme.png}" width="149"></img>
+			<img alt="Fork me on GitHub" class="github-image" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"></img>
 		</a>
 	</div>
   <div class="hero-foot">
@@ -75,7 +77,7 @@
 	<div class="navbar-brand">
 		<div class="navbar-item"> 
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"></input>
+		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"></input>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
@@ -121,15 +123,15 @@
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" target="_blank" th:href="@{/ab/}" title="Answerbot App">
+			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Answerbot App">
 				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"></img>
 		    </a>
 
-			<a class="navbar-item" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
+			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
 				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"></img>
 		    </a>
       			
-			<a class="navbar-item" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
+			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>
