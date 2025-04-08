@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Informativa sulla privacy</h1>
+
+			<h2 data-tx="t0002">Indirizzo IP</h2>
+			<p data-tx="t0003">Quando visitate questo sito, l'indirizzo IP del vostro computer viene temporaneamente memorizzato in un file di log a scopo di analisi degli errori e viene automaticamente cancellato dopo 14 giorni. Senza registrazione, questo sito non raccoglie alcun dato personale dei suoi visitatori e non contiene né pubblicità né tracker di terze parti.</p>
+
+			<h2 data-tx="t0004">e-mail</h2>
+			<p data-tx="t0005">Quando ci si registra per un account PhoneBlock, l'indirizzo e-mail fornito sarà memorizzato ai fini dell'autenticazione dell'utente. L'indirizzo e-mail non sarà trasmesso a terzi. Le e-mail saranno inviate solo all'indirizzo specificato per l'autenticazione o per il funzionamento di PhoneBlock.</p>
+
+			<h2 data-tx="t0006">Biscotti</h2>
+			<p data-tx="t0007">Un cookie di sessione tecnicamente necessario viene impostato durante alcune interazioni con il sito web PhoneBlock, ad esempio durante la registrazione e la valutazione dei numeri di telefono.</p>
+			<p data-tx="t0008">Se attivate la funzione "Mantieni il login su questo dispositivo" al momento del login, PhoneBlock imposterà un cookie persistente con il quale il sito vi riconoscerà alla vostra prossima visita, in modo da effettuare automaticamente il login senza dover reinserire la password o ripetere il processo di login di Google. Se cliccate sul pulsante "Esci", questo cookie verrà cancellato e dovrete effettuare nuovamente il login alla vostra prossima visita.</p>
+
+			<h2 data-tx="t0009">Eliminazione dell'account</h2>
+			<p data-tx="t0010">È possibile cancellare il proprio account PhoneBlock in qualsiasi momento nelle <a th:href="@{/settings/}">impostazioni</a>. Cancellando il vostro account, i vostri dati memorizzati con PhoneBlock saranno cancellati.</p>
+			
+			<h2 data-tx="t0011">Numeri di telefono</h2>
+			<p data-tx="t0012">Se il vostro numero di telefono è stato aggiunto per errore alla blocklist, potete naturalmente chiederne la cancellazione. Scrivete un'e-mail a <code>Bernhard Haumacher &lt;<button class="showaddr">...</button></code>.</p>
+
+			<h2 data-tx="t0013">Segreteria telefonica</h2>
+			<p data-tx="t0014">Quando si utilizza la segreteria telefonica <a th:href="@{/anrufbeantworter/}">PhoneBlock</a>, PhoneBlock deve salvare in modo permanente l'indirizzo IP del Fritz!Box per registrarvi la segreteria telefonica e mantenere la registrazione. Per fare ciò, avete memorizzato il nome host del vostro Fritz!Box o avete installato il servizio DynDNS di PhoneBlock nel vostro Fritz!</p>
+			
+			<p data-tx="t0015">Le chiamate in arrivo al Fritz!Box vengono visualizzate su una segreteria telefonica registrata. Il numero di telefono del chiamante viene trasmesso alla segreteria telefonica PhoneBlock. Questo numero di telefono viene utilizzato per confrontarlo con il database dei numeri telefonici SPAM. Solo se il numero di telefono è contenuto nel database SPAM, la segreteria telefonica accetta la chiamata e la salva nell'elenco delle chiamate della segreteria. In tutti gli altri casi, nessun dato relativo alla chiamata verrà memorizzato in PhoneBlock.</p>
+			
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

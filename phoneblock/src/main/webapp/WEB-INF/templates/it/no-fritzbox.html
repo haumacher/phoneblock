@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body>
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Nessuna casella Fritz! trovata</h1>
+
+		<p data-tx="t0002">La ricerca non ha trovato un Fritz! Le ragioni possono essere diverse.</p>
+		
+		<ul>
+			<li data-tx="t0003">Non si è connessi alla WLAN, la funzione "dati mobili" è attiva?</li>
+			<li data-tx="t0004">Il vostro Fritz!Box non ha la configurazione standard con nome <code>fritz.box</code> e indirizzo <code>192.168.178.1</code>?</li>
+			<li data-tx="t0005">Avete un router internet diverso. Forse può funzionare anche con PhoneBlock, controllare la <a th:href="@{/faq.jsp}">FAQ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
