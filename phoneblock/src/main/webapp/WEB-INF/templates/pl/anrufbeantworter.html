@@ -21,7 +21,7 @@
 			<li><a data-tx="t0004" href="#register">Zarejestruj się w PhoneBlock</a></li>
 			<li><a data-tx="t0005" href="#create">Tworzenie automatycznej sekretarki</a></li>
 			<li><a data-tx="t0006" href="#dyndns">Konfiguracja DynDNS w Fritz!Box</a></li>
-			<li><a data-tx="t0007" href="#sip">Konfiguracja urządzenia telefonicznego w aplikacji Fritz!</a></li>
+			<li><a data-tx="t0007" href="#sip">Konfiguracja urządzenia telefonicznego w aplikacji Fritz!Box</a></li>
 			<li><a data-tx="t0008" href="#enable">Włącz automatyczną sekretarkę PhoneBlock</a></li>
 			<li><a data-tx="t0009" href="#test">Test automatycznej sekretarki</a></li>
 		</ol>
@@ -30,7 +30,7 @@
 		 
 		<h2 data-tx="t0011" id="register">Krok 1: Rejestracja w PhoneBlock</h2>
 
-		<p data-tx="t0012">Od tego momentu potrzebne będą trzy okna przeglądarki (lub karty). Jedno dla tego przewodnika, jedno dla aplikacji automatycznej sekretarki PhoneBlock i jedno dla interfejsu konfiguracyjnego Fritz!</p>
+		<p data-tx="t0012">Od tego momentu potrzebne będą trzy okna przeglądarki (lub karty). Jedno dla tego przewodnika, jedno dla aplikacji automatycznej sekretarki PhoneBlock i jedno dla interfejsu konfiguracyjnego Fritz!Box</p>
 		
 		<p data-tx="t0013" th:if="${loggedIn}">Po pierwsze, musisz zarejestrować się lub zalogować do PhoneBlock, aby rozpocząć konfigurację.</p>
 		
@@ -69,7 +69,7 @@
 		
 		<h2 data-tx="t0019" id="dyndns">Krok 4: Konfiguracja DynDNS</h2>
 		
-		<p data-tx="t0020">Poprzez "DynDNS" Fritz! Box informuje PhoneBlock o swoim adresie IP. Jest to konieczne, aby automatyczna sekretarka PhoneBlock mogła znaleźć skrzynkę Fritz!</p>
+		<p data-tx="t0020">Poprzez "DynDNS" Fritz!Box Box informuje PhoneBlock o swoim adresie IP. Jest to konieczne, aby automatyczna sekretarka PhoneBlock mogła znaleźć skrzynkę Fritz!Box</p>
 		
 		<h3 data-tx="t0021">Aktywacja PhoneBlock DynDNS</h3>
 		
@@ -93,7 +93,7 @@
 
 		<h3 data-tx="t0025">Wprowadź dane logowania w polu Fritz!Box</h3>
 		
-		<p data-tx="t0026">Ten link <a class="showFB" href="http://fritz.box" target="fritzbox">otwiera okno Fritz!Box</a>. Zaloguj się tam za pomocą hasła Fritz!Box. Jeśli nigdy wcześniej tego nie robiłeś, hasło znajdziesz na dole okna Fritz!</p>
+		<p data-tx="t0026">Ten link <a class="showFB" href="http://fritz.box" target="fritzbox">otwiera okno Fritz!Box</a>. Zaloguj się tam za pomocą hasła Fritz!Box. Jeśli nigdy wcześniej tego nie robiłeś, hasło znajdziesz na dole okna Fritz!Box</p>
 		
 		<p data-tx="t0027">W <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> przejdź do "Internet &gt; Shares" na pasku bocznym i wybierz zakładkę "DynDNS".</p>
 
@@ -126,9 +126,9 @@
 
 		<p data-tx="t0031">Teraz wróć do aplikacji <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine</a> i sprawdź ustawienia (punkt 6 na powyższym obrazku). Jeśli PhoneBlock znalazł Fritz!Box, zostaniesz przeniesiony do następnej strony z danymi dostępu do rzeczywistej automatycznej sekretarki.</p>
 		
-		<h2 data-tx="t0032" id="sip">Krok 4: Konfiguracja automatycznej sekretarki w urządzeniu Fritz!</h2>
+		<h2 data-tx="t0032" id="sip">Krok 4: Konfiguracja automatycznej sekretarki w urządzeniu Fritz!Box</h2>
 		
-		<p data-tx="t0033">Automatyczna sekretarka jest teraz skonfigurowana jako urządzenie telefoniczne w interfejsie Fritz! Aby to zrobić, otwórz ponownie interfejs <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
+		<p data-tx="t0033">Automatyczna sekretarka jest teraz skonfigurowana jako urządzenie telefoniczne w interfejsie Fritz!Box Aby to zrobić, otwórz ponownie interfejs <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
 
 		<h3 data-tx="t0034">Konfiguracja urządzenia telefonicznego</h3>
 
@@ -142,7 +142,7 @@
 		
 		<h3 data-tx="t0036">Wybierz typ urządzenia</h3>
 
-		<p data-tx="t0037">Wybierz opcję "Telefon (z automatyczną sekretarką i bez)" i kliknij "Dalej". Uwaga: Nie <b>nie</b> wybieraj oczywistej opcji "Automatyczna sekretarka", ponieważ może ona być używana tylko do konfigurowania automatycznych sekretarek, które są na stałe zainstalowane w Fritz!</p>
+		<p data-tx="t0037">Wybierz opcję "Telefon (z automatyczną sekretarką i bez)" i kliknij "Dalej". Uwaga: Nie <b>nie</b> wybieraj oczywistej opcji "Automatyczna sekretarka", ponieważ może ona być używana tylko do konfigurowania automatycznych sekretarek, które są na stałe zainstalowane w Fritz!Box</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
@@ -253,7 +253,7 @@
 		
 		<h2 data-tx="t0057" id="test">Krok 6: Przetestuj automatyczną sekretarkę</h2>
 
-		<p data-tx="t0058">Jeśli chcesz wypróbować, jak działa połączenie z nie do końca codzienną automatyczną sekretarką PhoneBlock, możesz zadzwonić do niej z telefonu podłączonego bezpośrednio do Fritz!Box (np. telefonu bezprzewodowego DECT) za pośrednictwem <b>numeru wewnętrznego</b> automatycznej sekretarki. Automatyczna sekretarka zawsze akceptuje takie połączenia testowe. <b>Ważne:</b> Działa to <b>tylko</b> za pośrednictwem numeru wewnętrznego automatycznej sekretarki (zwykle zaczyna się od "**"). Numer wewnętrzny można znaleźć w wierszu "PhoneBlock" w przeglądzie urządzenia Fritz! Może spróbujesz oszacować dla niego system fotowoltaiczny? Miłej zabawy!</p>
+		<p data-tx="t0058">Jeśli chcesz wypróbować, jak działa połączenie z nie do końca codzienną automatyczną sekretarką PhoneBlock, możesz zadzwonić do niej z telefonu podłączonego bezpośrednio do Fritz!Box (np. telefonu bezprzewodowego DECT) za pośrednictwem <b>numeru wewnętrznego</b> automatycznej sekretarki. Automatyczna sekretarka zawsze akceptuje takie połączenia testowe. <b>Ważne:</b> Działa to <b>tylko</b> za pośrednictwem numeru wewnętrznego automatycznej sekretarki (zwykle zaczyna się od "**"). Numer wewnętrzny można znaleźć w wierszu "PhoneBlock" w przeglądzie urządzenia Fritz!Box Może spróbujesz oszacować dla niego system fotowoltaiczny? Miłej zabawy!</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

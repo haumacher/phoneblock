@@ -71,7 +71,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021">If you have problems updating the blocklist, you can reduce the size of your blocklist here. AVM recommends filling phone books with a maximum of 1000 entries. The FRITZ!Box 7590, for example, can handle up to 3000 entries in a phone book.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Attention:</b> If you want to test how many entries your box can store in a phone book, proceed as follows: Start with the default setting of 2000 entries. Synchronize the blocklist and display the blocklist phonebook. Scroll to the very end and display the print preview of the blocklist and note the number of pages that would be printed. Now increase the blocklist size by one step, resynchronize the blocklist and display the print preview of the blocklist again. If the number of pages has increased accordingly, then your box can handle this size, try the next size. If the number of pages in the print preview has not increased or has not increased accordingly, then use the last smaller size of the blocklist. Interestingly, the Fritz! box does not report an error if a phone book becomes too large, but either simply does not synchronize or simply omits any numbers. I have seen boxes simply crash if the phone book size is too large - so be careful.</p>
+			  <p class="help" data-tx="t0022"><b>Attention:</b> If you want to test how many entries your box can store in a phone book, proceed as follows: Start with the default setting of 2000 entries. Synchronize the blocklist and display the blocklist phonebook. Scroll to the very end and display the print preview of the blocklist and note the number of pages that would be printed. Now increase the blocklist size by one step, resynchronize the blocklist and display the print preview of the blocklist again. If the number of pages has increased accordingly, then your box can handle this size, try the next size. If the number of pages in the print preview has not increased or has not increased accordingly, then use the last smaller size of the blocklist. Interestingly, the Fritz!Box box does not report an error if a phone book becomes too large, but either simply does not synchronize or simply omits any numbers. I have seen boxes simply crash if the phone book size is too large - so be careful.</p>
 			</div>
 			
 			<div class="field">
@@ -181,7 +181,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">You have not explicitly blocked any numbers. To block a number, search for the number using the search field above and write a negative comment, or make a phone book entry for the number in the blocklist in your Fritz!</p>
+	<p data-tx="t0047" th:unless="${blacklist}">You have not explicitly blocked any numbers. To block a number, search for the number using the search field above and write a negative comment, or make a phone book entry for the number in the blocklist in your Fritz!Box</p>
 
 	<th:block th:if="${blacklist}">
 	<p data-tx="t0048">You have explicitly blocked these numbers. You can remove an accidental block here:</p>

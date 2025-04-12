@@ -57,8 +57,8 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (lille til meget gamle Fritz!-bokse)</option>
-			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (anbefales til de fleste Fritz!-bokse)</option>
+			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (lille til meget gamle Fritz!Box-bokse)</option>
+			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (anbefales til de fleste Fritz!Box-bokse)</option>
 			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (virker f.eks. stadig på FRITZ!Box 7590)</option>
 			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (se bemærkninger nedenfor)</option>
 			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (stort, se bemærkninger nedenfor)</option>
@@ -71,7 +71,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021">Hvis du har problemer med at opdatere bloklisten, kan du reducere størrelsen på din blokliste her. AVM anbefaler at fylde telefonbøger med maksimalt 1000 poster. FRITZ!Box 7590 kan f.eks. håndtere op til 3000 poster i en telefonbog.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Opmærksomhed:</b> Hvis du vil teste, hvor mange poster din boks kan gemme i en telefonbog, skal du gøre følgende: Start med standardindstillingen på 2000 poster. Synkroniser bloklisten, og vis bloklistens telefonbog. Rul helt til slutningen, og få vist forhåndsvisningen af bloklisten, og noter antallet af sider, der skal udskrives. Forøg nu bloklistens størrelse med et trin, synkroniser bloklisten igen, og vis forhåndsvisningen af bloklisten igen. Hvis antallet af sider er steget tilsvarende, kan din boks håndtere denne størrelse, så prøv den næste størrelse. Hvis antallet af sider i forhåndsvisningen ikke er steget eller ikke er steget tilsvarende, skal du bruge den sidste mindre størrelse af bloklisten. Interessant nok rapporterer Fritz! boksen ikke en fejl, hvis en telefonbog bliver for stor, men synkroniserer enten ikke eller udelader numre. Jeg har set bokse, der simpelthen går ned, hvis telefonbogen er for stor - så vær forsigtig.</p>
+			  <p class="help" data-tx="t0022"><b>Opmærksomhed:</b> Hvis du vil teste, hvor mange poster din boks kan gemme i en telefonbog, skal du gøre følgende: Start med standardindstillingen på 2000 poster. Synkroniser bloklisten, og vis bloklistens telefonbog. Rul helt til slutningen, og få vist forhåndsvisningen af bloklisten, og noter antallet af sider, der skal udskrives. Forøg nu bloklistens størrelse med et trin, synkroniser bloklisten igen, og vis forhåndsvisningen af bloklisten igen. Hvis antallet af sider er steget tilsvarende, kan din boks håndtere denne størrelse, så prøv den næste størrelse. Hvis antallet af sider i forhåndsvisningen ikke er steget eller ikke er steget tilsvarende, skal du bruge den sidste mindre størrelse af bloklisten. Interessant nok rapporterer Fritz!Box boksen ikke en fejl, hvis en telefonbog bliver for stor, men synkroniserer enten ikke eller udelader numre. Jeg har set bokse, der simpelthen går ned, hvis telefonbogen er for stor - så vær forsigtig.</p>
 			</div>
 			
 			<div class="field">
@@ -181,7 +181,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Du har ikke eksplicit blokeret nogen numre. For at blokere et nummer skal du søge efter nummeret ved hjælp af søgefeltet ovenfor og skrive en negativ kommentar, eller lave en telefonbogspost for nummeret i blokeringslisten i din Fritz!</p>
+	<p data-tx="t0047" th:unless="${blacklist}">Du har ikke eksplicit blokeret nogen numre. For at blokere et nummer skal du søge efter nummeret ved hjælp af søgefeltet ovenfor og skrive en negativ kommentar, eller lave en telefonbogspost for nummeret i blokeringslisten i din Fritz!Box</p>
 
 	<th:block th:if="${blacklist}">
 	<p data-tx="t0048">Du har udtrykkeligt blokeret disse numre. Du kan ophæve en utilsigtet blokering her:</p>

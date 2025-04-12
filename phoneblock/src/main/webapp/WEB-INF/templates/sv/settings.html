@@ -71,7 +71,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021">Om du har problem med att uppdatera blocklistan kan du minska storleken på din blocklista här. AVM rekommenderar att telefonböcker fylls med maximalt 1000 poster. FRITZ!Box 7590 kan t.ex. hantera upp till 3000 poster i en telefonbok.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Attention:</b> Om du vill testa hur många poster din box kan spara i en telefonbok gör du på följande sätt: Börja med standardinställningen på 2000 poster. Synkronisera blocklistan och visa blocklistans telefonbok. Bläddra ända till slutet och visa förhandsgranskningen av blocklistan och notera antalet sidor som skulle skrivas ut. Öka nu blocklistans storlek med ett steg, synkronisera blocklistan igen och visa förhandsgranskningen av blocklistans utskrift igen. Om antalet sidor har ökat i motsvarande grad kan din box hantera den här storleken, prova nästa storlek. Om antalet sidor i förhandsgranskningen inte har ökat eller inte har ökat i motsvarande grad, använd då den senaste mindre storleken på blocklistan. Intressant nog rapporterar Fritz!-rutan inte ett fel om en telefonbok blir för stor, utan antingen synkroniseras den helt enkelt inte eller så utelämnas helt enkelt några nummer. Jag har sett boxar som helt enkelt kraschar om telefonbokens storlek är för stor - så var försiktig.</p>
+			  <p class="help" data-tx="t0022"><b>Attention:</b> Om du vill testa hur många poster din box kan spara i en telefonbok gör du på följande sätt: Börja med standardinställningen på 2000 poster. Synkronisera blocklistan och visa blocklistans telefonbok. Bläddra ända till slutet och visa förhandsgranskningen av blocklistan och notera antalet sidor som skulle skrivas ut. Öka nu blocklistans storlek med ett steg, synkronisera blocklistan igen och visa förhandsgranskningen av blocklistans utskrift igen. Om antalet sidor har ökat i motsvarande grad kan din box hantera den här storleken, prova nästa storlek. Om antalet sidor i förhandsgranskningen inte har ökat eller inte har ökat i motsvarande grad, använd då den senaste mindre storleken på blocklistan. Intressant nog rapporterar Fritz!Box-rutan inte ett fel om en telefonbok blir för stor, utan antingen synkroniseras den helt enkelt inte eller så utelämnas helt enkelt några nummer. Jag har sett boxar som helt enkelt kraschar om telefonbokens storlek är för stor - så var försiktig.</p>
 			</div>
 			
 			<div class="field">
@@ -181,7 +181,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Du har inte uttryckligen blockerat några nummer. Du blockerar ett nummer genom att söka efter numret i sökfältet ovan och skriva en negativ kommentar, eller genom att lägga till numret i telefonboken i blockeringslistan i din Fritz!</p>
+	<p data-tx="t0047" th:unless="${blacklist}">Du har inte uttryckligen blockerat några nummer. Du blockerar ett nummer genom att söka efter numret i sökfältet ovan och skriva en negativ kommentar, eller genom att lägga till numret i telefonboken i blockeringslistan i din Fritz!Box</p>
 
 	<th:block th:if="${blacklist}">
 	<p data-tx="t0048">Du har uttryckligen blockerat dessa nummer. Du kan avbryta en oavsiktlig blockering här:</p>

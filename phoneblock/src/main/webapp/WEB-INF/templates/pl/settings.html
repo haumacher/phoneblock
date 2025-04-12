@@ -71,7 +71,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021">W przypadku problemów z aktualizacją listy blokad można zmniejszyć jej rozmiar w tym miejscu. AVM zaleca, aby książki telefoniczne zawierały maksymalnie 1000 wpisów. Na przykład FRITZ!Box 7590 może obsłużyć do 3000 wpisów w książce telefonicznej.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Uwaga:</b> Jeśli chcesz sprawdzić, ile wpisów można zapisać w książce telefonicznej, wykonaj następujące czynności: Rozpocznij od domyślnego ustawienia 2000 wpisów. Zsynchronizuj listę blokad i wyświetl książkę telefoniczną listy blokad. Przewiń do samego końca i wyświetl podgląd wydruku listy zablokowanych i zanotuj liczbę stron, które zostaną wydrukowane. Teraz zwiększ rozmiar listy bloków o jeden krok, ponownie zsynchronizuj listę bloków i ponownie wyświetl podgląd wydruku listy bloków. Jeśli liczba stron odpowiednio wzrosła, skrzynka może obsłużyć ten rozmiar, spróbuj użyć następnego rozmiaru. Jeśli liczba stron w podglądzie wydruku nie wzrosła lub nie wzrosła odpowiednio, użyj ostatniego mniejszego rozmiaru listy bloków. Co ciekawe, skrzynka Fritz! nie zgłasza błędu, jeśli książka telefoniczna staje się zbyt duża, ale po prostu nie synchronizuje się lub po prostu pomija numery. Zdarzało mi się, że skrzynki po prostu się zawieszały, jeśli rozmiar książki telefonicznej był zbyt duży - należy więc zachować ostrożność.</p>
+			  <p class="help" data-tx="t0022"><b>Uwaga:</b> Jeśli chcesz sprawdzić, ile wpisów można zapisać w książce telefonicznej, wykonaj następujące czynności: Rozpocznij od domyślnego ustawienia 2000 wpisów. Zsynchronizuj listę blokad i wyświetl książkę telefoniczną listy blokad. Przewiń do samego końca i wyświetl podgląd wydruku listy zablokowanych i zanotuj liczbę stron, które zostaną wydrukowane. Teraz zwiększ rozmiar listy bloków o jeden krok, ponownie zsynchronizuj listę bloków i ponownie wyświetl podgląd wydruku listy bloków. Jeśli liczba stron odpowiednio wzrosła, skrzynka może obsłużyć ten rozmiar, spróbuj użyć następnego rozmiaru. Jeśli liczba stron w podglądzie wydruku nie wzrosła lub nie wzrosła odpowiednio, użyj ostatniego mniejszego rozmiaru listy bloków. Co ciekawe, skrzynka Fritz!Box nie zgłasza błędu, jeśli książka telefoniczna staje się zbyt duża, ale po prostu nie synchronizuje się lub po prostu pomija numery. Zdarzało mi się, że skrzynki po prostu się zawieszały, jeśli rozmiar książki telefonicznej był zbyt duży - należy więc zachować ostrożność.</p>
 			</div>
 			
 			<div class="field">
@@ -181,7 +181,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Nie zablokowałeś żadnych numerów. Aby zablokować numer, wyszukaj go za pomocą powyższego pola wyszukiwania i napisz negatywny komentarz lub dokonaj wpisu w książce telefonicznej dla tego numeru na liście blokowanych numerów w aplikacji Fritz!</p>
+	<p data-tx="t0047" th:unless="${blacklist}">Nie zablokowałeś żadnych numerów. Aby zablokować numer, wyszukaj go za pomocą powyższego pola wyszukiwania i napisz negatywny komentarz lub dokonaj wpisu w książce telefonicznej dla tego numeru na liście blokowanych numerów w aplikacji Fritz!Box</p>
 
 	<th:block th:if="${blacklist}">
 	<p data-tx="t0048">Te numery zostały wyraźnie zablokowane. Przypadkową blokadę można anulować tutaj:</p>

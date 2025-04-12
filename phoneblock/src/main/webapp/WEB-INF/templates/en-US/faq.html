@@ -23,14 +23,14 @@
 		
 		<p data-tx="t0009">You can add numbers to your personalized blocklist yourself and, more importantly, exclude numbers from blocking (see also "A number is blocked by mistake, what to do?" below). This is interesting if PhoneBlock has added a number to the blocklist that you would like to be called by. For example, a number, e.g. from an Internet provider, can easily end up on the blocklist if many people feel annoyed by callbacks from this number, but you are waiting for a callback. This is also explained very well in this <a target="_blank" th:href="@{/link/tellows-problems}">YouTube video</a>. With PhoneBlock you can customize your blocklist, numbers that you have put on it yourself will remain blocked and numbers that you have added to your whitelist will certainly not be blocked.</p>
 
-		<h2 data-tx="t0010">My Fritz! box does not yet support CardDAV, can I still use PhoneBlock?</h2>
+		<h2 data-tx="t0010">My Fritz!Box box does not yet support CardDAV, can I still use PhoneBlock?</h2>
 		<p data-tx="t0011">Yes, there are two possibilities:</p>
 		<ol>
 		<li data-tx="t0012">Use the PhoneBlock answering machine (currently still in beta testing) instead of the phone book. You register the PhoneBlock answering machine to your Fritz!Box like an Internet phone and it always answers when a SPAM number calls, so quickly that your phone doesn't ring or only rings very briefly. The PhoneBlock answering machine is currently only available on a test system that requires a separate registration: <a th:href="@{/anrufbeantworter/}">To the answering machine test system</a>. If you were able to install the answering machine successfully - or had problems doing so - please let us know so that the new tool can become generally available as soon as possible.</li>
-		<li data-tx="t0013">Use the <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> tool to load the blocklist into your Fritz! However, you will need a PC on which you can install the program. SpamBlockUp can also use the PhoneBlock blocklist and load it into your Fritz! For details, please contact the author of this program. PhoneBlock is not related to SpamBlockUp.</li>
+		<li data-tx="t0013">Use the <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> tool to load the blocklist into your Fritz!Box However, you will need a PC on which you can install the program. SpamBlockUp can also use the PhoneBlock blocklist and load it into your Fritz!Box For details, please contact the author of this program. PhoneBlock is not related to SpamBlockUp.</li>
 		</ol>
 
-		<h2 data-tx="t0014">I don't have a Fritz! box, can I still use PhoneBlock?</h2>
+		<h2 data-tx="t0014">I don't have a Fritz!Box box, can I still use PhoneBlock?</h2>
 		
 		<p data-tx="t0015">You can install the <a th:href="@{/anrufbeantworter/}">PhoneBlock answering machine</a> in any VOIP-capable Internet router, even if your router does not support the CardDAV protocol for Internet phone books. Install the answering machine as a normal VOIP telephone that logs on to your box via the Internet.</p>
 		
@@ -75,14 +75,14 @@
 		<p data-tx="t0040">With PhoneBlock you don't necessarily have to block numbers. You have the following options:</p>
 		<ol>
 			<li data-tx="t0041">Instead of blocking, set up a forwarding to your answering machine. If someone calls who really wants something from you, they will leave a message and you can call them back.</li>
-			<li data-tx="t0042">Leave out the installation step with the blocking completely. Just set up the PhoneBlock phone book in your Fritz! Then you will see "SPAM: 03016637169", for example, on the phone display when you make a call. You can then decide whether to answer the call because you are waiting for a callback or whether you want to push the caller away.</li>
+			<li data-tx="t0042">Leave out the installation step with the blocking completely. Just set up the PhoneBlock phone book in your Fritz!Box Then you will see "SPAM: 03016637169", for example, on the phone display when you make a call. You can then decide whether to answer the call because you are waiting for a callback or whether you want to push the caller away.</li>
 		</ol>
 
 		<h2 data-tx="t0043">Do I have to update the phone book manually?</h2>
-		<p data-tx="t0044">No, this happens automatically every night. Your Fritz! box contacts the PhoneBlock server every night and compares the numbers in the blocklist with the blocklist phonebook. This means that your blocklist is always up to date. If the blocklist is not retrieved from your Fritz!Box for a longer period of time (for whatever reason), PhoneBlock will send you an e-mail so that you can check the configuration before your blocklist becomes outdated.</p>
+		<p data-tx="t0044">No, this happens automatically every night. Your Fritz!Box box contacts the PhoneBlock server every night and compares the numbers in the blocklist with the blocklist phonebook. This means that your blocklist is always up to date. If the blocklist is not retrieved from your Fritz!Box for a longer period of time (for whatever reason), PhoneBlock will send you an e-mail so that you can check the configuration before your blocklist becomes outdated.</p>
 
 		<h2 data-tx="t0045">When exactly will the block list be updated?</h2>
-		<p data-tx="t0046">This is decided by your Fritz! If you don't explicitly press the "Update" button on the blocklist phonebook, your Fritz! box dices a time between 0 and 6 a.m. for the update. This is cleverly done by AVM, because the calls are distributed relatively evenly throughout the night, thus limiting the server load.</p>
+		<p data-tx="t0046">This is decided by your Fritz!Box If you don't explicitly press the "Update" button on the blocklist phonebook, your Fritz!Box box dices a time between 0 and 6 a.m. for the update. This is cleverly done by AVM, because the calls are distributed relatively evenly throughout the night, thus limiting the server load.</p>
 		
 		<h2 data-tx="t0047">I think PhoneBlock is great, can I make a donation?</h2>
 		<p data-tx="t0048">Yes, if you like PhoneBlock, you are welcome to make a <a th:href="@{/support.jsp}">small donation</a> towards the running costs for server rental, domain registration, Internet access, etc.</p>

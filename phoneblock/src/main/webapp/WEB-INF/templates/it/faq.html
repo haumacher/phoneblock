@@ -23,14 +23,14 @@
 		
 		<p data-tx="t0009">Potete aggiungere voi stessi i numeri alla vostra lista di blocco personalizzata e, cosa più importante, potete anche escludere i numeri dal blocco (vedere anche "Un numero è stato bloccato per errore, cosa fare?" qui sotto). Questo è interessante se PhoneBlock ha aggiunto alla lista di blocco un numero da cui si desidera essere chiamati. Ad esempio, un numero di un provider Internet può essere facilmente aggiunto alla blocklist se molte persone sono infastidite dalle chiamate provenienti da questo numero, ma voi siete in attesa di essere richiamati. Questo è spiegato molto bene anche in questo <a target="_blank" th:href="@{/link/tellows-problems}">video di YouTube</a>. Con PhoneBlock potete personalizzare la vostra blocklist, i numeri che avete inserito voi stessi rimarranno bloccati e i numeri che avete aggiunto alla vostra whitelist non saranno certamente bloccati.</p>
 
-		<h2 data-tx="t0010">Il mio box Fritz! non supporta ancora CardDAV, posso ancora usare PhoneBlock?</h2>
+		<h2 data-tx="t0010">Il mio box Fritz!Box non supporta ancora CardDAV, posso ancora usare PhoneBlock?</h2>
 		<p data-tx="t0011">Sì, ci sono due possibilità:</p>
 		<ol>
 		<li data-tx="t0012">Utilizzate la segreteria telefonica PhoneBlock (attualmente ancora in fase di beta testing) al posto della rubrica telefonica. La segreteria telefonica PhoneBlock viene registrata sul Fritz!Box come un telefono Internet e risponde sempre quando un numero SPAM chiama, così rapidamente che il telefono non squilla o squilla solo molto brevemente. La segreteria telefonica PhoneBlock è attualmente disponibile solo su un sistema di prova che richiede una registrazione separata: <a th:href="@{/anrufbeantworter/}">Al sistema di prova della segreteria telefonica</a>. Se siete riusciti a installare la segreteria telefonica con successo - o se avete avuto problemi nel farlo - vi preghiamo di farcelo sapere in modo che il nuovo strumento possa diventare disponibile in generale il prima possibile.</li>
-		<li data-tx="t0013">Utilizzate lo strumento <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> per caricare la blocklist nel vostro Fritz! Tuttavia, è necessario un PC su cui installare il programma. SpamBlockUp può anche utilizzare la blocklist di PhoneBlock e caricarla nel Fritz! Per maggiori dettagli, contattate l'autore del programma. PhoneBlock non è collegato a SpamBlockUp.</li>
+		<li data-tx="t0013">Utilizzate lo strumento <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> per caricare la blocklist nel vostro Fritz!Box Tuttavia, è necessario un PC su cui installare il programma. SpamBlockUp può anche utilizzare la blocklist di PhoneBlock e caricarla nel Fritz!Box Per maggiori dettagli, contattate l'autore del programma. PhoneBlock non è collegato a SpamBlockUp.</li>
 		</ol>
 
-		<h2 data-tx="t0014">Non ho un box Fritz!, posso comunque usare PhoneBlock?</h2>
+		<h2 data-tx="t0014">Non ho un box Fritz!Box, posso comunque usare PhoneBlock?</h2>
 		
 		<p data-tx="t0015">È possibile installare la segreteria telefonica <a th:href="@{/anrufbeantworter/}">PhoneBlock</a> in qualsiasi router Internet con capacità VOIP, anche se il router non supporta il protocollo CardDAV per le rubriche Internet. La segreteria telefonica può essere installata come un normale telefono VOIP che si collega alla propria casella via Internet.</p>
 		
@@ -54,7 +54,7 @@
 			<li data-tx="t0027">Ricreare la rubrica telefonica. Assicuratevi di aver copiato correttamente l'indirizzo del server. Assicuratevi che non ci siano spazi all'inizio o alla fine del nome utente e della password.</li>
 		</ol>
 		
-		<p data-tx="t0028">Attenzione: Se si cambia la password di accesso al PhoneBlock, non è sufficiente impostare la nuova password nelle impostazioni della rubrica. Il box Fritz! sembra avere un problema nell'aggiornamento dei dati di accesso. Eliminate invece la rubrica e impostatela di nuovo.</p>
+		<p data-tx="t0028">Attenzione: Se si cambia la password di accesso al PhoneBlock, non è sufficiente impostare la nuova password nelle impostazioni della rubrica. Il box Fritz!Box sembra avere un problema nell'aggiornamento dei dati di accesso. Eliminate invece la rubrica e impostatela di nuovo.</p>
 
 		<h2 data-tx="t0029" id="disposable-mail">Perché non posso registrarmi con un indirizzo e-mail usa e getta?</h2>
 		<p data-tx="t0030">Se utilizzate PhoneBlock, consumate continuamente capacità di calcolo e larghezza di banda Internet, poiché l'elenco dei blocchi viene aggiornato quotidianamente. Il funzionamento di PhoneBlock consuma attualmente circa 500 GB di volume di dati al mese. Al momento questo consumo è gratuito per l'utente. Tuttavia, se qualcosa non funziona "senza intoppi" durante il funzionamento, mi aspetto che siate contattabili per risolvere qualsiasi problema. Se vi registrate con un indirizzo usa e getta, questo non è possibile. Registrarsi con un indirizzo usa e getta sarebbe come non registrarsi affatto.</p>
@@ -75,14 +75,14 @@
 		<p data-tx="t0040">Con PhoneBlock non è necessario bloccare necessariamente i numeri. Avete le seguenti opzioni:</p>
 		<ol>
 			<li data-tx="t0041">Invece di bloccare, impostate un inoltro alla segreteria telefonica. Se chiama qualcuno che vuole davvero qualcosa da voi, lascerà un messaggio e potrete richiamarlo.</li>
-			<li data-tx="t0042">Tralasciate completamente la fase di installazione del blocco. Basta impostare la rubrica PhoneBlock nel Fritz! Quindi, ad esempio, "SPAM: 03016637169" verrà visualizzato sul display del telefono quando si riceve una chiamata. Potrete quindi decidere se rispondere alla chiamata perché siete in attesa di una chiamata o se respingere il chiamante.</li>
+			<li data-tx="t0042">Tralasciate completamente la fase di installazione del blocco. Basta impostare la rubrica PhoneBlock nel Fritz!Box Quindi, ad esempio, "SPAM: 03016637169" verrà visualizzato sul display del telefono quando si riceve una chiamata. Potrete quindi decidere se rispondere alla chiamata perché siete in attesa di una chiamata o se respingere il chiamante.</li>
 		</ol>
 
 		<h2 data-tx="t0043">Devo aggiornare manualmente la rubrica?</h2>
-		<p data-tx="t0044">No, questo avviene automaticamente ogni notte. Il vostro Fritz! contatta ogni notte il server PhoneBlock e sincronizza i numeri della blocklist con la rubrica della blocklist. La vostra lista di blocco rimane quindi sempre aggiornata. Se la blocklist non viene recuperata dal vostro Fritz!Box per un periodo di tempo prolungato (per qualsiasi motivo), PhoneBlock vi invierà un'e-mail in modo che possiate controllare la configurazione prima che la vostra blocklist diventi obsoleta.</p>
+		<p data-tx="t0044">No, questo avviene automaticamente ogni notte. Il vostro Fritz!Box contatta ogni notte il server PhoneBlock e sincronizza i numeri della blocklist con la rubrica della blocklist. La vostra lista di blocco rimane quindi sempre aggiornata. Se la blocklist non viene recuperata dal vostro Fritz!Box per un periodo di tempo prolungato (per qualsiasi motivo), PhoneBlock vi invierà un'e-mail in modo che possiate controllare la configurazione prima che la vostra blocklist diventi obsoleta.</p>
 
 		<h2 data-tx="t0045">Quando verrà aggiornato esattamente l'elenco dei blocchi?</h2>
-		<p data-tx="t0046">Questo viene deciso dal Fritz! Se non si preme esplicitamente il pulsante "Aggiorna" sulla rubrica della blocklist, la casella del Fritz! sceglie un orario compreso tra le 0 e le 6 del mattino per l'aggiornamento. AVM ha fatto questo in modo molto intelligente, perché significa che le chiamate sono distribuite in modo relativamente uniforme durante la notte e il carico del server rimane limitato.</p>
+		<p data-tx="t0046">Questo viene deciso dal Fritz!Box Se non si preme esplicitamente il pulsante "Aggiorna" sulla rubrica della blocklist, la casella del Fritz!Box sceglie un orario compreso tra le 0 e le 6 del mattino per l'aggiornamento. AVM ha fatto questo in modo molto intelligente, perché significa che le chiamate sono distribuite in modo relativamente uniforme durante la notte e il carico del server rimane limitato.</p>
 		
 		<h2 data-tx="t0047">Penso che PhoneBlock sia fantastico, posso fare una donazione?</h2>
 		<p data-tx="t0048">Sì, se vi piace PhoneBlock, siete invitati a fare una <a th:href="@{/support.jsp}">piccola donazione</a> per i costi di gestione per l'affitto del server, la registrazione del dominio, l'accesso a internet, ecc.</p>

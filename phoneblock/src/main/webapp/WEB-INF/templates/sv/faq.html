@@ -23,14 +23,14 @@
 		
 		<p data-tx="t0009">Du kan själv lägga till nummer i din personliga blockeringslista och, vilket är ännu viktigare, du kan också utesluta nummer från att blockeras (se även "Ett nummer blockeras av misstag, vad gör jag?" nedan). Detta är intressant om PhoneBlock har lagt till ett nummer i blockeringslistan som du vill bli uppringd av. Till exempel kan ett nummer från en internetleverantör lätt hamna på blockeringslistan om många människor känner sig irriterade av återuppringningar från detta nummer, men du väntar på en återuppringning. Detta förklaras också mycket bra i den här <a target="_blank" th:href="@{/link/tellows-problems}">YouTube-videon</a>. Med PhoneBlock kan du anpassa din blockeringslista, nummer som du själv har lagt till i den kommer att förbli blockerade och nummer som du har lagt till i din vitlista kommer absolut inte att blockeras.</p>
 
-		<h2 data-tx="t0010">Min Fritz!-box har ännu inte stöd för CardDAV, kan jag ändå använda PhoneBlock?</h2>
+		<h2 data-tx="t0010">Min Fritz!Box-box har ännu inte stöd för CardDAV, kan jag ändå använda PhoneBlock?</h2>
 		<p data-tx="t0011">Ja, det finns två möjligheter:</p>
 		<ol>
 		<li data-tx="t0012">Använd PhoneBlocks telefonsvarare (för närvarande fortfarande i betatestning) istället för telefonboken. Du registrerar PhoneBlocks telefonsvarare i din Fritz!Box som en Internettelefon och den svarar alltid när ett SPAM-nummer ringer, så snabbt att din telefon inte ringer eller bara ringer mycket kort. PhoneBlocks telefonsvarare är för närvarande endast tillgänglig på ett testsystem som kräver en separat registrering: <a th:href="@{/anrufbeantworter/}">Till testsystemet för telefonsvarare</a>. Om du lyckades installera telefonsvararen - eller om du hade problem med att göra det - får du gärna meddela oss så att det nya verktyget kan bli allmänt tillgängligt så snart som möjligt.</li>
-		<li data-tx="t0013">Använd verktyget <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> för att ladda blocklistan i din Fritz! Du behöver dock en dator som du kan installera programmet på. SpamBlockUp kan också använda PhoneBlock-blocklistan och ladda den i din Fritz! För mer information, vänligen kontakta författaren till detta program. PhoneBlock är inte relaterat till SpamBlockUp.</li>
+		<li data-tx="t0013">Använd verktyget <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> för att ladda blocklistan i din Fritz!Box Du behöver dock en dator som du kan installera programmet på. SpamBlockUp kan också använda PhoneBlock-blocklistan och ladda den i din Fritz!Box För mer information, vänligen kontakta författaren till detta program. PhoneBlock är inte relaterat till SpamBlockUp.</li>
 		</ol>
 
-		<h2 data-tx="t0014">Jag har ingen Fritz!-box, kan jag ändå använda PhoneBlock?</h2>
+		<h2 data-tx="t0014">Jag har ingen Fritz!Box-box, kan jag ändå använda PhoneBlock?</h2>
 		
 		<p data-tx="t0015">Du kan installera <a th:href="@{/anrufbeantworter/}">PhoneBlocks telefonsvarare</a> i alla VOIP-kompatibla Internet-routrar, även om din router inte stöder CardDAV-protokollet för Internettelefonböcker. Installera telefonsvararen som en vanlig VOIP-telefon som loggar in på din box via Internet.</p>
 		
@@ -54,7 +54,7 @@
 			<li data-tx="t0027">Återskapa telefonboken. Kontrollera att du verkligen har kopierat adressen till servern på rätt sätt. Se till att det inte finns några mellanslag i början eller slutet av användarnamnet och lösenordet.</li>
 		</ol>
 		
-		<p data-tx="t0028">Vänligen notera detta: Om du ändrar lösenordet för din PhoneBlock-åtkomst räcker det inte med att ange det nya lösenordet i telefonboksinställningarna. Fritz!-boxen verkar ha problem med att uppdatera åtkomstdata. Ta istället bort telefonboken och ställ in den igen.</p>
+		<p data-tx="t0028">Vänligen notera detta: Om du ändrar lösenordet för din PhoneBlock-åtkomst räcker det inte med att ange det nya lösenordet i telefonboksinställningarna. Fritz!Box-boxen verkar ha problem med att uppdatera åtkomstdata. Ta istället bort telefonboken och ställ in den igen.</p>
 
 		<h2 data-tx="t0029" id="disposable-mail">Varför kan jag inte registrera mig med en engångs-e-postadress?</h2>
 		<p data-tx="t0030">Om du använder PhoneBlock kommer du kontinuerligt att förbruka datorkapacitet och Internetbandbredd, eftersom blocklistan uppdateras dagligen. Driften av PhoneBlock förbrukar för närvarande ca 500 GB datavolym per månad. Detta är för närvarande kostnadsfritt för dig. Om något inte skulle fungera "smidigt" under driften förväntar jag mig dock att du är kontaktbar för att lösa eventuella problem. Om du registrerar dig med en engångsadress är detta inte möjligt. Att registrera sig med en engångsadress skulle vara lika bra som att inte registrera sig alls.</p>
@@ -75,14 +75,14 @@
 		<p data-tx="t0040">Med PhoneBlock behöver du inte nödvändigtvis blockera nummer. Du har följande alternativ:</p>
 		<ol>
 			<li data-tx="t0041">I stället för att blockera kan du vidarekoppla till din telefonsvarare. Om någon ringer och verkligen vill ha något från dig lämnar de ett meddelande och du kan ringa upp dem.</li>
-			<li data-tx="t0042">Utelämna installationssteget med blockeringen helt och hållet. Konfigurera bara PhoneBlock-telefonboken i din Fritz! Då visas t.ex. "SPAM: 03016637169" på telefonens display när du får ett samtal. Du kan sedan välja om du vill svara på samtalet för att du väntar på att bli uppringd eller om du vill avvisa den som ringer.</li>
+			<li data-tx="t0042">Utelämna installationssteget med blockeringen helt och hållet. Konfigurera bara PhoneBlock-telefonboken i din Fritz!Box Då visas t.ex. "SPAM: 03016637169" på telefonens display när du får ett samtal. Du kan sedan välja om du vill svara på samtalet för att du väntar på att bli uppringd eller om du vill avvisa den som ringer.</li>
 		</ol>
 
 		<h2 data-tx="t0043">Måste jag uppdatera telefonboken manuellt?</h2>
-		<p data-tx="t0044">Nej, detta sker automatiskt varje natt. Fritz!-boxen kontaktar PhoneBlock-servern varje natt och synkroniserar numren i blocklistan med blocklistans telefonbok. Din blockeringslista är därför alltid uppdaterad. Om blocklistan inte hämtas från din Fritz!Box under en längre tid (oavsett anledning) skickar PhoneBlock ett e-postmeddelande till dig så att du kan kontrollera konfigurationen innan blocklistan blir föråldrad.</p>
+		<p data-tx="t0044">Nej, detta sker automatiskt varje natt. Fritz!Box-boxen kontaktar PhoneBlock-servern varje natt och synkroniserar numren i blocklistan med blocklistans telefonbok. Din blockeringslista är därför alltid uppdaterad. Om blocklistan inte hämtas från din Fritz!Box under en längre tid (oavsett anledning) skickar PhoneBlock ett e-postmeddelande till dig så att du kan kontrollera konfigurationen innan blocklistan blir föråldrad.</p>
 
 		<h2 data-tx="t0045">Exakt när kommer blocklistan att uppdateras?</h2>
-		<p data-tx="t0046">Detta bestäms av din Fritz! Om du inte uttryckligen trycker på knappen "Uppdatera" i blocklistans telefonbok, väljer din Fritz! box en tid mellan 0 och 6 på morgonen för uppdateringen. AVM har gjort detta på ett mycket smart sätt, eftersom det innebär att samtalen fördelas relativt jämnt över natten och att serverbelastningen förblir begränsad.</p>
+		<p data-tx="t0046">Detta bestäms av din Fritz!Box Om du inte uttryckligen trycker på knappen "Uppdatera" i blocklistans telefonbok, väljer din Fritz!Box box en tid mellan 0 och 6 på morgonen för uppdateringen. AVM har gjort detta på ett mycket smart sätt, eftersom det innebär att samtalen fördelas relativt jämnt över natten och att serverbelastningen förblir begränsad.</p>
 		
 		<h2 data-tx="t0047">Jag tycker att PhoneBlock är bra, kan jag göra en donation?</h2>
 		<p data-tx="t0048">Ja, om du gillar PhoneBlock är du välkommen att göra en <a th:href="@{/support.jsp}">liten donation</a> till de löpande kostnaderna för serverhyra, domänregistrering, internetåtkomst etc.</p>

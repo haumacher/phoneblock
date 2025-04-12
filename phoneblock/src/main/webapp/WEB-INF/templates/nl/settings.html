@@ -71,7 +71,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021">Als je problemen hebt met het bijwerken van de blokkadelijst, kun je hier de grootte van je blokkadelijst verkleinen. AVM raadt aan om telefoonboeken te vullen met maximaal 1000 vermeldingen. De FRITZ!Box 7590 kan bijvoorbeeld tot 3000 vermeldingen in een telefoonboek verwerken.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Attentie:</b> Als je wilt testen hoeveel vermeldingen je box in een telefoonboek kan opslaan, ga dan als volgt te werk: Begin met de standaardinstelling van 2000 vermeldingen. Synchroniseer de blokkadelijst en geef het telefoonboek van de blokkadelijst weer. Scroll helemaal naar het einde en geef het afdrukvoorbeeld van de blocklist weer en noteer het aantal pagina's dat zou worden afgedrukt. Verhoog nu de grootte van de blokkadelijst met één stap, synchroniseer de blokkadelijst opnieuw en geef het afdrukvoorbeeld van de blokkadelijst opnieuw weer. Als het aantal pagina's overeenkomstig is toegenomen, dan kan je box deze grootte aan, probeer de volgende grootte. Als het aantal pagina's in het afdrukvoorbeeld niet is toegenomen of niet overeenkomstig is toegenomen, gebruik dan het laatste kleinere formaat van de bloklijst. Interessant is dat de Fritz! box geen fout meldt als een telefoonboek te groot wordt, maar gewoon niet synchroniseert of gewoon nummers weglaat. Ik heb boxen zien crashen als het telefoonboek te groot werd - wees dus voorzichtig.</p>
+			  <p class="help" data-tx="t0022"><b>Attentie:</b> Als je wilt testen hoeveel vermeldingen je box in een telefoonboek kan opslaan, ga dan als volgt te werk: Begin met de standaardinstelling van 2000 vermeldingen. Synchroniseer de blokkadelijst en geef het telefoonboek van de blokkadelijst weer. Scroll helemaal naar het einde en geef het afdrukvoorbeeld van de blocklist weer en noteer het aantal pagina's dat zou worden afgedrukt. Verhoog nu de grootte van de blokkadelijst met één stap, synchroniseer de blokkadelijst opnieuw en geef het afdrukvoorbeeld van de blokkadelijst opnieuw weer. Als het aantal pagina's overeenkomstig is toegenomen, dan kan je box deze grootte aan, probeer de volgende grootte. Als het aantal pagina's in het afdrukvoorbeeld niet is toegenomen of niet overeenkomstig is toegenomen, gebruik dan het laatste kleinere formaat van de bloklijst. Interessant is dat de Fritz!Box box geen fout meldt als een telefoonboek te groot wordt, maar gewoon niet synchroniseert of gewoon nummers weglaat. Ik heb boxen zien crashen als het telefoonboek te groot werd - wees dus voorzichtig.</p>
 			</div>
 			
 			<div class="field">
@@ -181,7 +181,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoek je naar het nummer via het zoekveld hierboven en schrijf je een negatieve opmerking, of maak je een telefoonboekvermelding voor het nummer in de blokkadelijst in je Fritz!</p>
+	<p data-tx="t0047" th:unless="${blacklist}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoek je naar het nummer via het zoekveld hierboven en schrijf je een negatieve opmerking, of maak je een telefoonboekvermelding voor het nummer in de blokkadelijst in je Fritz!Box</p>
 
 	<th:block th:if="${blacklist}">
 	<p data-tx="t0048">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>

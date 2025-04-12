@@ -11,7 +11,7 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">رقم الهاتف ☎ ☎ <th:block th:text="${info.phone}"></th:block></h1>
+	<h1 data-tx="t0001">رقم الهاتف ☎ <th:block th:text="${info.phone}"></th:block></h1>
 
 	<p>
 		<th:block th:switch="${state}">
@@ -36,10 +36,10 @@
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">رقم الهاتف مدرج في القائمة البيضاء ولا يمكن حظره بواسطة PhoneBlock. إذا كنت لا تزال تشعر بالمضايقة من هذا الرقم، يرجى إعداد حظر خاص لهذا الرقم.</p>
   	<p data-tx="t0036" th:case="'legitimate'">لم يتم تضمين رقم الهاتف في قاعدة بيانات <a th:href="@{/status.jsp}">PhoneBlock. لا يوجد حتى الآن أي أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>.</a></p>
-  	<p data-tx="t0037" th:case="'wildcard'">رقم الهاتف نفسه غير موجود في قاعدة بيانات <a th:href="@{/status.jsp}">PhoneBlock. ومع ذلك، فإن الرقم ☎ ☎ <code th:text="${info.phone}"></code> يأتي من كتلة أرقام يشتبه في أنها غير مرغوب فيها. <th:block th:if="${info.votesWildcard == 1}"> هناك تصويت لصالح حظر كتلة الأرقام. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> هناك <th:block th:text="${info.votesWildcard}"></th:block> أصوات مؤيدة لحظر كتلة الأرقام. </th:block></a></p>
+  	<p data-tx="t0037" th:case="'wildcard'">رقم الهاتف نفسه غير موجود في قاعدة بيانات <a th:href="@{/status.jsp}">PhoneBlock. ومع ذلك، فإن الرقم ☎ <code th:text="${info.phone}"></code> يأتي من كتلة أرقام يشتبه في أنها غير مرغوب فيها. <th:block th:if="${info.votesWildcard == 1}"> هناك تصويت لصالح حظر كتلة الأرقام. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> هناك <th:block th:text="${info.votesWildcard}"></th:block> أصوات مؤيدة لحظر كتلة الأرقام. </th:block></a></p>
   	<p data-tx="t0038" th:case="'suspicious'">يوجد بالفعل <th:block th:text="${info.votes}"></th:block> أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>. ومع ذلك، لم يتم حظر الرقم بعد.</p>  	
   	<p data-tx="t0039" th:case="'archived'">هناك <th:block th:text="${info.votes}"></th:block> أصوات قديمة تحدثت لصالح حجب ☎ <code th:text="${info.phone}"></code>. ومع ذلك، لم يعد الرقم محظورًا.</p>
-  	<p data-tx="t0040" th:case="'blocked'">رقم الهاتف ☎ ☎ <code th:text="${info.phone}"></code> هو مصدر متكرر للمكالمات الهاتفية غير المرغوب فيها <a th:href="@{/status.jsp}">. <th:block th:text="${info.votes}"></th:block> الأصوات المؤيدة لحظر الرقم.</a></p>
+  	<p data-tx="t0040" th:case="'blocked'">رقم الهاتف ☎ <code th:text="${info.phone}"></code> هو مصدر متكرر للمكالمات الهاتفية غير المرغوب فيها <a th:href="@{/status.jsp}">. <th:block th:text="${info.votes}"></th:block> الأصوات المؤيدة لحظر الرقم.</a></p>
   	</th:block>
 
 	<ul>
@@ -97,11 +97,11 @@
 		</div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
-	<p data-tx="t0020">قد ينتمي الرقم ☎ ☎ <th:block th:text="${info.phone}"></th:block> إلى نفس الاتصال مثل الأرقام التالية في قاعدة البيانات:</p>
+	<p data-tx="t0020">قد ينتمي الرقم ☎ <th:block th:text="${info.phone}"></th:block> إلى نفس الاتصال مثل الأرقام التالية في قاعدة البيانات:</p>
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
-			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">☎ ☎ <th:block th:text="${related}"></th:block></a>
+			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
 		</span>
 	</blockquote>
 </th:block>	
@@ -240,7 +240,7 @@
 	<div class="media-content">
 	  <div class="content">
 		<p class="commentHeader">
-		  <strong data-tx="t0030">☎ ☎ <th:block th:text="${comment.phone}"></th:block></strong>
+		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"></th:block></strong>
 		  <small>
 		  <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
 		  <span data-tx="t0031" th:unless="${comment.service}">فون بلوك</span>
