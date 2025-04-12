@@ -332,6 +332,9 @@
 				<excludes>
 					<exclude>**/*.java</exclude>
 				</excludes>
+			</resource>
+			<resource>
+				<directory>${project.basedir}/src/main/resources-filtered</directory>
 				<filtering>true</filtering>
 			</resource>
 		</resources>
