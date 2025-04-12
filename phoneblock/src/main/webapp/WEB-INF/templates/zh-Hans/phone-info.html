@@ -31,7 +31,7 @@
 	<p data-tx="t0007">关于呼叫号码 <th:block th:text="${info.phone}"></th:block> 的信息</p>
   </div>
   <div class="message-body">
-  	<p th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">还没安装？那就安装吧！</p>
@@ -247,7 +247,7 @@
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
 		</p>
-		<p class="commentText" th:text="${comment.comment}">
+		<p class="commentText" th:lang="${comment.lang}" th:text="${comment.comment}">
 		</p>
 	  </div>
 			

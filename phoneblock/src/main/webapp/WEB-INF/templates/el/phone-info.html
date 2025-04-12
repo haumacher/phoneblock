@@ -31,7 +31,7 @@
 	<p data-tx="t0007">Πληροφορίες σχετικά με τον αριθμό κλήσης <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-  	<p th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Ο αριθμός τηλεφώνου περιλαμβάνεται στη λευκή λίστα και δεν μπορεί να αποκλειστεί από το PhoneBlock. Εάν εξακολουθείτε να αισθάνεστε ότι σας ενοχλεί αυτός ο αριθμός, παρακαλούμε ρυθμίστε μια ιδιωτική φραγή για αυτόν τον αριθμό.</p>
@@ -247,7 +247,7 @@
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
 		</p>
-		<p class="commentText" th:text="${comment.comment}">
+		<p class="commentText" th:lang="${comment.lang}" th:text="${comment.comment}">
 		</p>
 	  </div>
 			

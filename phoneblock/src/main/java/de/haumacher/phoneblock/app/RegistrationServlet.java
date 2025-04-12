@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.Language;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -70,7 +72,9 @@ public class RegistrationServlet extends HttpServlet {
 				
 				String displayName = DB.toDisplayName(email);
 				
-				passwd = db.createUser(login, displayName);
+				Language language = DefaultController.selectLanguage(req);
+				
+				passwd = db.createUser(login, displayName, language.tag);
 				db.setEmail(login, email);
 			} else {
 				// No longer known.

@@ -31,7 +31,7 @@
 	<p data-tx="t0007">Informazioni sul numero di chiamata <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-  	<p th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Il numero di telefono è nella lista bianca e non può essere bloccato da PhoneBlock. Se vi sentite ancora molestati da questo numero, impostate un blocco privato per questo numero.</p>
@@ -247,7 +247,7 @@
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
 		</p>
-		<p class="commentText" th:text="${comment.comment}">
+		<p class="commentText" th:lang="${comment.lang}" th:text="${comment.comment}">
 		</p>
 	  </div>
 			

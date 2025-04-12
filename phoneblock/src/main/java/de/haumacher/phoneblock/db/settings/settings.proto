@@ -14,6 +14,9 @@ message UserSettings {
 	/** The user's real name. */
 	string displayName;
 	
+	/** The preferred language of the user. */
+	string lang;
+	
 	/** The user's e-mail address. */
 	string email;
 	

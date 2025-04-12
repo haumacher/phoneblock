@@ -2,11 +2,14 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -232,6 +235,13 @@ public abstract class LoginFilter implements Filter {
 	public static void setSessionUser(HttpServletRequest req, String userName) {
 		setRequestUser(req, userName);
 		req.getSession().setAttribute(AUTHENTICATED_USER_ATTR, userName);
+		
+		DB db = DBService.getInstance();
+		try (SqlSession tx = db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+			String lang = users.getLocale(userName);
+			req.getSession().setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
+		}
 	}
 
 	/** 

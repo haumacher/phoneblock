@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.Language;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import jakarta.servlet.ServletException;
@@ -77,9 +79,11 @@ public class RatingServlet extends HttpServlet {
 		if (session.getAttribute(ratingAttr) == null) {
 			if (ratingName != null || comment != null) {
 				Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
+				
+				Language language = DefaultController.selectLanguage(req);
 
 				DB db = DBService.getInstance();
-				db.addRating(userName, number, rating, comment, System.currentTimeMillis());
+				db.addRating(userName, number, rating, comment, language.tag, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
 				

@@ -266,6 +266,9 @@ message UserComment {
 	@Nullable
 	long userId;
 	
+	/** The language tag describing the language of this comment. */
+	string lang;
+	
 	/** The phone number this comment belongs to. */
 	string phone;
 	

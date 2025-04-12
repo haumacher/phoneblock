@@ -76,7 +76,7 @@ class TestDB {
 	
 	@Test
 	void testAuthToken() {
-		_db.createUser("user1", "User 1");
+		_db.createUser("user1", "User 1", "de");
 
 		long time = 1000;
 		final long createTime = time;
@@ -270,8 +270,8 @@ class TestDB {
 	
 	@Test
 	void testUserManagement() throws IOException {
-		_db.addUser("foo@bar.com", "Mr. X", "012300000");
-		_db.addUser("baz@bar.com", "Mr. Y", "012300000");
+		_db.addUser("foo@bar.com", "Mr. X", "012300000", "de");
+		_db.addUser("baz@bar.com", "Mr. Y", "012300000", "de");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000")));
         assertNull(_db.basicAuth(header("foo@bar.com", "0321")));
@@ -464,7 +464,7 @@ class TestDB {
 	
 	@Test
 	void testRating() {
-		_db.createUser("user-1", "User 1");
+		_db.createUser("user-1", "User 1", "de");
 		
 		long time = 1;
 		
@@ -485,14 +485,14 @@ class TestDB {
 	}
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
-		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), rating, comment, now);
+		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), rating, comment, "de", now);
 	}
 	
 	@Test
 	public void testContribution() {
-		_db.createUser("aaaaaaaa-bbbb", "Noname");
-		_db.createUser("cccccccc-dddd", "Egon Maier");
-		_db.createUser("eeeeeeee-ffff", "Erna Busch");
+		_db.createUser("aaaaaaaa-bbbb", "Noname", "de");
+		_db.createUser("cccccccc-dddd", "Egon Maier", "de");
+		_db.createUser("eeeeeeee-ffff", "Erna Busch", "de");
 		
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);
@@ -550,10 +550,10 @@ class TestDB {
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
-			users.addUser("user-1", "U1", passwd, 1000);
-			users.addUser("user-2a", "U2a", passwd, 2000);
-			users.addUser("user-2b", "U2b", passwd, 2000);
-			users.addUser("user-3", "U3", passwd, 3000);
+			users.addUser("user-1", "U1", "de", passwd, 1000);
+			users.addUser("user-2a", "U2a", "de", passwd, 2000);
+			users.addUser("user-2b", "U2b", "de", passwd, 2000);
+			users.addUser("user-3", "U3", "de", passwd, 3000);
 			tx.commit();
 		}
 		

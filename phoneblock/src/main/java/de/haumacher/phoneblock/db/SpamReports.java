@@ -333,14 +333,14 @@ public interface SpamReports {
 	int incSearchCount(String phone, long now);
 
 	@Select("""
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
 			where s.PHONE=#{phone}
 			""")
 	List<DBUserComment> getComments(String phone);
 	
 	@Select("""
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
 			where 
 				s.PHONE > #{prefix}
@@ -350,10 +350,10 @@ public interface SpamReports {
 	List<DBUserComment> getAllComments(String prefix, int expectedLength);
 	
 	@Insert("""
-			insert into COMMENTS (ID, PHONE, RATING, COMMENT, SERVICE, CREATED, USERID) 
-			values (#{id}, #{phone}, #{rating}, #{comment}, #{service}, #{created}, #{userId})
+			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID) 
+			values (#{id}, #{phone}, #{rating}, #{comment}, #{lang}, #{service}, #{created}, #{userId})
 			""")
-	void addComment(String id, String phone, Rating rating, String comment, String service, long created, Long userId);
+	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
 	
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);

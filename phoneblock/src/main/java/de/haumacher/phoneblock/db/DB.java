@@ -108,8 +108,7 @@ public class DB {
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList(
-		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES", 
-		"SEARCHCLUSTER", "SEARCHHISTORY"
+		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES"
 	);
 	
 	private SqlSessionFactory _sessionFactory;
@@ -431,19 +430,49 @@ public class DB {
 				} catch (Exception ex) {
 					LOG.error("Failed to compute phone hashes.", ex);
 				}
+			} else {
+				Users users = session.getMapper(Users.class);
+				
+				int version = Integer.parseInt(users.getProperty("db.version"));
+				while (true) {
+					version++;
+					
+					String versionId = Integer.toString(version);
+					while (versionId.length() < 2) {
+						versionId = "0" + versionId;
+					}
+
+					String scriptName = "db-migration-" + versionId + ".sql";
+					InputStream script = migrationScript(scriptName);
+					if (script == null) {
+						break;
+					}
+					
+					runScript(connection, scriptName);
+					users.updateProperty("db.version", Integer.toString(version));
+					session.commit();
+				}
 			}
 		}
 	}
 
 	private void runScript(Connection connection, String scriptName) {
-		LOG.info("Running DB script: " + scriptName);
+		try (InputStream in = migrationScript(scriptName)) {
+			LOG.info("Running DB script: {}", scriptName);
+			
+			ScriptRunner sr = new ScriptRunner(connection);
+			sr.setAutoCommit(true);
+			sr.setDelimiter(";");
+			sr.runScript(new InputStreamReader(in, StandardCharsets.UTF_8));
+			
+			LOG.info("Finished DB script: {}", scriptName);
+		} catch (IOException ex) {
+			LOG.error("Problem while running DB script '{}': {}", scriptName, ex.getMessage(), ex);
+		}
+	}
 
-		ScriptRunner sr = new ScriptRunner(connection);
-		sr.setAutoCommit(true);
-		sr.setDelimiter(";");
-		sr.runScript(new InputStreamReader(getClass().getResourceAsStream(scriptName), StandardCharsets.UTF_8));
-		
-		LOG.info("Finished DB script: " + scriptName);
+	private InputStream migrationScript(String scriptName) {
+		return getClass().getResourceAsStream(scriptName);
 	}
 
 	private Date schedule(int atHour, Runnable command) {
@@ -478,14 +507,13 @@ public class DB {
 
 	/**
 	 * Creates a new PhoneBlock user account.
-	 * @param clientName The authorization scope for the new user.
-	 * @param googleId The ID for Google authentication.
 	 * @param login The user name (e.g. e-mail address) of the new account.
+	 * @param lang The preferred language (locale tag) of the user.
 	 * @return The randomly generated password for the account.
 	 */
-	public String createUser(String login, String displayName) {
+	public String createUser(String login, String displayName, String lang) {
 		String passwd = createPassword(20);
-		addUser(login, displayName, passwd);
+		addUser(login, displayName, lang, passwd);
 		return passwd;
 	}
 
@@ -854,7 +882,7 @@ public class DB {
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
 	 */
-	public void addRating(String userName, PhoneNumer number, Rating rating, String comment, long now) {
+	public void addRating(String userName, PhoneNumer number, Rating rating, String comment, String lang, long now) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 		
 		boolean updateRequired;
@@ -889,6 +917,11 @@ public class DB {
 						blocklist.addExclude(userId, phone);
 					}
 				}
+				
+				if (lang == null) {
+					DBUserSettings settings = users.getSettingsById(userId);
+					lang = settings.getLang();
+				}
 			}
 			
 			UserComment userComment = UserComment.create()
@@ -897,6 +930,7 @@ public class DB {
 				.setPhone(phone)
 				.setRating(rating)
 				.setComment(comment)
+				.setLang(lang)
 				.setCreated(now);
 			
 			updateRequired = addRating(reports, number, userComment, recordVote);
@@ -934,7 +968,7 @@ public class DB {
 				// Limit to DB constraint.
 				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
 			}
-			reports.addComment(comment.getId(), phone, rating, commentText, comment.getService(), created, comment.getUserId());
+			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, comment.getUserId());
 			updateRequired = true;
 		}
 
@@ -1405,10 +1439,10 @@ public class DB {
 	/** 
 	 * Adds the given user with the given password.
 	 */
-	public void addUser(String login, String displayName, String passwd) {
+	public void addUser(String login, String displayName, String lang, String passwd) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.addUser(login, displayName, pwhash(passwd), System.currentTimeMillis());
+			users.addUser(login, displayName, lang, pwhash(passwd), System.currentTimeMillis());
 			session.commit();
 		}
 	}

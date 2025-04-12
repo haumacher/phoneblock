@@ -102,6 +102,7 @@ public class MetaAnruferBewertung extends AbstractMetaSearch {
 				.setPhone(phone)
 				.setRating(negative ? Rating.B_MISSED : Rating.A_LEGITIMATE)
 				.setComment(text)
+				.setLang("de")
 				.setCreated(date.getTime())
 				.setService(getService()));
 		}

@@ -4,8 +4,10 @@
 package de.haumacher.phoneblock.app.oauth;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.spi.LocaleServiceProvider;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.servlet.ServletException;
@@ -30,6 +32,8 @@ import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.Language;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 
@@ -65,9 +69,11 @@ public class OAuthLoginServlet extends HttpServlet {
 		
 		String displayName;
 		String email;
+		Locale locale;
 		if (userProfile instanceof CommonProfile) {
 			CommonProfile commonProfile = (CommonProfile) userProfile;
 			displayName = commonProfile.getDisplayName();
+			locale = commonProfile.getLocale();
 			LOG.info("Received user name: " + displayName);
 			
 			email = commonProfile.getEmail();
@@ -75,6 +81,14 @@ public class OAuthLoginServlet extends HttpServlet {
 		} else {
 			email = null;
 			displayName = null;
+			locale = null;
+		}
+		
+		Language language;
+		if (locale == null) {
+			language = DefaultController.selectLanguage(req);
+		} else {
+			language = DefaultController.selectLanguage(locale);
 		}
 		
 		String googleId = userProfile.getId();
@@ -112,7 +126,7 @@ public class OAuthLoginServlet extends HttpServlet {
 				}
 			}
 			
-			String passwd = db.createUser(login, displayName);
+			String passwd = db.createUser(login, displayName, language.tag);
 			db.setGoogleId(login, googleId, null);
 			if (email != null) {
 				try {

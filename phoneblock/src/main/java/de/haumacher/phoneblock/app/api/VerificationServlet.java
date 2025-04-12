@@ -6,22 +6,22 @@ package de.haumacher.phoneblock.app.api;
 import java.io.IOException;
 import java.util.UUID;
 
+import de.haumacher.msgbuf.json.JsonReader;
+import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import de.haumacher.phoneblock.app.api.model.RegistrationCompletion;
+import de.haumacher.phoneblock.app.api.model.RegistrationResult;
+import de.haumacher.phoneblock.app.api.model.SessionInfo;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.Language;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.mail.internet.AddressException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import de.haumacher.msgbuf.json.JsonReader;
-import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.app.RegistrationServlet;
-import de.haumacher.phoneblock.app.api.model.RegistrationCompletion;
-import de.haumacher.phoneblock.app.api.model.RegistrationResult;
-import de.haumacher.phoneblock.app.api.model.SessionInfo;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet completing a user registration.
@@ -51,8 +51,11 @@ public class VerificationServlet extends HttpServlet {
 		try {
 			login = db.getEmailLogin(email);
 			if (login == null) {
+				
+				Language language = DefaultController.selectLanguage(req);
+				
 				login = UUID.randomUUID().toString();
-				password = db.createUser(login, email);
+				password = db.createUser(login, email, language.tag);
 				db.setEmail(login, email);
 			} else {
 				password = db.resetPassword(login);
