@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<th:block th:replace="~{fragments/page :: headContent}"></th:block>
+<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', info.phone)})}"></th:block>
 
 <script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>
@@ -23,7 +23,7 @@
 		<span class="tag is-info is-danger" data-tx="t0006" th:case="'blocked'">Заблоковано.</span>
 		</th:block>
 		
-		<span th:class="|tag is-info ${ratingCssClass}|" th:if="${info.votes &gt; 0 and rating.name != 'B_MISSED' and rating.name != 'A_LEGITIMATE'}" th:text="${ratingLabel}"></span>
+		<span th:class="|tag is-info ${ratingCssClass}|" th:if="${info.votes &gt; 0 and rating.name != 'B_MISSED' and rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(ratingLabelKey)}"></span>
 	</p>
 
 <article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
@@ -122,7 +122,7 @@
 				<span class="icon">
 					<i th:class="${rating.iconClass}"></i>
 				</span>
-				<span th:text="${rating.label}"></span>
+				<span th:text="${#messages.msg(rating.labelKey)}"></span>
 	  		</label>
 		</div>
 

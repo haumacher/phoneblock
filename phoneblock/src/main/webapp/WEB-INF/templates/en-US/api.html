@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<th:block th:replace="~{fragments/page :: headContent}"></th:block>
+<th:block th:replace="~{fragments/page :: headContent(title=#{page.api.title})}"></th:block>
 <link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|"></link>
 </head>
 

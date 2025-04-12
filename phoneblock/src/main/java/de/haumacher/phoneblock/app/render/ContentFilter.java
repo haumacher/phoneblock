@@ -4,14 +4,23 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.dialect.IDialect;
+import org.thymeleaf.messageresolver.AbstractMessageResolver;
+import org.thymeleaf.messageresolver.IMessageResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.WebApplicationTemplateResolver;
 import org.thymeleaf.templateresource.ITemplateResource;
@@ -29,6 +38,7 @@ import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.ResetPasswordServlet;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
+import de.haumacher.phoneblock.app.oauth.OAuthLoginServlet;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -58,7 +68,7 @@ public class ContentFilter implements Filter {
 	    ServletContext servletContext = filterConfig.getServletContext();
 	    
 		JakartaServletWebApplication application = JakartaServletWebApplication.buildApplication(servletContext);
-	    
+		
 	    // We will see later how the TemplateEngine object is built and configured
 	    ITemplateEngine templateEngine = buildTemplateEngine(application);
 
@@ -102,6 +112,7 @@ public class ContentFilter implements Filter {
 			path.startsWith(RegistrationServlet.REGISTER_MOBILE) ||
 			path.startsWith(ResetPasswordServlet.PATH) ||
 			path.startsWith(SearchServlet.NUMS_PREFIX)  ||
+			path.startsWith(OAuthLoginServlet.OAUTH_LOGIN_PATH)  ||
 			path.equals("/sitemap.jsp") ||
 			path.endsWith(".js") || 
 			path.endsWith(".json") 
@@ -238,8 +249,33 @@ public class ContentFilter implements Filter {
 	    // be automatically updated when modified.
 	    templateResolver.setCacheable(true);
 
+	    IMessageResolver messageResolver = new AbstractMessageResolver() {
+			@Override
+			public String resolveMessage(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
+				Locale locale = context.getLocale();
+
+				ResourceBundle bundle = ResourceBundle.getBundle("Messages", locale);
+				String message = bundle.getString(key);
+				
+				if (messageParameters != null && messageParameters.length > 0) {
+					return new MessageFormat(message).format(messageParameters);
+				} else {
+					return message;
+				}
+			}
+			
+			@Override
+			public String createAbsentMessageRepresentation(ITemplateContext context, Class<?> origin, String key,
+					Object[] messageParameters) {
+				return "[" + key + messageParameters == null || messageParameters.length == 0 
+						? ""
+						: ("(" + Arrays.stream(messageParameters).map(Objects::toString).collect(Collectors.joining(","))+ ")") + "]";
+			}
+		};
+	    
 	    TemplateEngine templateEngine = new TemplateEngine();
 	    templateEngine.setTemplateResolver(templateResolver);
+		templateEngine.setMessageResolver(messageResolver);
 	    IDialect pbDialect = new PBDialect();
 		templateEngine.addDialect(pbDialect);
 

@@ -24,16 +24,8 @@ public class Ratings {
 	/**
 	 * The label to display this {@link Ratings}.
 	 */
-	public static String getLabel(Rating rating) {
-        return switch (rating) {
-            case A_LEGITIMATE -> "Seriös";
-            case B_MISSED -> "Unbekannt";
-            case C_PING -> "Ping-Anruf";
-            case D_POLL -> "Umfrage";
-            case E_ADVERTISING -> "Werbung";
-            case F_GAMBLE -> "Gewinnspiel";
-            case G_FRAUD -> "Betrug";
-        };
+	public static String getLabelKey(Rating rating) {
+        return "rating." + rating.name();
     }
 
 	/**

@@ -13,6 +13,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +27,8 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchResult;
 import de.haumacher.phoneblock.app.api.model.UserComment;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.Language;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
@@ -411,6 +414,9 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(RELATED_NUMBERS_ATTR, searchResult.getRelatedNumbers());
 		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
 		
+        Language lang = DefaultController.selectLanguage(req);
+		ResourceBundle bundle = ResourceBundle.getBundle("Messages", lang.locale);
+		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
 		if (searchResult.getNumber().getShortcut() != null) {
@@ -425,7 +431,7 @@ public class SearchServlet extends HttpServlet {
 		
 		if (searchResult.getTopRating() != Rating.B_MISSED) {
 			keywords.append(", ");
-			keywords.append(Ratings.getLabel(searchResult.getTopRating()));
+			keywords.append(bundle.getString(Ratings.getLabelKey(searchResult.getTopRating())));
 		}
 		
 		keywords.append(", ");
@@ -439,7 +445,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(KEYWORDS_ATTR, keywords.toString());
 		
 		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
-		req.setAttribute("ratingLabel", Ratings.getLabel(searchResult.getTopRating()));
+		req.setAttribute("ratingLabelKey", Ratings.getLabelKey(searchResult.getTopRating()));
 		
   		String state = info.isWhiteListed() ? 
   			"whitelisted" : 
@@ -485,7 +491,7 @@ public class SearchServlet extends HttpServlet {
 				ratingBackground.append(',');
 				ratingBorder.append(',');
 			}
-			jsString(ratingLabels, Ratings.getLabel(r));
+			jsString(ratingLabels, bundle.getString(Ratings.getLabelKey(r)));
 
 			ratingData.append(ratings.getOrDefault(r, 0));
 

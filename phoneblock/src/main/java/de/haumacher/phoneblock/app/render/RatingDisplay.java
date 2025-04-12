@@ -11,18 +11,14 @@ public class RatingDisplay {
 		this._rating = rating;
 	}
 	
-	public String getLabel() {
-		return de.haumacher.phoneblock.db.Ratings.getLabel(_rating);
+	public String getLabelKey() {
+		return de.haumacher.phoneblock.db.Ratings.getLabelKey(_rating);
 	}
 	
 	public String getCssClass() {
 		return Ratings.getCssClass(_rating);
 	}
 	
-	public String getButtonClass() {
-		return getLabel();
-	}
-
 	public String getName() {
 		return _rating.name();
 	}

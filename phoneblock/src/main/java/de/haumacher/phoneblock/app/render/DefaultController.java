@@ -71,7 +71,7 @@ public class DefaultController implements WebController {
 	
 	private static final Map<String, Language> LANG_BY_TAG = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.tag, l -> l));
 	private static final Map<Locale, Language> LANG_BY_LOCALE = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> Locale.forLanguageTag(l.tag), l -> l));
-	private static final String DEFAULT_LANG = LANGUAGES[0].tag;
+	private static final Language DEFAULT_LANG = LANGUAGES[0];
 
 	/**
 	 * Template resolution attribute specifying the requested language.
@@ -107,9 +107,11 @@ public class DefaultController implements WebController {
 
 	@Override
 	public void process(IServletWebExchange webExchange, ITemplateEngine templateEngine, Writer writer) throws IOException {
-        WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
+		HttpServletRequest request = (HttpServletRequest) webExchange.getNativeRequestObject();
+		
+        Language lang = selectLanguage(request);
+        WebContext ctx = new WebContext(webExchange, lang.locale);
         
-        HttpServletRequest request = (HttpServletRequest) webExchange.getNativeRequestObject();
         fillContext(ctx, request);
 
         String template = (String) request.getAttribute(RENDER_TEMPLATE);
@@ -120,23 +122,22 @@ public class DefaultController implements WebController {
 
         	LOG.debug("Serving template {} for {}.", template, path);
         }
-        
-        String lang = selectLanguage(request);
 
-        request.setAttribute("currentLang", LANG_BY_TAG.get(lang));
+        request.setAttribute("currentLang", lang);
         
 		// Note: Template is required to start with "/".
-		String i18nTemplate = "/" + lang + template;
+		String i18nTemplate = "/" + lang.tag + template;
         
 		templateEngine.process(i18nTemplate, ctx, writer);
 	}
 
-	private String selectLanguage(HttpServletRequest request) {
-		String lang = request.getParameter("lang");
-        if (lang == null) {
+	public static Language selectLanguage(HttpServletRequest request) {
+		String selectedLang = request.getParameter("lang");
+		Language lang;
+        if (selectedLang == null) {
         	HttpSession session = request.getSession(false);
         	if (session != null) {
-        		lang = (String) session.getAttribute("lang");
+        		lang = (Language) session.getAttribute("lang");
         		if (lang != null) {
         			return lang;
         		}
@@ -148,7 +149,7 @@ public class DefaultController implements WebController {
     		if (locale == null) {
     			lang = DEFAULT_LANG;
     		} else {
-    			lang = LANG_BY_LOCALE.get(locale).tag;
+    			lang = LANG_BY_LOCALE.get(locale);
     		}
     		
     		if (session != null) {
@@ -157,11 +158,11 @@ public class DefaultController implements WebController {
     		}
         } else {
         	// Normalize value.
-        	Language language = LANG_BY_TAG.get(lang);
+        	Language language = LANG_BY_TAG.get(selectedLang);
         	if (language == null) {
         		lang = DEFAULT_LANG;
         	} else {
-        		lang = language.tag;
+        		lang = language;
         	}
 
     		// Remember requested language.
