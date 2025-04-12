@@ -66,7 +66,7 @@ public class DefaultController implements WebController {
 	    lang("sv"     , "sv"    , "Swedish"               ),
 //	    lang("tr"     , "tr"    , "Turkish"               ),
 	    lang("uk"     , "ua"    , "Ukrainian"             ),
-	    lang("zh-HANS", "cn"    , "Chinese"               ),
+	    lang("zh-Hans", "cn"    , "Chinese"               ),
 	};
 	
 	private static final Map<String, Language> LANG_BY_TAG = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.tag, l -> l));
