@@ -2,7 +2,7 @@
 <html>
 <head th:fragment="head">
 <th:block th:fragment="headContent">
-	<title th:text="${title}"></title>
+	<title th:text="${#messages.msg(titleKey)}"></title>
 	
 	<meta content="text/html;charset=utf-8" http-equiv="content-type"></meta>
 
@@ -10,17 +10,17 @@
 	<link rel="alternate" th:each="lang : ${languages}" th:href="|https://phoneblock.net${contextPath}${currentPage}?lang=${lang.tag}|" th:hreflang="${lang.tag}" th:unless="${lang == currentLang}"></link>	
 	
 	<meta content="width=device-width, initial-scale=1" name="viewport"></meta>
-	<meta name="description" th:content="${description}" th:if="${description}"></meta>
+	<meta name="description" th:content="${#messages.msg(descriptionKey)}" th:if="${descriptionKey}"></meta>
 	<meta name="keywords" th:content="${keywords}" th:if="${keywords}"></meta>
 	<meta content="summary" name="twitter:card"></meta>
 	<meta content="@bhaumacher" name="twitter:site"></meta>
 	<meta content="@bhaumacher" name="twitter:creator"></meta>
 	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"></meta>
 	
-	<meta name="og:title" th:content="${title}"></meta>
+	<meta name="og:title" th:content="${#messages.msg(titleKey)}"></meta>
 	<meta name="og:url" th:content="${canonical}"></meta>
 	<link rel="canonical" th:href="${canonical}"></link>
-	<meta name="og:description" th:content="${description}" th:if="${description}"></meta>
+	<meta name="og:description" th:content="${#messages.msg(descriptionKey)}" th:if="${descriptionKey}"></meta>
 	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"></meta>
 	<meta content="website" name="og:type"></meta>
 	<meta content="de_DE" name="og:locale"></meta>

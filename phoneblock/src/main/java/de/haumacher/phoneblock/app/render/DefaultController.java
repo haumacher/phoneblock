@@ -184,8 +184,8 @@ public class DefaultController implements WebController {
         ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, LoginServlet.location(request));
         ctx.setVariable("currentPage", ServletUtil.currentPage(request));
         
-        ctx.setVariable("title", "PhoneBlock: Der Werbeblocker fürs Telefon");
-        ctx.setVariable("description", "Werbeanrufe mit Deiner Fritz!Box automatisch blockieren. PhoneBlock jetzt kostenlos installieren.");
+        ctx.setVariable("titleKey", "app.defaultTitle");
+        ctx.setVariable("descriptionKey", "app.defaultDescription");
         ctx.setVariable("keywords", "");
         
 		ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
