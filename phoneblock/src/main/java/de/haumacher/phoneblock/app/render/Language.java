@@ -16,8 +16,8 @@ public class Language {
 		this.locale = Locale.forLanguageTag(tag);
 	}
 
-	public static Language lang(String locale, String icon, String name) {
-		return new Language(locale, icon, name);
+	public static Language lang(String tag, String icon, String name) {
+		return new Language(tag, icon, name);
 	}
 
 }
