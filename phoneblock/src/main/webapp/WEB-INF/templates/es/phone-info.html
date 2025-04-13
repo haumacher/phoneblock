@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Gracias por tu valoración, estás ayudando a otros que también están llamados.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">¿Te ha llamado? <code><th:block th:text="${info.phone}"></th:block></code> te llamó? Diga a los demás lo que tienen que esperar de ? <code><th:block th:text="${number.plus}"></th:block></code> tienen que esperar. Si te molestan las llamadas de ? <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">instala PhoneBlock</a> y califica a ? <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">¿Te ha llamado? <code><th:block th:text="${info.phone}"></th:block></code> te llamó? Diga a los demás lo que tienen que esperar de? <code><th:block th:text="${number.plus}"></th:block></code> tienen que esperar. Si te molestan las llamadas de? <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">instala PhoneBlock</a> y califica a? <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>

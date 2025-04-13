@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Tu es déjà inscrit en tant que <code th:text="${userName}"></code>, super ! Tu peux commencer tout de suite.</p>
+		<p data-tx="t0005" th:if="${login}">Tu es déjà inscrit en tant que <code th:text="${userName}"></code>, super! Tu peux commencer tout de suite.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -93,7 +93,7 @@
 
 			<li data-tx="t0023">Ensuite, tu peux choisir <span class="tag is-danger">3</span> le fournisseur <i>Fournisseur CardDAV</i>.</li>
 
-			<li data-tx="t0024">Tu y es presque, voici maintenant les données de connexion <span class="tag is-danger">4</span>. Le mieux est de les transférer par copier-coller pour éviter les fautes de frappe ! <ul>
+			<li data-tx="t0024">Tu y es presque, voici maintenant les données de connexion <span class="tag is-danger">4</span>. Le mieux est de les transférer par copier-coller pour éviter les fautes de frappe! <ul>
 					<li> Inscris l'URL du carnet d'adresses PhoneBlock dans le champ <i>Adresse Internet du serveur CardDAV</i> : <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
 					<li> Inscris le nom d'utilisateur <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a> dans le champ <i>Nom d'utilisateur</i>. </li>
@@ -101,7 +101,7 @@
 					<li> Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> tu dois maintenant encore l'inscrire dans le champ <i>mot de passe</i>. </li>
 				    </ul></li>
 
-			<li data-tx="t0025">Tu peux maintenant confirmer <span class="tag is-danger">5</span> la création du nouveau répertoire. Attention, s'il te plaît : Ne sélectionne <b>aucun de tes téléphones</b> dans le point "Attribution des téléphones" ! Sinon, tu ne trouveras sur ton téléphone que des appelants SPAM dans les contacts.</li>
+			<li data-tx="t0025">Tu peux maintenant confirmer <span class="tag is-danger">5</span> la création du nouveau répertoire. Attention, s'il te plaît : Ne sélectionne <b>aucun de tes téléphones</b> dans le point "Attribution des téléphones"! Sinon, tu ne trouveras sur ton téléphone que des appelants SPAM dans les contacts.</li>
 		</ul>
 		
 		<div class="columns">
@@ -140,7 +140,7 @@
 		  </div>
 		</div>
 		
-		<p data-tx="t0032">Parfait ! Tu as terminé la configuration. Ton téléphone devrait maintenant sonner beaucoup moins souvent à cause d'un appel indésirable. Et si c'est le cas, tu peux facilement faire taire le gêneur pour toi et pour toute la communauté PhoneBlock :</p>
+		<p data-tx="t0032">Parfait! Tu as terminé la configuration. Ton téléphone devrait maintenant sonner beaucoup moins souvent à cause d'un appel indésirable. Et si c'est le cas, tu peux facilement faire taire le gêneur pour toi et pour toute la communauté PhoneBlock :</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
