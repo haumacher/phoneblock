@@ -13,15 +13,15 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBContribution;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBContribution;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
 
 /**
  * {@link HttpServlet} searching for a contribution that was not automatically assigned to a user.

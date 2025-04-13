@@ -13,7 +13,6 @@ import java.util.Collections;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,7 @@ import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.UpdateMessage.Type;
 import de.haumacher.phoneblock.util.ConnectionUtil;
+import jakarta.servlet.ServletContextEvent;
 
 /**
  * {@link IndexUpdateService} updating the Google index.

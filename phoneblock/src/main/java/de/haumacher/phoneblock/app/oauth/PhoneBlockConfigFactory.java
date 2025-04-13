@@ -3,7 +3,6 @@
  */
 package de.haumacher.phoneblock.app.oauth;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,6 @@ import org.pac4j.core.context.WebContextFactory;
 import org.pac4j.core.engine.DefaultSecurityLogic;
 import org.pac4j.core.engine.savedrequest.DefaultSavedRequestHandler;
 import org.pac4j.core.engine.savedrequest.SavedRequestHandler;
-import org.pac4j.core.util.Pac4jConstants;
 import org.pac4j.jee.context.JEEContext;
 import org.pac4j.jee.context.JEEFrameworkParameters;
 import org.pac4j.oidc.client.GoogleOidcClient;

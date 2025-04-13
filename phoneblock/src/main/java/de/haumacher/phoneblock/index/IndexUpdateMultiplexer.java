@@ -3,10 +3,10 @@
  */
 package de.haumacher.phoneblock.index;
 
-import jakarta.servlet.ServletContextEvent;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.servlet.ServletContextEvent;
 
 /**
  * {@link IndexUpdateService} forwarding calls to multiple {@link IndexUpdateService} instances.

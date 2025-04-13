@@ -19,12 +19,13 @@ import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import net.markenwerk.utils.data.fetcher.BufferedDataFetcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import net.markenwerk.utils.data.fetcher.BufferedDataFetcher;
 
 /**
  * The {@link MailService} singleton.

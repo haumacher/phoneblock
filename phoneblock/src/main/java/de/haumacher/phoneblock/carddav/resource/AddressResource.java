@@ -3,12 +3,11 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.util.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.appendElement;
+import static de.haumacher.phoneblock.util.DomUtil.appendText;
 
 import java.io.IOException;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.ibatis.session.SqlSession;
@@ -30,6 +29,8 @@ import ezvcard.VCard;
 import ezvcard.VCardVersion;
 import ezvcard.io.text.VCardReader;
 import ezvcard.property.Telephone;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link Resource} representing an individual entry in an {@link AddressBookResource}.

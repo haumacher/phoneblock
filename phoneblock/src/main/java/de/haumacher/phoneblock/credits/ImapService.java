@@ -20,7 +20,6 @@ import de.haumacher.phoneblock.db.DBContribution;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Users;
-import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.jndi.JNDIProperties;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;

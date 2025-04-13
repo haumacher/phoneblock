@@ -13,9 +13,6 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +35,9 @@ import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.WebListener;
 
 /**
  * Central controller of services.

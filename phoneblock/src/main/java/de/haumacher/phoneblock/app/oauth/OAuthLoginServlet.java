@@ -7,14 +7,6 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.spi.LocaleServiceProvider;
-
-import jakarta.mail.internet.AddressException;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.pac4j.core.context.FrameworkParameters;
 import org.pac4j.core.context.WebContext;
@@ -36,6 +28,12 @@ import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.Language;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import jakarta.mail.internet.AddressException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet receiving user profile information after a successful OAuth login.

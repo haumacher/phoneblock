@@ -15,7 +15,6 @@ import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
 
-import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 

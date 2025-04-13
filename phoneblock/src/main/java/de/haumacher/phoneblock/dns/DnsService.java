@@ -5,8 +5,6 @@ import java.io.IOException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -16,6 +14,8 @@ import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Service module starting a DNS server for answering DNS lookups from Fritz!Box devices registered via DynDNS.

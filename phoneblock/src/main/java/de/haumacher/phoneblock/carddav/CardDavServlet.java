@@ -3,7 +3,15 @@
  */
 package de.haumacher.phoneblock.carddav;
 
-import static de.haumacher.phoneblock.util.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.appendElement;
+import static de.haumacher.phoneblock.util.DomUtil.appendText;
+import static de.haumacher.phoneblock.util.DomUtil.appendTextElement;
+import static de.haumacher.phoneblock.util.DomUtil.createDocumentBuilder;
+import static de.haumacher.phoneblock.util.DomUtil.elements;
+import static de.haumacher.phoneblock.util.DomUtil.filter;
+import static de.haumacher.phoneblock.util.DomUtil.qname;
+import static de.haumacher.phoneblock.util.DomUtil.qnames;
+import static de.haumacher.phoneblock.util.DomUtil.toList;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -11,11 +19,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -39,6 +42,11 @@ import de.haumacher.phoneblock.carddav.resource.RootResource;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 import de.haumacher.phoneblock.util.DebugUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link HttpServlet} serving the CardDAV address book(s).

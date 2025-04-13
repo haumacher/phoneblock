@@ -5,17 +5,15 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.db.settings.AuthToken;
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Filter requesting basic authentication.

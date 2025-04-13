@@ -12,7 +12,6 @@ import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.msgbuf.xml.XmlSerializable;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

@@ -1,7 +1,6 @@
 package de.haumacher.phoneblock.app.render;
 
 import java.io.IOException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;

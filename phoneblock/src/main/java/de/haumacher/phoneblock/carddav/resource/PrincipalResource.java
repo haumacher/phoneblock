@@ -3,12 +3,10 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.util.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.appendElement;
 
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
@@ -18,6 +16,8 @@ import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.util.DomUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link Resource} representing a PhoneBlock user account.
