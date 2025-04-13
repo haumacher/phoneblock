@@ -20,7 +20,7 @@
 		</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Melde Dich bei PhoneBlock an.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Melde Dich bei PhoneBlock an.</a></li>
    		<li data-tx="t0005">Öffne "Einstellungen" &gt; "Kontakte" &gt; "Accounts".</li>
    		<li data-tx="t0006">Tippe auf "Account hinzufügen" - "Andere" &gt; "CardDAV-Account hinzufügen".</li>
    		<li data-tx="t0007">Gib deine Zugangsdaten ein und tippe auf "Weiter".
@@ -31,7 +31,7 @@
 				<dt><b>Benutzername</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Melde Dich an</a>, um Deinen Benutzernamen zu sehen.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Melde Dich an</a>, um Deinen Benutzernamen zu sehen.</span>
 				</dd>
 
 				<dt><b>Passwort</b></dt>

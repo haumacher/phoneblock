@@ -9,7 +9,7 @@
 	<div class="content">
 		<h1 data-tx="t0001">设置</h1>
 		
-		<p data-tx="t0002">要编辑个人设置，必须<a th:href="@{/login.jsp(location=${location})}">登录</a>。</p>
+		<p data-tx="t0002">要编辑个人设置，必须<a th:href="@{/login(location=${location})}">登录</a>。</p>
 	</div>
 </section>
 
@@ -34,13 +34,13 @@
 				<div class="field">
 				  <label class="label" data-tx="t0007">用户名</label>
 				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">您必须输入此值作为用户名，以便<a th:href="@{/setup.jsp}">调用拦截列表</a>。</p>
+				  <p class="help" data-tx="t0008">您必须输入此值作为用户名，以便<a th:href="@{/setup}">调用拦截列表</a>。</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">暗号</label>
 				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">您必须使用此密码才能<a th:href="@{/setup.jsp}">设置电话簿</a>或登录本网站。</p>
+				  <p class="help" data-tx="t0010">您必须使用此密码才能<a th:href="@{/setup}">设置电话簿</a>或登录本网站。</p>
 				  <p class="help" data-tx="t0011">请记下密码（或将其保存在<a href="https://keepass.info/">密码管理器</a>中），因为密码只会在您注销或会话过期前显示。</p>
 				</div>
 			  </div>
@@ -49,7 +49,7 @@
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">用户名</label>
 			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">您必须输入此值作为用户名，以便<a th:href="@{/setup.jsp}">检索拦截列表</a>。你的密码在首次登录时就已显示。如果你不再记得它，可以在本页底部创建一个 <a href="#resetPassword">新密码</a>。但请注意：旧密码将失效。</p>
+			  <p class="help" data-tx="t0013">您必须输入此值作为用户名，以便<a th:href="@{/setup}">检索拦截列表</a>。你的密码在首次登录时就已显示。如果你不再记得它，可以在本页底部创建一个 <a href="#resetPassword">新密码</a>。但请注意：旧密码将失效。</p>
 			</div>
 
 			<div class="field">
@@ -102,7 +102,7 @@
 			    <button class="button is-primary" data-tx="t0031" type="submit">节省</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings.jsp}">丢弃</a>
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">丢弃</a>
 			  </p>
 			</div>
 		</form>
@@ -256,7 +256,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">您为 PhoneBlock 运营所做的捐赠</h2>
 	
-	<p data-tx="t0059">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support.jsp}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献无法在此列出。</p>
+	<p data-tx="t0059">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献无法在此列出。</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">未找到捐赠。</p>
 	

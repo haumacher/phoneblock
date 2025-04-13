@@ -25,7 +25,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
 			    <span class="icon">
 					<i class="fa-solid fa-phone"></i>
 			    </span>
@@ -54,9 +54,9 @@
 
 		<p data-tx="t0008">PhoneBlock è un elenco gestito dalla comunità PhoneBlock di numeri telefonici sospettati di essere spam. La segreteria telefonica di <a th:href="@{/anrufbeantworter/}">PhoneBlock</a> accetta quindi le chiamate dei chiamanti presenti nell'elenco di blocco, in modo che il telefono rimanga silenzioso per queste chiamate.</p>
 		
-		<p data-tx="t0009">In alternativa, potete anche importare la lista nera come rubrica telefonica nel vostro router Internet "FRITZ!Box" e bloccare le chiamate dai numeri presenti in questa <a th:href="@{/setup.jsp}">rubrica telefonica speciale</a>. Non è più necessario bloccare manualmente gli intervalli di numeri, perché il Fritz!Box aggiorna automaticamente l'elenco dei numeri bloccati ogni notte. Non appena un numero viene aggiunto a questa lista nera, il FRITZ!Box rifiuta automaticamente chi chiama con questo numero. Tuttavia, la <a th:href="@{/anrufbeantworter/}">segreteria telefonica</a> è la soluzione migliore perché la rubrica telefonica ha dimensioni limitate e non può contenere tutti i numeri dell'elenco di blocco.</p>
+		<p data-tx="t0009">In alternativa, potete anche importare la lista nera come rubrica telefonica nel vostro router Internet "FRITZ!Box" e bloccare le chiamate dai numeri presenti in questa <a th:href="@{/setup}">rubrica telefonica speciale</a>. Non è più necessario bloccare manualmente gli intervalli di numeri, perché il Fritz!Box aggiorna automaticamente l'elenco dei numeri bloccati ogni notte. Non appena un numero viene aggiunto a questa lista nera, il FRITZ!Box rifiuta automaticamente chi chiama con questo numero. Tuttavia, la <a th:href="@{/anrufbeantworter/}">segreteria telefonica</a> è la soluzione migliore perché la rubrica telefonica ha dimensioni limitate e non può contenere tutti i numeri dell'elenco di blocco.</p>
 
-		<p data-tx="t0010">Se si riceve ancora una chiamata indesiderata perché il numero non è ancora stato aggiunto all'elenco di blocco, è possibile bloccare facilmente il <a th:href="@{/block.jsp}">numero nel FRITZ!Box</a>. A tal fine, inserite una voce per il chiamante indesiderato nella rubrica PhoneBlock direttamente nel vostro Fritz!Box Non appena avrete fatto questo, il vostro FrizBox aggiornerà l'elenco di blocco per tutti i membri della comunità PhoneBlock e le chiamate da questo nuovo numero saranno bloccate immediatamente anche per tutti gli altri. Questo richiede un po' più di tempo rispetto al blocco diretto del numero nel Fritz!BoxPhone, ma ha il vantaggio di proteggere l'intera comunità PhoneBlock da <a th:href="@{/status.jsp}">ulteriori chiamate spam</a>.</p>
+		<p data-tx="t0010">Se si riceve ancora una chiamata indesiderata perché il numero non è ancora stato aggiunto all'elenco di blocco, è possibile bloccare facilmente il <a th:href="@{/block}">numero nel FRITZ!Box</a>. A tal fine, inserite una voce per il chiamante indesiderato nella rubrica PhoneBlock direttamente nel vostro Fritz!Box Non appena avrete fatto questo, il vostro FrizBox aggiornerà l'elenco di blocco per tutti i membri della comunità PhoneBlock e le chiamate da questo nuovo numero saranno bloccate immediatamente anche per tutti gli altri. Questo richiede un po' più di tempo rispetto al blocco diretto del numero nel Fritz!BoxPhone, ma ha il vantaggio di proteggere l'intera comunità PhoneBlock da <a th:href="@{/status}">ulteriori chiamate spam</a>.</p>
 
 		<h2 data-tx="t0011">Quali sono i requisiti?</h2>
 
@@ -65,7 +65,7 @@
 			</a>
 		</div>
 		
-		<p data-tx="t0012">PhoneBlock è in grado di bloccare le chiamate indesiderate sia sulla <a th:href="@{/setup.jsp}">"linea fissa"</a> in combinazione con un router Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" di AVM</a>, sia di visualizzare direttamente sul <a th:href="@{/setup-android/}">cellulare</a> se un chiamante è potenzialmente indesiderato.</p>
+		<p data-tx="t0012">PhoneBlock è in grado di bloccare le chiamate indesiderate sia sulla <a th:href="@{/setup}">"linea fissa"</a> in combinazione con un router Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" di AVM</a>, sia di visualizzare direttamente sul <a th:href="@{/setup-android/}">cellulare</a> se un chiamante è potenzialmente indesiderato.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">

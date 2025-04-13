@@ -10,7 +10,7 @@
 		<h1 data-tx="t0001">Vragen en antwoorden over PhoneBlock</h1>
 
 		<h2 data-tx="t0002">Is PhoneBlock gratis?</h2>
-		<p data-tx="t0003">Ja, u hoeft momenteel niets te betalen om PhoneBlock te gebruiken. De werking van PhoneBlock maakt nu echter lopende kosten voor serverhuur, internettoegang en domeinregistratie. Om deze kosten te dekken, zou het fijn zijn als u <b><a th:href="@{/support.jsp}">een kleine donatie</a></b> zou kunnen doen.</p>
+		<p data-tx="t0003">Ja, u hoeft momenteel niets te betalen om PhoneBlock te gebruiken. De werking van PhoneBlock maakt nu echter lopende kosten voor serverhuur, internettoegang en domeinregistratie. Om deze kosten te dekken, zou het fijn zijn als u <b><a th:href="@{/support}">een kleine donatie</a></b> zou kunnen doen.</p>
 		
 		<p data-tx="t0004">PhoneBlock draaide lange tijd op een <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> op mijn bureau en veroorzaakte daardoor nauwelijks extra kosten (afgezien van mijn internetverbinding en domeinregistratie). Echter, door toenemende gebruikersaantallen en vooral om een betere beschikbaarheid van de dienst te garanderen, is PhoneBlock nu verhuisd naar de <a href="https://www.hetzner.com/">Hetzner Cloud</a> (serverlocatie Falkenstein, Duitsland). Met <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">deze link krijgt u 20€ cloudtegoed van Hetzner cadeau</a> - en als u het daadwerkelijk gebruikt en er geld voor betaalt, krijgt PhoneBlock de eerste 10€ die u uitgeeft als cloudtegoed.</p>
 
@@ -19,7 +19,7 @@
 		
 		<p data-tx="t0007">Je kunt het <a th:href="@{/anrufbeantworter/}">PhoneBlock antwoordapparaat</a> in elke VOIP-geschikte internetrouter installeren, zelfs als je router het CardDAV protocol voor internet telefoonboeken niet ondersteunt.</p>
 		
-		<p data-tx="t0008">Met beide aanbiedingen kun je de <a th:href="@{/setup.jsp}">blocklist instellen als een internettelefoonboek</a> in je Fritz!Box en de nummers in dit telefoonboek blokkeren. PhoneBlock biedt ook de mogelijkheid om je blokkadelijst te personaliseren en is ook gratis (zie hierboven).</p>
+		<p data-tx="t0008">Met beide aanbiedingen kun je de <a th:href="@{/setup}">blocklist instellen als een internettelefoonboek</a> in je Fritz!Box en de nummers in dit telefoonboek blokkeren. PhoneBlock biedt ook de mogelijkheid om je blokkadelijst te personaliseren en is ook gratis (zie hierboven).</p>
 		
 		<p data-tx="t0009">Je kunt zelf nummers toevoegen aan je persoonlijke blokkadelijst en, nog belangrijker, je kunt ook nummers uitsluiten van blokkering (zie ook "Een nummer wordt per ongeluk geblokkeerd, wat moet ik doen?" hieronder). Dit is interessant als PhoneBlock een nummer aan de blokkadelijst heeft toegevoegd waarmee u wel gebeld wilt worden. Zo kan bijvoorbeeld een nummer van een internetprovider gemakkelijk op de blokkadelijst terechtkomen als veel mensen zich ergeren aan terugbelacties van dit nummer, maar u wacht op een terugbelactie. Dit wordt ook heel goed uitgelegd in deze <a target="_blank" th:href="@{/link/tellows-problems}">YouTube video</a>. Met PhoneBlock kun je je blokkadelijst aanpassen, nummers die je er zelf op hebt gezet blijven geblokkeerd en nummers die je aan je whitelist hebt toegevoegd worden zeker niet geblokkeerd.</p>
 
@@ -63,7 +63,7 @@
 		<p data-tx="t0032">Als u zelf een nummer toevoegt aan de blokkadelijst, worden oproepen van dit nummer onmiddellijk voor u geblokkeerd. Andere abonnees van de PhoneBlock-blokkadelijst zullen dit nummer echter niet onmiddellijk in hun blokkadelijst ontvangen. Het nieuwe nummer wordt pas onder alle abonnees verspreid als ten minste drie abonnees het nummer ook hebben geblokkeerd. De exacte regels over wanneer een nummer wordt toegevoegd aan de blokkadelijst en wanneer het wordt verwijderd van de blokkadelijst worden nog uitgewerkt. Eén ding is echter zeker: een nummer dat je zelf aan de blokkadelijst hebt toegevoegd, blijft in elk geval voor jou geblokkeerd.</p>
 		
 		<h2 data-tx="t0033">Ik ontvang nog steeds spamoproepen ondanks PhoneBlock, wat kan ik doen?</h2>
-		<p data-tx="t0034">Er zijn altijd nieuwe spornummers, dus PhoneBlock kan geen 100% bescherming bieden. <a th:href="@{/block.jsp}">Voeg de nieuwe ongewenste beller toe aan de blokkadelijst</a> en help anderen om snel van deze lastpost af te komen!</p>
+		<p data-tx="t0034">Er zijn altijd nieuwe spornummers, dus PhoneBlock kan geen 100% bescherming bieden. <a th:href="@{/block}">Voeg de nieuwe ongewenste beller toe aan de blokkadelijst</a> en help anderen om snel van deze lastpost af te komen!</p>
 
 		<h2 data-tx="t0035">Een nummer is per ongeluk geblokkeerd, wat moet ik doen?</h2>
 		<p data-tx="t0036">Geen probleem, open <a th:href="@{/settings/#whitelist}">Uw instellingen</a> en voeg het nummer toe aan je witte lijst. Je witte lijst is een lijst met telefoonnummers die je hebt uitgesloten van blokkering. Ze komen nooit op je blokkadelijst terecht, zelfs als veel anderen zich ergeren aan telefoontjes van dit nummer en ze blokkeren.</p>
@@ -85,7 +85,7 @@
 		<p data-tx="t0046">Dit wordt bepaald door je Fritz!Box Als je niet expliciet op de knop "Bijwerken" drukt in het telefoonboek van de bloklijst, dan kiest je Fritz!Box box een tijd tussen 0 en 6 uur 's ochtends voor de update. AVM heeft dit heel slim gedaan, omdat de oproepen relatief gelijkmatig over de nacht worden verdeeld en de serverbelasting beperkt blijft.</p>
 		
 		<h2 data-tx="t0047">Ik vind PhoneBlock geweldig, kan ik een donatie doen?</h2>
-		<p data-tx="t0048">Ja, als u PhoneBlock leuk vindt, bent u welkom om een <a th:href="@{/support.jsp}">kleine donatie</a> te doen voor de lopende kosten voor serverhuur, domeinregistratie, internettoegang, enz.</p>
+		<p data-tx="t0048">Ja, als u PhoneBlock leuk vindt, bent u welkom om een <a th:href="@{/support}">kleine donatie</a> te doen voor de lopende kosten voor serverhuur, domeinregistratie, internettoegang, enz.</p>
 		
 		<p data-tx="t0049">Maar het is ook belangrijk dat PhoneBlock bekender wordt. Dus als je niet kunt of wilt doneren, post dan links naar de PhoneBlock pagina op forums, op FaceBook, in commentaren op tijdschriftartikelen, in je blog of waar je maar denkt dat het gepast is. Alleen als de verspreiding van PhoneBlock sneller gaat, zal het project effect hebben tegen de schandalige telefoonterreur die woedt in het Duitse telefoonnetwerk.</p>
 
@@ -95,7 +95,7 @@
 		<h2 data-tx="t0052">Hoe kan ik PhoneBlock weer verwijderen?</h2>
 		<p data-tx="t0053">Hebt u PhoneBlock niet meer nodig of bent u er niet tevreden over? Jammer, misschien kunt u <a target="_blank" th:href="@{/link/issues}">een suggestie voor verbetering doen</a>?</p>
 		
-		<p data-tx="t0054">Om de installatie ongedaan te maken, gaat u op dezelfde manier te werk als bij de installatie, maar dan omgekeerd. Afhankelijk van hoe u PhoneBlock hebt geïnstalleerd (als <a th:href="@{/setup.jsp}">Telefoonboek</a> of als <a th:href="@{/anrufbeantworter/}">Antwoordapparaat</a>, of beide), moet u de bijbehorende instellingen verwijderen. Voor het telefoonboek: Verwijder de oproepblokkering (of oproepdoorschakeling) die van toepassing is op alle oproepen uit het telefoonboek van PhoneBlock. Vervolgens kunt u het PhoneBlock-telefoonboek verwijderen. Voor het antwoordapparaat: Verwijder het "PhoneBlock"-telefonieapparaat en deactiveer vervolgens de DynIP-vrijgave (als u geen aparte DynIP-service hebt gebruikt). Vervolgens moet u uw PhoneBlock-account verwijderen in de <a th:href="@{/settings/}">instellingen</a>.</p>
+		<p data-tx="t0054">Om de installatie ongedaan te maken, gaat u op dezelfde manier te werk als bij de installatie, maar dan omgekeerd. Afhankelijk van hoe u PhoneBlock hebt geïnstalleerd (als <a th:href="@{/setup}">Telefoonboek</a> of als <a th:href="@{/anrufbeantworter/}">Antwoordapparaat</a>, of beide), moet u de bijbehorende instellingen verwijderen. Voor het telefoonboek: Verwijder de oproepblokkering (of oproepdoorschakeling) die van toepassing is op alle oproepen uit het telefoonboek van PhoneBlock. Vervolgens kunt u het PhoneBlock-telefoonboek verwijderen. Voor het antwoordapparaat: Verwijder het "PhoneBlock"-telefonieapparaat en deactiveer vervolgens de DynIP-vrijgave (als u geen aparte DynIP-service hebt gebruikt). Vervolgens moet u uw PhoneBlock-account verwijderen in de <a th:href="@{/settings/}">instellingen</a>.</p>
 
 		<h2 data-tx="t0055">Mijn vraag wordt hier niet beantwoord, wie kan helpen?</h2>
 		<p data-tx="t0056">Waarom schrijf je geen reactie op de <a target="_blank" th:href="@{/link/facebook}">Facebookpagina van PhoneBlock</a>, dan kan iedereen de vraag lezen. Je kunt me ook een persoonlijk bericht sturen per e-mail: <code>Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code></p>

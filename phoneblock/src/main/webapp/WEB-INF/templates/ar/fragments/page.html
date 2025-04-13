@@ -98,24 +98,24 @@
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">جهاز الرد الآلي</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup.jsp}">دليل هاتف بلوك ليست</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">دليل هاتف بلوك ليست</a>
 					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">أندرويد</a>
 					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">آيفون</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" data-tx="t0008" th:href="@{/faq.jsp}">الأسئلة الشائعة</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status.jsp}">الحالة</a>
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">الأسئلة الشائعة</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">الحالة</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link prevent-default" data-tx="t0010">المزيد</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support.jsp}">تبرع إلى PhoneBlock</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">تبرع إلى PhoneBlock</a>
 					<hr class="navbar-divider"/>
 					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">واجهة برمجة تطبيقات للمطورين</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">مشروع GitHub</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block.jsp}">إضافة حظر المكالمات</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">إضافة حظر المكالمات</a>
 					
 					<hr class="navbar-divider"/>
 					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">الإبلاغ عن خطأ</a>
@@ -140,7 +140,7 @@
       			
 			<div class="navbar-item">
 				<div class="buttons">
-					<a class="button is-light" th:href="@{/login.jsp(location=${location})}" th:unless="${loggedIn}">
+					<a class="button is-light" th:href="@{/login(location=${location})}" th:unless="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
@@ -245,9 +245,9 @@
 		<p data-tx="t0022"><strong>FRITZ!Box</strong> و<strong>FITZ!OS</strong> علامتان تجاريتان مسجلتان لـ <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> لا علاقة لها بذلك.</p>
 
 		<p>
-			<strong><a data-tx="t0023" th:href="@{/datenschutz.jsp}">حماية البيانات - لا تتبع ولا إعلانات ولا بسكويت</a></strong><br/>
-			<strong><a data-tx="t0024" th:href="@{/usage.jsp}">شروط الاستخدام</a></strong><br/>
-			<strong><a data-tx="t0025" th:href="@{/impressum.jsp}">بصمة</a></strong>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz}">حماية البيانات - لا تتبع ولا إعلانات ولا بسكويت</a></strong><br/>
+			<strong><a data-tx="t0024" th:href="@{/usage}">شروط الاستخدام</a></strong><br/>
+			<strong><a data-tx="t0025" th:href="@{/impressum}">بصمة</a></strong>
 		</p>
 	</div>
 </footer>

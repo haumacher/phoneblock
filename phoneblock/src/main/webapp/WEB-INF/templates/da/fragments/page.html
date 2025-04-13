@@ -98,24 +98,24 @@
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">Telefonsvarer</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup.jsp}">Telefonbog med blokeringsliste</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Telefonbog med blokeringsliste</a>
 					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">Android</a>
 					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" data-tx="t0008" th:href="@{/faq.jsp}">OFTE STILLEDE SPØRGSMÅL</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status.jsp}">Status</a>
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">OFTE STILLEDE SPØRGSMÅL</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link prevent-default" data-tx="t0010">Mere om det</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support.jsp}">Donér til PhoneBlock</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Donér til PhoneBlock</a>
 					<hr class="navbar-divider"/>
 					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">API til udviklere</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub-projekt</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block.jsp}">Tilføj opkaldsspærring</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Tilføj opkaldsspærring</a>
 					
 					<hr class="navbar-divider"/>
 					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Rapporter fejl</a>
@@ -140,7 +140,7 @@
       			
 			<div class="navbar-item">
 				<div class="buttons">
-					<a class="button is-light" th:href="@{/login.jsp(location=${location})}" th:unless="${loggedIn}">
+					<a class="button is-light" th:href="@{/login(location=${location})}" th:unless="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
@@ -245,9 +245,9 @@
 		<p data-tx="t0022"><strong>FRITZ!Box</strong> og <strong>FRITZ!OS</strong> er registrerede varemærker tilhørende <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> har ingen relation til dette.</p>
 
 		<p>
-			<strong><a data-tx="t0023" th:href="@{/datenschutz.jsp}">Databeskyttelse - ingen sporing, ingen reklame, ingen kiks</a></strong><br/>
-			<strong><a data-tx="t0024" th:href="@{/usage.jsp}">Vilkår for brug</a></strong><br/>
-			<strong><a data-tx="t0025" th:href="@{/impressum.jsp}">Påtryk</a></strong>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Databeskyttelse - ingen sporing, ingen reklame, ingen kiks</a></strong><br/>
+			<strong><a data-tx="t0024" th:href="@{/usage}">Vilkår for brug</a></strong><br/>
+			<strong><a data-tx="t0025" th:href="@{/impressum}">Påtryk</a></strong>
 		</p>
 	</div>
 </footer>

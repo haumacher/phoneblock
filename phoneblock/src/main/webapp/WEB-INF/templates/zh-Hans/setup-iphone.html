@@ -14,7 +14,7 @@
 		<p data-tx="t0003">安装步骤如下：</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">在 PhoneBlock 注册。</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">在 PhoneBlock 注册。</a></li>
    		<li data-tx="t0005">打开 "设置"&gt;"通讯录"&gt;"账户"。</li>
    		<li data-tx="t0006">点击 "添加账户" - "其他" &gt; "添加 CardDAV 账户"。</li>
    		<li data-tx="t0007">输入您的访问数据，然后点击 "下一步"。<dl>
@@ -24,7 +24,7 @@
 				<dt><b>用户名</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">登录</a>，查看用户名。</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">登录</a>，查看用户名。</span>
 				</dd>
 
 				<dt><b>密码</b></dt>

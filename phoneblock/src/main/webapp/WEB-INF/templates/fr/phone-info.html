@@ -71,7 +71,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
 				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
 				</span>
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Merci pour ton évaluation, tu aides ainsi d'autres personnes qui sont également appelées.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Tu as été contacté par ? <code><th:block th:text="${info.phone}"></th:block></code> appelé ? Dis aux autres ce qu'ils doivent faire de ? <code><th:block th:text="${number.plus}"></th:block></code>. Si tu es gêné par des appels de ? <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">installe PhoneBlock</a> et donne une note à ? <code><th:block th:text="${number.zeroZero}"></th:block></code> :</p>
+	<p data-tx="t0024">Tu as été contacté par ? <code><th:block th:text="${info.phone}"></th:block></code> appelé ? Dis aux autres ce qu'ils doivent faire de ? <code><th:block th:text="${number.plus}"></th:block></code>. Si tu es gêné par des appels de ? <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">installe PhoneBlock</a> et donne une note à ? <code><th:block th:text="${number.zeroZero}"></th:block></code> :</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>
@@ -131,7 +131,7 @@
 		</p>
 		
 		<th:block th:unless="${userName}">		
-		<p data-tx="t0025">Pour que ton évaluation ait un impact immédiat sur ta blocklist, <a th:href="@{/login.jsp(location=${currentPage})}">inscris-toi au préalable</a> !</p>
+		<p data-tx="t0025">Pour que ton évaluation ait un impact immédiat sur ta blocklist, <a th:href="@{/login(location=${currentPage})}">inscris-toi au préalable</a> !</p>
 		
 		<p>
 			<label class="label" data-tx="t0041">Désactiver les appels publicitaires sur le réseau fixe !</label>

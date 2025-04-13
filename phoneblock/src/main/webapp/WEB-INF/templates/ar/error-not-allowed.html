@@ -9,18 +9,18 @@
 		<div class="content">
 			<h1 data-tx="t0001">لا يمكن عرض هذه الصفحة في المتصفح</h1>
 
-			<p data-tx="t0002">يجب عليك إدخال رابط دفتر العناوين الذي تلقيته عندما قمت بـ <a th:href="@{/login.jsp}">التسجيل</a> كدفتر عناوين في فريتز! بوكس الخاص بك كما هو موضح في <a th:href="@{/setup.jsp}">تعليمات التثبيت</a> مع عنوان بريدك الإلكتروني وكلمة المرور المرسلة إليك. لا يمكنك عرض هذا الرابط مباشرةً في المتصفح لأن دفاتر العناوين يتم الوصول إليها عبر بروتوكول خاص (CardDAV) لا يدعمه متصفحك.</p>
+			<p data-tx="t0002">يجب عليك إدخال رابط دفتر العناوين الذي تلقيته عندما قمت بـ <a th:href="@{/login}">التسجيل</a> كدفتر عناوين في فريتز! بوكس الخاص بك كما هو موضح في <a th:href="@{/setup}">تعليمات التثبيت</a> مع عنوان بريدك الإلكتروني وكلمة المرور المرسلة إليك. لا يمكنك عرض هذا الرابط مباشرةً في المتصفح لأن دفاتر العناوين يتم الوصول إليها عبر بروتوكول خاص (CardDAV) لا يدعمه متصفحك.</p>
 
 			<div class="tile is-ancestor">
 				<div class="tile is-parent is-6">
-					<a class="tile is-child notification is-primary" th:href="@{/login.jsp(location='/settings')}">
+					<a class="tile is-child notification is-primary" th:href="@{/login(location='/settings')}">
 						<p class="title" data-tx="t0003">هل نسيت تفاصيل تسجيل الدخول الخاصة بك؟</p>
 						<p class="subtitle" data-tx="t0004">ما عليك سوى التسجيل مرة أخرى وإعادة تعيين كلمة المرور الخاصة بك!</p>
 					</a>
 				</div>
 
 				<div class="tile is-parent is-6 ">
-					<a class="tile is-child notification is-info" th:href="@{/setup.jsp}">
+					<a class="tile is-child notification is-info" th:href="@{/setup}">
 						<p class="title" data-tx="t0005">هل لديك أي أسئلة؟</p>
 						<p class="subtitle" data-tx="t0006">تحقق من تعليمات التثبيت!</p>
 					</a>

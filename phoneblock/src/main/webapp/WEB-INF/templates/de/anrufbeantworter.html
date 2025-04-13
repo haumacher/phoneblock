@@ -15,8 +15,8 @@
 		
 		<p data-tx="t0002">
 			PhoneBlock bietet Dir einen intelligenten Anrufbeantworter an, der automatisch nur dann 
-			das Gespräch annimmt, wenn die Nummer des Anrufers in der <a th:href="@{/status.jsp}">SPAM-Datenbank von PhoneBlock</a> 
-			gelistet ist. Genauso wie für die <a th:href="@{/setup.jsp}">Einrichtung der Blockliste</a> benötigst Du hierfür kein 
+			das Gespräch annimmt, wenn die Nummer des Anrufers in der <a th:href="@{/status}">SPAM-Datenbank von PhoneBlock</a> 
+			gelistet ist. Genauso wie für die <a th:href="@{/setup}">Einrichtung der Blockliste</a> benötigst Du hierfür kein 
 			eigenes Gerät oder Computer. Du erstellt einen PhoneBlock-Anrufbeantworter hier auf der 
 			Webseite und meldest ihn über das Internet an Deiner Fritz!Box oder einem anderen VOIP-fähigen
 			Internetrouter an. 
@@ -56,7 +56,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

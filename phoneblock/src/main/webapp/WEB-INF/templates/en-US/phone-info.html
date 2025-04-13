@@ -71,7 +71,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
 				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
 				</span>
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Thank you for your rating, you are helping others who are also called.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Have you been called by ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Tell others what to expect from ☎ <code><th:block th:text="${number.plus}"></th:block></code>. If you are bothered by calls from ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">install PhoneBlock</a> and give a rating for ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Have you been called by ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Tell others what to expect from ☎ <code><th:block th:text="${number.plus}"></th:block></code>. If you are bothered by calls from ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">install PhoneBlock</a> and give a rating for ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>
@@ -131,7 +131,7 @@
 		</p>
 		
 		<th:block th:unless="${userName}">		
-		<p data-tx="t0025">To ensure that your rating has an immediate impact on your blocklist, <a th:href="@{/login.jsp(location=${currentPage})}">log in first</a>!</p>
+		<p data-tx="t0025">To ensure that your rating has an immediate impact on your blocklist, <a th:href="@{/login(location=${currentPage})}">log in first</a>!</p>
 		
 		<p>
 			<label class="label" data-tx="t0041">Switch off landline advertising calls!</label>

@@ -10,7 +10,7 @@
 		<h1 data-tx="t0001">关于 PhoneBlock 的问题和答案</h1>
 
 		<h2 data-tx="t0002">PhoneBlock 是免费的吗？</h2>
-		<p data-tx="t0003">是的，目前使用 PhoneBlock 无需支付任何费用。但是，PhoneBlock 的运行现在需要支付服务器租用、互联网接入和域名注册的运行成本。为了支付这些费用，您最好能进行<b><a th:href="@{/support.jsp}">小额捐款</a></b>。</p>
+		<p data-tx="t0003">是的，目前使用 PhoneBlock 无需支付任何费用。但是，PhoneBlock 的运行现在需要支付服务器租用、互联网接入和域名注册的运行成本。为了支付这些费用，您最好能进行<b><a th:href="@{/support}">小额捐款</a></b>。</p>
 		
 		<p data-tx="t0004">长期以来，PhoneBlock 一直在我桌上的<a href="https://www.raspberrypi.com/">Raspberry PI 4</a>上运行，因此几乎没有增加任何成本（除了网络连接和域名注册）。不过，由于用户数量不断增加，尤其是为了确保服务的可用性，PhoneBlock 现已转移到 <a href="https://www.hetzner.com/">Hetzner Cloud</a>（服务器地点：德国法尔肯施泰因）。通过<a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">此链接，您将收到来自 Hetzner 的 20 欧元云信用额度作为礼物</a>--如果您实际使用并支付了费用，PhoneBlock 将把您花费的前 10 欧元作为云信用额度记入您的账户。</p>
 
@@ -19,7 +19,7 @@
 		
 		<p data-tx="t0007">即使您的路由器不支持用于互联网电话簿的 CardDAV 协议，您也可以在任何支持 VOIP 的互联网路由器上安装 <a th:href="@{/anrufbeantworter/}">PhoneBlock 应答机</a>。</p>
 		
-		<p data-tx="t0008">通过这两项服务，您可以在 Fritz!Box 中将 <a th:href="@{/setup.jsp}"> 封锁列表设置为 Internet 电话簿</a>，并封锁该电话簿中的号码。PhoneBlock 还提供个性化拦截列表选项，而且也是免费的（见上文）。</p>
+		<p data-tx="t0008">通过这两项服务，您可以在 Fritz!Box 中将 <a th:href="@{/setup}"> 封锁列表设置为 Internet 电话簿</a>，并封锁该电话簿中的号码。PhoneBlock 还提供个性化拦截列表选项，而且也是免费的（见上文）。</p>
 		
 		<p data-tx="t0009">您可以自己添加号码到个性化拦截列表，更重要的是，您还可以排除被拦截的号码（另见下文 "一个号码被错误拦截，怎么办？）如果 PhoneBlock 在拦截列表中添加了您希望被呼叫的号码，这就很有意思了。例如，如果许多人对来自互联网提供商的号码的回拨感到厌烦，而你却在等待回拨，那么这个号码就很容易被添加到拦截列表中。在这个 <a target="_blank" th:href="@{/link/tellows-problems}">YouTube 视频</a>中也有很好的解释。通过 PhoneBlock，您可以自定义您的拦截列表，您自己添加到列表中的号码将继续被拦截，而您添加到白名单中的号码肯定不会被拦截。</p>
 
@@ -63,7 +63,7 @@
 		<p data-tx="t0032">如果您自己将一个号码添加到拦截列表中，来自该号码的呼叫将立即被拦截。但是，PhoneBlock 封锁名单的其他用户不会立即在他们的封锁名单中收到这个号码。只有在至少有三个用户也阻止了该号码后，新号码才会发送给所有用户。关于一个号码何时被添加到屏蔽列表以及何时从列表中删除的确切规则仍在最后确定中。不过，有一点是肯定的：无论如何，您自己添加到封锁名单中的号码将继续为您封锁。</p>
 		
 		<h2 data-tx="t0033">尽管有 PhoneBlock，我还是会收到垃圾电话，我该怎么办？</h2>
-		<p data-tx="t0034">垃圾电话号码层出不穷，因此 PhoneBlock 无法提供 100% 的保护。<a th:href="@{/block.jsp}">将新的骚扰电话添加到拦截列表</a>，帮助他人快速摆脱骚扰！</p>
+		<p data-tx="t0034">垃圾电话号码层出不穷，因此 PhoneBlock 无法提供 100% 的保护。<a th:href="@{/block}">将新的骚扰电话添加到拦截列表</a>，帮助他人快速摆脱骚扰！</p>
 
 		<h2 data-tx="t0035">号码被错误屏蔽，我该怎么办？</h2>
 		<p data-tx="t0036">没问题，打开<a th:href="@{/settings/#whitelist}">您的设置</a>，将号码添加到白名单。白名单是您排除在拦截范围之外的电话号码列表。即使很多人对这个号码打来的电话感到厌烦并对其进行拦截，它们也不会出现在您的拦截列表中。</p>
@@ -85,7 +85,7 @@
 		<p data-tx="t0046">这由您的 Fritz 决定！如果您没有明确按下拦截列表电话簿上的 "更新 "按钮，您的 Fritz!Box 框会在凌晨 0 点到 6 点之间选择一个时间进行更新。AVM 的这一做法非常巧妙，因为这意味着呼叫会在整个晚上相对均匀地分布，而服务器的负荷仍然有限。</p>
 		
 		<h2 data-tx="t0047">我认为 PhoneBlock 非常好，我能捐款吗？</h2>
-		<p data-tx="t0048">是的，如果您喜欢PhoneBlock，欢迎您进行<a th:href="@{/support.jsp}">小额捐赠</a>，用于支付服务器租用、域名注册、互联网接入等运行费用。</p>
+		<p data-tx="t0048">是的，如果您喜欢PhoneBlock，欢迎您进行<a th:href="@{/support}">小额捐赠</a>，用于支付服务器租用、域名注册、互联网接入等运行费用。</p>
 		
 		<p data-tx="t0049">但同样重要的是，让 PhoneBlock 更广为人知。因此，如果您不能或不想捐款，请在论坛、FaceBook、杂志文章评论、博客或其他您认为合适的地方发布 PhoneBlock 页面的链接。只有 PhoneBlock 的传播速度越来越快，该项目才能对德国电话网络中肆虐的电话恐怖产生影响。</p>
 
@@ -95,7 +95,7 @@
 		<h2 data-tx="t0052">如何再次卸载 PhoneBlock？</h2>
 		<p data-tx="t0053">您不再需要 PhoneBlock 或对它不满意？太遗憾了，也许您可以<a target="_blank" th:href="@{/link/issues}">提出改进建议</a>？</p>
 		
-		<p data-tx="t0054">卸载的步骤与安装相同，只是要倒过来。根据您安装 PhoneBlock 的方式（作为 <a th:href="@{/setup.jsp}">Phonebook</a> 或作为 <a th:href="@{/anrufbeantworter/}">Answering Machine</a> 或两者），您必须删除相应的设置。对于电话簿：删除适用于 PhoneBlock 电话簿中所有呼叫的呼叫阻断（或呼叫转移）。然后可以删除 PhoneBlock 电话簿。电话答录机：删除 "PhoneBlock "电话设备，然后停用 DynIP 版本（如果没有使用单独的 DynIP 服务）。然后在 <a th:href="@{/settings/}">settings</a> 中删除 PhoneBlock 帐户。</p>
+		<p data-tx="t0054">卸载的步骤与安装相同，只是要倒过来。根据您安装 PhoneBlock 的方式（作为 <a th:href="@{/setup}">Phonebook</a> 或作为 <a th:href="@{/anrufbeantworter/}">Answering Machine</a> 或两者），您必须删除相应的设置。对于电话簿：删除适用于 PhoneBlock 电话簿中所有呼叫的呼叫阻断（或呼叫转移）。然后可以删除 PhoneBlock 电话簿。电话答录机：删除 "PhoneBlock "电话设备，然后停用 DynIP 版本（如果没有使用单独的 DynIP 服务）。然后在 <a th:href="@{/settings/}">settings</a> 中删除 PhoneBlock 帐户。</p>
 
 		<h2 data-tx="t0055">这里没有回答我的问题，谁能帮帮我？</h2>
 		<p data-tx="t0056">您为什么不在 PhoneBlock 的 <a target="_blank" th:href="@{/link/facebook}">Facebook 页面</a>上写评论，这样每个人都能看到这个问题。我们也欢迎您通过电子邮件给我发送个人信息：<code>Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code> 。</p>

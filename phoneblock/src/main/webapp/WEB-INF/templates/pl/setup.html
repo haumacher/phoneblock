@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Utwórz konto PhoneBlock</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Prawie gotowe, teraz dane logowania <span class="tag is-danger">4</span>. Najlepiej przenieść je za pomocą Cut&amp;Paste, aby uniknąć błędów podczas wpisywania! <ul>
 					<li>W polu <i>Adres internetowy serwera CardDAV</i> wpisz adres URL książki adresowej PhoneBlock: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li>W polu <i>Nazwa użytkownika</i> wpisz nazwę użytkownika <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> otrzymaną podczas <a th:href="@{/login.jsp(location='/settings')}">rejestracji</a>. </li>
+					<li>W polu <i>Nazwa użytkownika</i> wpisz nazwę użytkownika <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> otrzymaną podczas <a th:href="@{/login(location='/settings')}">rejestracji</a>. </li>
 
-					<li>Hasło<th:block th:unless="${token}"> otrzymane podczas <a th:href="@{/login.jsp(location='/settings')}">rejestracji</a>,</th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> należy teraz wprowadzić w polu <i>Hasło</i>. </li>
+					<li>Hasło<th:block th:unless="${token}"> otrzymane podczas <a th:href="@{/login(location='/settings')}">rejestracji</a>,</th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> należy teraz wprowadzić w polu <i>Hasło</i>. </li>
 				    </ul>.</li>
 
 			<li data-tx="t0025">Teraz można potwierdzić <span class="tag is-danger">5</span> utworzenie nowej książki telefonicznej. Uwaga: Wybierz <b>żadnego ze swoich telefonów</b> w sekcji "Przypisanie telefonu"! W przeciwnym razie w kontaktach w telefonie będą znajdować się tylko osoby dzwoniące ze spamem.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Zablokuj numer telefonu</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Zablokuj numer telefonu</button></a>
 		  </div>
 		</div>
 	</div>

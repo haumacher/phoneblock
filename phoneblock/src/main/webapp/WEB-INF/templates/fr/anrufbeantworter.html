@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Installation en tant que répondeur téléphonique</h1>
 		
-		<p data-tx="t0002">PhoneBlock te propose un répondeur intelligent qui ne répond automatiquement à l'appel que si le numéro de l'appelant figure dans la base de données <a th:href="@{/status.jsp}">SPAM de PhoneBlock</a>. Tout comme pour la <a th:href="@{/setup.jsp}">configuration de la liste de blocage</a>, tu n'as pas besoin de ton propre appareil ou ordinateur pour cela. Tu crées un répondeur PhoneBlock ici sur le site web et tu le connectes via Internet à ta Fritz!Box ou à un autre routeur Internet compatible VOIP. Tu peux lire <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">ici</a> comment fonctionne exactement le répondeur PhoneBlock.</p>
+		<p data-tx="t0002">PhoneBlock te propose un répondeur intelligent qui ne répond automatiquement à l'appel que si le numéro de l'appelant figure dans la base de données <a th:href="@{/status}">SPAM de PhoneBlock</a>. Tout comme pour la <a th:href="@{/setup}">configuration de la liste de blocage</a>, tu n'as pas besoin de ton propre appareil ou ordinateur pour cela. Tu crées un répondeur PhoneBlock ici sur le site web et tu le connectes via Internet à ta Fritz!Box ou à un autre routeur Internet compatible VOIP. Tu peux lire <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">ici</a> comment fonctionne exactement le répondeur PhoneBlock.</p>
 		
 		<p data-tx="t0003">Les étapes suivantes te permettront d'accéder à ta messagerie vocale PhoneBlock :</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

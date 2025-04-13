@@ -98,24 +98,24 @@
 
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">Antwoordapparaat</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup.jsp}">Blocklist telefoonboek</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklist telefoonboek</a>
 					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">Android</a>
 					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" data-tx="t0008" th:href="@{/faq.jsp}">FAQ</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status.jsp}">Status</a>
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">FAQ</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link prevent-default" data-tx="t0010">Meer</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support.jsp}">Doneer aan PhoneBlock</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Doneer aan PhoneBlock</a>
 					<hr class="navbar-divider"/>
 					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">API voor ontwikkelaars</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub project</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block.jsp}">Gespreksblokkering toevoegen</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Gespreksblokkering toevoegen</a>
 					
 					<hr class="navbar-divider"/>
 					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Fout melden</a>
@@ -140,7 +140,7 @@
       			
 			<div class="navbar-item">
 				<div class="buttons">
-					<a class="button is-light" th:href="@{/login.jsp(location=${location})}" th:unless="${loggedIn}">
+					<a class="button is-light" th:href="@{/login(location=${location})}" th:unless="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
@@ -245,9 +245,9 @@
 		<p data-tx="t0022"><strong>FRITZ!Box</strong> en <strong>FRITZ!OS</strong> zijn geregistreerde handelsmerken van <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> heeft hier geen relatie mee.</p>
 
 		<p>
-			<strong><a data-tx="t0023" th:href="@{/datenschutz.jsp}">Gegevensbescherming - geen tracking, geen reclame, geen koekjes</a></strong><br/>
-			<strong><a data-tx="t0024" th:href="@{/usage.jsp}">Gebruiksvoorwaarden</a></strong><br/>
-			<strong><a data-tx="t0025" th:href="@{/impressum.jsp}">Afdruk</a></strong>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Gegevensbescherming - geen tracking, geen reclame, geen koekjes</a></strong><br/>
+			<strong><a data-tx="t0024" th:href="@{/usage}">Gebruiksvoorwaarden</a></strong><br/>
+			<strong><a data-tx="t0025" th:href="@{/impressum}">Afdruk</a></strong>
 		</p>
 	</div>
 </footer>

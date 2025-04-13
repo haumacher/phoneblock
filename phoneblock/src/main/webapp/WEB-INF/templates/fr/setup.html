@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Créer un compte PhoneBlock</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Tu y es presque, voici maintenant les données de connexion <span class="tag is-danger">4</span>. Le mieux est de les transférer par copier-coller pour éviter les fautes de frappe ! <ul>
 					<li> Inscris l'URL du carnet d'adresses PhoneBlock dans le champ <i>Adresse Internet du serveur CardDAV</i> : <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Inscris le nom d'utilisateur <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> que tu as reçu lors de l'<a th:href="@{/login.jsp(location='/settings')}">enregistrement</a> dans le champ <i>Nom d'utilisateur</i>. </li>
+					<li> Inscris le nom d'utilisateur <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a> dans le champ <i>Nom d'utilisateur</i>. </li>
 
-					<li> Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de l'<a th:href="@{/login.jsp(location='/settings')}">enregistrement</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> tu dois maintenant encore l'inscrire dans le champ <i>mot de passe</i>. </li>
+					<li> Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> tu dois maintenant encore l'inscrire dans le champ <i>mot de passe</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Tu peux maintenant confirmer <span class="tag is-danger">5</span> la création du nouveau répertoire. Attention, s'il te plaît : Ne sélectionne <b>aucun de tes téléphones</b> dans le point "Attribution des téléphones" ! Sinon, tu ne trouveras sur ton téléphone que des appelants SPAM dans les contacts.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Bloquer un numéro de téléphone</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Bloquer un numéro de téléphone</button></a>
 		  </div>
 		</div>
 	</div>

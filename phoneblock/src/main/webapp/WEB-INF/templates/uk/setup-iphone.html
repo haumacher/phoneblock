@@ -14,7 +14,7 @@
 		<p data-tx="t0003">Встановлення виконується у наступні етапи:</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Зареєструйтеся в PhoneBlock.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Зареєструйтеся в PhoneBlock.</a></li>
    		<li data-tx="t0005">Відкрийте "Налаштування" &gt; "Контакти" &gt; "Акаунти".</li>
    		<li data-tx="t0006">Натисніть "Додати обліковий запис" - "Інше" &gt; "Додати обліковий запис CardDAV".</li>
    		<li data-tx="t0007">Введіть дані доступу і натисніть "Далі". <dl>
@@ -24,7 +24,7 @@
 				<dt><b>Ім'я користувача</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Увійдіть</a>, щоб побачити своє ім'я користувача.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Увійдіть</a>, щоб побачити своє ім'я користувача.</span>
 				</dd>
 
 				<dt><b>Пароль</b></dt>

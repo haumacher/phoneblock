@@ -35,11 +35,11 @@
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Ο αριθμός τηλεφώνου περιλαμβάνεται στη λευκή λίστα και δεν μπορεί να αποκλειστεί από το PhoneBlock. Εάν εξακολουθείτε να αισθάνεστε ότι σας ενοχλεί αυτός ο αριθμός, παρακαλούμε ρυθμίστε μια ιδιωτική φραγή για αυτόν τον αριθμό.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Ο αριθμός τηλεφώνου δεν περιλαμβάνεται στη βάση δεδομένων <a th:href="@{/status.jsp}">PhoneBlock</a>. Μέχρι στιγμής δεν υπάρχουν ψήφοι υπέρ του αποκλεισμού ☎ <code th:text="${info.phone}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Ο ίδιος ο αριθμός τηλεφώνου δεν περιέχεται στη βάση δεδομένων <a th:href="@{/status.jsp}">PhoneBlock</a>. Ωστόσο, ο αριθμός ☎ <code th:text="${info.phone}"></code> προέρχεται από ένα μπλοκ αριθμών με υποψίες για ανεπιθύμητη αλληλογραφία. <th:block th:if="${info.votesWildcard == 1}"> Υπάρχει μια ψηφοφορία υπέρ του αποκλεισμού του μπλοκ αριθμών. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Υπάρχουν <th:block th:text="${info.votesWildcard}"></th:block> ψήφοι υπέρ του αποκλεισμού του αριθμητικού μπλοκ. </th:block></p>
+  	<p data-tx="t0036" th:case="'legitimate'">Ο αριθμός τηλεφώνου δεν περιλαμβάνεται στη βάση δεδομένων <a th:href="@{/status}">PhoneBlock</a>. Μέχρι στιγμής δεν υπάρχουν ψήφοι υπέρ του αποκλεισμού ☎ <code th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Ο ίδιος ο αριθμός τηλεφώνου δεν περιέχεται στη βάση δεδομένων <a th:href="@{/status}">PhoneBlock</a>. Ωστόσο, ο αριθμός ☎ <code th:text="${info.phone}"></code> προέρχεται από ένα μπλοκ αριθμών με υποψίες για ανεπιθύμητη αλληλογραφία. <th:block th:if="${info.votesWildcard == 1}"> Υπάρχει μια ψηφοφορία υπέρ του αποκλεισμού του μπλοκ αριθμών. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Υπάρχουν <th:block th:text="${info.votesWildcard}"></th:block> ψήφοι υπέρ του αποκλεισμού του αριθμητικού μπλοκ. </th:block></p>
   	<p data-tx="t0038" th:case="'suspicious'">Υπάρχουν ήδη <th:block th:text="${info.votes}"></th:block> ψήφοι υπέρ του αποκλεισμού ☎ <code th:text="${info.phone}"></code>. Ωστόσο, ο αριθμός δεν έχει ακόμη μπλοκαριστεί.</p>  	
   	<p data-tx="t0039" th:case="'archived'">Υπάρχουν <th:block th:text="${info.votes}"></th:block> παλιές φωνές που μίλησαν υπέρ του αποκλεισμού ☎ <code th:text="${info.phone}"></code>. Ωστόσο, ο αριθμός δεν είναι πλέον μπλοκαρισμένος.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Ο αριθμός τηλεφώνου ☎ <code th:text="${info.phone}"></code> είναι μια επανειλημμένα αναφερόμενη πηγή <a th:href="@{/status.jsp}">ανεπιθύμητων τηλεφωνικών κλήσεων</a>. <th:block th:text="${info.votes}"></th:block> Οι φωνές τάσσονται υπέρ του αποκλεισμού του αριθμού.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Ο αριθμός τηλεφώνου ☎ <code th:text="${info.phone}"></code> είναι μια επανειλημμένα αναφερόμενη πηγή <a th:href="@{/status}">ανεπιθύμητων τηλεφωνικών κλήσεων</a>. <th:block th:text="${info.votes}"></th:block> Οι φωνές τάσσονται υπέρ του αποκλεισμού του αριθμού.</p>
   	</th:block>
 
 	<ul>
@@ -71,7 +71,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
 				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
 				</span>
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Σας ευχαριστώ για την αξιολόγησή σας, βοηθάτε άλλους που επίσης καλούνται.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Σας έχει καλέσει ☎ <code><th:block th:text="${info.phone}"></th:block></code>; Πείτε στους άλλους τι να περιμένουν από την ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Αν σας ενοχλούν οι κλήσεις από την ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">εγκαταστήστε το PhoneBlock</a> και αφήστε μια κριτική για την ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Σας έχει καλέσει ☎ <code><th:block th:text="${info.phone}"></th:block></code>; Πείτε στους άλλους τι να περιμένουν από την ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Αν σας ενοχλούν οι κλήσεις από την ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">εγκαταστήστε το PhoneBlock</a> και αφήστε μια κριτική για την ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>
@@ -131,7 +131,7 @@
 		</p>
 		
 		<th:block th:unless="${userName}">		
-		<p data-tx="t0025">Για να διασφαλίσετε ότι η βαθμολογία σας θα έχει άμεσο αντίκτυπο στη λίστα αποκλεισμού σας, <a th:href="@{/login.jsp(location=${currentPage})}">συνδεθείτε πρώτα</a>!</p>
+		<p data-tx="t0025">Για να διασφαλίσετε ότι η βαθμολογία σας θα έχει άμεσο αντίκτυπο στη λίστα αποκλεισμού σας, <a th:href="@{/login(location=${currentPage})}">συνδεθείτε πρώτα</a>!</p>
 		
 		<p>
 			<label class="label" data-tx="t0041">Κωδικός ασφαλείας</label>

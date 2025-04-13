@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">安装为应答机</h1>
 		
-		<p data-tx="t0002">PhoneBlock 为您提供智能应答机，只有当来电者的号码被列入 PhoneBlock 的 <a th:href="@{/status.jsp}">SPAM 数据库</a>时，应答机才会自动接听来电。正如<a th:href="@{/setup.jsp}">拦截列表的设置</a>一样，您不需要自己的设备或计算机来完成这项工作。您可以在网站上创建 PhoneBlock 应答机，并通过互联网在 Fritz!Box 或其他支持 VOIP 的互联网路由器上注册。您可以在<a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">这里</a>了解 PhoneBlock 电话答录机的具体工作原理。</p>
+		<p data-tx="t0002">PhoneBlock 为您提供智能应答机，只有当来电者的号码被列入 PhoneBlock 的 <a th:href="@{/status}">SPAM 数据库</a>时，应答机才会自动接听来电。正如<a th:href="@{/setup}">拦截列表的设置</a>一样，您不需要自己的设备或计算机来完成这项工作。您可以在网站上创建 PhoneBlock 应答机，并通过互联网在 Fritz!Box 或其他支持 VOIP 的互联网路由器上注册。您可以在<a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">这里</a>了解 PhoneBlock 电话答录机的具体工作原理。</p>
 		
 		<p data-tx="t0003">以下步骤将带您进入 PhoneBlock 应答机：</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

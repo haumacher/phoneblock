@@ -39,11 +39,11 @@
 		Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.  	
   	</p>
   	<p data-tx="t0036" th:case="'legitimate'">
-  		Die Telefonnummer ist nicht in der <a th:href="@{/status.jsp}">PhoneBlock-Datenbank</a> enthalten. 
+  		Die Telefonnummer ist nicht in der <a th:href="@{/status}">PhoneBlock-Datenbank</a> enthalten. 
   		Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprechen.
 	</p>
   	<p data-tx="t0037" th:case="'wildcard'">
-  		Die Telefonnummer selbst ist nicht in der <a th:href="@{/status.jsp}">PhoneBlock-Datenbank</a> enthalten. 
+  		Die Telefonnummer selbst ist nicht in der <a th:href="@{/status}">PhoneBlock-Datenbank</a> enthalten. 
   		Die Nummer ☎ <code th:text="${info.phone}"></code> stammt aber aus einem Nummernblock mit Spam-Verdacht.
   		<th:block th:if="${info.votesWildcard == 1}">
 		Es spricht eine Stimme für die Sperrung des Nummernblocks.
@@ -61,7 +61,7 @@
   		Die Nummer wird aber nicht mehr blockiert.
   	</p>
   	<p data-tx="t0040" th:case="'blocked'">
-		Die Telefonnummer ☎ <code th:text="${info.phone}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status.jsp}">unerwünschten Telefonanrufen</a>.
+		Die Telefonnummer ☎ <code th:text="${info.phone}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status}">unerwünschten Telefonanrufen</a>.
 		<th:block th:text="${info.votes}"></th:block> Stimmen sprechen sich für eine Sperrung der Nummer aus.
   	</p>
   	</th:block>
@@ -116,7 +116,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
 				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
 				</span>
@@ -162,7 +162,7 @@
 		Du wurdest von ☎ <code><th:block th:text="${info.phone}"></th:block></code> angerufen? 
 		Sag anderen, was sie von ☎ <code><th:block th:text="${number.plus}"></th:block></code> zu erwarten haben.
 		Wenn Du Dich von Anrufen von ☎ <code><th:block th:text="${info.phone}"></th:block></code> belästigt fühlst, 
-		<a th:href="@{/setup.jsp}">installiere PhoneBlock</a> 
+		<a th:href="@{/setup}">installiere PhoneBlock</a> 
 		und gibt eine Bewertung für ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code> ab:
 	</p>
 
@@ -185,7 +185,7 @@
 		
 		<th:block th:unless="${userName}">		
 		<p data-tx="t0025">
-		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a th:href="@{/login.jsp(location=${currentPage})}">melde Dich vorher an</a>!
+		Damit Deine Bewertung sofort einen Einfluss auf Deine Blocklist hat, <a th:href="@{/login(location=${currentPage})}">melde Dich vorher an</a>!
 		</p>
 		
 		<p>

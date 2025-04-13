@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Instalacja jako automatyczna sekretarka</h1>
 		
-		<p data-tx="t0002">PhoneBlock oferuje inteligentną automatyczną sekretarkę, która automatycznie odbiera połączenia tylko wtedy, gdy numer dzwoniącego znajduje się w <a th:href="@{/status.jsp}">bazie danych spamu</a> PhoneBlock. Podobnie jak w przypadku <a th:href="@{/setup.jsp}">konfiguracji listy blokowania</a>, nie potrzebujesz do tego własnego urządzenia ani komputera. Tworzysz automatyczną sekretarkę PhoneBlock tutaj na stronie internetowej i rejestrujesz ją przez Internet na swoim Fritz!Box lub innym routerze internetowym obsługującym VOIP. Możesz dowiedzieć się dokładnie, jak działa automatyczna sekretarka PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">tutaj</a>.</p>
+		<p data-tx="t0002">PhoneBlock oferuje inteligentną automatyczną sekretarkę, która automatycznie odbiera połączenia tylko wtedy, gdy numer dzwoniącego znajduje się w <a th:href="@{/status}">bazie danych spamu</a> PhoneBlock. Podobnie jak w przypadku <a th:href="@{/setup}">konfiguracji listy blokowania</a>, nie potrzebujesz do tego własnego urządzenia ani komputera. Tworzysz automatyczną sekretarkę PhoneBlock tutaj na stronie internetowej i rejestrujesz ją przez Internet na swoim Fritz!Box lub innym routerze internetowym obsługującym VOIP. Możesz dowiedzieć się dokładnie, jak działa automatyczna sekretarka PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">tutaj</a>.</p>
 		
 		<p data-tx="t0003">Poniższe kroki prowadzą do automatycznej sekretarki PhoneBlock:</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

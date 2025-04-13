@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Skapa ett PhoneBlock-konto</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Nästan klart, nu är inloggningsuppgifterna <span class="tag is-danger">4</span>. Det är bäst att överföra dem med Cut&amp;Paste för att undvika skrivfel! <ul>
 					<li> Ange URL:en för PhoneBlocks adressbok i fältet <i>Internetadress för CardDAV-servern</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Ange användarnamnet <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> som du fick under <a th:href="@{/login.jsp(location='/settings')}">registreringen</a> i fältet <i>Användarnamn</i>. </li>
+					<li> Ange användarnamnet <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> som du fick under <a th:href="@{/login(location='/settings')}">registreringen</a> i fältet <i>Användarnamn</i>. </li>
 
-					<li>Det lösenord<th:block th:unless="${token}"> som du fick vid <a th:href="@{/login.jsp(location='/settings')}">registreringen</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> måste nu anges i fältet <i>Lösenord</i>. </li>
+					<li>Det lösenord<th:block th:unless="${token}"> som du fick vid <a th:href="@{/login(location='/settings')}">registreringen</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> måste nu anges i fältet <i>Lösenord</i>. </li>
 				    </ul>.</li>
 
 			<li data-tx="t0025">Nu kan du bekräfta <span class="tag is-danger">5</span> skapandet av den nya telefonboken. Vänligen notera detta: Välj <b>Ingen av dina telefoner</b> under "Telefontilldelning"! Annars kommer du bara att hitta SPAM-samtalare i kontakterna på din telefon.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Spärra telefonnummer</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Spärra telefonnummer</button></a>
 		  </div>
 		</div>
 	</div>

@@ -35,11 +35,11 @@
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Telefonnummeret er på den hvite listen og kan ikke blokkeres av PhoneBlock. Hvis du fortsatt føler deg trakassert av dette nummeret, kan du sette opp en privat blokkering for dette nummeret.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Telefonnummeret er ikke inkludert i <a th:href="@{/status.jsp}">PhoneBlock-databasen</a>. Så langt er det ingen stemmer for å blokkere ☎ <code th:text="${info.phone}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Selve telefonnummeret finnes ikke i <a th:href="@{/status.jsp}">PhoneBlock-databasen</a>. Nummeret ☎ <code th:text="${info.phone}"></code> kommer imidlertid fra en nummerblokk med mistanke om spam. <th:block th:if="${info.votesWildcard == 1}"> Det er en stemme for å blokkere nummerblokken. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Det er <th:block th:text="${info.votesWildcard}"></th:block> stemmer for å blokkere nummerblokken. </th:block></p>
+  	<p data-tx="t0036" th:case="'legitimate'">Telefonnummeret er ikke inkludert i <a th:href="@{/status}">PhoneBlock-databasen</a>. Så langt er det ingen stemmer for å blokkere ☎ <code th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Selve telefonnummeret finnes ikke i <a th:href="@{/status}">PhoneBlock-databasen</a>. Nummeret ☎ <code th:text="${info.phone}"></code> kommer imidlertid fra en nummerblokk med mistanke om spam. <th:block th:if="${info.votesWildcard == 1}"> Det er en stemme for å blokkere nummerblokken. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Det er <th:block th:text="${info.votesWildcard}"></th:block> stemmer for å blokkere nummerblokken. </th:block></p>
   	<p data-tx="t0038" th:case="'suspicious'">Det er allerede <th:block th:text="${info.votes}"></th:block> stemmer for å blokkere ☎ <code th:text="${info.phone}"></code>. Nummeret er imidlertid ikke blokkert ennå.</p>  	
   	<p data-tx="t0039" th:case="'archived'">Det er <th:block th:text="${info.votes}"></th:block> gamle stemmer som talte for å blokkere ☎ <code th:text="${info.phone}"></code>. Nummeret er imidlertid ikke lenger blokkert.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Telefonnummeret ☎ <code th:text="${info.phone}"></code> er en gjentatte ganger rapportert kilde til <a th:href="@{/status.jsp}">uønskede telefonsamtaler</a>. <th:block th:text="${info.votes}"></th:block> Det er flere som ønsker å blokkere nummeret.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Telefonnummeret ☎ <code th:text="${info.phone}"></code> er en gjentatte ganger rapportert kilde til <a th:href="@{/status}">uønskede telefonsamtaler</a>. <th:block th:text="${info.votes}"></th:block> Det er flere som ønsker å blokkere nummeret.</p>
   	</th:block>
 
 	<ul>
@@ -71,7 +71,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
 				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
 				</span>
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Takk for din vurdering, du hjelper andre som også er kalt.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Har du blitt oppringt av ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Fortell andre hva de kan forvente fra ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Hvis du er plaget av anrop fra ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">installer PhoneBlock</a> og legg igjen en anmeldelse for ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Har du blitt oppringt av ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Fortell andre hva de kan forvente fra ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Hvis du er plaget av anrop fra ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">installer PhoneBlock</a> og legg igjen en anmeldelse for ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>
@@ -131,7 +131,7 @@
 		</p>
 		
 		<th:block th:unless="${userName}">		
-		<p data-tx="t0025">For å sikre at vurderingen din får umiddelbar innvirkning på blokkeringslisten din, må du <a th:href="@{/login.jsp(location=${currentPage})}">logge inn først</a>!</p>
+		<p data-tx="t0025">For å sikre at vurderingen din får umiddelbar innvirkning på blokkeringslisten din, må du <a th:href="@{/login(location=${currentPage})}">logge inn først</a>!</p>
 		
 		<p>
 			<label class="label" data-tx="t0041">Sikkerhetskode</label>

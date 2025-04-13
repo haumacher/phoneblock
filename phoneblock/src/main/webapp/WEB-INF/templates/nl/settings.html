@@ -9,7 +9,7 @@
 	<div class="content">
 		<h1 data-tx="t0001">Instellingen</h1>
 		
-		<p data-tx="t0002">Om je persoonlijke instellingen te bewerken, moet je <a th:href="@{/login.jsp(location=${location})}">inloggen</a>.</p>
+		<p data-tx="t0002">Om je persoonlijke instellingen te bewerken, moet je <a th:href="@{/login(location=${location})}">inloggen</a>.</p>
 	</div>
 </section>
 
@@ -34,13 +34,13 @@
 				<div class="field">
 				  <label class="label" data-tx="t0007">Gebruikersnaam</label>
 				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">Je moet deze waarde invoeren als de gebruikersnaam voor <a th:href="@{/setup.jsp}">het oproepen van de blokkadelijst</a>.</p>
+				  <p class="help" data-tx="t0008">Je moet deze waarde invoeren als de gebruikersnaam voor <a th:href="@{/setup}">het oproepen van de blokkadelijst</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">wachtwoord</label>
 				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">Je moet dit wachtwoord gebruiken om <a th:href="@{/setup.jsp}">het telefoonboek in te stellen</a> of om in te loggen op deze website.</p>
+				  <p class="help" data-tx="t0010">Je moet dit wachtwoord gebruiken om <a th:href="@{/setup}">het telefoonboek in te stellen</a> of om in te loggen op deze website.</p>
 				  <p class="help" data-tx="t0011">Noteer het wachtwoord (of sla het op in een <a href="https://keepass.info/">wachtwoordmanager</a>), want het wordt alleen weergegeven totdat je uitlogt of je sessie verloopt.</p>
 				</div>
 			  </div>
@@ -49,7 +49,7 @@
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Gebruikersnaam</label>
 			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">Je moet deze waarde invoeren als gebruikersnaam voor <a th:href="@{/setup.jsp}">het ophalen van de blokkadelijst</a>. Je wachtwoord werd weergegeven toen je voor het eerst inlogde. Als je het niet meer weet, kun je onderaan deze pagina een <a href="#resetPassword">nieuw wachtwoord</a> aanmaken. Maar let op: het oude wachtwoord wordt ongeldig.</p>
+			  <p class="help" data-tx="t0013">Je moet deze waarde invoeren als gebruikersnaam voor <a th:href="@{/setup}">het ophalen van de blokkadelijst</a>. Je wachtwoord werd weergegeven toen je voor het eerst inlogde. Als je het niet meer weet, kun je onderaan deze pagina een <a href="#resetPassword">nieuw wachtwoord</a> aanmaken. Maar let op: het oude wachtwoord wordt ongeldig.</p>
 			</div>
 
 			<div class="field">
@@ -102,7 +102,7 @@
 			    <button class="button is-primary" data-tx="t0031" type="submit">Sla</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings.jsp}">Gooi weg</a>
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">Gooi weg</a>
 			  </p>
 			</div>
 		</form>
@@ -256,7 +256,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Uw donaties voor de werking van PhoneBlock</h2>
 	
-	<p data-tx="t0059">Als je een <a th:href="@{/support.jsp}">donatie hebt gedaan voor de werking van PhoneBlock</a>, wordt die hier (na enige tijd) vermeld. Om dit te laten werken, zou het fijn zijn als je de eerste paar tekens van je gebruikersnaam in het bericht van de donatie zet, bijvoorbeeld <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Helaas kunnen bijdragen via het GitHub sponsorprogramma hier niet vermeld worden.</p>
+	<p data-tx="t0059">Als je een <a th:href="@{/support}">donatie hebt gedaan voor de werking van PhoneBlock</a>, wordt die hier (na enige tijd) vermeld. Om dit te laten werken, zou het fijn zijn als je de eerste paar tekens van je gebruikersnaam in het bericht van de donatie zet, bijvoorbeeld <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Helaas kunnen bijdragen via het GitHub sponsorprogramma hier niet vermeld worden.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Geen donaties gevonden.</p>
 	

@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Crear una cuenta PhoneBlock</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Casi hecho, ahora los datos de acceso <span class="tag is-danger">4</span>. ¡Es mejor transferirlos con Cut&amp;Paste para evitar errores de escritura! <ul>
 					<li>Introduzca la URL de la libreta de direcciones de PhoneBlock en el campo <i>Dirección de Internet del servidor CardDAV</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li>Introduzca el nombre de usuario <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> que recibió durante el <a th:href="@{/login.jsp(location='/settings')}">registro</a> en el campo <i>Nombre de usuario</i>. </li>
+					<li>Introduzca el nombre de usuario <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a> en el campo <i>Nombre de usuario</i>. </li>
 
-					<li>La contraseña<th:block th:unless="${token}"> que recibió durante el <a th:href="@{/login.jsp(location='/settings')}">registro</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> debe introducirse ahora en el campo <i>Contraseña</i>. </li>
+					<li>La contraseña<th:block th:unless="${token}"> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> debe introducirse ahora en el campo <i>Contraseña</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Ahora puede confirmar <span class="tag is-danger">5</span> la creación de la nueva agenda telefónica. Tenga en cuenta: ¡Seleccione <b>ninguno de sus teléfonos</b> en "Asignación de teléfonos"! De lo contrario, sólo encontrará las llamadas SPAM en los contactos de su teléfono.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Bloquear número de teléfono</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Bloquear número de teléfono</button></a>
 		  </div>
 		</div>
 	</div>

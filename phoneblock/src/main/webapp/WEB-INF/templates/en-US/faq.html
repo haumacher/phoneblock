@@ -10,7 +10,7 @@
 		<h1 data-tx="t0001">Questions and answers about PhoneBlock</h1>
 
 		<h2 data-tx="t0002">Is PhoneBlock free of charge?</h2>
-		<p data-tx="t0003">Yes, you currently don't have to pay anything to use PhoneBlock. However, the operation of PhoneBlock now incurs running costs for server rental, Internet access and domain registration. To cover these costs, it would be nice if you could make <b><a th:href="@{/support.jsp}">a small donation</a></b>.</p>
+		<p data-tx="t0003">Yes, you currently don't have to pay anything to use PhoneBlock. However, the operation of PhoneBlock now incurs running costs for server rental, Internet access and domain registration. To cover these costs, it would be nice if you could make <b><a th:href="@{/support}">a small donation</a></b>.</p>
 		
 		<p data-tx="t0004">For a long time, PhoneBlock ran on a <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> on my desk and therefore caused hardly any additional costs (apart from my internet connection and domain registration). However, due to increasing user numbers and above all to ensure better availability of the service, PhoneBlock has now moved to the <a href="https://www.hetzner.com/">Hetzner Cloud</a> (server location Falkenstein, Germany). With <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">this link you will receive 20? Cloud credit from Hetzner as a gift</a> - and if you actually use it and pay for it, PhoneBlock will be credited with the first 10? you spend as Cloud credit.</p>
 
@@ -19,7 +19,7 @@
 		
 		<p data-tx="t0007">You can install the <a th:href="@{/anrufbeantworter/}">PhoneBlock answering machine</a> in any VOIP-capable Internet router, even if your router does not support the CardDAV protocol for Internet telephone directories.</p>
 		
-		<p data-tx="t0008">With both offers, you can set up the <a th:href="@{/setup.jsp}">blocklist as an Internet phonebook</a> in your Fritz!Box and block the numbers in this phonebook. PhoneBlock also offers you the option of personalizing your blocklist and is also free of charge (see above).</p>
+		<p data-tx="t0008">With both offers, you can set up the <a th:href="@{/setup}">blocklist as an Internet phonebook</a> in your Fritz!Box and block the numbers in this phonebook. PhoneBlock also offers you the option of personalizing your blocklist and is also free of charge (see above).</p>
 		
 		<p data-tx="t0009">You can add numbers to your personalized blocklist yourself and, more importantly, exclude numbers from blocking (see also "A number is blocked by mistake, what to do?" below). This is interesting if PhoneBlock has added a number to the blocklist that you would like to be called by. For example, a number, e.g. from an Internet provider, can easily end up on the blocklist if many people feel annoyed by callbacks from this number, but you are waiting for a callback. This is also explained very well in this <a target="_blank" th:href="@{/link/tellows-problems}">YouTube video</a>. With PhoneBlock you can customize your blocklist, numbers that you have put on it yourself will remain blocked and numbers that you have added to your whitelist will certainly not be blocked.</p>
 
@@ -63,7 +63,7 @@
 		<p data-tx="t0032">If you add a number to the blocklist yourself, calls from this number will be blocked for you immediately. However, other subscribers to the PhoneBlock blocklist will not immediately receive this number in their blocklist. The new number will only be distributed to all subscribers once at least three subscribers have also blocked the number. The exact rules as to when a number is added to the blocklist and when it is removed from it are still being adapted. However, one thing is certain: a number that you have added to the blocklist yourself will remain blocked for you in any case.</p>
 		
 		<h2 data-tx="t0033">I still receive spam calls despite PhoneBlock, what can I do?</h2>
-		<p data-tx="t0034">There are always new spam numbers, so PhoneBlock cannot offer 100% protection. <a th:href="@{/block.jsp}">Add the new unwanted caller to the blocklist</a> and help others to get rid of the pest quickly!</p>
+		<p data-tx="t0034">There are always new spam numbers, so PhoneBlock cannot offer 100% protection. <a th:href="@{/block}">Add the new unwanted caller to the blocklist</a> and help others to get rid of the pest quickly!</p>
 
 		<h2 data-tx="t0035">A number is blocked by mistake, what should I do?</h2>
 		<p data-tx="t0036">No problem, open <a th:href="@{/settings/#whitelist}">Your settings</a> and add the number to your whitelist. Your whitelist is a list of phone numbers that you have exempted from blocking. They never end up on your blocklist, even if many others feel annoyed by calls from this number and block them.</p>
@@ -85,7 +85,7 @@
 		<p data-tx="t0046">This is decided by your Fritz!Box If you don't explicitly press the "Update" button on the blocklist phonebook, your Fritz!Box box dices a time between 0 and 6 a.m. for the update. This is cleverly done by AVM, because the calls are distributed relatively evenly throughout the night, thus limiting the server load.</p>
 		
 		<h2 data-tx="t0047">I think PhoneBlock is great, can I make a donation?</h2>
-		<p data-tx="t0048">Yes, if you like PhoneBlock, you are welcome to make a <a th:href="@{/support.jsp}">small donation</a> towards the running costs for server rental, domain registration, Internet access, etc.</p>
+		<p data-tx="t0048">Yes, if you like PhoneBlock, you are welcome to make a <a th:href="@{/support}">small donation</a> towards the running costs for server rental, domain registration, Internet access, etc.</p>
 		
 		<p data-tx="t0049">But it is also important that PhoneBlock becomes better known. So if you can't or don't want to donate, then post links to the PhoneBlock page in forums, on FaceBook, in comments to magazine articles, in your blog or wherever else you think it's appropriate. Only if the spread of PhoneBlock grows faster will the project have an effect against the outrageous telephone terror that is raging in the German telephone network.</p>
 
@@ -95,7 +95,7 @@
 		<h2 data-tx="t0052">How can I uninstall PhoneBlock again?</h2>
 		<p data-tx="t0053">You no longer need PhoneBlock or are not satisfied with it? Too bad, maybe you can <a target="_blank" th:href="@{/link/issues}">make a suggestion for improvement</a>?</p>
 		
-		<p data-tx="t0054">To uninstall, proceed in the same way as for the installation, only backwards. Depending on how you installed PhoneBlock (as <a th:href="@{/setup.jsp}">Phonebook</a> or as <a th:href="@{/anrufbeantworter/}">Answering Machine</a>, or both), you must delete the corresponding settings. For the phonebook: Delete the call blocking (or call forwarding), which applies to all calls from the PhoneBlock phonebook. You can then delete the PhoneBlock phonebook. For the answering machine: Delete the "PhoneBlock" telephony device and then deactivate the DynIP release (if you have not used a separate DynIP service). You should then delete your PhoneBlock account in the <a th:href="@{/settings/}">settings</a>.</p>
+		<p data-tx="t0054">To uninstall, proceed in the same way as for the installation, only backwards. Depending on how you installed PhoneBlock (as <a th:href="@{/setup}">Phonebook</a> or as <a th:href="@{/anrufbeantworter/}">Answering Machine</a>, or both), you must delete the corresponding settings. For the phonebook: Delete the call blocking (or call forwarding), which applies to all calls from the PhoneBlock phonebook. You can then delete the PhoneBlock phonebook. For the answering machine: Delete the "PhoneBlock" telephony device and then deactivate the DynIP release (if you have not used a separate DynIP service). You should then delete your PhoneBlock account in the <a th:href="@{/settings/}">settings</a>.</p>
 
 		<h2 data-tx="t0055">My question is not answered here, who can help?</h2>
 		<p data-tx="t0056">Why don't you write a comment on the <a target="_blank" th:href="@{/link/facebook}">Facebook page of PhoneBlock</a>, then everyone can read the question. You are also welcome to send me a personal message by e-mail: <code>Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code></p>

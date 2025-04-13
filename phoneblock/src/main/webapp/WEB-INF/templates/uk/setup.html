@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Створіть обліковий запис PhoneBlock</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Майже готово, тепер дані для входу <span class="tag is-danger">4</span>. Найкраще перенести їх за допомогою Cut&amp;Paste, щоб уникнути помилок при введенні! <ul>
 					<li> У полі <i>Інтернет-адреса сервера CardDAV</i> введіть URL адресної книги PhoneBlock: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> У полі <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> введіть ім'я користувача <a th:href="@{/login.jsp(location='/settings')}"></a>, яке ви отримали під час <i>реєстрації</i>. </li>
+					<li> У полі <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> введіть ім'я користувача <a th:href="@{/login(location='/settings')}"></a>, яке ви отримали під час <i>реєстрації</i>. </li>
 
-					<li>Пароль <th:block th:unless="${token}">, який ви отримали під час <a th:href="@{/login.jsp(location='/settings')}">реєстрації</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> тепер слід ввести у полі <i>Пароль</i>. </li>
+					<li>Пароль <th:block th:unless="${token}">, який ви отримали під час <a th:href="@{/login(location='/settings')}">реєстрації</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> тепер слід ввести у полі <i>Пароль</i>. </li>
 				    </ul> &lt;/x11</li>
 
 			<li data-tx="t0025">Тепер ви можете підтвердити <span class="tag is-danger">5</span> створення нової телефонної книги. Зверніть увагу: Виберіть <b>ні один з ваших телефонів</b> в розділі "Призначення телефону"! Інакше в контактах на вашому телефоні ви побачите лише абонентів зі спамом.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Заблокувати номер телефону</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Заблокувати номер телефону</button></a>
 		  </div>
 		</div>
 	</div>

@@ -28,7 +28,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">PhoneBlock-Account erstellen</button>
 			</a>
 		  </div>
@@ -139,13 +139,13 @@
 
 					<li>
 						Trage den Benutzernamen <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>, den Du bei der
-						<a th:href="@{/login.jsp(location='/settings')}">Registrierung</a> erhalten hast, in das Feld 
+						<a th:href="@{/login(location='/settings')}">Registrierung</a> erhalten hast, in das Feld 
 						<i>Benutzername</i> ein. 
 					</li>
 
 					<li>
 						Das Passwort<th:block th:unless="${token}">, 
-						das Du bei der <a th:href="@{/login.jsp(location='/settings')}">Registrierung</a> erhalten 
+						das Du bei der <a th:href="@{/login(location='/settings')}">Registrierung</a> erhalten 
 						hast, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> muss Du jetzt noch in das Feld
 						<i>Passwort</i> eintragen werden.
 					</li>
@@ -215,7 +215,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Rufnummer sperren</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Rufnummer sperren</button></a>
 		  </div>
 		</div>
 	</div>

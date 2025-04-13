@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">إنشاء حساب "حظر الهاتف</button>
 			</a>
 		  </div>
@@ -94,7 +94,7 @@
 			<li data-tx="t0023">بعد ذلك يمكنك تحديد <span class="tag is-danger">3</span> الموفر <i>موفر بطاقة كارد ديف</i>.</li>
 
 			<li data-tx="t0024">أوشكت على الانتهاء، والآن بيانات تسجيل الدخول <span class="tag is-danger">4</span>. من الأفضل نقلها باستخدام القص واللصق لتجنب أخطاء الكتابة! <ul>
-					<li> أدخل عنوان URL الخاص بدفتر عناوين PhoneBlock في الحقل <i> عنوان الإنترنت لخادم CardDAV: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>  <li>  أدخل اسم المستخدم <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> الذي تلقيته أثناء <a th:href="@{/login.jsp(location='/settings')}">التسجيل في الحقل <i>اسم المستخدم. </i></a></li> <li> كلمة المرور <th:block th:unless="${token}"> التي تلقيتها أثناء <a th:href="@{/login.jsp(location='/settings')}"> التسجيل، ،  يجب الآن إدخال كلمة المرور <code id="passwd2" th:text="${token}">  </code></a></th:block></li></i></li>
+					<li> أدخل عنوان URL الخاص بدفتر عناوين PhoneBlock في الحقل <i> عنوان الإنترنت لخادم CardDAV: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>  <li>  أدخل اسم المستخدم <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> الذي تلقيته أثناء <a th:href="@{/login(location='/settings')}">التسجيل في الحقل <i>اسم المستخدم. </i></a></li> <li> كلمة المرور <th:block th:unless="${token}"> التي تلقيتها أثناء <a th:href="@{/login(location='/settings')}"> التسجيل، ،  يجب الآن إدخال كلمة المرور <code id="passwd2" th:text="${token}">  </code></a></th:block></li></i></li>
 
 					
 
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">حظر رقم الهاتف</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">حظر رقم الهاتف</button></a>
 		  </div>
 		</div>
 	</div>

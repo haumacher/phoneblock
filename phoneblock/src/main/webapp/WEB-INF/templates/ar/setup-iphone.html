@@ -14,7 +14,7 @@
 		<p data-tx="t0003">يتم التثبيت في الخطوات التالية:</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">قم بالتسجيل في PhoneBlock.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">قم بالتسجيل في PhoneBlock.</a></li>
    		<li data-tx="t0005">افتح "الإعدادات"&gt; "جهات الاتصال"&gt; "الحسابات".</li>
    		<li data-tx="t0006">اضغط على "إضافة حساب" - "أخرى"&gt; "إضافة حساب CardDAV".</li>
    		<li data-tx="t0007">أدخل بيانات الوصول الخاصة بك واضغط على "التالي". <dl>
@@ -24,7 +24,7 @@
 				<dt><b>اسم المستخدم</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">تسجيل الدخول</a> لرؤية اسم المستخدم الخاص بك.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">تسجيل الدخول</a> لرؤية اسم المستخدم الخاص بك.</span>
 				</dd>
 
 				<dt><b>كلمة المرور</b></dt>

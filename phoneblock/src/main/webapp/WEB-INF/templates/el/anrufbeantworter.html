@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Εγκατάσταση ως αυτόματος τηλεφωνητής</h1>
 		
-		<p data-tx="t0002">Το PhoneBlock σας προσφέρει έναν έξυπνο αυτόματο τηλεφωνητή που απαντά αυτόματα στην κλήση μόνο εάν ο αριθμός του καλούντος είναι καταχωρημένος στη βάση δεδομένων <a th:href="@{/status.jsp}">SPAM</a> του PhoneBlock. Ακριβώς όπως και για τη <a th:href="@{/setup.jsp}">ρύθμιση της λίστας αποκλεισμού</a>, δεν χρειάζεστε τη δική σας συσκευή ή υπολογιστή για αυτό. Δημιουργείτε έναν τηλεφωνητή PhoneBlock εδώ στον ιστότοπο και τον καταχωρείτε μέσω του Διαδικτύου στο Fritz!Box ή σε έναν άλλο δρομολογητή Διαδικτύου με δυνατότητα VOIP. Μπορείτε να μάθετε πώς ακριβώς λειτουργεί ο τηλεφωνητής PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">εδώ</a>.</p>
+		<p data-tx="t0002">Το PhoneBlock σας προσφέρει έναν έξυπνο αυτόματο τηλεφωνητή που απαντά αυτόματα στην κλήση μόνο εάν ο αριθμός του καλούντος είναι καταχωρημένος στη βάση δεδομένων <a th:href="@{/status}">SPAM</a> του PhoneBlock. Ακριβώς όπως και για τη <a th:href="@{/setup}">ρύθμιση της λίστας αποκλεισμού</a>, δεν χρειάζεστε τη δική σας συσκευή ή υπολογιστή για αυτό. Δημιουργείτε έναν τηλεφωνητή PhoneBlock εδώ στον ιστότοπο και τον καταχωρείτε μέσω του Διαδικτύου στο Fritz!Box ή σε έναν άλλο δρομολογητή Διαδικτύου με δυνατότητα VOIP. Μπορείτε να μάθετε πώς ακριβώς λειτουργεί ο τηλεφωνητής PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">εδώ</a>.</p>
 		
 		<p data-tx="t0003">Τα παρακάτω βήματα θα σας οδηγήσουν στον τηλεφωνητή σας PhoneBlock:</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

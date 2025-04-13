@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Installasjon som telefonsvarer</h1>
 		
-		<p data-tx="t0002">PhoneBlock tilbyr deg en intelligent telefonsvarer som automatisk bare besvarer anrop hvis nummeret til den som ringer er oppført i PhoneBlocks <a th:href="@{/status.jsp}">SPAM-database</a>. Akkurat som for <a th:href="@{/setup.jsp}">oppsett av blokkeringslisten</a>, trenger du ikke din egen enhet eller datamaskin for dette. Du oppretter en PhoneBlock-telefonsvarer her på nettstedet og registrerer den via Internett på din Fritz!Box eller en annen VOIP-kompatibel Internett-ruter. Du kan finne ut nøyaktig hvordan PhoneBlock-telefonsvareren fungerer <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">her</a>.</p>
+		<p data-tx="t0002">PhoneBlock tilbyr deg en intelligent telefonsvarer som automatisk bare besvarer anrop hvis nummeret til den som ringer er oppført i PhoneBlocks <a th:href="@{/status}">SPAM-database</a>. Akkurat som for <a th:href="@{/setup}">oppsett av blokkeringslisten</a>, trenger du ikke din egen enhet eller datamaskin for dette. Du oppretter en PhoneBlock-telefonsvarer her på nettstedet og registrerer den via Internett på din Fritz!Box eller en annen VOIP-kompatibel Internett-ruter. Du kan finne ut nøyaktig hvordan PhoneBlock-telefonsvareren fungerer <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">her</a>.</p>
 		
 		<p data-tx="t0003">Følgende trinn tar deg til PhoneBlock-telefonsvareren din:</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

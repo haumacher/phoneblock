@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Δημιουργία λογαριασμού PhoneBlock</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Σχεδόν τελειώσαμε, τώρα τα δεδομένα σύνδεσης <span class="tag is-danger">4</span>. Είναι καλύτερο να τα μεταφέρετε με Cut&amp;Paste για να αποφύγετε τα λάθη πληκτρολόγησης! <ul>
 					<li> Εισάγετε τη διεύθυνση URL του βιβλίου διευθύνσεων του PhoneBlock στο πεδίο <i>Διεύθυνση διαδικτύου του διακομιστή CardDAV</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Εισάγετε το όνομα χρήστη <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> που λάβατε κατά την <a th:href="@{/login.jsp(location='/settings')}">εγγραφή</a> στο πεδίο <i>Όνομα χρήστη</i>. </li>
+					<li> Εισάγετε το όνομα χρήστη <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a> στο πεδίο <i>Όνομα χρήστη</i>. </li>
 
-					<li>Ο κωδικός πρόσβασης<th:block th:unless="${token}"> που λάβατε κατά την <a th:href="@{/login.jsp(location='/settings')}">εγγραφή</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> πρέπει τώρα να εισαχθεί στο πεδίο <i>Κωδικός πρόσβασης</i>. </li>
+					<li>Ο κωδικός πρόσβασης<th:block th:unless="${token}"> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> πρέπει τώρα να εισαχθεί στο πεδίο <i>Κωδικός πρόσβασης</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Τώρα μπορείτε να επιβεβαιώσετε <span class="tag is-danger">5</span> τη δημιουργία του νέου τηλεφωνικού καταλόγου. Παρακαλούμε σημειώστε: Επιλέξτε <b>κανένα από τα τηλέφωνά σας</b> στην ενότητα "Ανάθεση τηλεφώνου"! Διαφορετικά, θα βρίσκετε μόνο τους καλούντες SPAM στις επαφές του τηλεφώνου σας.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Αποκλεισμός αριθμού τηλεφώνου</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Αποκλεισμός αριθμού τηλεφώνου</button></a>
 		  </div>
 		</div>
 	</div>

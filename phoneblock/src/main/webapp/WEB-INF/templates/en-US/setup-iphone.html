@@ -14,7 +14,7 @@
 		<p data-tx="t0003">The installation runs in the following steps:</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Register with PhoneBlock.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Register with PhoneBlock.</a></li>
    		<li data-tx="t0005">Open "Settings" &gt; "Contacts" &gt; "Accounts".</li>
    		<li data-tx="t0006">Tap on "Add account" - "Other" &gt; "Add CardDAV account".</li>
    		<li data-tx="t0007">Enter your access data and tap on "Next". <dl>
@@ -24,7 +24,7 @@
 				<dt><b>User name</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Log in</a> to see your user name.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log in</a> to see your user name.</span>
 				</dd>
 
 				<dt><b>Password</b></dt>

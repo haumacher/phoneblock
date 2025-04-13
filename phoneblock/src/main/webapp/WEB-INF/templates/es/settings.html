@@ -9,7 +9,7 @@
 	<div class="content">
 		<h1 data-tx="t0001">Ajustes</h1>
 		
-		<p data-tx="t0002">Para editar tu configuración personal, debes <a th:href="@{/login.jsp(location=${location})}">conectarte</a>.</p>
+		<p data-tx="t0002">Para editar tu configuración personal, debes <a th:href="@{/login(location=${location})}">conectarte</a>.</p>
 	</div>
 </section>
 
@@ -34,13 +34,13 @@
 				<div class="field">
 				  <label class="label" data-tx="t0007">Nombre de usuario</label>
 				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup.jsp}">llamar a la lista de bloqueo</a>.</p>
+				  <p class="help" data-tx="t0008">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup}">llamar a la lista de bloqueo</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">contraseña</label>
 				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">Debe utilizar esta contraseña para <a th:href="@{/setup.jsp}">configurar la agenda telefónica</a> o para iniciar sesión en este sitio web.</p>
+				  <p class="help" data-tx="t0010">Debe utilizar esta contraseña para <a th:href="@{/setup}">configurar la agenda telefónica</a> o para iniciar sesión en este sitio web.</p>
 				  <p class="help" data-tx="t0011">Anote la contraseña (o guárdela en un <a href="https://keepass.info/">gestor de contraseñas</a>), ya que sólo se mostrará hasta que cierre la sesión o ésta expire.</p>
 				</div>
 			  </div>
@@ -49,7 +49,7 @@
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Nombre de usuario</label>
 			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup.jsp}">recuperar la lista de bloqueo</a>. Su contraseña se mostró cuando se conectó por primera vez. Si ya no la recuerda, puede crear una <a href="#resetPassword">nueva contraseña</a> al final de esta página. Pero tenga cuidado: la contraseña antigua dejará de ser válida.</p>
+			  <p class="help" data-tx="t0013">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup}">recuperar la lista de bloqueo</a>. Su contraseña se mostró cuando se conectó por primera vez. Si ya no la recuerda, puede crear una <a href="#resetPassword">nueva contraseña</a> al final de esta página. Pero tenga cuidado: la contraseña antigua dejará de ser válida.</p>
 			</div>
 
 			<div class="field">
@@ -102,7 +102,7 @@
 			    <button class="button is-primary" data-tx="t0031" type="submit">Guardar</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings.jsp}">Descartar</a>
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">Descartar</a>
 			  </p>
 			</div>
 		</form>
@@ -256,7 +256,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Sus donaciones para el funcionamiento de PhoneBlock</h2>
 	
-	<p data-tx="t0059">Si has hecho una <a th:href="@{/support.jsp}">donación para el funcionamiento de PhoneBlock</a>, será listada aquí (después de algún tiempo). Para que esto funcione, estaría bien que incluyeras los primeros caracteres de tu nombre de usuario en el mensaje de transferencia, por ejemplo <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Lamentablemente, las contribuciones a través del programa de patrocinio de GitHub no se pueden incluir aquí.</p>
+	<p data-tx="t0059">Si has hecho una <a th:href="@{/support}">donación para el funcionamiento de PhoneBlock</a>, será listada aquí (después de algún tiempo). Para que esto funcione, estaría bien que incluyeras los primeros caracteres de tu nombre de usuario en el mensaje de transferencia, por ejemplo <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Lamentablemente, las contribuciones a través del programa de patrocinio de GitHub no se pueden incluir aquí.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">No se han encontrado donaciones.</p>
 	

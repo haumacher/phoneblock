@@ -16,7 +16,7 @@
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login.jsp(location='/setup')}">
+			<a th:href="@{/login(location='/setup')}">
 				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Een PhoneBlock-account aanmaken</button>
 			</a>
 		  </div>
@@ -96,9 +96,9 @@
 			<li data-tx="t0024">Bijna klaar, nu de aanmeldingsgegevens <span class="tag is-danger">4</span>. Je kunt ze het beste overzetten met Cut&amp;Paste om typefouten te voorkomen! <ul>
 					<li>Voer de URL van het PhoneBlock-adresboek in het veld <i>Internetadres van de CardDAV-server</i> in: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li>Voer de gebruikersnaam <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> in die u tijdens de <a th:href="@{/login.jsp(location='/settings')}">registratie</a> hebt ontvangen in het veld <i>Gebruikersnaam</i>. </li>
+					<li>Voer de gebruikersnaam <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block> in die u tijdens de <a th:href="@{/login(location='/settings')}">registratie</a> hebt ontvangen in het veld <i>Gebruikersnaam</i>. </li>
 
-					<li>Het wachtwoord<th:block th:unless="${token}"> dat u tijdens de <a th:href="@{/login.jsp(location='/settings')}">registratie</a> hebt ontvangen, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> moet nu worden ingevoerd in het veld <i>Wachtwoord</i>. </li>
+					<li>Het wachtwoord<th:block th:unless="${token}"> dat u tijdens de <a th:href="@{/login(location='/settings')}">registratie</a> hebt ontvangen, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> moet nu worden ingevoerd in het veld <i>Wachtwoord</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Nu kunt u <span class="tag is-danger">5</span> het aanmaken van het nieuwe telefoonboek bevestigen. Let op: Selecteer <b>geen van je telefoons</b> onder "Telefoontoewijzing"! Anders vind je alleen SPAM bellers in de contacten op je telefoon.</li>
@@ -144,7 +144,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block.jsp}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Telefoonnummer blokkeren</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Telefoonnummer blokkeren</button></a>
 		  </div>
 		</div>
 	</div>

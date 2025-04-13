@@ -14,7 +14,7 @@
 		<p data-tx="t0003">De installatie verloopt in de volgende stappen:</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Registreren bij PhoneBlock.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Registreren bij PhoneBlock.</a></li>
    		<li data-tx="t0005">Open "Instellingen" &gt; "Contacten" &gt; "Accounts".</li>
    		<li data-tx="t0006">Druk op "Account toevoegen" - "Andere" &gt; "CardDAV-account toevoegen".</li>
    		<li data-tx="t0007">Voer je toegangsgegevens in en tik op "Volgende". <dl>
@@ -24,7 +24,7 @@
 				<dt><b>Gebruikersnaam</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Log in</a> om uw gebruikersnaam te zien.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log in</a> om uw gebruikersnaam te zien.</span>
 				</dd>
 
 				<dt><b>Wachtwoord</b></dt>

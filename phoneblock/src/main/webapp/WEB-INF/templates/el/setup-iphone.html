@@ -14,7 +14,7 @@
 		<p data-tx="t0003">Η εγκατάσταση εκτελείται με τα ακόλουθα βήματα:</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Εγγραφείτε στο PhoneBlock.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Εγγραφείτε στο PhoneBlock.</a></li>
    		<li data-tx="t0005">Ανοίξτε τις "Ρυθμίσεις" &gt; "Επαφές" &gt; "Λογαριασμοί".</li>
    		<li data-tx="t0006">Πατήστε "Προσθήκη λογαριασμού" - "Άλλα" &gt; "Προσθήκη λογαριασμού CardDAV".</li>
    		<li data-tx="t0007">Εισάγετε τα δεδομένα πρόσβασης και πατήστε "Επόμενο". <dl>
@@ -24,7 +24,7 @@
 				<dt><b>Όνομα χρήστη</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Είσοδος</a> για να δείτε το όνομα χρήστη σας.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Είσοδος</a> για να δείτε το όνομα χρήστη σας.</span>
 				</dd>
 
 				<dt><b>Κωδικός πρόσβασης</b></dt>

@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Installazione come segreteria telefonica</h1>
 		
-		<p data-tx="t0002">PhoneBlock vi offre una segreteria telefonica intelligente che risponde automaticamente alla chiamata solo se il numero del chiamante è elencato nel database <a th:href="@{/status.jsp}">SPAM</a> di PhoneBlock. Come per l'<a th:href="@{/setup.jsp}">impostazione della lista di blocco</a>, non avete bisogno di un dispositivo o di un computer proprio per questo. Si crea una segreteria telefonica PhoneBlock qui sul sito web e la si registra via Internet sul Fritz!Box o su un altro router Internet con capacità VOIP. Potete scoprire esattamente come funziona la segreteria telefonica PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">qui</a>.</p>
+		<p data-tx="t0002">PhoneBlock vi offre una segreteria telefonica intelligente che risponde automaticamente alla chiamata solo se il numero del chiamante è elencato nel database <a th:href="@{/status}">SPAM</a> di PhoneBlock. Come per l'<a th:href="@{/setup}">impostazione della lista di blocco</a>, non avete bisogno di un dispositivo o di un computer proprio per questo. Si crea una segreteria telefonica PhoneBlock qui sul sito web e la si registra via Internet sul Fritz!Box o su un altro router Internet con capacità VOIP. Potete scoprire esattamente come funziona la segreteria telefonica PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">qui</a>.</p>
 		
 		<p data-tx="t0003">I passi seguenti vi condurranno alla vostra segreteria telefonica PhoneBlock:</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

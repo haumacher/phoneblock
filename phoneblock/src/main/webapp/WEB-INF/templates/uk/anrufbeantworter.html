@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Встановлення як автовідповідач</h1>
 		
-		<p data-tx="t0002">PhoneBlock пропонує вам інтелектуальний автовідповідач, який автоматично відповість на дзвінок, тільки якщо номер абонента внесено до <a th:href="@{/status.jsp}">Бази даних спаму</a> PhoneBlock. Як і для <a th:href="@{/setup.jsp}">налаштування списку блокування</a>, для цього вам не потрібен власний пристрій або комп'ютер. Ви створюєте автовідповідач PhoneBlock тут, на сайті, і реєструєте його через Інтернет на своєму Fritz!Box або іншому інтернет-маршрутизаторі з підтримкою VOIP. Про те, як саме працює автовідповідач PhoneBlock, ви можете дізнатися <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">тут</a>.</p>
+		<p data-tx="t0002">PhoneBlock пропонує вам інтелектуальний автовідповідач, який автоматично відповість на дзвінок, тільки якщо номер абонента внесено до <a th:href="@{/status}">Бази даних спаму</a> PhoneBlock. Як і для <a th:href="@{/setup}">налаштування списку блокування</a>, для цього вам не потрібен власний пристрій або комп'ютер. Ви створюєте автовідповідач PhoneBlock тут, на сайті, і реєструєте його через Інтернет на своєму Fritz!Box або іншому інтернет-маршрутизаторі з підтримкою VOIP. Про те, як саме працює автовідповідач PhoneBlock, ви можете дізнатися <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">тут</a>.</p>
 		
 		<p data-tx="t0003">Наступні кроки приведуть вас до автовідповідача PhoneBlock:</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

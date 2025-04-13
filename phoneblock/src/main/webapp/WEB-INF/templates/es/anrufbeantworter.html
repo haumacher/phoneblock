@@ -13,7 +13,7 @@
 	
 		<h1 data-tx="t0001">Instalación como contestador automático</h1>
 		
-		<p data-tx="t0002">PhoneBlock le ofrece un contestador inteligente que automáticamente sólo contesta la llamada si el número de la persona que llama aparece en la <a th:href="@{/status.jsp}">base de datos de SPAM</a> de PhoneBlock. Al igual que para la <a th:href="@{/setup.jsp}">configuración de la lista de bloqueo</a>, no necesita su propio dispositivo u ordenador para ello. Usted crea un contestador automático PhoneBlock aquí en el sitio web y lo registra a través de Internet en su Fritz!Box u otro router de Internet con capacidad VOIP. Puede saber exactamente cómo funciona el contestador automático PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">aquí</a>.</p>
+		<p data-tx="t0002">PhoneBlock le ofrece un contestador inteligente que automáticamente sólo contesta la llamada si el número de la persona que llama aparece en la <a th:href="@{/status}">base de datos de SPAM</a> de PhoneBlock. Al igual que para la <a th:href="@{/setup}">configuración de la lista de bloqueo</a>, no necesita su propio dispositivo u ordenador para ello. Usted crea un contestador automático PhoneBlock aquí en el sitio web y lo registra a través de Internet en su Fritz!Box u otro router de Internet con capacidad VOIP. Puede saber exactamente cómo funciona el contestador automático PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">aquí</a>.</p>
 		
 		<p data-tx="t0003">Los siguientes pasos le llevarán a su contestador automático PhoneBlock:</p>
 		
@@ -36,7 +36,7 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login.jsp(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>

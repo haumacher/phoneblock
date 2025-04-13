@@ -10,7 +10,7 @@
 		<h1 data-tx="t0001">Einstellungen</h1>
 		
 		<p data-tx="t0002">
-			Um deine persönlichen Einstellungen zu bearbeiten, musst Du Dich <a th:href="@{/login.jsp(location=${location})}">anmelden</a>.
+			Um deine persönlichen Einstellungen zu bearbeiten, musst Du Dich <a th:href="@{/login(location=${location})}">anmelden</a>.
 		</p>
 	</div>
 </section>
@@ -40,14 +40,14 @@
 				  <label class="label" data-tx="t0007">Benutzername</label>
 				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">
-				  	Diesen Wert musst du als Benutzernamen für den <a th:href="@{/setup.jsp}">Abruf der Blocklist</a> eintragen.
+				  	Diesen Wert musst du als Benutzernamen für den <a th:href="@{/setup}">Abruf der Blocklist</a> eintragen.
 				  </p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">Passwort</label>
 				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">Dieses Passwort musst Du für die <a th:href="@{/setup.jsp}">Einrichtung des Telefonbuchs</a> oder für die Anmeldung an dieser Webseite verwenden. </p>
+				  <p class="help" data-tx="t0010">Dieses Passwort musst Du für die <a th:href="@{/setup}">Einrichtung des Telefonbuchs</a> oder für die Anmeldung an dieser Webseite verwenden. </p>
 				  <p class="help" data-tx="t0011">
 				  	Bitte notiere Dir das Passwort (oder speichere es am besten in einem <a href="https://keepass.info/">Passwort-Manager</a>), 
 				  	denn es wird nur solange angezeigt bis Du Dich abmeldest, oder Deine Sitzung abläuft.
@@ -60,7 +60,7 @@
 			  <label class="label" data-tx="t0012">Benutzername</label>
 			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">
-			  	Diesen Wert musst du als Benutzernamen für den <a th:href="@{/setup.jsp}">Abruf der Blocklist</a> eintragen.
+			  	Diesen Wert musst du als Benutzernamen für den <a th:href="@{/setup}">Abruf der Blocklist</a> eintragen.
 			  	Dein Passwort wurde Dir bei Deiner ersten Anmeldung angezeigt. Wenn du dieses nicht mehr weißt, dann kannst Du unten auf dieser Seite
 			  	ein <a href="#resetPassword">neues Passwort erstellen lassen</a>. Aber Vorsicht: Das alte Passwort wird dadurch ungültig. 
 			  </p>
@@ -142,7 +142,7 @@
 			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings.jsp}">
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">
 			      Verwerfen
 			    </a>
 			  </p>
@@ -328,7 +328,7 @@
 	<h2 data-tx="t0058" id="sec-contributions">Deine Spenden für den Betrieb von PhoneBlock</h2>
 	
 	<p data-tx="t0059">
-		Wenn Du eine <a th:href="@{/support.jsp}">Spende für den Betrieb von PhoneBlock</a> gemacht hast, 
+		Wenn Du eine <a th:href="@{/support}">Spende für den Betrieb von PhoneBlock</a> gemacht hast, 
 		dann wird diese hier (nach einiger Zeit) aufgelistet. 
 		Damit das klappt, wäre es nett, wenn Du bei der Überweisungsnachricht die ersten paar Zeichen von Deinem Nutzernamen
 		mitschicken würdest, also z.B. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>.

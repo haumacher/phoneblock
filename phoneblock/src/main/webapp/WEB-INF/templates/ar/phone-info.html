@@ -35,11 +35,11 @@
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">رقم الهاتف مدرج في القائمة البيضاء ولا يمكن حظره بواسطة PhoneBlock. إذا كنت لا تزال تشعر بالمضايقة من هذا الرقم، يرجى إعداد حظر خاص لهذا الرقم.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">لم يتم تضمين رقم الهاتف في قاعدة بيانات <a th:href="@{/status.jsp}">PhoneBlock. لا يوجد حتى الآن أي أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>.</a></p>
-  	<p data-tx="t0037" th:case="'wildcard'">رقم الهاتف نفسه غير موجود في قاعدة بيانات <a th:href="@{/status.jsp}">PhoneBlock. ومع ذلك، فإن الرقم ☎ <code th:text="${info.phone}"></code> يأتي من كتلة أرقام يشتبه في أنها غير مرغوب فيها. <th:block th:if="${info.votesWildcard == 1}"> هناك تصويت لصالح حظر كتلة الأرقام. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> هناك <th:block th:text="${info.votesWildcard}"></th:block> أصوات مؤيدة لحظر كتلة الأرقام. </th:block></a></p>
+  	<p data-tx="t0036" th:case="'legitimate'">لم يتم تضمين رقم الهاتف في قاعدة بيانات <a th:href="@{/status}">PhoneBlock. لا يوجد حتى الآن أي أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>.</a></p>
+  	<p data-tx="t0037" th:case="'wildcard'">رقم الهاتف نفسه غير موجود في قاعدة بيانات <a th:href="@{/status}">PhoneBlock. ومع ذلك، فإن الرقم ☎ <code th:text="${info.phone}"></code> يأتي من كتلة أرقام يشتبه في أنها غير مرغوب فيها. <th:block th:if="${info.votesWildcard == 1}"> هناك تصويت لصالح حظر كتلة الأرقام. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> هناك <th:block th:text="${info.votesWildcard}"></th:block> أصوات مؤيدة لحظر كتلة الأرقام. </th:block></a></p>
   	<p data-tx="t0038" th:case="'suspicious'">يوجد بالفعل <th:block th:text="${info.votes}"></th:block> أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>. ومع ذلك، لم يتم حظر الرقم بعد.</p>  	
   	<p data-tx="t0039" th:case="'archived'">هناك <th:block th:text="${info.votes}"></th:block> أصوات قديمة تحدثت لصالح حجب ☎ <code th:text="${info.phone}"></code>. ومع ذلك، لم يعد الرقم محظورًا.</p>
-  	<p data-tx="t0040" th:case="'blocked'">رقم الهاتف ☎ <code th:text="${info.phone}"></code> هو مصدر متكرر للمكالمات الهاتفية غير المرغوب فيها <a th:href="@{/status.jsp}">. <th:block th:text="${info.votes}"></th:block> الأصوات المؤيدة لحظر الرقم.</a></p>
+  	<p data-tx="t0040" th:case="'blocked'">رقم الهاتف ☎ <code th:text="${info.phone}"></code> هو مصدر متكرر للمكالمات الهاتفية غير المرغوب فيها <a th:href="@{/status}">. <th:block th:text="${info.votes}"></th:block> الأصوات المؤيدة لحظر الرقم.</a></p>
   	</th:block>
 
 	<ul>
@@ -71,7 +71,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup.jsp}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
 				<span class="icon">
 					<i class="fa-solid fa-phone"></i>
 				</span>
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">شكرًا لك على تقييمك، فأنت تساعد الآخرين الذين يتم استدعاؤهم أيضًا.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">هل تم استدعاؤك من قبل ☎ <code><th:block th:text="${info.phone}"></th:block></code>؟ أخبر الآخرين بما يجب أن تتوقعه من ☎ <code><th:block th:text="${number.plus}"></th:block></code>. إذا كنت منزعجًا من المكالمات الواردة من ☎ <code><th:block th:text="${info.phone}"></th:block></code>، فقم بتثبيت PhoneBlock <a th:href="@{/setup.jsp}"> واترك تعليقًا لـ ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</a></p>
+	<p data-tx="t0024">هل تم استدعاؤك من قبل ☎ <code><th:block th:text="${info.phone}"></th:block></code>؟ أخبر الآخرين بما يجب أن تتوقعه من ☎ <code><th:block th:text="${number.plus}"></th:block></code>. إذا كنت منزعجًا من المكالمات الواردة من ☎ <code><th:block th:text="${info.phone}"></th:block></code>، فقم بتثبيت PhoneBlock <a th:href="@{/setup}"> واترك تعليقًا لـ ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</a></p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>
@@ -131,7 +131,7 @@
 		</p>
 		
 		<th:block th:unless="${userName}">		
-		<p data-tx="t0025">للتأكد من أن تقييمك له تأثير فوري على قائمة الحظر الخاصة بك، <a th:href="@{/login.jsp(location=${currentPage})}"> سجل الدخول أولاً</a>!</p>
+		<p data-tx="t0025">للتأكد من أن تقييمك له تأثير فوري على قائمة الحظر الخاصة بك، <a th:href="@{/login(location=${currentPage})}"> سجل الدخول أولاً</a>!</p>
 		
 		<p>
 			<label class="label" data-tx="t0041">رمز الأمان</label>

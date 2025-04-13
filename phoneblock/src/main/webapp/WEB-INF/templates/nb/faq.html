@@ -10,7 +10,7 @@
 		<h1 data-tx="t0001">Spørsmål og svar om PhoneBlock</h1>
 
 		<h2 data-tx="t0002">Er PhoneBlock gratis?</h2>
-		<p data-tx="t0003">Ja, du trenger for øyeblikket ikke å betale noe for å bruke PhoneBlock. Driften av PhoneBlock medfører imidlertid nå løpende kostnader for serverleie, internettilgang og domeneregistrering. For å dekke disse kostnadene ville det være fint om du kunne gi <b><a th:href="@{/support.jsp}">en liten donasjon</a></b>.</p>
+		<p data-tx="t0003">Ja, du trenger for øyeblikket ikke å betale noe for å bruke PhoneBlock. Driften av PhoneBlock medfører imidlertid nå løpende kostnader for serverleie, internettilgang og domeneregistrering. For å dekke disse kostnadene ville det være fint om du kunne gi <b><a th:href="@{/support}">en liten donasjon</a></b>.</p>
 		
 		<p data-tx="t0004">I lang tid kjørte PhoneBlock på en <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> på skrivebordet mitt og forårsaket derfor knapt noen ekstra kostnader (bortsett fra internettforbindelsen min og domeneregistreringen). Men på grunn av økende antall brukere og fremfor alt for å sikre bedre tilgjengelighet av tjenesten, har PhoneBlock nå flyttet til <a href="https://www.hetzner.com/">Hetzner Cloud</a> (serverplassering Falkenstein, Tyskland). Med <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">denne lenken vil du motta 20 € skykreditt fra Hetzner i gave</a> - og hvis du faktisk bruker den og betaler penger for den, vil PhoneBlock bli kreditert med de første 10 € du bruker som skykreditt.</p>
 
@@ -19,7 +19,7 @@
 		
 		<p data-tx="t0007">Du kan installere <a th:href="@{/anrufbeantworter/}">PhoneBlock-telefonsvareren</a> i en hvilken som helst VOIP-kompatibel Internett-ruter, selv om ruteren din ikke støtter CardDAV-protokollen for Internett-telefonkataloger.</p>
 		
-		<p data-tx="t0008">Med begge tilbudene kan du sette opp <a th:href="@{/setup.jsp}">blokkeringslisten som en Internett-telefonbok</a> i Fritz!Boxen din og blokkere numrene i denne telefonboken. PhoneBlock gir deg også muligheten til å tilpasse blokkeringslisten din, og er også gratis (se ovenfor).</p>
+		<p data-tx="t0008">Med begge tilbudene kan du sette opp <a th:href="@{/setup}">blokkeringslisten som en Internett-telefonbok</a> i Fritz!Boxen din og blokkere numrene i denne telefonboken. PhoneBlock gir deg også muligheten til å tilpasse blokkeringslisten din, og er også gratis (se ovenfor).</p>
 		
 		<p data-tx="t0009">Du kan selv legge til numre i din personlige blokkeringsliste, og du kan også ekskludere numre fra å bli blokkert (se også "Et nummer blokkeres ved en feil, hva gjør jeg?" nedenfor). Dette er interessant hvis PhoneBlock har lagt til et nummer i blokkeringslisten som du ønsker å bli oppringt av. For eksempel kan et nummer fra en Internett-leverandør lett havne på blokkeringslisten hvis mange føler seg irritert over oppringninger fra dette nummeret, men du venter på å bli oppringt. Dette forklares også veldig godt i denne <a target="_blank" th:href="@{/link/tellows-problems}">YouTube-videoen</a>. Med PhoneBlock kan du tilpasse blokkeringslisten din, numre som du selv har lagt til på den, vil forbli blokkert, og numre som du har lagt til på hvitelisten din, vil absolutt ikke bli blokkert.</p>
 
@@ -63,7 +63,7 @@
 		<p data-tx="t0032">Hvis du selv legger til et nummer i blokkeringslisten, vil anrop fra dette nummeret bli blokkert for deg umiddelbart. Andre abonnenter på PhoneBlock-blokklisten vil imidlertid ikke umiddelbart motta dette nummeret i blokklisten sin. Det nye nummeret vil først bli distribuert til alle abonnenter når minst tre abonnenter også har blokkert nummeret. De nøyaktige reglene for når et nummer legges til på blokklisten og når det fjernes fra den, er fortsatt under utarbeidelse. En ting er imidlertid sikkert: Et nummer som du selv har lagt til i sperrelisten, vil uansett forbli sperret for deg.</p>
 		
 		<h2 data-tx="t0033">Jeg mottar fortsatt spam-anrop til tross for PhoneBlock, hva kan jeg gjøre?</h2>
-		<p data-tx="t0034">Det kommer alltid nye spamnumre, så PhoneBlock kan ikke tilby 100 % beskyttelse. <a th:href="@{/block.jsp}">Legg til den nye uønskede innringeren i blokkeringslisten</a> og hjelp andre med å bli kvitt skadedyret raskt!</p>
+		<p data-tx="t0034">Det kommer alltid nye spamnumre, så PhoneBlock kan ikke tilby 100 % beskyttelse. <a th:href="@{/block}">Legg til den nye uønskede innringeren i blokkeringslisten</a> og hjelp andre med å bli kvitt skadedyret raskt!</p>
 
 		<h2 data-tx="t0035">Et nummer er blokkert ved en feil, hva skal jeg gjøre?</h2>
 		<p data-tx="t0036">Ikke noe problem, åpne <a th:href="@{/settings/#whitelist}">Dine innstillinger</a> og legg til nummeret i hvitelisten din. Hvitelisten din er en liste over telefonnumre som du har ekskludert fra blokkering. De havner aldri på blokkeringslisten din, selv om mange andre føler seg irritert av anrop fra dette nummeret og blokkerer dem.</p>
@@ -85,7 +85,7 @@
 		<p data-tx="t0046">Dette avgjøres av din Fritz!Box Hvis du ikke eksplisitt trykker på "Oppdater"-knappen i telefonboken for blokklisten, vil Fritz!Box boksen din velge et tidspunkt mellom 0 og 6 om morgenen for oppdateringen. AVM har gjort dette veldig smart, fordi det betyr at anropene fordeles relativt jevnt utover natten, og serverbelastningen forblir begrenset.</p>
 		
 		<h2 data-tx="t0047">Jeg synes PhoneBlock er flott, kan jeg gi en donasjon?</h2>
-		<p data-tx="t0048">Ja, hvis du liker PhoneBlock, er du velkommen til å gi en <a th:href="@{/support.jsp}">liten donasjon</a> til driftskostnadene for serverleie, domeneregistrering, internettilgang osv.</p>
+		<p data-tx="t0048">Ja, hvis du liker PhoneBlock, er du velkommen til å gi en <a th:href="@{/support}">liten donasjon</a> til driftskostnadene for serverleie, domeneregistrering, internettilgang osv.</p>
 		
 		<p data-tx="t0049">Men det er også viktig at PhoneBlock blir bedre kjent. Så hvis du ikke kan eller vil donere, så legg ut lenker til PhoneBlock-siden i fora, på FaceBook, i kommentarer til tidsskriftartikler, i bloggen din eller hvor du ellers synes det er passende. Bare hvis PhoneBlock sprer seg raskere, vil prosjektet ha en effekt mot den uhyrlige telefonterroren som herjer i det tyske telefonnettet.</p>
 
@@ -95,7 +95,7 @@
 		<h2 data-tx="t0052">Hvordan kan jeg avinstallere PhoneBlock igjen?</h2>
 		<p data-tx="t0053">Trenger du ikke lenger PhoneBlock eller er du ikke fornøyd med det? Synd, kanskje du kan <a target="_blank" th:href="@{/link/issues}">komme med et forslag til forbedring</a>?</p>
 		
-		<p data-tx="t0054">For å avinstallere, gjør du på samme måte som for installasjonen, bare baklengs. Avhengig av hvordan du installerte PhoneBlock (som <a th:href="@{/setup.jsp}">Telefonbok</a> eller som <a th:href="@{/anrufbeantworter/}">Telefonsvarer</a>, eller begge deler), må du slette de tilsvarende innstillingene. For telefonboken: Slett anropsblokkeringen (eller viderekoblingen) som gjelder for alle anrop fra PhoneBlock-telefonboken. Deretter kan du slette PhoneBlock-telefonboken. For telefonsvareren: Slett "PhoneBlock"-telefonienheten, og deaktiver deretter DynIP-frigjøringen (hvis du ikke har brukt en separat DynIP-tjeneste). Deretter bør du slette PhoneBlock-kontoen din i <a th:href="@{/settings/}">innstillinger</a>.</p>
+		<p data-tx="t0054">For å avinstallere, gjør du på samme måte som for installasjonen, bare baklengs. Avhengig av hvordan du installerte PhoneBlock (som <a th:href="@{/setup}">Telefonbok</a> eller som <a th:href="@{/anrufbeantworter/}">Telefonsvarer</a>, eller begge deler), må du slette de tilsvarende innstillingene. For telefonboken: Slett anropsblokkeringen (eller viderekoblingen) som gjelder for alle anrop fra PhoneBlock-telefonboken. Deretter kan du slette PhoneBlock-telefonboken. For telefonsvareren: Slett "PhoneBlock"-telefonienheten, og deaktiver deretter DynIP-frigjøringen (hvis du ikke har brukt en separat DynIP-tjeneste). Deretter bør du slette PhoneBlock-kontoen din i <a th:href="@{/settings/}">innstillinger</a>.</p>
 
 		<h2 data-tx="t0055">Spørsmålet mitt blir ikke besvart her, hvem kan hjelpe?</h2>
 		<p data-tx="t0056">Hvorfor skriver du ikke en kommentar på <a target="_blank" th:href="@{/link/facebook}">Facebook-siden til PhoneBlock</a>, så kan alle lese spørsmålet. Du er også velkommen til å sende meg en personlig melding via e-post: <code>Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code></p>

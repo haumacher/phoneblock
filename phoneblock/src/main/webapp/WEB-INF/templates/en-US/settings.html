@@ -9,7 +9,7 @@
 	<div class="content">
 		<h1 data-tx="t0001">Settings</h1>
 		
-		<p data-tx="t0002">To edit your personal settings, you must <a th:href="@{/login.jsp(location=${location})}">log in</a>.</p>
+		<p data-tx="t0002">To edit your personal settings, you must <a th:href="@{/login(location=${location})}">log in</a>.</p>
 	</div>
 </section>
 
@@ -34,13 +34,13 @@
 				<div class="field">
 				  <label class="label" data-tx="t0007">User name</label>
 				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">You must enter this value as the user name for <a th:href="@{/setup.jsp}">calling up the blocklist</a>.</p>
+				  <p class="help" data-tx="t0008">You must enter this value as the user name for <a th:href="@{/setup}">calling up the blocklist</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">password</label>
 				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">You must use this password to <a th:href="@{/setup.jsp}">set up the phone book</a> or to log in to this website.</p>
+				  <p class="help" data-tx="t0010">You must use this password to <a th:href="@{/setup}">set up the phone book</a> or to log in to this website.</p>
 				  <p class="help" data-tx="t0011">Please make a note of the password (or save it in a <a href="https://keepass.info/">password manager</a>), as it will only be displayed until you log out or your session expires.</p>
 				</div>
 			  </div>
@@ -49,7 +49,7 @@
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">User name</label>
 			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">You must enter this value as the user name for <a th:href="@{/setup.jsp}">retrieving the blocklist</a>. Your password was displayed when you first logged in. If you no longer remember it, you can create a <a href="#resetPassword">new password</a> at the bottom of this page. But be careful: the old password will become invalid.</p>
+			  <p class="help" data-tx="t0013">You must enter this value as the user name for <a th:href="@{/setup}">retrieving the blocklist</a>. Your password was displayed when you first logged in. If you no longer remember it, you can create a <a href="#resetPassword">new password</a> at the bottom of this page. But be careful: the old password will become invalid.</p>
 			</div>
 
 			<div class="field">
@@ -102,7 +102,7 @@
 			    <button class="button is-primary" data-tx="t0031" type="submit">Save</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings.jsp}">Discard</a>
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">Discard</a>
 			  </p>
 			</div>
 		</form>
@@ -256,7 +256,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Your donations for the operation of PhoneBlock</h2>
 	
-	<p data-tx="t0059">If you have made a <a th:href="@{/support.jsp}">donation for the operation of PhoneBlock</a>, it will be listed here (after some time). For this to work, it would be nice if you could include the first few characters of your username in the transfer message, e.g. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Unfortunately, contributions via the GitHub sponsor program cannot be listed here.</p>
+	<p data-tx="t0059">If you have made a <a th:href="@{/support}">donation for the operation of PhoneBlock</a>, it will be listed here (after some time). For this to work, it would be nice if you could include the first few characters of your username in the transfer message, e.g. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Unfortunately, contributions via the GitHub sponsor program cannot be listed here.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">No donations found.</p>
 	

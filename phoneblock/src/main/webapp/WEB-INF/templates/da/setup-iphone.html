@@ -14,7 +14,7 @@
 		<p data-tx="t0003">Installationen foregår i følgende trin:</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login.jsp(location=${currentPage})}">Registrer dig hos PhoneBlock.</a></li>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Registrer dig hos PhoneBlock.</a></li>
    		<li data-tx="t0005">Åbn "Indstillinger" &gt; "Kontakter" &gt; "Konti".</li>
    		<li data-tx="t0006">Tryk på "Tilføj konto" - "Andet" &gt; "Tilføj CardDAV-konto".</li>
    		<li data-tx="t0007">Indtast dine adgangsdata, og tryk på "Næste". <dl>
@@ -24,7 +24,7 @@
 				<dt><b>Brugernavn</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login.jsp(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
+				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
 				</dd>
 
 				<dt><b>Password</b></dt>
