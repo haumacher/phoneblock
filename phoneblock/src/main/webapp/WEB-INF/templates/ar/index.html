@@ -17,7 +17,7 @@
 
 		<div class="columns">
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
 			    <span class="icon">
 					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 			    </span>
@@ -33,7 +33,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
@@ -41,7 +41,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
 			    </span>
@@ -52,9 +52,9 @@
 
 		<h2 data-tx="t0007">كيف يعمل PhoneBlock PhoneBlock؟</h2>
 
-		<p data-tx="t0008">PhoneBlock عبارة عن قائمة يحتفظ بها مجتمع PhoneBlock لأرقام الهواتف التي يشتبه في كونها غير مرغوب فيها. ثم يقبل جهاز الرد الآلي <a th:href="@{/anrufbeantworter/}"> PhoneBlock المكالمات الواردة من المتصلين المدرجين في قائمة الحظر بحيث يبقى هاتفك صامتاً لهذه المكالمات.</a></p>
+		<p data-tx="t0008">PhoneBlock عبارة عن قائمة يحتفظ بها مجتمع PhoneBlock لأرقام الهواتف التي يشتبه في كونها غير مرغوب فيها. ثم يقبل جهاز الرد الآلي <a th:href="@{/anrufbeantworter}"> PhoneBlock المكالمات الواردة من المتصلين المدرجين في قائمة الحظر بحيث يبقى هاتفك صامتاً لهذه المكالمات.</a></p>
 		
-		<p data-tx="t0009">بدلاً من ذلك، يمكنك أيضًا استيراد القائمة السوداء كدفتر هاتف إلى جهاز توجيه الإنترنت "FRITZ!Box" الخاص بك وحظر المكالمات من الأرقام الموجودة في دفتر الهاتف الخاص هذا. لم تعد مضطرًا لحظر نطاقات الأرقام يدويًا، لأن جهاز "فريتز!بوكس" الخاص بك يقوم تلقائيًا بتحديث القائمة المحظورة كل ليلة. بمجرد إضافة رقم ما إلى هذه القائمة السوداء، يرفض جهاز FRITZ!Box تلقائيًا المتصلين بهذا الرقم. ومع ذلك، فإن <a th:href="@{/anrufbeantworter/}"> جهاز الرد الآلي  هو الحل الأفضل لأن دفتر الهاتف محدود الحجم ولا يمكنه استيعاب جميع الأرقام في قائمة الحظر.</a></p>
+		<p data-tx="t0009">بدلاً من ذلك، يمكنك أيضًا استيراد القائمة السوداء كدفتر هاتف إلى جهاز توجيه الإنترنت "FRITZ!Box" الخاص بك وحظر المكالمات من الأرقام الموجودة في دفتر الهاتف الخاص هذا. لم تعد مضطرًا لحظر نطاقات الأرقام يدويًا، لأن جهاز "فريتز!بوكس" الخاص بك يقوم تلقائيًا بتحديث القائمة المحظورة كل ليلة. بمجرد إضافة رقم ما إلى هذه القائمة السوداء، يرفض جهاز FRITZ!Box تلقائيًا المتصلين بهذا الرقم. ومع ذلك، فإن <a th:href="@{/anrufbeantworter}"> جهاز الرد الآلي  هو الحل الأفضل لأن دفتر الهاتف محدود الحجم ولا يمكنه استيعاب جميع الأرقام في قائمة الحظر.</a></p>
 
 		<p data-tx="t0010">إذا كنت لا تزال تتلقى مكالمة غير مرغوب فيها لأن الرقم لم تتم إضافته بعد إلى قائمة الحظر، يمكنك بسهولة حظر الرقم في فريتز! للقيام بذلك، قم بعمل إدخال للمتصل غير المرغوب فيه في دفتر عناوين PhoneBlock مباشرةً في فريتز! بمجرد قيامك بذلك، سيقوم فريتز بوكس الخاص بك بتحديث قائمة الحظر لجميع أعضاء مجتمع فون بلوك وسيتم حظر المكالمات من هذا الرقم الجديد على الفور أيضًا لأي شخص آخر. هذا يستغرق وقتًا أطول بقليل من حظر الرقم في فريتز! هاتفك مباشرة، ولكن لديه ميزة أنك تحمي مجتمع PhoneBlock بأكمله من <a th:href="@{/status}"> مكالمات أخرى غير مرغوب فيها.</a></p>
 
@@ -65,7 +65,7 @@
 			</a>
 		</div>
 		
-		<p data-tx="t0012">يمكن ل PhoneBlock حظر المكالمات غير المرغوب فيها إما على <a th:href="@{/setup}"> "الخط الأرضي"  بالاقتران مع <a th:href="@{/link/fritzbox}"> "FRITZ!Box" جهاز توجيه الإنترنت من AVM</a>، أو عرض مباشرةً على <a th:href="@{/setup-android/}"> هاتفك المحمول  ما إذا كان المتصل غير مرغوب فيه.</a></a></p>
+		<p data-tx="t0012">يمكن ل PhoneBlock حظر المكالمات غير المرغوب فيها إما على <a th:href="@{/setup}"> "الخط الأرضي"  بالاقتران مع <a th:href="@{/link/fritzbox}"> "FRITZ!Box" جهاز توجيه الإنترنت من AVM</a>، أو عرض مباشرةً على <a th:href="@{/setup-android}"> هاتفك المحمول  ما إذا كان المتصل غير مرغوب فيه.</a></a></p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">

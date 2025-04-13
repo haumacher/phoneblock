@@ -12,7 +12,7 @@
 <th:block th:unless="${token}">
 		<p data-tx="t0002">Per installare la blocklist, è necessario un router Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" di AVM</a> e un account PhoneBlock. Non deve essere necessariamente l'ultimo modello, ma dovreste controllare che su di esso sia installato l'ultimo FRITZ!OS (07.29 o più recente). In caso contrario, utilizzate le seguenti istruzioni di installazione per verificare se la vostra versione offre già le opzioni necessarie.</p>
 		
-		<p data-tx="t0003">Nota: a causa delle limitazioni tecniche del Fritz!Box, l'intero elenco di blocco non può essere caricato in una rubrica telefonica. Pertanto, l'impostazione di una segreteria telefonica <a th:href="@{/anrufbeantworter/}">Block</a> offre una migliore protezione contro le chiamate SPAM.</p>
+		<p data-tx="t0003">Nota: a causa delle limitazioni tecniche del Fritz!Box, l'intero elenco di blocco non può essere caricato in una rubrica telefonica. Pertanto, l'impostazione di una segreteria telefonica <a th:href="@{/anrufbeantworter}">Block</a> offre una migliore protezione contro le chiamate SPAM.</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">

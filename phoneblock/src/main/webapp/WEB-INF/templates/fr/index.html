@@ -17,7 +17,7 @@
 
 		<div class="columns">
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
 			    <span class="icon">
 					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 			    </span>
@@ -33,7 +33,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
@@ -41,7 +41,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
 			    </span>
@@ -52,9 +52,9 @@
 
 		<h2 data-tx="t0007">Comment fonctionne PhoneBlock ?</h2>
 
-		<p data-tx="t0008">PhoneBlock est une liste de numéros de téléphone suspectés d'être des spams, gérée par la communauté PhoneBlock. Le répondeur <a th:href="@{/anrufbeantworter/}">PhoneBlock</a> accepte alors les appels des personnes figurant sur la liste de blocage, de sorte que ton téléphone reste muet lors de ces appels.</p>
+		<p data-tx="t0008">PhoneBlock est une liste de numéros de téléphone suspectés d'être des spams, gérée par la communauté PhoneBlock. Le répondeur <a th:href="@{/anrufbeantworter}">PhoneBlock</a> accepte alors les appels des personnes figurant sur la liste de blocage, de sorte que ton téléphone reste muet lors de ces appels.</p>
 		
-		<p data-tx="t0009">Tu peux aussi importer la liste de blocage comme annuaire téléphonique dans ton routeur Internet "FRITZ!Box" et bloquer les appels des numéros de cet <a th:href="@{/setup}">annuaire spécial</a>. Tu n'as plus besoin de bloquer manuellement des plages de numéros, car ta Fritz!Box actualise automatiquement la liste de blocage chaque nuit. Dès qu'un numéro est ajouté à cette liste de blocage, ta FRITZ!Box rejette automatiquement les appelants portant ce numéro. Le <a th:href="@{/anrufbeantworter/}">répondeur</a> est toutefois la meilleure solution, car un annuaire téléphonique est limité en taille et ne peut pas contenir tous les numéros de la liste de blocage.</p>
+		<p data-tx="t0009">Tu peux aussi importer la liste de blocage comme annuaire téléphonique dans ton routeur Internet "FRITZ!Box" et bloquer les appels des numéros de cet <a th:href="@{/setup}">annuaire spécial</a>. Tu n'as plus besoin de bloquer manuellement des plages de numéros, car ta Fritz!Box actualise automatiquement la liste de blocage chaque nuit. Dès qu'un numéro est ajouté à cette liste de blocage, ta FRITZ!Box rejette automatiquement les appelants portant ce numéro. Le <a th:href="@{/anrufbeantworter}">répondeur</a> est toutefois la meilleure solution, car un annuaire téléphonique est limité en taille et ne peut pas contenir tous les numéros de la liste de blocage.</p>
 
 		<p data-tx="t0010">Si tu reçois quand même un appel indésirable parce que le numéro n'est pas encore inscrit dans la liste des numéros bloqués, tu peux facilement bloquer le <a th:href="@{/block}">numéro dans ta FRITZ!Box</a>. Pour cela, tu crées une entrée pour l'appelant indésirable dans le carnet d'adresses PhoneBlock directement dans ta Fritz!Box. Dès que tu as fait cela, ta FrizBox met à jour la liste de blocage pour tous les membres de la communauté PhoneBlock et les appels provenant de ce nouveau numéro sont immédiatement refusés par tous les autres. C'est certes un peu plus compliqué que de bloquer directement le numéro dans ton Fritz!BoxPhone, mais cela a l'avantage de protéger toute la communauté PhoneBlock contre <a th:href="@{/status}">d'autres appels de spam</a>.</p>
 
@@ -65,7 +65,7 @@
 			</a>
 		</div>
 		
-		<p data-tx="t0012">PhoneBlock peut soit bloquer les appels indésirables sur la <a th:href="@{/setup}">"ligne fixe"</a> en combinaison avec un <a th:href="@{/link/fritzbox}">"routeur Internet FRITZ!Box" d'AVM</a>, soit indiquer directement sur ton <a th:href="@{/setup-android/}">téléphone mobile</a> si un appelant est potentiellement indésirable.</p>
+		<p data-tx="t0012">PhoneBlock peut soit bloquer les appels indésirables sur la <a th:href="@{/setup}">"ligne fixe"</a> en combinaison avec un <a th:href="@{/link/fritzbox}">"routeur Internet FRITZ!Box" d'AVM</a>, soit indiquer directement sur ton <a th:href="@{/setup-android}">téléphone mobile</a> si un appelant est potentiellement indésirable.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">

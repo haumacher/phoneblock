@@ -12,7 +12,7 @@
 <th:block th:unless="${token}">
 		<p data-tx="t0002">To install the blocklist, you need a <a th:href="@{/link/fritzbox}">"FRITZ!Box" Internet router from AVM</a> and a PhoneBlock account. It does not necessarily have to be the latest model, but you should check whether the latest FRITZ!OS is installed on it (07.29 or newer). If this is not the case, use the following installation instructions to check whether your version already offers the necessary options.</p>
 		
-		<p data-tx="t0003">Note: Due to technical limitations of the Fritz!Box, the entire block list cannot be loaded into a phone book. Therefore, setting up a <a th:href="@{/anrufbeantworter/}">PhoneBlock answering machine</a> offers better protection against SPAM calls.</p>
+		<p data-tx="t0003">Note: Due to technical limitations of the Fritz!Box, the entire block list cannot be loaded into a phone book. Therefore, setting up a <a th:href="@{/anrufbeantworter}">PhoneBlock answering machine</a> offers better protection against SPAM calls.</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">

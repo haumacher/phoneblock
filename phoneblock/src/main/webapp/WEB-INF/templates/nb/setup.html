@@ -12,7 +12,7 @@
 <th:block th:unless="${token}">
 		<p data-tx="t0002">For å installere blokkeringslisten trenger du en <a th:href="@{/link/fritzbox}">"FRITZ!Box" Internett-ruter fra AVM</a> og en PhoneBlock-konto. Det trenger ikke nødvendigvis å være den nyeste modellen, men du bør sjekke om det nyeste FRITZ!OS er installert på den (07.29 eller nyere). Hvis dette ikke er tilfelle, kan du bruke følgende installasjonsinstruksjoner for å sjekke om din versjon allerede tilbyr de nødvendige alternativene.</p>
 		
-		<p data-tx="t0003">Merk: På grunn av tekniske begrensninger i Fritz!Box kan ikke hele blokkeringslisten lastes inn i en telefonbok. Derfor gir det bedre beskyttelse mot SPAM-anrop å sette opp en <a th:href="@{/anrufbeantworter/}">PhoneBlock-telefonsvarer</a>.</p>
+		<p data-tx="t0003">Merk: På grunn av tekniske begrensninger i Fritz!Box kan ikke hele blokkeringslisten lastes inn i en telefonbok. Derfor gir det bedre beskyttelse mot SPAM-anrop å sette opp en <a th:href="@{/anrufbeantworter}">PhoneBlock-telefonsvarer</a>.</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">

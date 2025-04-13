@@ -97,10 +97,10 @@
 				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Instalacja</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">Automatyczna sekretarka</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Automatyczna sekretarka</a>
 					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Książka telefoniczna z blokadą</a>
-					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">Android</a>
-					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
 				</div>
 			</div>
 
@@ -113,7 +113,7 @@
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Przekaż darowiznę na rzecz PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">API dla deweloperów</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API dla deweloperów</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">Projekt GitHub</a>
 					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Dodaj blokadę połączeń</a>
 					
@@ -169,7 +169,7 @@
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-primary">
 				<p class="title" data-tx="t0034">PhoneBlock dla Androida</p>
 				<p class="subtitle" data-tx="t0035">Jeszcze nie zainstalowany? Więc do dzieła!</p>
@@ -218,7 +218,7 @@
 		</div>
 	
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-info">
 				<p class="title" data-tx="t0052">PhoneBlock dla Androida</p>
 				<p class="subtitle" data-tx="t0053">Jeszcze nie zainstalowany? Więc do dzieła!</p>

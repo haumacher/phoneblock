@@ -97,10 +97,10 @@
 				<a class="navbar-link prevent-default" data-tx="t0003" href="#">安装</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">答录机</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">答录机</a>
 					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklist 电话簿</a>
-					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">安卓</a>
-					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">安卓</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
 				</div>
 			</div>
 
@@ -113,7 +113,7 @@
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">为 PhoneBlock 捐款</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">面向开发人员的应用程序接口</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">面向开发人员的应用程序接口</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub 项目</a>
 					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">添加呼叫限制</a>
 					
@@ -169,7 +169,7 @@
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-primary">
 				<p class="title" data-tx="t0034">安卓版 PhoneBlock</p>
 				<p class="subtitle" data-tx="t0035">还没安装？那就安装吧！</p>
@@ -218,7 +218,7 @@
 		</div>
 	
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-info">
 				<p class="title" data-tx="t0052">安卓版 PhoneBlock</p>
 				<p class="subtitle" data-tx="t0053">还没安装？那就安装吧！</p>

@@ -12,7 +12,7 @@
 <th:block th:unless="${token}">
 		<p data-tx="t0002">Pour installer la liste de blocage, tu as besoin d'un routeur Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" d'AVM</a> et d'un compte PhoneBlock. Il ne doit pas nécessairement s'agir du modèle le plus récent, mais tu devrais vérifier si le FRITZ!OS actuel y est installé (07.29 ou plus récent). Si ce n'est pas le cas, vérifie à l'aide des instructions d'installation suivantes si ta version propose déjà les options nécessaires.</p>
 		
-		<p data-tx="t0003">Attention : en raison de limitations techniques de la Fritz!Box, il n'est pas possible de charger la totalité de la liste de blocage dans un annuaire téléphonique. C'est pourquoi la mise en place d'un <a th:href="@{/anrufbeantworter/}">répondeur téléphonique</a> offre une meilleure protection contre les appels SPAM.</p>
+		<p data-tx="t0003">Attention : en raison de limitations techniques de la Fritz!Box, il n'est pas possible de charger la totalité de la liste de blocage dans un annuaire téléphonique. C'est pourquoi la mise en place d'un <a th:href="@{/anrufbeantworter}">répondeur téléphonique</a> offre une meilleure protection contre les appels SPAM.</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">

@@ -15,9 +15,9 @@
 		<p data-tx="t0004">Under en lång tid kördes PhoneBlock på en <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> på mitt skrivbord och orsakade därför knappast några extra kostnader (förutom min internetanslutning och domänregistrering). Men på grund av det ökande antalet användare och framför allt för att säkerställa bättre tillgänglighet till tjänsten har PhoneBlock nu flyttat till <a href="https://www.hetzner.com/">Hetzner Cloud</a> (serverplats Falkenstein, Tyskland). Med <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">den här länken får du 20 € molnkredit från Hetzner som en gåva</a> - och om du faktiskt använder den och betalar pengar för den, kommer PhoneBlock att krediteras med de första 10 € du spenderar som molnkredit.</p>
 
 		<h2 data-tx="t0005">Vad är skillnaden mellan PhoneBlock och "<a target="_blank" th:href="@{/link/tellows}">tellows do not disturb</a>"?</h2>
-		<p data-tx="t0006"><a th:href="@{/anrufbeantworter/}">PhoneBlocks telefonsvarare</a> känner inte av någon storleksgräns för den svartlistade telefonboken. Den accepterar samtalet för alla nummer på blockeringslistan. Det är inte nödvändigt att uppdatera blockeringslistan i Fritz!Box varje kväll, blockeringslistan är alltid uppdaterad.</p>
+		<p data-tx="t0006"><a th:href="@{/anrufbeantworter}">PhoneBlocks telefonsvarare</a> känner inte av någon storleksgräns för den svartlistade telefonboken. Den accepterar samtalet för alla nummer på blockeringslistan. Det är inte nödvändigt att uppdatera blockeringslistan i Fritz!Box varje kväll, blockeringslistan är alltid uppdaterad.</p>
 		
-		<p data-tx="t0007">Du kan installera <a th:href="@{/anrufbeantworter/}">PhoneBlock telefonsvarare</a> i alla VOIP-kompatibla Internet-routrar, även om din router inte stöder CardDAV-protokollet för Internet-telefonkataloger.</p>
+		<p data-tx="t0007">Du kan installera <a th:href="@{/anrufbeantworter}">PhoneBlock telefonsvarare</a> i alla VOIP-kompatibla Internet-routrar, även om din router inte stöder CardDAV-protokollet för Internet-telefonkataloger.</p>
 		
 		<p data-tx="t0008">Med båda erbjudandena kan du ställa in <a th:href="@{/setup}">blocklistan som en Internettelefonbok</a> i din Fritz!Box och blockera numren i denna telefonbok. PhoneBlock ger dig också möjlighet att anpassa din blockeringslista och är också kostnadsfritt (se ovan).</p>
 		
@@ -26,23 +26,23 @@
 		<h2 data-tx="t0010">Min Fritz!Box-box har ännu inte stöd för CardDAV, kan jag ändå använda PhoneBlock?</h2>
 		<p data-tx="t0011">Ja, det finns två möjligheter:</p>
 		<ol>
-		<li data-tx="t0012">Använd PhoneBlocks telefonsvarare (för närvarande fortfarande i betatestning) istället för telefonboken. Du registrerar PhoneBlocks telefonsvarare i din Fritz!Box som en Internettelefon och den svarar alltid när ett SPAM-nummer ringer, så snabbt att din telefon inte ringer eller bara ringer mycket kort. PhoneBlocks telefonsvarare är för närvarande endast tillgänglig på ett testsystem som kräver en separat registrering: <a th:href="@{/anrufbeantworter/}">Till testsystemet för telefonsvarare</a>. Om du lyckades installera telefonsvararen - eller om du hade problem med att göra det - får du gärna meddela oss så att det nya verktyget kan bli allmänt tillgängligt så snart som möjligt.</li>
+		<li data-tx="t0012">Använd PhoneBlocks telefonsvarare (för närvarande fortfarande i betatestning) istället för telefonboken. Du registrerar PhoneBlocks telefonsvarare i din Fritz!Box som en Internettelefon och den svarar alltid när ett SPAM-nummer ringer, så snabbt att din telefon inte ringer eller bara ringer mycket kort. PhoneBlocks telefonsvarare är för närvarande endast tillgänglig på ett testsystem som kräver en separat registrering: <a th:href="@{/anrufbeantworter}">Till testsystemet för telefonsvarare</a>. Om du lyckades installera telefonsvararen - eller om du hade problem med att göra det - får du gärna meddela oss så att det nya verktyget kan bli allmänt tillgängligt så snart som möjligt.</li>
 		<li data-tx="t0013">Använd verktyget <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a> för att ladda blocklistan i din Fritz!Box Du behöver dock en dator som du kan installera programmet på. SpamBlockUp kan också använda PhoneBlock-blocklistan och ladda den i din Fritz!Box För mer information, vänligen kontakta författaren till detta program. PhoneBlock är inte relaterat till SpamBlockUp.</li>
 		</ol>
 
 		<h2 data-tx="t0014">Jag har ingen Fritz!Box-box, kan jag ändå använda PhoneBlock?</h2>
 		
-		<p data-tx="t0015">Du kan installera <a th:href="@{/anrufbeantworter/}">PhoneBlocks telefonsvarare</a> i alla VOIP-kompatibla Internet-routrar, även om din router inte stöder CardDAV-protokollet för Internettelefonböcker. Installera telefonsvararen som en vanlig VOIP-telefon som loggar in på din box via Internet.</p>
+		<p data-tx="t0015">Du kan installera <a th:href="@{/anrufbeantworter}">PhoneBlocks telefonsvarare</a> i alla VOIP-kompatibla Internet-routrar, även om din router inte stöder CardDAV-protokollet för Internettelefonböcker. Installera telefonsvararen som en vanlig VOIP-telefon som loggar in på din box via Internet.</p>
 		
 		<p data-tx="t0016">För att kunna importera blocklistan som en telefonbok måste din Internetrouter/telefonsystem kunna prenumerera på en telefonbok via protokollet <code>CardDAV</code> och automatiskt avvisa alla samtal från ett nummer i en viss telefonbok (eller vidarebefordra dem till telefonsvararen). För att ta reda på om detta är möjligt med din telefonanläggning, se bruksanvisningen eller fråga din telefonoperatör. Om du har lyckats installera blocklistan i en annan router, vänligen meddela oss så att installationsanvisningarna kan anpassas.</p>
 
 		<h2 data-tx="t0017">Kan jag använda PhoneBlock på en Android-mobiltelefon?</h2>
 		<p data-tx="t0018">Ja, du har till och med två alternativ här: (a) prenumerera på PhoneBlock-adressboken, eller (b) konfigurera SpamBlocker och integrera PhoneBlock-databasen där.</p>
-		<p data-tx="t0019">Om du prenumererar på <a th:href="@{/setup-android/}">PhoneBlocks adressbok</a> kan du direkt i samtalet se om det är värt att svara på samtalet eller ringa tillbaka om du missar ett samtal. Det är dock inte möjligt att avvisa spam-samtal direkt.</p>
+		<p data-tx="t0019">Om du prenumererar på <a th:href="@{/setup-android}">PhoneBlocks adressbok</a> kan du direkt i samtalet se om det är värt att svara på samtalet eller ringa tillbaka om du missar ett samtal. Det är dock inte möjligt att avvisa spam-samtal direkt.</p>
 		<p data-tx="t0020">Om du installerar <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a> kan du integrera PhoneBlock-databasen där. SpamBlocker kan sedan jämföra numret med PhoneBlock-databasen när ett samtal tas emot och avvisa samtalet direkt om det är en matchning. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> är en oberoende app, vänligen kontakta utvecklaren direkt om du har några problem med den.</p>
 		
 		<h2 data-tx="t0021">Kan jag använda PhoneBlock på en iPhone?</h2>
-		<p data-tx="t0022">Ja, med iPhone kan du till och med göra detta utan att installera några ytterligare appar. Ta en titt på <a th:href="@{/setup-iphone/}">installationsanvisningarna</a> här.</p>
+		<p data-tx="t0022">Ja, med iPhone kan du till och med göra detta utan att installera några ytterligare appar. Ta en titt på <a th:href="@{/setup-iphone}">installationsanvisningarna</a> här.</p>
 
 		<h2 data-tx="t0023" id="Error26">Min FritzBox! rapporterar "Fel 26" under installationen</h2>
 		
@@ -95,7 +95,7 @@
 		<h2 data-tx="t0052">Hur kan jag avinstallera PhoneBlock igen?</h2>
 		<p data-tx="t0053">Behöver du inte längre PhoneBlock eller är du inte nöjd med det? Synd, kanske kan du <a target="_blank" th:href="@{/link/issues}">komma med ett förslag till förbättring</a>?</p>
 		
-		<p data-tx="t0054">För att avinstallera gör du på samma sätt som vid installationen, fast baklänges. Beroende på hur du installerade PhoneBlock (som <a th:href="@{/setup}">Telefonbok</a> eller som <a th:href="@{/anrufbeantworter/}">Svarare</a>, eller båda) måste du radera motsvarande inställningar. För telefonboken: Ta bort den samtalsspärr (eller vidarekoppling) som gäller för alla samtal från PhoneBlock-telefonboken. Därefter kan du radera PhoneBlock-telefonboken. För telefonsvararen: Ta bort telefonapparaten "PhoneBlock" och avaktivera sedan DynIP-versionen (om du inte har använt en separat DynIP-tjänst). Du bör sedan ta bort ditt PhoneBlock-konto i <a th:href="@{/settings/}">inställningar</a>.</p>
+		<p data-tx="t0054">För att avinstallera gör du på samma sätt som vid installationen, fast baklänges. Beroende på hur du installerade PhoneBlock (som <a th:href="@{/setup}">Telefonbok</a> eller som <a th:href="@{/anrufbeantworter}">Svarare</a>, eller båda) måste du radera motsvarande inställningar. För telefonboken: Ta bort den samtalsspärr (eller vidarekoppling) som gäller för alla samtal från PhoneBlock-telefonboken. Därefter kan du radera PhoneBlock-telefonboken. För telefonsvararen: Ta bort telefonapparaten "PhoneBlock" och avaktivera sedan DynIP-versionen (om du inte har använt en separat DynIP-tjänst). Du bör sedan ta bort ditt PhoneBlock-konto i <a th:href="@{/settings/}">inställningar</a>.</p>
 
 		<h2 data-tx="t0055">Min fråga besvaras inte här, vem kan hjälpa till?</h2>
 		<p data-tx="t0056">Varför skriver du inte en kommentar på <a target="_blank" th:href="@{/link/facebook}">Facebook-sidan för PhoneBlock</a>, så kan alla läsa frågan. Du är också välkommen att skicka ett personligt meddelande till mig via e-post: <code>Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code></p>

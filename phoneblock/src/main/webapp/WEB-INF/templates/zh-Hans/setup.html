@@ -12,7 +12,7 @@
 <th:block th:unless="${token}">
 		<p data-tx="t0002">要安装拦截列表，您需要一个来自 AVM 的 <a th:href="@{/link/fritzbox}">"FRITZ!Box" 互联网路由器</a>和一个 PhoneBlock 帐户。路由器不一定是最新型号，但您应检查路由器上是否安装了最新的 FRITZ！OS（07.29 或更新版本）。如果没有，请使用以下安装说明检查您的版本是否已提供必要的选项。</p>
 		
-		<p data-tx="t0003">注意：由于 Fritz!Box 的技术限制，无法将整个拦截列表加载到电话簿中。因此，设置 <a th:href="@{/anrufbeantworter/}">PhoneBlock 应答机</a> 可以更好地防止垃圾邮件电话。</p>
+		<p data-tx="t0003">注意：由于 Fritz!Box 的技术限制，无法将整个拦截列表加载到电话簿中。因此，设置 <a th:href="@{/anrufbeantworter}">PhoneBlock 应答机</a> 可以更好地防止垃圾邮件电话。</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">

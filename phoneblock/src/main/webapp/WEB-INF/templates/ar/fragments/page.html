@@ -97,10 +97,10 @@
 				<a class="navbar-link prevent-default" data-tx="t0003" href="#">التركيب</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">جهاز الرد الآلي</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">جهاز الرد الآلي</a>
 					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">دليل هاتف بلوك ليست</a>
-					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">أندرويد</a>
-					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">آيفون</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">أندرويد</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">آيفون</a>
 				</div>
 			</div>
 
@@ -113,7 +113,7 @@
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">تبرع إلى PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">واجهة برمجة تطبيقات للمطورين</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">واجهة برمجة تطبيقات للمطورين</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">مشروع GitHub</a>
 					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">إضافة حظر المكالمات</a>
 					
@@ -169,7 +169,7 @@
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-primary">
 				<p class="title" data-tx="t0034">فون بلوك للأندرويد</p>
 				<p class="subtitle" data-tx="t0035">لم يتم تثبيته بعد؟ إذاً قم بذلك!</p>
@@ -218,7 +218,7 @@
 		</div>
 	
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-info">
 				<p class="title" data-tx="t0052">فون بلوك للأندرويد</p>
 				<p class="subtitle" data-tx="t0053">لم يتم تثبيته بعد؟ إذاً قم بذلك!</p>

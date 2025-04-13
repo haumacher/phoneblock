@@ -17,7 +17,7 @@
 
 		<div class="columns">
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
 			    <span class="icon">
 					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 			    </span>
@@ -33,7 +33,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
@@ -41,7 +41,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
 			    </span>
@@ -52,9 +52,9 @@
 
 		<h2 data-tx="t0007">PhoneBlock 如何工作？</h2>
 
-		<p data-tx="t0008">PhoneBlock 是由 PhoneBlock 社区维护的一份涉嫌垃圾邮件的电话号码列表。<a th:href="@{/anrufbeantworter/}">PhoneBlock应答机</a>会接受来自阻止列表上的来电者的呼叫，因此您的电话在接到这些呼叫时会保持静音。</p>
+		<p data-tx="t0008">PhoneBlock 是由 PhoneBlock 社区维护的一份涉嫌垃圾邮件的电话号码列表。<a th:href="@{/anrufbeantworter}">PhoneBlock应答机</a>会接受来自阻止列表上的来电者的呼叫，因此您的电话在接到这些呼叫时会保持静音。</p>
 		
-		<p data-tx="t0009">或者，您也可以将黑名单作为电话簿导入 "FRITZ！Box "互联网路由器，并阻止来自<a th:href="@{/setup}">专用电话簿</a>中号码的呼叫。您不必再手动阻止号码范围，因为您的 "Fritz！Box "每晚都会自动更新阻止列表。一旦某个号码被添加到黑名单中，FRITZ！Box 就会自动拒绝该号码的来电。不过，<a th:href="@{/anrufbeantworter/}">应答机</a>是更好的解决方案，因为电话簿的容量有限，无法容纳阻止列表中的所有号码。</p>
+		<p data-tx="t0009">或者，您也可以将黑名单作为电话簿导入 "FRITZ！Box "互联网路由器，并阻止来自<a th:href="@{/setup}">专用电话簿</a>中号码的呼叫。您不必再手动阻止号码范围，因为您的 "Fritz！Box "每晚都会自动更新阻止列表。一旦某个号码被添加到黑名单中，FRITZ！Box 就会自动拒绝该号码的来电。不过，<a th:href="@{/anrufbeantworter}">应答机</a>是更好的解决方案，因为电话簿的容量有限，无法容纳阻止列表中的所有号码。</p>
 
 		<p data-tx="t0010">如果由于该号码尚未添加到拦截列表中而仍然收到骚扰电话，您可以在 FRITZ！Box 中轻松拦截该<a th:href="@{/block}">号码</a>。为此，请直接在您的 Fritz 中的 PhoneBlock 通讯录中为不受欢迎的来电者创建一个条目！一旦您这样做了，您的FrizBox就会更新PhoneBlock社区所有成员的拦截列表，来自这个新号码的来电也会立即被拦截。这比直接在您的Fritz！Phone中封堵该号码要费时一些，但其优点是您可以保护整个PhoneBlock社区免受<a th:href="@{/status}">更多垃圾电话的骚扰</a>。</p>
 
@@ -65,7 +65,7 @@
 			</a>
 		</div>
 		
-		<p data-tx="t0012">PhoneBlock 可以与 AVM 的 <a th:href="@{/link/fritzbox}">"FRITZ!Box" 互联网路由器</a>结合使用，在 <a th:href="@{/setup}">"座机"</a>上阻止骚扰电话，或者直接在您的 <a th:href="@{/setup-android/}">移动电话</a>上显示来电者是否可能是骚扰电话。</p>
+		<p data-tx="t0012">PhoneBlock 可以与 AVM 的 <a th:href="@{/link/fritzbox}">"FRITZ!Box" 互联网路由器</a>结合使用，在 <a th:href="@{/setup}">"座机"</a>上阻止骚扰电话，或者直接在您的 <a th:href="@{/setup-android}">移动电话</a>上显示来电者是否可能是骚扰电话。</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">

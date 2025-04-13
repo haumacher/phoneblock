@@ -24,7 +24,7 @@
 
 		<div class="columns">
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
 			    <span class="icon">
 					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 			    </span>
@@ -40,7 +40,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android/}">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
 			    <span class="icon">
 					<i class="fa-solid fa-mobile-screen"></i>
 			    </span>
@@ -48,7 +48,7 @@
 			</a>
 		  </div>
 		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone/}">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
 			    <span class="icon">
 					<i class="fa-brands fa-apple"></i>
 			    </span>
@@ -62,7 +62,7 @@
 		<p data-tx="t0008">
 			PhoneBlock ist eine von der PhoneBlock-Community gepflegte
 			Liste mit Telefonnummern, die unter Spamverdacht stehen. 
-			Der <a th:href="@{/anrufbeantworter/}">PhoneBlock-Anrufbeantworter</a>
+			Der <a th:href="@{/anrufbeantworter}">PhoneBlock-Anrufbeantworter</a>
 			nimmt dann Gespräche von Anrufern auf der Sperrliste an, so dass Dein Telefon 
 			bei diesen Anrufen stumm bleibt. 
 		</p>
@@ -74,7 +74,7 @@
 			Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
 			aktualisiert die Sperrliste jede Nacht automatisch. Sobald eine Nummer in diese Sperrliste
 			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
-			automatisch ab. Der <a th:href="@{/anrufbeantworter/}">Anrufbeantworter</a> ist allerdings die 
+			automatisch ab. Der <a th:href="@{/anrufbeantworter}">Anrufbeantworter</a> ist allerdings die 
 			bessere Lösung, weil ein Telefonbuch in der Größe beschränkt ist und nicht alle Nummern der Blockliste aufnehmen kann.
 		</p>
 
@@ -101,7 +101,7 @@
 		<p data-tx="t0012">
 			PhoneBlock kann unerwünschte Anrufe entweder am <a th:href="@{/setup}">"Festnetzanschluss"</a> in
 			Zusammenspiel mit einem <a th:href="@{/link/fritzbox}">"FRITZ!Box"
-			Internetrouter von AVM</a> blockieren, oder auf Deinem <a th:href="@{/setup-android/}">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
+			Internetrouter von AVM</a> blockieren, oder auf Deinem <a th:href="@{/setup-android}">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
 		</p>
 		
 		<div class="columns">

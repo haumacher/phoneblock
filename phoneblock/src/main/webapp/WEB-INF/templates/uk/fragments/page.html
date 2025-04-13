@@ -97,10 +97,10 @@
 				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Встановлення</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter/}">Автовідповідач</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Автовідповідач</a>
 					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Блокування телефонної книги</a>
-					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android/}">Android</a>
-					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone/}">iPhone</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
 				</div>
 			</div>
 
@@ -113,7 +113,7 @@
 				<div class="navbar-dropdown">
 					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Пожертвувати на PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api/}">API для розробників</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API для розробників</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">Проект GitHub</a>
 					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Додати заборону дзвінків</a>
 					
@@ -169,7 +169,7 @@
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-primary">
 				<p class="title" data-tx="t0034">PhoneBlock для Android</p>
 				<p class="subtitle" data-tx="t0035">Ще не встановили? Тоді вперед!</p>
@@ -218,7 +218,7 @@
 		</div>
 	
 		<div class="cell">
-			<a class="card" th:href="@{/setup-android/}">
+			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-info">
 				<p class="title" data-tx="t0052">PhoneBlock для Android</p>
 				<p class="subtitle" data-tx="t0053">Ще не встановили? Тоді вперед!</p>
