@@ -58,7 +58,7 @@ public abstract class LoginFilter implements Filter {
 			if (session != null) {
 				String userName = LoginFilter.getAuthenticatedUser(session);
 				if (userName != null) {
-					req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
+					setRequestUser(req, userName);
 					chain.doFilter(request, response);
 					return;
 				}
@@ -76,7 +76,7 @@ public abstract class LoginFilter implements Filter {
 						AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), true);
 						if (authorization != null && checkTokenAuthorization(req, authorization)) {
 							String userName = authorization.getUserName();
-							LOG.info("Accepted login token for user {}.", userName);
+							LOG.info("Accepted login token for user {} accessing '{}'.", userName, req.getServletPath());
 							
 							setUser(req, userName);
 							
@@ -88,9 +88,9 @@ public abstract class LoginFilter implements Filter {
 							return;
 						} else {
 							if (authorization == null) {
-								LOG.info("Dropping outdated login cookie: {}", token);
+								LOG.info("Dropping outdated login cookie accessing '{}': {}", req.getServletPath(), token);
 							} else {
-								LOG.info("Login not allowed with cookie: {}", token);
+								LOG.info("Login not allowed with cookie accessing '{}': {}", req.getServletPath(), token);
 							}
 							removeLoginCookie(req, resp);
 						}
@@ -166,7 +166,7 @@ public abstract class LoginFilter implements Filter {
 	}
 	
 	/**
-	 * Sets or updats a cookie with a login token.
+	 * Sets or updates a cookie with a login token.
 	 */
 	public static void setLoginCookie(HttpServletRequest req, HttpServletResponse resp, AuthToken authorization) {
 		Cookie loginCookie = new Cookie(LOGIN_COOKIE, authorization.getToken());
@@ -234,13 +234,17 @@ public abstract class LoginFilter implements Filter {
 	 */
 	public static void setSessionUser(HttpServletRequest req, String userName) {
 		setRequestUser(req, userName);
-		req.getSession().setAttribute(AUTHENTICATED_USER_ATTR, userName);
+		setSessionUser(req.getSession(), userName);
+	}
+
+	private static void setSessionUser(HttpSession session, String userName) {
+		session.setAttribute(AUTHENTICATED_USER_ATTR, userName);
 		
 		DB db = DBService.getInstance();
 		try (SqlSession tx = db.openSession()) {
 			Users users = tx.getMapper(Users.class);
 			String lang = users.getLocale(userName);
-			req.getSession().setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
+			session.setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
 		}
 	}
 
