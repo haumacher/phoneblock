@@ -14,17 +14,17 @@
 		<ol>
 		<li data-tx="t0003">
 			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: 
-			<code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.
+			<code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.
 		</li>
 			
 		<li data-tx="t0004">
 			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a th:href="@{/login(location=${currentPage})}">PhoneBlock-Anmeldung</a> erhalten 
-			hast<th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0002" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.
+			hast<th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.
 		</li>
 			
 		<li data-tx="t0005">
 			Das Passwort wurde dir nach der ersten Anmeldung 
-			angezeigt<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.
+			angezeigt<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.
 		</li>
 		</ol>
 		
@@ -35,10 +35,10 @@
 
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img alt="Adressbuch hinzufügen" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>
+	  			<img alt="Adressbuch hinzufügen" class="image appscreen" data-tx="t0012" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>
 	  		</div>
 			<div class="column is-two-fifths">
-	  			<img alt="Adressbuch hinzufügen" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>
+	  			<img alt="Adressbuch hinzufügen" class="image appscreen" data-tx="t0013" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>
 	  		</div>
 		</div>
 		

@@ -12,21 +12,21 @@
 		<h2 data-tx="t0002">Trin 4: Tilføj en adressebog, og indtast PhoneBlock-kontodataene</h2>
 		
 		<ol>
-		<li data-tx="t0003">Vælg indstillingen "Log ind med URL og brugernavn", og indtast adressen på PhoneBlock-adressebogen som "Base URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0001" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Vælg indstillingen "Log ind med URL og brugernavn", og indtast adressen på PhoneBlock-adressebogen som "Base URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">For "Brugernavn" skal du indtaste det brugernavn, som du modtog ved <a th:href="@{/login(location=${currentPage})}">PhoneBlock-registrering</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0002" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">For "Brugernavn" skal du indtaste det brugernavn, som du modtog ved <a th:href="@{/login(location=${currentPage})}">PhoneBlock-registrering</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">Adgangskoden blev vist til dig efter det første login<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0003" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">Adgangskoden blev vist til dig efter det første login<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">Har du ikke længere dine login-oplysninger ved hånden? Det gør ikke noget, du skal bare logge ind og <a th:href="@{/login(location='/settings')}">genindstille adgangskoden</a> i indstillingerne.</p>
 
 		<div class="columns">
 			<div class="column is-two-fifths">
-	  			<img alt="Tilføj adressebog" class="image appscreen" data-tx="t0001" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>Android-installation
+	  			<img alt="Tilføj adressebog" class="image appscreen" data-tx="t0012" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>
 	  		</div>
 			<div class="column is-two-fifths">
-	  			<img alt="Tilføj adressebog" class="image appscreen" data-tx="t0002" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>Trin 4: Tilføj en adressebog, og indtast PhoneBlock-kontodataene
+	  			<img alt="Tilføj adressebog" class="image appscreen" data-tx="t0013" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>
 	  		</div>
 		</div>
 		
