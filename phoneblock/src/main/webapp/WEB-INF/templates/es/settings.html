@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> Resumir números con "*"</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Resumir números con "*"</label>
 			  <p class="help" data-tx="t0030">Si selecciona esta opción, los números vecinos de su lista de bloqueo se combinarán en un solo número con un comodín ("*"). Muchos spammers profesionales tienen una conexión multidispositivo y utilizan un bloque entero de números como remitentes. Con esta opción, todos estos números se bloquean automáticamente y su lista de bloqueo puede incluir más números de spam. Fritz!Box admite guías telefónicas con números comodín y bloquea todo el rango de números especificado. Sin embargo, es posible que no pueda utilizar números comodín en otros dispositivos.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Observación de uso</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Uso para..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Uso para..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">Aquí puede introducir una nota sobre para qué ha generado la clave API, por ejemplo, "SpamBlocker en el teléfono móvil de la abuela".</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">Ha bloqueado explícitamente estos números. Puedes cancelar un bloqueo accidental aquí:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Añadir excepción</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nueva excepción" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nueva excepción" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">Puede introducir aquí uno o varios números de teléfono, separados por comas, en cualquier formato: 07041-123456789, +49171123456789, 0034 123456789</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Remitente</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">En caso de transferencia bancaria, el nombre del titular de la cuenta que ha efectuado la transferencia. Indique también a continuación la fecha de la transferencia.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">fecha</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">La fecha de la transferencia bancaria. Indique también el nombre completo del titular de la cuenta que ha efectuado la transferencia.</p>
 		</div>

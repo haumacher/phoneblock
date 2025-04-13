@@ -124,7 +124,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029">
-			    <input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input>
+			    <input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/>
 				Nummern mit "*" zusammenfassen
 			  </label>
 			  <p class="help" data-tx="t0030">Wenn Du dies Option auswählst, werden in Deiner Blocklist nebeneinander liegende Nummern 
@@ -178,7 +178,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -211,7 +211,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Bemerkung für Verwendung</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Nutzung für..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Nutzung für..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">
 	  Du kannst hier eine Hinweis eingeben, wofür Du den API-Key erzeugt hast, z.B. "SpamBlocker auf Omas Handy.".
@@ -247,7 +247,7 @@
 	<p data-tx="t0048">Diese Nummern hast Du explizit gesperrt. Eine versehentlich eingetragene Sperre kannst Du hier aufheben:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -280,7 +280,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -302,7 +302,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Ausnahme hinzufügen</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Neue Ausnahme" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Neue Ausnahme" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">
@@ -378,7 +378,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Absender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">
@@ -390,7 +390,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">Datum</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">
 			  Das Datum der Banküberweisung. Bitte gib auch oben noch den vollständigen Namen des Kontoinhabers an, der die Überweisung getätigt hat.

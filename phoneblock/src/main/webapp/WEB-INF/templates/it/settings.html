@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> Riassumere i numeri con "*".</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Riassumere i numeri con "*".</label>
 			  <p class="help" data-tx="t0030">Se si seleziona questa opzione, i numeri vicini nella blocklist verranno combinati in un unico numero con un carattere jolly ("*"). Molti spammer professionisti dispongono di una connessione a più dispositivi e utilizzano un intero blocco di numeri come mittenti. Con questa opzione, tutti questi numeri vengono automaticamente bloccati e la vostra blocklist può includere più numeri di spam. Fritz!Box supporta le rubriche telefoniche con numeri jolly e blocca l'intero intervallo di numeri specificato. Tuttavia, su altri dispositivi potrebbe non essere possibile utilizzare i numeri jolly.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Nota per l'uso</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Utilizzare per..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Utilizzare per..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">Qui è possibile inserire una nota sul motivo per cui è stata generata la chiave API, ad esempio "SpamBlocker sul cellulare della nonna".</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">Avete bloccato esplicitamente questi numeri. È possibile annullare un blocco accidentale qui:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Aggiungi eccezione</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nuova eccezione" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nuova eccezione" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">È possibile inserire qui uno o più numeri di telefono, separati da virgole, in qualsiasi formato: 07041-123456789, +49171123456789, 0034 123456789</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Mittente</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">In caso di bonifico bancario, il nome del titolare del conto che ha effettuato il bonifico. Indicare anche la data del bonifico.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">data</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">La data del bonifico. Indicare anche il nome completo del titolare del conto che ha effettuato il bonifico.</p>
 		</div>

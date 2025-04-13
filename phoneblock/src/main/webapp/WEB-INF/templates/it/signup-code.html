@@ -24,10 +24,10 @@
 					<div class="field">
 					  <label class="label" data-tx="t0005">Codice</label>
 					  <div class="control has-icons-left has-icons-right">
-					    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
-					    <input name="rememberMe" th:if="${rememberMe}" th:value="${rememberMe}" type="hidden"></input>
+					    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+					    <input name="rememberMe" th:if="${rememberMe}" th:value="${rememberMe}" type="hidden"/>
 
-					    <input data-tx="t0001" name="code" placeholder="Codice di conferma" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value="">Inserire il codice</input>
+					    <input data-tx="t0001" name="code" placeholder="Codice di conferma" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value=""/>Inserire il codice
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-barcode"></i>
 					    </span>

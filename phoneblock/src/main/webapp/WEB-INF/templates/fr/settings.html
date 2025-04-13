@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> Combiner les numéros avec "*".</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Combiner les numéros avec "*".</label>
 			  <p class="help" data-tx="t0030">Si tu sélectionnes cette option, les numéros adjacents dans ta liste de blocage seront regroupés en un seul numéro avec un joker ("*"). De nombreux spammeurs professionnels ont une connexion multi-appareils et utilisent tout un bloc de numéros comme expéditeur. Avec cette option, tous ces numéros sont automatiquement bloqués et ta liste de blocage peut accueillir davantage de numéros de spam. La Fritz!Box supporte les répertoires téléphoniques avec des numéros Wildcard et bloque alors toute la plage de numéros indiquée. Cependant, sur d'autres appareils, il se peut que tu ne puisses pas utiliser les numéros Wildcard.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Remarque sur l'utilisation</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Utilisation pour..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Utilisation pour..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">Tu peux entrer ici une indication de l'usage que tu as fait de la clé API, par exemple "SpamBlocker sur le téléphone de grand-mère".</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">Tu as explicitement bloqué ces numéros. Tu peux annuler ici un blocage accidentel :</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Ajouter une exception</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nouvelle exception" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nouvelle exception" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">Tu peux saisir ici un ou plusieurs numéros de téléphone, séparés par une virgule, dans n'importe quel format : 07041-123456789, +49171123456789, 0034 123456789</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Expéditeur</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">Dans le cas d'un virement bancaire, le nom du titulaire du compte qui a effectué le virement. Merci d'indiquer également la date du virement ci-dessous.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">Date</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">La date du virement bancaire. Veuillez également indiquer ci-dessus le nom complet du titulaire du compte qui a effectué le virement.</p>
 		</div>

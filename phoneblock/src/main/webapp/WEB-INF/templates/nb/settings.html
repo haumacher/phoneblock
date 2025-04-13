@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> Oppsummer tall med "*"</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Oppsummer tall med "*"</label>
 			  <p class="help" data-tx="t0030">Hvis du velger dette alternativet, vil nabonumre i blokkeringslisten kombineres til ett nummer med et jokertegn ("*"). Mange profesjonelle spammere har en tilkobling med flere enheter og bruker en hel blokk med numre som avsendere. Med dette alternativet blir alle disse numrene automatisk blokkert, og blokkeringslisten din kan inneholde flere spamnumre. Fritz!Box støtter telefonbøker med jokertegn og blokkerer deretter hele det angitte nummerområdet. Det er imidlertid ikke sikkert at du kan bruke jokernumre på andre enheter.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Merknad for bruk</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Brukes til..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Brukes til..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">Her kan du skrive inn en merknad om hva du genererte API-nøkkelen for, for eksempel "SpamBlocker på bestemors mobiltelefon.".</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">Du har eksplisitt blokkert disse numrene. Du kan oppheve en utilsiktet blokkering her:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Legg til unntak</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nytt unntak" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nytt unntak" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">Her kan du skrive inn ett eller flere telefonnumre, atskilt med komma, i hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Avsender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">Ved bankoverføring, navnet på kontoinnehaveren som foretok overføringen. Oppgi også datoen for overføringen nedenfor.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">dato</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">Datoen for bankoverføringen. Oppgi også det fulle navnet på kontoinnehaveren som foretok overføringen ovenfor.</p>
 		</div>

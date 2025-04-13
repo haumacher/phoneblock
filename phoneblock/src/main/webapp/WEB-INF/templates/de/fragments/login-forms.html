@@ -13,13 +13,13 @@
 	  		<div class="content">
 				<form method="get" th:action="@{/oauth/login}">
 
-			    <input name="force_client" th:value="${googleClient}" type="hidden"></input>
-			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+			    <input name="force_client" th:value="${googleClient}" type="hidden"/>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 	
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
 					  <span data-tx="t0002">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
@@ -60,11 +60,11 @@
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
 	  		<div class="content">
-			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 				<div class="field">
 					<label class="label" data-tx="t0007">E-Mail</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0020" name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"></input>
+					    <input data-tx="t0020" name="email" placeholder="Deine E-Mail-Adresse" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
@@ -78,10 +78,10 @@
 				<div>
 					<label class="label" data-tx="t0019">Sicherheitscode</label>
 
-					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"></img>
+					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"/>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0022" name="captcha" placeholder="Text im Bild oben" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"></input>
+					    <input data-tx="t0022" name="captcha" placeholder="Text im Bild oben" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>
@@ -95,7 +95,7 @@
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
 					  <span data-tx="t0008">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>
@@ -138,10 +138,10 @@
 			<div class="panel-block">
 	  		<div class="content">
 				<form method="post" th:action="${contextPath} + ${loginAction}">
-			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"></input>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" data-tx="t0023" placeholder="Benutzername" th:name="${userNameParam}" type="text"></input>
+				    <input class="input" data-tx="t0023" placeholder="Benutzername" th:name="${userNameParam}" type="text"/>
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -153,7 +153,7 @@
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" data-tx="t0024" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"></input>
+				    <input class="input" data-tx="t0024" placeholder="PhoneBlock-Passwort" th:name="${passwordParam}" type="password"/>
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
@@ -168,7 +168,7 @@
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
-					  <input th:name="${rememberParam}" type="checkbox" value="true"></input>
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
 					  <span data-tx="t0016">Auf diesem Gerät angemeldet bleiben (setzt ein <a th:href="@{/datenschutz.jsp}">Cookie</a>)</span>
 					</label>
 				  </div>

@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> Nummers samenvatten met "*"</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Nummers samenvatten met "*"</label>
 			  <p class="help" data-tx="t0030">Als je deze optie selecteert, worden naburige nummers in je blokkadelijst gecombineerd tot één nummer met een jokerteken ("*"). Veel professionele spammers hebben een verbinding met meerdere apparaten en gebruiken een heel blok nummers als afzenders. Met deze optie worden al deze nummers automatisch geblokkeerd en kan je blocklist meer spamnummers bevatten. De Fritz!Box ondersteunt telefoonboeken met wildcardnummers en blokkeert dan het hele opgegeven nummerbereik. Het is echter mogelijk dat je wildcardnummers niet kunt gebruiken op andere apparaten.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Opmerking voor gebruik</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Te gebruiken voor..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Te gebruiken voor..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">Je kunt hier een opmerking invoeren over waar je de API-sleutel voor hebt gegenereerd, bijvoorbeeld "SpamBlocker op oma's mobiele telefoon.".</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Uitzondering toevoegen</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nieuwe uitzondering" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nieuwe uitzondering" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">Je kunt hier een of meer telefoonnummers invoeren, gescheiden door komma's, in elk formaat: 07041-123456789, +49171123456789, 0034 123456789</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Afzender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">In het geval van een bankoverschrijving, de naam van de rekeninghouder die de overschrijving heeft gedaan. Vermeld hieronder ook de datum van de overschrijving.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">datum</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">De datum van de overschrijving. Vul hierboven ook de volledige naam in van de rekeninghouder die de overschrijving heeft gedaan.</p>
 		</div>

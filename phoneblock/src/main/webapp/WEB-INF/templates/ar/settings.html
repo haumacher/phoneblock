@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> تلخيص الأرقام بـ "*"</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> تلخيص الأرقام بـ "*"</label>
 			  <p class="help" data-tx="t0030">إذا قمت بتحديد هذا الخيار، سيتم دمج الأرقام المتجاورة في قائمة الحظر الخاصة بك في رقم واحد مع حرف بدل ("*"). العديد من مرسلي البريد العشوائي المحترفين لديهم اتصال متعدد الأجهزة ويستخدمون كتلة كاملة من الأرقام كمرسلين. باستخدام هذا الخيار، يتم حظر جميع هذه الأرقام تلقائيًا ويمكن أن تتضمن قائمة الحظر الخاصة بك المزيد من الأرقام غير المرغوب فيها. يدعم Fritz!Box دفاتر الهواتف التي تحتوي على أرقام أحرف البدل ومن ثم يحظر نطاق الأرقام المحددة بالكامل. ومع ذلك، قد لا تتمكن من استخدام أرقام أحرف البدل على أجهزة أخرى.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">ملاحظة للاستخدام</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="يُستخدم لـ..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="يُستخدم لـ..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">يمكنك إدخال ملاحظة هنا حول الغرض الذي أنشأت مفتاح واجهة برمجة التطبيقات من أجله، على سبيل المثال "مانع البريد العشوائي على هاتف الجدة المحمول."</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">لقد قمت بحظر هذه الأرقام بشكل صريح. يمكنك إلغاء الحظر العرضي هنا:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">إضافة استثناء</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="استثناء جديد" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="استثناء جديد" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">يمكنك إدخال رقم هاتف واحد أو أكثر هنا، مفصولة بفواصل، بأي صيغة: 07041-123456789، +49171123456789، 0034 123456789</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">المرسل</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="ماكس موسترمان" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="ماكس موسترمان" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">في حالة التحويل المصرفي، يُرجى ذكر اسم صاحب الحساب الذي قام بالتحويل. يرجى أيضاً ذكر تاريخ التحويل أدناه.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">التاريخ</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">تاريخ التحويل المصرفي. يرجى أيضاً إدخال الاسم الكامل لصاحب الحساب الذي قام بالتحويل أعلاه.</p>
 		</div>

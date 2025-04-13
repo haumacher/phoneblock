@@ -3,7 +3,7 @@
 
 <head>
 <th:block th:replace="~{fragments/page :: headContent(title=#{page.api.title})}"></th:block>
-<link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|"></link>
+<link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|"/>
 </head>
 
 <body>
@@ -14,7 +14,7 @@
 
 <script th:src="|${contextPath}${deps.swagger}/swagger-ui-bundle.js|"></script>
 <script th:src="@{/assets/js/api.js}" type="text/javascript"></script>
-<input id="context-path" th:value="${contextPath}" type="hidden"></input>
+<input id="context-path" th:value="${contextPath}" type="hidden"/>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

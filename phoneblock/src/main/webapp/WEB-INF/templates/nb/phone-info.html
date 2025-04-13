@@ -65,7 +65,7 @@
 		  <div class="column is-one-quarter">
 			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter/}">
 				<span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"></img>
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 				</span>
 				<span data-tx="t0016">Telefonsvarer</span>			
 			</a>
@@ -114,11 +114,11 @@
 	<p data-tx="t0024">Har du blitt oppringt av ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Fortell andre hva de kan forvente fra ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Hvis du er plaget av anrop fra ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup.jsp}">installer PhoneBlock</a> og legg igjen en anmeldelse for ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
-		<input name="phone" th:value="${info.phone}" type="hidden"></input>
+		<input name="phone" th:value="${info.phone}" type="hidden"/>
 		
 		<div class="buttons">
 		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">
-		  		<input name="rating" th:checked="${#strings.equals(rating.name, enteredRating)}" th:value="${rating}" type="radio"></input>
+		  		<input name="rating" th:checked="${#strings.equals(rating.name, enteredRating)}" th:value="${rating}" type="radio"/>
 				<span class="icon">
 					<i th:class="${rating.iconClass}"></i>
 				</span>
@@ -136,10 +136,10 @@
 		<p>
 			<label class="label" data-tx="t0041">Sikkerhetskode</label>
 
-			<img alt="Captcha" data-tx="t0043" th:src="${captchaSrc}"></img>
+			<img alt="Captcha" data-tx="t0043" th:src="${captchaSrc}"/>
 
 			<div class="control has-icons-left has-icons-right">
-			    <input class="input" data-tx="t0044" name="captcha" placeholder="Tekst i bildet over" type="text"></input>
+			    <input class="input" data-tx="t0044" name="captcha" placeholder="Tekst i bildet over" type="text"/>
  
 			    <span class="icon is-small is-left">
 			      <i class="fa-solid fa-key"></i>
@@ -228,7 +228,7 @@
 	
 	<th:block th:each="comment,commentIt : ${comments}">
 	
-	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"></input>
+	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"/>
 <div class="box">
   <article class="media">
 	<div class="media-left">

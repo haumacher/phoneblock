@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"></input> Підсумовування чисел за допомогою символу "*"</label>
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Підсумовування чисел за допомогою символу "*"</label>
 			  <p class="help" data-tx="t0030">Якщо ви виберете цю опцію, сусідні номери у вашому списку блокування будуть об'єднані в один номер за допомогою символу підстановки ("*"). Багато професійних спамерів мають з'єднання з декількома пристроями і використовують цілий блок номерів як відправників. З цією опцією всі ці номери будуть автоматично заблоковані, і ваш список блокування може включати більше спам-номерів. Fritz!Box підтримує телефонні книги зі спеціальними номерами і блокує весь вказаний діапазон номерів. Однак, можливо, ви не зможете використовувати підставні номери на інших пристроях.</p>
 			</div>
 			
@@ -128,7 +128,7 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"></input>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
@@ -159,7 +159,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0043">Вказівки щодо використання</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Використовуйте для..." type="text"></input>
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Використовуйте для..." type="text"/>
 	  </p>
 	  <p class="help" data-tx="t0044">Тут ви можете ввести примітку про те, для чого ви згенерували API-ключ, наприклад, "SpamBlocker на мобільному телефоні бабусі".</p>
 	</div>
@@ -187,7 +187,7 @@
 	<p data-tx="t0048">Ви навмисно заблокували ці номери. Ви можете скасувати випадкове блокування тут:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 
@@ -216,7 +216,7 @@
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"></input> <th:block th:text="${number}"></th:block>
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
 		</label>
 	</div>
 	
@@ -236,7 +236,7 @@
 	<div class="field">
 	  <label class="label" data-tx="t0054">Додати виняток</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Новий виняток" type="tel"></input>
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Новий виняток" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
 	  <p class="help" data-tx="t0056">Ви можете ввести один або декілька номерів телефонів через кому у довільному форматі: 07041-123456789, +49171123456789, 0034 123456789.</p>
@@ -294,7 +294,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0067">Відправник</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Макс Мустерман" type="text"></input>
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Макс Мустерман" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
 		  <p class="help" data-tx="t0068">У разі банківського переказу - ім'я власника рахунку, який здійснив переказ. Будь ласка, вкажіть також дату переказу.</p>
@@ -303,7 +303,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0069">дата</label>
 		  <p class="control has-icons-left">
-		    <input class="input" name="contrib-date" type="date"></input>
+		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
 		  <p class="help" data-tx="t0070">Дата банківського переказу. Будь ласка, введіть повне ім'я власника рахунку, який здійснив переказ вище.</p>
 		</div>
