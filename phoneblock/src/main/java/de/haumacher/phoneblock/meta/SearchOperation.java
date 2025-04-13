@@ -73,7 +73,7 @@ public class SearchOperation {
 
 			String phoneId = NumberAnalyzer.getPhoneId(_number);
 			
-			_comments = new ArrayList<>(mapper.getComments(phoneId));
+			_comments = new ArrayList<>(mapper.getAnyComments(phoneId));
 			{
 				_searchPerformed = shouldSearch(mapper, _number);
 				

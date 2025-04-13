@@ -333,21 +333,39 @@ public interface SpamReports {
 	int incSearchCount(String phone, long now);
 
 	@Select("""
+			<script>
 			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
-			where s.PHONE=#{phone}
+			where s.PHONE=#{phone} and s.LOCALE in 
+			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
 			""")
-	List<DBUserComment> getComments(String phone);
+	List<DBUserComment> getComments(String phone, Collection<String> langs);
 	
 	@Select("""
 			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
-			where 
-				s.PHONE > #{prefix}
-				and s.PHONE < concat(#{prefix}, 'Z')
-				and LENGTH(s.PHONE) = #{expectedLength}
+			where s.PHONE=#{phone}
 			""")
-	List<DBUserComment> getAllComments(String prefix, int expectedLength);
+	List<DBUserComment> getAnyComments(String phone);
+	
+	@Select("""
+			<script>
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			from COMMENTS s 
+			where 
+				s.PHONE &gt; #{prefix}
+				and s.PHONE &lt; concat(#{prefix}, 'Z')
+				and LENGTH(s.PHONE) = #{expectedLength}
+				and s.LOCALE in 
+			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
+			""")
+	List<DBUserComment> getAllComments(String prefix, int expectedLength, Collection<String> langs);
 	
 	@Insert("""
 			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID) 

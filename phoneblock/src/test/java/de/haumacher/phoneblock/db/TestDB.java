@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -270,8 +272,8 @@ class TestDB {
 	
 	@Test
 	void testUserManagement() throws IOException {
-		_db.addUser("foo@bar.com", "Mr. X", "012300000", "de");
-		_db.addUser("baz@bar.com", "Mr. Y", "012300000", "de");
+		_db.addUser("foo@bar.com", "Mr. X", "de", "012300000");
+		_db.addUser("baz@bar.com", "Mr. Y", "de", "012300000");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000")));
         assertNull(_db.basicAuth(header("foo@bar.com", "0321")));
@@ -475,19 +477,26 @@ class TestDB {
 		assertEquals(1, _db.getVotesFor("0123456789"));
 		
 		// Both comments have been recorded.
-		assertEquals(2, _db.getComments("0123456789").size());
+		assertEquals(2, getComments("0123456789").size());
 		
 		addRating("user-1", "0123456789", Rating.A_LEGITIMATE, "Was my uncle.", time++);
 
 		assertEquals(0, _db.getVotesFor("0123456789"));
 
-		assertEquals(3, _db.getComments("0123456789").size());
+		assertEquals(3, getComments("0123456789").size());
 	}
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
 		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), rating, comment, "de", now);
 	}
-	
+
+	public List<? extends UserComment> getComments(String phone) {
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getComments(phone, Collections.singleton("de"));
+		}
+	} 
+
 	@Test
 	public void testContribution() {
 		_db.createUser("aaaaaaaa-bbbb", "Noname", "de");

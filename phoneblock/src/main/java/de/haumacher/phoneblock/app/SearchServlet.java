@@ -9,11 +9,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +25,7 @@ import java.util.stream.Stream;
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.HashServlet;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
@@ -36,6 +41,7 @@ import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.JspUtil;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -203,21 +209,39 @@ public class SearchServlet extends HttpServlet {
 		try (SqlSession session = db.openSession()) {
 			String userName = LoginFilter.getAuthenticatedUser(req);
 			minVotes = db.getMinVotes(session, userName);
+			
+			Set<String> langs = new HashSet<>();
+			langs.add(DefaultController.selectLanguage(req).tag);
+			for (Enumeration<Locale> locales = req.getLocales(); locales.hasMoreElements(); ) {
+				Locale locale = locales.nextElement();
+				Language language = DefaultController.selectLanguage(locale);
+				langs.add(language.tag);
+			}
 
-			searchResult = analyzeDb(db, session, number, isSeachHit);
+			searchResult = analyzeDb(db, session, number, isSeachHit, langs);
 		}
+		
 		
 		sendResult(req, resp, searchResult, minVotes);
 	}
 
-	public static SearchResult analyze(String query) {
+	public static SearchResult analyze(String query, String userName) {
 		PhoneNumer number = extractNumber(query);
 		if (number == null) {
 			return null;
 		}
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
-			return analyzeDb(db, session, number, true);
+			Set<String> langs;
+			if (userName == null) {
+				langs = Collections.singleton(DefaultController.DEFAULT_LANG.tag);
+			} else {
+				Users users = session.getMapper(Users.class);
+				String lang = users.getLocale(userName);
+				langs = Collections.singleton(lang);
+			}
+
+			return analyzeDb(db, session, number, true, langs);
 		}
 	}
 
@@ -234,7 +258,7 @@ public class SearchServlet extends HttpServlet {
 		return number;
 	}
 
-	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, boolean isSeachHit) {
+	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, boolean isSeachHit, Set<String> langs) {
 		SpamReports reports = session.getMapper(SpamReports.class);
 		
 		String phone = NumberAnalyzer.getPhoneId(number);
@@ -252,9 +276,9 @@ public class SearchServlet extends HttpServlet {
 		
 		// Note: Search for comments first, since new comments may change the state of the number.
 		if (isSeachHit) {
-			comments = MetaSearchService.getInstance().fetchComments(number);
+			comments = MetaSearchService.getInstance().fetchComments(number).stream().filter(c -> langs.contains(c.getLang())).toList();
 		} else {
-			comments = reports.getComments(phone);
+			comments = reports.getComments(phone, langs);
 		}
 		
 		boolean commit = false;
@@ -292,7 +316,7 @@ public class SearchServlet extends HttpServlet {
 				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phone.length());
 				
 				if (comments.isEmpty()) {
-					comments = reports.getAllComments(aggregation100.getPrefix(), phone.length());
+					comments = reports.getAllComments(aggregation100.getPrefix(), phone.length(), langs);
 				}
 				
 				if (info.getRating() == Rating.B_MISSED) {
@@ -304,7 +328,7 @@ public class SearchServlet extends HttpServlet {
 					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phone.length());
 
 					if (comments.isEmpty()) {
-						comments = reports.getAllComments(aggregation10.getPrefix(), phone.length());
+						comments = reports.getAllComments(aggregation10.getPrefix(), phone.length(), langs);
 					}
 
 					if (info.getRating() == Rating.B_MISSED) {

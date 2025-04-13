@@ -943,13 +943,6 @@ public class DB {
 		}
 	}
 	
-	public List<? extends UserComment> getComments(String phone) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getComments(phone);
-		}
-	} 
-
 	/** 
 	 * Adds a rating for a phone number without DB commit.
 	 * @param recordVote 

@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.SearchResult;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -32,8 +33,10 @@ public class SearchApiServlet extends HttpServlet {
 			return;
 		}
 		
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		
 		String query = pathInfo.substring(1);
-		SearchResult searchResult = SearchServlet.analyze(query);
+		SearchResult searchResult = SearchServlet.analyze(query, userName);
 		
 		if (searchResult == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");

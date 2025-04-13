@@ -84,7 +84,7 @@ public class DefaultController implements WebController {
 			}
 		}
 	}
-	private static final Language DEFAULT_LANG = LANGUAGES[0];
+	public static final Language DEFAULT_LANG = LANGUAGES[0];
 
 	static final String RENDER_TEMPLATE = "renderTemplate";
 

@@ -184,7 +184,7 @@ public class ChatGPTService implements ServletContextListener {
 			session.commit();
 
 			isWhiteListed = reports.isWhiteListed(phone);
-			comments = new ArrayList<>(reports.getComments(phone));
+			comments = new ArrayList<>(reports.getAnyComments(phone));
 		}
 			
 		List<ChatCompletionChoice> answers = createSummary(phone, comments, isWhiteListed);
