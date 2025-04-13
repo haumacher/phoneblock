@@ -173,3 +173,10 @@ body.test-system {
 	z-index: 35;
 }
 
+button.showaddr:before {
+	content: "<";
+}
+
+button.showaddr:after {
+	content: ">";
+}

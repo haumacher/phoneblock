@@ -121,7 +121,10 @@ function showaddr(target) {
   link.setAttribute("href", "mailto:" + addr);
   link.appendChild(
     document.createTextNode(addr));
-  target.parentNode.replaceChild(link, target);
+  target.parentNode.insertBefore(document.createTextNode("<"), target);
+  target.parentNode.insertBefore(link, target);
+  target.parentNode.insertBefore(document.createTextNode(">"), target);
+  target.parentNode.removeChild(target);
   return false;
 }
 
