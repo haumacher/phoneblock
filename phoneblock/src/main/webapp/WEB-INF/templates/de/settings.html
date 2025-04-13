@@ -162,10 +162,10 @@
 		PhoneBlock-Nutzernamen und PhoneBlock-Passwort, hierfür benötigst Du also keinen API-Key.
 	</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">
 		Du hast noch keine API-Keys erzeugt.
 	</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -237,13 +237,13 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">
+	<p data-tx="t0047" th:if="${blacklist.empty}">
 		Du hast keine Nummern explizit gesperrt. Um eine Nummer zu sperren, suche die Nummer über das Suchfeld oben und 
 		schreibe einen negativen Kommentar, oder mach in Deiner Fritz!Box einen Telefonbucheintrag für die Nummer in der 
 		Blocklist.
 	</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Diese Nummern hast Du explizit gesperrt. Eine versehentlich eingetragene Sperre kannst Du hier aufheben:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -271,11 +271,11 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">
+	<p data-tx="t0051" th:if="${whitelist.empty}">
 		Du hast keine Nummern von der Sperrung ausgenommen.
 	</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">Diese Nummern hast Du explizit von der Sperrung ausgenommen:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -335,11 +335,11 @@
 		Beiträge über das GitHub-Sponsor-Programm können hier leider nicht aufgelistet werden. 
 	</p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">
+	<p data-tx="t0060" th:if="${contributions.empty}">
 		Keine Spendenbeiträge gefunden.
 	</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>

@@ -114,8 +114,8 @@
 	<h2 data-tx="t0033" id="myAPIKeys">Ваші ключі API</h2>
 	<p data-tx="t0034">Якщо ви використовуєте інші програми для перевірки телефонних номерів за допомогою PhoneBlock (наприклад, <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> або <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), вам потрібен ключ API. Для телефонної книги блокування у вашому Fritz!Box ви просто використовуєте своє ім'я користувача PhoneBlock і пароль PhoneBlock, тому вам не потрібен ключ API.</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">Ви ще не створили жодного ключа API.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">Ви ще не створили жодного ключа API.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -181,9 +181,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Ви не заблокували жодного номера. Щоб заблокувати номер, знайдіть його за допомогою поля пошуку вище і напишіть негативний коментар, або внесіть номер в телефонну книгу до списку заблокованих у вашому Fritz!Box</p>
+	<p data-tx="t0047" th:if="${blacklist.empty}">Ви не заблокували жодного номера. Щоб заблокувати номер, знайдіть його за допомогою поля пошуку вище і напишіть негативний коментар, або внесіть номер в телефонну книгу до списку заблокованих у вашому Fritz!Box</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Ви навмисно заблокували ці номери. Ви можете скасувати випадкове блокування тут:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -209,9 +209,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">Ви не виключили жодного номера з блокування.</p>
+	<p data-tx="t0051" th:if="${whitelist.empty}">Ви не виключили жодного номера з блокування.</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">Ви явно виключили ці номери з блокування:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -258,9 +258,9 @@
 	
 	<p data-tx="t0059">Якщо ви зробили <a th:href="@{/support.jsp}">пожертву на роботу PhoneBlock</a>, вона буде перерахована тут (через деякий час). Щоб це спрацювало, було б добре, якби ви могли включити перші кілька символів вашого імені користувача в повідомлення про переказ, наприклад, <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. На жаль, внески через спонсорську програму GitHub не можуть бути перераховані тут.</p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">Пожертвувань не знайдено.</p>
+	<p data-tx="t0060" th:if="${contributions.empty}">Пожертвувань не знайдено.</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>

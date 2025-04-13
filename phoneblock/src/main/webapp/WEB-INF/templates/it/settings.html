@@ -114,8 +114,8 @@
 	<h2 data-tx="t0033" id="myAPIKeys">Le chiavi API</h2>
 	<p data-tx="t0034">Se si utilizzano altre applicazioni per controllare i numeri di telefono con PhoneBlock (ad esempio <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> o <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), è necessaria una chiave API. Per la rubrica della lista di blocco nel vostro Fritz!Box, utilizzate semplicemente il vostro nome utente PhoneBlock e la password PhoneBlock, quindi non avete bisogno di una chiave API.</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">Non è stata ancora creata alcuna chiave API.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">Non è stata ancora creata alcuna chiave API.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -181,9 +181,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Non avete bloccato esplicitamente alcun numero. Per bloccare un numero, cercatelo utilizzando il campo di ricerca in alto e scrivete un commento negativo, oppure inserite il numero nella lista di blocco del vostro Fritz!Box</p>
+	<p data-tx="t0047" th:if="${blacklist.empty}">Non avete bloccato esplicitamente alcun numero. Per bloccare un numero, cercatelo utilizzando il campo di ricerca in alto e scrivete un commento negativo, oppure inserite il numero nella lista di blocco del vostro Fritz!Box</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Avete bloccato esplicitamente questi numeri. È possibile annullare un blocco accidentale qui:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -209,9 +209,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">Non avete escluso alcun numero dal blocco.</p>
+	<p data-tx="t0051" th:if="${whitelist.empty}">Non avete escluso alcun numero dal blocco.</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">Avete esplicitamente escluso questi numeri dal blocco:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -258,9 +258,9 @@
 	
 	<p data-tx="t0059">Se avete fatto una <a th:href="@{/support.jsp}">donazione per il funzionamento di PhoneBlock</a>, sarà elencata qui (dopo qualche tempo). Affinché questo funzioni, sarebbe opportuno che includeste i primi caratteri del vostro nome utente nel messaggio di trasferimento, ad esempio <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Purtroppo i contributi tramite il programma di sponsorizzazione di GitHub non possono essere elencati qui.</p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">Non sono state trovate donazioni.</p>
+	<p data-tx="t0060" th:if="${contributions.empty}">Non sono state trovate donazioni.</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>

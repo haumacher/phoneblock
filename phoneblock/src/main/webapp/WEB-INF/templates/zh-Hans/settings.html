@@ -114,8 +114,8 @@
 	<h2 data-tx="t0033" id="myAPIKeys">您的应用程序接口密钥</h2>
 	<p data-tx="t0034">如果您使用其他应用程序通过 PhoneBlock 检查电话号码（例如 <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> 或 <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>），则需要一个 API 密钥。对于 Fritz!Box 中的 blocklist 电话簿，您只需使用 PhoneBlock 用户名和 PhoneBlock 密码即可，因此不需要 API 密钥。</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">您尚未创建任何 API 密钥。</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">您尚未创建任何 API 密钥。</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -181,9 +181,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">您尚未明确阻止任何号码。要阻止一个号码，请使用上面的搜索栏搜索该号码并写下负面评论，或者在 Fritz 的阻止列表中为该号码建立一个电话簿条目！</p>
+	<p data-tx="t0047" th:if="${blacklist.empty}">您尚未明确阻止任何号码。要阻止一个号码，请使用上面的搜索栏搜索该号码并写下负面评论，或者在 Fritz 的阻止列表中为该号码建立一个电话簿条目！</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">您已明确阻止了这些号码。您可以在此取消意外阻止：</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -209,9 +209,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">您没有将任何数字排除在屏蔽范围之外。</p>
+	<p data-tx="t0051" th:if="${whitelist.empty}">您没有将任何数字排除在屏蔽范围之外。</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">您已明确将这些数字排除在拦截范围之外：</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -258,9 +258,9 @@
 	
 	<p data-tx="t0059">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support.jsp}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献无法在此列出。</p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">未找到捐赠。</p>
+	<p data-tx="t0060" th:if="${contributions.empty}">未找到捐赠。</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>

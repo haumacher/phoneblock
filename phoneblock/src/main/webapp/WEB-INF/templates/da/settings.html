@@ -114,8 +114,8 @@
 	<h2 data-tx="t0033" id="myAPIKeys">Dine API-nøgler</h2>
 	<p data-tx="t0034">Hvis du bruger andre programmer til at tjekke telefonnumre med PhoneBlock (f.eks. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> eller <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), skal du bruge en API-nøgle. Til blocklist-telefonbogen i din Fritz!Box bruger du blot dit PhoneBlock-brugernavn og din PhoneBlock-adgangskode, så du har ikke brug for en API-nøgle til dette.</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">Du har endnu ikke oprettet nogen API-nøgler.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">Du har endnu ikke oprettet nogen API-nøgler.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -181,9 +181,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Du har ikke eksplicit blokeret nogen numre. For at blokere et nummer skal du søge efter nummeret ved hjælp af søgefeltet ovenfor og skrive en negativ kommentar, eller lave en telefonbogspost for nummeret i blokeringslisten i din Fritz!Box</p>
+	<p data-tx="t0047" th:if="${blacklist.empty}">Du har ikke eksplicit blokeret nogen numre. For at blokere et nummer skal du søge efter nummeret ved hjælp af søgefeltet ovenfor og skrive en negativ kommentar, eller lave en telefonbogspost for nummeret i blokeringslisten i din Fritz!Box</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Du har udtrykkeligt blokeret disse numre. Du kan ophæve en utilsigtet blokering her:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -209,9 +209,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">Du har ikke udelukket nogen numre fra blokeringen.</p>
+	<p data-tx="t0051" th:if="${whitelist.empty}">Du har ikke udelukket nogen numre fra blokeringen.</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">Du har udtrykkeligt udelukket disse numre fra blokeringen:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -258,9 +258,9 @@
 	
 	<p data-tx="t0059">Hvis du har lavet en <a th:href="@{/support.jsp}">donation til driften af PhoneBlock</a>, vil den blive listet her (efter noget tid). For at dette skal fungere, ville det være rart, hvis du kunne inkludere de første par tegn i dit brugernavn i overførselsmeddelelsen, f.eks. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Bidrag via GitHubs sponsorprogram kan desværre ikke vises her.</p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">Ingen donationer fundet.</p>
+	<p data-tx="t0060" th:if="${contributions.empty}">Ingen donationer fundet.</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>

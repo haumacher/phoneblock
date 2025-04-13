@@ -114,8 +114,8 @@
 	<h2 data-tx="t0033" id="myAPIKeys">Τα κλειδιά σας API</h2>
 	<p data-tx="t0034">Εάν χρησιμοποιείτε άλλες εφαρμογές για τον έλεγχο τηλεφωνικών αριθμών με το PhoneBlock (π.χ. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> ή <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), τότε χρειάζεστε ένα κλειδί API. Για τον τηλεφωνικό κατάλογο μπλοκαρίσματος στο Fritz!Box σας, χρησιμοποιείτε απλώς το όνομα χρήστη PhoneBlock και τον κωδικό πρόσβασης PhoneBlock, οπότε δεν χρειάζεστε κλειδί API για αυτό.</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">Δεν έχετε δημιουργήσει ακόμη κανένα κλειδί API.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">Δεν έχετε δημιουργήσει ακόμη κανένα κλειδί API.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -181,9 +181,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">Δεν έχετε αποκλείσει ρητά κανέναν αριθμό. Για να μπλοκάρετε έναν αριθμό, αναζητήστε τον αριθμό χρησιμοποιώντας το παραπάνω πεδίο αναζήτησης και γράψτε ένα αρνητικό σχόλιο ή κάντε μια καταχώρηση στον τηλεφωνικό κατάλογο για τον αριθμό στη λίστα μπλοκαρίσματος στο Fritz!Box</p>
+	<p data-tx="t0047" th:if="${blacklist.empty}">Δεν έχετε αποκλείσει ρητά κανέναν αριθμό. Για να μπλοκάρετε έναν αριθμό, αναζητήστε τον αριθμό χρησιμοποιώντας το παραπάνω πεδίο αναζήτησης και γράψτε ένα αρνητικό σχόλιο ή κάντε μια καταχώρηση στον τηλεφωνικό κατάλογο για τον αριθμό στη λίστα μπλοκαρίσματος στο Fritz!Box</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς. Μπορείτε να ακυρώσετε έναν τυχαίο αποκλεισμό εδώ:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -209,9 +209,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">Δεν έχετε αποκλείσει κανέναν αριθμό από τον αποκλεισμό.</p>
+	<p data-tx="t0051" th:if="${whitelist.empty}">Δεν έχετε αποκλείσει κανέναν αριθμό από τον αποκλεισμό.</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς από τον αποκλεισμό:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -258,9 +258,9 @@
 	
 	<p data-tx="t0059">Αν έχετε κάνει μια <a th:href="@{/support.jsp}">δωρεά για τη λειτουργία του PhoneBlock</a>, θα αναγράφεται εδώ (μετά από κάποιο χρονικό διάστημα). Για να λειτουργήσει αυτό, θα ήταν καλό να συμπεριλάβετε τους πρώτους χαρακτήρες του ονόματος χρήστη σας στο μήνυμα μεταφοράς, π.χ. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. Δυστυχώς, οι συνεισφορές μέσω του χορηγικού προγράμματος του GitHub δεν μπορούν να καταχωρηθούν εδώ.</p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">Δεν βρέθηκαν δωρεές.</p>
+	<p data-tx="t0060" th:if="${contributions.empty}">Δεν βρέθηκαν δωρεές.</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>

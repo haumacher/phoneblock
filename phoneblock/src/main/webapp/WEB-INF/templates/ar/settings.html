@@ -114,8 +114,8 @@
 	<h2 data-tx="t0033" id="myAPIKeys">مفاتيح API الخاصة بك</h2>
 	<p data-tx="t0034">إذا كنت تستخدم تطبيقات أخرى للتحقق من أرقام الهواتف مع PhoneBlock (على سبيل المثال: <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> أو <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>)، فأنت بحاجة إلى مفتاح API. بالنسبة لدليل هاتف قائمة الحظر في Fritz!Box، يمكنك ببساطة استخدام اسم مستخدم PhoneBlock وكلمة مرور PhoneBlock، لذلك لا تحتاج إلى مفتاح API لهذا الغرض.</p>
 	
-	<p data-tx="t0035" th:unless="${explicitTokens}">لم تقم بعد بإنشاء أي مفاتيح API.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:if="${explicitTokens}">
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">لم تقم بعد بإنشاء أي مفاتيح API.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -181,9 +181,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:unless="${blacklist}">لم تقم بحظر أي أرقام بشكل صريح. لحظر رقم ما، ابحث عن الرقم باستخدام حقل البحث أعلاه واكتب تعليقًا سلبيًا، أو قم بإدخال دليل الهاتف للرقم في قائمة الحظر في فريتز!</p>
+	<p data-tx="t0047" th:if="${blacklist.empty}">لم تقم بحظر أي أرقام بشكل صريح. لحظر رقم ما، ابحث عن الرقم باستخدام حقل البحث أعلاه واكتب تعليقًا سلبيًا، أو قم بإدخال دليل الهاتف للرقم في قائمة الحظر في فريتز!</p>
 
-	<th:block th:if="${blacklist}">
+	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">لقد قمت بحظر هذه الأرقام بشكل صريح. يمكنك إلغاء الحظر العرضي هنا:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox">
@@ -209,9 +209,9 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:unless="${whitelist}">لم تستبعد أي أرقام من الحجب.</p>
+	<p data-tx="t0051" th:if="${whitelist.empty}">لم تستبعد أي أرقام من الحجب.</p>
 
-	<th:block th:if="${whitelist}">
+	<th:block th:unless="${whitelist.empty}">
 	<p data-tx="t0052">لقد استبعدت هذه الأرقام صراحةً من الحجب:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
@@ -258,9 +258,9 @@
 	
 	<p data-tx="t0059">إذا كنت قد قدمت <a th:href="@{/support.jsp}"> تبرعًا لتشغيل PhoneBlock، فسيتم إدراجه هنا (بعد مرور بعض الوقت). لكي يعمل هذا الأمر، سيكون من الجيد أن تقوم بتضمين الأحرف القليلة الأولى من اسم المستخدم الخاص بك في رسالة التحويل، على سبيل المثال: <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>. للأسف، لا يمكن إدراج المساهمات عبر برنامج الراعي GitHub هنا.</a></p>
 	
-	<p data-tx="t0060" th:unless="${contributions}">لم يتم العثور على أي تبرعات.</p>
+	<p data-tx="t0060" th:if="${contributions.empty}">لم يتم العثور على أي تبرعات.</p>
 	
-	<th:block th:if="${contributions}">
+	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>
