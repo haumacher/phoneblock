@@ -59,7 +59,7 @@ public abstract class LoginFilter implements Filter {
 				String userName = LoginFilter.getAuthenticatedUser(session);
 				if (userName != null) {
 					setRequestUser(req, userName);
-					chain.doFilter(request, response);
+					loggedIn(req, resp, userName, chain);
 					return;
 				}
 			}
@@ -84,7 +84,7 @@ public abstract class LoginFilter implements Filter {
 							// This enhances security since a token can be used only once.
 							setLoginCookie(req, resp, authorization);
 							
-							chain.doFilter(request, response);
+							loggedIn(req, resp, userName, chain);
 							return;
 						} else {
 							if (authorization == null) {
@@ -114,7 +114,7 @@ public abstract class LoginFilter implements Filter {
 						
 						setUser(req, userName);
 						
-						chain.doFilter(request, response);
+						loggedIn(req, resp, userName, chain);
 						return;
 					} else {
 						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.", 
@@ -125,13 +125,18 @@ public abstract class LoginFilter implements Filter {
 				String userName = db.basicAuth(authHeader);
 				if (userName != null) {
 					setUser(req, userName);
-					chain.doFilter(request, response);
+					loggedIn(req, resp, userName, chain);
 					return;
 				}
 			}
 		}
 		
 		requestLogin(req, resp, chain);
+	}
+
+	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, String userName, FilterChain chain)
+			throws IOException, ServletException {
+		chain.doFilter(request, response);
 	}
 
 	protected boolean allowBasicAuth(HttpServletRequest req) {

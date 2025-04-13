@@ -27,10 +27,12 @@ import org.thymeleaf.web.IWebApplication;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.AssignContributionServlet;
+import de.haumacher.phoneblock.app.BasicLoginFilter;
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.DeleteAccountServlet;
 import de.haumacher.phoneblock.app.EMailVerificationServlet;
 import de.haumacher.phoneblock.app.ExternalLinkServlet;
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.RatingServlet;
 import de.haumacher.phoneblock.app.RegistrationServlet;
@@ -39,7 +41,7 @@ import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.oauth.OAuthLoginServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
-import jakarta.servlet.Filter;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletContext;
@@ -53,7 +55,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebFilter(urlPatterns = {
 	"/*",
 })
-public class ContentFilter implements Filter {
+public class ContentFilter extends LoginFilter {
 	
 	private TemplateRenderer _renderer;
 	
@@ -79,16 +81,39 @@ public class ContentFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		
-		HttpServletRequest httpRequest = (HttpServletRequest)request;
-		HttpServletResponse httpResponse = (HttpServletResponse) response;
-		
-		String path = httpRequest.getServletPath();
+		if (BasicLoginFilter.matches(((HttpServletRequest) request).getServletPath())) {
+			// Prevent duplicate checking.
+			chain.doFilter(request, response);
+		} else {
+			super.doFilter(request, response, chain);
+		}
+	}
+
+	@Override
+	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
+		return authorization.isAccessLogin();
+	}
+
+	@Override
+	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+		// Continue without login, login is optional.
+		render(request, response, chain);
+	}
+	
+	@Override
+	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, String userName, FilterChain chain)
+			throws IOException, ServletException {
+		render(request, response, chain);
+	}
+	
+	private void render(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+		String path = request.getServletPath();
 		
 		// Forward old paths to new locations.
 		String newLocation = LEGACY_PAGES.get(path);
 		if (newLocation != null) {
-			httpResponse.sendRedirect(httpRequest.getContextPath() + newLocation);
+			response.sendRedirect(request.getContextPath() + newLocation);
 			return;
 		}
 		
@@ -118,45 +143,45 @@ public class ContentFilter implements Filter {
 			path.endsWith(".js") || 
 			path.endsWith(".json") 
 		) {
-			chain.doFilter(httpRequest, httpResponse);
+			chain.doFilter(request, response);
 			return;
 		}
 		
 		// Canonicalize requested path.
 		if (path.endsWith("index.html")) {
-			StringBuilder canonical = canonical(httpRequest);
+			StringBuilder canonical = canonical(request);
 			canonical.append(path, 0, path.length() - "index.html".length());
 			appendParams(canonical, request);
-			httpResponse.sendRedirect(canonical.toString());
+			response.sendRedirect(canonical.toString());
 			return;
 		}
 		if (path.endsWith("index.jsp")) {
-			StringBuilder canonical = canonical(httpRequest);
+			StringBuilder canonical = canonical(request);
 			canonical.append(path, 0, path.length() - "index.jsp".length());
 			appendParams(canonical, request);
-			httpResponse.sendRedirect(canonical.toString());
+			response.sendRedirect(canonical.toString());
 			return;
 		}
 
 		// Ensure that old-style JSP resources are still resolvable.
 		if (path.endsWith(".jsp")) {
-			StringBuilder canonical = canonical(httpRequest);
+			StringBuilder canonical = canonical(request);
 			canonical.append(path, 0, path.length() - ".jsp".length());
 			appendParams(canonical, request);
-			httpResponse.sendRedirect(canonical.toString());
+			response.sendRedirect(canonical.toString());
 			return;
 		}
 		
 		// All pages are directories.
 		if (path.endsWith("/") && path.length() > 1) {
-			StringBuilder canonical = canonical(httpRequest);
+			StringBuilder canonical = canonical(request);
 			canonical.append(path, 0, path.length() - 1);
 			appendParams(canonical, request);
-			httpResponse.sendRedirect(canonical.toString());
+			response.sendRedirect(canonical.toString());
 			return;
 		}
 	
-		if (!process(httpRequest, httpResponse)) {
+		if (!process(request, response)) {
 			chain.doFilter(request, response);
 		}
 	}
