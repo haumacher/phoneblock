@@ -38,6 +38,7 @@ import de.haumacher.phoneblock.app.ResetPasswordServlet;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.oauth.OAuthLoginServlet;
+import de.haumacher.phoneblock.carddav.CardDavServlet;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -98,6 +99,7 @@ public class ContentFilter implements Filter {
 			path.startsWith("/assets") ||
 			path.startsWith("/webjars") ||
 			(path.startsWith("/api/") && !path.equals("/api/")) ||
+			path.startsWith(CardDavServlet.DIR_NAME) ||
 			path.startsWith(AssignContributionServlet.PATH) ||
 			path.startsWith(CreateAuthTokenServlet.CREATE_TOKEN) ||
 			path.startsWith(DeleteAccountServlet.PATH) ||
