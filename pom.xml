@@ -52,7 +52,7 @@
 
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 		
-		<msgbuf.version>1.1.2</msgbuf.version>
+		<msgbuf.version>1.1.7</msgbuf.version>
 	</properties>
 
 	<dependencies>

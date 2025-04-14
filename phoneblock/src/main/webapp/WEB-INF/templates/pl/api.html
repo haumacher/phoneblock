@@ -6,7 +6,7 @@
 <link rel="stylesheet" th:href="|${contextPath}${deps.swagger}/swagger-ui.css|"/>
 </head>
 
-<body>
+<body th:dir="${currentLang.direction}">
 <div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section" id="swagger-ui">

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * A comment posted for a phone number
  */
-public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable, de.haumacher.phoneblock.shared.operations.UserCommentOperations {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.UserComment} instance.
@@ -622,6 +622,11 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
 			}
 		}
+	}
+
+	@Override
+	public UserComment self() {
+		return this;
 	}
 
 	/** Creates a new {@link UserComment} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */

@@ -18,7 +18,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getNumbers() */
 	public static final String NUMBERS__PROP = "numbers";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.BlockListEntry>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
 			_listener.beforeAdd(Blocklist.this, NUMBERS__PROP, index, element);
@@ -159,11 +159,13 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case NUMBERS__PROP: {
+				java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addNumber(de.haumacher.phoneblock.app.api.model.BlockListEntry.readBlockListEntry(in));
+					newValue.add(de.haumacher.phoneblock.app.api.model.BlockListEntry.readBlockListEntry(in));
 				}
 				in.endArray();
+				setNumbers(newValue);
 			}
 			break;
 			default: super.readField(in, field);

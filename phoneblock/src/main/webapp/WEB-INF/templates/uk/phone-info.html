@@ -6,7 +6,7 @@
 <script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>
 
-<body>
+<body th:dir="${currentLang.direction}">
 <div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
 
 <section class="section">
@@ -31,7 +31,7 @@
 	<p data-tx="t0007">Інформація про номер виклику <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-  	<p lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Номер телефону знаходиться в білому списку і не може бути заблокований за допомогою PhoneBlock. Якщо ви все ще відчуваєте переслідування з цього номера, будь ласка, встановіть приватне блокування для цього номера.</p>
@@ -164,7 +164,7 @@
 <div class="columns">
 	<div class="column is-half">
 	<div th:if="${ratings}">
-		<canvas aria-label="Anzahl Bewertungen" height="200" id="ratings" role="img" width="400"></canvas>
+		<canvas aria-label="Кількість оцінок" data-tx="t0047" height="200" id="ratings" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="ratings-data">
 		{
 			"type": "bar",
@@ -194,7 +194,7 @@
 
 	<div class="column is-half">
 	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
-		<canvas aria-label="Suchanfragen in der letzten Woche" height="200" id="searches" role="img" width="400"></canvas>
+		<canvas aria-label="Пошукові запити за останній тиждень" data-tx="t0048" height="200" id="searches" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="searches-data">
 		{
 			"type": "line",
@@ -247,19 +247,19 @@
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
 		</p>
-		<p class="commentText" th:lang="${comment.lang}" th:text="${comment.comment}">
+		<p class="commentText" th:dir="${comment.direction}" th:lang="${comment.lang}" th:text="${comment.comment}">
 		</p>
 	  </div>
 			
 	  <nav class="level is-mobile">
 		<div class="level-left">
-		  <a aria-label="Guter Hinweis" class="level-item thumbs-up commentVote" data-tx="t0045" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Гарна порада!">
+		  <a aria-label="Гарна підказка." class="level-item thumbs-up commentVote" data-tx="t0045" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Гарна порада!">
 			<span class="icon">
 			  <i class="fa-solid fa-thumbs-up"></i>
 			</span>
 			<span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
 		  </a>
-		  <a aria-label="Unsinn" class="level-item thumbs-down commentVote" data-tx="t0046" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Нісенітниця!">
+		  <a aria-label="Нісенітниця." class="level-item thumbs-down commentVote" data-tx="t0046" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Нісенітниця!">
 			<span class="icon">
 			  <i class="fa-solid fa-thumbs-down"></i>
 			</span>
@@ -274,9 +274,9 @@
 	</th:block>
 </th:block>
 
-	<nav aria-label="pagination" class="pagination is-centered" role="navigation">
-		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Попередній номер</a>
-		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Наступний номер</a>
+	<nav aria-label="пагінація" class="pagination is-centered" data-tx="t0049" role="navigation">
+		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Vorherige Nummer</a>
+		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Nächste Nummer</a>
 	</nav>
 </div>
 </section>

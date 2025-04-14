@@ -43,7 +43,7 @@
 </th:block>
 </head>
 
-<body>
+<body th:dir="${currentLang.direction}">
 <section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
 		<div class="title">
@@ -59,7 +59,7 @@
 			      </span>
 			    </button>
 			  </div>
-			  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+			  <div class="dropdown-menu" dir="ltr" id="dropdown-menu" role="menu">
 			    <div class="dropdown-content">
 			      <a class="dropdown-item" th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
 			    </div>
@@ -69,16 +69,18 @@
 
 		<p class="subtitle" data-tx="t0002">The spam filter for your phone</p>
 		<a target="_blank" th:href="@{/link/github}">
-			<img alt="Fork me on GitHub" class="github-image is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
-			<img alt="" class="github-image is-hidden-desktop" data-tx="t0049" height="30" th:src="@{/assets/forkme.png}" width="30"/>
+			<img alt="Fork me on GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
+			<img alt="" class="github-image ltr is-hidden-desktop" data-tx="t0049" height="45" th:src="@{/assets/forkme.png}" width="45"/>
+			<img alt="Fork me on GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
+			<img alt="" class="github-image rtl is-hidden-desktop" data-tx="t0055" height="45" th:src="@{/assets/forkme_rtl.png}" width="45"/>
 		</a>
 	</div>
   <div class="hero-foot">
-  <nav aria-label="main navigation" class="navbar" role="navigation">
+  <nav aria-label="main navigation" class="navbar" data-tx="t0056" role="navigation">
 	<div class="navbar-brand">
 		<div class="navbar-item"> 
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Check telephone number" type="tel"/>
+		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"/>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
@@ -88,7 +90,7 @@
 		</div>
 		</div>
 
-		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
 		</a>
 	</div>
 	<div class="navbar-menu" id="navbarBasicExample">
@@ -97,8 +99,8 @@
 				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Installation</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Answering machine</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklist phonebook</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Anrufbeantworter</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklisten-Telefonbuch</a>
 					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
 					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
 				</div>
@@ -111,28 +113,28 @@
 				<a class="navbar-link prevent-default" data-tx="t0010">More</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Donate to PhoneBlock</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">An PhoneBlock spenden</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API for developers</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API für Entwickler</a>
 					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub Project</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Add call barring</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Rufsperre hinzufügen</a>
 					
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Report error</a>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Fehler melden</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Answerbot app">
+			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Answerbot App">
 				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
 		    </a>
 
-			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="To the news page">
+			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
 				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
 		    </a>
       			
-			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS feed">
+			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>

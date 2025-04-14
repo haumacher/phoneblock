@@ -32,7 +32,6 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchResult;
 import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.app.render.DefaultController;
-import de.haumacher.phoneblock.app.render.Language;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
@@ -42,6 +41,7 @@ import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.meta.MetaSearchService;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -231,7 +231,7 @@ public class SearchServlet extends HttpServlet {
 		try (SqlSession session = db.openSession()) {
 			Set<String> langs;
 			if (userName == null) {
-				langs = Collections.singleton(DefaultController.DEFAULT_LANG.tag);
+				langs = Collections.singleton(Language.getDefault().tag);
 			} else {
 				Users users = session.getMapper(Users.class);
 				String lang = users.getLocale(userName);

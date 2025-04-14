@@ -100,7 +100,21 @@ body.test-system {
 .github-image {
     position: absolute;
     top: 0;
+    left: auto;
     right: 0;
+}
+
+.github-image:dir(rtl) {
+    left: 0;
+    right: auto;
+}
+
+.ltr:dir(rtl) {
+	display: none;
+}
+
+.rtl:dir(ltr) {
+	display: none;
 }
 
 .hero-body {

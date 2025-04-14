@@ -2,7 +2,7 @@
 <html>
 <head th:replace="~{fragments/page :: head(title=#{page.faq.title})}"></head>
 
-<body>
+<body th:dir="${currentLang.direction}">
 <div th:replace="~{fragments/page :: header}"></div>
 
 <section class="section">

@@ -258,6 +258,7 @@ message Ratings {
 }
 
 /** A comment posted for a phone number */
+@Operations("de.haumacher.phoneblock.shared.operations.UserCommentOperations")
 message UserComment {
 	/** Technical identifier of this comment. */
 	string id;

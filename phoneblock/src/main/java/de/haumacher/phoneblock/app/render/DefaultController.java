@@ -1,7 +1,5 @@
 package de.haumacher.phoneblock.app.render;
 
-import static de.haumacher.phoneblock.app.render.Language.lang;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -12,7 +10,6 @@ import java.util.Locale.LanguageRange;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -29,6 +26,7 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -39,52 +37,6 @@ public class DefaultController implements WebController {
 	 * Session attribute specifying the preferred language of type {@link Language}.
 	 */
 	public static final String LANG_ATTR = "lang";
-
-	private static final Language[] LANGUAGES = {
-		lang("ar"     , "arab"  , "Arabic"                ),
-//	    lang("bg"     , "bg"    , "Bulgarian"             ),
-//	    lang("cs"     , "cz"    , "Czech"                 ),
-	    lang("da"     , "dk"    , "Danish"                ),
-	    lang("de"     , "de"    , "German"                ),
-	    lang("el"     , "gr"    , "Greek"                 ),
-//	    lang("en-GB"  , "gb"    , "English (British)"     ),
-	    lang("en-US"  , "us"    , "English (American)"    , "en"),
-	    lang("es"     , "es"    , "Spanish"               ),
-//	    lang("et"     , "et"    , "Estonian"              ),
-//	    lang("fi"     , "fi"    , "Finnish"               ),
-	    lang("fr"     , "fr"    , "French"                ),
-//	    lang("hu"     , "hu"    , "Hungarian"             ),
-//	    lang("id"     , "id"    , "Indonesian"            ),
-	    lang("it"     , "it"    , "Italian"               ),
-//	    lang("ja"     , "jp"    , "Japanese"              ),
-//	    lang("ko"     , "kr"    , "Korean"                ),
-//	    lang("lt"     , "lt"    , "Lithuanian"            ),
-//	    lang("lv"     , "lv"    , "Latvian"               ),
-	    lang("nb"     , "no"    , "Norwegian Bokmål"      ),
-	    lang("nl"     , "nl"    , "Dutch"                 ),
-	    lang("pl"     , "pl"    , "Polish"                ),
-//	    lang("pt-BR"  , "br"    , "Portuguese (Brazilian)"),
-//	    lang("pt-PT"  , "pt"    , "Portuguese"            ),
-//	    lang("ro"     , "ro"    , "Romanian"              ),
-//	    lang("ru"     , "ru"    , "Russian"               ),
-//	    lang("sk"     , "sk"    , "Slovak"                ),
-//	    lang("sl"     , "sl"    , "Slovenian"             ),
-	    lang("sv"     , "sv"    , "Swedish"               ),
-//	    lang("tr"     , "tr"    , "Turkish"               ),
-	    lang("uk"     , "ua"    , "Ukrainian"             ),
-	    lang("zh-Hans", "cn"    , "Chinese"               , "zh"),
-	};
-	
-	private static final Map<String, Language> LANG_BY_TAG = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.tag, l -> l));
-	private static final Map<Locale, Language> LANG_BY_LOCALE = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> Locale.forLanguageTag(l.tag), l -> l));
-	static {
-		for (Language lang : LANGUAGES) {
-			for (Locale fallback : lang.fallbacks) {
-				LANG_BY_LOCALE.put(fallback, lang);
-			}
-		}
-	}
-	public static final Language DEFAULT_LANG = LANGUAGES[0];
 
 	static final String RENDER_TEMPLATE = "renderTemplate";
 
@@ -140,17 +92,17 @@ public class DefaultController implements WebController {
 	}
 
 	public static Language selectLanguage(Locale locale) {
-		Language language = LANG_BY_LOCALE.get(locale);
+		Language language = Language.fromLocale(locale);
 		if (language != null) {
 			return language;
 		}
 		
-		Language fallback = LANG_BY_LOCALE.get(new Locale(locale.getLanguage()));
+		Language fallback = Language.fromLocale(new Locale(locale.getLanguage()));
 		if (fallback != null) {
 			return fallback;
 		}
 		
-		return DEFAULT_LANG;
+		return Language.getDefault();
 	}
 	
 	public static Language selectLanguage(HttpServletRequest request) {
@@ -167,11 +119,11 @@ public class DefaultController implements WebController {
         	
     		// Use browser default
     		List<LanguageRange> acceptLanguage = LanguageRange.parse(request.getHeader("Accept-Language"));
-    		Locale locale = Locale.lookup(acceptLanguage, LANG_BY_LOCALE.keySet());
+    		Locale locale = Locale.lookup(acceptLanguage, Language.supportedLocales());
     		if (locale == null) {
-    			lang = DEFAULT_LANG;
+    			lang = Language.getDefault();
     		} else {
-    			lang = LANG_BY_LOCALE.get(locale);
+    			lang = Language.fromLocale(locale);
     		}
     		
     		if (session != null) {
@@ -201,9 +153,9 @@ public class DefaultController implements WebController {
 
 	public static Language selectLanguage(String selectedLang) {
 		// Normalize value.
-		Language language = LANG_BY_TAG.get(selectedLang);
+		Language language = Language.fromTag(selectedLang);
 		if (language == null) {
-			return DEFAULT_LANG;
+			return Language.getDefault();
 		} else {
 			return language;
 		}
@@ -240,7 +192,7 @@ public class DefaultController implements WebController {
 		ctx.setVariable("fritzbox", Boolean.valueOf(!android && !iphone));
 		
 		ctx.setVariable("ratings", RATINGS);
-		ctx.setVariable("languages", LANGUAGES);
+		ctx.setVariable("languages", Language.all());
 	}
 
 	

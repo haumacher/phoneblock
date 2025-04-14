@@ -43,7 +43,7 @@
 </th:block>
 </head>
 
-<body>
+<body th:dir="${currentLang.direction}">
 <section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
 		<div class="title">
@@ -59,7 +59,7 @@
 			      </span>
 			    </button>
 			  </div>
-			  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+			  <div class="dropdown-menu" dir="ltr" id="dropdown-menu" role="menu">
 			    <div class="dropdown-content">
 			      <a class="dropdown-item" th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
 			    </div>
@@ -69,12 +69,14 @@
 
 		<p class="subtitle" data-tx="t0002">Der Spam-Filter fürs Telefon</p>
 		<a target="_blank" th:href="@{/link/github}">
-			<img alt="Fork me on GitHub" class="github-image is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
-			<img alt="" class="github-image is-hidden-desktop" data-tx="t0049" height="30" th:src="@{/assets/forkme.png}" width="30"/>
+			<img alt="Fork me on GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
+			<img alt="" class="github-image ltr is-hidden-desktop" data-tx="t0049" height="45" th:src="@{/assets/forkme.png}" width="45"/>
+			<img alt="Fork me on GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
+			<img alt="" class="github-image rtl is-hidden-desktop" data-tx="t0055" height="45" th:src="@{/assets/forkme_rtl.png}" width="45"/>
 		</a>
 	</div>
   <div class="hero-foot">
-  <nav aria-label="main navigation" class="navbar" role="navigation">
+  <nav aria-label="main navigation" class="navbar" data-tx="t0056" role="navigation">
 	<div class="navbar-brand">
 		<div class="navbar-item"> 
 		<div class="control has-icons-left has-icons-right">
@@ -88,7 +90,7 @@
 		</div>
 		</div>
 
-		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
 		</a>
 	</div>
 	<div class="navbar-menu" id="navbarBasicExample">
