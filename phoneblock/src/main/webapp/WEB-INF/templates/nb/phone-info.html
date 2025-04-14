@@ -171,7 +171,7 @@
 			"data": {
 				"labels": <th:block th:text="${ratingLabels}"></th:block>,
 				"datasets": [{
-					"label": "Anzahl Bewertungen",
+					"label": "<th:block th:text="#{page.phone-info.ratingCount}"></th:block>",
 					"data": <th:block th:text="${ratingData}"></th:block>,
 					"backgroundColor": <th:block th:text="${ratingBackground}"></th:block>,
 					"borderColor": <th:block th:text="${ratingBorder}"></th:block>,
@@ -194,14 +194,14 @@
 
 	<div class="column is-half">
 	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
-		<canvas aria-label="Søk i løpet av den siste uken" data-tx="t0048" height="200" id="searches" role="img" width="400"></canvas>
+		<canvas aria-label="Søk i løpet av den siste uken" data-tx="t0048" dir="ltr" height="200" id="searches" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="searches-data">
 		{
 			"type": "line",
 			"data": {
 				"labels": <th:block th:text="${searchLabels}"></th:block>,
 				"datasets": [{
-					"label": "Suchanfragen in der letzten Woche",
+					"label": "<th:block th:text="#{page.phone-info.searchRequests}"></th:block>",
 					"data": <th:block th:text="${searchData}"></th:block>,
 					"fill": false,
 					"borderColor": "rgb(75, 192, 192)",
@@ -275,8 +275,8 @@
 </th:block>
 
 	<nav aria-label="paginering" class="pagination is-centered" data-tx="t0049" role="navigation">
-		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Vorherige Nummer</a>
-		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Nächste Nummer</a>
+		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Forrige nummer</a>
+		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Neste nummer</a>
 	</nav>
 </div>
 </section>

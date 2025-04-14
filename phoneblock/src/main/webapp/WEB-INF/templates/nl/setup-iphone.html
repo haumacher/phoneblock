@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Druk op "Account toevoegen" - "Andere" &gt; "CardDAV-account toevoegen".</li>
    		<li data-tx="t0007">Voer je toegangsgegevens in en tik op "Volgende". <dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Gebruikersnaam</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log in</a> om uw gebruikersnaam te zien.</span>
 				</dd>
 
 				<dt><b>Wachtwoord</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Werd direct aan u getoond na de eerste keer inloggen, u kunt <a th:href="@{/settings}">een nieuwe genereren in de instellingen</a> </span>
 				</dd>
 

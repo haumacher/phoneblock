@@ -94,11 +94,11 @@
 			<li data-tx="t0023">Derefter kan du vælge <span class="tag is-danger">3</span> udbyderen <i>CardDAV-udbyder</i>.</li>
 
 			<li data-tx="t0024">Næsten færdig, nu er login-dataene <span class="tag is-danger">4</span>. Det er bedst at overføre dem med Cut&amp;Paste for at undgå tastefejl! <ul>
-					<li> Indtast URL'en til PhoneBlock-adressebogen i feltet <i>Internetadressen til CardDAV-serveren</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> Indtast URL'en til PhoneBlock-adressebogen i feltet <i>Internetadressen til CardDAV-serveren</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Indtast brugernavnet <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>, som du modtog under <a th:href="@{/login(location='/settings')}">registreringen</a>, i feltet <i>Brugernavn</i>. </li>
+					<li> Indtast brugernavnet <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>, som du modtog under <a th:href="@{/login(location='/settings')}">registreringen</a>, i feltet <i>Brugernavn</i>. </li>
 
-					<li>Kodeordet<th:block th:unless="${token}">, som du fik under <a th:href="@{/login(location='/settings')}">registreringen</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> skal nu indtastes i feltet <i>Kodeord</i>. </li>
+					<li>Kodeordet<th:block th:unless="${token}">, som du fik under <a th:href="@{/login(location='/settings')}">registreringen</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a>,</th:block> skal nu indtastes i feltet <i>Kodeord</i>. </li>
 				    </ul>.</li>
 
 			<li data-tx="t0025">Nu kan du bekræfte <span class="tag is-danger">5</span> oprettelsen af den nye telefonbog. Vær opmærksom på dette: Vælg <b>ingen af dine telefoner</b> under "Telefontildeling"! Ellers vil du kun finde SPAM-opkald i kontakterne på din telefon.</li>

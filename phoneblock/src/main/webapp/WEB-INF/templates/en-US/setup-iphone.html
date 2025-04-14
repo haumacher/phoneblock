@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Tap on "Add account" - "Other" &gt; "Add CardDAV account".</li>
    		<li data-tx="t0007">Enter your access data and tap on "Next". <dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>User name</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log in</a> to see your user name.</span>
 				</dd>
 
 				<dt><b>Password</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Was shown to you directly after the first login, you can <a th:href="@{/settings}">generate a new one in the settings</a> </span>
 				</dd>
 

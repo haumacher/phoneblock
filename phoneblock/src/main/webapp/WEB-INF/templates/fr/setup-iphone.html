@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Tape sur "Ajouter un compte" - "Autres" &gt; "Ajouter un compte CardDAV".</li>
    		<li data-tx="t0007">Saisis tes données d'accès et tape sur "Suivant". <dl>
 				<dt><b>Serveur</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Nom d'utilisateur</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Connecte-toi</a> pour voir ton nom d'utilisateur.</span>
 				</dd>
 
 				<dt><b>Mot de passe</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Il t'a été montré directement après ta première connexion, tu peux en générer un nouveau <a th:href="@{/settings}">dans les paramètres</a>.</span>
 				</dd>
 

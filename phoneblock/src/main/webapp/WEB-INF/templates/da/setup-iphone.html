@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Tryk på "Tilføj konto" - "Andet" &gt; "Tilføj CardDAV-konto".</li>
    		<li data-tx="t0007">Indtast dine adgangsdata, og tryk på "Næste". <dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakter/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakter/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Brugernavn</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
 				</dd>
 
 				<dt><b>Password</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Vises til dig direkte efter første login, du kan <a th:href="@{/settings}">generere et nyt i indstillingerne</a> </span>
 				</dd>
 

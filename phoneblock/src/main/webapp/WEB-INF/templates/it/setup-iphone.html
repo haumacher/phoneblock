@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Toccare "Aggiungi account" - "Altro" &gt; "Aggiungi account CardDAV".</li>
    		<li data-tx="t0007">Immettere i dati di accesso e toccare "Avanti". <dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contatti/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contatti/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Nome utente</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Eseguire il login</a> per visualizzare il proprio nome utente.</span>
 				</dd>
 
 				<dt><b>Password</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Vi è stata mostrata direttamente dopo il primo accesso, potete <a th:href="@{/settings}">generarne una nuova nelle impostazioni</a> </span>
 				</dd>
 

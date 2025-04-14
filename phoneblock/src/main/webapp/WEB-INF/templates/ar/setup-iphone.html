@@ -19,17 +19,17 @@
    		<li data-tx="t0006">اضغط على "إضافة حساب" - "أخرى"&gt; "إضافة حساب CardDAV".</li>
    		<li data-tx="t0007">أدخل بيانات الوصول الخاصة بك واضغط على "التالي". <dl>
 				<dt><b>الخادم</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/x4&gt;/x4&gt;/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/x4&gt;/x4&gt;/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>اسم المستخدم</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">تسجيل الدخول</a> لرؤية اسم المستخدم الخاص بك.</span>
 				</dd>
 
 				<dt><b>كلمة المرور</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">تظهر لك مباشرةً بعد تسجيل الدخول الأول، يمكنك <a th:href="@{/settings}">إنشاء كلمة مرور جديدة في الإعدادات</a> </span>
 				</dd>
 

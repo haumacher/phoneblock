@@ -25,7 +25,7 @@
 					</div>
 					<p class="subtitle" data-tx="t0005">使用 "给朋友汇款"，否则 PayPal 会收取荒唐的费用，1 欧元只需 60Ct 到账。</p>
 					<p class="subtitle" data-tx="t0006" th:unless="${loggedIn}">请输入您用户名的前几个字符作为信息，以便我分配付款。</p>
-					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">请输入 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0013" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></span>，以便我分配付款。</p>
+					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">请输入 <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0013" href="#" id="purpose_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></span>，以便我分配付款。</p>
 				  </div>
 				</a>
 			</div>

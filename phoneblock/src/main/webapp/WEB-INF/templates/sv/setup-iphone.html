@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Tryck på "Lägg till konto" - "Övrigt" &gt; "Lägg till CardDAV-konto".</li>
    		<li data-tx="t0007">Ange dina åtkomstuppgifter och tryck på "Nästa". <dl>
 				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakter/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakter/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Användarnamn</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Logga in</a> för att se ditt användarnamn.</span>
 				</dd>
 
 				<dt><b>Lösenord</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Visas för dig direkt efter första inloggningen, du kan <a th:href="@{/settings}">genera ett nytt i inställningarna</a> </span>
 				</dd>
 

@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">Βήμα 4: Προσθέστε ένα βιβλίο διευθύνσεων και εισαγάγετε τα δεδομένα του λογαριασμού PhoneBlock</h2>
 		
 		<ol>
-		<li data-tx="t0003">Επιλέξτε την επιλογή "Σύνδεση με URL και όνομα χρήστη" και εισαγάγετε τη διεύθυνση του βιβλίου διευθύνσεων του PhoneBlock ως "Βασική διεύθυνση URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Επιλέξτε την επιλογή "Σύνδεση με URL και όνομα χρήστη" και εισαγάγετε τη διεύθυνση του βιβλίου διευθύνσεων του PhoneBlock ως "Βασική διεύθυνση URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">Για το "Όνομα χρήστη", εισαγάγετε το όνομα χρήστη που λάβατε κατά την <a th:href="@{/login(location=${currentPage})}">Εγγραφή του PhoneBlock</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">Για το "Όνομα χρήστη", εισαγάγετε το όνομα χρήστη που λάβατε κατά την <a th:href="@{/login(location=${currentPage})}">Εγγραφή του PhoneBlock</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">Ο κωδικός πρόσβασης σας εμφανίστηκε μετά την πρώτη σύνδεση<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">Ο κωδικός πρόσβασης σας εμφανίστηκε μετά την πρώτη σύνδεση<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">Δεν έχετε πλέον τα στοιχεία σύνδεσής σας στο χέρι; Δεν πειράζει, απλά συνδεθείτε και <a th:href="@{/login(location='/settings')}"> επαναφέρετε τον κωδικό πρόσβασης</a> στις ρυθμίσεις.</p>

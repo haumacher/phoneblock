@@ -80,7 +80,7 @@
 	<div class="navbar-brand">
 		<div class="navbar-item"> 
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"/>
+		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Дослідити номер телефону" type="tel"/>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
@@ -90,51 +90,51 @@
 		</div>
 		</div>
 
-		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		<a aria-expanded="false" aria-label="меню" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
 		</a>
 	</div>
 	<div class="navbar-menu" id="navbarBasicExample">
 		<div class="navbar-start">
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Installation</a>
+				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Встановлення</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Anrufbeantworter</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklisten-Telefonbuch</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Автовідповідач</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Блокування телефонної книги</a>
 					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
 					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">FAQ</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Status</a>
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">ПОШИРЕНІ ЗАПИТАННЯ</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Статус</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0010">More</a>
+				<a class="navbar-link prevent-default" data-tx="t0010">Більше</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">An PhoneBlock spenden</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Пожертвувати на PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API für Entwickler</a>
-					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub Project</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Rufsperre hinzufügen</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API для розробників</a>
+					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">Проект GitHub</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Додати заборону дзвінків</a>
 					
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Fehler melden</a>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Повідомити про помилку</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Answerbot App">
+			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Додаток Answerbot">
 				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
 		    </a>
 
-			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
+			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="На сторінку новин">
 				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
 		    </a>
       			
-			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
+			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-стрічка">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>
@@ -146,19 +146,19 @@
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
-						<strong data-tx="t0016">Log in</strong>
+						<strong data-tx="t0016">Увійдіть в систему</strong>
 					</a>
 					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>
-						<strong data-tx="t0017">Settings</strong>
+						<strong data-tx="t0017">Налаштування</strong>
 					</a>
 					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>
-						<strong data-tx="t0018">Log out</strong>
+						<strong data-tx="t0018">Вийдіть з системи</strong>
 					</a>
 				</div>
 			</div>

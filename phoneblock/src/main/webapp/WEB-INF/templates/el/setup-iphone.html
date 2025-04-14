@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Πατήστε "Προσθήκη λογαριασμού" - "Άλλα" &gt; "Προσθήκη λογαριασμού CardDAV".</li>
    		<li data-tx="t0007">Εισάγετε τα δεδομένα πρόσβασης και πατήστε "Επόμενο". <dl>
 				<dt><b>Διακομιστής</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Όνομα χρήστη</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Είσοδος</a> για να δείτε το όνομα χρήστη σας.</span>
 				</dd>
 
 				<dt><b>Κωδικός πρόσβασης</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Σας εμφανίστηκε αμέσως μετά την πρώτη είσοδο, μπορείτε <a th:href="@{/settings}">να νέο να δημιουργήσετε στις ρυθμίσεις</a> </span>
 				</dd>
 

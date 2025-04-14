@@ -19,17 +19,17 @@
    		<li data-tx="t0006">Натисніть "Додати обліковий запис" - "Інше" &gt; "Додати обліковий запис CardDAV".</li>
    		<li data-tx="t0007">Введіть дані доступу і натисніть "Далі". <dl>
 				<dt><b>Сервер</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b>Ім'я користувача</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Увійдіть</a>, щоб побачити своє ім'я користувача.</span>
 				</dd>
 
 				<dt><b>Пароль</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span th:unless="${token}">Був показаний вам одразу після першого входу, ви можете <a th:href="@{/settings}">згенерувати новий в налаштуваннях</a> </span>
 				</dd>
 

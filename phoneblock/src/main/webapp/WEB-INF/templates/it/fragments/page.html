@@ -80,7 +80,7 @@
 	<div class="navbar-brand">
 		<div class="navbar-item"> 
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Telefonnummer untersuchen" type="tel"/>
+		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Controllare il numero di telefono" type="tel"/>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
@@ -96,45 +96,45 @@
 	<div class="navbar-menu" id="navbarBasicExample">
 		<div class="navbar-start">
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Installation</a>
+				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Installazione</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Anrufbeantworter</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklisten-Telefonbuch</a>
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Segreteria telefonica</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Elenco telefonico di blocco</a>
 					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
 					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
 				</div>
 			</div>
 
 			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">FAQ</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Status</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Stato</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0010">More</a>
+				<a class="navbar-link prevent-default" data-tx="t0010">Di più</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">An PhoneBlock spenden</a>
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Donazione a PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API für Entwickler</a>
-					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub Project</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Rufsperre hinzufügen</a>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API per gli sviluppatori</a>
+					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">Progetto GitHub</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Aggiungere il blocco delle chiamate</a>
 					
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Fehler melden</a>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Segnala un errore</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Answerbot App">
+			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="App Answerbot">
 				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
 		    </a>
 
-			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="Zur News-Seite">
+			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="Alla pagina delle notizie">
 				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
 		    </a>
       			
-			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-Feed">
+			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="Feed RSS">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>
@@ -146,19 +146,19 @@
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
-						<strong data-tx="t0016">Log in</strong>
+						<strong data-tx="t0016">Accedi</strong>
 					</a>
 					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>
-						<strong data-tx="t0017">Settings</strong>
+						<strong data-tx="t0017">Impostazioni</strong>
 					</a>
 					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>
-						<strong data-tx="t0018">Log out</strong>
+						<strong data-tx="t0018">Disconnettersi</strong>
 					</a>
 				</div>
 			</div>

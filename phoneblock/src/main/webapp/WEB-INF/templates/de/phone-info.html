@@ -226,7 +226,7 @@
 			"data": {
 				"labels": <th:block th:text="${ratingLabels}"></th:block>,
 				"datasets": [{
-					"label": "Anzahl Bewertungen",
+					"label": "<th:block th:text="#{page.phone-info.ratingCount}"></th:block>",
 					"data": <th:block th:text="${ratingData}"></th:block>,
 					"backgroundColor": <th:block th:text="${ratingBackground}"></th:block>,
 					"borderColor": <th:block th:text="${ratingBorder}"></th:block>,
@@ -251,14 +251,14 @@
 
 	<div class="column is-half">
 	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
-		<canvas aria-label="Suchanfragen in der letzten Woche" data-tx="t0048" height="200" id="searches" role="img" width="400"></canvas>
+		<canvas aria-label="Suchanfragen in der letzten Woche" data-tx="t0048" dir="ltr" height="200" id="searches" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="searches-data">
 		{
 			"type": "line",
 			"data": {
 				"labels": <th:block th:text="${searchLabels}"></th:block>,
 				"datasets": [{
-					"label": "Suchanfragen in der letzten Woche",
+					"label": "<th:block th:text="#{page.phone-info.searchRequests}"></th:block>",
 					"data": <th:block th:text="${searchData}"></th:block>,
 					"fill": false,
 					"borderColor": "rgb(75, 192, 192)",
