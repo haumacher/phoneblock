@@ -148,7 +148,7 @@ class TestNumberTree {
 		
 		tree.markWildcards();
 		
-		List<NumberBlock> blocks = tree.createNumberBlocks(1, 300);
+		List<NumberBlock> blocks = tree.createNumberBlocks(1, 300, "+49");
 		int numbers = 0;
 		int wildcard = 0;
 		

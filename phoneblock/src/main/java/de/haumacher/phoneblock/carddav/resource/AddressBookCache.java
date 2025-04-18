@@ -184,7 +184,7 @@ public class AddressBookCache implements ServletContextListener {
 			numberTree.markWildcards();
 		}
 		
-		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength());
+		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
 	}
 	
 	private static final class Cache<K, V> {

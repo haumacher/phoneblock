@@ -313,7 +313,7 @@ public class NumberTree {
 		
 	}
 	
-	public List<NumberBlock> createNumberBlocks(int minVotes, int maxEntries) {
+	public List<NumberBlock> createNumberBlocks(int minVotes, int maxEntries, String dialPrefix) {
 		class BlockCreator implements NumberIterator {
 			List<WeightedNumber> _numbers = new ArrayList<>();
 			
@@ -323,6 +323,11 @@ public class NumberTree {
 				
 				if (weight < minVotes) {
 					return;
+				}
+				
+				if (number.startsWith(dialPrefix)) {
+					// Increase weight of local numbers. This is a heuristics until votes are also counted per country.
+					weight = weight + 100;
 				}
 				
 				_numbers.add(new WeightedNumber(number, weight));
