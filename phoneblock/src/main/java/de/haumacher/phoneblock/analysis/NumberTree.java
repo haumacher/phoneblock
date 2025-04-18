@@ -15,8 +15,23 @@ import java.util.stream.Collectors;
  */
 public class NumberTree {
 	
-	private Node _root = new Node();
+	private Node _root = new RootNode();
 	
+	
+	private static class RootNode extends Node {
+		@Override
+		protected int width() {
+			return 11;
+		}
+		
+		@Override
+		protected int index(char digit) {
+			if (digit == '+') {
+				return 10;
+			}
+			return super.index(digit);
+		}
+	}
 	
 	private static class Node {
 		private Node[] _next;
@@ -38,7 +53,7 @@ public class NumberTree {
 			char ch = phone.charAt(index);
 			
 			if (_next == null) {
-				_next = new Node[10];
+				_next = new Node[width()];
 			}
 			
 			int digit = index(ch);
@@ -49,6 +64,10 @@ public class NumberTree {
 			}
 			
 			return next.append(phone, index + 1, weight, age);
+		}
+
+		protected int width() {
+			return 10;
 		}
 		
 		/**
@@ -61,7 +80,7 @@ public class NumberTree {
 		/**
 		 * The given digit as integer (index). 
 		 */
-		private static int index(char digit) {
+		protected int index(char digit) {
 			int result = digit - '0';
 			if (result < 0 || result > 9) {
 				throw new IllegalArgumentException("Not a digit: " + digit);

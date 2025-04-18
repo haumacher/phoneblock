@@ -97,6 +97,33 @@ class TestNumberTree {
 	}
 	
 	@Test
+	void testInternational() {
+		NumberTree tree = new NumberTree();
+		tree.insert("+4930123010");
+		tree.insert("+4930123011");
+		tree.insert("+4930123012");
+		tree.insert("+4930123020");
+		tree.insert("+4930123021");
+		tree.insert("+4930123022");
+		tree.insert("+4930123030");
+		tree.insert("+4930123031");
+		tree.insert("+4930123032");
+		tree.insert("+4330123010");
+		tree.insert("+4330123011");
+		tree.insert("+4330123012");
+		tree.insert("+4330123020");
+		tree.insert("+4330123021");
+		tree.insert("+4330123022");
+		tree.insert("+4330123030");
+		tree.insert("+4330123031");
+		tree.insert("+4330123032");
+		tree.markWildcards();
+		List<String> entries = tree.createBlockEntries();
+		
+		assertEquals(List.of("+43301230*", "+49301230*"), entries);
+	}
+	
+	@Test
 	void testRealData() throws IOException {
 		NumberTree tree = new NumberTree();
 
