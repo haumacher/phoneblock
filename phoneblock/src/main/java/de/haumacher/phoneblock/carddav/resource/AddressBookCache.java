@@ -152,7 +152,7 @@ public class AddressBookCache implements ServletContextListener {
 				if (phone.startsWith("00")) {
 					phone = "+" + phone.substring(2);
 				} else {
-					phone = dialPrefix + phone.substring(1);
+					phone = "+49" + phone.substring(1);
 				}
 				
 				if (nationalOnly && !phone.startsWith(dialPrefix)) {
