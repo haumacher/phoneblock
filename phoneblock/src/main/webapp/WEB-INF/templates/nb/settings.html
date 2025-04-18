@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Landskoden din</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Telefonnumre med landskoden din vil vises i blokkeringslisten din i forkortet form (som nasjonale numre). SPAM-rapporter fra deg har en spesiell vekt for andre brukere i ditt land.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Maksimal størrelse på blokklisten</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Oppsummer tall med "*"</label>
 			  <p class="help" data-tx="t0030">Hvis du velger dette alternativet, vil nabonumre i blokkeringslisten kombineres til ett nummer med et jokertegn ("*"). Mange profesjonelle spammere har en tilkobling med flere enheter og bruker en hel blokk med numre som avsendere. Med dette alternativet blir alle disse numrene automatisk blokkert, og blokkeringslisten din kan inneholde flere spamnumre. Fritz!Box støtter telefonbøker med jokertegn og blokkerer deretter hele det angitte nummerområdet. Det er imidlertid ikke sikkert at du kan bruke jokernumre på andre enheter.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Kun nasjonale nummer</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Dette alternativet er nyttig hvis du har blokkert alle utenlandske numre i Fritz! Med dette alternativet vises bare nasjonale numre i blokkeringslisten. Dette betyr at flere numre som er relevante for deg, får plass i blokkeringslisten din. Kontroller at du har angitt landskoden riktig ovenfor.</p> 
 			</div>
 			
 			<div class="field is-grouped">

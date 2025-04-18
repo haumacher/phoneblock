@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Su código de país</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Los números de teléfono con el prefijo de su país aparecerán en su lista de bloqueados de forma abreviada (como números nacionales). Los informes de SPAM procedentes de usted tienen un peso especial para otros usuarios de su país.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Tamaño máximo de la lista de bloqueo</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Resumir números con "*"</label>
 			  <p class="help" data-tx="t0030">Si selecciona esta opción, los números vecinos de su lista de bloqueo se combinarán en un solo número con un comodín ("*"). Muchos spammers profesionales tienen una conexión multidispositivo y utilizan un bloque entero de números como remitentes. Con esta opción, todos estos números se bloquean automáticamente y su lista de bloqueo puede incluir más números de spam. Fritz!Box admite guías telefónicas con números comodín y bloquea todo el rango de números especificado. Sin embargo, es posible que no pueda utilizar números comodín en otros dispositivos.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Sólo números nacionales</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">¡Esta opción es útil si has bloqueado todos los números extranjeros en tu buzón de Fritz! Con esta opción, sólo los números nacionales aparecerán en su lista de bloqueo. Esto significa que más números relevantes para ti cabrán en tu lista de bloqueo. Asegúrate de que has configurado correctamente tu código de país.</p> 
 			</div>
 			
 			<div class="field is-grouped">

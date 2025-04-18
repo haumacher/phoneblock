@@ -124,7 +124,9 @@ public class OAuthLoginServlet extends HttpServlet {
 				}
 			}
 			
-			String passwd = db.createUser(login, displayName, language.tag);
+			String dialPrefix = DefaultController.selectDialPrefix(req);
+			
+			String passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 			db.setGoogleId(login, googleId, null);
 			if (email != null) {
 				try {

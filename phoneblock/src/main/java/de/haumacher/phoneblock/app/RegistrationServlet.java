@@ -72,8 +72,9 @@ public class RegistrationServlet extends HttpServlet {
 				String displayName = DB.toDisplayName(email);
 				
 				Language language = DefaultController.selectLanguage(req);
+				String dialPrefix = DefaultController.selectDialPrefix(req);
 				
-				passwd = db.createUser(login, displayName, language.tag);
+				passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 				db.setEmail(login, email);
 			} else {
 				// No longer known.

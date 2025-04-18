@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Код вашої країни</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Телефонні номери з кодом вашої країни з'являтимуться у вашому списку блокування у скороченому вигляді (як національні номери). Повідомлення про спам від вас мають особливу вагу для інших користувачів у вашій країні.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Максимальний розмір блоклиста</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Підсумовування чисел за допомогою символу "*"</label>
 			  <p class="help" data-tx="t0030">Якщо ви виберете цю опцію, сусідні номери у вашому списку блокування будуть об'єднані в один номер за допомогою символу підстановки ("*"). Багато професійних спамерів мають з'єднання з декількома пристроями і використовують цілий блок номерів як відправників. З цією опцією всі ці номери будуть автоматично заблоковані, і ваш список блокування може включати більше спам-номерів. Fritz!Box підтримує телефонні книги зі спеціальними номерами і блокує весь вказаний діапазон номерів. Однак, можливо, ви не зможете використовувати підставні номери на інших пристроях.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Тільки національні номери</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Ця опція корисна, якщо ви заблокували всі іноземні номери у вашій скриньці Fritz! З цією опцією у вашому списку блокування з'являться тільки національні номери. Це означає, що більше номерів, які мають відношення до вас, потраплять до вашого списку блокування. Переконайтеся, що ви правильно встановили код вашої країни.</p> 
 			</div>
 			
 			<div class="field is-grouped">

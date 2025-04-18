@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Ton indicatif de pays</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Les numéros de téléphone avec l'indicatif de ton pays apparaissent dans ta liste de blocage sous forme raccourcie (comme numéros nationaux). Les rapports de SPAM te concernant ont un poids particulier pour les autres utilisateurs dans ton pays.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Taille maximale de la liste de blocs</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Combiner les numéros avec "*".</label>
 			  <p class="help" data-tx="t0030">Si tu sélectionnes cette option, les numéros adjacents dans ta liste de blocage seront regroupés en un seul numéro avec un joker ("*"). De nombreux spammeurs professionnels ont une connexion multi-appareils et utilisent tout un bloc de numéros comme expéditeur. Avec cette option, tous ces numéros sont automatiquement bloqués et ta liste de blocage peut accueillir davantage de numéros de spam. La Fritz!Box supporte les répertoires téléphoniques avec des numéros Wildcard et bloque alors toute la plage de numéros indiquée. Cependant, sur d'autres appareils, il se peut que tu ne puisses pas utiliser les numéros Wildcard.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Numéros nationaux uniquement</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Cette option est utile si tu as bloqué globalement tous les numéros étrangers dans ta Fritz!Box. Avec cette option, seuls les numéros nationaux apparaissent dans ta liste de blocage. Ainsi, davantage de numéros pertinents pour toi peuvent figurer dans ta liste de blocage. Assure-toi que tu as correctement configuré ton indicatif de pays ci-dessus.</p> 
 			</div>
 			
 			<div class="field is-grouped">

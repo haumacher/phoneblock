@@ -30,6 +30,7 @@ import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
 import de.haumacher.phoneblock.jmx.ManagementService;
+import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
@@ -99,6 +100,7 @@ public class Application implements ServletContextListener {
 		SecureRandomService rnd;
 		SipService sip;
 		_services = new ServletContextListener[] {
+			new LocationService(),
 			rnd = new SecureRandomService(),
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(

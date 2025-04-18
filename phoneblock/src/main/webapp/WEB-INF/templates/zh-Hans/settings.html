@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">您的国家代码</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">带有您所在国家代码的电话号码将以缩写形式（作为国家号码）出现在您的拦截列表中。对于您所在国家的其他用户来说，您的垃圾邮件报告具有特殊权重。</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">最大拦截列表大小</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> 用 "*"来概括数字</label>
 			  <p class="help" data-tx="t0030">如果选择此选项，您的拦截列表中的相邻号码将合并为一个带通配符（"*"）的号码。许多专业垃圾邮件发送者拥有多设备连接，并使用整个号码块作为发送者。有了这个选项，所有这些号码都会被自动拦截，您的拦截列表也可以包含更多的垃圾邮件号码。Fritz!Box 支持带有通配符号码的电话簿，然后会阻止整个指定的号码范围。但是，您可能无法在其他设备上使用通配符号码。</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">仅限本国号码</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">如果您已经在 Fritz!使用此选项，只有本国号码会出现在您的拦截列表中。这意味着更多与您相关的号码将出现在您的拦截列表中。请确保您在上面正确设置了国家代码。</p> 
 			</div>
 			
 			<div class="field is-grouped">

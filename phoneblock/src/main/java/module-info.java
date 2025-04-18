@@ -40,6 +40,7 @@ module de.haumacher.phoneblock {
 	requires transitive com.h2database;
 	requires transitive com.opencsv;
 	requires transitive com.googlecode.ezvcard;
+	requires transitive com.ip2location;
 	requires java.base;
 	requires java.desktop;
 	requires java.management;

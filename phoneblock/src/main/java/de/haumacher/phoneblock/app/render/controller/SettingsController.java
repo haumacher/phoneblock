@@ -1,6 +1,8 @@
 package de.haumacher.phoneblock.app.render.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -15,11 +17,45 @@ import de.haumacher.phoneblock.db.DBContribution;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import de.haumacher.phoneblock.location.Countries;
+import de.haumacher.phoneblock.location.model.Country;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 public class SettingsController extends RequireLoginController {
 	
+	public static class DialPrefix {
+		public final String dialPrefix;
+		public final Country country;
+
+		public DialPrefix(String prefix, Country country) {
+			this.dialPrefix = prefix;
+			this.country = country;
+		}
+		
+		public Country getCountry() {
+			return country;
+		}
+		
+		public String getDialPrefix() {
+			return dialPrefix;
+		}
+	}
+	
+	private static final List<DialPrefix> DIAL_PREFIXES;
+	
+	static {
+		List<DialPrefix> prefixes = new ArrayList<>();
+		for (Country country : Countries.all()) {
+			for (String dialPrefix : country.getDialPrefixes()) {
+				prefixes.add(new DialPrefix(dialPrefix, country));
+			}
+		}
+		prefixes.sort(Comparator.comparing(d -> d.dialPrefix));
+		
+		DIAL_PREFIXES = prefixes;
+	}
+
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);
@@ -30,6 +66,7 @@ public class SettingsController extends RequireLoginController {
 		UserSettings settings = DBService.getInstance().getSettings(userName);
 		
 		request.setAttribute("settings", settings);
+		request.setAttribute("dialPrefixes", DIAL_PREFIXES);
 		
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {

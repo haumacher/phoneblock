@@ -78,7 +78,7 @@ class TestDB {
 	
 	@Test
 	void testAuthToken() {
-		_db.createUser("user1", "User 1", "de");
+		_db.createUser("user1", "User 1", "de", "+49");
 
 		long time = 1000;
 		final long createTime = time;
@@ -272,8 +272,8 @@ class TestDB {
 	
 	@Test
 	void testUserManagement() throws IOException {
-		_db.addUser("foo@bar.com", "Mr. X", "de", "012300000");
-		_db.addUser("baz@bar.com", "Mr. Y", "de", "012300000");
+		_db.addUser("foo@bar.com", "Mr. X", "de", "+49", "012300000");
+		_db.addUser("baz@bar.com", "Mr. Y", "de", "+49", "012300000");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000")));
         assertNull(_db.basicAuth(header("foo@bar.com", "0321")));
@@ -466,7 +466,7 @@ class TestDB {
 	
 	@Test
 	void testRating() {
-		_db.createUser("user-1", "User 1", "de");
+		_db.createUser("user-1", "User 1", "de", "+49");
 		
 		long time = 1;
 		
@@ -499,9 +499,9 @@ class TestDB {
 
 	@Test
 	public void testContribution() {
-		_db.createUser("aaaaaaaa-bbbb", "Noname", "de");
-		_db.createUser("cccccccc-dddd", "Egon Maier", "de");
-		_db.createUser("eeeeeeee-ffff", "Erna Busch", "de");
+		_db.createUser("aaaaaaaa-bbbb", "Noname", "de", "+49");
+		_db.createUser("cccccccc-dddd", "Egon Maier", "de", "+49");
+		_db.createUser("eeeeeeee-ffff", "Erna Busch", "de", "+49");
 		
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);
@@ -559,10 +559,10 @@ class TestDB {
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
-			users.addUser("user-1", "U1", "de", passwd, 1000);
-			users.addUser("user-2a", "U2a", "de", passwd, 2000);
-			users.addUser("user-2b", "U2b", "de", passwd, 2000);
-			users.addUser("user-3", "U3", "de", passwd, 3000);
+			users.addUser("user-1", "U1", "de", "+49", passwd, 1000);
+			users.addUser("user-2a", "U2a", "de", "+49", passwd, 2000);
+			users.addUser("user-2b", "U2b", "de", "+49", passwd, 2000);
+			users.addUser("user-3", "U3", "de", "+49", passwd, 3000);
 			tx.commit();
 		}
 		

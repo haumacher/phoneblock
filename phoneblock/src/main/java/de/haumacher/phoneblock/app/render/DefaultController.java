@@ -26,6 +26,9 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.location.Countries;
+import de.haumacher.phoneblock.location.LocationService;
+import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +40,13 @@ public class DefaultController implements WebController {
 	 * Session attribute specifying the preferred language of type {@link Language}.
 	 */
 	public static final String LANG_ATTR = "lang";
+	
+	/**
+	 * Session attribute specifying the user's dial prefix ("+49" for Germany).
+	 * 
+	 * @see Country#getDialPrefix()
+	 */
+	public static final String DIAL_PREFIX_ATTR = "dialPrefix";
 
 	static final String RENDER_TEMPLATE = "renderTemplate";
 
@@ -69,7 +79,9 @@ public class DefaultController implements WebController {
 	public void process(IServletWebExchange webExchange, ITemplateEngine templateEngine, Writer writer) throws IOException {
 		HttpServletRequest request = (HttpServletRequest) webExchange.getNativeRequestObject();
 		
-        Language lang = selectLanguage(request);
+        Language lang = resolveLanguage(request);
+        resolveDialPrefix(request);
+        
         WebContext ctx = new WebContext(webExchange, lang.locale);
         
         fillContext(ctx, request);
@@ -83,8 +95,6 @@ public class DefaultController implements WebController {
         	LOG.debug("Serving template {} for {}.", template, path);
         }
 
-        request.setAttribute("currentLang", lang);
-        
 		// Note: Template is required to start with "/".
 		String i18nTemplate = "/" + lang.tag + template;
         
@@ -105,6 +115,12 @@ public class DefaultController implements WebController {
 		return Language.getDefault();
 	}
 	
+	private static Language resolveLanguage(HttpServletRequest request) {
+		Language lang = selectLanguage(request);
+        request.setAttribute("currentLang", lang);
+        return lang;
+	}
+
 	public static Language selectLanguage(HttpServletRequest request) {
 		String selectedLang = request.getParameter(LANG_ATTR);
 		Language lang;
@@ -151,6 +167,55 @@ public class DefaultController implements WebController {
         return lang;
 	}
 
+	private static void resolveDialPrefix(HttpServletRequest request) {
+		String dialPrefix = selectDialPrefix(request);
+		request.setAttribute("currentDialPrefix", dialPrefix);
+	}
+	
+	public static String selectDialPrefix(HttpServletRequest request) {
+		String selectedPrefix = request.getParameter(DIAL_PREFIX_ATTR);
+		String dialPrefix = null;
+		if (selectedPrefix == null) {
+			HttpSession session = request.getSession(false);
+			if (session != null) {
+				dialPrefix = (String) session.getAttribute(DIAL_PREFIX_ATTR);
+				if (dialPrefix != null) {
+					return dialPrefix;
+				}
+			}
+			
+			// Detect from address.
+			Country country = LocationService.getInstance().getCountry(request);
+			if (country != null) {
+				List<String> dialPrefixes = country.getDialPrefixes();
+				dialPrefix = dialPrefixes.size() > 0 ? dialPrefixes.get(0) : null;
+			}
+			
+			if (session != null) {
+				// Remember to make next lookup more efficient.
+				session.setAttribute(DIAL_PREFIX_ATTR, dialPrefix);
+			}
+		} else {
+			dialPrefix = Countries.selectDialPrefix(selectedPrefix);
+			
+			// Remember requested language.
+			request.getSession().setAttribute(DIAL_PREFIX_ATTR, dialPrefix);
+			
+			// Remember in personal settings.
+			String login = LoginFilter.getAuthenticatedUser(request);
+			if (login != null) {
+				DB db = DBService.getInstance();
+				try (SqlSession tx = db.openSession()) {
+					Users users = tx.getMapper(Users.class);
+					users.setDialPrefix(login, dialPrefix);
+					tx.commit();
+				}
+			}
+		}
+		
+		return dialPrefix;
+	}
+	
 	public static Language selectLanguage(String selectedLang) {
 		// Normalize value.
 		Language language = Language.fromTag(selectedLang);

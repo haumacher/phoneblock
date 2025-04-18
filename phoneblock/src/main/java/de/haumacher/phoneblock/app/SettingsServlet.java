@@ -19,6 +19,7 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import de.haumacher.phoneblock.location.Countries;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -169,6 +170,8 @@ public class SettingsServlet extends HttpServlet {
 		int minVotes = Integer.parseInt(req.getParameter("minVotes"));
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
 		boolean wildcards = req.getParameter("wildcards") != null;
+		String myDialPrefix = Countries.selectDialPrefix(req.getParameter("myDialPrefix"));
+		boolean nationalOnly = req.getParameter("nationalOnly") != null;
 		
 		if (minVotes <= 2) {
 			minVotes = 2;
@@ -207,6 +210,14 @@ public class SettingsServlet extends HttpServlet {
 		settings.setMinVotes(minVotes);
 		settings.setMaxLength(maxLength);
 		settings.setWildcards(wildcards);
+		
+		// Verify input.
+		if (myDialPrefix != null) {
+			settings.setDialPrefix(myDialPrefix);
+		}
+		
+		settings.setNationalOnly(nationalOnly);
+		
 		db.updateSettings(settings);
 		
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.

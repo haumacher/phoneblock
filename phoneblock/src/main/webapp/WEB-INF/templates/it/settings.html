@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Codice del paese</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">I numeri telefonici con il prefisso del vostro Paese appariranno nell'elenco di blocco in forma abbreviata (come numeri nazionali). Le segnalazioni di SPAM da parte vostra hanno un peso particolare per gli altri utenti del vostro Paese.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Dimensione massima della lista di blocco</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Riassumere i numeri con "*".</label>
 			  <p class="help" data-tx="t0030">Se si seleziona questa opzione, i numeri vicini nella blocklist verranno combinati in un unico numero con un carattere jolly ("*"). Molti spammer professionisti dispongono di una connessione a più dispositivi e utilizzano un intero blocco di numeri come mittenti. Con questa opzione, tutti questi numeri vengono automaticamente bloccati e la vostra blocklist può includere più numeri di spam. Fritz!Box supporta le rubriche telefoniche con numeri jolly e blocca l'intero intervallo di numeri specificato. Tuttavia, su altri dispositivi potrebbe non essere possibile utilizzare i numeri jolly.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Solo numeri nazionali</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Questa opzione è utile se avete bloccato tutti i numeri stranieri nella vostra casella Fritz! Con questa opzione, nella blocklist appariranno solo i numeri nazionali. Ciò significa che un maggior numero di numeri rilevanti per voi sarà inserito nella vostra blocklist. Assicuratevi di aver impostato correttamente il vostro codice paese.</p> 
 			</div>
 			
 			<div class="field is-grouped">

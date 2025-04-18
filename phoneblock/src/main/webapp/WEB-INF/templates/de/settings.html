@@ -67,6 +67,24 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Deine Landesvorwahl</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">
+			  	Telefonnummer mit Deiner Landesvorwahl tauchen in Deiner Blockliste gekürzt (als nationale Nummern) auf. SPAM-Reports von Dir
+			  	haben ein besonderes Gewicht für andere Nutzer in Deinem Land.
+			  </p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Maximale Blocklist-Größe</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -133,6 +151,19 @@
 			  blockiert und deine Blocklist kann mehr Spam-Nummern aufnehmen. Die Fritz!Box unterstützt Telefonbücher mit 
 			  Wildcard-Nummern und blockiert dann den ganzen angegebenen Nummernbereich. Auf anderen Geräten kannst Du
 			  aber Wildcard-Nummer möglicherweise nicht verwenden.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Nur nationale Nummern</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">
+			  	Dies Option ist sinnvoll, wenn Du in Deiner Fritz!Box alle ausländischen Nummern pauschal gesperrt hast. Mit dieser Option
+			  	tauchen in Deiner Blockliste nur nationale Nummern auf. Damit passen mehr für Dich relevante Nummern in Deine Blockliste.
+			  	Stelle sicher, dass Du Deine Landesvorwahl oben korrekt eingestellt hast.
+			  </p> 
 			</div>
 			
 			<div class="field is-grouped">

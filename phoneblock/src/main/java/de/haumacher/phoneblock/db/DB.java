@@ -511,9 +511,9 @@ public class DB {
 	 * @param lang The preferred language (locale tag) of the user.
 	 * @return The randomly generated password for the account.
 	 */
-	public String createUser(String login, String displayName, String lang) {
+	public String createUser(String login, String displayName, String lang, String dialPrefix) {
 		String passwd = createPassword(20);
-		addUser(login, displayName, lang, passwd);
+		addUser(login, displayName, lang, dialPrefix, passwd);
 		return passwd;
 	}
 
@@ -1432,10 +1432,10 @@ public class DB {
 	/** 
 	 * Adds the given user with the given password.
 	 */
-	public void addUser(String login, String displayName, String lang, String passwd) {
+	public void addUser(String login, String displayName, String lang, String dialPrefix, String passwd) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.addUser(login, displayName, lang, pwhash(passwd), System.currentTimeMillis());
+			users.addUser(login, displayName, lang, dialPrefix, pwhash(passwd), System.currentTimeMillis());
 			session.commit();
 		}
 	}
@@ -1539,7 +1539,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength(), settings.isWildcards());
+			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength(), settings.isWildcards(), settings.getDialPrefix(), settings.isNationalOnly());
 			session.commit();
 		}
 	}

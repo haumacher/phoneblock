@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Din landekode</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Telefonnumre med din landekode vises i din blokeringsliste i forkortet form (som nationale numre). SPAM-rapporter fra dig har en særlig vægt for andre brugere i dit land.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Maksimal størrelse på blokliste</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Opsummer tal med "*"</label>
 			  <p class="help" data-tx="t0030">Hvis du vælger denne mulighed, vil nabonumre i din blokliste blive kombineret til ét nummer med et jokertegn ("*"). Mange professionelle spammere har forbindelse til flere enheder og bruger en hel blok af numre som afsendere. Med denne indstilling bliver alle disse numre automatisk blokeret, og din blokeringsliste kan indeholde flere spamnumre. Fritz!Box understøtter telefonbøger med jokertegn og blokerer derefter hele det angivne nummerinterval. Det er dog ikke sikkert, at du kan bruge jokertegn på andre enheder.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Kun nationale numre</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Denne indstilling er nyttig, hvis du har blokeret alle udenlandske numre i din Fritz! boks. Med denne indstilling vises kun nationale numre i din blokeringsliste. Det betyder, at flere numre, der er relevante for dig, vil få plads på din blokeringsliste. Sørg for, at du har indstillet din landekode korrekt ovenfor.</p> 
 			</div>
 			
 			<div class="field is-grouped">

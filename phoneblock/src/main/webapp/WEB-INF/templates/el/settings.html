@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Ο κωδικός της χώρας σας</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Οι τηλεφωνικοί αριθμοί με τον κωδικό της χώρας σας θα εμφανίζονται στη λίστα μπλοκ σας σε συντομογραφία (ως εθνικοί αριθμοί). Οι αναφορές SPAM από εσάς έχουν ιδιαίτερη βαρύτητα για άλλους χρήστες στη χώρα σας.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Μέγιστο μέγεθος λίστας μπλοκ</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Συνοψίστε τους αριθμούς με "*"</label>
 			  <p class="help" data-tx="t0030">Εάν επιλέξετε αυτή την επιλογή, οι γειτονικοί αριθμοί στη λίστα αποκλεισμού σας θα συνδυαστούν σε έναν αριθμό με ένα μπαλαντέρ ("*"). Πολλοί επαγγελματίες spammers έχουν σύνδεση πολλών συσκευών και χρησιμοποιούν ένα ολόκληρο μπλοκ αριθμών ως αποστολείς. Με αυτήν την επιλογή, όλοι αυτοί οι αριθμοί αποκλείονται αυτόματα και η λίστα μπλοκ σας μπορεί να περιλαμβάνει περισσότερους αριθμούς ανεπιθύμητης αλληλογραφίας. Το Fritz!Box υποστηρίζει τηλεφωνικούς καταλόγους με αριθμούς μπαλαντέρ και στη συνέχεια μπλοκάρει ολόκληρο το καθορισμένο εύρος αριθμών. Ωστόσο, ενδέχεται να μην μπορείτε να χρησιμοποιήσετε αριθμούς μπαλαντέρ σε άλλες συσκευές.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Μόνο εθνικοί αριθμοί</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Αυτή η επιλογή είναι χρήσιμη εάν έχετε αποκλείσει όλους τους ξένους αριθμούς στο Fritz! Με αυτή την επιλογή, μόνο εθνικοί αριθμοί θα εμφανίζονται στη λίστα αποκλεισμού σας. Αυτό σημαίνει ότι περισσότεροι αριθμοί που αφορούν εσάς θα χωρέσουν στη λίστα αποκλεισμού σας. Βεβαιωθείτε ότι έχετε ορίσει σωστά τον κωδικό χώρας σας παραπάνω.</p> 
 			</div>
 			
 			<div class="field is-grouped">

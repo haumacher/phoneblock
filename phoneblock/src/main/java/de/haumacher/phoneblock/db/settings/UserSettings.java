@@ -27,6 +27,12 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** @see #getLang() */
 	public static final String LANG__PROP = "lang";
 
+	/** @see #getDialPrefix() */
+	public static final String DIAL_PREFIX__PROP = "dialPrefix";
+
+	/** @see #isNationalOnly() */
+	public static final String NATIONAL_ONLY__PROP = "nationalOnly";
+
 	/** @see #getEmail() */
 	public static final String EMAIL__PROP = "email";
 
@@ -57,23 +63,29 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** Identifier for the property {@link #getLang()} in binary format. */
 	static final int LANG__ID = 4;
 
+	/** Identifier for the property {@link #getDialPrefix()} in binary format. */
+	static final int DIAL_PREFIX__ID = 5;
+
+	/** Identifier for the property {@link #isNationalOnly()} in binary format. */
+	static final int NATIONAL_ONLY__ID = 6;
+
 	/** Identifier for the property {@link #getEmail()} in binary format. */
-	static final int EMAIL__ID = 5;
+	static final int EMAIL__ID = 7;
 
 	/** Identifier for the property {@link #getMinVotes()} in binary format. */
-	static final int MIN_VOTES__ID = 6;
+	static final int MIN_VOTES__ID = 8;
 
 	/** Identifier for the property {@link #getMaxLength()} in binary format. */
-	static final int MAX_LENGTH__ID = 7;
+	static final int MAX_LENGTH__ID = 9;
 
 	/** Identifier for the property {@link #isWildcards()} in binary format. */
-	static final int WILDCARDS__ID = 8;
+	static final int WILDCARDS__ID = 10;
 
 	/** Identifier for the property {@link #getLastAccess()} in binary format. */
-	static final int LAST_ACCESS__ID = 9;
+	static final int LAST_ACCESS__ID = 11;
 
 	/** Identifier for the property {@link #getCredit()} in binary format. */
-	static final int CREDIT__ID = 10;
+	static final int CREDIT__ID = 12;
 
 	private long _id = 0L;
 
@@ -82,6 +94,10 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	private String _displayName = "";
 
 	private String _lang = "";
+
+	private String _dialPrefix = "";
+
+	private boolean _nationalOnly = false;
 
 	private String _email = "";
 
@@ -186,6 +202,48 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetLang(String value) {
 		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
+	}
+
+	/**
+	 * The user's country dial prefix ("+49" for Germany).
+	 */
+	public final String getDialPrefix() {
+		return _dialPrefix;
+	}
+
+	/**
+	 * @see #getDialPrefix()
+	 */
+	public de.haumacher.phoneblock.db.settings.UserSettings setDialPrefix(String value) {
+		internalSetDialPrefix(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getDialPrefix()} without chain call utility. */
+	protected final void internalSetDialPrefix(String value) {
+		_listener.beforeSet(this, DIAL_PREFIX__PROP, value);
+		_dialPrefix = value;
+	}
+
+	/**
+	 * Whether the user's blocklist should contain nationl numbers only.
+	 */
+	public final boolean isNationalOnly() {
+		return _nationalOnly;
+	}
+
+	/**
+	 * @see #isNationalOnly()
+	 */
+	public de.haumacher.phoneblock.db.settings.UserSettings setNationalOnly(boolean value) {
+		internalSetNationalOnly(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isNationalOnly()} without chain call utility. */
+	protected final void internalSetNationalOnly(boolean value) {
+		_listener.beforeSet(this, NATIONAL_ONLY__PROP, value);
+		_nationalOnly = value;
 	}
 
 	/**
@@ -347,6 +405,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			LOGIN__PROP, 
 			DISPLAY_NAME__PROP, 
 			LANG__PROP, 
+			DIAL_PREFIX__PROP, 
+			NATIONAL_ONLY__PROP, 
 			EMAIL__PROP, 
 			MIN_VOTES__PROP, 
 			MAX_LENGTH__PROP, 
@@ -366,6 +426,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case LOGIN__PROP: return getLogin();
 			case DISPLAY_NAME__PROP: return getDisplayName();
 			case LANG__PROP: return getLang();
+			case DIAL_PREFIX__PROP: return getDialPrefix();
+			case NATIONAL_ONLY__PROP: return isNationalOnly();
 			case EMAIL__PROP: return getEmail();
 			case MIN_VOTES__PROP: return getMinVotes();
 			case MAX_LENGTH__PROP: return getMaxLength();
@@ -383,6 +445,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case LOGIN__PROP: internalSetLogin((String) value); break;
 			case DISPLAY_NAME__PROP: internalSetDisplayName((String) value); break;
 			case LANG__PROP: internalSetLang((String) value); break;
+			case DIAL_PREFIX__PROP: internalSetDialPrefix((String) value); break;
+			case NATIONAL_ONLY__PROP: internalSetNationalOnly((boolean) value); break;
 			case EMAIL__PROP: internalSetEmail((String) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
@@ -415,6 +479,10 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getDisplayName());
 		out.name(LANG__PROP);
 		out.value(getLang());
+		out.name(DIAL_PREFIX__PROP);
+		out.value(getDialPrefix());
+		out.name(NATIONAL_ONLY__PROP);
+		out.value(isNationalOnly());
 		out.name(EMAIL__PROP);
 		out.value(getEmail());
 		out.name(MIN_VOTES__PROP);
@@ -436,6 +504,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case LOGIN__PROP: setLogin(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case DISPLAY_NAME__PROP: setDisplayName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LANG__PROP: setLang(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case DIAL_PREFIX__PROP: setDialPrefix(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case NATIONAL_ONLY__PROP: setNationalOnly(in.nextBoolean()); break;
 			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__PROP: setMaxLength(in.nextInt()); break;
@@ -469,6 +539,10 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getDisplayName());
 		out.name(LANG__ID);
 		out.value(getLang());
+		out.name(DIAL_PREFIX__ID);
+		out.value(getDialPrefix());
+		out.name(NATIONAL_ONLY__ID);
+		out.value(isNationalOnly());
 		out.name(EMAIL__ID);
 		out.value(getEmail());
 		out.name(MIN_VOTES__ID);
@@ -513,6 +587,8 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case LOGIN__ID: setLogin(in.nextString()); break;
 			case DISPLAY_NAME__ID: setDisplayName(in.nextString()); break;
 			case LANG__ID: setLang(in.nextString()); break;
+			case DIAL_PREFIX__ID: setDialPrefix(in.nextString()); break;
+			case NATIONAL_ONLY__ID: setNationalOnly(in.nextBoolean()); break;
 			case EMAIL__ID: setEmail(in.nextString()); break;
 			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
 			case MAX_LENGTH__ID: setMaxLength(in.nextInt()); break;

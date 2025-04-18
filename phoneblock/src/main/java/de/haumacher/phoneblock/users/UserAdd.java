@@ -35,7 +35,7 @@ public class UserAdd {
 		} else {
 			login = args[0];
 		}
-		String passwd = db.createUser(login, login, "de");
+		String passwd = db.createUser(login, login, "de", "+49");
 		
 		System.out.println(passwd);
 		

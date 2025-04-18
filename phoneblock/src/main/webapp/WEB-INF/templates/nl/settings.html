@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">Je landcode</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Telefoonnummers met jouw landcode verschijnen in afgekorte vorm (als nationale nummers) in jouw blokkadelijst. SPAM-meldingen van jou hebben een speciaal gewicht voor andere gebruikers in jouw land.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">Maximale grootte bloklijst</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Nummers samenvatten met "*"</label>
 			  <p class="help" data-tx="t0030">Als je deze optie selecteert, worden naburige nummers in je blokkadelijst gecombineerd tot één nummer met een jokerteken ("*"). Veel professionele spammers hebben een verbinding met meerdere apparaten en gebruiken een heel blok nummers als afzenders. Met deze optie worden al deze nummers automatisch geblokkeerd en kan je blocklist meer spamnummers bevatten. De Fritz!Box ondersteunt telefoonboeken met wildcardnummers en blokkeert dan het hele opgegeven nummerbereik. Het is echter mogelijk dat je wildcardnummers niet kunt gebruiken op andere apparaten.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Alleen nationale nummers</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Deze optie is handig als je alle buitenlandse nummers hebt geblokkeerd in je Fritz! box. Met deze optie verschijnen alleen nationale nummers in je blokkadelijst. Dit betekent dat er meer nummers die relevant zijn voor jou in je blokkadelijst passen. Zorg ervoor dat je hierboven je landcode correct hebt ingesteld.</p> 
 			</div>
 			
 			<div class="field is-grouped">

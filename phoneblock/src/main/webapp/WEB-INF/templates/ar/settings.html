@@ -53,6 +53,21 @@
 			</div>
 
 			<div class="field">
+			  <label class="label" data-tx="t0094">رمز بلدك</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">ستظهر أرقام الهواتف التي تحمل رمز بلدك في قائمة الحظر الخاصة بك بشكل مختصر (كأرقام وطنية). تقارير الرسائل الاقتحامية منك لها وزن خاص بالنسبة للمستخدمين الآخرين في بلدك.</p>
+			</div>
+
+			<div class="field">
 			  <label class="label" data-tx="t0014">الحد الأقصى لحجم قائمة الحظر</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
@@ -95,6 +110,15 @@
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> تلخيص الأرقام بـ "*"</label>
 			  <p class="help" data-tx="t0030">إذا قمت بتحديد هذا الخيار، سيتم دمج الأرقام المتجاورة في قائمة الحظر الخاصة بك في رقم واحد مع حرف بدل ("*"). العديد من مرسلي البريد العشوائي المحترفين لديهم اتصال متعدد الأجهزة ويستخدمون كتلة كاملة من الأرقام كمرسلين. باستخدام هذا الخيار، يتم حظر جميع هذه الأرقام تلقائيًا ويمكن أن تتضمن قائمة الحظر الخاصة بك المزيد من الأرقام غير المرغوب فيها. يدعم Fritz!Box دفاتر الهواتف التي تحتوي على أرقام أحرف البدل ومن ثم يحظر نطاق الأرقام المحددة بالكامل. ومع ذلك، قد لا تتمكن من استخدام أرقام أحرف البدل على أجهزة أخرى.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">الأرقام الوطنية فقط</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">هذا الخيار مفيد إذا كنت قد حظرت جميع الأرقام الأجنبية في صندوق Fritz! باستخدام هذا الخيار، ستظهر الأرقام الوطنية فقط في قائمة الحظر الخاصة بك. هذا يعني أن المزيد من الأرقام ذات الصلة بك ستظهر في قائمة الحظر الخاصة بك. تأكد من أنك قمت بتعيين رمز بلدك بشكل صحيح أعلاه.</p> 
 			</div>
 			
 			<div class="field is-grouped">

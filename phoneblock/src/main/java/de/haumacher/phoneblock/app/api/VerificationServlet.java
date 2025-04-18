@@ -53,9 +53,10 @@ public class VerificationServlet extends HttpServlet {
 			if (login == null) {
 				
 				Language language = DefaultController.selectLanguage(req);
+				String dialPrefix = DefaultController.selectDialPrefix(req);
 				
 				login = UUID.randomUUID().toString();
-				password = db.createUser(login, email, language.tag);
+				password = db.createUser(login, email, language.tag, dialPrefix);
 				db.setEmail(login, email);
 			} else {
 				password = db.resetPassword(login);
