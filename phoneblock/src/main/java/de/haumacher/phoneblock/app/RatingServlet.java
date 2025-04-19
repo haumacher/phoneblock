@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,8 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.location.LocationService;
+import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -51,6 +54,7 @@ public class RatingServlet extends HttpServlet {
 		String comment = req.getParameter("comment");
 
 		String userName = LoginFilter.getAuthenticatedUser(req);
+		String dialPrefix = null;
         if (userName == null) {
     		String captcha = req.getParameter("captcha");
     		if (captcha == null || captcha.trim().isEmpty()) {
@@ -65,6 +69,8 @@ public class RatingServlet extends HttpServlet {
     			sendFailure(req, resp, phoneId, ratingName, comment, "Der Sicherheitscode stimmt nicht überein.");
     			return;
     		}
+    		
+    		dialPrefix = LocationService.getInstance().getDialPrefix(req);
         }
         
 		if (comment != null) {
@@ -83,7 +89,7 @@ public class RatingServlet extends HttpServlet {
 				Language language = DefaultController.selectLanguage(req);
 
 				DB db = DBService.getInstance();
-				db.addRating(userName, number, rating, comment, language.tag, System.currentTimeMillis());
+				db.addRating(userName, number, dialPrefix, rating, comment, language.tag, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
 				

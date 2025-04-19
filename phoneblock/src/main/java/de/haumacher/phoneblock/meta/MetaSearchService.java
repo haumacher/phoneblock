@@ -141,15 +141,15 @@ public class MetaSearchService implements ServletContextListener {
 	 * @param bot
 	 *        Whether a bot requested the info.
 	 */
-	public List<UserComment> fetchComments(PhoneNumer phoneId) {
-		return createSearch(phoneId).search().getComments();
+	public List<UserComment> fetchComments(PhoneNumer phoneId, String dialPrefix) {
+		return createSearch(phoneId, dialPrefix).search().getComments();
 	}
 
 	/**
 	 * Schedules a meta search for a given phone number.
 	 */
 	public void scheduleMetaSearch(PhoneNumer phoneId) {
-		_jobs.add(() -> createSearch(phoneId).search().searchPerformed());
+		_jobs.add(() -> createSearch(phoneId, null).search().searchPerformed());
 	}
 	
 	/**
@@ -164,7 +164,7 @@ public class MetaSearchService implements ServletContextListener {
 	 *        The phone number to search comments and votes for.
 	 */
 	public void scheduleMetaSearch(int votes, long lastVote, PhoneNumer phoneId) {
-		_jobs.add(() -> createSearch(phoneId).addVotes(votes, lastVote).search().searchPerformed());
+		_jobs.add(() -> createSearch(phoneId, null).addVotes(votes, lastVote).search().searchPerformed());
 	}
 
 	private void reSchedule(long now) {
@@ -207,8 +207,8 @@ public class MetaSearchService implements ServletContextListener {
 	/** 
 	 * Creates a search for the given phone number.
 	 */
-	private SearchOperation createSearch(PhoneNumer number) {
-		return new SearchOperation(_scheduler, _indexer, _plugins, number);
+	private SearchOperation createSearch(PhoneNumer number, String dialPrefix) {
+		return new SearchOperation(_scheduler, _indexer, _plugins, number, dialPrefix);
 	}
 
 	/** 
@@ -232,7 +232,7 @@ public class MetaSearchService implements ServletContextListener {
 			System.err.println("Invalid number: " + phoneText);
 			return;
 		}
-		List<UserComment> comments = searchService.createSearch(number).search().getComments();
+		List<UserComment> comments = searchService.createSearch(number, "+49").search().getComments();
 		for (var comment : comments) {
 			System.out.println(comment);
 		}

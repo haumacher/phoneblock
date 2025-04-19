@@ -127,6 +127,7 @@ public class AddressResource extends Resource {
 			Users users = session.getMapper(Users.class);
 			
 			long currentUser = users.getUserId(_principal);
+			String dialPrefix = users.getDialPrefix(_principal);
 			
 			if (card.getTelephoneNumbers().size() > 1) {
 				LOG.warn("Prevent putting card with multiple numbers: " + card);
@@ -148,7 +149,7 @@ public class AddressResource extends Resource {
 						blockList.removePersonalization(currentUser, phoneId);
 						blockList.addPersonalization(currentUser, phoneId);
 						
-						db.processVotesAndPublish(spamreport, number, 2, System.currentTimeMillis());
+						db.processVotesAndPublish(spamreport, number, dialPrefix, 2, System.currentTimeMillis());
 					}
 				}
 				

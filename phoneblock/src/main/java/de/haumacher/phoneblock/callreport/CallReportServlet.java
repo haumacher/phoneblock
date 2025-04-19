@@ -18,6 +18,7 @@ import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,9 +37,14 @@ public class CallReportServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
+			return;
+		}
+
 		try {
 			DB db = DBService.getInstance();
-			String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
 			
 			ReportInfo info = db.getCallReportInfo(userName);
 			resp.setContentType("text/json");
@@ -52,9 +58,14 @@ public class CallReportServlet extends HttpServlet {
 	
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
+			return;
+		}
+
 		try {
 			CallReport callReport = CallReport.readCallReport(new JsonReader(new ReaderAdapter(req.getReader())));
-			String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
 			
 			DB db = DBService.getInstance();
 			db.storeCallReport(userName, callReport);

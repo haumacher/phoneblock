@@ -47,7 +47,7 @@ public class RateServlet extends HttpServlet {
 		}
 
 		Rating rating = rateRequest.getRating();
-		DBService.getInstance().addRating(userName, number, rating, rateRequest.getComment(), null, System.currentTimeMillis());
+		DBService.getInstance().addRating(userName, number, null, rating, rateRequest.getComment(), null, System.currentTimeMillis());
 		
 		ServletUtil.sendMessage(resp, HttpServletResponse.SC_OK, "Rating recorded.");
 	}

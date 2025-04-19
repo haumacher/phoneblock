@@ -751,14 +751,14 @@ public class DB {
 	 * @param votes The votes to add/remove for the given phone number.
 	 * @param time The current time to update the last update time to.
 	 */
-	public void processVotes(PhoneNumer phone, int votes, long time) {
+	public void processVotes(PhoneNumer phone, String dialPrefix, int votes, long time) {
 		if (votes == 0) {
 			return;
 		}
 		
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			processVotesAndPublish(reports, phone, votes, time);
+			processVotesAndPublish(reports, phone, dialPrefix, votes, time);
 			session.commit();
 		}
 	}
@@ -768,8 +768,8 @@ public class DB {
 	 * 
 	 * @return Whether an index update should be performed.
 	 */
-	public boolean processVotesAndPublish(SpamReports reports, PhoneNumer phone, int votes, long time) {
-		boolean updateRequired = processVotes(reports, phone, votes, time);
+	public boolean processVotesAndPublish(SpamReports reports, PhoneNumer phone, String dialPrefix, int votes, long time) {
+		boolean updateRequired = processVotes(reports, phone, dialPrefix, votes, time);
 		if (updateRequired) {
 			_indexer.publishUpdate(phone);
 		}
@@ -779,7 +779,7 @@ public class DB {
 	/**
 	 * Updates the votes for a certain number.
 	 */
-	public boolean processVotes(SpamReports reports, PhoneNumer number, int votes, long time) {
+	public boolean processVotes(SpamReports reports, PhoneNumer number, String dialPrefix, int votes, long time) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
@@ -801,7 +801,22 @@ public class DB {
 		
 		pingRelatedNumbers(reports, phone, time);
 		
+		if (votes > 0) {
+			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, time);
+		}
+		
 		return classify(oldVotes) != classify(newVotes);
+	}
+
+	private void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
+		if (dialPrefix == null) {
+			return;
+		}
+
+		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+		if (cnt == 0) {
+			reports.insertNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+		}
 	}
 
 	/**
@@ -882,7 +897,7 @@ public class DB {
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
 	 */
-	public void addRating(String userName, PhoneNumer number, Rating rating, String comment, String lang, long now) {
+	public void addRating(String userName, PhoneNumer number, String dialPrefix, Rating rating, String comment, String lang, long now) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 		
 		boolean updateRequired;
@@ -918,10 +933,11 @@ public class DB {
 					}
 				}
 				
+				DBUserSettings settings = users.getSettingsById(userId);
 				if (lang == null) {
-					DBUserSettings settings = users.getSettingsById(userId);
 					lang = settings.getLang();
 				}
+				dialPrefix = settings.getDialPrefix();
 			}
 			
 			UserComment userComment = UserComment.create()
@@ -933,7 +949,7 @@ public class DB {
 				.setLang(lang)
 				.setCreated(now);
 			
-			updateRequired = addRating(reports, number, userComment, recordVote);
+			updateRequired = addRating(reports, number, dialPrefix, userComment, recordVote);
 			
 			session.commit();
 		}
@@ -949,7 +965,7 @@ public class DB {
 	 * 
 	 * @return Whether an index update is required.
 	 */
-	public boolean addRating(SpamReports reports, PhoneNumer number, UserComment comment, boolean recordVote) {
+	public boolean addRating(SpamReports reports, PhoneNumer number, String dialPrefix, UserComment comment, boolean recordVote) {
 		boolean updateRequired = false;
 		
 		String phone = NumberAnalyzer.getPhoneId(number);
@@ -966,7 +982,7 @@ public class DB {
 		}
 
 		if (recordVote) {
-			updateRequired |= processVotes(reports, number, Ratings.getVotes(rating), created);
+			updateRequired |= processVotes(reports, number, dialPrefix, Ratings.getVotes(rating), created);
 			if (rating != Rating.B_MISSED) {
 				Rating oldRating = rating(reports, phone);
 				
@@ -1191,7 +1207,7 @@ public class DB {
 		return minVotes;
 	}
 
-	private DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
+	public DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
 		Users users = session.getMapper(Users.class);
 		return users.getSettingsRaw(login);
 	}
@@ -1655,7 +1671,7 @@ public class DB {
 			if (stateBefore == null || stateBefore.booleanValue()) {
 				// Do not add positive votes, if the number was voted positive before. This prevents vandals 
 				// from deleting the whole list by repeatedly adding numbers to the exclude list.
-				processVotesAndPublish(spamreport, number, -1, System.currentTimeMillis());
+				processVotesAndPublish(spamreport, number, "unknown", -1, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -1909,6 +1925,7 @@ public class DB {
 			long now = System.currentTimeMillis();
 		
 			long userId = users.getUserId(login);
+			String dialPrefix = users.getDialPrefix(login);
 			int cnt = users.updateReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
 			if (cnt == 0) {
 				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
@@ -1927,7 +1944,7 @@ public class DB {
 					users.insertCaller(userId, phoneId, now);
 				}
 				
-				processVotesAndPublish(reports, number, 2, now);
+				processVotesAndPublish(reports, number, dialPrefix, 2, now);
 			}
 			
 			session.commit();

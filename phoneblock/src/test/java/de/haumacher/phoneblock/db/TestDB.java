@@ -443,7 +443,7 @@ class TestDB {
 	}
 	
 	private void processVotes(String phoneId, int votes, long time) {
-		_db.processVotes(NumberAnalyzer.analyze(phoneId), votes, time);
+		_db.processVotes(NumberAnalyzer.analyze(phoneId), "+49", votes, time);
 	}
 
 	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
@@ -487,7 +487,7 @@ class TestDB {
 	}
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
-		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), rating, comment, "de", now);
+		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), "+49", rating, comment, "de", now);
 	}
 
 	public List<? extends UserComment> getComments(String phone) {

@@ -45,7 +45,23 @@ public interface SpamReports {
 			where PHONE = #{phone}
 			""")
 	int addVote(String phone, int delta, long now);
-
+	
+	@Insert("""
+			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, VOTES, CALLS, LASTACCESS) 
+			values (#{phone}, #{dialPrefix}, #{searches}, #{votes}, #{calls}, #{now})
+			""")
+	int insertNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	
+	@Update("""
+			update NUMBERS_LOCALE set 
+				SEARCHES = SEARCHES + #{searches},
+				VOTES = VOTES + #{votes},
+				CALLS = CALLS + #{calls},
+				LASTACCESS = #{now}
+			where PHONE = #{phone} and DIAL = #{dialPrefix}
+			""")
+	int updateNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	
 	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
 	

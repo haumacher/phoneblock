@@ -37,9 +37,11 @@ import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
@@ -205,7 +207,16 @@ public class SearchServlet extends HttpServlet {
 		int minVotes;
 		try (SqlSession session = db.openSession()) {
 			String userName = LoginFilter.getAuthenticatedUser(req);
-			minVotes = db.getMinVotes(session, userName);
+			
+			String dialPrefix;
+			if (userName == null) {
+				minVotes = DB.MIN_VOTES;
+				dialPrefix = LocationService.getInstance().getDialPrefix(req);
+			} else {
+				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
+				minVotes = settings.getMinVotes();
+				dialPrefix = settings.getDialPrefix();
+			}
 			
 			Set<String> langs = new HashSet<>();
 			langs.add(DefaultController.selectLanguage(req).tag);
@@ -214,15 +225,15 @@ public class SearchServlet extends HttpServlet {
 				Language language = DefaultController.selectLanguage(locale);
 				langs.add(language.tag);
 			}
-
-			searchResult = analyzeDb(db, session, number, isSeachHit, langs);
+			
+			searchResult = analyzeDb(db, session, number, dialPrefix, isSeachHit, langs);
 		}
 		
 		
 		sendResult(req, resp, searchResult, minVotes);
 	}
 
-	public static SearchResult analyze(String query, String userName) {
+	public static SearchResult analyze(String query, String userName, String dialPrefix) {
 		PhoneNumer number = extractNumber(query);
 		if (number == null) {
 			return null;
@@ -235,10 +246,11 @@ public class SearchServlet extends HttpServlet {
 			} else {
 				Users users = session.getMapper(Users.class);
 				String lang = users.getLocale(userName);
+				dialPrefix = users.getDialPrefix(userName);
 				langs = Collections.singleton(lang);
 			}
 
-			return analyzeDb(db, session, number, true, langs);
+			return analyzeDb(db, session, number, dialPrefix, true, langs);
 		}
 	}
 
@@ -255,7 +267,7 @@ public class SearchServlet extends HttpServlet {
 		return number;
 	}
 
-	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, boolean isSeachHit, Set<String> langs) {
+	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
 		SpamReports reports = session.getMapper(SpamReports.class);
 		
 		String phone = NumberAnalyzer.getPhoneId(number);
@@ -273,7 +285,7 @@ public class SearchServlet extends HttpServlet {
 		
 		// Note: Search for comments first, since new comments may change the state of the number.
 		if (isSeachHit) {
-			comments = MetaSearchService.getInstance().fetchComments(number).stream().filter(c -> langs.contains(c.getLang())).toList();
+			comments = MetaSearchService.getInstance().fetchComments(number, dialPrefix).stream().filter(c -> langs.contains(c.getLang())).toList();
 		} else {
 			comments = reports.getComments(phone, langs);
 		}

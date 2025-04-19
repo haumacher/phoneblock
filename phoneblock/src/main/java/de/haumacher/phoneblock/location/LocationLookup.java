@@ -2,6 +2,7 @@ package de.haumacher.phoneblock.location;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import de.haumacher.phoneblock.location.model.Country;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +34,17 @@ public interface LocationLookup {
 		}
 		
 		return getCountry(ipAddress);
+	}
+	
+	default String getDialPrefix(HttpServletRequest req) {
+		Country country = LocationService.getInstance().getCountry(req);
+		if (country != null) {
+			List<String> dialPrefixes = country.getDialPrefixes();
+			if (!dialPrefixes.isEmpty()) {
+				return dialPrefixes.get(0);
+			}
+		}
+		return null;
 	}
 	
 }
