@@ -17,25 +17,28 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Zarejestruj się w PhoneBlock.</a></li>
    		<li data-tx="t0005">Otwórz "Ustawienia" &gt; "Kontakty" &gt; "Konta".</li>
    		<li data-tx="t0006">Stuknij w "Dodaj konto" - "Inne" &gt; "Dodaj konto CardDAV".</li>
-   		<li data-tx="t0007">Wprowadź dane dostępu i dotknij "Dalej". <dl>
-				<dt><b>Serwer</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakty/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></dd>
+   		<li>
+   			<div data-tx="t0007">Wprowadź swoje dane dostępu i dotknij "Kontynuuj".</div>
+   			<dl>
+				<dt><b data-tx="t0016">Serwer</b></dt>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>Nazwa użytkownika</b></dt>
+				<dt><b data-tx="t0017">Nazwa użytkownika</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Zaloguj się</a> aby zobaczyć swoją nazwę użytkownika.</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Zaloguj się</a>, aby zobaczyć swoją nazwę użytkownika.</span>
 				</dd>
 
-				<dt><b>Hasło</b></dt>
+				<dt><b data-tx="t0019">hasło</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">Wyświetlone bezpośrednio po pierwszym logowaniu, możesz <a th:href="@{/settings}">wygenerować nowe w ustawieniach</a> </span>
+				<span data-tx="t0020" th:unless="${token}">Został wyświetlony bezpośrednio po pierwszym logowaniu, możesz wygenerować nowy <a th:href="@{/settings}">w ustawieniach</a>.</span>
 				</dd>
 
-				<dt><b>Opis</b></dt>
-				<dd>Blokada telefonu</dd>		
-   			         </dl>.</li>
+				<dt><b data-tx="t0021">Opis</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
+   			</dl>
+   		</li>
    		<li data-tx="t0008">Aktywuj "Kontakty" i dotknij "Zapisz".</li>
 		<li data-tx="t0009">Teraz będziesz widzieć połączenia z "SPAM: ..." w książce kontaktów i kiedy zadzwonią. Dzięki temu można od razu sprawdzić, czy warto odebrać połączenie lub oddzwonić.</li>
    		</ol>

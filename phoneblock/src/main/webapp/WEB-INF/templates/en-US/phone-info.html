@@ -18,7 +18,7 @@
 		<span class="tag is-info is-success" data-tx="t0002" th:case="'whitelisted'"><i class="fa-solid fa-star"></i> On the white list</span>
 		<span class="tag is-info is-success" data-tx="t0004" th:case="'legitimate'">No complaints</span>
 		<span class="tag is-info is-warning" data-tx="t0003" th:case="'wildcard'">Number pad with suspected spam</span>
-		<span class="tag is-info is-warning" data-tx="t0005" th:case="'suspicious'">Complaint has been lodged</span>
+		<span class="tag is-info is-warning" data-tx="t0005" th:case="'suspicious'">Complaint has been logged</span>
 		<span class="tag is-info is-warning" data-tx="t0034" th:case="'archived'">Old complaints</span>
 		<span class="tag is-info is-danger" data-tx="t0006" th:case="'blocked'">Blocked</span>
 		</th:block>
@@ -50,7 +50,7 @@
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">Votes for blocking: <th:block th:text="${info.votes}"></th:block></li>
 		
-		<li data-tx="t0012" th:if="${info.votesWildcard} &gt; ${info.votes}">Votes for locking the numeric keypad: <th:block th:text="${info.votesWildcard}"></th:block></li>
+		<li data-tx="t0012" th:if="${info.votesWildcard} &gt; ${info.votes}">Votes for blocking the number block: <th:block th:text="${info.votesWildcard}"></th:block></li>
 		
 		<li data-tx="t0013" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Last complaint from: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
 

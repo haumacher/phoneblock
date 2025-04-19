@@ -17,25 +17,28 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Registratevi con PhoneBlock.</a></li>
    		<li data-tx="t0005">Aprire "Impostazioni" &gt; "Contatti" &gt; "Account".</li>
    		<li data-tx="t0006">Toccare "Aggiungi account" - "Altro" &gt; "Aggiungi account CardDAV".</li>
-   		<li data-tx="t0007">Immettere i dati di accesso e toccare "Avanti". <dl>
-				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contatti/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></dd>
+   		<li>
+   			<div data-tx="t0007">Inserite i vostri dati di accesso e toccate "Continua".</div>
+   			<dl>
+				<dt><b data-tx="t0016">Server</b></dt>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>Nome utente</b></dt>
+				<dt><b data-tx="t0017">Nome utente</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Eseguire il login</a> per visualizzare il proprio nome utente.</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log in</a> per vedere il proprio nome utente.</span>
 				</dd>
 
-				<dt><b>Password</b></dt>
+				<dt><b data-tx="t0019">password</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">Vi è stata mostrata direttamente dopo il primo accesso, potete <a th:href="@{/settings}">generarne una nuova nelle impostazioni</a> </span>
+				<span data-tx="t0020" th:unless="${token}">È stato visualizzato direttamente dopo il primo accesso, è possibile generarne uno nuovo <a th:href="@{/settings}">nelle impostazioni</a>.</span>
 				</dd>
 
-				<dt><b>Descrizione</b></dt>
-				<dd>Blocco telefonico</dd>		
-   			         </dl></li>
+				<dt><b data-tx="t0021">Descrizione del</b></dt>
+				<dd data-tx="t0022">Blocco del telefono</dd>		
+   			</dl>
+   		</li>
    		<li data-tx="t0008">Attivare "Contatti" e toccare "Salva".</li>
 		<li data-tx="t0009">Ora vedrete le chiamate con "SPAM: ..." nella vostra rubrica e quando squillano. Potrete così capire subito se vale la pena rispondere o richiamare.</li>
    		</ol>

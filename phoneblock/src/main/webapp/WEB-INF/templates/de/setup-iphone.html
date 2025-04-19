@@ -23,25 +23,26 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Melde Dich bei PhoneBlock an.</a></li>
    		<li data-tx="t0005">Öffne "Einstellungen" &gt; "Kontakte" &gt; "Accounts".</li>
    		<li data-tx="t0006">Tippe auf "Account hinzufügen" - "Andere" &gt; "CardDAV-Account hinzufügen".</li>
-   		<li data-tx="t0007">Gib deine Zugangsdaten ein und tippe auf "Weiter".
+   		<li>
+   			<div data-tx="t0007">Gib deine Zugangsdaten ein und tippe auf "Weiter".</div>
    			<dl>
-				<dt><b>Server</b></dt>
+				<dt><b data-tx="t0016">Server</b></dt>
 				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>Benutzername</b></dt>
+				<dt><b data-tx="t0017">Benutzername</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Melde Dich an</a>, um Deinen Benutzernamen zu sehen.</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Melde Dich an</a>, um Deinen Benutzernamen zu sehen.</span>
 				</dd>
 
-				<dt><b>Passwort</b></dt>
+				<dt><b data-tx="t0019">Passwort</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">Wurde Dir direkt nach der ersten Anmeldung angezeigt, Du kannst <a th:href="@{/settings}">in den Einstellungen</a> ein neues generieren.</span>
+				<span data-tx="t0020" th:unless="${token}">Wurde Dir direkt nach der ersten Anmeldung angezeigt, Du kannst <a th:href="@{/settings}">in den Einstellungen</a> ein neues generieren.</span>
 				</dd>
 
-				<dt><b>Beschreibung</b></dt>
-				<dd>PhoneBlock</dd>		
+				<dt><b data-tx="t0021">Beschreibung</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
    			</dl>
    		</li>
    		<li data-tx="t0008">Aktiviere "Kontakte" und tippe auf "Sichern".</li>

@@ -17,25 +17,28 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Inscris-toi sur PhoneBlock.</a></li>
    		<li data-tx="t0005">Ouvre "Paramètres" &gt; "Contacts" &gt; "Comptes".</li>
    		<li data-tx="t0006">Tape sur "Ajouter un compte" - "Autres" &gt; "Ajouter un compte CardDAV".</li>
-   		<li data-tx="t0007">Saisis tes données d'accès et tape sur "Suivant". <dl>
-				<dt><b>Serveur</b></dt>
+   		<li>
+   			<div data-tx="t0007">Saisis tes données d'accès et tape sur "Continuer".</div>
+   			<dl>
+				<dt><b data-tx="t0016">Serveur</b></dt>
 				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>Nom d'utilisateur</b></dt>
+				<dt><b data-tx="t0017">Nom d'utilisateur</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Connecte-toi</a> pour voir ton nom d'utilisateur.</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Inscrivez-vous</a> pour voir votre nom d'utilisateur.</span>
 				</dd>
 
-				<dt><b>Mot de passe</b></dt>
+				<dt><b data-tx="t0019">Mot de passe</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">Il t'a été montré directement après ta première connexion, tu peux en générer un nouveau <a th:href="@{/settings}">dans les paramètres</a>.</span>
+				<span data-tx="t0020" th:unless="${token}">T'a été affiché directement après la première connexion, tu peux en générer un nouveau <a th:href="@{/settings}">dans les paramètres</a>.</span>
 				</dd>
 
-				<dt><b>Description</b></dt>
-				<dd>PhoneBlock</dd>		
-   			         </dl></li>
+				<dt><b data-tx="t0021">Description</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
+   			</dl>
+   		</li>
    		<li data-tx="t0008">Active "Contacts" et tape sur "Sauvegarder".</li>
 		<li data-tx="t0009">Tu peux maintenant voir les appels avec "SPAM : ..." dans ton carnet de contacts et à la sonnerie. Tu peux ainsi voir immédiatement si cela vaut la peine de répondre ou de rappeler.</li>
    		</ol>

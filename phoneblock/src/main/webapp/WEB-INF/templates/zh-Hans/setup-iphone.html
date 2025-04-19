@@ -17,25 +17,28 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">在 PhoneBlock 注册。</a></li>
    		<li data-tx="t0005">打开 "设置"&gt;"通讯录"&gt;"账户"。</li>
    		<li data-tx="t0006">点击 "添加账户" - "其他" &gt; "添加 CardDAV 账户"。</li>
-   		<li data-tx="t0007">输入您的访问数据，然后点击 "下一步"。<dl>
-				<dt><b>服务器</b></dt>
+   		<li>
+   			<div data-tx="t0007">输入您的访问数据，然后点击 "继续"。</div>
+   			<dl>
+				<dt><b data-tx="t0016">服务器</b></dt>
 				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>用户名</b></dt>
+				<dt><b data-tx="t0017">用户名</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">登录</a>，查看用户名。</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">登录</a>，查看您的用户名。</span>
 				</dd>
 
-				<dt><b>密码</b></dt>
+				<dt><b data-tx="t0019">暗号</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">第一次登录后直接显示给您，您可以<a th:href="@{/settings}">在设置中生成一个新的密码</a> </span>
+				<span data-tx="t0020" th:unless="${token}">第一次登录后直接显示，您可以在设置中生成一个新的<a th:href="@{/settings}"></a>。</span>
 				</dd>
 
-				<dt><b>描述</b></dt>
-				<dd>电话区块</dd>		
-   			         </dl> </li>
+				<dt><b data-tx="t0021">说明</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
+   			</dl>
+   		</li>
    		<li data-tx="t0008">激活 "通讯录 "并点击 "保存"。</li>
 		<li data-tx="t0009">现在，您可以在联系人簿中看到标有 "SPAM: ..." 的来电以及来电铃声。这样你就可以立即知道是否值得接听或回拨。</li>
    		</ol>

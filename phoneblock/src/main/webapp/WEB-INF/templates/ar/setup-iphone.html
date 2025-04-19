@@ -17,25 +17,28 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">قم بالتسجيل في PhoneBlock.</a></li>
    		<li data-tx="t0005">افتح "الإعدادات"&gt; "جهات الاتصال"&gt; "الحسابات".</li>
    		<li data-tx="t0006">اضغط على "إضافة حساب" - "أخرى"&gt; "إضافة حساب CardDAV".</li>
-   		<li data-tx="t0007">أدخل بيانات الوصول الخاصة بك واضغط على "التالي". <dl>
-				<dt><b>الخادم</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/x4&gt;/x4&gt;/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
+   		<li>
+   			<div data-tx="t0007">أدخل بيانات الوصول الخاصة بك واضغط على "متابعة".</div>
+   			<dl>
+				<dt><b data-tx="t0016">الخادم</b></dt>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>اسم المستخدم</b></dt>
+				<dt><b data-tx="t0017">اسم المستخدم</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">تسجيل الدخول</a> لرؤية اسم المستخدم الخاص بك.</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}"> تسجيل الدخول</a> لمعرفة اسم المستخدم الخاص بك.</span>
 				</dd>
 
-				<dt><b>كلمة المرور</b></dt>
+				<dt><b data-tx="t0019">كلمة السر</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">تظهر لك مباشرةً بعد تسجيل الدخول الأول، يمكنك <a th:href="@{/settings}">إنشاء كلمة مرور جديدة في الإعدادات</a> </span>
+				<span data-tx="t0020" th:unless="${token}">تم عرضها لك مباشرةً بعد تسجيل الدخول الأول، يمكنك إنشاء واحدة جديدة <a th:href="@{/settings}"> في الإعدادات.</a></span>
 				</dd>
 
-				<dt><b>الوصف</b></dt>
-				<dd>حظر الهاتف</dd>		
-   			         </dl></li>
+				<dt><b data-tx="t0021">وصف</b></dt>
+				<dd data-tx="t0022">فون بلوك</dd>		
+   			</dl>
+   		</li>
    		<li data-tx="t0008">قم بتنشيط "جهات الاتصال" وانقر على "حفظ".</li>
 		<li data-tx="t0009">سترى الآن المكالمات التي تحتوي على "الرسائل الاقتحامية: ..." في دفتر جهات الاتصال الخاص بك وعندما ترن. يمكنك بعد ذلك أن ترى على الفور ما إذا كان الأمر يستحق الرد أو معاودة الاتصال.</li>
    		</ol>

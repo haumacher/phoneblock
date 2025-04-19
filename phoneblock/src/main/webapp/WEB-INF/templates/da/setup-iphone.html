@@ -17,25 +17,28 @@
    		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Registrer dig hos PhoneBlock.</a></li>
    		<li data-tx="t0005">Åbn "Indstillinger" &gt; "Kontakter" &gt; "Konti".</li>
    		<li data-tx="t0006">Tryk på "Tilføj konto" - "Andet" &gt; "Tilføj CardDAV-konto".</li>
-   		<li data-tx="t0007">Indtast dine adgangsdata, og tryk på "Næste". <dl>
-				<dt><b>Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/kontakter/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></dd>
+   		<li>
+   			<div data-tx="t0007">Indtast dine adgangsdata, og tryk på "Fortsæt".</div>
+   			<dl>
+				<dt><b data-tx="t0016">Server</b></dt>
+				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b>Brugernavn</b></dt>
+				<dt><b data-tx="t0017">Brugernavn</b></dt>
 				<dd>
 				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
 				</dd>
 
-				<dt><b>Password</b></dt>
+				<dt><b data-tx="t0019">adgangskode</b></dt>
 				<dd>
 				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span th:unless="${token}">Vises til dig direkte efter første login, du kan <a th:href="@{/settings}">generere et nyt i indstillingerne</a> </span>
+				<span data-tx="t0020" th:unless="${token}">blev vist for dig direkte efter det første login, kan du generere en ny <a th:href="@{/settings}">i indstillingerne</a>.</span>
 				</dd>
 
-				<dt><b>Beskrivelse</b></dt>
-				<dd>PhoneBlock</dd>		
-   			         </dl>.</li>
+				<dt><b data-tx="t0021">Beskrivelse af</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
+   			</dl>
+   		</li>
    		<li data-tx="t0008">Aktivér "Kontakter", og tryk på "Gem".</li>
 		<li data-tx="t0009">Nu kan du se opkald med "SPAM: ..." i din kontaktbog, og når de ringer. Så kan du med det samme se, om det er værd at besvare eller ringe tilbage.</li>
    		</ol>
