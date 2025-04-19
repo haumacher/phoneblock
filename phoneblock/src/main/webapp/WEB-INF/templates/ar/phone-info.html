@@ -36,10 +36,10 @@
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">رقم الهاتف مدرج في القائمة البيضاء ولا يمكن حظره بواسطة PhoneBlock. إذا كنت لا تزال تشعر بالمضايقة من هذا الرقم، يرجى إعداد حظر خاص لهذا الرقم.</p>
   	<p data-tx="t0036" th:case="'legitimate'">لم يتم تضمين رقم الهاتف في قاعدة بيانات <a th:href="@{/status}">PhoneBlock. لا يوجد حتى الآن أي أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>.</a></p>
-  	<p data-tx="t0037" th:case="'wildcard'">رقم الهاتف نفسه غير موجود في قاعدة بيانات <a th:href="@{/status}">PhoneBlock. ومع ذلك، فإن الرقم ☎ <code th:text="${info.phone}"></code> يأتي من كتلة أرقام يشتبه في أنها غير مرغوب فيها. <th:block th:if="${info.votesWildcard == 1}"> هناك تصويت لصالح حظر كتلة الأرقام. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> هناك <th:block th:text="${info.votesWildcard}"></th:block> أصوات مؤيدة لحظر كتلة الأرقام. </th:block></a></p>
+  	<p data-tx="t0037" th:case="'wildcard'">رقم الهاتف نفسه غير موجود في قاعدة بيانات <a th:href="@{/status}">PhoneBlock. ومع ذلك، فإن الرقم ☎ ☎ <code th:text="${info.phone}"></code> يأتي من كتلة أرقام يشتبه في أنها غير مرغوب فيها. <th:block th:if="${info.votesWildcard == 1}"> هناك تصويت لصالح حظر كتلة الأرقام. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> هناك <th:block th:text="${info.votesWildcard}"></th:block> أصوات مؤيدة لحظر كتلة الأرقام. </th:block></a></p>
   	<p data-tx="t0038" th:case="'suspicious'">يوجد بالفعل <th:block th:text="${info.votes}"></th:block> أصوات مؤيدة لحظر ☎ <code th:text="${info.phone}"></code>. ومع ذلك، لم يتم حظر الرقم بعد.</p>  	
   	<p data-tx="t0039" th:case="'archived'">هناك <th:block th:text="${info.votes}"></th:block> أصوات قديمة تحدثت لصالح حجب ☎ <code th:text="${info.phone}"></code>. ومع ذلك، لم يعد الرقم محظورًا.</p>
-  	<p data-tx="t0040" th:case="'blocked'">رقم الهاتف ☎ <code th:text="${info.phone}"></code> هو مصدر متكرر للمكالمات الهاتفية غير المرغوب فيها <a th:href="@{/status}">. <th:block th:text="${info.votes}"></th:block> الأصوات المؤيدة لحظر الرقم.</a></p>
+  	<p data-tx="t0040" th:case="'blocked'">رقم الهاتف ☎ ☎ <code th:text="${info.phone}"></code> هو مصدر متكرر للمكالمات الهاتفية غير المرغوب فيها <a th:href="@{/status}">. <th:block th:text="${info.votes}"></th:block> الأصوات المؤيدة لحظر الرقم.</a></p>
   	</th:block>
 
 	<ul>

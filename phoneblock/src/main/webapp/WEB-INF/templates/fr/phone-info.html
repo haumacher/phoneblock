@@ -34,12 +34,12 @@
   	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
-  	<p data-tx="t0035" th:case="'whitelisted'">Pas encore installé? Alors, c'est parti!</p>
-  	<p data-tx="t0036" th:case="'legitimate'">PhoneBlock pour Fritz!Box</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Désactiver les appels publicitaires sur le réseau fixe!</p>
-  	<p data-tx="t0038" th:case="'suspicious'">PhoneBlock pour iPhobe</p>  	
-  	<p data-tx="t0039" th:case="'archived'">Pas encore installé? Alors, c'est parti!</p>
-  	<p data-tx="t0040" th:case="'blocked'">PhoneBlock pour Fritz!Box</p>
+  	<p data-tx="t0035" th:case="'whitelisted'">Le numéro de téléphone figure sur la liste blanche et ne peut pas être bloqué par PhoneBlock. Si tu te sens tout de même harcelé par ce numéro, veuillez mettre en place un blocage privé pour ce numéro.</p>
+  	<p data-tx="t0036" th:case="'legitimate'">Le numéro de téléphone ne figure pas dans la base de données <a th:href="@{/status}">PhoneBlock</a>. Il n'y a pour l'instant pas de voix en faveur d'un blocage de ☎ <code th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Le numéro de téléphone lui-même ne figure pas dans la base de données <a th:href="@{/status}">PhoneBlock</a>. Le numéro ☎ <code th:text="${info.phone}"></code> provient cependant d'un bloc de numéros suspecté d'être du spam. <th:block th:if="${info.votesWildcard == 1}"> Une voix s'exprime en faveur du blocage du pavé numérique. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Il y a <th:block th:text="${info.votesWildcard}"></th:block> voix pour le blocage du pavé numérique. </th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">Il y a déjà <th:block th:text="${info.votes}"></th:block> voix en faveur du blocage de ☎ <code th:text="${info.phone}"></code>. Le numéro n'est toutefois pas encore bloqué.</p>  	
+  	<p data-tx="t0039" th:case="'archived'">Il y a certes <th:block th:text="${info.votes}"></th:block> d'anciennes voix qui plaidaient pour un blocage de ☎ <code th:text="${info.phone}"></code>. Mais le numéro n'est plus bloqué.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Le numéro de téléphone ☎ <code th:text="${info.phone}"></code> est une source d'appels téléphoniques <a th:href="@{/status}">non sollicités</a> signalée à plusieurs reprises. <th:block th:text="${info.votes}"></th:block> Des voix s'élèvent pour demander le blocage de ce numéro.</p>
   	</th:block>
 
 	<ul>

@@ -34,12 +34,12 @@
   	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
-  	<p data-tx="t0035" th:case="'whitelisted'">还没安装？那就安装吧！</p>
-  	<p data-tx="t0036" th:case="'legitimate'">用于 Fritz!Box 的 PhoneBlock</p>
-  	<p data-tx="t0037" th:case="'wildcard'">关闭固定电话上的广告电话！</p>
-  	<p data-tx="t0038" th:case="'suspicious'">针对 iPhobe 的 PhoneBlock</p>  	
-  	<p data-tx="t0039" th:case="'archived'">还没安装？那就安装吧！</p>
-  	<p data-tx="t0040" th:case="'blocked'">用于 Fritz!Box 的 PhoneBlock</p>
+  	<p data-tx="t0035" th:case="'whitelisted'">该电话号码已被列入白名单，无法被 PhoneBlock 屏蔽。如果您仍然觉得受到该号码的骚扰，请为该号码设置私人拦截。</p>
+  	<p data-tx="t0036" th:case="'legitimate'">该电话号码不在 <a th:href="@{/status}">PhoneBlock 数据库</a>中。到目前为止，还没有赞成屏蔽☎ <code th:text="${info.phone}"></code>的投票。</p>
+  	<p data-tx="t0037" th:case="'wildcard'">电话号码本身不包含在 <a th:href="@{/status}">PhoneBlock 数据库</a>中。但是，号码☎ <code th:text="${info.phone}"></code>来自一个疑似垃圾邮件的号码块。<th:block th:if="${info.votesWildcard == 1}"> 有一票赞成屏蔽该号码块。</th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> 有 <th:block th:text="${info.votesWildcard}"></th:block> 票赞成屏蔽号码块。</th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">已经有 <th:block th:text="${info.votes}"></th:block> 票赞成封锁☎ <code th:text="${info.phone}"></code>。但是，该号码尚未被封锁。</p>  	
+  	<p data-tx="t0039" th:case="'archived'">有 <th:block th:text="${info.votes}"></th:block> 种古老的声音支持封锁☎ <code th:text="${info.phone}"></code>。不过，该号码已不再被封锁。</p>
+  	<p data-tx="t0040" th:case="'blocked'">☎<code th:text="${info.phone}"></code>电话号码屡次被报告为<a th:href="@{/status}">不受欢迎电话</a>的来源。<th:block th:text="${info.votes}"></th:block>有声音赞成封锁该号码。</p>
   	</th:block>
 
 	<ul>
