@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock</artifactId>
-	<version>1.7.0-SNAPSHOT</version>
+	<version>1.7.0</version>
 	
 	<name>PhoneBlock</name>
 	<description>Ad blocker for your Fritz!Box</description>
@@ -29,7 +29,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-	  <tag>1.6.14</tag>
+	  <tag>1.7.0</tag>
   	</scm>
   	
   	<packaging>war</packaging>
@@ -525,7 +525,7 @@
 				 </goals>
 				 <configuration>
 				   <tasks>
-				     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION"/>
+				     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
 				   </tasks>
 				 </configuration>
                </execution>
@@ -534,7 +534,7 @@
 			     <phase>process-resources</phase>
                  <configuration>
                    <tasks>
-                     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION"/>
+                     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
                    </tasks>
                  </configuration>
                  <goals>
@@ -780,7 +780,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -799,7 +799,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
