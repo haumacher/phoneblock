@@ -242,8 +242,8 @@
 		<p class="commentHeader">
 		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"></th:block></strong>
 		  <small>
-		  <a target="_blank" th:href="@{/link/{service}/phone(service=${comment.service}, phone=${comment.phone})}" th:if="${comment.service}" th:text="${comment.service}"></a>
-		  <span data-tx="t0031" th:unless="${comment.service}">Blocco del telefono</span>
+		  <a target="_blank" th:href="@{/link/{service}/{phone}(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}" th:unless="${#strings.isEmpty(comment.service)}"></a>
+		  <span data-tx="t0031" th:if="${#strings.isEmpty(comment.service)}">Blocco del telefono</span>
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
 		</p>
