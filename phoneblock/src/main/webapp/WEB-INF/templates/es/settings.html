@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.settings.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section" th:unless="${userName}">
+	<div class="content">
+		<h1 data-tx="t0001">Ajustes</h1>
+		
+		<p data-tx="t0002">Para editar tu configuración personal, debes <a th:href="@{/login(location=${location})}">conectarte</a>.</p>
+	</div>
+</section>
+
+<section class="section" th:if="${userName}">
+	<div class="content">
+		<h1 data-tx="t0003">Ajustes</h1>
+			<p data-tx="t0004">Bienvenido <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}">(<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
+			
+			<form method="post" th:action="@{/update-settings}">
+
+			<article class="message is-info" th:if="${token}">
+			  <div class="message-header">
+			    <p data-tx="t0005">Sus datos de acceso</p>
+			  </div>
+			  
+			  <div class="message-body">
+				<div class="field">
+				  <label class="label" data-tx="t0006">Dirección de Internet del servidor CardDAV</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+
+				<div class="field">
+				  <label class="label" data-tx="t0007">Nombre de usuario</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup}">llamar a la lista de bloqueo</a>.</p>
+				</div>
+					
+				<div class="field">
+				  <label class="label" data-tx="t0009">contraseña</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010">Debe utilizar esta contraseña para <a th:href="@{/setup}">configurar la agenda telefónica</a> o para iniciar sesión en este sitio web.</p>
+				  <p class="help" data-tx="t0011">Anote la contraseña (o guárdela en un <a href="https://keepass.info/">gestor de contraseñas</a>), ya que sólo se mostrará hasta que cierre la sesión o ésta expire.</p>
+				</div>
+			  </div>
+			</article>
+
+			<div class="field" th:unless="${token}">
+			  <label class="label" data-tx="t0012">Nombre de usuario</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup}">recuperar la lista de bloqueo</a>. Su contraseña se mostró cuando se conectó por primera vez. Si ya no la recuerda, puede crear una <a href="#resetPassword">nueva contraseña</a> al final de esta página. Pero tenga cuidado: la contraseña antigua dejará de ser válida.</p>
+			</div>
+
+			<div class="field">
+			  <label class="label" data-tx="t0094">Su código de país</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Los números de teléfono con el prefijo de su país aparecerán en su lista de bloqueados de forma abreviada (como números nacionales). Los informes de SPAM procedentes de usted tienen un peso especial para otros usuarios de su país.</p>
+			</div>
+
+			<div class="field">
+			  <label class="label" data-tx="t0014">Tamaño máximo de la lista de bloqueo</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="maxLength">
+			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (pequeño para cajas Fritz muy antiguas)</option>
+			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recomendado para la mayoría de las cajas Fritz)</option>
+			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (por ejemplo, sigue funcionando en el FRITZ!Box 7590)</option>
+			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (ver notas más abajo)</option>
+			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (enorme, véanse las notas a continuación)</option>
+			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extremo, ten cuidado, tu Fritz!Box puede bloquearse)</option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-ruler-vertical"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0021">Si tiene problemas para actualizar la lista de bloqueo, puede reducir el tamaño de la misma aquí. AVM recomienda llenar las agendas telefónicas con un máximo de 1000 entradas. El FRITZ!Box 7590, por ejemplo, puede manejar hasta 3000 entradas en una agenda telefónica.</p>
+			  
+			  <p class="help" data-tx="t0022"><b>Atención:</b> Si desea probar cuántas entradas puede guardar su buzón en una agenda telefónica, proceda de la siguiente manera: Comience con el ajuste predeterminado de 2000 entradas. Sincronice la lista de bloqueo y visualice la agenda de la lista de bloqueo. Desplácese hasta el final y visualice la vista previa de impresión de la lista de bloqueo y anote el número de páginas que se imprimirían. Aumente ahora el tamaño de la lista de bloqueo en un paso, vuelva a sincronizar la lista de bloqueo y visualice de nuevo la vista previa de impresión de la lista de bloqueo. Si el número de páginas ha aumentado en consecuencia, entonces su caja puede manejar este tamaño, pruebe con el siguiente tamaño. Si el número de páginas de la vista previa de impresión no ha aumentado o no lo ha hecho en consecuencia, utilice el último tamaño más pequeño de la lista de bloques. Curiosamente, el buzón de Fritz!Box no informa de un error si la guía telefónica es demasiado grande, sino que simplemente no se sincroniza o simplemente omite algún número. He visto cajas que simplemente se bloquean si el tamaño de la guía telefónica es demasiado grande - así que ten cuidado.</p>
+			</div>
+			
+			<div class="field">
+			  <label class="label" data-tx="t0023">Confianza mínima</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="minVotes">
+			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2 (bloqueo inmediato)</option>	
+			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 (esperar confirmaciones)</option>	
+			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 (sólo cuando sea seguro)</option>	
+			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100 (sólo spammers de alto nivel)</option>	
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-phone-volume"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0028">Cuanto más alta sea la cifra que elija, más quejas deberá tener un número de teléfono antes de que se añada a su lista de bloqueo personal y mayor será la probabilidad de que también reciba una llamada de un nuevo número de spam. Cada reclamación añade 2 a la puntuación de confianza.</p>
+			</div>
+			
+			<div class="field">
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Resumir números con "*"</label>
+			  <p class="help" data-tx="t0030">Si selecciona esta opción, los números vecinos de su lista de bloqueo se combinarán en un solo número con un comodín ("*"). Muchos spammers profesionales tienen una conexión multidispositivo y utilizan un bloque entero de números como remitentes. Con esta opción, todos estos números se bloquean automáticamente y su lista de bloqueo puede incluir más números de spam. Fritz!Box admite guías telefónicas con números comodín y bloquea todo el rango de números especificado. Sin embargo, es posible que no pueda utilizar números comodín en otros dispositivos.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Sólo números nacionales</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">¡Esta opción es útil si has bloqueado todos los números extranjeros en tu buzón de Fritz! Con esta opción, sólo los números nacionales aparecerán en su lista de bloqueo. Esto significa que más números relevantes para ti cabrán en tu lista de bloqueo. Asegúrate de que has configurado correctamente tu código de país.</p> 
+			</div>
+			
+			<div class="field is-grouped">
+			  <p class="control">
+			    <button class="button is-primary" data-tx="t0031" type="submit">Guardar</button>
+			  </p>
+			  <p class="control">
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">Descartar</a>
+			  </p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0033" id="myAPIKeys">Sus claves API</h2>
+	<p data-tx="t0034">Si utiliza otras aplicaciones para comprobar números de teléfono con PhoneBlock (por ejemplo <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> o <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), entonces necesita una clave API. Para la lista de teléfonos bloqueados en su Fritz!Box, simplemente use su nombre de usuario PhoneBlock y contraseña PhoneBlock, así que no necesita una clave API para esto.</p>
+	
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">Aún no ha creado ninguna clave API.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
+	<table>
+		<tr>
+			<th>
+			</th>
+			<th data-tx="t0036">Nombre</th>
+			<th data-tx="t0037">Genera</th>
+			<th data-tx="t0038">Último uso</th>
+			<th data-tx="t0039">Dispositivo</th>
+		</tr>
+
+		<tr th:each="authToken : ${explicitTokens}">
+			<td>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+			</td>
+			<td th:text="${authToken.label}"></td>
+			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+			<td>
+				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">No utilizados.</th:block>
+				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+			</td>
+			<td th:text="${authToken.userAgent}"></td>
+		</tr>
+	</table>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0041" type="submit">Borrar seleccionados</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0042" id="createAPIKey">Generar clave API</h2>
+
+	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0043">Observación de uso</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Uso para..." type="text"/>
+	  </p>
+	  <p class="help" data-tx="t0044">Aquí puede introducir una nota sobre para qué ha generado la clave API, por ejemplo, "SpamBlocker en el teléfono móvil de la abuela".</p>
+	</div>
+		
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0045" type="submit">Generar clave API</button>
+	  </p>
+	</div>
+
+	</form>
+
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0046" id="blacklist">Su lista negra</h2>
+	
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<p data-tx="t0047" th:if="${blacklist.empty}">No has bloqueado explícitamente ningún número. ¡Para bloquear un número, búscalo utilizando el campo de búsqueda de arriba y escribe un comentario negativo, o haz una entrada para el número en la lista de bloqueados de tu Fritz!Box</p>
+
+	<th:block th:unless="${blacklist.empty}">
+	<p data-tx="t0048">Ha bloqueado explícitamente estos números. Puedes cancelar un bloqueo accidental aquí:</p>
+	<div class="field" th:each="number : ${blacklist}">
+		<label class="checkbox">
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
+		</label>
+	</div>
+
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0049" type="submit">Borrar</button>
+	  </p>
+	</div>
+	</th:block>
+		
+	</form>
+	
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0050" id="whitelist">Su lista blanca</h2>
+	
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<p data-tx="t0051" th:if="${whitelist.empty}">No ha excluido ningún número del bloqueo.</p>
+
+	<th:block th:unless="${whitelist.empty}">
+	<p data-tx="t0052">Ha excluido explícitamente estos números del bloqueo:</p>
+
+	<div class="field" th:each="number : ${whitelist}">
+		<label class="checkbox">
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
+		</label>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0053" type="submit">Borrar</button>
+	  </p>
+	</div>
+	</th:block>
+	
+	</form>
+	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0054">Añadir excepción</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nueva excepción" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0056">Puede introducir aquí uno o varios números de teléfono, separados por comas, en cualquier formato: 07041-123456789, +49171123456789, 0034 123456789</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0057" type="submit">Añadir</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+</section>
+
+<section class="section">
+<div class="content">
+	<h2 data-tx="t0058" id="sec-contributions">Sus donaciones para el funcionamiento de PhoneBlock</h2>
+	
+	<p data-tx="t0059">Si has hecho una <a th:href="@{/support}">donación para el funcionamiento de PhoneBlock</a>, será listada aquí (después de algún tiempo). Para que esto funcione, estaría bien que incluyeras los primeros caracteres de tu nombre de usuario en el mensaje de transferencia, por ejemplo <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></span>. Lamentablemente, las contribuciones a través del programa de patrocinio de GitHub no se pueden incluir aquí.</p>
+	
+	<p data-tx="t0060" th:if="${contributions.empty}">No se han encontrado donaciones.</p>
+	
+	<th:block th:unless="${contributions.empty}">
+	<table class="table">
+	<thead>
+		<tr>
+			<th data-tx="t0061">fecha</th>
+			<th data-tx="t0062">Mensaje</th>
+			<th data-tx="t0063">Importe</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr th:each="contribution : ${contributions}">
+			<th th:text="${#dates.format(#converters.fromEpoch(contribution.received))}"></th>
+			<th th:text="${contribution.message}"></th>
+			<th th:text="${'€ ' + #numbers.formatDecimal(contribution.amount / 100.0,1,'POINT',2,'COMMA')}"></th>
+		</tr>
+	</tbody>
+	</table>
+	
+	<p data-tx="t0064">Muchas gracias por contribuir a los costes de funcionamiento de PhoneBlock.</p>	
+	</th:block>
+</div>
+
+<nav class="panel is-info">
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">¿No ha pagado?</span></a></p>
+	<div class="is-collapsible" id="contribForm">
+
+	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
+	<div class="panel-block">
+	<div class="content">
+		<p data-tx="t0066">¿Le falta algún pago? Puede buscar un pago aquí. Introduzca su nombre completo (que su banco/PayPal utiliza como remitente) y la fecha de la transferencia:</p>
+	
+		<div class="field">
+		  <label class="label" data-tx="t0067">Remitente</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
+		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
+		  </p>
+		  <p class="help" data-tx="t0068">En caso de transferencia bancaria, el nombre del titular de la cuenta que ha efectuado la transferencia. Indique también a continuación la fecha de la transferencia.</p>
+		</div>
+	
+		<div class="field">
+		  <label class="label" data-tx="t0069">fecha</label>
+		  <p class="control has-icons-left">
+		    <input class="input" name="contrib-date" type="date"/>
+		  </p>
+		  <p class="help" data-tx="t0070">La fecha de la transferencia bancaria. Indique también el nombre completo del titular de la cuenta que ha efectuado la transferencia.</p>
+		</div>
+	</div>
+	</div>
+
+	<div class="panel-block">
+		<button class="button is-medium is-primary" type="submit">
+		    <span class="icon">
+				<i class="fa-solid fa-magnifying-glass-dollar"></i>
+		    </span>
+			<span data-tx="t0071">Contribución a la búsqueda</span>
+		</button>
+	</div>
+
+	</form>
+  	</div>
+</nav>
+
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0072">Zona de peligro</h2>
+	<p data-tx="t0073">Utilice esta funcionalidad con precaución. ¡Puede romper su instalación PhoneBlock con ella!</p>
+	</div>
+		
+<nav class="panel is-warning" id="resetPassword">
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">Crear nueva contraseña</span></a></p>
+	<div class="is-collapsible" id="resetForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0075">Tenga cuidado, esto invalidará su antigua contraseña de PhoneBlock. A continuación, deberá introducir la nueva contraseña en los ajustes de su FritzBox o de su teléfono móvil para poder seguir accediendo a la lista de bloqueo.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-eraser"></i>
+			    </span>
+				<span data-tx="t0076">Restablecer contraseña</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+<nav class="panel is-warning">
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">Cerrar sesión en todos los dispositivos</span></a></p>
+	<div class="is-collapsible" id="logoutForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0078">Te desconecta de todos los dispositivos para los que hayas activado la opción "Permanecer conectado en este dispositivo" al iniciar sesión. En su próxima visita, tendrá que volver a iniciar sesión en todos los dispositivos. Utilice esta función de cierre de sesión si ha activado accidentalmente la función "Permanecer conectado" en un PC público.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-right-from-bracket"></i>
+			    </span>
+				<span data-tx="t0079">Cerrar sesión en todas partes</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+	
+<nav class="panel is-warning">
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">Eliminar cuenta</span></a></p>
+	<div class="is-collapsible" id="quitForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0081">Ten cuidado, todos tus datos serán borrados. Ya no será posible recuperar la lista de bloqueo ni acceder a la base de datos de PhoneBlock desde ninguno de tus dispositivos.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-power-off"></i>
+			    </span>
+				<span data-tx="t0082">Borrar acceso, ¡no más consultas de seguridad!</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

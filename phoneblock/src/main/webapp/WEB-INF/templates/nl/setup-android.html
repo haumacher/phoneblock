@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-android.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-installatie</h1>
+		
+		<p data-tx="t0002">De installatie voegt het PhoneBlock-adresboek toe aan uw contacten. Als je gebeld wordt door een spornummer, wordt dit onmiddellijk weergegeven, bv. "SPAM: 03016637169". Je kunt ook meteen in de gemiste oproepen zien dat het niet de moeite waard is om terug te bellen zonder eerst het nummer te hoeven googelen.</p>
+		
+		<p data-tx="t0003">U kunt dit niet gebruiken om SPAM-oproepen te blokkeren (uw telefoon zal nog steeds overgaan, maar u zult zien dat het een SPAM-oproep is). U kunt SPAM-oproepen blokkeren door <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a> te installeren en de PhoneBlock-database te integreren. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is een onafhankelijke app, neem rechtstreeks contact op met de ontwikkelaar als je er problemen mee hebt.</p>
+		
+		<p data-tx="t0004">Voor het synchroniseren van adresboeken heb je een app nodig waarmee je internettelefoonboeken kunt synchroniseren. Je kunt bijvoorbeeld "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>" of "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>" gebruiken. De instructies hier zijn geschreven voor "PeopleSync", maar de procedure met "DAVx⁵" is vergelijkbaar:</p>
+		
+		<h2 data-tx="t0005">Stap 1: Open de Playstore en zoek naar "PeopleSync".</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Playstore openen" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
+	  		</div>
+		
+			<div class="column">
+				<img alt="Zoeken naar PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">Terug</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">Verder</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

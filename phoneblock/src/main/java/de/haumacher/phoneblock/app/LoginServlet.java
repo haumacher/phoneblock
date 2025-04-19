@@ -7,19 +7,20 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.settings.AuthToken;
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet displaying information about a telephone number in the DB.
@@ -39,7 +40,7 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * Request parameter that makes the login persistent, if its value is <code>true</code>.
 	 */
-	public static final String REMEMBER_PARAM = "remember";
+	public static final String REMEMBER_ME_PARAM = "rememberMe";
 
 	/**
 	 * Request attribute that save the original location that was requested before login.
@@ -52,9 +53,9 @@ public class LoginServlet extends HttpServlet {
 	 * The value is transmitted in the login request as additional parameter.
 	 * </p>
 	 */
-	public static final String LOCATION_ATTRIBUTE = "locationAfterLogin";
+	public static final String LOCATION_ATTRIBUTE = "location";
 	
-	public static final String PATH = "/login";
+	public static final String PATH = "/check-login";
 
 	private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
@@ -70,7 +71,7 @@ public class LoginServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
 		}
-		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+		TemplateRenderer.getInstance(req).process("/login", req, resp);
 	}
 	
 	@Override
@@ -98,7 +99,7 @@ public class LoginServlet extends HttpServlet {
 			return;
 		}
 
-		String rememberValue = req.getParameter(REMEMBER_PARAM);
+		String rememberValue = req.getParameter(REMEMBER_ME_PARAM);
 		processRememberMe(req, resp, db, rememberValue, userName);
 		
 		LoginFilter.setSessionUser(req, authenticatedUser);
@@ -207,7 +208,7 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		if (request.getAttribute(LoginServlet.KEEP_LOCATION_AFTER_LOGIN) != null) {
-			return ServletUtil.currentPage(request).substring(request.getContextPath().length());
+			return ServletUtil.currentPage(request);
 		}
 		
 		return SettingsServlet.PATH;
@@ -229,8 +230,17 @@ public class LoginServlet extends HttpServlet {
 	public static void requestLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String originalLocation = originalLocation(request);
 		LOG.info("Requesting login for resource: " + originalLocation);
+		
+		// Forward language
+		String langSpec;
+		String langParam = request.getParameter(DefaultController.LANG_ATTR);
+		if (langParam != null) {
+			langSpec = "&" + DefaultController.LANG_ATTR + "=" + URLEncoder.encode(langParam, StandardCharsets.UTF_8);
+		} else {
+			langSpec = "";
+		}
 
-		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
+		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true) + langSpec);
 	}
 
 	private static String originalLocation(HttpServletRequest request) {

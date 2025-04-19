@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * A comment posted for a phone number
  */
-public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable, de.haumacher.phoneblock.shared.operations.UserCommentOperations {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.UserComment} instance.
@@ -20,6 +20,9 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** @see #getUserId() */
 	public static final String USER_ID__PROP = "userId";
+
+	/** @see #getLang() */
+	public static final String LANG__PROP = "lang";
 
 	/** @see #getPhone() */
 	public static final String PHONE__PROP = "phone";
@@ -45,6 +48,8 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	private String _id = "";
 
 	private Long _userId = null;
+
+	private String _lang = "";
 
 	private String _phone = "";
 
@@ -116,6 +121,27 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	 */
 	public final boolean hasUserId() {
 		return _userId != null;
+	}
+
+	/**
+	 * The language tag describing the language of this comment.
+	 */
+	public final String getLang() {
+		return _lang;
+	}
+
+	/**
+	 * @see #getLang()
+	 */
+	public de.haumacher.phoneblock.app.api.model.UserComment setLang(String value) {
+		internalSetLang(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLang()} without chain call utility. */
+	protected final void internalSetLang(String value) {
+		_listener.beforeSet(this, LANG__PROP, value);
+		_lang = value;
 	}
 
 	/**
@@ -297,6 +323,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		java.util.Arrays.asList(
 			ID__PROP, 
 			USER_ID__PROP, 
+			LANG__PROP, 
 			PHONE__PROP, 
 			RATING__PROP, 
 			COMMENT__PROP, 
@@ -315,6 +342,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case ID__PROP: return getId();
 			case USER_ID__PROP: return getUserId();
+			case LANG__PROP: return getLang();
 			case PHONE__PROP: return getPhone();
 			case RATING__PROP: return getRating();
 			case COMMENT__PROP: return getComment();
@@ -331,6 +359,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case ID__PROP: internalSetId((String) value); break;
 			case USER_ID__PROP: internalSetUserId((Long) value); break;
+			case LANG__PROP: internalSetLang((String) value); break;
 			case PHONE__PROP: internalSetPhone((String) value); break;
 			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
 			case COMMENT__PROP: internalSetComment((String) value); break;
@@ -362,6 +391,8 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 			out.name(USER_ID__PROP);
 			out.value(getUserId());
 		}
+		out.name(LANG__PROP);
+		out.value(getLang());
 		out.name(PHONE__PROP);
 		out.value(getPhone());
 		out.name(RATING__PROP);
@@ -383,6 +414,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		switch (field) {
 			case ID__PROP: setId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case USER_ID__PROP: setUserId(in.nextLong()); break;
+			case LANG__PROP: setLang(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -402,6 +434,9 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** XML attribute or element name of a {@link #getUserId} property. */
 	private static final String USER_ID__XML_ATTR = "user-id";
+
+	/** XML attribute or element name of a {@link #getLang} property. */
+	private static final String LANG__XML_ATTR = "lang";
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";
@@ -439,6 +474,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(ID__XML_ATTR, getId());
 		out.writeAttribute(USER_ID__XML_ATTR, Long.toString(getUserId()));
+		out.writeAttribute(LANG__XML_ATTR, getLang());
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
 		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
 		out.writeAttribute(COMMENT__XML_ATTR, getComment());
@@ -491,6 +527,10 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				setUserId(Long.parseLong(value));
 				break;
 			}
+			case LANG__XML_ATTR: {
+				setLang(value);
+				break;
+			}
 			case PHONE__XML_ATTR: {
 				setPhone(value);
 				break;
@@ -536,6 +576,10 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				setUserId(Long.parseLong(in.getElementText()));
 				break;
 			}
+			case LANG__XML_ATTR: {
+				setLang(in.getElementText());
+				break;
+			}
 			case PHONE__XML_ATTR: {
 				setPhone(in.getElementText());
 				break;
@@ -578,6 +622,11 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
 			}
 		}
+	}
+
+	@Override
+	public UserComment self() {
+		return this;
 	}
 
 	/** Creates a new {@link UserComment} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */

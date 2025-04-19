@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.support-banktransfer.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">通过银行转账捐款</h1>
+
+		<p data-tx="t0002">感谢您为 PhoneBlock 捐款。如果有很多人参与，小额捐款就足够了，例如<b>每年1欧元</b>或<b>每拦截一个垃圾电话0.01欧元</b>，但您可以自行选择捐款数额。</p>
+		
+		<p data-tx="t0003">请使用以下账户信息进行银行转账：</p>
+
+		<ul>
+			<li data-tx="t0004">接收器：<code dir="ltr" id="receiver" th:text="${props.bank.receiver}"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="receiver_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i>&lt;/x2</a></li>
+			<li data-tx="t0005">账号：<code dir="ltr" id="account"><span class="token" th:text="${#strings.substring(props.bank.account,0,4)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,4,8)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,8,12)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,12,16)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,16,20)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,20)}"></span></code><a class="copyToClipboard" data-tx="t0010" href="#" id="account_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i>&lt;/x2</a></li>
+			<li data-tx="t0006">BIC: <code dir="ltr" id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="bic_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0007">预期用途： <code dir="ltr" id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" data-tx="t0012" href="#" id="purpose_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></li>
+		</ul>
+		
+		<p data-tx="t0008">感谢您为使用 PhoneBlock 做出的贡献！</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

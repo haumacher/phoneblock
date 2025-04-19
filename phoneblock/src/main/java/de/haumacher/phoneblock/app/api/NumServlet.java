@@ -5,13 +5,19 @@ package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
 
+import org.apache.ibatis.session.SqlSession;
+
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
@@ -56,24 +62,37 @@ public class NumServlet extends HttpServlet {
 		
 		DB db = DBService.getInstance();
 		MetaSearchService.getInstance().scheduleMetaSearch(number);
-		PhoneInfo result = db.getPhoneApiInfo(phoneId);
 		
-		// Do not hand out any information for non-spam numbers, even if they have been
-		// (accidentally) recorded in the DB.
-		if (result.getVotes() == 0 && result.getVotesWildcard() == 0) {
-			result.setArchived(false);
-			result.setDateAdded(0);
-			result.setLastUpdate(0);
-			result.setRating(Rating.A_LEGITIMATE);
+		try (SqlSession session = db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			PhoneInfo result = db.getPhoneApiInfo(reports, phoneId);
+			
+			// Do not hand out any information for non-spam numbers, even if they have been
+			// (accidentally) recorded in the DB.
+			if (result.getVotes() == 0 && result.getVotesWildcard() == 0) {
+				result.setArchived(false);
+				result.setDateAdded(0);
+				result.setLastUpdate(0);
+				result.setRating(Rating.A_LEGITIMATE);
+				return result;
+			}
+			
+			// Only record search hits, for numbers that are suspicious to SPAM.
+			if (!SearchServlet.isBot(req)) {
+				String dialPrefix;
+
+				String userName = LoginFilter.getAuthenticatedUser(req);
+				if (userName == null) {
+					dialPrefix = LocationService.getInstance().getDialPrefix(req);
+				} else {
+					dialPrefix = session.getMapper(Users.class).getDialPrefix(userName);
+				}
+				
+				db.addSearchHit(number, dialPrefix);
+			}
+			
 			return result;
 		}
-		
-		// Only record search hits, for numbers that are suspicious to SPAM.
-		if (!SearchServlet.isBot(req)) {
-			db.addSearchHit(number);
-		}
-		
-		return result;
 	}
 
 }

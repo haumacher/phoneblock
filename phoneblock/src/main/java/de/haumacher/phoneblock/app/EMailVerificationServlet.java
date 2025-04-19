@@ -5,15 +5,6 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.DClass;
@@ -22,10 +13,18 @@ import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.Type;
 
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
-import de.haumacher.phoneblock.util.ServletUtil;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * {@link HttpServlet} that is invoked from the <code>login.jsp</code> form when requesting to login by e-mail.
@@ -44,7 +43,12 @@ public class EMailVerificationServlet extends HttpServlet {
 	/**
 	 * Request attribute set, if e-mail verification failed.
 	 */
-	public static final String VERIFY_ERROR_ATTR = "message";
+	public static final String EMAIL_MESSAGE_ATTR = "emailMessage";
+	
+	/**
+	 * Request attribute set, if captcha verification failed.
+	 */
+	public static final String CAPTCHA_MESSAGE_ATTR = "captchaMessage";
 	
 	public static final String LOGIN_WEB = "/login-web";
 	
@@ -59,7 +63,7 @@ public class EMailVerificationServlet extends HttpServlet {
 		
 		String email = req.getParameter("email");
 		if (email == null || email.trim().isEmpty()) {
-			sendFailure(req, resp, "Die E-Mail darf nicht leer sein.");
+			sendEmailFailure(req, resp, "Die E-Mail darf nicht leer sein.");
 			return;
 		}
 
@@ -67,7 +71,7 @@ public class EMailVerificationServlet extends HttpServlet {
 
 		String captcha = req.getParameter("captcha");
 		if (captcha == null || captcha.trim().isEmpty()) {
-			sendFailure(req, resp, "Du musst den Sicherheitscode eingeben.");
+			sendCaptchaFailure(req, resp, "Du musst den Sicherheitscode eingeben.");
 			return;
 		}
 
@@ -75,7 +79,7 @@ public class EMailVerificationServlet extends HttpServlet {
 		String captchaExpected = (String) session.getAttribute("captcha");
 		session.removeAttribute("captcha");
 		if (!captcha.trim().equals(captchaExpected)) {
-			sendFailure(req, resp, "Der Sicherheitscode stimmt nicht überein.");
+			sendCaptchaFailure(req, resp, "Der Sicherheitscode stimmt nicht überein.");
 			return;
 		}
 		
@@ -86,14 +90,14 @@ public class EMailVerificationServlet extends HttpServlet {
 			int atIndex = plainAddress.indexOf('@');
 			if (atIndex <= 0) {
 				req.removeAttribute("email");
-				sendFailure(req, resp, "Die E-Mail-Adresse enthält keinen Nutzernamen.");
+				sendEmailFailure(req, resp, "Die E-Mail-Adresse enthält keinen Nutzernamen.");
 				return;
 			}
 			String domain = plainAddress.substring(atIndex + 1);
 			Record[] result = new Lookup(domain, Type.MX, DClass.IN).run();
 			if (result == null || result.length == 0) {
 				req.removeAttribute("email");
-				sendFailure(req, resp, "Keine gültige E-Mail-Domain: " + domain);
+				sendEmailFailure(req, resp, "Keine gültige E-Mail-Domain: " + domain);
 				return;
 			}
 			
@@ -101,12 +105,12 @@ public class EMailVerificationServlet extends HttpServlet {
 			String mxHost = mx.getTarget().toString(true);
 			if (".".equals(mxHost)) {
 				req.removeAttribute("email");
-				sendFailure(req, resp, "Die Domain kann keine E-Mails empfangen: " + domain);
+				sendEmailFailure(req, resp, "Die Domain kann keine E-Mails empfangen: " + domain);
 				return;
 			}
 		} catch (AddressException ex) {
 			req.removeAttribute("email");
-			sendFailure(req, resp, "Die E-Mail-Adresse ist nicht gültig: " + ex.getMessage());
+			sendEmailFailure(req, resp, "Die E-Mail-Adresse ist nicht gültig: " + ex.getMessage());
 			return;
 		}
     	
@@ -117,53 +121,60 @@ public class EMailVerificationServlet extends HttpServlet {
 			MailService mailService = MailServiceStarter.getInstance();
 			if (mailService == null) {
 				LOG.error("Mail service not active!");
-				sendFailure(req, resp, "Es kann aktuell keine E-Mail versendet werden, bitte probiere es später noch einmal.");
+				sendEmailFailure(req, resp, "Es kann aktuell keine E-Mail versendet werden, bitte probiere es später noch einmal.");
 				return;
 			}
 
 			mailService.sendActivationMail(email, code);
 		} catch (AddressException ex) {
 			LOG.warn("Failed to send message: " + ex.getMessage());
-			sendFailure(req, resp, "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
+			sendEmailFailure(req, resp, "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
 			return;
 		} catch (Exception ex) {
 			LOG.error("Failed to send message.", ex);
-			sendFailure(req, resp, "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
+			sendEmailFailure(req, resp, "Es konnte keine E-Mail geschickt werden: " + ex.getMessage());
 			return;
 		}
 		
 		session.setAttribute("email", email);
 		session.setAttribute("code", code);
 		req.setAttribute(RESTART_PAGE_ATTR, failurePage(req));
-		req.getRequestDispatcher(successPage(req)).forward(req, resp);
+		
+		TemplateRenderer.getInstance(req).process(successPage(req), req, resp);
 	}
 
-	private void sendFailure(HttpServletRequest req, HttpServletResponse resp, String message)
+	private void sendEmailFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
-		req.setAttribute(VERIFY_ERROR_ATTR, message);
-		req.getRequestDispatcher(failurePage(req)).forward(req, resp);
+		req.setAttribute(EMAIL_MESSAGE_ATTR, message);
+		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
 	}
 
+	private void sendCaptchaFailure(HttpServletRequest req, HttpServletResponse resp, String message)
+			throws ServletException, IOException {
+		req.setAttribute(CAPTCHA_MESSAGE_ATTR, message);
+		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
+	}
+	
 	/**
 	 * The page to redirect, if something went wrong.
 	 */
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case LOGIN_MOBILE: 
-			return "/mobile/login.jsp";
+			return "/mobile-login";
 		case LOGIN_WEB: 
 		default:
-			return "/login.jsp";
+			return "/login";
 		}
 	}
 
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 			case LOGIN_MOBILE: 
-				return "/mobile/code.jsp";
+				return "/mobile-code";
 			case LOGIN_WEB: 
 			default:
-				return "/signup-code.jsp"; 
+				return "/signup-code"; 
 		}
 	}
 

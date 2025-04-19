@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Registrazione</h1>
+	</div>
+	
+	<div class="content">
+		<p data-tx="t0002">Per impostare PhoneBlock come <a th:href="@{/setup}">rubrica telefonica di blocco</a>, o <a th:href="@{/anrufbeantworter}">segreteria telefonica intelligente</a>, è necessario prima registrarsi qui.</p>
+
+		<p data-tx="t0003">Dopo aver effettuato l'accesso, è possibile definire nelle <a th:href="@{/settings}">impostazioni del blocco telefonico</a>, ad esempio, il livello di confidenza a partire dal quale un numero di telefono viene aggiunto alla lista di blocco o la lunghezza massima della lista di blocco.</p>
+
+		<p data-tx="t0004">Anche la gestione della segreteria telefonica <a th:href="@{/ab/}">PhoneBlock</a> richiede la registrazione.</p> 
+	</div>
+
+	<div th:replace="~{fragments/login-forms :: forms(web=true)}">
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

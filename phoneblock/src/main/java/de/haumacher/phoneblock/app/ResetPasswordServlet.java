@@ -5,13 +5,12 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.db.DBService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import de.haumacher.phoneblock.db.DBService;
 
 /**
  * {@link HttpServlet} creating a new password for the currently logged in user.

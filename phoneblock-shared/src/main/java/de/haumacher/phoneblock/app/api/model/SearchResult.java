@@ -49,7 +49,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private de.haumacher.phoneblock.app.api.model.PhoneNumer _number = null;
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> _comments = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.UserComment>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> _comments = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.UserComment element) {
 			_listener.beforeAdd(SearchResult.this, COMMENTS__PROP, index, element);
@@ -63,7 +63,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private de.haumacher.phoneblock.app.api.model.PhoneInfo _info = null;
 
-	private final java.util.List<Integer> _searches = new de.haumacher.msgbuf.util.ReferenceList<Integer>() {
+	private final java.util.List<Integer> _searches = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, Integer element) {
 			_listener.beforeAdd(SearchResult.this, SEARCHES__PROP, index, element);
@@ -77,7 +77,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private String _aiSummary = "";
 
-	private final java.util.List<String> _relatedNumbers = new de.haumacher.msgbuf.util.ReferenceList<String>() {
+	private final java.util.List<String> _relatedNumbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(SearchResult.this, RELATED_NUMBERS__PROP, index, element);
@@ -95,7 +95,17 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private de.haumacher.phoneblock.app.api.model.Rating _topRating = de.haumacher.phoneblock.app.api.model.Rating.A_LEGITIMATE;
 
-	private final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> _ratings = new java.util.HashMap<>();
+	private final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> _ratings = new de.haumacher.msgbuf.util.ReferenceMap<>() {
+		@Override
+		protected void beforeAdd(de.haumacher.phoneblock.app.api.model.Rating index, Integer element) {
+			_listener.beforeAdd(SearchResult.this, RATINGS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterRemove(de.haumacher.phoneblock.app.api.model.Rating index, Integer element) {
+			_listener.afterRemove(SearchResult.this, RATINGS__PROP, index, element);
+		}
+	};
 
 	/**
 	 * Creates a {@link SearchResult} instance.
@@ -555,35 +565,42 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case PHONE_ID__PROP: setPhoneId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case NUMBER__PROP: setNumber(de.haumacher.phoneblock.app.api.model.PhoneNumer.readPhoneNumer(in)); break;
 			case COMMENTS__PROP: {
+				java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addComment(de.haumacher.phoneblock.app.api.model.UserComment.readUserComment(in));
+					newValue.add(de.haumacher.phoneblock.app.api.model.UserComment.readUserComment(in));
 				}
 				in.endArray();
+				setComments(newValue);
 			}
 			break;
 			case INFO__PROP: setInfo(de.haumacher.phoneblock.app.api.model.PhoneInfo.readPhoneInfo(in)); break;
 			case SEARCHES__PROP: {
+				java.util.List<Integer> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addSearche(in.nextInt());
+					newValue.add(in.nextInt());
 				}
 				in.endArray();
+				setSearches(newValue);
 			}
 			break;
 			case AI_SUMMARY__PROP: setAiSummary(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case RELATED_NUMBERS__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addRelatedNumber(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
 				}
 				in.endArray();
+				setRelatedNumbers(newValue);
 			}
 			break;
 			case PREV__PROP: setPrev(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case NEXT__PROP: setNext(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case TOP_RATING__PROP: setTopRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			case RATINGS__PROP: {
+				java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> newValue = new java.util.LinkedHashMap<>();
 				in.beginArray();
 				while (in.hasNext()) {
 					in.beginObject();
@@ -596,10 +613,11 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 							default: in.skipValue(); break;
 						}
 					}
-					putRating(key, value);
+					newValue.put(key, value);
 					in.endObject();
 				}
 				in.endArray();
+				setRatings(newValue);
 				break;
 			}
 			default: super.readField(in, field);

@@ -15,7 +15,7 @@
 <section class="hero is-small is-primary">
 	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" class="logo-image">
+			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/assets/img/app-logo.svg" class="logo-image">
 			PhoneBlock
 		</p>
 		<p class="subtitle">Der Spam-Filter fürs Telefon</p>

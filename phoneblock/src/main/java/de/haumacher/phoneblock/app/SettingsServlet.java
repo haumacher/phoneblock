@@ -5,25 +5,21 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.ibatis.session.SqlSession;
 
-import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBAuthToken;
-import de.haumacher.phoneblock.db.DBContribution;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
-import de.haumacher.phoneblock.util.ServletUtil;
+import de.haumacher.phoneblock.location.Countries;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -33,60 +29,14 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * Servlet updating user settings.
  */
-@WebServlet(urlPatterns = SettingsServlet.PATH)
+@WebServlet(urlPatterns = SettingsServlet.ACTION_PATH)
 public class SettingsServlet extends HttpServlet {
 	
-	public static final String API_KEY_LABEL_PARAM = "label";
+	public static final String API_KEY_LABEL_PARAM = "apikey-label";
 	public static final String KEY_ID_PREFIX = "key-";
 	public static final String PATH = "/settings";
+	public static final String ACTION_PATH = "/update-settings";
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
-		if (userName == null) {
-			LoginServlet.requestLogin(req, resp);
-			return;
-		}
-		
-		DB db = DBService.getInstance();
-		try (SqlSession session = db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			
-			Long userIdOpt = users.getUserId(userName);
-			List<String> blacklist;
-			List<String> whitelist;
-			List<DBAnswerbotInfo> answerBots;
-			List<DBAuthToken> explicitTokens;
-			List<DBContribution> contributions;
-			if (userIdOpt == null) {
-				blacklist = Collections.emptyList();
-				whitelist = Collections.emptyList();
-				answerBots = Collections.emptyList();
-				explicitTokens = Collections.emptyList();
-				contributions = Collections.emptyList();
-			} else {
-				long userId = userIdOpt.longValue();
-				
-				BlockList blocklist = session.getMapper(BlockList.class);
-				blacklist = blocklist.getPersonalizations(userId);
-				whitelist = blocklist.getWhiteList(userId);
-
-				answerBots = users.getAnswerBots(userId);
-				explicitTokens = users.getExplicitTokens(userId);
-
-				contributions = users.getContributions(userId);
-			}
-			
-			req.setAttribute("blacklist", blacklist);
-			req.setAttribute("whitelist", whitelist);
-			req.setAttribute("answerBots", answerBots);
-			req.setAttribute("explicitTokens", explicitTokens);
-			req.setAttribute("contributions", contributions);
-		}
-		
-		ServletUtil.display(req, resp, "/settings.jsp");
-	}
-	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
@@ -113,7 +63,7 @@ public class SettingsServlet extends HttpServlet {
 					return;
 					
 				default: 
-				forwardToSettings(req, resp);
+				forwardToSettings(req, resp, null);
 			}
 		}
 	}
@@ -137,9 +87,9 @@ public class SettingsServlet extends HttpServlet {
 				session.commit();
 				
 				req.setAttribute("apiKey", apiKey);
-				req.getRequestDispatcher("/show-api-key.jsp").forward(req, resp);
+				TemplateRenderer.getInstance(req).process("/show-api-key", req, resp);
 			} else {
-				forwardToSettings(req, resp);
+				forwardToSettings(req, resp, "myAPIKeys");
 			}
 		}
 	}
@@ -162,7 +112,7 @@ public class SettingsServlet extends HttpServlet {
 				session.commit();
 			}
 		}
-		forwardToSettings(req, resp);
+		forwardToSettings(req, resp, "myAPIKeys");
 	}
 
 	private void updateLists(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
@@ -213,13 +163,15 @@ public class SettingsServlet extends HttpServlet {
 		
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
-		forwardToSettings(req, resp);
+		forwardToSettings(req, resp, "blacklist");
 	}
 
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
 		int minVotes = Integer.parseInt(req.getParameter("minVotes"));
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
 		boolean wildcards = req.getParameter("wildcards") != null;
+		String myDialPrefix = Countries.selectDialPrefix(req.getParameter("myDialPrefix"));
+		boolean nationalOnly = req.getParameter("nationalOnly") != null;
 		
 		if (minVotes <= 2) {
 			minVotes = 2;
@@ -258,21 +210,29 @@ public class SettingsServlet extends HttpServlet {
 		settings.setMinVotes(minVotes);
 		settings.setMaxLength(maxLength);
 		settings.setWildcards(wildcards);
+		
+		// Verify input.
+		if (myDialPrefix != null) {
+			settings.setDialPrefix(myDialPrefix);
+		}
+		
+		settings.setNationalOnly(nationalOnly);
+		
 		db.updateSettings(settings);
 		
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
 		AddressBookCache.getInstance().flushUserCache(userName);
 		
-		forwardToSettings(req, resp);
+		forwardToSettings(req, resp, null);
 	}
 
-	private void forwardToSettings(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+	private void forwardToSettings(HttpServletRequest req, HttpServletResponse resp, String fragment) throws IOException {
+		resp.sendRedirect(req.getContextPath() + "/settings" + (fragment == null ? "" : "#" + fragment));
 	}
 
 	private void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
-		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+		TemplateRenderer.getInstance(req).process("/login", req, resp);
 	}
 
 }

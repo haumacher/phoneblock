@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.impressum.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Imprint</h1>
+
+		<p data-tx="t0002">PhoneBlock is a <a href="https://github.com/haumacher/phoneblock">private project</a> that can help you with digital self-defense against telephone terror and unwanted advertising calls. PhoneBlock is neither a product nor a commercial service within the meaning of the <a href="https://www.gesetze-im-internet.de/ddg/__5.html">Digital Services Act</a>.</p>
+		
+		<p data-tx="t0003">I (Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button>) operate this website as a private person for my personal pleasure and out of technological interest. I make it possible for you to use the software free of charge and also provide you with the necessary server capacity free of charge. If you would like to contribute to the operating costs or simply say "thank you", you are welcome to "donate" a <a th:href="@{/support}">small amount</a>. However, you do this without expecting anything in return.</p>
+		
+		<p data-tx="t0004">The software behind this website was developed by Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button> and others. If you have any questions that are not already answered in the <a th:href="@{/faq}">FAQ</a> and the <a th:href="@{/usage}">Terms of Use</a>, please feel free to contact me (<button class="button is-small is-link is-light showaddr">...</button>). However, I do not wish to receive telephone calls or visits, which is why e-mail must suffice as the sole means of contact. In case of problems, e.g. if your phone number has accidentally been added to the blocklist, I will be happy to help you immediately and without complications.</p>
+
+		</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

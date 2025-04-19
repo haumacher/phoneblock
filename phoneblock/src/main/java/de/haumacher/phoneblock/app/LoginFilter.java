@@ -2,11 +2,14 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -55,8 +58,8 @@ public abstract class LoginFilter implements Filter {
 			if (session != null) {
 				String userName = LoginFilter.getAuthenticatedUser(session);
 				if (userName != null) {
-					req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
-					chain.doFilter(request, response);
+					setRequestUser(req, userName);
+					loggedIn(req, resp, userName, chain);
 					return;
 				}
 			}
@@ -73,7 +76,7 @@ public abstract class LoginFilter implements Filter {
 						AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), true);
 						if (authorization != null && checkTokenAuthorization(req, authorization)) {
 							String userName = authorization.getUserName();
-							LOG.info("Accepted login token for user {}.", userName);
+							LOG.info("Accepted login token for user {} accessing '{}'.", userName, req.getServletPath());
 							
 							setUser(req, userName);
 							
@@ -81,13 +84,13 @@ public abstract class LoginFilter implements Filter {
 							// This enhances security since a token can be used only once.
 							setLoginCookie(req, resp, authorization);
 							
-							chain.doFilter(request, response);
+							loggedIn(req, resp, userName, chain);
 							return;
 						} else {
 							if (authorization == null) {
-								LOG.info("Dropping outdated login cookie: {}", token);
+								LOG.info("Dropping outdated login cookie accessing '{}': {}", req.getServletPath(), token);
 							} else {
-								LOG.info("Login not allowed with cookie: {}", token);
+								LOG.info("Login not allowed with cookie accessing '{}': {}", req.getServletPath(), token);
 							}
 							removeLoginCookie(req, resp);
 						}
@@ -111,7 +114,7 @@ public abstract class LoginFilter implements Filter {
 						
 						setUser(req, userName);
 						
-						chain.doFilter(request, response);
+						loggedIn(req, resp, userName, chain);
 						return;
 					} else {
 						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.", 
@@ -122,13 +125,18 @@ public abstract class LoginFilter implements Filter {
 				String userName = db.basicAuth(authHeader);
 				if (userName != null) {
 					setUser(req, userName);
-					chain.doFilter(request, response);
+					loggedIn(req, resp, userName, chain);
 					return;
 				}
 			}
 		}
 		
 		requestLogin(req, resp, chain);
+	}
+
+	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, String userName, FilterChain chain)
+			throws IOException, ServletException {
+		chain.doFilter(request, response);
 	}
 
 	protected boolean allowBasicAuth(HttpServletRequest req) {
@@ -163,7 +171,7 @@ public abstract class LoginFilter implements Filter {
 	}
 	
 	/**
-	 * Sets or updats a cookie with a login token.
+	 * Sets or updates a cookie with a login token.
 	 */
 	public static void setLoginCookie(HttpServletRequest req, HttpServletResponse resp, AuthToken authorization) {
 		Cookie loginCookie = new Cookie(LOGIN_COOKIE, authorization.getToken());
@@ -194,7 +202,11 @@ public abstract class LoginFilter implements Filter {
 	}
 
 	private static void removeLoginCookie(HttpServletRequest request, HttpServletResponse response) {
-		for (Cookie cookie : request.getCookies()) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+			return;
+		}
+		for (Cookie cookie : cookies) {
 			if (LOGIN_COOKIE.equals(cookie.getName())) {
 				Cookie removal = new Cookie(LOGIN_COOKIE, "");
 				removal.setMaxAge(0);
@@ -227,7 +239,18 @@ public abstract class LoginFilter implements Filter {
 	 */
 	public static void setSessionUser(HttpServletRequest req, String userName) {
 		setRequestUser(req, userName);
-		req.getSession().setAttribute(AUTHENTICATED_USER_ATTR, userName);
+		setSessionUser(req.getSession(), userName);
+	}
+
+	private static void setSessionUser(HttpSession session, String userName) {
+		session.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+		
+		DB db = DBService.getInstance();
+		try (SqlSession tx = db.openSession()) {
+			Users users = tx.getMapper(Users.class);
+			String lang = users.getLocale(userName);
+			session.setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
+		}
 	}
 
 	/** 

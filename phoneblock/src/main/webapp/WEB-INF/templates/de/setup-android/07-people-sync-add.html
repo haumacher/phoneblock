@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-Installation</h1>
+		
+		<h2 data-tx="t0002">Schritt 4: Füge ein Adressbuch hinzu und gib die PhoneBlock-Account-Daten an</h2>
+		
+		<ol>
+		<li data-tx="t0003">
+			Wähle die Option "Mit URL und Benutzername anmelden" und gib als "Basis-URL" die Adresse des PhoneBlock-Adressbuchs an: 
+			<code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>.
+		</li>
+			
+		<li data-tx="t0004">
+			Bei "Benutzername" trägst Du den Benutzernamen ein, den Du bei der <a th:href="@{/login(location=${currentPage})}">PhoneBlock-Anmeldung</a> erhalten 
+			hast<th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.
+		</li>
+			
+		<li data-tx="t0005">
+			Das Passwort wurde dir nach der ersten Anmeldung 
+			angezeigt<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>)</th:block>.
+		</li>
+		</ol>
+		
+		<p data-tx="t0006">			
+			Du hast die Anmelde-Daten nicht mehr zur Hand? Macht nichts, einfach anmelden und 
+			<a th:href="@{/login(location='/settings')}">in den Einstellungen das Passwort zurücksetzen</a>.
+		</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Adressbuch hinzufügen" class="image appscreen" data-tx="t0012" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="Adressbuch hinzufügen" class="image appscreen" data-tx="t0013" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0007">Zurück</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span data-tx="t0008">Weiter</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

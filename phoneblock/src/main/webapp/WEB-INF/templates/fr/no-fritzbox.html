@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Aucune Fritz!Box trouvée</h1>
+
+		<p data-tx="t0002">La recherche n'a pas trouvé de Fritz!Box. Il peut y avoir plusieurs raisons à cela.</p>
+		
+		<ul>
+			<li data-tx="t0003">Tu n'es pas connecté au WLan, des "données mobiles" sont-elles peut-être actives?</li>
+			<li data-tx="t0004">Ta Fritz!Box n'a pas la configuration par défaut avec le nom <code dir="ltr">fritz.box</code> et l'adresse <code dir="ltr">192.168.178.1</code>?</li>
+			<li data-tx="t0005">Tu as un autre routeur Internet. Peut-être qu'il peut aussi fonctionner avec PhoneBlock, vérifie la <a th:href="@{/faq}">FAQ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

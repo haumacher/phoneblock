@@ -1,0 +1,196 @@
+body.test-system {
+	background-image: url("../test-system.svg");
+	background-repeat: no-repeat;
+	background-position-x: 30px;
+	background-position-y: 230px;
+	background-size: calc(100% - 60px);	
+}
+
+.swagger-ui pre {
+    background-color: inherit;
+}
+
+.navbar-dropdown {
+    background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
+}
+
+.hero.is-primary .navbar-item, .hero.is-primary .navbar-link {
+    background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
+	color: rgba(255,255,255);
+}
+
+.navbar-dropdown a.navbar-item:not(.is-active, .is-selected) {
+    background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
+	color: rgba(255,255,255);
+}
+
+.hero.is-primary .button.lang-select {
+	background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l))
+}
+
+/* Reduce spacing around rating images */
+.content figure {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media screen and (min-width: 1024px) {
+    .navbar-item.has-dropdown.is-active .navbar-link,
+    .navbar-item.has-dropdown:focus .navbar-link,
+    .navbar-item.has-dropdown:hover .navbar-link {
+        background-color:#00b89c;
+    }
+
+    .navbar-link.is-active, .navbar-link:focus, .navbar-link:focus-within, .navbar-link:hover, a.navbar-item.is-active, a.navbar-item:focus, a.navbar-item:focus-within, a.navbar-item:hover {
+        background-color: #00b89c;
+    }
+
+    .navbar-dropdown a.navbar-item:focus, .navbar-dropdown a.navbar-item:hover {
+        background-color: #00b89c;
+    }
+}
+
+.tag:not(body).is-legitimate,
+.button.is-legitimate {
+    background-color: rgba(72, 199, 142, 1);
+    color: #fff;
+}
+
+.tag:not(body).is-missed,
+.button.is-missed {
+    background-color: rgba(170, 172, 170, 1);
+    color: #fff;
+}
+
+.tag:not(body).is-ping,
+.button.is-ping {
+    background-color: rgba(31, 94, 220, 1);
+    color: #fff;
+}
+
+.tag:not(body).is-poll,
+.button.is-poll {
+    background-color: rgba(157, 31, 220, 1);
+    color: #fff;
+}
+
+.tag:not(body).is-advertising,
+.button.is-advertising {
+    background-color: rgba(255, 224, 138, 1);
+    color: rgba(0,0,0,.7);
+}
+
+.tag:not(body).is-gamble,
+.button.is-gamble {
+    background-color: rgba(241, 122, 70, 1);
+    color: #fff;
+}
+
+.tag:not(body).is-fraud,
+.button.is-fraud {
+    background-color: rgba(241, 70, 104, 1);
+    color: #fff;
+}
+
+.logo-image {
+    height: 37px;
+    vertical-align: bottom;
+}
+
+.github-image {
+    position: absolute;
+    top: 0;
+    left: auto;
+    right: 0;
+}
+
+.github-image:dir(rtl) {
+    left: 0;
+    right: auto;
+}
+
+.ltr:dir(rtl) {
+	display: none;
+}
+
+.rtl:dir(ltr) {
+	display: none;
+}
+
+.hero-body {
+    position: relative;
+}
+
+.logo-animation {
+    float: right;
+    max-width: 15%;
+}
+
+.facebook-color {
+    color: #1877F2;
+}
+
+.fritzbox-position {
+    float: right;
+}
+
+.related-numbers {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 64px;
+    row-gap: 0;
+}
+
+.token {
+	padding-right:5px;
+}
+
+.copyToClipboard {
+	padding-left: 0.5ex;	
+}
+
+.appscreen {
+	border: 5px solid #555;
+	border-radius: 10px;
+}
+
+.chartjs-data {
+	display: none;
+}
+
+.box .fa-star {
+    color: green;
+}
+
+.fa-triangle-exclamation {
+    color: red;
+}
+
+.image.is-64x64 i {
+    font-size: 64px;
+}
+
+.level-item.thumbs-up {
+    color: green;
+}
+
+.level-item.thumbs-down {
+    color: red;
+}
+
+.level-item {
+    padding-right: 1rem;
+}
+
+/* Fix z-order issue in bulma.css, see https://github.com/jgthms/bulma/pull/3978 */
+.dropdown-menu {
+	z-index: 35;
+}
+
+button.showaddr:before {
+	content: "<";
+}
+
+button.showaddr:after {
+	content: ">";
+}

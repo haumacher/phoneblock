@@ -12,7 +12,6 @@ import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.msgbuf.xml.XmlSerializable;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -83,14 +82,10 @@ public class ServletUtil {
 	public static String currentPage(HttpServletRequest req) {
 		String currentPage = (String) req.getAttribute(CURRENT_PAGE);
 		if (currentPage == null) {
-			currentPage = req.getRequestURI();
+			String requestURI = req.getRequestURI();
+			currentPage = requestURI.substring(req.getContextPath().length());
 		}
 		return currentPage;
-	}
-
-	public static void display(HttpServletRequest req, HttpServletResponse resp, String page) throws ServletException, IOException {
-		req.setAttribute(CURRENT_PAGE, req.getRequestURI());
-		req.getRequestDispatcher(page).forward(req, resp);
 	}
 
 }

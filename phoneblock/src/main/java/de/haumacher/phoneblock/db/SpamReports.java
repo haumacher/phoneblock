@@ -45,7 +45,23 @@ public interface SpamReports {
 			where PHONE = #{phone}
 			""")
 	int addVote(String phone, int delta, long now);
-
+	
+	@Insert("""
+			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, VOTES, CALLS, LASTACCESS) 
+			values (#{phone}, #{dialPrefix}, #{searches}, #{votes}, #{calls}, #{now})
+			""")
+	int insertNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	
+	@Update("""
+			update NUMBERS_LOCALE set 
+				SEARCHES = SEARCHES + #{searches},
+				VOTES = VOTES + #{votes},
+				CALLS = CALLS + #{calls},
+				LASTACCESS = #{now}
+			where PHONE = #{phone} and DIAL = #{dialPrefix}
+			""")
+	int updateNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	
 	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
 	
@@ -299,10 +315,10 @@ public interface SpamReports {
 	List<String> getBlockList(int minVotes);
 	
 	@Select("""
-			SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM NUMBERS s
-			where ACTIVE
-			GROUP BY confidence 
-			ORDER BY confidence DESC
+			SELECT CASE WHEN s.VOTES < #{minVotes} THEN 'reported' ELSE 'blocked' END state, COUNT(1) cnt FROM NUMBERS s
+			where s.ACTIVE and s.VOTES > 0
+			GROUP BY state
+			ORDER BY state
 			""")
 	List<Statistics> getStatistics(int minVotes);
 	
@@ -333,27 +349,45 @@ public interface SpamReports {
 	int incSearchCount(String phone, long now);
 
 	@Select("""
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			<script>
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			from COMMENTS s 
+			where s.PHONE=#{phone} and s.LOCALE in 
+			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
+			""")
+	List<DBUserComment> getComments(String phone, Collection<String> langs);
+	
+	@Select("""
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
 			where s.PHONE=#{phone}
 			""")
-	List<DBUserComment> getComments(String phone);
+	List<DBUserComment> getAnyComments(String phone);
 	
 	@Select("""
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			<script>
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
 			from COMMENTS s 
 			where 
-				s.PHONE > #{prefix}
-				and s.PHONE < concat(#{prefix}, 'Z')
+				s.PHONE &gt; #{prefix}
+				and s.PHONE &lt; concat(#{prefix}, 'Z')
 				and LENGTH(s.PHONE) = #{expectedLength}
+				and s.LOCALE in 
+			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
 			""")
-	List<DBUserComment> getAllComments(String prefix, int expectedLength);
+	List<DBUserComment> getAllComments(String prefix, int expectedLength, Collection<String> langs);
 	
 	@Insert("""
-			insert into COMMENTS (ID, PHONE, RATING, COMMENT, SERVICE, CREATED, USERID) 
-			values (#{id}, #{phone}, #{rating}, #{comment}, #{service}, #{created}, #{userId})
+			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID) 
+			values (#{id}, #{phone}, #{rating}, #{comment}, #{lang}, #{service}, #{created}, #{userId})
 			""")
-	void addComment(String id, String phone, Rating rating, String comment, String service, long created, Long userId);
+	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
 	
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);

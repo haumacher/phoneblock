@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-Installation</h1>
+		
+		<h2 data-tx="t0002">Schritt 7: Aboniere die Blocklist</h2>
+		
+		<p data-tx="t0003">
+			Wähle deinen neu angelegten Account aus und aktiviere das "Blocklist"-Adressbuch. 
+			Drücke jetzt den Synchronisierungsknopf. 
+		</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="Konto ist eingerichtet" class="image appscreen" data-tx="t0006" th:src="@{/assets/img/peoplesync/09-people-sync-account-finished.png}"/>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="Aboniere die Blocklist" class="image appscreen" data-tx="t0007" th:src="@{/assets/img/peoplesync/10-people-sync-subscribe.png}"/>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/07-people-sync-add}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">Zurück</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/11-spam-contacts}">
+		    <span data-tx="t0005">Weiter</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

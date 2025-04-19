@@ -19,7 +19,7 @@
 <section class="hero is-small is-primary">
 	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/app-logo.svg" class="logo-image">
+			<img alt="PhoneBlock Logo" src="<%=request.getContextPath()%>/assets/img/app-logo.svg" class="logo-image">
 			PhoneBlock
 		</p>
 		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
@@ -51,7 +51,7 @@
 
 	<jsp:include page="/login-forms.jspf">
 		<jsp:param name="web" value="false" />
-		<jsp:param name="locationAfterLogin" value="/mobile/login.jsp" />
+		<jsp:param name="location" value="/mobile/login.jsp" />
 	</jsp:include>
 
 <% } else { %>
@@ -72,7 +72,7 @@
 <% } %>
 </section>
 
-<script type="text/javascript" src="<%= request.getContextPath() %>/bulma.js"></script>
+<script type="text/javascript" src="<%= request.getContextPath() %>/assets/js/bulma.js"></script>
 
 </body>
 </html>

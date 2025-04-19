@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-android.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Встановлення Android</h1>
+		
+		<p data-tx="t0002">Під час встановлення до ваших контактів буде додано адресну книгу PhoneBlock. Якщо вам зателефонують зі спам-номера, це одразу ж відобразиться на екрані, наприклад, "СПАМ: 03016637169". Також у пропущених дзвінках можна одразу побачити, що не варто передзвонювати, не погугливши номер.</p>
+		
+		<p data-tx="t0003">Ви не можете використовувати цю функцію для блокування СПАМ-дзвінків (ваш телефон все одно дзвонитиме, але ви бачитимете, що це СПАМ-дзвінок). Ви можете заблокувати СПАМ-дзвінки, <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">встановивши SpamBlocker</a> та інтегрувавши базу даних PhoneBlock. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> є незалежним додатком, якщо у вас виникли проблеми з ним, будь ласка, зв'яжіться безпосередньо з розробником.</p>
+		
+		<p data-tx="t0004">Для синхронізації адресної книги вам потрібна програма, з якою ви можете синхронізувати інтернет-телефонні книги. Ви можете використовувати "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", наприклад, або "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Інструкції тут написані для "PeopleSync", але процедура з "DAVx⁵" дуже схожа:</p>
+		
+		<h2 data-tx="t0005">Крок 1: Відкрийте Playstore і знайдіть "PeopleSync"</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Відкритий ігровий магазин" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
+	  		</div>
+		
+			<div class="column">
+				<img alt="Пошук у PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">Назад</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">Далі</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

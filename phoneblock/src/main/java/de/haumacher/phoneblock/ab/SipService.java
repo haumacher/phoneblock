@@ -222,6 +222,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 						if (info.getVotes() > 0) {
 							long now = System.currentTimeMillis();
 							reports.recordCall(info.getPhone(), now);
+							DBUserSettings settings = users.getSettingsById(userId);
+							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(), 0, 0, 1, now);
 							session.commit();
 						}
 					} catch (Exception ex) {

@@ -15,7 +15,7 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	/** @see #getValues() */
 	public static final String VALUES__PROP = "values";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.Rating>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.Rating element) {
 			_listener.beforeAdd(Ratings.this, VALUES__PROP, index, element);
@@ -153,11 +153,13 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case VALUES__PROP: {
+				java.util.List<de.haumacher.phoneblock.app.api.model.Rating> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addValue(de.haumacher.phoneblock.app.api.model.Rating.readRating(in));
+					newValue.add(de.haumacher.phoneblock.app.api.model.Rating.readRating(in));
 				}
 				in.endArray();
+				setValues(newValue);
 			}
 			break;
 			default: super.readField(in, field);

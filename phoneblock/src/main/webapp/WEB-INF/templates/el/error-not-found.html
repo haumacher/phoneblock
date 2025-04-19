@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Η σελίδα δεν βρέθηκε.</h1>
+
+			<p data-tx="t0002">Η ζητούμενη σελίδα δεν βρέθηκε. Ελέγξτε τις καταχωρήσεις σας και προσπαθήστε ξανά!</p>
+
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

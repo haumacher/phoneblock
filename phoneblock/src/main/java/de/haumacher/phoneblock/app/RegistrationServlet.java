@@ -6,18 +6,19 @@ package de.haumacher.phoneblock.app;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
 
 /**
  * {@link HttpServlet} invoked from the signup page when the e-mail verification code is entered.
@@ -31,7 +32,7 @@ public class RegistrationServlet extends HttpServlet {
 	/**
 	 * Request attribute set, if registration fails.
 	 */
-	public static final String REGISTER_ERROR_ATTR = "message";
+	public static final String REGISTER_ERROR_ATTR = "errorMessage";
 
 	public static final String REGISTER_WEB = "/register-web";
 	
@@ -70,14 +71,17 @@ public class RegistrationServlet extends HttpServlet {
 				
 				String displayName = DB.toDisplayName(email);
 				
-				passwd = db.createUser(login, displayName);
+				Language language = DefaultController.selectLanguage(req);
+				String dialPrefix = DefaultController.selectDialPrefix(req);
+				
+				passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 				db.setEmail(login, email);
 			} else {
 				// No longer known.
 				passwd = null;
 			}
 			
-			String rememberValue = req.getParameter(LoginServlet.REMEMBER_PARAM);
+			String rememberValue = req.getParameter(LoginServlet.REMEMBER_ME_PARAM);
 			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);
 
 			startSetup(req, resp, login, passwd);

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Εγκατάσταση ως τηλεφωνικός κατάλογος</h1>
+
+<th:block th:unless="${token}">
+		<p data-tx="t0002">Για να εγκαταστήσετε τη λίστα αποκλεισμού, χρειάζεστε έναν δρομολογητή Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" της AVM</a> και έναν λογαριασμό PhoneBlock. Δεν είναι απαραίτητο να είναι το πιο πρόσφατο μοντέλο, αλλά θα πρέπει να ελέγξετε αν είναι εγκατεστημένο σε αυτό το πιο πρόσφατο FRITZ!OS (07.29 ή νεότερο). Αν δεν ισχύει αυτό, χρησιμοποιήστε τις παρακάτω οδηγίες εγκατάστασης για να ελέγξετε αν η έκδοσή σας προσφέρει ήδη τις απαραίτητες επιλογές.</p>
+		
+		<p data-tx="t0003">Σημείωση: Λόγω τεχνικών περιορισμών του Fritz!Box, δεν είναι δυνατή η φόρτωση ολόκληρου του καταλόγου μπλοκ σε έναν τηλεφωνικό κατάλογο. Επομένως, η ρύθμιση ενός <a th:href="@{/anrufbeantworter}">Αποκριτή PhoneBlock</a> προσφέρει καλύτερη προστασία από τις κλήσεις SPAM.</p>
+		
+		<div class="columns" th:unless="${login}">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/login(location='/setup')}">
+				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Δημιουργία λογαριασμού PhoneBlock</button>
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0005" th:if="${login}">Έχετε ήδη εγγραφεί ως <code dir="ltr" th:text="${userName}"></code>, υπέροχα! Μπορείτε να ξεκινήσετε αμέσως.</p>
+</th:block>
+
+<div class="columns" th:if="${token}">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <p class="title" data-tx="t0006">Τα στοιχεία σύνδεσής σας</p>
+	        <p class="subtitle" data-tx="t0007">Θα χρειαστείτε τα ακόλουθα δεδομένα για την εγκατάσταση.</p>
+	        <div class="content">
+		
+				<div class="field">
+				  <label class="label" data-tx="t0008">Διεύθυνση Internet του διακομιστή CardDAV</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0009">Όνομα χρήστη</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0010">κωδικός πρόσβασης</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+			</div>
+		</article>
+	  </div>
+    </div>
+  </div>
+</div>
+		
+		<h2 data-tx="t0011">Συνδεθείτε στο FRITZ!Box σας</h2>
+		
+		<p data-tx="t0012">Για να λειτουργήσει αυτό, πρέπει να βρίσκεστε στο σπίτι σας στο WLAN ή ο υπολογιστής σας πρέπει να είναι απευθείας συνδεδεμένος στο FRITZ!Box μέσω καλωδίου. Το FRITZ!Box θα σας ζητήσει πρώτα τον κωδικό πρόσβασής σας. Εάν δεν έχετε συνδεθεί ποτέ στο παρελθόν, θα βρείτε αυτόν τον κωδικό πρόσβασης στο κάτω μέρος της συσκευής.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a href="http://fritz.box" target="_blank">
+				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013">Συνδεθείτε στο FRITZ!Box</button>
+			</a>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0014">Δημιουργία νέου τηλεφωνικού καταλόγου "Blocklist"</h2>
+		
+		<p data-tx="t0015">Για να μπορεί το FRITZ!Box σας να μπλοκάρει τις ανεπιθύμητες κλήσεις, χρειάζεται τον δικό του τηλεφωνικό κατάλογο στον οποίο καταχωρούνται όλοι οι αριθμοί των ανεπιθύμητων καλούντων. Καλέστε αυτόν τον τηλεφωνικό κατάλογο "Blocklist". Για αυτό</p>
+		
+		<ol>
+			<li data-tx="t0016">Πλοηγηθείτε πρώτα στην ενότητα "Τηλεφωνία",</li>
+			<li data-tx="t0017">επιλέξτε το στοιχείο μενού "Τηλεφωνικός κατάλογος" και</li>
+			<li data-tx="t0018">και στη συνέχεια κάντε κλικ στο σύνδεσμο "Νέος τηλεφωνικός κατάλογος".</li>
+		</ol>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Λίστα κλήσεων Fritz!Box" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0019">Εισάγετε τα στοιχεία σύνδεσης του λογαριασμού σας PhoneBlock</h2>
+		
+		<p data-tx="t0020">Τώρα χρειάζεστε τα στοιχεία σύνδεσης του λογαριασμού σας PhoneBlock.</p>
+
+		<ul>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Δώστε στον τηλεφωνικό κατάλογο που πρόκειται να χρησιμοποιηθεί ως λίστα φραγής το όνομα <code dir="ltr">Λίστα φραγής</code>. Θα χρειαστείτε ξανά αυτό το όνομα για το επόμενο βήμα.</li>
+
+			<li data-tx="t0022">Τώρα επιλέξτε <span class="tag is-danger">2</span> την επιλογή <i>Χρήση του τηλεφωνικού καταλόγου ενός διαδικτυακού παρόχου</i>.</li>
+
+			<li data-tx="t0023">Στη συνέχεια, μπορείτε να επιλέξετε <span class="tag is-danger">3</span> τον πάροχο <i>CardDAV provider</i>.</li>
+
+			<li data-tx="t0024">Σχεδόν τελειώσαμε, τώρα τα δεδομένα σύνδεσης <span class="tag is-danger">4</span>. Είναι καλύτερο να τα μεταφέρετε με Cut&amp;Paste για να αποφύγετε τα λάθη πληκτρολόγησης! <ul>
+					<li> Εισάγετε τη διεύθυνση URL του βιβλίου διευθύνσεων του PhoneBlock στο πεδίο <i>Διεύθυνση διαδικτύου του διακομιστή CardDAV</i>: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a> </li>
+
+					<li> Εισάγετε το όνομα χρήστη <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a> στο πεδίο <i>Όνομα χρήστη</i>. </li>
+
+					<li>Ο κωδικός πρόσβασης<th:block th:unless="${token}"> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a>,</th:block> πρέπει τώρα να εισαχθεί στο πεδίο <i>Κωδικός πρόσβασης</i>. </li>
+				    </ul></li>
+
+			<li data-tx="t0025">Τώρα μπορείτε να επιβεβαιώσετε <span class="tag is-danger">5</span> τη δημιουργία του νέου τηλεφωνικού καταλόγου. Παρακαλούμε σημειώστε: Επιλέξτε <b>κανένα από τα τηλέφωνά σας</b> στην ενότητα "Ανάθεση τηλεφώνου"! Διαφορετικά, θα βρίσκετε μόνο τους καλούντες SPAM στις επαφές του τηλεφώνου σας.</li>
+		</ul>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Δημιουργία νέου βιβλίου διευθύνσεων" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0026">Ελέγξτε αν έχει δημιουργηθεί η "Blocklist" σας</h2>
+		
+		<p data-tx="t0027">Αν όλα πήγαν καλά, τότε το FRITZ!Box σας έχει φορτώσει όλους τους αριθμούς από τη λίστα αποκλεισμού PhoneBlock. Θα πρέπει τώρα να έχετε έναν νέο τηλεφωνικό κατάλογο "Blocklist" στην ενότητα "Telephony / Phonebook". Εάν επιλέξετε την καρτέλα "Blocklist", μπορείτε να δείτε όλους τους αριθμούς των τρεχόντων καλούντων spam.</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Εμφάνιση ανακτημένης λίστας μπλοκ" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0028">Αφήστε το FRITZ!Box να απορρίψει κλήσεις από τη "Λίστα αποκλεισμού"</h2>
+		
+		<p data-tx="t0029">Στην ενότητα "Τηλεφωνία / Χειρισμός κλήσεων", μπορείτε τώρα να καθορίσετε τον νέο τηλεφωνικό κατάλογο "Blocklist" ως το εύρος αριθμών τηλεφώνου που θα μπλοκαριστεί.</p>			
+		
+		<p data-tx="t0030">Μετακινηθείτε προς τα κάτω στο υποστοιχείο "Block number ranges" και κάντε κλικ στο κουμπί "Add range".</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Προσθήκη νέας φραγής κλήσεων" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0031">Στη νέα οθόνη, επιλέξτε την επιλογή "Τηλεφωνικός κατάλογος" στην επιλογή για την "Περιοχή" και επιλέξτε τον πρόσφατα δημιουργημένο τηλεφωνικό κατάλογο "Blocklist" ως τον "Τηλεφωνικό κατάλογο" προς αποκλεισμό.</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Αποκλεισμός καλούντων με αριθμό τηλεφώνου στη λίστα αποκλεισμού" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0032">Τέλεια! Έχετε κάνει το στήσιμο. Το τηλέφωνό σας θα πρέπει τώρα να χτυπάει πολύ λιγότερο συχνά εξαιτίας ενός ανεπιθύμητου καλούντος. Και αν το κάνει, μπορείτε εύκολα να σιωπήσετε τον ενοχλητικό για εσάς και για ολόκληρη την κοινότητα PhoneBlock:</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Αποκλεισμός αριθμού τηλεφώνου</button></a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

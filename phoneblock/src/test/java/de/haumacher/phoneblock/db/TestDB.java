@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -76,7 +78,7 @@ class TestDB {
 	
 	@Test
 	void testAuthToken() {
-		_db.createUser("user1", "User 1");
+		_db.createUser("user1", "User 1", "de", "+49");
 
 		long time = 1000;
 		final long createTime = time;
@@ -270,8 +272,8 @@ class TestDB {
 	
 	@Test
 	void testUserManagement() throws IOException {
-		_db.addUser("foo@bar.com", "Mr. X", "012300000");
-		_db.addUser("baz@bar.com", "Mr. Y", "012300000");
+		_db.addUser("foo@bar.com", "Mr. X", "de", "+49", "012300000");
+		_db.addUser("baz@bar.com", "Mr. Y", "de", "+49", "012300000");
 		
 		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000")));
         assertNull(_db.basicAuth(header("foo@bar.com", "0321")));
@@ -354,7 +356,7 @@ class TestDB {
 	}
 	
 	private void addSearchHit(String phone) {
-		_db.addSearchHit(NumberAnalyzer.analyze(phone));
+		_db.addSearchHit(NumberAnalyzer.analyze(phone), "+49");
 	}
 
 	@Test
@@ -378,7 +380,7 @@ class TestDB {
 	}
 	
 	private void addSearchHit(String phone, long now) {
-		_db.addSearchHit(NumberAnalyzer.analyze(phone), now);
+		_db.addSearchHit(NumberAnalyzer.analyze(phone), "+49", now);
 	}
 
 	@Test
@@ -441,7 +443,7 @@ class TestDB {
 	}
 	
 	private void processVotes(String phoneId, int votes, long time) {
-		_db.processVotes(NumberAnalyzer.analyze(phoneId), votes, time);
+		_db.processVotes(NumberAnalyzer.analyze(phoneId), "+49", votes, time);
 	}
 
 	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
@@ -464,7 +466,7 @@ class TestDB {
 	
 	@Test
 	void testRating() {
-		_db.createUser("user-1", "User 1");
+		_db.createUser("user-1", "User 1", "de", "+49");
 		
 		long time = 1;
 		
@@ -475,24 +477,31 @@ class TestDB {
 		assertEquals(1, _db.getVotesFor("0123456789"));
 		
 		// Both comments have been recorded.
-		assertEquals(2, _db.getComments("0123456789").size());
+		assertEquals(2, getComments("0123456789").size());
 		
 		addRating("user-1", "0123456789", Rating.A_LEGITIMATE, "Was my uncle.", time++);
 
 		assertEquals(0, _db.getVotesFor("0123456789"));
 
-		assertEquals(3, _db.getComments("0123456789").size());
+		assertEquals(3, getComments("0123456789").size());
 	}
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
-		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), rating, comment, now);
+		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), "+49", rating, comment, "de", now);
 	}
-	
+
+	public List<? extends UserComment> getComments(String phone) {
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getComments(phone, Collections.singleton("de"));
+		}
+	} 
+
 	@Test
 	public void testContribution() {
-		_db.createUser("aaaaaaaa-bbbb", "Noname");
-		_db.createUser("cccccccc-dddd", "Egon Maier");
-		_db.createUser("eeeeeeee-ffff", "Erna Busch");
+		_db.createUser("aaaaaaaa-bbbb", "Noname", "de", "+49");
+		_db.createUser("cccccccc-dddd", "Egon Maier", "de", "+49");
+		_db.createUser("eeeeeeee-ffff", "Erna Busch", "de", "+49");
 		
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);
@@ -550,10 +559,10 @@ class TestDB {
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);
 			
-			users.addUser("user-1", "U1", passwd, 1000);
-			users.addUser("user-2a", "U2a", passwd, 2000);
-			users.addUser("user-2b", "U2b", passwd, 2000);
-			users.addUser("user-3", "U3", passwd, 3000);
+			users.addUser("user-1", "U1", "de", "+49", passwd, 1000);
+			users.addUser("user-2a", "U2a", "de", "+49", passwd, 2000);
+			users.addUser("user-2b", "U2b", "de", "+49", passwd, 2000);
+			users.addUser("user-3", "U3", "de", "+49", passwd, 3000);
 			tx.commit();
 		}
 		

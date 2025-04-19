@@ -3,7 +3,6 @@
  */
 package de.haumacher.phoneblock.chatgpt;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -184,7 +182,7 @@ public class ChatGPTService implements ServletContextListener {
 			session.commit();
 
 			isWhiteListed = reports.isWhiteListed(phone);
-			comments = new ArrayList<>(reports.getComments(phone));
+			comments = new ArrayList<>(reports.getAnyComments(phone));
 		}
 			
 		List<ChatCompletionChoice> answers = createSummary(phone, comments, isWhiteListed);

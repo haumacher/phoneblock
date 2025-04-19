@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">注册</h1>
+	</div>
+	
+	<div class="content">
+		<p data-tx="t0002">要将 PhoneBlock 设置为 <a th:href="@{/setup}"> 拦截列表电话簿</a> 或 <a th:href="@{/anrufbeantworter}"> 智能应答机</a>，必须先在此处注册。</p>
+
+		<p data-tx="t0003">登录后，您可以在 <a th:href="@{/settings}">PhoneBlock 设置</a>中定义将电话号码添加到拦截列表的置信度或拦截列表的最大长度。</p>
+
+		<p data-tx="t0004">管理您的<a th:href="@{/ab/}">PhoneBlock 应答机</a>也需要注册。</p> 
+	</div>
+
+	<div th:replace="~{fragments/login-forms :: forms(web=true)}">
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

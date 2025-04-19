@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+	<h1 data-tx="t0001">Le numéro d'appel ☎ <span th:text="${number}"></span> n'existe pas</h1>
+
+	<p data-tx="t0002">Le numéro que tu recherches n'est pas un numéro de téléphone. Veuillez corriger votre recherche et réessayer!</p>
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

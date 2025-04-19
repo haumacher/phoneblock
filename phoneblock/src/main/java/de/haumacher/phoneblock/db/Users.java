@@ -29,15 +29,27 @@ public interface Users {
 	@Update("update PROPERTIES set VAL=#{value} where NAME=#{key}")
 	int updateProperty(String key, String value);
 	
-	@Insert("insert into USERS (LOGIN, DISPLAYNAME, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH) " + 
-			"values (#{login}, #{displayName}, #{pwhash}, #{registered}, 4, 2000)")
-	void addUser(String login, String displayName, byte[] pwhash, long registered);
+	@Insert("insert into USERS (LOGIN, DISPLAYNAME, LOCALE, DIAL, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH) " + 
+			"values (#{login}, #{displayName}, #{lang}, #{dial}, #{pwhash}, #{registered}, 4, 2000)")
+	void addUser(String login, String displayName, String lang, String dial, byte[] pwhash, long registered);
 	
 	@Update("update USERS set PWHASH=#{pwhash} where ID=#{userId}")
 	void setPassword(long userId, byte[] pwhash);
 	
 	@Update("update USERS set EMAIL=#{email} where LOGIN=#{login}")
 	void setEmail(String login, String email);
+	
+	@Update("update USERS set LOCALE=#{lang} where LOGIN=#{login}")
+	void setLocale(String login, String lang);
+	
+	@Select("select LOCALE from USERS where LOGIN=#{login}")
+	String getLocale(String login);
+	
+	@Update("update USERS set DIAL=#{dial} where LOGIN=#{login}")
+	void setDialPrefix(String login, String dial);
+	
+	@Select("select DIAL from USERS where LOGIN=#{login}")
+	String getDialPrefix(String login);
 	
 	@Update("update USERS set GOOGLEID=#{googleId} where LOGIN=#{login}")
 	void setGoogleId(String login, String googleId);
@@ -237,13 +249,13 @@ public interface Users {
 	@Select("select LOGIN from USERS where EMAIL=#{email}")
 	String getEmailLogin(String email);
 
-	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where LOGIN=#{login}")
+	@Select("select ID, LOGIN, DISPLAYNAME, LOCALE, DIAL, NATIONAL, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where LOGIN=#{login}")
 	DBUserSettings getSettingsRaw(String login);
 	
 	@Select("select LOGIN from USERS where ID=#{userId}")
 	String getUserName(long userId);
 	
-	@Select("select ID, LOGIN, DISPLAYNAME, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where ID=#{userId}")
+	@Select("select ID, LOGIN, DISPLAYNAME, LOCALE, DIAL, NATIONAL, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where ID=#{userId}")
 	DBUserSettings getSettingsById(long userId);
 	
 	/**
@@ -265,7 +277,7 @@ public interface Users {
 	 * </p>
 	 */
 	@Select("""
-			select u.ID, u.LOGIN, u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u
+			select u.ID, u.LOGIN, u.DISPLAYNAME, u.LOCALE, u.DIAL, u.NATIONAL, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u
 			where u.LASTACCESS < #{lastAccessBefore}
 			and (u.LASTACCESS > #{registeredAfter}
 			  or (u.REGISTERED > #{registeredAfter} and u.REGISTERED < #{registeredBefore}))
@@ -276,7 +288,7 @@ public interface Users {
 			""")
 	List<DBUserSettings> getNewInactiveUsers(long lastAccessBefore, long registeredAfter, long registeredBefore);
 	
-	@Select("select u.ID, u.LOGIN u.DISPLAYNAME, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u "
+	@Select("select u.ID, u.LOGIN u.DISPLAYNAME, u.LOCALE, u.DIAL, u.NATIONAL, u.EMAIL, u.MIN_VOTES, u.MAX_LENGTH, u.WILDCARDS, u.LASTACCESS, u.CREDIT from USERS u "
 			+ "where not u.WELCOME "
 			+ "and u.LASTACCESS > #{accessAfter} "
 			+ "and u.REGISTERED > #{registeredAfter} "
@@ -289,8 +301,8 @@ public interface Users {
 	@Update("update USERS set WELCOME=true where ID=#{id}")
 	int markWelcome(long id);
 	
-	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength}, WILDCARDS=#{wildcards} where ID=#{id}")
-	int updateSettings(long id, int minVotes, int maxLength, boolean wildcards);
+	@Update("update USERS set MIN_VOTES=#{minVotes}, MAX_LENGTH=#{maxLength}, WILDCARDS=#{wildcards}, DIAL=#{dial}, NATIONAL=#{nationalOnly} where ID=#{id}")
+	int updateSettings(long id, int minVotes, int maxLength, boolean wildcards, String dial, boolean nationalOnly);
 	
 	/**
 	 * Reads the user's last access timestamp (pretend it is a new user that has never accessed the

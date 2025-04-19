@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.analysis;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,8 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test of {@link NumberTree}.
@@ -97,6 +97,33 @@ class TestNumberTree {
 	}
 	
 	@Test
+	void testInternational() {
+		NumberTree tree = new NumberTree();
+		tree.insert("+4930123010");
+		tree.insert("+4930123011");
+		tree.insert("+4930123012");
+		tree.insert("+4930123020");
+		tree.insert("+4930123021");
+		tree.insert("+4930123022");
+		tree.insert("+4930123030");
+		tree.insert("+4930123031");
+		tree.insert("+4930123032");
+		tree.insert("+4330123010");
+		tree.insert("+4330123011");
+		tree.insert("+4330123012");
+		tree.insert("+4330123020");
+		tree.insert("+4330123021");
+		tree.insert("+4330123022");
+		tree.insert("+4330123030");
+		tree.insert("+4330123031");
+		tree.insert("+4330123032");
+		tree.markWildcards();
+		List<String> entries = tree.createBlockEntries();
+		
+		assertEquals(List.of("+43301230*", "+49301230*"), entries);
+	}
+	
+	@Test
 	void testRealData() throws IOException {
 		NumberTree tree = new NumberTree();
 
@@ -121,7 +148,7 @@ class TestNumberTree {
 		
 		tree.markWildcards();
 		
-		List<NumberBlock> blocks = tree.createNumberBlocks(1, 300);
+		List<NumberBlock> blocks = tree.createNumberBlocks(1, 300, "+49");
 		int numbers = 0;
 		int wildcard = 0;
 		

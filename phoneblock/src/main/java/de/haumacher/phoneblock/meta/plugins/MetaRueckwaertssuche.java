@@ -134,6 +134,7 @@ public class MetaRueckwaertssuche extends AbstractMetaSearch {
 					.setPhone(phone)
 					.setRating(rating)
 					.setComment(text)
+					.setLang("de")
 					.setCreated(date.getTime())
 					.setService(getService()));
 			}

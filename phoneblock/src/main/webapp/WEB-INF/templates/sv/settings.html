@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.settings.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section" th:unless="${userName}">
+	<div class="content">
+		<h1 data-tx="t0001">Inställningar</h1>
+		
+		<p data-tx="t0002">För att redigera dina personliga inställningar måste du <a th:href="@{/login(location=${location})}">logga in</a>.</p>
+	</div>
+</section>
+
+<section class="section" th:if="${userName}">
+	<div class="content">
+		<h1 data-tx="t0003">Inställningar</h1>
+			<p data-tx="t0004">Välkommen <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
+			
+			<form method="post" th:action="@{/update-settings}">
+
+			<article class="message is-info" th:if="${token}">
+			  <div class="message-header">
+			    <p data-tx="t0005">Dina åtkomstuppgifter</p>
+			  </div>
+			  
+			  <div class="message-body">
+				<div class="field">
+				  <label class="label" data-tx="t0006">Internetadress till CardDAV-servern</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+
+				<div class="field">
+				  <label class="label" data-tx="t0007">Användarens namn</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008">Du måste ange detta värde som användarnamn när du <a th:href="@{/setup}">kallar upp blocklistan</a>.</p>
+				</div>
+					
+				<div class="field">
+				  <label class="label" data-tx="t0009">Lösenord</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010">Du måste använda detta lösenord för att <a th:href="@{/setup}">skapa telefonboken</a> eller för att logga in på denna webbplats.</p>
+				  <p class="help" data-tx="t0011">Anteckna lösenordet (eller spara det i en <a href="https://keepass.info/">lösenordshanterare</a>), eftersom det bara visas tills du loggar ut eller din session löper ut.</p>
+				</div>
+			  </div>
+			</article>
+
+			<div class="field" th:unless="${token}">
+			  <label class="label" data-tx="t0012">Användarens namn</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013">Du måste ange detta värde som användarnamn för <a th:href="@{/setup}">hämtning av blocklistan</a>. Ditt lösenord visades när du loggade in första gången. Om du inte längre kommer ihåg det kan du skapa ett <a href="#resetPassword">nytt lösenord</a> längst ner på den här sidan. Men var försiktig: det gamla lösenordet kommer att bli ogiltigt.</p>
+			</div>
+
+			<div class="field">
+			  <label class="label" data-tx="t0094">Din landskod</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">Telefonnummer med din landskod kommer att visas i din blocklista i förkortad form (som nationella nummer). SPAM-rapporter från dig har en särskild vikt för andra användare i ditt land.</p>
+			</div>
+
+			<div class="field">
+			  <label class="label" data-tx="t0014">Maximal storlek på blocklistan</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="maxLength">
+			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (liten för mycket gamla Fritz!Boxar)</option>
+			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (rekommenderas för de flesta Fritz!Boxar)</option>
+			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (t.ex. fungerar fortfarande på FRITZ!Box 7590)</option>
+			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (se anmärkningar nedan)</option>
+			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (stort, se anmärkningar nedan)</option>
+			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extrem, var försiktig, din Fritz!Box kan krascha)</option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-ruler-vertical"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0021">Om du har problem med att uppdatera blocklistan kan du minska storleken på din blocklista här. AVM rekommenderar att telefonböcker fylls med maximalt 1000 poster. FRITZ!Box 7590 kan t.ex. hantera upp till 3000 poster i en telefonbok.</p>
+			  
+			  <p class="help" data-tx="t0022"><b>Attention:</b> Om du vill testa hur många poster din box kan spara i en telefonbok gör du på följande sätt: Börja med standardinställningen på 2000 poster. Synkronisera blocklistan och visa blocklistans telefonbok. Bläddra ända till slutet och visa förhandsgranskningen av blocklistan och notera antalet sidor som skulle skrivas ut. Öka nu blocklistans storlek med ett steg, synkronisera blocklistan igen och visa förhandsgranskningen av blocklistans utskrift igen. Om antalet sidor har ökat i motsvarande grad kan din box hantera den här storleken, prova nästa storlek. Om antalet sidor i förhandsgranskningen inte har ökat eller inte har ökat i motsvarande grad, använd då den senaste mindre storleken på blocklistan. Intressant nog rapporterar Fritz!Box-rutan inte ett fel om en telefonbok blir för stor, utan antingen synkroniseras den helt enkelt inte eller så utelämnas helt enkelt några nummer. Jag har sett boxar som helt enkelt kraschar om telefonbokens storlek är för stor - så var försiktig.</p>
+			</div>
+			
+			<div class="field">
+			  <label class="label" data-tx="t0023">Lägsta förtroende</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="minVotes">
+			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2 (lås omedelbart)</option>	
+			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 (inväntar bekräftelser)</option>	
+			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 (endast när det är säkert)</option>	
+			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100 (endast de bästa spammarna)</option>	
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-phone-volume"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0028">Ju högre siffra du väljer, desto fler klagomål måste ett telefonnummer ha innan det läggs till i din personliga blockeringslista och desto större är sannolikheten att du också får ett samtal från ett nytt spamnummer. Varje klagomål lägger till 2 till förtroendepoängen.</p>
+			</div>
+			
+			<div class="field">
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Sammanfatta siffror med "*"</label>
+			  <p class="help" data-tx="t0030">Om du väljer det här alternativet kommer angränsande nummer i blocklistan att kombineras till ett nummer med ett jokertecken ("*"). Många professionella spammare har flera enheter anslutna och använder ett helt block av nummer som avsändare. Med det här alternativet blockeras alla dessa nummer automatiskt och din blocklista kan innehålla fler spamnummer. Fritz!Box stöder telefonböcker med jokertecken och blockerar sedan hela det angivna nummerintervallet. Det kan dock hända att du inte kan använda jokernummer på andra enheter.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">Endast nationella nummer</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">Detta alternativ är användbart om du har blockerat alla utländska nummer i din Fritz! box. Med det här alternativet visas endast nationella nummer i din blockeringslista. Det innebär att fler nummer som är relevanta för dig får plats i blockeringslistan. Kontrollera att du har ställt in din landskod korrekt ovan.</p> 
+			</div>
+			
+			<div class="field is-grouped">
+			  <p class="control">
+			    <button class="button is-primary" data-tx="t0031" type="submit">Spara</button>
+			  </p>
+			  <p class="control">
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">Kassera</a>
+			  </p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0033" id="myAPIKeys">Dina API-nycklar</h2>
+	<p data-tx="t0034">Om du använder andra program för att kontrollera telefonnummer med PhoneBlock (t.ex. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> eller <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>) behöver du en API-nyckel. För blocklisttelefonboken i din Fritz!Box använder du helt enkelt ditt PhoneBlock-användarnamn och PhoneBlock-lösenord, så du behöver ingen API-nyckel för detta.</p>
+	
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">Du har ännu inte skapat några API-nycklar.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
+	<table>
+		<tr>
+			<th>
+			</th>
+			<th data-tx="t0036">Namn</th>
+			<th data-tx="t0037">Genererar</th>
+			<th data-tx="t0038">Senaste användning</th>
+			<th data-tx="t0039">Enhet</th>
+		</tr>
+
+		<tr th:each="authToken : ${explicitTokens}">
+			<td>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+			</td>
+			<td th:text="${authToken.label}"></td>
+			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+			<td>
+				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">Ej använd.</th:block>
+				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+			</td>
+			<td th:text="${authToken.userAgent}"></td>
+		</tr>
+	</table>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0041" type="submit">Radera markerad</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0042" id="createAPIKey">Generera API-nyckel</h2>
+
+	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0043">Anmärkning för användning</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Använd för..." type="text"/>
+	  </p>
+	  <p class="help" data-tx="t0044">Här kan du skriva en anteckning om vad du genererade API-nyckeln för, t.ex. "SpamBlocker på mormors mobiltelefon.".</p>
+	</div>
+		
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0045" type="submit">Generera API-nyckel</button>
+	  </p>
+	</div>
+
+	</form>
+
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0046" id="blacklist">Din svarta lista</h2>
+	
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<p data-tx="t0047" th:if="${blacklist.empty}">Du har inte uttryckligen blockerat några nummer. Du blockerar ett nummer genom att söka efter numret i sökfältet ovan och skriva en negativ kommentar, eller genom att lägga till numret i telefonboken i blockeringslistan i din Fritz!Box</p>
+
+	<th:block th:unless="${blacklist.empty}">
+	<p data-tx="t0048">Du har uttryckligen blockerat dessa nummer. Du kan avbryta en oavsiktlig blockering här:</p>
+	<div class="field" th:each="number : ${blacklist}">
+		<label class="checkbox">
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
+		</label>
+	</div>
+
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0049" type="submit">Radera</button>
+	  </p>
+	</div>
+	</th:block>
+		
+	</form>
+	
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0050" id="whitelist">Din vitlista</h2>
+	
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<p data-tx="t0051" th:if="${whitelist.empty}">Du har inte uteslutit några nummer från blockeringen.</p>
+
+	<th:block th:unless="${whitelist.empty}">
+	<p data-tx="t0052">Du har uttryckligen uteslutit dessa nummer från blockeringen:</p>
+
+	<div class="field" th:each="number : ${whitelist}">
+		<label class="checkbox">
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
+		</label>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0053" type="submit">Radera</button>
+	  </p>
+	</div>
+	</th:block>
+	
+	</form>
+	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0054">Lägg till undantag</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nytt undantag" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0056">Här kan du ange ett eller flera telefonnummer, åtskilda med kommatecken, i valfritt format: 07041-123456789, +49171123456789, 0034 123456789</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0057" type="submit">Lägg till</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+</section>
+
+<section class="section">
+<div class="content">
+	<h2 data-tx="t0058" id="sec-contributions">Dina donationer för driften av PhoneBlock</h2>
+	
+	<p data-tx="t0059">Om du har gjort en <a th:href="@{/support}">donation för driften av PhoneBlock</a> kommer den att listas här (efter en tid). För att detta ska fungera vore det bra om du kunde inkludera de första tecknen i ditt användarnamn i överföringsmeddelandet, t.ex. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></span>. Bidrag via GitHubs sponsorprogram kan tyvärr inte listas här.</p>
+	
+	<p data-tx="t0060" th:if="${contributions.empty}">Inga donationer hittades.</p>
+	
+	<th:block th:unless="${contributions.empty}">
+	<table class="table">
+	<thead>
+		<tr>
+			<th data-tx="t0061">datum</th>
+			<th data-tx="t0062">Meddelande</th>
+			<th data-tx="t0063">Belopp</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr th:each="contribution : ${contributions}">
+			<th th:text="${#dates.format(#converters.fromEpoch(contribution.received))}"></th>
+			<th th:text="${contribution.message}"></th>
+			<th th:text="${'€ ' + #numbers.formatDecimal(contribution.amount / 100.0,1,'POINT',2,'COMMA')}"></th>
+		</tr>
+	</tbody>
+	</table>
+	
+	<p data-tx="t0064">Tack så mycket för att du bidrar till kostnaderna för att driva PhoneBlock!</p>	
+	</th:block>
+</div>
+
+<nav class="panel is-info">
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">Har du missat en betalning?</span></a></p>
+	<div class="is-collapsible" id="contribForm">
+
+	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
+	<div class="panel-block">
+	<div class="content">
+		<p data-tx="t0066">Saknar du en betalning? Du kan söka efter en betalning här. Ange ditt fullständiga namn (som din bank/PayPal använder som avsändare) och datum för överföringen:</p>
+	
+		<div class="field">
+		  <label class="label" data-tx="t0067">Avsändare</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
+		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
+		  </p>
+		  <p class="help" data-tx="t0068">Vid banköverföring, namnet på den kontoinnehavare som gjort överföringen. Vänligen ange även datum för överföringen nedan.</p>
+		</div>
+	
+		<div class="field">
+		  <label class="label" data-tx="t0069">datum</label>
+		  <p class="control has-icons-left">
+		    <input class="input" name="contrib-date" type="date"/>
+		  </p>
+		  <p class="help" data-tx="t0070">Datum för banköverföringen. Ange också det fullständiga namnet på den kontoinnehavare som gjorde överföringen ovan.</p>
+		</div>
+	</div>
+	</div>
+
+	<div class="panel-block">
+		<button class="button is-medium is-primary" type="submit">
+		    <span class="icon">
+				<i class="fa-solid fa-magnifying-glass-dollar"></i>
+		    </span>
+			<span data-tx="t0071">Sök bidrag</span>
+		</button>
+	</div>
+
+	</form>
+  	</div>
+</nav>
+
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0072">Farlig zon</h2>
+	<p data-tx="t0073">Använd denna funktion med försiktighet. Du kan förstöra din PhoneBlock-installation med den!</p>
+	</div>
+		
+<nav class="panel is-warning" id="resetPassword">
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">Skapa nytt lösenord</span></a></p>
+	<div class="is-collapsible" id="resetForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0075">Var försiktig, detta kommer att ogiltigförklara ditt gamla PhoneBlock-lösenord. Du måste då ange det nya lösenordet i inställningarna för din Fritz!Box eller din mobiltelefon så att blocklistan fortfarande kan nås.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-eraser"></i>
+			    </span>
+				<span data-tx="t0076">Återställ lösenord</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+<nav class="panel is-warning">
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">Logga ut på alla enheter</span></a></p>
+	<div class="is-collapsible" id="logoutForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0078">Loggar ut dig från alla enheter för vilka du har aktiverat alternativet "Förbli inloggad på den här enheten" när du loggar in. Vid ditt nästa besök måste du logga in igen på alla enheter. Använd denna utloggningsfunktion om du av misstag har aktiverat funktionen "Stay logged in" på en offentlig dator.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-right-from-bracket"></i>
+			    </span>
+				<span data-tx="t0079">Logga ut överallt</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+	
+<nav class="panel is-warning">
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">Ta bort konto</span></a></p>
+	<div class="is-collapsible" id="quitForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0081">Var försiktig, alla dina data kommer att raderas. Det kommer inte längre att vara möjligt att hämta blocklistan eller komma åt PhoneBlock-databasen från någon av dina enheter!</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-power-off"></i>
+			    </span>
+				<span data-tx="t0082">Ta bort åtkomst, ingen ytterligare säkerhetsförfrågan!</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

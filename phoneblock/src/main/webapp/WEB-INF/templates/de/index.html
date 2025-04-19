@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="PhoneBlock Logo" data-tx="t0015" th:src="@{/assets/img/animation.svg}"/>
+		</div>
+
+		<h1 data-tx="t0001">Unerwünschte Anrufer automatisch abweisen</h1>
+
+		<p data-tx="t0002">
+			Ist Deine Telefonnummer auch zwielichtigen Addresshändlern in die
+			Hände gefallen und Du erhältst ständig lästige Anrufe, die Deine
+			Stromrechnung "optimieren", Dir eine Beratung für eine Solaranlage
+			angedeihen lassen wollen, schon wieder einen Hauptgewinn ankündigen,
+			oder sontige "Vergünstigungen" offerieren wollen? Dann ist <b>PhoneBlock</b>
+			genau das was Du brauchst!
+		</p>
+
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
+			    <span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
+			    </span>
+				<span data-tx="t0003">Anrufbeantworter</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span data-tx="t0004">Fritz!Box Telefonbuch</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span data-tx="t0005">Für Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span data-tx="t0006">Für iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0007">Wie funktioniert PhoneBlock?</h2>
+
+		<p data-tx="t0008">
+			PhoneBlock ist eine von der PhoneBlock-Community gepflegte
+			Liste mit Telefonnummern, die unter Spamverdacht stehen. 
+			Der <a th:href="@{/anrufbeantworter}">PhoneBlock-Anrufbeantworter</a>
+			nimmt dann Gespräche von Anrufern auf der Sperrliste an, so dass Dein Telefon 
+			bei diesen Anrufen stumm bleibt. 
+		</p>
+		
+		<p data-tx="t0009">
+			Alternativ kannst Du die 
+			Sperrliste auch als Telefonbuch in Deinen Internet-Router "FRITZ!Box" 
+			importieren und Anrufe von Nummern aus diesem <a th:href="@{/setup}">speziellen Telefonbuch</a> blockiern. 
+			Du musst nicht mehr von Hand Rufnummernbereiche sperren, denn Deine Fritz!Box 
+			aktualisiert die Sperrliste jede Nacht automatisch. Sobald eine Nummer in diese Sperrliste
+			aufgenommen ist, weist Deine FRITZ!Box Anrufer mit dieser Nummer
+			automatisch ab. Der <a th:href="@{/anrufbeantworter}">Anrufbeantworter</a> ist allerdings die 
+			bessere Lösung, weil ein Telefonbuch in der Größe beschränkt ist und nicht alle Nummern der Blockliste aufnehmen kann.
+		</p>
+
+		<p data-tx="t0010">Erhältst Du trotzdem noch einen unerwünschten Anruf, weil die
+			Nummer noch nicht in die Sperrliste aufgenommen ist, kannst Du die
+			<a th:href="@{/block}">Nummer ganz einfach in Deiner FRITZ!Box sperren</a>. 
+			Hierzu machst Du für den unerwünschten 
+			Anrufer einen Eintrag im PhoneBlock-Adressbuch direkt in Deiner Fritz!Box. 
+			Sobald Du das getan hast, aktualisiert Deine FrizBox die
+			Sperrliste für alle Mitglieder der PhoneBlock-Community und Anrufe
+			von dieser neuen Nummer blitzen bei allen anderen ebenfalls sofort
+			ab. Das ist zwar ein klein wenig aufwendiger, als die Nummer in Deinem Fritz!BoxPhone direkt 
+			zu sperren, aber hat den Vorteil, dass Du damit die ganze PhoneBlock-Community vor 
+			<a th:href="@{/status}">weiteren Spam-Anrufen</a> schützt. 
+		</p>
+
+		<h2 data-tx="t0011">Was sind die Vorausetzungen?</h2>
+
+		<div class="fritzbox-position">
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
+			</a>
+		</div>
+		
+		<p data-tx="t0012">
+			PhoneBlock kann unerwünschte Anrufe entweder am <a th:href="@{/setup}">"Festnetzanschluss"</a> in
+			Zusammenspiel mit einem <a th:href="@{/link/fritzbox}">"FRITZ!Box"
+			Internetrouter von AVM</a> blockieren, oder auf Deinem <a th:href="@{/setup-android}">Mobiltelefon</a> direkt anzeigen, ob ein Anrufer potentiell unerwünscht ist. 
+		</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			  <input id="context-path" th:value="@{/}" type="hidden"/>
+			<a class="button is-medium is-info is-fullwidth" href="#" id="search-fritzbox">
+				<span class="icon is-small is-left">
+					<i class="fa-solid fa-magnifying-glass"></i>
+				</span>
+				<span data-tx="t0013">Fritz!Box suchen</span>
+			</a>
+		  </div>
+		</div>
+
+		<p data-tx="t0014">
+			Du bist nicht sicher, ob Du eine Fritz!Box hast? Wenn Du Dich gerade zu Hause im WLan befindest, dann drück
+			den Such-Button oben. PhoneBlock versucht dann, eine Fritz!Box in Deiner Nähe zu finden.
+		</p>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

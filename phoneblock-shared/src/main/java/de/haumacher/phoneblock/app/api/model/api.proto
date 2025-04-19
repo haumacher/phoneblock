@@ -258,6 +258,7 @@ message Ratings {
 }
 
 /** A comment posted for a phone number */
+@Operations("de.haumacher.phoneblock.shared.operations.UserCommentOperations")
 message UserComment {
 	/** Technical identifier of this comment. */
 	string id;
@@ -265,6 +266,9 @@ message UserComment {
 	/** The user ID of the user that created this comment, or <code>null</code>, if the comment was created by an anonymous user. */
 	@Nullable
 	long userId;
+	
+	/** The language tag describing the language of this comment. */
+	string lang;
 	
 	/** The phone number this comment belongs to. */
 	string phone;

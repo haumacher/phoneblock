@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.anrufbeantworter.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="PhoneBlocks logotyp för telefonsvarare" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+		</div>
+	
+		<h1 data-tx="t0001">Installation som telefonsvarare</h1>
+		
+		<p data-tx="t0002">PhoneBlock erbjuder dig en intelligent telefonsvarare som automatiskt svarar på samtal endast om numret till den som ringer är listat i PhoneBlocks <a th:href="@{/status}">SPAM-databas</a>. Precis som för <a th:href="@{/setup}">inställningen av blocklistan</a> behöver du ingen egen enhet eller dator för detta. Du skapar en PhoneBlock-svarare här på webbplatsen och registrerar den via Internet på din Fritz!Box eller en annan VOIP-kompatibel Internet-router. Du kan ta reda på exakt hur PhoneBlocks telefonsvarare fungerar <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">här</a>.</p>
+		
+		<p data-tx="t0003">Följande steg tar dig till din telefonsvarare från PhoneBlock:</p>
+		
+		<ol>
+			<li><a data-tx="t0004" href="#register">Registrera dig med PhoneBlock</a></li>
+			<li><a data-tx="t0005" href="#create">Skapa telefonsvarare</a></li>
+			<li><a data-tx="t0006" href="#dyndns">Konfigurera DynDNS i Fritz!Box</a></li>
+			<li><a data-tx="t0007" href="#sip">Installera telefonienheten i Fritz!Box</a></li>
+			<li><a data-tx="t0008" href="#enable">Slå på PhoneBlocks telefonsvarare</a></li>
+			<li><a data-tx="t0009" href="#test">Testa telefonsvarare</a></li>
+		</ol>
+		
+		 <p data-tx="t0010">Instruktionerna vägleder dig steg för steg genom installationen. Konfigurationen i Fritz!Box är inte lätt, men om du följer den procedur som beskrivs här exakt kan inget gå fel.</p>
+		 
+		<h2 data-tx="t0011" id="register">Steg 1: Registrera dig med PhoneBlock</h2>
+
+		<p data-tx="t0012">Härifrån behöver du tre webbläsarfönster (eller flikar). Ett för den här guiden, ett för PhoneBlocks telefonsvararapp och ett för konfigurationsgränssnittet för din Fritz!Box</p>
+		
+		<p data-tx="t0013" th:if="${loggedIn}">För det första måste du registrera dig eller logga in på PhoneBlock för att kunna påbörja installationen.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			    <span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+			    </span>
+				<span data-tx="t0014">Logga in</span>			
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0015" unless:if="${loggedIn}">Du är inloggad som <code dir="ltr" th:text="${userName}"></code>, bra, låt oss gå vidare till nästa steg!</p>
+		
+		<h2 data-tx="t0016" id="create">Steg 2: Skapa en telefonsvarare</h2>
+		
+		<p data-tx="t0017">Om du klickar här öppnas ett fönster med appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlocks telefonsvarare</a>. När du öppnar den för första gången är listan över dina telefonsvarare tom och det finns en knapp längst ner till höger som du kan använda för att skapa en telefonsvarare. Tryck på denna plusknapp.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0018">Öppna app</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfigurera DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0019" id="dyndns">Steg 4: Konfigurera DynDNS</h2>
+		
+		<p data-tx="t0020">Via "DynDNS" informerar din Fritz!Box-box PhoneBlock om sin IP-adress. Detta är nödvändigt för att PhoneBlocks telefonsvarare ska kunna hitta din Fritz!Box</p>
+		
+		<h3 data-tx="t0021">Aktivera PhoneBlock DynDNS</h3>
+		
+		<p data-tx="t0022">Aktivera omkopplaren "Use PhoneBlock DynDNS" i appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Svarsmaskin</a> (om du är bekant och redan använder en annan DynDNS-leverantör kan du också ange värdnamnet på din Fritz!Box direkt).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfigurera DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0023">På nästa sida bekräftar du med "Activate DynDNS".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfigurera DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0024">Du kommer nu att få åtkomstuppgifter för PhoneBlock DynDNS, som du kan ange i din Fritz!Box (se nedan).</p>
+
+		<h3 data-tx="t0025">Ange inloggningsuppgifter i Fritz!Box</h3>
+		
+		<p data-tx="t0026">Den här länken <a class="showFB" href="http://fritz.box" target="fritzbox">öppnar ett fönster för din Fritz!Box</a>. Logga in där med ditt lösenord till Fritz!Box. Om du aldrig har gjort det här förut hittar du lösenordet längst ner på Fritz!Box</p>
+		
+		<p data-tx="t0027">I din <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a> navigerar du till "Internet &gt; Aktier" i sidofältet och väljer fliken "DynDNS".</p>
+
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0028">Öppna Fritz!Box</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfigurera DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0029">Kopiera uppgifterna för "Uppdatera webbadress", "Domännamn", "Användarnamn" och "Lösenord" från appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Svarsmaskin</a> och skriv in dem i din <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Bekräfta sedan med "Apply" (punkt 5 i bilden nedan).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Konfigurera DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0030">Kontrollera DynDNS</h3>
+
+		<p data-tx="t0031">Gå nu tillbaka till appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Svarare</a> och kontrollera inställningarna (punkt 6 i bilden ovan). Om PhoneBlock har hittat din Fritz!Box kommer du till nästa sida med åtkomstdata för den faktiska telefonsvararen.</p>
+		
+		<h2 data-tx="t0032" id="sip">Steg 4: Konfigurera telefonsvararen i Fritz!Box</h2>
+		
+		<p data-tx="t0033">Telefonsvararen är nu konfigurerad som en telefonienhet i Fritz!Box För att göra detta öppnar du ditt <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box-gränssnitt</a> igen.</p>
+
+		<h3 data-tx="t0034">Inställning av telefonienheten</h3>
+
+		<p data-tx="t0035">Navigera till "Telefoni &gt; Telefonienheter" i sidofältet och klicka på knappen "Konfigurera ny enhet".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Ställ in enheten" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0036">Välj typ av enhet</h3>
+
+		<p data-tx="t0037">Välj alternativet "Telefon (med och utan telefonsvarare)" och klicka på "Nästa". Obs: Välj <b>inte</b> det självklara alternativet "Telefonsvarare", eftersom detta endast kan användas för att konfigurera telefonsvarare som är permanent installerade i Fritz!Box</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Skapa enhet" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0038">Konfigurera IP-telefonen</h3>
+
+		<p data-tx="t0039">På sidan "Anslut telefon" väljer du alternativet "LAN/WLAN (IP-telefon)" och ger den nya enheten namnet "PhoneBlock" i textfältet nedan. Klicka sedan på "Nästa".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Skapa IP-telefon" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040">Överföring av åtkomstdata</h3>
+
+		<p data-tx="t0041">På nästa sida "Apply settings in IP phone" kommer du att bli ombedd att ange "User name" och "Password". Kopiera motsvarande data som visas i appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">svarsmaskin&lt;/x1 Klicka på "Nästa".</a></p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Användardata" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0042">Inställningar för utgående samtal</h3>
+
+		<p data-tx="t0043">På sidan "Konfigurera telefonen för utgående samtal" kan du helt enkelt klicka på "Nästa". PhoneBlocks telefonsvarare behöver inget telefonnummer för utgående samtal eftersom den aldrig aktivt ringer samtal. Vi kommer att avaktivera detta nummer i ett senare steg så att din telefonsvarare verkligen inte kan ringa några samtal.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Utgående samtal" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0044">Välj nummer som ska skyddas</h3>
+
+		<p data-tx="t0045">På sidan "Konfigurera telefoninställningar för inkommande samtal" bör du lämna standardinställningen "Acceptera alla samtal". Om du bara vill skydda vissa nummer från SPAM-samtal kan du också välja vilka nummer som telefonsvararen överhuvudtaget ska ta emot samtal från. Klicka på "Nästa".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Skyddade nummer" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0046">Bekräfta konfigurationen</h3>
+
+		<p data-tx="t0047">Du kommer nu till sammanfattningssidan "Apply settings". Du kan kontrollera de inställningar du har gjort igen och bekräfta dem med "Apply".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Kontrollera inställningarna" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0048">Avsluta konfigurationen av enheten</h3>
+
+		<p data-tx="t0049">Du är tillbaka i "Enhetsöversikt". Du bör nu se din nya telefonsvarare "PhoneBlock" i listan. Innan du kan sätta på telefonsvararen måste du dock göra ytterligare inställningar. För att göra detta klickar du på redigeringspennan i slutet av PhoneBlock-raden.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Redigera telefonsvarare" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050">Stoppa utgående samtal</h3>
+
+		<p data-tx="t0051">I valfältet "Utgående samtal" kan du nu välja den sista tomma posten för att säkerställa att din telefonsvarare inte kan ringa samtal självständigt. Klicka <b>inte</b> på knappen Apply nedan, utan på den andra fliken "Inloggningsdata". Du kommer nu att få frågan om du vill spara ändringarna. Klicka på "Apply" i den här dialogen.</p>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Förhindra utgående samtal" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  		</div>
+			<div class="column">
+	  			<img alt="Bekräfta" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0052">Tillåt inloggning från Internet</h3>
+
+		<p data-tx="t0053">På fliken "Inloggningsdata" måste du nu aktivera alternativet "Tillåt inloggning från Internet" och kopiera lösenordet igen från appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">svarsmaskin</a> och ange det i fältet "Lösenord". Klicka sedan på knappen "Apply".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Åtkomst från Internet" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0054" id="enable">Steg 5: Slå på telefonsvararen</h2>
+		
+		<p data-tx="t0055">Konfigurationen av din telefonsvarare är nu klar. Växla tillbaka till <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">appen för telefonsvarare</a> och slå på din nya telefonsvarare.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Åtkomst från Internet" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0056">Grattis, om allt gick bra ska telefonsvararen nu visas i grönt som "påslagen" i appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Telefonsvarare</a>. Nästa otrevliga samtal kan du diskutera med PhoneBlock i framtiden.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Telefonsvarare ansluten" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0057" id="test">Steg 6: Testa telefonsvararen</h2>
+
+		<p data-tx="t0058">Om du vill prova hur ett samtal med den inte helt vardagliga PhoneBlock-svararen fungerar kan du ringa den från en telefon som är direkt ansluten till Fritz!Box (t.ex. en trådlös DECT-telefon) via telefonsvararens <b>interna nummer</b>. Telefonsvararen tar alltid emot sådana testsamtal. <b>Viktigt:</b> Detta fungerar <b>endast</b> via telefonsvararens interna nummer (börjar vanligtvis med "**"). Du hittar internnumret i enhetsöversikten för din Fritz!Box på raden "PhoneBlock". Varför försöker du inte uppskatta ett solcellssystem åt honom? Ha det så roligt!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Telefonsvarare ansluten" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  		</div>
+		</div>
+		
+	</div>
+</section>
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

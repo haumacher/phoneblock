@@ -14,14 +14,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.OptionalLong;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -33,6 +28,11 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.check.db.DBDomainCheck;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.mail.check.model.RapidAPIResult;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Checker for disposable e-mail addresses.

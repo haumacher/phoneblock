@@ -1,10 +1,13 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory;
 
 /**
  * Paths for dependencies included as web jars.
@@ -20,6 +23,18 @@ public class UIProperties {
 	public final static String JQUERY_PATH = getWebJarPath("org.webjars", "jquery");
 	public final static String CHARTJS_PATH = getWebJarPath("org.webjars", "chartjs");
 	public final static String SWAGGER_PATH = getWebJarPath("org.webjars.npm", "swagger-ui-dist");
+	public final static String FLAGS_PATH = getWebJarPath("org.webjars.npm", "flag-icons");
+
+	public static final Properties APP_PROPERTIES;
+	
+	static {
+    	APP_PROPERTIES = new Properties();
+    	try {
+			APP_PROPERTIES.load(PhoneBlockConfigFactory.class.getResourceAsStream("/phoneblock.properties"));
+		} catch (IOException ex) {
+			LOG.error("Failed to read configuration properties.", ex);
+		}
+	}
 
 	private static String getWebJarPath(String groupId, String artifactId) {
 		return "/webjars/" + artifactId + "/" + getVersion(groupId, artifactId);
@@ -29,7 +44,11 @@ public class UIProperties {
 		String version;
 		try {
 			Properties properties = new Properties();
-			properties.load(UIProperties.class.getResourceAsStream("/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties"));
+			try (InputStream in = UIProperties.class.getResourceAsStream("/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties")) {
+				if (in != null) {
+					properties.load(in);
+				}
+			}
 			version = properties.getProperty("version");
 			LOG.info("Using '" + artifactId + "' version: " + version);
 		} catch (IOException e) {

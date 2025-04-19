@@ -53,14 +53,17 @@ public class SearchOperation {
 
 	private boolean _searchPerformed;
 
+	private String _dialPrefix;
+
 	/** 
 	 * Creates a {@link SearchOperation}.
 	 */
-	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, PhoneNumer number) {
+	public SearchOperation(SchedulerService scheduler, IndexUpdateService indexer, List<AbstractMetaSearch> plugins, PhoneNumer number, String dialPrefix) {
 		_scheduler = scheduler;
 		_indexer = indexer;
 		_plugins = plugins;
 		_number = number;
+		_dialPrefix = dialPrefix;
 	}
 
 	/** 
@@ -73,7 +76,7 @@ public class SearchOperation {
 
 			String phoneId = NumberAnalyzer.getPhoneId(_number);
 			
-			_comments = new ArrayList<>(mapper.getComments(phoneId));
+			_comments = new ArrayList<>(mapper.getAnyComments(phoneId));
 			{
 				_searchPerformed = shouldSearch(mapper, _number);
 				
@@ -90,7 +93,7 @@ public class SearchOperation {
 							comment.setId(UUID.randomUUID().toString());
 							_comments.add(comment);
 							
-							db.addRating(mapper, _number, comment, true);
+							db.addRating(mapper, _number, _dialPrefix, comment, true);
 							commentCnt++;
 							indexUpdated = true;
 						}
@@ -103,7 +106,7 @@ public class SearchOperation {
 				boolean commit = _searchPerformed;
 				
 				if (_votes != 0) {
-					indexUpdated |= db.processVotes(mapper, _number, _votes, _lastVote);
+					indexUpdated |= db.processVotes(mapper, _number, _dialPrefix, _votes, _lastVote);
 					commit = true;
 				}
 				

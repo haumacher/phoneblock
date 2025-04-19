@@ -1,0 +1,174 @@
+package de.haumacher.phoneblock.location.model;
+
+/** Country description from the database at https://github.com/datasets/country-codes */
+message Country {
+
+	@Name("FIFA")
+	string FIFA;
+
+	@Name("Dial")
+	repeated string dialPrefixes;
+	
+	@Name("ISO3166-1-Alpha-3")
+	string ISO3166_1_Alpha_3;
+
+	@Name("MARC")
+	string MARC;
+
+	@Name("is_independent")
+	string is_independent;
+
+	@Name("ISO3166-1-numeric")
+	string ISO3166_1_numeric;
+
+	@Name("GAUL")
+	string GAUL;
+
+	@Name("FIPS")
+	string FIPS;
+
+	@Name("WMO")
+	string WMO;
+
+	@Name("ISO3166-1-Alpha-2")
+	string ISO3166_1_Alpha_2;
+
+	@Name("ITU")
+	string ITU;
+
+	@Name("IOC")
+	string IOC;
+
+	@Name("DS")
+	string DS;
+
+	@Name("UNTERM Spanish Formal")
+	string UNTERM_Spanish_Formal;
+
+	@Name("Global Code")
+	string Global_Code;
+
+	@Name("Intermediate Region Code")
+	string Intermediate_Region_Code;
+
+	@Name("official_name_fr")
+	string official_name_fr;
+
+	@Name("UNTERM French Short")
+	string UNTERM_French_Short;
+
+	@Name("ISO4217-currency_name")
+	string ISO4217_currency_name;
+
+	@Name("UNTERM Russian Formal")
+	string UNTERM_Russian_Formal;
+
+	@Name("UNTERM English Short")
+	string UNTERM_English_Short;
+
+	@Name("ISO4217-currency_alphabetic_code")
+	string ISO4217_currency_alphabetic_code;
+
+	@Name("Small Island Developing States (SIDS)")
+	string Small_Island_Developing_States_SIDS;
+
+	@Name("UNTERM Spanish Short")
+	string UNTERM_Spanish_Short;
+
+	@Name("ISO4217-currency_numeric_code")
+	string ISO4217_currency_numeric_code;
+
+	@Name("UNTERM Chinese Formal")
+	string UNTERM_Chinese_Formal;
+
+	@Name("UNTERM French Formal")
+	string UNTERM_French_Formal;
+
+	@Name("UNTERM Russian Short")
+	string UNTERM_Russian_Short;
+
+	@Name("M49")
+	string M49;
+
+	@Name("Sub-region Code")
+	string Sub_region_Code;
+
+	@Name("Region Code")
+	string Region_Code;
+
+	@Name("official_name_ar")
+	string official_name_ar;
+
+	@Name("ISO4217-currency_minor_unit")
+	string ISO4217_currency_minor_unit;
+
+	@Name("UNTERM Arabic Formal")
+	string UNTERM_Arabic_Formal;
+
+	@Name("UNTERM Chinese Short")
+	string UNTERM_Chinese_Short;
+
+	@Name("Land Locked Developing Countries (LLDC)")
+	string Land_Locked_Developing_Countries_LLDC;
+
+	@Name("Intermediate Region Name")
+	string Intermediate_Region_Name;
+
+	@Name("official_name_es")
+	string official_name_es;
+
+	@Name("UNTERM English Formal")
+	string UNTERM_English_Formal;
+
+	@Name("official_name_cn")
+	string official_name_cn;
+
+	@Name("official_name_en")
+	string official_name_en;
+
+	@Name("ISO4217-currency_country_name")
+	string ISO4217_currency_country_name;
+
+	@Name("Least Developed Countries (LDC)")
+	string Least_Developed_Countries_LDC;
+
+	@Name("Region Name")
+	string Region_Name;
+
+	@Name("UNTERM Arabic Short")
+	string UNTERM_Arabic_Short;
+
+	@Name("Sub-region Name")
+	string Sub_region_Name;
+
+	@Name("official_name_ru")
+	string official_name_ru;
+
+	@Name("Global Name")
+	string Global_Name;
+
+	@Name("Capital")
+	string Capital;
+
+	@Name("Continent")
+	string Continent;
+
+	@Name("TLD")
+	string TLD;
+
+	@Name("Languages")
+	repeated string Languages;
+
+	@Name("Geoname ID")
+	string Geoname_ID;
+
+	@Name("CLDR display name")
+	string CLDR_display_name;
+
+	@Name("EDGAR")
+	string EDGAR;
+
+	@Name("wikidata_id")
+	string wikidata_id;
+
+}

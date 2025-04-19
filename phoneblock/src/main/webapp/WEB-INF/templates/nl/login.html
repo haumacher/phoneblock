@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Registratie</h1>
+	</div>
+	
+	<div class="content">
+		<p data-tx="t0002">Om PhoneBlock in te stellen als <a th:href="@{/setup}">blocklist telefoonboek</a>, of <a th:href="@{/anrufbeantworter}">intelligent antwoordapparaat</a>, moet u zich eerst hier registreren.</p>
+
+		<p data-tx="t0003">Na het inloggen kun je in de <a th:href="@{/settings}">PhoneBlock instellingen</a> bijvoorbeeld het betrouwbaarheidsniveau bepalen vanaf wanneer een telefoonnummer wordt toegevoegd aan je blokkadelijst of de maximale lengte van je blokkadelijst.</p>
+
+		<p data-tx="t0004">Voor het beheer van je <a th:href="@{/ab/}">PhoneBlock antwoordapparaat</a> is ook registratie vereist.</p> 
+	</div>
+
+	<div th:replace="~{fragments/login-forms :: forms(web=true)}">
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

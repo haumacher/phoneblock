@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.support.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Υποστήριξη PhoneBlock</h1>
+
+		<p data-tx="t0002">Το PhoneBlock είναι δωρεάν στη χρήση, μπορείτε να εγκαταστήσετε το PhoneBlock σε όλα τα κουτιά Fritz!Box και τα κινητά σας τηλέφωνα χωρίς να χρειαστεί να πληρώσετε γι' αυτό. Ωστόσο, η λειτουργία του PhoneBlock δεν είναι καθόλου δωρεάν. Υπάρχουν συνεχή έξοδα για την ενοικίαση διακομιστή, την πρόσβαση στο Internet και την καταχώριση domain. <a th:href="@{/impressum}">Εγώ</a> το χρηματοδοτώ από την τσέπη μου.</p>
+		
+		<p data-tx="t0003">Αν σας αρέσει το PhoneBlock και σας βοηθάει να κρατήσετε τα ενοχλητικά παράσιτα μακριά από την τηλεφωνική σας σύνδεση, τότε μπορείτε να συνεισφέρετε στο κόστος του PhoneBlock ή απλώς να πείτε "ευχαριστώ" με μια μικρή δωρεά. Αν συμμετάσχουν πολλοί χρήστες, ένα μικρό ποσό - π.χ. <b>1€ ανά έτος</b> ή <b>0,01€ ανά αναχαιτισμένη κλήση spam</b> - είναι αρκετό για να καλύψει το κόστος. Το ποσό εξαρτάται από εσάς. Η δωρεά σας δεν αποτελεί "συνδρομή μέλους" και δεν περιμένετε κανένα αντάλλαγμα.</p>
+		
+		<div class="columns">
+			<div class="column is-full">
+				<a class="card" href="http://paypal.me/phoneblock" target="_blank">
+				  <div class="card-content has-background-primary">
+					<div class="title">
+					    <span class="icon">
+							<i class="fa-brands fa-paypal"></i>
+					    </span>
+						<span data-tx="t0004">Δωρεά με PayPal</span>			
+					</div>
+					<p class="subtitle" data-tx="t0005">Χρησιμοποιήστε το "Αποστολή χρημάτων σε φίλους", το PayPal χρεώνει αλλιώς παράλογα τέλη, με 1€ μόνο 60Ct φτάνουν.</p>
+					<p class="subtitle" data-tx="t0006" th:unless="${loggedIn}">Παρακαλούμε εισάγετε τους πρώτους χαρακτήρες του ονόματος χρήστη σας ως μήνυμα, ώστε να μπορέσω να κατανείμω την πληρωμή.</p>
+					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">Παρακαλώ εισάγετε <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0013" href="#" id="purpose_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></span> ως μήνυμα, ώστε να μπορέσω να διαθέσω την πληρωμή.</p>
+				  </div>
+				</a>
+			</div>
+		</div>
+
+		<div class="columns">
+			<div class="column is-half">
+				<a class="card" href="https://github.com/sponsors/haumacher" target="_blank">
+				  <div class="card-content has-background-info">
+					<p class="title">
+					    <span class="icon">
+							<i class="fa-brands fa-github"></i>
+					    </span>
+						<span data-tx="t0008">Γίνετε χορηγός στο GitHub</span>
+					</p>
+					<p class="subtitle" data-tx="t0009">Μπορείτε να κάνετε μια εφάπαξ ή τακτική δωρεά.</p>
+				  </div>
+				</a>
+			</div>
+			<div class="column is-half">
+				<a class="card" th:href="@{/support-banktransfer}">
+				  <div class="card-content has-background-info">
+					<p class="title">
+					    <span class="icon">
+							<i class="fa-solid fa-building-columns"></i>
+					    </span>
+						<span data-tx="t0010">Δωρεά με τραπεζικό έμβασμα</span>
+					</p>
+					<p class="subtitle" data-tx="t0011">Πρέπει να συνδεθείτε για να δείτε τα στοιχεία του λογαριασμού.</p>
+				  </div>
+				</a>
+			</div>
+		</div>
+				
+		<p data-tx="t0012">Σας ευχαριστούμε για τη συνεισφορά σας στο κόστος του PhoneBlock!</p>
+		
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.settings.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section" th:unless="${userName}">
+	<div class="content">
+		<h1 data-tx="t0001">الإعدادات</h1>
+		
+		<p data-tx="t0002">لتعديل إعداداتك الشخصية، يجب عليك <a th:href="@{/login(location=${location})}"> تسجيل الدخول</a>.</p>
+	</div>
+</section>
+
+<section class="section" th:if="${userName}">
+	<div class="content">
+		<h1 data-tx="t0003">الإعدادات</h1>
+			<p data-tx="t0004">مرحبًا بك <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>) </th:block>.</p>
+			
+			<form method="post" th:action="@{/update-settings}">
+
+			<article class="message is-info" th:if="${token}">
+			  <div class="message-header">
+			    <p data-tx="t0005">بيانات الوصول الخاصة بك</p>
+			  </div>
+			  
+			  <div class="message-body">
+				<div class="field">
+				  <label class="label" data-tx="t0006">عنوان الإنترنت الخاص بخادم CardDAV</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+
+				<div class="field">
+				  <label class="label" data-tx="t0007">اسم المستخدم</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008">يجب عليك إدخال هذه القيمة كاسم المستخدم لـ <a th:href="@{/setup}"> استدعاء قائمة الحظر.</a></p>
+				</div>
+					
+				<div class="field">
+				  <label class="label" data-tx="t0009">كلمة السر</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010">يجب عليك استخدام كلمة المرور هذه لـ <a th:href="@{/setup}"> لإعداد دفتر الهاتف</a> أو لتسجيل الدخول إلى هذا الموقع الإلكتروني.</p>
+				  <p class="help" data-tx="t0011">يُرجى تدوين كلمة المرور (أو حفظها في <a href="https://keepass.info/"> مدير كلمات المرور)، حيث سيتم عرضها فقط حتى تقوم بتسجيل الخروج أو انتهاء صلاحية جلستك.</a></p>
+				</div>
+			  </div>
+			</article>
+
+			<div class="field" th:unless="${token}">
+			  <label class="label" data-tx="t0012">اسم المستخدم</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013">يجب إدخال هذه القيمة كاسم المستخدم لـ <a th:href="@{/setup}"> استرداد قائمة الحظر. تم عرض كلمة المرور الخاصة بك عند تسجيل الدخول لأول مرة. إذا لم تعد تتذكرها، يمكنك إنشاء <a href="#resetPassword"> كلمة مرور جديدة في أسفل هذه الصفحة. ولكن كن حذرًا: ستصبح كلمة المرور القديمة غير صالحة.</a></a></p>
+			</div>
+
+			<div class="field">
+			  <label class="label" data-tx="t0094">رمز بلدك</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="myDialPrefix">
+			    	<option th:each="d : ${dialPrefixes}" th:selected="${#strings.equals(d.dialPrefix, settings.dialPrefix)}" th:text="${d.dialPrefix + ' ' + d.country.officialNameEn}" th:value="${d.dialPrefix}"></option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fa-solid fa-earth-americas"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0091">ستظهر أرقام الهواتف التي تحمل رمز بلدك في قائمة الحظر الخاصة بك بشكل مختصر (كأرقام وطنية). تقارير الرسائل الاقتحامية منك لها وزن خاص بالنسبة للمستخدمين الآخرين في بلدك.</p>
+			</div>
+
+			<div class="field">
+			  <label class="label" data-tx="t0014">الحد الأقصى لحجم قائمة الحظر</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="maxLength">
+			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (صغيرة بالنسبة لصناديق فريتز!)</option>
+			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (موصى به لمعظم صناديق فريتز!)</option>
+			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (على سبيل المثال لا يزال يعمل على FRITZ!Box 7590)</option>
+			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (انظر الملاحظات أدناه)</option>
+			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (ضخمة، انظر الملاحظات أدناه)</option>
+			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000 (متطرف، احذر، فقد يتعطل صندوق فريتز! بوكس)</option>
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-ruler-vertical"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0021">إذا واجهتك مشاكل في تحديث قائمة الحظر، يمكنك تقليل حجم قائمة الحظر هنا. توصي AVM بتعبئة دفاتر الهاتف بحد أقصى 1000 إدخال. يمكن لجهاز FRITZ!Box 7590، على سبيل المثال، التعامل مع ما يصل إلى 3000 إدخال في دفتر الهاتف.</p>
+			  
+			  <p class="help" data-tx="t0022"><b>تنبيه:</b> إذا كنت ترغب في اختبار عدد الإدخالات التي يمكن لصندوقك حفظها في دفتر الهاتف، فتابع على النحو التالي: ابدأ بالإعداد الافتراضي 2000 إدخال. قم بمزامنة قائمة الحظر وعرض دفتر هاتف قائمة الحظر. مرر إلى النهاية واعرض معاينة طباعة قائمة الحظر ولاحظ عدد الصفحات التي ستتم طباعتها. قم الآن بزيادة حجم قائمة الحظر بخطوة واحدة، وأعد مزامنة قائمة الحظر واعرض معاينة الطباعة لقائمة الحظر مرة أخرى. إذا زاد عدد الصفحات وفقاً لذلك، فإن الصندوق الخاص بك يمكنه التعامل مع هذا الحجم، جرب الحجم التالي. أما إذا لم يزد عدد الصفحات في معاينة الطباعة أو لم يزد وفقاً لذلك، فاستخدم آخر حجم أصغر من قائمة الكتل. من المثير للاهتمام أن صندوق Fritz!Box لا يبلغ عن خطأ إذا أصبح حجم دفتر الهاتف كبيرًا جدًا، ولكنه ببساطة لا يقوم بالمزامنة أو يحذف أي أرقام ببساطة. لقد رأيت صناديق تتعطل ببساطة إذا كان حجم دفتر الهاتف كبيرًا جدًا - لذا كن حذرًا.</p>
+			</div>
+			
+			<div class="field">
+			  <label class="label" data-tx="t0023">الحد الأدنى من الثقة</label>
+			  <div class="control has-icons-left">
+				<div class="select">			  
+			    <select class="input" name="minVotes">
+			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2 (قفل على الفور)</option>	
+			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 (في انتظار التأكيدات)</option>	
+			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 (فقط في حالة الأمان)</option>	
+			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100 (كبار مرسلي البريد العشوائي فقط)</option>	
+			    </select>
+			    </div>
+			    <span class="icon is-small is-left">
+			      <i class="fas fa-phone-volume"></i>
+			    </span>
+			  </div>
+			  <p class="help" data-tx="t0028">وكلما زاد الرقم الذي تختاره، كلما زاد عدد الشكاوى التي يجب أن يكون الرقم الهاتفي قبل إضافته إلى قائمة الحظر الشخصية الخاصة بك، وكلما زاد احتمال تلقيك أيضًا مكالمة من رقم هاتف مزعج جديد. كل شكوى تضيف 2 إلى درجة الثقة.</p>
+			</div>
+			
+			<div class="field">
+			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> تلخيص الأرقام بـ "*"</label>
+			  <p class="help" data-tx="t0030">إذا قمت بتحديد هذا الخيار، سيتم دمج الأرقام المتجاورة في قائمة الحظر الخاصة بك في رقم واحد مع حرف بدل ("*"). العديد من مرسلي البريد العشوائي المحترفين لديهم اتصال متعدد الأجهزة ويستخدمون كتلة كاملة من الأرقام كمرسلين. باستخدام هذا الخيار، يتم حظر جميع هذه الأرقام تلقائيًا ويمكن أن تتضمن قائمة الحظر الخاصة بك المزيد من الأرقام غير المرغوب فيها. يدعم Fritz!Box دفاتر الهواتف التي تحتوي على أرقام أحرف البدل ومن ثم يحظر نطاق الأرقام المحددة بالكامل. ومع ذلك، قد لا تتمكن من استخدام أرقام أحرف البدل على أجهزة أخرى.</p>
+			</div>
+
+			<div class="field">
+			  <label class="checkbox">
+			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
+				<span data-tx="t0092">الأرقام الوطنية فقط</span>
+			  </label>
+			
+			  <p class="help" data-tx="t0093">هذا الخيار مفيد إذا كنت قد حظرت جميع الأرقام الأجنبية في صندوق Fritz! باستخدام هذا الخيار، ستظهر الأرقام الوطنية فقط في قائمة الحظر الخاصة بك. هذا يعني أن المزيد من الأرقام ذات الصلة بك ستظهر في قائمة الحظر الخاصة بك. تأكد من أنك قمت بتعيين رمز بلدك بشكل صحيح أعلاه.</p> 
+			</div>
+			
+			<div class="field is-grouped">
+			  <p class="control">
+			    <button class="button is-primary" data-tx="t0031" type="submit">الحفظ</button>
+			  </p>
+			  <p class="control">
+			    <a class="button " data-tx="t0032" th:href="@{/settings}">تجاهل</a>
+			  </p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0033" id="myAPIKeys">مفاتيح API الخاصة بك</h2>
+	<p data-tx="t0034">إذا كنت تستخدم تطبيقات أخرى للتحقق من أرقام الهواتف مع PhoneBlock (على سبيل المثال: <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> أو <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>)، فأنت بحاجة إلى مفتاح API. بالنسبة لدليل هاتف قائمة الحظر في Fritz!Box، يمكنك ببساطة استخدام اسم مستخدم PhoneBlock وكلمة مرور PhoneBlock، لذلك لا تحتاج إلى مفتاح API لهذا الغرض.</p>
+	
+	<p data-tx="t0035" th:if="${explicitTokens.empty}">لم تقم بعد بإنشاء أي مفاتيح API.</p>
+	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
+	<table>
+		<tr>
+			<th>
+			</th>
+			<th data-tx="t0036">الاسم</th>
+			<th data-tx="t0037">يولد</th>
+			<th data-tx="t0038">آخر استخدام</th>
+			<th data-tx="t0039">الجهاز</th>
+		</tr>
+
+		<tr th:each="authToken : ${explicitTokens}">
+			<td>
+				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+			</td>
+			<td th:text="${authToken.label}"></td>
+			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+			<td>
+				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">غير مستخدمة.</th:block>
+				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+			</td>
+			<td th:text="${authToken.userAgent}"></td>
+		</tr>
+	</table>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0041" type="submit">حذف المحدد</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0042" id="createAPIKey">إنشاء مفتاح API</h2>
+
+	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0043">ملاحظة للاستخدام</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="يُستخدم لـ..." type="text"/>
+	  </p>
+	  <p class="help" data-tx="t0044">يمكنك إدخال ملاحظة هنا حول الغرض الذي أنشأت مفتاح واجهة برمجة التطبيقات من أجله، على سبيل المثال "مانع البريد العشوائي على هاتف الجدة المحمول."</p>
+	</div>
+		
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0045" type="submit">إنشاء مفتاح API</button>
+	  </p>
+	</div>
+
+	</form>
+
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0046" id="blacklist">قائمتك السوداء</h2>
+	
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<p data-tx="t0047" th:if="${blacklist.empty}">لم تقم بحظر أي أرقام بشكل صريح. لحظر رقم ما، ابحث عن الرقم باستخدام حقل البحث أعلاه واكتب تعليقًا سلبيًا، أو قم بإدخال دليل الهاتف للرقم في قائمة الحظر في فريتز!</p>
+
+	<th:block th:unless="${blacklist.empty}">
+	<p data-tx="t0048">لقد قمت بحظر هذه الأرقام بشكل صريح. يمكنك إلغاء الحظر العرضي هنا:</p>
+	<div class="field" th:each="number : ${blacklist}">
+		<label class="checkbox">
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
+		</label>
+	</div>
+
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0049" type="submit">حذف</button>
+	  </p>
+	</div>
+	</th:block>
+		
+	</form>
+	
+	</div>
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0050" id="whitelist">قائمتك البيضاء</h2>
+	
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<p data-tx="t0051" th:if="${whitelist.empty}">لم تستبعد أي أرقام من الحجب.</p>
+
+	<th:block th:unless="${whitelist.empty}">
+	<p data-tx="t0052">لقد استبعدت هذه الأرقام صراحةً من الحجب:</p>
+
+	<div class="field" th:each="number : ${whitelist}">
+		<label class="checkbox">
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${number}"></th:block>
+		</label>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-danger" data-tx="t0053" type="submit">حذف</button>
+	  </p>
+	</div>
+	</th:block>
+	
+	</form>
+	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0054">إضافة استثناء</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0088" name="add-wl" placeholder="استثناء جديد" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0056">يمكنك إدخال رقم هاتف واحد أو أكثر هنا، مفصولة بفواصل، بأي صيغة: 07041-123456789، +49171123456789، 0034 123456789</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0057" type="submit">إضافة</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+</section>
+
+<section class="section">
+<div class="content">
+	<h2 data-tx="t0058" id="sec-contributions">تبرعاتك لتشغيل PhoneBlock</h2>
+	
+	<p data-tx="t0059">إذا كنت قد قدمت <a th:href="@{/support}"> تبرعًا لتشغيل PhoneBlock، فسيتم إدراجه هنا (بعد مرور بعض الوقت). لكي يعمل هذا الأمر، سيكون من الجيد أن تقوم بتضمين الأحرف القليلة الأولى من اسم المستخدم الخاص بك في رسالة التحويل، على سبيل المثال: <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></span>. للأسف، لا يمكن إدراج المساهمات عبر برنامج الراعي GitHub هنا.</a></p>
+	
+	<p data-tx="t0060" th:if="${contributions.empty}">لم يتم العثور على أي تبرعات.</p>
+	
+	<th:block th:unless="${contributions.empty}">
+	<table class="table">
+	<thead>
+		<tr>
+			<th data-tx="t0061">التاريخ</th>
+			<th data-tx="t0062">الرسالة</th>
+			<th data-tx="t0063">المبلغ</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr th:each="contribution : ${contributions}">
+			<th th:text="${#dates.format(#converters.fromEpoch(contribution.received))}"></th>
+			<th th:text="${contribution.message}"></th>
+			<th th:text="${'€ ' + #numbers.formatDecimal(contribution.amount / 100.0,1,'POINT',2,'COMMA')}"></th>
+		</tr>
+	</tbody>
+	</table>
+	
+	<p data-tx="t0064">شكراً جزيلاً لك على مساهمتك في تكاليف تشغيل PhoneBlock!</p>	
+	</th:block>
+</div>
+
+<nav class="panel is-info">
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">هل فاتتك دفعة؟</span></a></p>
+	<div class="is-collapsible" id="contribForm">
+
+	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
+	<div class="panel-block">
+	<div class="content">
+		<p data-tx="t0066">هل فاتتك دفعة؟ يمكنك البحث عن دفعة هنا. أدخل اسمك الكامل (الذي يستخدمه البنك الذي تتعامل معه/باي بال كمرسل) وتاريخ التحويل:</p>
+	
+		<div class="field">
+		  <label class="label" data-tx="t0067">المرسل</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="ماكس موسترمان" type="text"/>
+		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
+		  </p>
+		  <p class="help" data-tx="t0068">في حالة التحويل المصرفي، يُرجى ذكر اسم صاحب الحساب الذي قام بالتحويل. يرجى أيضاً ذكر تاريخ التحويل أدناه.</p>
+		</div>
+	
+		<div class="field">
+		  <label class="label" data-tx="t0069">التاريخ</label>
+		  <p class="control has-icons-left">
+		    <input class="input" name="contrib-date" type="date"/>
+		  </p>
+		  <p class="help" data-tx="t0070">تاريخ التحويل المصرفي. يرجى أيضاً إدخال الاسم الكامل لصاحب الحساب الذي قام بالتحويل أعلاه.</p>
+		</div>
+	</div>
+	</div>
+
+	<div class="panel-block">
+		<button class="button is-medium is-primary" type="submit">
+		    <span class="icon">
+				<i class="fa-solid fa-magnifying-glass-dollar"></i>
+		    </span>
+			<span data-tx="t0071">مساهمة البحث</span>
+		</button>
+	</div>
+
+	</form>
+  	</div>
+</nav>
+
+</section>
+
+<section class="section">
+	<div class="content">
+	<h2 data-tx="t0072">منطقة الخطر</h2>
+	<p data-tx="t0073">استخدم هذه الوظيفة بحذر. يمكنك كسر تثبيت PhoneBlock الخاص بك باستخدامها!</p>
+	</div>
+		
+<nav class="panel is-warning" id="resetPassword">
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">إنشاء كلمة مرور جديدة</span></a></p>
+	<div class="is-collapsible" id="resetForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0075">كن حذرًا، سيؤدي ذلك إلى إبطال كلمة مرور PhoneBlock القديمة. يجب عليك بعد ذلك إدخال كلمة المرور الجديدة في إعدادات Fritz!Box أو هاتفك المحمول حتى يظل من الممكن الوصول إلى قائمة الحظر.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-eraser"></i>
+			    </span>
+				<span data-tx="t0076">إعادة تعيين كلمة المرور</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+<nav class="panel is-warning">
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">تسجيل الخروج على جميع الأجهزة</span></a></p>
+	<div class="is-collapsible" id="logoutForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0078">يقوم بتسجيل خروجك من جميع الأجهزة التي قمت بتفعيل خيار "البقاء مسجّل الدخول على هذا الجهاز" عند تسجيل الدخول. في زيارتك التالية، سيتعين عليك تسجيل الدخول مرة أخرى على جميع الأجهزة. استخدم وظيفة تسجيل الخروج هذه إذا قمت بتفعيل وظيفة "البقاء مسجّل الدخول" عن طريق الخطأ على جهاز كمبيوتر عام.</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-right-from-bracket"></i>
+			    </span>
+				<span data-tx="t0079">تسجيل الخروج في كل مكان</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+	
+<nav class="panel is-warning">
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">حذف الحساب</span></a></p>
+	<div class="is-collapsible" id="quitForm">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
+  		<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0081">كن حذرًا، سيتم حذف جميع بياناتك. لن يكون من الممكن بعد الآن استرداد قائمة الحظر أو الوصول إلى قاعدة بيانات PhoneBlock من أي من أجهزتك!</p>
+	  		</div>
+	  	</div>
+	  	
+  		<div class="panel-block">
+			<button class="button is-medium is-fullwidth is-danger" type="submit">
+			    <span class="icon">
+					<i class="fa-solid fa-power-off"></i>
+			    </span>
+				<span data-tx="t0082">حذف الوصول، لا مزيد من الاستفسارات الأمنية!</span>
+			</button>
+  		</div>
+  		</form>
+  	</div>
+</nav>
+
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

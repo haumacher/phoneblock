@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.support.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Stöd PhoneBlock</h1>
+
+		<p data-tx="t0002">PhoneBlock är gratis att använda, du kan installera PhoneBlock på alla dina Fritz!Box-boxar och mobiltelefoner utan att behöva betala för det. Driften av PhoneBlock är dock inte på något sätt gratis. Det tillkommer löpande kostnader för serverhyra, internetåtkomst och domänregistrering. <a th:href="@{/impressum}">Jag</a> finansierar detta ur egen ficka.</p>
+		
+		<p data-tx="t0003">Om du gillar PhoneBlock och tycker att det hjälper dig att hålla irriterande skadedjur borta från din telefonanslutning, kan du bidra till kostnaderna för PhoneBlock eller helt enkelt säga "tack" med en liten donation. Om många användare ansluter sig räcker det med en liten summa - t.ex. <b>1 euro per år</b> eller <b>0,01 euro per avlyssnat spam-samtal</b> - för att täcka kostnaderna. Beloppet är upp till dig. Din donation är inte en "medlemsavgift" och du kan inte förvänta dig något i gengäld.</p>
+		
+		<div class="columns">
+			<div class="column is-full">
+				<a class="card" href="http://paypal.me/phoneblock" target="_blank">
+				  <div class="card-content has-background-primary">
+					<div class="title">
+					    <span class="icon">
+							<i class="fa-brands fa-paypal"></i>
+					    </span>
+						<span data-tx="t0004">Donera med PayPal</span>			
+					</div>
+					<p class="subtitle" data-tx="t0005">Använd "Skicka pengar till vänner", PayPal tar annars ut absurda avgifter, med 1 € kommer endast 60Ct fram.</p>
+					<p class="subtitle" data-tx="t0006" th:unless="${loggedIn}">Vänligen ange de första tecknen i ditt användarnamn som ett meddelande så att jag kan fördela betalningen.</p>
+					<p class="subtitle" data-tx="t0007" th:if="${loggedIn}">Vänligen ange <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0013" href="#" id="purpose_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></span> som meddelande så att jag kan fördela betalningen.</p>
+				  </div>
+				</a>
+			</div>
+		</div>
+
+		<div class="columns">
+			<div class="column is-half">
+				<a class="card" href="https://github.com/sponsors/haumacher" target="_blank">
+				  <div class="card-content has-background-info">
+					<p class="title">
+					    <span class="icon">
+							<i class="fa-brands fa-github"></i>
+					    </span>
+						<span data-tx="t0008">Bli sponsor på GitHub</span>
+					</p>
+					<p class="subtitle" data-tx="t0009">Du kan göra en engångsdonation eller en regelbunden donation.</p>
+				  </div>
+				</a>
+			</div>
+			<div class="column is-half">
+				<a class="card" th:href="@{/support-banktransfer}">
+				  <div class="card-content has-background-info">
+					<p class="title">
+					    <span class="icon">
+							<i class="fa-solid fa-building-columns"></i>
+					    </span>
+						<span data-tx="t0010">Donera via banköverföring</span>
+					</p>
+					<p class="subtitle" data-tx="t0011">Du måste logga in för att se kontouppgifterna.</p>
+				  </div>
+				</a>
+			</div>
+		</div>
+				
+		<p data-tx="t0012">Tack för att du bidrar till kostnaderna för PhoneBlock!</p>
+		
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

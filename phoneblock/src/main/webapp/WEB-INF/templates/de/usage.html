@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Nutzungsbedingungen</h1>
+		
+		<p data-tx="t0002">
+			PhoneBlock kann Dir bei der digitalen Selbstverteidigung gegen Telefonterror und unerwünschte 
+			Werbeanrufe helfen. PhoneBlock ist <a th:href="@{/impressum}">mein</a> 
+			privates <a href="https://github.com/haumacher/phoneblock">Projekt</a> und ich lasse Dich gerne 
+			unentgeldlich daran teilhaben.
+		</p>
+		
+		<h2 data-tx="t0003">Haftungsausschluss</h2>
+		
+		<p data-tx="t0004">
+			Die Nutzung von PhoneBlock erfolgt ausschließlich und ausdrücklich
+			auf eigene Gefahr. Du bist Dir bei der Nutzung bewusst, dass durch
+			einen Fehler in der Software, oder durch möglicherweise böswilliges
+			Einfügen von Nummern in die Blockliste eine Nummer gesperrt werden
+			könnte, von der du vielleich angerufen werden willst.
+		</p>
+		
+		<h2 data-tx="t0005">Kommerzieller Einsatz</h2>
+		
+		<p data-tx="t0006">
+			Ich rate davon ab, PhoneBlock an einem geschäftlichen Telefonanschluss 
+			einzusetzen. Wenn Du das trotzdem tun möchtest, dann trägst Du auch 
+			hierbei das alleinige Risiko für alle daraus möglicherweise resultierenden 
+			Schäden. Um das Einsatzrisiko zu minimieren, empfehle ich Dir, Nummern
+			der Blockliste nicht zu sperren, sondern nur auf Deinen  Anrufbeantworter 
+			umzuleiten. Im kommerziellen Umfeld rate ich außerdem dringend vom Einsatz des
+			PhoneBlock-Anrufbeantworters ab - unter keinen
+			Umständen, willst Du riskieren einen potentiellen Kunden an Deinem
+			Telefonanschluss von dem Anrufbeantworter "veräppeln" zu lassen.
+		</p>
+		
+		<h2 data-tx="t0007">Betrieb des PhoneBlock-Servers</h2>
+		
+		<p data-tx="t0008">
+			PhoneBlock steht Dir unentgeldlich zur Verfügung. Der Betrieb einer 
+			Webanwendung ist aber nicht kostenlos. Wenn Dir PhoneBlock hilft, kannst Du Dich
+			gerne in Form einer <a th:href="@{/support}">kleinen Spende</a>
+			an den Betriebskosten beteiligen. Du tust dies aber ohne die Erwartung jedweder 
+			Gegenleistung.
+		</p>
+		
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

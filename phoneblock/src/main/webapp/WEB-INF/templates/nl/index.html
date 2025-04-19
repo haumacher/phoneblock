@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="PhoneBlock logo" data-tx="t0015" th:src="@{/assets/img/animation.svg}"/>
+		</div>
+
+		<h1 data-tx="t0001">Automatisch ongewenste bellers weigeren</h1>
+
+		<p data-tx="t0002">Is jouw telefoonnummer ook in handen gevallen van onbetrouwbare adreshandelaren en ontvang je constant vervelende telefoontjes die je elektriciteitsrekening willen "optimaliseren", je advies willen geven over een zonne-energiesysteem, nog een hoofdprijs willen aankondigen of andere "extraatjes" willen aanbieden? Dan is <b>PhoneBlock</b> precies wat je nodig hebt!</p>
+
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
+			    <span class="icon">
+					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
+			    </span>
+				<span data-tx="t0003">Antwoordapparaat</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
+			    <span class="icon">
+					<i class="fa-solid fa-phone"></i>
+			    </span>
+				<span data-tx="t0004">Fritz!Box telefoonboek</span>			
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
+			    <span class="icon">
+					<i class="fa-solid fa-mobile-screen"></i>
+			    </span>
+				<span data-tx="t0005">Voor Android</span>
+			</a>
+		  </div>
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
+			    <span class="icon">
+					<i class="fa-brands fa-apple"></i>
+			    </span>
+				<span data-tx="t0006">Voor iPhone</span>
+			</a>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0007">Hoe werkt PhoneBlock?</h2>
+
+		<p data-tx="t0008">PhoneBlock is een door de PhoneBlock-gemeenschap bijgehouden lijst met telefoonnummers waarvan vermoed wordt dat het spam is. Het antwoordapparaat <a th:href="@{/anrufbeantworter}">PhoneBlock</a> accepteert vervolgens oproepen van bellers op de blokkadelijst, zodat je telefoon stil blijft voor deze oproepen.</p>
+		
+		<p data-tx="t0009">Je kunt de zwarte lijst ook als telefoonboek in je "FRITZ!Box" internetrouter importeren en oproepen van nummers in dit <a th:href="@{/setup}">speciale telefoonboek</a> blokkeren. Je hoeft niet langer handmatig nummerreeksen te blokkeren, want je Fritz!Box werkt de geblokkeerde lijst elke nacht automatisch bij. Zodra een nummer aan deze zwarte lijst wordt toegevoegd, weigert je FRITZ!Box automatisch bellers met dit nummer. Het <a th:href="@{/anrufbeantworter}">antwoordapparaat</a> is echter de betere oplossing omdat een telefoonboek beperkt is in omvang en niet alle nummers in de blokkadelijst kan bevatten.</p>
+
+		<p data-tx="t0010">Als u nog steeds ongewenste oproepen ontvangt omdat het nummer nog niet is toegevoegd aan de lijst met geblokkeerde nummers, kunt u het <a th:href="@{/block}">nummer eenvoudig blokkeren in uw FRITZ!Box</a>. Om dit te doen, maakt u een vermelding voor de ongewenste beller in het PhoneBlock-adresboek direct in uw Fritz!Box Zodra je dit hebt gedaan, zal je FrizBox de blokkadelijst bijwerken voor alle leden van de PhoneBlock-community en worden oproepen van dit nieuwe nummer ook meteen geblokkeerd voor alle anderen. Dit is iets tijdrovender dan het direct blokkeren van het nummer in je Fritz!BoxPhone, maar heeft als voordeel dat je de hele PhoneBlock community beschermt tegen <a th:href="@{/status}">nog meer spam oproepen</a>.</p>
+
+		<h2 data-tx="t0011">Wat zijn de vereisten?</h2>
+
+		<div class="fritzbox-position">
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
+			</a>
+		</div>
+		
+		<p data-tx="t0012">PhoneBlock kan ongewenste oproepen blokkeren op de <a th:href="@{/setup}">"vaste lijn"</a> in combinatie met een <a th:href="@{/link/fritzbox}">"FRITZ!Box"-internetrouter van AVM</a>, of direct op je <a th:href="@{/setup-android}">mobiele telefoon</a> weergeven of een beller mogelijk ongewenst is.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			  <input id="context-path" th:value="@{/}" type="hidden"/>
+			<a class="button is-medium is-info is-fullwidth" href="#" id="search-fritzbox">
+				<span class="icon is-small is-left">
+					<i class="fa-solid fa-magnifying-glass"></i>
+				</span>
+				<span data-tx="t0013">Fritz!Box zoeken</span>
+			</a>
+		  </div>
+		</div>
+
+		<p data-tx="t0014">Weet je niet zeker of je een Fritz!Box box hebt? Als u op dit moment thuis bent in het WLan, druk dan op de zoekknop hierboven. PhoneBlock zal dan proberen een Fritz!Box box bij u in de buurt te vinden.</p>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -14,6 +14,15 @@ message UserSettings {
 	/** The user's real name. */
 	string displayName;
 	
+	/** The preferred language of the user. */
+	string lang;
+	
+	/** The user's country dial prefix ("+49" for Germany). */
+	string dialPrefix;
+	
+	/** Whether the user's blocklist should contain nationl numbers only. */
+	bool nationalOnly;
+	
 	/** The user's e-mail address. */
 	string email;
 	
