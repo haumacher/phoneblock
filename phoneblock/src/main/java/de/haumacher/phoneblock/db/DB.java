@@ -808,7 +808,7 @@ public class DB {
 		return classify(oldVotes) != classify(newVotes);
 	}
 
-	private void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
+	public void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
 		if (dialPrefix == null) {
 			return;
 		}
