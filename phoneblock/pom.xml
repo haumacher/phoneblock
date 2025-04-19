@@ -97,9 +97,9 @@
 -->
 
 		<dependency>
-			<groupId>com.github.ip2location</groupId>
+			<groupId>com.github.haumacher</groupId>
 			<artifactId>ip2location-java</artifactId>
-			<version>8.12.3-SNAPSHOT</version>
+			<version>8.12.2-haumacher</version>
 		</dependency>
 
 		<dependency>
