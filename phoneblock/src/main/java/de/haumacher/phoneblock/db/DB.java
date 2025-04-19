@@ -1395,16 +1395,16 @@ public class DB {
 	/**
 	 * Records a search hit for the given phone number.
 	 */
-	public void addSearchHit(PhoneNumer phone) {
+	public void addSearchHit(PhoneNumer phone, String dialPrefix) {
 		long now = System.currentTimeMillis();
-		addSearchHit(phone, now);
+		addSearchHit(phone, dialPrefix, now);
 	}
 
-	void addSearchHit(PhoneNumer phone, long now) {
+	void addSearchHit(PhoneNumer phone, String dialPrefix, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			addSearchHit(reports, phone, now);
+			addSearchHit(reports, phone, dialPrefix, now);
 			
 			session.commit();
 		}
@@ -1413,7 +1413,7 @@ public class DB {
 	/**
 	 * Records a search hit for the given phone number.
 	 */
-	public void addSearchHit(SpamReports reports, PhoneNumer number, long now) {
+	public void addSearchHit(SpamReports reports, PhoneNumer number, String dialPrefix, long now) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 		
 		int rows = reports.incSearchCount(phone, now);
@@ -1424,6 +1424,8 @@ public class DB {
 		}
 		
 		pingRelatedNumbers(reports, phone, now);
+		
+		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, now);
 	}
 	
 	/**

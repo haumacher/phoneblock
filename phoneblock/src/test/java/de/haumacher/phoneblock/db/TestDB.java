@@ -356,7 +356,7 @@ class TestDB {
 	}
 	
 	private void addSearchHit(String phone) {
-		_db.addSearchHit(NumberAnalyzer.analyze(phone));
+		_db.addSearchHit(NumberAnalyzer.analyze(phone), "+49");
 	}
 
 	@Test
@@ -380,7 +380,7 @@ class TestDB {
 	}
 	
 	private void addSearchHit(String phone, long now) {
-		_db.addSearchHit(NumberAnalyzer.analyze(phone), now);
+		_db.addSearchHit(NumberAnalyzer.analyze(phone), "+49", now);
 	}
 
 	@Test

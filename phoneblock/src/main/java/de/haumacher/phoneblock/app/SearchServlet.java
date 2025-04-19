@@ -297,7 +297,7 @@ public class SearchServlet extends HttpServlet {
 		// potential SPAM call.
 		if (isSeachHit) {
 			long now = System.currentTimeMillis();
-			db.addSearchHit(reports, number, now);
+			db.addSearchHit(reports, number, dialPrefix, now);
 			commit = true;
 		}
 		
