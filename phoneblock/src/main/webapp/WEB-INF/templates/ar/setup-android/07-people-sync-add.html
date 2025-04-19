@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">الخطوة 4: إضافة دفتر العناوين وإدخال بيانات حساب PhoneBlock</h2>
 		
 		<ol>
-		<li data-tx="t0003">حدّد الخيار "تسجيل الدخول باستخدام عنوان URL واسم المستخدم" وأدخل عنوان دفتر عناوين PhoneBlock باعتباره "عنوان URL الأساسي": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">حدّد الخيار "تسجيل الدخول باستخدام عنوان URL واسم المستخدم" وأدخل عنوان دفتر عناوين PhoneBlock باعتباره "عنوان URL الأساسي": <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">بالنسبة إلى "اسم المستخدم"، أدخل اسم المستخدم الذي تلقيته عند <a th:href="@{/login(location=${currentPage})}"> تسجيل حظر الهاتف<th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>).</th:block></a></li>
+		<li data-tx="t0004">بالنسبة إلى "اسم المستخدم"، أدخل اسم المستخدم الذي تلقيته عند <a th:href="@{/login(location=${currentPage})}"> تسجيل حظر الهاتف<th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>).</th:block></a></li>
 			
-		<li data-tx="t0005">تم عرض كلمة المرور لك بعد تسجيل الدخول الأول<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>).</th:block></li>
+		<li data-tx="t0005">تم عرض كلمة المرور لك بعد تسجيل الدخول الأول<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>).</th:block></li>
 		</ol>
 		
 		<p data-tx="t0006">لم تعد لديك تفاصيل تسجيل الدخول الخاصة بك في متناول اليد؟ لا يهم، ما عليك سوى تسجيل الدخول و <a th:href="@{/login(location='/settings')}"> إعادة تعيين كلمة المرور</a> في الإعدادات.</p>

@@ -40,11 +40,11 @@
   	</p>
   	<p data-tx="t0036" th:case="'legitimate'">
   		Die Telefonnummer ist nicht in der <a th:href="@{/status}">PhoneBlock-Datenbank</a> enthalten. 
-  		Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprechen.
+  		Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${info.phone}"></code> sprechen.
 	</p>
   	<p data-tx="t0037" th:case="'wildcard'">
   		Die Telefonnummer selbst ist nicht in der <a th:href="@{/status}">PhoneBlock-Datenbank</a> enthalten. 
-  		Die Nummer ☎ <code th:text="${info.phone}"></code> stammt aber aus einem Nummernblock mit Spam-Verdacht.
+  		Die Nummer ☎ <code dir="ltr" th:text="${info.phone}"></code> stammt aber aus einem Nummernblock mit Spam-Verdacht.
   		<th:block th:if="${info.votesWildcard == 1}">
 		Es spricht eine Stimme für die Sperrung des Nummernblocks.
 		</th:block>
@@ -53,15 +53,15 @@
 		</th:block>
   	</p>
   	<p data-tx="t0038" th:case="'suspicious'">
-  		Es gibt bereits <th:block th:text="${info.votes}"></th:block> Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprechen.
+  		Es gibt bereits <th:block th:text="${info.votes}"></th:block> Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${info.phone}"></code> sprechen.
   		Die Nummer wird aber noch nicht blockiert.
 	</p>  	
   	<p data-tx="t0039" th:case="'archived'">
-  		Es gibt zwar <th:block th:text="${info.votes}"></th:block> alte Stimmen, die für eine Sperrung von ☎ <code th:text="${info.phone}"></code> sprachen.
+  		Es gibt zwar <th:block th:text="${info.votes}"></th:block> alte Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${info.phone}"></code> sprachen.
   		Die Nummer wird aber nicht mehr blockiert.
   	</p>
   	<p data-tx="t0040" th:case="'blocked'">
-		Die Telefonnummer ☎ <code th:text="${info.phone}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status}">unerwünschten Telefonanrufen</a>.
+		Die Telefonnummer ☎ <code dir="ltr" th:text="${info.phone}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status}">unerwünschten Telefonanrufen</a>.
 		<th:block th:text="${info.votes}"></th:block> Stimmen sprechen sich für eine Sperrung der Nummer aus.
   	</p>
   	</th:block>
@@ -70,17 +70,17 @@
 		<li data-tx="t0008">
 			Alternative Schreibweisen: 
 			<th:block th:if="${number.shortcut}">
-				<code th:text="${number.shortcut}"></code>, 
+				<code dir="ltr" th:text="${number.shortcut}"></code>, 
 			</th:block>
-			<code th:text="${number.plus}"></code>, 
-			<code th:text="${number.zeroZero}"></code>
+			<code dir="ltr" th:text="${number.plus}"></code>, 
+			<code dir="ltr" th:text="${number.zeroZero}"></code>
 		</li>
 		<li data-tx="t0009">
-			Land: <th:block th:text="${number.country}"></th:block> (<code th:text="${number.countryCode}"></code>)
+			Land: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)
 		</li>
 
 		<li data-tx="t0010" th:if="${number.city}">
-			Stadt: <th:block th:text="${number.city}"></th:block> (<code th:text="${number.cityCode}"></code>)
+			Stadt: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)
 		</li>
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">
@@ -159,11 +159,11 @@
 	
 <th:block th:unless="${thanks}">
 	<p data-tx="t0024">
-		Du wurdest von ☎ <code><th:block th:text="${info.phone}"></th:block></code> angerufen? 
-		Sag anderen, was sie von ☎ <code><th:block th:text="${number.plus}"></th:block></code> zu erwarten haben.
-		Wenn Du Dich von Anrufen von ☎ <code><th:block th:text="${info.phone}"></th:block></code> belästigt fühlst, 
+		Du wurdest von ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code> angerufen? 
+		Sag anderen, was sie von ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code> zu erwarten haben.
+		Wenn Du Dich von Anrufen von ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code> belästigt fühlst, 
 		<a th:href="@{/setup}">installiere PhoneBlock</a> 
-		und gibt eine Bewertung für ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code> ab:
+		und gibt eine Bewertung für ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code> ab:
 	</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">

@@ -34,7 +34,7 @@
 		  </div>
 		</div>
 		<p data-tx="t0005" th:if="${login}">
-			Du bist bereits als <code th:text="${userName}"></code> angemeldet, prima! Du kannst sofort loslegen.
+			Du bist bereits als <code dir="ltr" th:text="${userName}"></code> angemeldet, prima! Du kannst sofort loslegen.
 		</p>
 </th:block>
 
@@ -49,17 +49,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Internetadresse des CardDAV-Servers</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Benutzername</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">Passwort</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -114,7 +114,7 @@
 		<ul>
 			<li data-tx="t0021">
 				<span class="tag is-danger">1</span> 
-				gib dem Telefonbuch, das als Sperrliste dienen soll, den Namen <code>Blocklist</code>. Du benötigst diesen 
+				gib dem Telefonbuch, das als Sperrliste dienen soll, den Namen <code dir="ltr">Blocklist</code>. Du benötigst diesen 
 				Namen nochmals für den nächsten Schritt.
 			</li>
 
@@ -134,11 +134,11 @@
 				<ul>
 					<li>
 						Trage die URL von des PhoneBlock-Adressbuchs in das Feld <i>Internetadresse des CardDAV-Servers</i> ein:
-						<code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>
+						<code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>
 					</li>
 
 					<li>
-						Trage den Benutzernamen <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>, den Du bei der
+						Trage den Benutzernamen <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>, den Du bei der
 						<a th:href="@{/login(location='/settings')}">Registrierung</a> erhalten hast, in das Feld 
 						<i>Benutzername</i> ein. 
 					</li>
@@ -146,7 +146,7 @@
 					<li>
 						Das Passwort<th:block th:unless="${token}">, 
 						das Du bei der <a th:href="@{/login(location='/settings')}">Registrierung</a> erhalten 
-						hast, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> muss Du jetzt noch in das Feld
+						hast, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> muss Du jetzt noch in das Feld
 						<i>Passwort</i> eintragen werden.
 					</li>
 				</ul>

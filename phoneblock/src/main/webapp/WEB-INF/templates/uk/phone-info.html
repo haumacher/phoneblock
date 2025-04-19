@@ -35,18 +35,18 @@
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Номер телефону знаходиться в білому списку і не може бути заблокований за допомогою PhoneBlock. Якщо ви все ще відчуваєте переслідування з цього номера, будь ласка, встановіть приватне блокування для цього номера.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Номер телефону не входить до бази даних <a th:href="@{/status}">PhoneBlock</a>. Поки що немає голосів за блокування ☎ <code th:text="${info.phone}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Сам номер телефону не міститься в базі даних <a th:href="@{/status}">PhoneBlock</a>. Однак номер ☎ <code th:text="${info.phone}"></code> походить з блоку номерів з підозрою на спам. <th:block th:if="${info.votesWildcard == 1}"> Відбувається голосування за блокування блоку номерів. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Є <th:block th:text="${info.votesWildcard}"></th:block> голосів за блокування номерного блоку. </th:block></p>
-  	<p data-tx="t0038" th:case="'suspicious'">Вже є <th:block th:text="${info.votes}"></th:block> голосів за блокування ☎ <code th:text="${info.phone}"></code>. Однак номер ще не заблоковано.</p>  	
-  	<p data-tx="t0039" th:case="'archived'">Існують <th:block th:text="${info.votes}"></th:block> старі голоси, які виступали за блокування ☎ <code th:text="${info.phone}"></code>. Однак, номер більше не заблокований.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Номер телефону ☎ <code th:text="${info.phone}"></code> неодноразово повідомлявся як джерело <a th:href="@{/status}">небажаних телефонних дзвінків</a>. <th:block th:text="${info.votes}"></th:block> Голоси на користь блокування номера.</p>
+  	<p data-tx="t0036" th:case="'legitimate'">Номер телефону не входить до бази даних <a th:href="@{/status}">PhoneBlock</a>. Поки що немає голосів за блокування ☎ <code dir="ltr" th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Сам номер телефону не міститься в базі даних <a th:href="@{/status}">PhoneBlock</a>. Однак номер ☎ <code dir="ltr" th:text="${info.phone}"></code> походить з блоку номерів з підозрою на спам. <th:block th:if="${info.votesWildcard == 1}"> Відбувається голосування за блокування блоку номерів. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Є <th:block th:text="${info.votesWildcard}"></th:block> голосів за блокування номерного блоку. </th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">Вже є <th:block th:text="${info.votes}"></th:block> голосів за блокування ☎ <code dir="ltr" th:text="${info.phone}"></code>. Однак номер ще не заблоковано.</p>  	
+  	<p data-tx="t0039" th:case="'archived'">Існують <th:block th:text="${info.votes}"></th:block> старі голоси, які виступали за блокування ☎ <code dir="ltr" th:text="${info.phone}"></code>. Однак, номер більше не заблокований.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Номер телефону ☎ <code dir="ltr" th:text="${info.phone}"></code> неодноразово повідомлявся як джерело <a th:href="@{/status}">небажаних телефонних дзвінків</a>. <th:block th:text="${info.votes}"></th:block> Голоси на користь блокування номера.</p>
   	</th:block>
 
 	<ul>
-		<li data-tx="t0008">Альтернативні варіанти написання: <th:block th:if="${number.shortcut}"> <code th:text="${number.shortcut}"></code>, </th:block> <code th:text="${number.plus}"></code>, <code th:text="${number.zeroZero}"></code>.</li>
-		<li data-tx="t0009">Країна: <th:block th:text="${number.country}"></th:block> (<code th:text="${number.countryCode}"></code>)</li>
+		<li data-tx="t0008">Альтернативні варіанти написання: <th:block th:if="${number.shortcut}"> <code dir="ltr" th:text="${number.shortcut}"></code>, </th:block> <code dir="ltr" th:text="${number.plus}"></code>, <code dir="ltr" th:text="${number.zeroZero}"></code>.</li>
+		<li data-tx="t0009">Країна: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
-		<li data-tx="t0010" th:if="${number.city}">Місто: <th:block th:text="${number.city}"></th:block> (<code th:text="${number.cityCode}"></code>)</li>
+		<li data-tx="t0010" th:if="${number.city}">Місто: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">Голоси за блокування: <th:block th:text="${info.votes}"></th:block>.</li>
 		
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Дякуємо за вашу оцінку, ви допомагаєте іншим, хто також покликаний.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Чи телефонував вам ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Розкажіть іншим, чого очікувати від ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Якщо вас турбують дзвінки від ☎ <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">встановіть PhoneBlock</a> і залиште відгук для ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Чи телефонував вам ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>? Розкажіть іншим, чого очікувати від ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Якщо вас турбують дзвінки від ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">встановіть PhoneBlock</a> і залиште відгук для ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>

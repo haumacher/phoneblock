@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Έχετε ήδη εγγραφεί ως <code th:text="${userName}"></code>, υπέροχα! Μπορείτε να ξεκινήσετε αμέσως.</p>
+		<p data-tx="t0005" th:if="${login}">Έχετε ήδη εγγραφεί ως <code dir="ltr" th:text="${userName}"></code>, υπέροχα! Μπορείτε να ξεκινήσετε αμέσως.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Διεύθυνση Internet του διακομιστή CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Όνομα χρήστη</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">κωδικός πρόσβασης</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">Τώρα χρειάζεστε τα στοιχεία σύνδεσης του λογαριασμού σας PhoneBlock.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> Δώστε στον τηλεφωνικό κατάλογο που πρόκειται να χρησιμοποιηθεί ως λίστα φραγής το όνομα <code>Λίστα φραγής</code>. Θα χρειαστείτε ξανά αυτό το όνομα για το επόμενο βήμα.</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Δώστε στον τηλεφωνικό κατάλογο που πρόκειται να χρησιμοποιηθεί ως λίστα φραγής το όνομα <code dir="ltr">Λίστα φραγής</code>. Θα χρειαστείτε ξανά αυτό το όνομα για το επόμενο βήμα.</li>
 
 			<li data-tx="t0022">Τώρα επιλέξτε <span class="tag is-danger">2</span> την επιλογή <i>Χρήση του τηλεφωνικού καταλόγου ενός διαδικτυακού παρόχου</i>.</li>
 
 			<li data-tx="t0023">Στη συνέχεια, μπορείτε να επιλέξετε <span class="tag is-danger">3</span> τον πάροχο <i>CardDAV provider</i>.</li>
 
 			<li data-tx="t0024">Σχεδόν τελειώσαμε, τώρα τα δεδομένα σύνδεσης <span class="tag is-danger">4</span>. Είναι καλύτερο να τα μεταφέρετε με Cut&amp;Paste για να αποφύγετε τα λάθη πληκτρολόγησης! <ul>
-					<li> Εισάγετε τη διεύθυνση URL του βιβλίου διευθύνσεων του PhoneBlock στο πεδίο <i>Διεύθυνση διαδικτύου του διακομιστή CardDAV</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> Εισάγετε τη διεύθυνση URL του βιβλίου διευθύνσεων του PhoneBlock στο πεδίο <i>Διεύθυνση διαδικτύου του διακομιστή CardDAV</i>: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Εισάγετε το όνομα χρήστη <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a> στο πεδίο <i>Όνομα χρήστη</i>. </li>
+					<li> Εισάγετε το όνομα χρήστη <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a> στο πεδίο <i>Όνομα χρήστη</i>. </li>
 
-					<li>Ο κωδικός πρόσβασης<th:block th:unless="${token}"> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a>,</th:block> πρέπει τώρα να εισαχθεί στο πεδίο <i>Κωδικός πρόσβασης</i>. </li>
+					<li>Ο κωδικός πρόσβασης<th:block th:unless="${token}"> που λάβατε κατά την <a th:href="@{/login(location='/settings')}">εγγραφή</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a>,</th:block> πρέπει τώρα να εισαχθεί στο πεδίο <i>Κωδικός πρόσβασης</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Τώρα μπορείτε να επιβεβαιώσετε <span class="tag is-danger">5</span> τη δημιουργία του νέου τηλεφωνικού καταλόγου. Παρακαλούμε σημειώστε: Επιλέξτε <b>κανένα από τα τηλέφωνά σας</b> στην ενότητα "Ανάθεση τηλεφώνου"! Διαφορετικά, θα βρίσκετε μόνο τους καλούντες SPAM στις επαφές του τηλεφώνου σας.</li>

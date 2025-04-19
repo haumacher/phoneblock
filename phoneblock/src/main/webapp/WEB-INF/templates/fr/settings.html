@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Adresse Internet du serveur CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Nom d'utilisateur</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">Tu dois saisir cette valeur comme nom d'utilisateur pour <a th:href="@{/setup}">l'appel de la blocklist</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">Mot de passe</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">Tu dois utiliser ce mot de passe pour <a th:href="@{/setup}">configurer l'annuaire</a> ou pour te connecter à ce site.</p>
 				  <p class="help" data-tx="t0011">Veuillez noter votre mot de passe (ou enregistrez-le dans un <a href="https://keepass.info/">gestionnaire de mots de passe</a>), car il ne sera affiché que jusqu'à ce que vous vous déconnectiez ou que votre session expire.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Nom d'utilisateur</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">Tu dois saisir cette valeur comme nom d'utilisateur pour <a th:href="@{/setup}">l'appel de la blocklist</a>. Ton mot de passe t'a été indiqué lors de ta première connexion. Si tu ne le connais plus, tu peux faire créer un <a href="#resetPassword">nouveau mot de passe</a> en bas de cette page. Mais attention : l'ancien mot de passe ne sera alors plus valable.</p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Tes dons pour le fonctionnement de PhoneBlock</h2>
 	
-	<p data-tx="t0059">Si tu as fait un don de <a th:href="@{/support}"> pour le fonctionnement de PhoneBlock</a>, celui-ci sera listé ici (après un certain temps). Pour que cela fonctionne, il serait bien que tu envoies les premiers caractères de ton nom d'utilisateur avec le message de transfert, par exemple <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></span>. Les contributions via le programme de sponsoring GitHub ne peuvent malheureusement pas être listées ici.</p>
+	<p data-tx="t0059">Si tu as fait un don de <a th:href="@{/support}"> pour le fonctionnement de PhoneBlock</a>, celui-ci sera listé ici (après un certain temps). Pour que cela fonctionne, il serait bien que tu envoies les premiers caractères de ton nom d'utilisateur avec le message de transfert, par exemple <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></span>. Les contributions via le programme de sponsoring GitHub ne peuvent malheureusement pas être listées ici.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Aucun don trouvé.</p>
 	

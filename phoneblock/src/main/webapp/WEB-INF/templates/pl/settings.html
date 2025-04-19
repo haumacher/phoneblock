@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Adres internetowy serwera CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Nazwa użytkownika</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">Należy wprowadzić tę wartość jako nazwę użytkownika dla <a th:href="@{/setup}">wywołania listy blokad</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">hasło</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">Musisz użyć tego hasła, aby <a th:href="@{/setup}">ustawić książkę telefoniczną</a> lub zalogować się na tej stronie.</p>
 				  <p class="help" data-tx="t0011">Zanotuj hasło (lub zapisz je w menedżerze haseł <a href="https://keepass.info/">password manager</a>), ponieważ będzie ono wyświetlane tylko do momentu wylogowania lub wygaśnięcia sesji.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Nazwa użytkownika</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">Tę wartość należy wprowadzić jako nazwę użytkownika w celu <a th:href="@{/setup}">pobrania listy blokad</a>. Hasło zostało wyświetlone podczas pierwszego logowania. Jeśli już go nie pamiętasz, możesz utworzyć <a href="#resetPassword">nowe hasło</a> na dole tej strony. Ale uwaga: stare hasło straci ważność.</p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Darowizny na rzecz działania PhoneBlock</h2>
 	
-	<p data-tx="t0059">Jeśli dokonałeś <a th:href="@{/support}">darowizny na rzecz działania PhoneBlock</a>, zostanie ona tutaj wymieniona (po pewnym czasie). Aby to zadziałało, byłoby miło, gdybyś mógł podać kilka pierwszych znaków swojej nazwy użytkownika w wiadomości przelewu, np. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></span>. Niestety, wkład za pośrednictwem programu sponsorskiego GitHub nie może być tutaj wymieniony.</p>
+	<p data-tx="t0059">Jeśli dokonałeś <a th:href="@{/support}">darowizny na rzecz działania PhoneBlock</a>, zostanie ona tutaj wymieniona (po pewnym czasie). Aby to zadziałało, byłoby miło, gdybyś mógł podać kilka pierwszych znaków swojej nazwy użytkownika w wiadomości przelewu, np. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></span>. Niestety, wkład za pośrednictwem programu sponsorskiego GitHub nie może być tutaj wymieniony.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Nie znaleziono żadnych darowizn.</p>
 	

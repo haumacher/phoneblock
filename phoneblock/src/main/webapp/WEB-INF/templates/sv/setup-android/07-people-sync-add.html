@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">Steg 4: Lägg till en adressbok och ange kontouppgifter för PhoneBlock</h2>
 		
 		<ol>
-		<li data-tx="t0003">Välj alternativet "Logga in med URL och användarnamn" och ange adressen till PhoneBlock-adressboken som "Base URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Välj alternativet "Logga in med URL och användarnamn" och ange adressen till PhoneBlock-adressboken som "Base URL": <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">För "Användarnamn" anger du det användarnamn som du fick när <a th:href="@{/login(location=${currentPage})}">PhoneBlock-registrering</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">För "Användarnamn" anger du det användarnamn som du fick när <a th:href="@{/login(location=${currentPage})}">PhoneBlock-registrering</a><th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">Lösenordet visades för dig efter den första inloggningen<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">Lösenordet visades för dig efter den första inloggningen<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">Har du inte längre dina inloggningsuppgifter till hands? Det gör inget, logga bara in och <a th:href="@{/login(location='/settings')}">återställ lösenordet</a> i inställningarna.</p>

@@ -35,18 +35,18 @@
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Le numéro de téléphone figure sur la liste blanche et ne peut pas être bloqué par PhoneBlock. Si tu te sens tout de même harcelé par ce numéro, veuillez mettre en place un blocage privé pour ce numéro.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Le numéro de téléphone ne figure pas dans la base de données <a th:href="@{/status}">PhoneBlock</a>. Il n'y a pour l'instant pas de voix en faveur d'un blocage de ☎ <code th:text="${info.phone}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Le numéro de téléphone lui-même ne figure pas dans la base de données <a th:href="@{/status}">PhoneBlock</a>. Le numéro ☎ <code th:text="${info.phone}"></code> provient cependant d'un bloc de numéros suspecté d'être du spam. <th:block th:if="${info.votesWildcard == 1}"> Une voix s'exprime en faveur du blocage du pavé numérique. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Il y a <th:block th:text="${info.votesWildcard}"></th:block> voix pour le blocage du pavé numérique. </th:block></p>
-  	<p data-tx="t0038" th:case="'suspicious'">Il y a déjà <th:block th:text="${info.votes}"></th:block> voix en faveur du blocage de ☎ <code th:text="${info.phone}"></code>. Le numéro n'est toutefois pas encore bloqué.</p>  	
-  	<p data-tx="t0039" th:case="'archived'">Il y a certes <th:block th:text="${info.votes}"></th:block> d'anciennes voix qui plaidaient pour un blocage de ☎ <code th:text="${info.phone}"></code>. Mais le numéro n'est plus bloqué.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Le numéro de téléphone ☎ <code th:text="${info.phone}"></code> est une source d'appels téléphoniques <a th:href="@{/status}">non sollicités</a> signalée à plusieurs reprises. <th:block th:text="${info.votes}"></th:block> Des voix s'élèvent pour demander le blocage de ce numéro.</p>
+  	<p data-tx="t0036" th:case="'legitimate'">Le numéro de téléphone ne figure pas dans la base de données <a th:href="@{/status}">PhoneBlock</a>. Il n'y a pour l'instant pas de voix en faveur d'un blocage de ☎ <code dir="ltr" th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Le numéro de téléphone lui-même ne figure pas dans la base de données <a th:href="@{/status}">PhoneBlock</a>. Le numéro ☎ <code dir="ltr" th:text="${info.phone}"></code> provient cependant d'un bloc de numéros suspecté d'être du spam. <th:block th:if="${info.votesWildcard == 1}"> Une voix s'exprime en faveur du blocage du pavé numérique. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Il y a <th:block th:text="${info.votesWildcard}"></th:block> voix pour le blocage du pavé numérique. </th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">Il y a déjà <th:block th:text="${info.votes}"></th:block> voix en faveur du blocage de ☎ <code dir="ltr" th:text="${info.phone}"></code>. Le numéro n'est toutefois pas encore bloqué.</p>  	
+  	<p data-tx="t0039" th:case="'archived'">Il y a certes <th:block th:text="${info.votes}"></th:block> d'anciennes voix qui plaidaient pour un blocage de ☎ <code dir="ltr" th:text="${info.phone}"></code>. Mais le numéro n'est plus bloqué.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Le numéro de téléphone ☎ <code dir="ltr" th:text="${info.phone}"></code> est une source d'appels téléphoniques <a th:href="@{/status}">non sollicités</a> signalée à plusieurs reprises. <th:block th:text="${info.votes}"></th:block> Des voix s'élèvent pour demander le blocage de ce numéro.</p>
   	</th:block>
 
 	<ul>
-		<li data-tx="t0008">Autres notations : <th:block th:if="${number.shortcut}"> <code th:text="${number.shortcut}"></code>, </th:block> <code th:text="${number.plus}"></code>, <code th:text="${number.zeroZero}"></code>.</li>
-		<li data-tx="t0009">Pays : <th:block th:text="${number.country}"></th:block> (<code th:text="${number.countryCode}"></code>)</li>
+		<li data-tx="t0008">Autres notations : <th:block th:if="${number.shortcut}"> <code dir="ltr" th:text="${number.shortcut}"></code>, </th:block> <code dir="ltr" th:text="${number.plus}"></code>, <code dir="ltr" th:text="${number.zeroZero}"></code>.</li>
+		<li data-tx="t0009">Pays : <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
-		<li data-tx="t0010" th:if="${number.city}">Ville : <th:block th:text="${number.city}"></th:block> (<code th:text="${number.cityCode}"></code>)</li>
+		<li data-tx="t0010" th:if="${number.city}">Ville : <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">Votes pour le blocage : <th:block th:text="${info.votes}"></th:block></li>
 		
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Merci pour ton évaluation, tu aides ainsi d'autres personnes qui sont également appelées.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Tu as été contacté par? <code><th:block th:text="${info.phone}"></th:block></code> appelé? Dis aux autres ce qu'ils doivent faire de? <code><th:block th:text="${number.plus}"></th:block></code>. Si tu es gêné par des appels de? <code><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">installe PhoneBlock</a> et donne une note à? <code><th:block th:text="${number.zeroZero}"></th:block></code> :</p>
+	<p data-tx="t0024">Tu as été contacté par? <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code> appelé? Dis aux autres ce qu'ils doivent faire de? <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Si tu es gêné par des appels de? <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">installe PhoneBlock</a> et donne une note à? <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code> :</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>

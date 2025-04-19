@@ -21,17 +21,17 @@
    			<div data-tx="t0007">Saisis tes données d'accès et tape sur "Continuer".</div>
    			<dl>
 				<dt><b data-tx="t0016">Serveur</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b data-tx="t0017">Nom d'utilisateur</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Inscrivez-vous</a> pour voir votre nom d'utilisateur.</span>
 				</dd>
 
 				<dt><b data-tx="t0019">Mot de passe</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0020" th:unless="${token}">T'a été affiché directement après la première connexion, tu peux en générer un nouveau <a th:href="@{/settings}">dans les paramètres</a>.</span>
 				</dd>
 

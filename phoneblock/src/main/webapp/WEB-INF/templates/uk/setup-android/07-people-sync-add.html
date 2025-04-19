@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">Крок 4: Додайте адресну книгу та введіть дані облікового запису PhoneBlock</h2>
 		
 		<ol>
-		<li data-tx="t0003">Виберіть опцію "Увійдіть за допомогою URL-адреси та імені користувача" і введіть адресу адресної книги PhoneBlock як "Базову URL-адресу": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Виберіть опцію "Увійдіть за допомогою URL-адреси та імені користувача" і введіть адресу адресної книги PhoneBlock як "Базову URL-адресу": <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">У полі "Ім'я користувача" введіть ім'я користувача, яке ви отримали при реєстрації <a th:href="@{/login(location=${currentPage})}">PhoneBlock</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">У полі "Ім'я користувача" введіть ім'я користувача, яке ви отримали при реєстрації <a th:href="@{/login(location=${currentPage})}">PhoneBlock</a><th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">Пароль було показано вам після першого входу<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">Пароль було показано вам після першого входу<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">Ви більше не маєте під рукою даних для входу? Не біда, просто увійдіть і <a th:href="@{/login(location='/settings')}">відновіть пароль</a> в налаштуваннях.</p>

@@ -35,18 +35,18 @@
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Telefonnummeret er på den hvide liste og kan ikke blokeres af PhoneBlock. Hvis du stadig føler dig chikaneret af dette nummer, bedes du oprette en privat blokering for dette nummer.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Telefonnummeret er ikke inkluderet i <a th:href="@{/status}">PhoneBlock-databasen</a>. Indtil videre er der ingen stemmer for at blokere ☎ <code th:text="${info.phone}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Selve telefonnummeret er ikke indeholdt i <a th:href="@{/status}">PhoneBlock-databasen</a>. Men nummeret ☎ <code th:text="${info.phone}"></code> kommer fra en nummerblok med mistanke om spam. <th:block th:if="${info.votesWildcard == 1}"> Der er en stemme for at blokere nummerblokken. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Der er <th:block th:text="${info.votesWildcard}"></th:block> stemmer for at blokere nummerblokken. </th:block></p>
-  	<p data-tx="t0038" th:case="'suspicious'">Der er allerede <th:block th:text="${info.votes}"></th:block> stemmer for at blokere ☎ <code th:text="${info.phone}"></code>. Nummeret er dog endnu ikke blokeret.</p>  	
-  	<p data-tx="t0039" th:case="'archived'">Der er <th:block th:text="${info.votes}"></th:block> gamle stemmer, der talte for at blokere ☎ <code th:text="${info.phone}"></code>. Nummeret er dog ikke længere blokeret.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Telefonnummeret ☎ <code th:text="${info.phone}"></code> er en gentagne gange rapporteret kilde til <a th:href="@{/status}">uønskede telefonopkald</a>. <th:block th:text="${info.votes}"></th:block> Stemmerne går ind for at blokere nummeret.</p>
+  	<p data-tx="t0036" th:case="'legitimate'">Telefonnummeret er ikke inkluderet i <a th:href="@{/status}">PhoneBlock-databasen</a>. Indtil videre er der ingen stemmer for at blokere ☎ <code dir="ltr" th:text="${info.phone}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Selve telefonnummeret er ikke indeholdt i <a th:href="@{/status}">PhoneBlock-databasen</a>. Men nummeret ☎ <code dir="ltr" th:text="${info.phone}"></code> kommer fra en nummerblok med mistanke om spam. <th:block th:if="${info.votesWildcard == 1}"> Der er en stemme for at blokere nummerblokken. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Der er <th:block th:text="${info.votesWildcard}"></th:block> stemmer for at blokere nummerblokken. </th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">Der er allerede <th:block th:text="${info.votes}"></th:block> stemmer for at blokere ☎ <code dir="ltr" th:text="${info.phone}"></code>. Nummeret er dog endnu ikke blokeret.</p>  	
+  	<p data-tx="t0039" th:case="'archived'">Der er <th:block th:text="${info.votes}"></th:block> gamle stemmer, der talte for at blokere ☎ <code dir="ltr" th:text="${info.phone}"></code>. Nummeret er dog ikke længere blokeret.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Telefonnummeret ☎ <code dir="ltr" th:text="${info.phone}"></code> er en gentagne gange rapporteret kilde til <a th:href="@{/status}">uønskede telefonopkald</a>. <th:block th:text="${info.votes}"></th:block> Stemmerne går ind for at blokere nummeret.</p>
   	</th:block>
 
 	<ul>
-		<li data-tx="t0008">Alternative stavemåder: <th:block th:if="${number.shortcut}"> <code th:text="${number.shortcut}"></code>, </th:block> <code th:text="${number.plus}"></code>, <code th:text="${number.zeroZero}"></code>.</li>
-		<li data-tx="t0009">Land: <th:block th:text="${number.country}"></th:block> (<code th:text="${number.countryCode}"></code>)</li>
+		<li data-tx="t0008">Alternative stavemåder: <th:block th:if="${number.shortcut}"> <code dir="ltr" th:text="${number.shortcut}"></code>, </th:block> <code dir="ltr" th:text="${number.plus}"></code>, <code dir="ltr" th:text="${number.zeroZero}"></code>.</li>
+		<li data-tx="t0009">Land: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
-		<li data-tx="t0010" th:if="${number.city}">By: <th:block th:text="${number.city}"></th:block> (<code th:text="${number.cityCode}"></code>)</li>
+		<li data-tx="t0010" th:if="${number.city}">By: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">Stemmer for blokering: <th:block th:text="${info.votes}"></th:block>.</li>
 		
@@ -111,7 +111,7 @@
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Tak for din vurdering, du hjælper andre, der også er kaldet.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Er du blevet ringet op af ☎ <code><th:block th:text="${info.phone}"></th:block></code>? Fortæl andre, hvad de kan forvente af ☎ <code><th:block th:text="${number.plus}"></th:block></code>. Hvis du er generet af opkald fra ☎ <code><th:block th:text="${info.phone}"></th:block></code>, skal du <a th:href="@{/setup}">installere PhoneBlock</a> og give en anmeldelse af ☎ <code><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Er du blevet ringet op af ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>? Fortæl andre, hvad de kan forvente af ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Hvis du er generet af opkald fra ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>, skal du <a th:href="@{/setup}">installere PhoneBlock</a> og give en anmeldelse af ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${info.phone}" type="hidden"/>

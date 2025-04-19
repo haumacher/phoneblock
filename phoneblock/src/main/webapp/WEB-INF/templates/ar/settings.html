@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">عنوان الإنترنت الخاص بخادم CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">اسم المستخدم</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">يجب عليك إدخال هذه القيمة كاسم المستخدم لـ <a th:href="@{/setup}"> استدعاء قائمة الحظر.</a></p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">كلمة السر</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">يجب عليك استخدام كلمة المرور هذه لـ <a th:href="@{/setup}"> لإعداد دفتر الهاتف</a> أو لتسجيل الدخول إلى هذا الموقع الإلكتروني.</p>
 				  <p class="help" data-tx="t0011">يُرجى تدوين كلمة المرور (أو حفظها في <a href="https://keepass.info/"> مدير كلمات المرور)، حيث سيتم عرضها فقط حتى تقوم بتسجيل الخروج أو انتهاء صلاحية جلستك.</a></p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">اسم المستخدم</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">يجب إدخال هذه القيمة كاسم المستخدم لـ <a th:href="@{/setup}"> استرداد قائمة الحظر. تم عرض كلمة المرور الخاصة بك عند تسجيل الدخول لأول مرة. إذا لم تعد تتذكرها، يمكنك إنشاء <a href="#resetPassword"> كلمة مرور جديدة في أسفل هذه الصفحة. ولكن كن حذرًا: ستصبح كلمة المرور القديمة غير صالحة.</a></a></p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">تبرعاتك لتشغيل PhoneBlock</h2>
 	
-	<p data-tx="t0059">إذا كنت قد قدمت <a th:href="@{/support}"> تبرعًا لتشغيل PhoneBlock، فسيتم إدراجه هنا (بعد مرور بعض الوقت). لكي يعمل هذا الأمر، سيكون من الجيد أن تقوم بتضمين الأحرف القليلة الأولى من اسم المستخدم الخاص بك في رسالة التحويل، على سبيل المثال: <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></span>. للأسف، لا يمكن إدراج المساهمات عبر برنامج الراعي GitHub هنا.</a></p>
+	<p data-tx="t0059">إذا كنت قد قدمت <a th:href="@{/support}"> تبرعًا لتشغيل PhoneBlock، فسيتم إدراجه هنا (بعد مرور بعض الوقت). لكي يعمل هذا الأمر، سيكون من الجيد أن تقوم بتضمين الأحرف القليلة الأولى من اسم المستخدم الخاص بك في رسالة التحويل، على سبيل المثال: <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></span>. للأسف، لا يمكن إدراج المساهمات عبر برنامج الراعي GitHub هنا.</a></p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">لم يتم العثور على أي تبرعات.</p>
 	

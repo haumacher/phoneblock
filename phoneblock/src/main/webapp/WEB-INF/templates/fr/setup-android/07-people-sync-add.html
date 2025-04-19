@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">Étape 4 : Ajoute un carnet d'adresses et indique les données du compte PhoneBlock</h2>
 		
 		<ol>
-		<li data-tx="t0003">Choisis l'option "Se connecter avec l'URL et le nom d'utilisateur" et indique comme "URL de base" l'adresse du carnet d'adresses PhoneBlock : <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Choisis l'option "Se connecter avec l'URL et le nom d'utilisateur" et indique comme "URL de base" l'adresse du carnet d'adresses PhoneBlock : <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">Dans "Nom d'utilisateur", tu inscris le nom d'utilisateur que tu as reçu lors de l'inscription <a th:href="@{/login(location=${currentPage})}">PhoneBlock</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">Dans "Nom d'utilisateur", tu inscris le nom d'utilisateur que tu as reçu lors de l'inscription <a th:href="@{/login(location=${currentPage})}">PhoneBlock</a><th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">Le mot de passe t'a été indiqué après la première connexion<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">Le mot de passe t'a été indiqué après la première connexion<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">Tu n'as plus tes données de connexion sous la main? Pas de problème, il suffit de se connecter et de <a th:href="@{/login(location='/settings')}">réinitialiser le mot de passe dans les paramètres</a>.</p>

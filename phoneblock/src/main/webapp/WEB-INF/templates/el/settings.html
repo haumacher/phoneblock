@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Διεύθυνση Internet του διακομιστή CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Όνομα χρήστη</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">Πρέπει να εισαγάγετε αυτή την τιμή ως όνομα χρήστη για την <a th:href="@{/setup}">ανάκληση της λίστας αποκλεισμού</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">κωδικός πρόσβασης</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">Πρέπει να χρησιμοποιήσετε αυτόν τον κωδικό πρόσβασης για να <a th:href="@{/setup}">ρυθμίσετε τον τηλεφωνικό κατάλογο</a> ή για να συνδεθείτε σε αυτόν τον ιστότοπο.</p>
 				  <p class="help" data-tx="t0011">Σημειώστε τον κωδικό πρόσβασης (ή αποθηκεύστε τον σε ένα <a href="https://keepass.info/">διαχειριστή κωδικών πρόσβασης</a>), καθώς θα εμφανίζεται μόνο μέχρι να αποσυνδεθείτε ή να λήξει η συνεδρία σας.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Όνομα χρήστη</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">Πρέπει να εισαγάγετε αυτή την τιμή ως όνομα χρήστη για την <a th:href="@{/setup}">ανάκτηση της λίστας αποκλεισμού</a>. Ο κωδικός πρόσβασής σας εμφανίστηκε όταν συνδεθήκατε για πρώτη φορά. Εάν δεν τον θυμάστε πλέον, μπορείτε να δημιουργήσετε έναν <a href="#resetPassword">νέο κωδικό πρόσβασης</a> στο κάτω μέρος αυτής της σελίδας. Αλλά προσέξτε: ο παλιός κωδικός πρόσβασης θα καταστεί άκυρος.</p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Οι δωρεές σας για τη λειτουργία του PhoneBlock</h2>
 	
-	<p data-tx="t0059">Αν έχετε κάνει μια <a th:href="@{/support}">δωρεά για τη λειτουργία του PhoneBlock</a>, θα αναγράφεται εδώ (μετά από κάποιο χρονικό διάστημα). Για να λειτουργήσει αυτό, θα ήταν καλό να συμπεριλάβετε τους πρώτους χαρακτήρες του ονόματος χρήστη σας στο μήνυμα μεταφοράς, π.χ. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></span>. Δυστυχώς, οι συνεισφορές μέσω του χορηγικού προγράμματος του GitHub δεν μπορούν να καταχωρηθούν εδώ.</p>
+	<p data-tx="t0059">Αν έχετε κάνει μια <a th:href="@{/support}">δωρεά για τη λειτουργία του PhoneBlock</a>, θα αναγράφεται εδώ (μετά από κάποιο χρονικό διάστημα). Για να λειτουργήσει αυτό, θα ήταν καλό να συμπεριλάβετε τους πρώτους χαρακτήρες του ονόματος χρήστη σας στο μήνυμα μεταφοράς, π.χ. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></span>. Δυστυχώς, οι συνεισφορές μέσω του χορηγικού προγράμματος του GitHub δεν μπορούν να καταχωρηθούν εδώ.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Δεν βρέθηκαν δωρεές.</p>
 	

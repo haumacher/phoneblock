@@ -21,17 +21,17 @@
    			<div data-tx="t0007">أدخل بيانات الوصول الخاصة بك واضغط على "متابعة".</div>
    			<dl>
 				<dt><b data-tx="t0016">الخادم</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b data-tx="t0017">اسم المستخدم</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}"> تسجيل الدخول</a> لمعرفة اسم المستخدم الخاص بك.</span>
 				</dd>
 
 				<dt><b data-tx="t0019">كلمة السر</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0020" th:unless="${token}">تم عرضها لك مباشرةً بعد تسجيل الدخول الأول، يمكنك إنشاء واحدة جديدة <a th:href="@{/settings}"> في الإعدادات.</a></span>
 				</dd>
 

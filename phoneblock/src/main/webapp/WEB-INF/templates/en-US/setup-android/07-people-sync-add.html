@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">Step 4: Add an address book and enter the PhoneBlock account data</h2>
 		
 		<ol>
-		<li data-tx="t0003">Select the option "Log in with URL and user name" and enter the address of the PhoneBlock address book as the "Base URL": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Select the option "Log in with URL and user name" and enter the address of the PhoneBlock address book as the "Base URL": <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">For "User name", enter the user name that you received when you <a th:href="@{/login(location=${currentPage})}">registered with PhoneBlock</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">For "User name", enter the user name that you received when you <a th:href="@{/login(location=${currentPage})}">registered with PhoneBlock</a><th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">The password was displayed to you after the first login<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">The password was displayed to you after the first login<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">You no longer have your login details to hand? Never mind, simply log in and <a th:href="@{/login(location='/settings')}">reset the password</a> in the settings.</p>

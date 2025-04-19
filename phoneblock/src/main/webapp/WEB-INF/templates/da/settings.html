@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Internetadresse på CardDAV-serveren</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Brugernavn</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">Du skal indtaste denne værdi som brugernavn for at <a th:href="@{/setup}">kalde bloklisten op</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">adgangskode</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">Du skal bruge denne adgangskode til at <a th:href="@{/setup}">opsætte telefonbogen</a> eller til at logge ind på denne hjemmeside.</p>
 				  <p class="help" data-tx="t0011">Skriv adgangskoden ned (eller gem den i en <a href="https://keepass.info/">password manager</a>), da den kun vil blive vist, indtil du logger ud, eller din session udløber.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Brugernavn</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">Du skal indtaste denne værdi som brugernavn for <a th:href="@{/setup}">at hente blokeringslisten</a>. Din adgangskode blev vist, da du loggede ind første gang. Hvis du ikke længere kan huske den, kan du oprette en <a href="#resetPassword">ny adgangskode</a> nederst på denne side. Men vær forsigtig: Den gamle adgangskode bliver ugyldig.</p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Dine donationer til driften af PhoneBlock</h2>
 	
-	<p data-tx="t0059">Hvis du har lavet en <a th:href="@{/support}">donation til driften af PhoneBlock</a>, vil den blive listet her (efter noget tid). For at dette skal fungere, ville det være rart, hvis du kunne inkludere de første par tegn i dit brugernavn i overførselsmeddelelsen, f.eks. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></span>. Bidrag via GitHubs sponsorprogram kan desværre ikke vises her.</p>
+	<p data-tx="t0059">Hvis du har lavet en <a th:href="@{/support}">donation til driften af PhoneBlock</a>, vil den blive listet her (efter noget tid). For at dette skal fungere, ville det være rart, hvis du kunne inkludere de første par tegn i dit brugernavn i overførselsmeddelelsen, f.eks. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></span>. Bidrag via GitHubs sponsorprogram kan desværre ikke vises her.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Ingen donationer fundet.</p>
 	

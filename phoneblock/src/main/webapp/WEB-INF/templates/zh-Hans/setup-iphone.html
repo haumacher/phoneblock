@@ -21,17 +21,17 @@
    			<div data-tx="t0007">输入您的访问数据，然后点击 "继续"。</div>
    			<dl>
 				<dt><b data-tx="t0016">服务器</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b data-tx="t0017">用户名</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">登录</a>，查看您的用户名。</span>
 				</dd>
 
 				<dt><b data-tx="t0019">暗号</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0020" th:unless="${token}">第一次登录后直接显示，您可以在设置中生成一个新的<a th:href="@{/settings}"></a>。</span>
 				</dd>
 

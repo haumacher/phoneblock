@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Siete già registrati come <code th:text="${userName}"></code>, bene! Puoi iniziare subito.</p>
+		<p data-tx="t0005" th:if="${login}">Siete già registrati come <code dir="ltr" th:text="${userName}"></code>, bene! Puoi iniziare subito.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Indirizzo Internet del server CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Nome utente</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">password</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">Ora sono necessari i dati di accesso del vostro account PhoneBlock.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> Assegnare alla rubrica telefonica da usare come lista di blocco il nome <code>Lista di blocco</code>. Questo nome servirà di nuovo per il passo successivo.</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Assegnare alla rubrica telefonica da usare come lista di blocco il nome <code dir="ltr">Lista di blocco</code>. Questo nome servirà di nuovo per il passo successivo.</li>
 
 			<li data-tx="t0022">Ora selezionate <span class="tag is-danger">2</span> l'opzione <i>Usa la rubrica di un provider online</i>.</li>
 
 			<li data-tx="t0023">Quindi è possibile selezionare <span class="tag is-danger">3</span> il provider <i>CardDAV provider</i>.</li>
 
 			<li data-tx="t0024">Quasi finito, ora i dati di accesso <span class="tag is-danger">4</span>. È meglio trasferirli con Cut&amp;Paste per evitare errori di digitazione! <ul>
-					<li> Inserire l'URL della rubrica di PhoneBlock nel campo <i>Indirizzo Internet del server CardDAV</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> Inserire l'URL della rubrica di PhoneBlock nel campo <i>Indirizzo Internet del server CardDAV</i>: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Inserire il nome utente <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></th:block> che avete ricevuto durante la <a th:href="@{/login(location='/settings')}">registrazione</a> nel campo <i>Nome utente</i>. </li>
+					<li> Inserire il nome utente <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></th:block> che avete ricevuto durante la <a th:href="@{/login(location='/settings')}">registrazione</a> nel campo <i>Nome utente</i>. </li>
 
-					<li>La password<th:block th:unless="${token}"> ricevuta durante la <a th:href="@{/login(location='/settings')}">registrazione</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a>,</th:block> deve ora essere inserita nel campo <i>Password</i>. </li>
+					<li>La password<th:block th:unless="${token}"> ricevuta durante la <a th:href="@{/login(location='/settings')}">registrazione</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a>,</th:block> deve ora essere inserita nel campo <i>Password</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Ora è possibile confermare <span class="tag is-danger">5</span> la creazione della nuova rubrica. Attenzione: Selezionare <b>nessun telefono</b> in "Assegnazione telefono"! In caso contrario, troverete i chiamanti SPAM solo nei contatti del vostro telefono.</li>

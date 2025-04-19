@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">您已经注册为 <code th:text="${userName}"></code>，很好！您可以立即开始使用。</p>
+		<p data-tx="t0005" th:if="${login}">您已经注册为 <code dir="ltr" th:text="${userName}"></code>，很好！您可以立即开始使用。</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">CardDAV 服务器的互联网地址</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">用户名</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">暗号</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">现在你需要 PhoneBlock 账户的登录信息。</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> 将用作拦截列表的电话簿命名为 <code>拦截列表</code>。下一步将再次使用该名称。</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> 将用作拦截列表的电话簿命名为 <code dir="ltr">拦截列表</code>。下一步将再次使用该名称。</li>
 
 			<li data-tx="t0022">现在选择<span class="tag is-danger">2</span>选项<i>使用在线提供商的电话簿</i>。</li>
 
 			<li data-tx="t0023">然后可以选择 <span class="tag is-danger">3</span> 提供商 <i>CardDAV 提供商</i>。</li>
 
 			<li data-tx="t0024">差不多完成了，现在是登录数据 <span class="tag is-danger">4</span>。最好用剪贴法传输，以避免输入错误！<ul>
-					<li> 在 <i>Internet address of the CardDAV server</i> 字段中输入 PhoneBlock 地址簿的 URL： <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a> </li>
+					<li> 在 <i>Internet address of the CardDAV server</i> 字段中输入 PhoneBlock 地址簿的 URL： <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> 在 <i>Username</i> 字段中输入您在 <a th:href="@{/login(location='/settings')}">registration</a> 时收到的用户名 <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>。</li>
+					<li> 在 <i>Username</i> 字段中输入您在 <a th:href="@{/login(location='/settings')}">registration</a> 时收到的用户名 <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>。</li>
 
-					<li>现在必须在 <i>密码</i>字段中输入您在<a th:href="@{/login(location='/settings')}">注册</a>时收到的密码<th:block th:unless="${token}">，</th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>, </th:block> 。</li>
+					<li>现在必须在 <i>密码</i>字段中输入您在<a th:href="@{/login(location='/settings')}">注册</a>时收到的密码<th:block th:unless="${token}">，</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>, </th:block> 。</li>
 				    &lt;/x2</ul></li>
 
 			<li data-tx="t0025">现在您可以确认 <span class="tag is-danger">5</span> 新电话簿的创建。请注意在 "电话分配 "下选择 <b>"无电话"</b>！否则您只能在手机联系人中找到垃圾邮件呼叫者。</li>

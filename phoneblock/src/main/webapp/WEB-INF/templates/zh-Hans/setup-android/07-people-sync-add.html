@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">步骤 4：添加通讯录并输入 PhoneBlock 账户数据</h2>
 		
 		<ol>
-		<li data-tx="t0003">选择 "使用 URL 和用户名登录 "选项，然后输入 PhoneBlock 地址簿的地址作为 "基本 URL"：<code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>。</li>
+		<li data-tx="t0003">选择 "使用 URL 和用户名登录 "选项，然后输入 PhoneBlock 地址簿的地址作为 "基本 URL"：<code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>。</li>
 			
-		<li data-tx="t0004">在 "用户名 "中，输入您在 <a th:href="@{/login(location=${currentPage})}">PhoneBlock 注册</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>)</th:block> 时收到的用户名。</li>
+		<li data-tx="t0004">在 "用户名 "中，输入您在 <a th:href="@{/login(location=${currentPage})}">PhoneBlock 注册</a><th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>)</th:block> 时收到的用户名。</li>
 			
-		<li data-tx="t0005">密码已在第一次登录<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>)</th:block> 后显示给您。</li>
+		<li data-tx="t0005">密码已在第一次登录<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>)</th:block> 后显示给您。</li>
 		</ol>
 		
 		<p data-tx="t0006">您手头没有登录信息？没关系，只需登录并在设置中<a th:href="@{/login(location='/settings')}">重新设置密码</a>即可。</p>

@@ -21,17 +21,17 @@
    			<div data-tx="t0007">Skriv inn tilgangsdataene dine, og trykk på "Fortsett".</div>
    			<dl>
 				<dt><b data-tx="t0016">Server</b></dt>
-				<dd><code id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></dd>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></dd>
 
 				<dt><b data-tx="t0017">Brukernavn</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Logg inn</a> for å se brukernavnet ditt.</span>
 				</dd>
 
 				<dt><b data-tx="t0019">passord</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></th:block>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></th:block>
 				<span data-tx="t0020" th:unless="${token}">ble vist til deg direkte etter første innlogging, kan du generere en ny <a th:href="@{/settings}">i innstillingene</a>.</span>
 				</dd>
 

@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Internetadress till CardDAV-servern</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Användarens namn</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">Du måste ange detta värde som användarnamn när du <a th:href="@{/setup}">kallar upp blocklistan</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">Lösenord</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">Du måste använda detta lösenord för att <a th:href="@{/setup}">skapa telefonboken</a> eller för att logga in på denna webbplats.</p>
 				  <p class="help" data-tx="t0011">Anteckna lösenordet (eller spara det i en <a href="https://keepass.info/">lösenordshanterare</a>), eftersom det bara visas tills du loggar ut eller din session löper ut.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Användarens namn</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">Du måste ange detta värde som användarnamn för <a th:href="@{/setup}">hämtning av blocklistan</a>. Ditt lösenord visades när du loggade in första gången. Om du inte längre kommer ihåg det kan du skapa ett <a href="#resetPassword">nytt lösenord</a> längst ner på den här sidan. Men var försiktig: det gamla lösenordet kommer att bli ogiltigt.</p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Dina donationer för driften av PhoneBlock</h2>
 	
-	<p data-tx="t0059">Om du har gjort en <a th:href="@{/support}">donation för driften av PhoneBlock</a> kommer den att listas här (efter en tid). För att detta ska fungera vore det bra om du kunde inkludera de första tecknen i ditt användarnamn i överföringsmeddelandet, t.ex. <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></span>. Bidrag via GitHubs sponsorprogram kan tyvärr inte listas här.</p>
+	<p data-tx="t0059">Om du har gjort en <a th:href="@{/support}">donation för driften av PhoneBlock</a> kommer den att listas här (efter en tid). För att detta ska fungera vore det bra om du kunde inkludera de första tecknen i ditt användarnamn i överföringsmeddelandet, t.ex. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></span>. Bidrag via GitHubs sponsorprogram kan tyvärr inte listas här.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Inga donationer hittades.</p>
 	

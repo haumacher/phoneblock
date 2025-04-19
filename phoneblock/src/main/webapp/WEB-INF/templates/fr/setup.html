@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Tu es déjà inscrit en tant que <code th:text="${userName}"></code>, super! Tu peux commencer tout de suite.</p>
+		<p data-tx="t0005" th:if="${login}">Tu es déjà inscrit en tant que <code dir="ltr" th:text="${userName}"></code>, super! Tu peux commencer tout de suite.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Adresse Internet du serveur CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Nom d'utilisateur</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">Mot de passe</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">Tu as maintenant besoin des données de connexion de ton compte PhoneBlock.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> donne le nom de <code>Blocklist</code> à l'annuaire téléphonique qui doit servir de liste de blocage. Tu auras à nouveau besoin de ce nom pour l'étape suivante.</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> donne le nom de <code dir="ltr">Blocklist</code> à l'annuaire téléphonique qui doit servir de liste de blocage. Tu auras à nouveau besoin de ce nom pour l'étape suivante.</li>
 
 			<li data-tx="t0022">Sélectionne maintenant <span class="tag is-danger">2</span> l'option <i>Utiliser le répertoire d'un fournisseur en ligne</i>.</li>
 
 			<li data-tx="t0023">Ensuite, tu peux choisir <span class="tag is-danger">3</span> le fournisseur <i>Fournisseur CardDAV</i>.</li>
 
 			<li data-tx="t0024">Tu y es presque, voici maintenant les données de connexion <span class="tag is-danger">4</span>. Le mieux est de les transférer par copier-coller pour éviter les fautes de frappe! <ul>
-					<li> Inscris l'URL du carnet d'adresses PhoneBlock dans le champ <i>Adresse Internet du serveur CardDAV</i> : <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> Inscris l'URL du carnet d'adresses PhoneBlock dans le champ <i>Adresse Internet du serveur CardDAV</i> : <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Inscris le nom d'utilisateur <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a> dans le champ <i>Nom d'utilisateur</i>. </li>
+					<li> Inscris le nom d'utilisateur <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a> dans le champ <i>Nom d'utilisateur</i>. </li>
 
-					<li> Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>,</th:block> tu dois maintenant encore l'inscrire dans le champ <i>mot de passe</i>. </li>
+					<li> Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de l'<a th:href="@{/login(location='/settings')}">enregistrement</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>,</th:block> tu dois maintenant encore l'inscrire dans le champ <i>mot de passe</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Tu peux maintenant confirmer <span class="tag is-danger">5</span> la création du nouveau répertoire. Attention, s'il te plaît : Ne sélectionne <b>aucun de tes téléphones</b> dans le point "Attribution des téléphones"! Sinon, tu ne trouveras sur ton téléphone que des appelants SPAM dans les contacts.</li>

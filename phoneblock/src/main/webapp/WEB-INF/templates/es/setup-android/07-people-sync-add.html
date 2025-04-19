@@ -12,11 +12,11 @@
 		<h2 data-tx="t0002">Paso 4: Añadir una libreta de direcciones e introducir los datos de la cuenta PhoneBlock</h2>
 		
 		<ol>
-		<li data-tx="t0003">Seleccione la opción "Iniciar sesión con URL y nombre de usuario" e introduzca la dirección de la agenda de PhoneBlock como "URL base": <code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>.</li>
+		<li data-tx="t0003">Seleccione la opción "Iniciar sesión con URL y nombre de usuario" e introduzca la dirección de la agenda de PhoneBlock como "URL base": <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>.</li>
 			
-		<li data-tx="t0004">Para "Nombre de usuario", introduzca el nombre de usuario que recibió cuando <a th:href="@{/login(location=${currentPage})}">Registro de bloqueo de teléfono</a><th:block th:if="${userName}"> (<code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0004">Para "Nombre de usuario", introduzca el nombre de usuario que recibió cuando <a th:href="@{/login(location=${currentPage})}">Registro de bloqueo de teléfono</a><th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 			
-		<li data-tx="t0005">La contraseña se te mostró tras el primer inicio de sesión<th:block th:if="${token}"> (<code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
+		<li data-tx="t0005">La contraseña se te mostró tras el primer inicio de sesión<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>)</th:block>.</li>
 		</ol>
 		
 		<p data-tx="t0006">¿Ya no tienes a mano tus datos de acceso? No importa, sólo tienes que conectarte y <a th:href="@{/login(location='/settings')}">restablecer la contraseña</a> en los ajustes.</p>

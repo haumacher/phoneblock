@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Ya estás registrado como <code th:text="${userName}"></code>, ¡genial! Puedes empezar ahora mismo.</p>
+		<p data-tx="t0005" th:if="${login}">Ya estás registrado como <code dir="ltr" th:text="${userName}"></code>, ¡genial! Puedes empezar ahora mismo.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Dirección de Internet del servidor CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Nombre de usuario</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">contraseña</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">Ahora necesitas los datos de acceso de tu cuenta PhoneBlock.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> Asigne a la guía telefónica que se va a utilizar como lista de bloqueo el nombre <code>Lista de bloqueo</code>. Necesitará este nombre de nuevo para el siguiente paso.</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Asigne a la guía telefónica que se va a utilizar como lista de bloqueo el nombre <code dir="ltr">Lista de bloqueo</code>. Necesitará este nombre de nuevo para el siguiente paso.</li>
 
 			<li data-tx="t0022">Ahora selecciona <span class="tag is-danger">2</span> la opción <i>Utilizar agenda telefónica de un proveedor online</i>.</li>
 
 			<li data-tx="t0023">A continuación puede seleccionar <span class="tag is-danger">3</span> el proveedor <i>CardDAV provider</i>.</li>
 
 			<li data-tx="t0024">Casi hecho, ahora los datos de acceso <span class="tag is-danger">4</span>. ¡Es mejor transferirlos con Cut&amp;Paste para evitar errores de escritura! <ul>
-					<li>Introduzca la URL de la libreta de direcciones de PhoneBlock en el campo <i>Dirección de Internet del servidor CardDAV</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a> </li>
+					<li>Introduzca la URL de la libreta de direcciones de PhoneBlock en el campo <i>Dirección de Internet del servidor CardDAV</i>: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li>Introduzca el nombre de usuario <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></th:block> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a> en el campo <i>Nombre de usuario</i>. </li>
+					<li>Introduzca el nombre de usuario <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></th:block> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a> en el campo <i>Nombre de usuario</i>. </li>
 
-					<li>La contraseña<th:block th:unless="${token}"> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>,</th:block> debe introducirse ahora en el campo <i>Contraseña</i>. </li>
+					<li>La contraseña<th:block th:unless="${token}"> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>,</th:block> debe introducirse ahora en el campo <i>Contraseña</i>. </li>
 				    </ul></li>
 
 			<li data-tx="t0025">Ahora puede confirmar <span class="tag is-danger">5</span> la creación de la nueva agenda telefónica. Tenga en cuenta: ¡Seleccione <b>ninguno de sus teléfonos</b> en "Asignación de teléfonos"! De lo contrario, sólo encontrará las llamadas SPAM en los contactos de su teléfono.</li>

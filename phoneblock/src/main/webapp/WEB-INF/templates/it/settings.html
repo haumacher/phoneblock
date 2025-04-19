@@ -28,18 +28,18 @@
 			  <div class="message-body">
 				<div class="field">
 				  <label class="label" data-tx="t0006">Indirizzo Internet del server CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
 				  <label class="label" data-tx="t0007">Nome utente</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0008">È necessario inserire questo valore come nome utente per <a th:href="@{/setup}">richiamare la lista di blocco</a>.</p>
 				</div>
 					
 				<div class="field">
 				  <label class="label" data-tx="t0009">password</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 				  <p class="help" data-tx="t0010">È necessario utilizzare questa password per <a th:href="@{/setup}">impostare la rubrica telefonica</a> o per accedere a questo sito web.</p>
 				  <p class="help" data-tx="t0011">Si prega di annotare la password (o di salvarla in un <a href="https://keepass.info/">gestore di password</a>), poiché sarà visualizzata solo fino al logout o alla scadenza della sessione.</p>
 				</div>
@@ -48,7 +48,7 @@
 
 			<div class="field" th:unless="${token}">
 			  <label class="label" data-tx="t0012">Nome utente</label>
-			  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></div>
 			  <p class="help" data-tx="t0013">È necessario inserire questo valore come nome utente per <a th:href="@{/setup}">recuperare la blocklist</a>. La password è stata visualizzata al primo accesso. Se non la si ricorda più, è possibile creare una <a href="#resetPassword">nuova password</a> in fondo a questa pagina. Ma attenzione: la vecchia password non sarà più valida.</p>
 			</div>
 
@@ -280,7 +280,7 @@
 <div class="content">
 	<h2 data-tx="t0058" id="sec-contributions">Le vostre donazioni per il funzionamento di PhoneBlock</h2>
 	
-	<p data-tx="t0059">Se avete fatto una <a th:href="@{/support}">donazione per il funzionamento di PhoneBlock</a>, sarà elencata qui (dopo qualche tempo). Affinché questo funzioni, sarebbe opportuno che includeste i primi caratteri del vostro nome utente nel messaggio di trasferimento, ad esempio <code id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></span>. Purtroppo i contributi tramite il programma di sponsorizzazione di GitHub non possono essere elencati qui.</p>
+	<p data-tx="t0059">Se avete fatto una <a th:href="@{/support}">donazione per il funzionamento di PhoneBlock</a>, sarà elencata qui (dopo qualche tempo). Affinché questo funzioni, sarebbe opportuno che includeste i primi caratteri del vostro nome utente nel messaggio di trasferimento, ad esempio <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></span>. Purtroppo i contributi tramite il programma di sponsorizzazione di GitHub non possono essere elencati qui.</p>
 	
 	<p data-tx="t0060" th:if="${contributions.empty}">Non sono state trovate donazioni.</p>
 	

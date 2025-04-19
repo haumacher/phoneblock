@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Ви вже зареєстровані як <code th:text="${userName}"></code>, чудово! Ви можете почати прямо зараз.</p>
+		<p data-tx="t0005" th:if="${login}">Ви вже зареєстровані як <code dir="ltr" th:text="${userName}"></code>, чудово! Ви можете почати прямо зараз.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Інтернет-адреса сервера CardDAV</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Ім'я користувача</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">пароль</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">Тепер вам потрібні дані для входу до вашого облікового запису PhoneBlock.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> Назвіть телефонну книгу, яку буде використано як блок-лист, <code>Блок-лист</code>. Ця назва знадобиться вам на наступному кроці.</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Назвіть телефонну книгу, яку буде використано як блок-лист, <code dir="ltr">Блок-лист</code>. Ця назва знадобиться вам на наступному кроці.</li>
 
 			<li data-tx="t0022">Тепер виберіть <span class="tag is-danger">2</span> опцію <i>Використовувати телефонну книгу інтернет-провайдера</i>.</li>
 
 			<li data-tx="t0023">Потім ви можете вибрати <span class="tag is-danger">3</span> провайдера <i>CardDAV провайдера</i>.</li>
 
 			<li data-tx="t0024">Майже готово, тепер дані для входу <span class="tag is-danger">4</span>. Найкраще перенести їх за допомогою Cut&amp;Paste, щоб уникнути помилок при введенні! <ul>
-					<li> У полі <i>Інтернет-адреса сервера CardDAV</i> введіть URL адресної книги PhoneBlock: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> У полі <i>Інтернет-адреса сервера CardDAV</i> введіть URL адресної книги PhoneBlock: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> У полі <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block> введіть ім'я користувача <a th:href="@{/login(location='/settings')}"></a>, яке ви отримали під час <i>реєстрації</i>. </li>
+					<li> У полі <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block> введіть ім'я користувача <a th:href="@{/login(location='/settings')}"></a>, яке ви отримали під час <i>реєстрації</i>. </li>
 
-					<li>Пароль <th:block th:unless="${token}">, який ви отримали під час <a th:href="@{/login(location='/settings')}">реєстрації</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>,</th:block> тепер слід ввести у полі <i>Пароль</i>. </li>
+					<li>Пароль <th:block th:unless="${token}">, який ви отримали під час <a th:href="@{/login(location='/settings')}">реєстрації</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>,</th:block> тепер слід ввести у полі <i>Пароль</i>. </li>
 				    </ul> &lt;/x11</li>
 
 			<li data-tx="t0025">Тепер ви можете підтвердити <span class="tag is-danger">5</span> створення нової телефонної книги. Зверніть увагу: Виберіть <b>ні один з ваших телефонів</b> в розділі "Призначення телефону"! Інакше в контактах на вашому телефоні ви побачите лише абонентів зі спамом.</li>

@@ -21,7 +21,7 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Du er allerede registreret som <code th:text="${userName}"></code>, fantastisk! Du kan komme i gang med det samme.</p>
+		<p data-tx="t0005" th:if="${login}">Du er allerede registreret som <code dir="ltr" th:text="${userName}"></code>, fantastisk! Du kan komme i gang med det samme.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -35,17 +35,17 @@
 		
 				<div class="field">
 				  <label class="label" data-tx="t0008">Internetadresse på CardDAV-serveren</label>
-				  <div class="control"><code id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0009">Brugernavn</label>
-				  <div class="control"><code id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
 				  <label class="label" data-tx="t0010">adgangskode</label>
-				  <div class="control"><code id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -87,18 +87,18 @@
 		<p data-tx="t0020">Nu skal du bruge loginoplysningerne til din PhoneBlock-konto.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> Giv den telefonbog, der skal bruges som blokeringsliste, navnet <code>Blokeringsliste</code>. Du skal bruge dette navn igen i næste trin.</li>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> Giv den telefonbog, der skal bruges som blokeringsliste, navnet <code dir="ltr">Blokeringsliste</code>. Du skal bruge dette navn igen i næste trin.</li>
 
 			<li data-tx="t0022">Vælg nu <span class="tag is-danger">2</span> indstillingen <i>Brug telefonbog fra en onlineudbyder</i>.</li>
 
 			<li data-tx="t0023">Derefter kan du vælge <span class="tag is-danger">3</span> udbyderen <i>CardDAV-udbyder</i>.</li>
 
 			<li data-tx="t0024">Næsten færdig, nu er login-dataene <span class="tag is-danger">4</span>. Det er bedst at overføre dem med Cut&amp;Paste for at undgå tastefejl! <ul>
-					<li> Indtast URL'en til PhoneBlock-adressebogen i feltet <i>Internetadressen til CardDAV-serveren</i>: <code id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a> </li>
+					<li> Indtast URL'en til PhoneBlock-adressebogen i feltet <i>Internetadressen til CardDAV-serveren</i>: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a> </li>
 
-					<li> Indtast brugernavnet <th:block th:if="${userName}"><code id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>, som du modtog under <a th:href="@{/login(location='/settings')}">registreringen</a>, i feltet <i>Brugernavn</i>. </li>
+					<li> Indtast brugernavnet <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>, som du modtog under <a th:href="@{/login(location='/settings')}">registreringen</a>, i feltet <i>Brugernavn</i>. </li>
 
-					<li>Kodeordet<th:block th:unless="${token}">, som du fik under <a th:href="@{/login(location='/settings')}">registreringen</a>, </th:block><th:block th:if="${token}"> <code id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a>,</th:block> skal nu indtastes i feltet <i>Kodeord</i>. </li>
+					<li>Kodeordet<th:block th:unless="${token}">, som du fik under <a th:href="@{/login(location='/settings')}">registreringen</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a>,</th:block> skal nu indtastes i feltet <i>Kodeord</i>. </li>
 				    </ul>.</li>
 
 			<li data-tx="t0025">Nu kan du bekræfte <span class="tag is-danger">5</span> oprettelsen af den nye telefonbog. Vær opmærksom på dette: Vælg <b>ingen af dine telefoner</b> under "Telefontildeling"! Ellers vil du kun finde SPAM-opkald i kontakterne på din telefon.</li>
