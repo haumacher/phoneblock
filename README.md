@@ -4,13 +4,13 @@
 Der Spam-Filter für dein Telefon - keine Kosten, keine Zusatzhardware
 
 * [PhoneBlock-Homepage](https://phoneblock.net/)
-* [Installation SPAM-Anrufbeantworter in der Fritz!Box](https://phoneblock.net/phoneblock/anrufbeantworter/)
-* [Installation Blocklist-Telefonbuch in der Fritz!Box](https://phoneblock.net/phoneblock/setup.jsp)
-* [Installation PhoneBlock auf Android-Telefonen](https://phoneblock.net/phoneblock/setup-android/)
-* [Installation PhoneBlock auf iPhones](https://phoneblock.net/phoneblock/setup-iphone/)
-* [Berichte über aktuelle Werbeanrufer](https://phoneblock.net/phoneblock/status.jsp)
-* [Fragen und Antworten zu PhoneBlock](https://phoneblock.net/phoneblock/faq.jsp)
-* [API für Entwickler](https://phoneblock.net/phoneblock/api/)
+* [Installation SPAM-Anrufbeantworter in der Fritz!Box](https://phoneblock.net/phoneblock/anrufbeantworter)
+* [Installation Blocklist-Telefonbuch in der Fritz!Box](https://phoneblock.net/phoneblock/setup)
+* [Installation PhoneBlock auf Android-Telefonen](https://phoneblock.net/phoneblock/setup-android)
+* [Installation PhoneBlock auf iPhones](https://phoneblock.net/phoneblock/setup-iphone)
+* [Berichte über aktuelle Werbeanrufer](https://phoneblock.net/phoneblock/status)
+* [Fragen und Antworten zu PhoneBlock](https://phoneblock.net/phoneblock/faq)
+* [API für Entwickler](https://phoneblock.net/phoneblock/api)
 
 ## Wie funktioniert PhoneBlock?
 
