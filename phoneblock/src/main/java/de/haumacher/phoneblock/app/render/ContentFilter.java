@@ -31,6 +31,7 @@ import de.haumacher.phoneblock.app.BasicLoginFilter;
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.DeleteAccountServlet;
 import de.haumacher.phoneblock.app.EMailVerificationServlet;
+import de.haumacher.phoneblock.app.ErrorServlet;
 import de.haumacher.phoneblock.app.ExternalLinkServlet;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
@@ -139,6 +140,8 @@ public class ContentFilter extends LoginFilter {
 			path.startsWith(ResetPasswordServlet.PATH) ||
 			path.startsWith(SearchServlet.NUMS_PREFIX)  ||
 			path.startsWith(OAuthLoginServlet.OAUTH_LOGIN_PATH)  ||
+			path.equals(ErrorServlet.NOT_FOUND_PATH) ||
+			path.equals(ErrorServlet.NOT_ALLOWED_PATH) ||
 			path.equals("/sitemap.jsp") ||
 			path.endsWith(".js") || 
 			path.endsWith(".json") 
