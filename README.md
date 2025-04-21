@@ -1,4 +1,4 @@
-<img align="right" src="phoneblock/src/main/webapp/app-logo.svg"/>
+<img align="right" src="phoneblock/src/main/webapp/assets/img/app-logo.svg"/>
 
 # PhoneBlock
 Der Spam-Filter für dein Telefon - keine Kosten, keine Zusatzhardware
