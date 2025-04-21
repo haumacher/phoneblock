@@ -41,15 +41,15 @@ public class TemplateRenderer {
 		_templateEngine = templateEngine;
 	}
 
-	public void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public boolean process(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		WebController controller = resolveControllerForRequest(request);
-		process(controller, request, response);
+		return process(controller, request, response);
 	}
 	
-	public void process(String template, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public boolean process(String template, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		WebController controller = resolveController(template);
 		request.setAttribute(DefaultController.RENDER_TEMPLATE, template);
-		process(controller, request, response);
+		return process(controller, request, response);
 	}
 	
     private WebController resolveControllerForRequest(final HttpServletRequest request) {
@@ -65,8 +65,8 @@ public class TemplateRenderer {
 		return controllersByURL.getOrDefault(path, DefaultController.INSTANCE);
 	}
 
-	public void process(WebController controller, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		controller.process(this, request, response);
+	public boolean process(WebController controller, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return controller.process(this, request, response);
 	}
 
 	public void install(ServletContext servletContext) {
@@ -79,6 +79,10 @@ public class TemplateRenderer {
 
 	public static TemplateRenderer getInstance(HttpServletRequest req) {
 		return getInstance(req.getServletContext());
+	}
+	
+	public JakartaServletWebApplication application() {
+		return _application;
 	}
 
 	public IServletWebExchange buildExchange(HttpServletRequest request, HttpServletResponse response) {

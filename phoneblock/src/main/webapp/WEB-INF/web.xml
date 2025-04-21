@@ -160,6 +160,11 @@
 	</error-page>
 
 	<error-page>
+		<error-code>401</error-code>
+		<location>/error-not-authenticated</location>
+	</error-page>
+
+	<error-page>
 		<error-code>404</error-code>
 		<location>/error-not-found</location>
 	</error-page>

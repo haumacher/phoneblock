@@ -1,5 +1,6 @@
 package de.haumacher.phoneblock.app.render;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 public class DefaultController implements WebController {
@@ -76,16 +78,9 @@ public class DefaultController implements WebController {
 	}
 
 	@Override
-	public void process(IServletWebExchange webExchange, ITemplateEngine templateEngine, Writer writer) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) webExchange.getNativeRequestObject();
-		
+	public boolean process(TemplateRenderer renderer, HttpServletRequest request, HttpServletResponse response) throws IOException {
         Language lang = resolveLanguage(request);
-        resolveDialPrefix(request);
         
-        WebContext ctx = new WebContext(webExchange, lang.locale);
-        
-        fillContext(ctx, request);
-
         String template = (String) request.getAttribute(RENDER_TEMPLATE);
         if (template == null) {
         	String path = request.getServletPath();
@@ -97,8 +92,33 @@ public class DefaultController implements WebController {
 
 		// Note: Template is required to start with "/".
 		String i18nTemplate = "/" + lang.tag + template;
+		
+		if (!renderer.application().resourceExists(ContentFilter.TEMPLATES_PATH + i18nTemplate + ContentFilter.TEMPLATE_SUFFIX)) {
+			return false;
+		}
+		
+        resolveDialPrefix(request);
+		
+		final IServletWebExchange webExchange = renderer.buildExchange(request, response);
+        WebContext ctx = new WebContext(webExchange, lang.locale);
         
-		templateEngine.process(i18nTemplate, ctx, writer);
+        fillContext(ctx, request);
+		
+		/*
+		 * Write the response headers
+		 */
+		response.setContentType("text/html;charset=UTF-8");
+		response.setHeader("Pragma", "no-cache");
+		response.setHeader("Cache-Control", "no-cache");
+		response.setDateHeader("Expires", 0);
+
+		/*
+		 * Obtain the response writer
+		 */
+		final Writer writer = response.getWriter();
+		
+		renderer.templateEngine().process(i18nTemplate, ctx, writer);
+		return true;
 	}
 
 	public static Language selectLanguage(Locale locale) {

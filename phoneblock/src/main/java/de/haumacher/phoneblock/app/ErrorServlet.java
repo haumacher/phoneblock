@@ -20,6 +20,7 @@ public class ErrorServlet extends HttpServlet {
 	
 	public static final String NOT_FOUND_PATH = "/error-not-found";
 	public static final String NOT_ALLOWED_PATH = "/error-not-allowed";
+	public static final String NOT_AUTHENTICATED_PATH = "/error-not-authenticated";
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

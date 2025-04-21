@@ -58,6 +58,10 @@ import jakarta.servlet.http.HttpServletResponse;
 })
 public class ContentFilter extends LoginFilter {
 	
+	public static final String TEMPLATES_PATH = "/WEB-INF/templates";
+
+	public static final String TEMPLATE_SUFFIX = ".html";
+	
 	private TemplateRenderer _renderer;
 	
 	private static final Map<String, String> LEGACY_PAGES;
@@ -142,6 +146,7 @@ public class ContentFilter extends LoginFilter {
 			path.startsWith(OAuthLoginServlet.OAUTH_LOGIN_PATH)  ||
 			path.equals(ErrorServlet.NOT_FOUND_PATH) ||
 			path.equals(ErrorServlet.NOT_ALLOWED_PATH) ||
+			path.equals(ErrorServlet.NOT_AUTHENTICATED_PATH) ||
 			path.equals("/sitemap.jsp") ||
 			path.endsWith(".js") || 
 			path.endsWith(".json") 
@@ -220,8 +225,7 @@ public class ContentFilter extends LoginFilter {
 	private boolean process(HttpServletRequest request, HttpServletResponse response)
 	        throws ServletException {
 	    try {
-	        _renderer.process(request, response);
-	        return true;
+	        return _renderer.process(request, response);
 	    } catch (Exception e) {
 	        try {
 	            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -230,7 +234,6 @@ public class ContentFilter extends LoginFilter {
 	        }
 	        throw new ServletException(e);
 	    }
-	    
 	}
 
 	private static ITemplateEngine buildTemplateEngine(final IWebApplication application) {
@@ -268,8 +271,8 @@ public class ContentFilter extends LoginFilter {
 	    templateResolver.setTemplateMode(TemplateMode.HTML);
 	    
 	    // This will convert "home" to "/WEB-INF/templates/home.html"
-	    templateResolver.setPrefix("/WEB-INF/templates/");
-	    templateResolver.setSuffix(".html");
+	    templateResolver.setPrefix(TEMPLATES_PATH);
+	    templateResolver.setSuffix(TEMPLATE_SUFFIX);
 	    
 	    // Set template cache TTL to 1 hour. If not set, entries would live in cache until expelled by LRU.
 	    templateResolver.setCacheTTLMs(Long.valueOf(3600000L));

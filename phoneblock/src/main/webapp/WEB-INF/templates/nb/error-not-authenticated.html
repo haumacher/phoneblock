@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Du må logge inn.</h1>
+
+			<p data-tx="t0002">For å se den forespurte siden må du <a th:href="@{/login}">logge inn</a> på PhoneBlock.</p>
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -13,17 +13,17 @@ import jakarta.servlet.http.HttpSession;
 public class RequireLoginController extends DefaultController {
 	
 	@Override
-	public void process(TemplateRenderer renderer, HttpServletRequest request, HttpServletResponse response)
+	public boolean process(TemplateRenderer renderer, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 
 		HttpSession httpSession = request.getSession(false);
 		String userName = LoginFilter.getAuthenticatedUser(httpSession);
 		if (userName == null) {
 			LoginServlet.requestLogin(request, response);
-			return;
+			return true;
 		}
 		
-		super.process(renderer, request, response);
+		return super.process(renderer, request, response);
 	}
 
 }
