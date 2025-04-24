@@ -24,11 +24,6 @@ public interface CustomerOptions extends RegistrationOptions, UserOptions {
 	}
 	
 	@Override
-	default String getAuthUser() {
-		return getSipUser();
-	}
-	
-	@Override
 	default NameAddress getUserURI() {
 		return new NameAddress(new SipURI(getSipUser(),getProxy()));
 	}

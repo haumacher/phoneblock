@@ -29,6 +29,10 @@ public class CustomerConfig implements CustomerOptions {
 			usage = "User name to register at the registrar server.")
 	private String sipUser;
 	
+	@Option(name = "--auth-user",
+			usage = "User for authentication to the registrar server. If not given, the the SIP user name is used.")
+	private String authUser;
+	
 	@Option(name = "--sip-passwd",
 			usage = "Password for the user to register at the registrar server.")
 	private String sipPasswd;
@@ -69,8 +73,24 @@ public class CustomerConfig implements CustomerOptions {
 		return sipUser;
 	}
 	
-	public void setUser(String user) {
+	public void setSipUser(String user) {
 		this.sipUser = user;
+	}
+	
+	@Override
+	public String getAuthUser() {
+		return hasAuthUser() ? this.authUser : getSipUser();
+	}
+
+	/**
+	 * Whether an explicit authentication user is defined.
+	 */
+	public boolean hasAuthUser() {
+		return this.authUser != null;
+	}
+	
+	public void setAuthUser(String authUser) {
+		this.authUser = authUser;
 	}
 
 	@Override

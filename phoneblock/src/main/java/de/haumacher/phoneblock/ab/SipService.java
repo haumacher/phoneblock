@@ -570,7 +570,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 	private CustomerConfig toCustomerConfig(AnswerBotSip bot) throws UnknownHostException {
 		CustomerConfig regConfig = new CustomerConfig();
-		regConfig.setUser(bot.getUserName());
+		regConfig.setSipUser(bot.getUserName());
 		regConfig.setPasswd(bot.getPasswd());
 		regConfig.setRealm(bot.getRealm());
 		regConfig.setRegistrar(new SipURI(bot.getRegistrar()));
