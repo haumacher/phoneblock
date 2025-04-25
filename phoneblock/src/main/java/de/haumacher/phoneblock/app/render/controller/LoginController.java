@@ -20,7 +20,7 @@ public class LoginController extends DefaultController {
 	
 	@Override
 	public boolean process(TemplateRenderer renderer, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		// If already logged in, forward to final destination.
+		// If already logged in, redirect to final destination.
 		String userName = LoginFilter.getAuthenticatedUser(request);
 		if (userName != null) {
 			LoginServlet.redirectToLocationAfterLogin(request, response);

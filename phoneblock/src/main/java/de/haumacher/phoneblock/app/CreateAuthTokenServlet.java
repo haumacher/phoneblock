@@ -2,6 +2,7 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -29,7 +30,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		String user = LoginFilter.getAuthenticatedUser(req.getSession(false));
 		if (user == null) {
 			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			req.getRequestDispatcher("/mobile/login.jsp").forward(req, resp);
+			TemplateRenderer.getInstance(req).process("/mobile/login", req, resp);
 			return;
 		}
 
@@ -38,6 +39,6 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
 		
 		req.setAttribute("token", loginToken.getToken());
-		req.getRequestDispatcher("/mobile/response.jsp").forward(req, resp);
+		TemplateRenderer.getInstance(req).process("/mobile/response", req, resp);
 	}
 }

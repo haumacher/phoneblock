@@ -134,7 +134,7 @@ public class LoginServlet extends HttpServlet {
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute(LOGIN_ERROR_ATTR, "Anmeldung fehlgeschlagen.");
-		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+		TemplateRenderer.getInstance(req).process("/login", req, resp);
 	}
 
 	/**

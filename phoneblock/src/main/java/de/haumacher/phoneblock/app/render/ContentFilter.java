@@ -115,7 +115,7 @@ public class ContentFilter extends LoginFilter {
 	private void render(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 		String path = request.getServletPath();
 		
-		// Forward old paths to new locations.
+		// Redirect old paths to new locations.
 		String newLocation = LEGACY_PAGES.get(path);
 		if (newLocation != null) {
 			response.sendRedirect(request.getContextPath() + newLocation);

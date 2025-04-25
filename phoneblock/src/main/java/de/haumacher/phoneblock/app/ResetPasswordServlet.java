@@ -5,6 +5,7 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DBService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -39,7 +40,7 @@ public class ResetPasswordServlet extends HttpServlet {
 		String password = DBService.getInstance().resetPassword(login);
 		if (password == null) {
 			req.setAttribute("message", "Nutzername nicht gefunden, bitte versuch Dich neu zu registrieren.");
-			req.getRequestDispatcher("/login.jsp").forward(req, resp);
+			TemplateRenderer.getInstance(req).process("/login", req, resp);
 			return;
 		}
 		

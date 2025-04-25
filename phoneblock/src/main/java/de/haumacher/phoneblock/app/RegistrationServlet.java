@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
@@ -102,7 +103,7 @@ public class RegistrationServlet extends HttpServlet {
 
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:
-			resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");
+			resp.sendRedirect(req.getContextPath() + "/mobile/login");
 			break;
 		case REGISTER_WEB:
 		default:
@@ -110,7 +111,7 @@ public class RegistrationServlet extends HttpServlet {
 				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
 			}
 			
-			String location = LoginServlet.location(req, passwd == null ? SettingsServlet.PATH : "/setup.jsp");
+			String location = LoginServlet.location(req, passwd == null ? SettingsServlet.PATH : "/setup");
 			resp.sendRedirect(req.getContextPath() + location);
 			break;
 		}
@@ -118,16 +119,16 @@ public class RegistrationServlet extends HttpServlet {
 
 	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
 		req.setAttribute(REGISTER_ERROR_ATTR, message);
-		req.getRequestDispatcher(errorPage(req)).forward(req, resp);
+		TemplateRenderer.getInstance(req).process(errorPage(req), req, resp);
 	}
 
 	private String errorPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:
-			return "/mobile/code.jsp";
+			return "/mobile/code";
 		case REGISTER_WEB:
 		default:
-			return "/signup-code.jsp";
+			return "/signup-code";
 		}
 	}
 
