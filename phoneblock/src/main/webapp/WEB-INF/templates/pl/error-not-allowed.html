@@ -10,25 +10,10 @@
 			<h1 data-tx="t0001">Ta strona nie może zostać wyświetlona w przeglądarce</h1>
 
 			<p data-tx="t0002">Musisz wprowadzić link do książki adresowej, który otrzymałeś podczas <a th:href="@{/login}">rejestracji</a> jako książkę adresową w Fritz!Box, jak opisano w <a th:href="@{/setup}">instrukcji instalacji</a> wraz z adresem e-mail i hasłem wysłanym do Ciebie. Nie można wyświetlić tego łącza bezpośrednio w przeglądarce, ponieważ książki adresowe są dostępne za pośrednictwem specjalnego protokołu (CardDAV), którego przeglądarka nie obsługuje.</p>
-
-			<div class="tile is-ancestor">
-				<div class="tile is-parent is-6">
-					<a class="tile is-child notification is-primary" th:href="@{/login(location='/settings')}">
-						<p class="title" data-tx="t0003">Nie pamiętasz danych logowania?</p>
-						<p class="subtitle" data-tx="t0004">Wystarczy zarejestrować się ponownie i zresetować hasło!</p>
-					</a>
-				</div>
-
-				<div class="tile is-parent is-6 ">
-					<a class="tile is-child notification is-info" th:href="@{/setup}">
-						<p class="title" data-tx="t0005">Jakieś pytania?</p>
-						<p class="subtitle" data-tx="t0006">Sprawdź instrukcje instalacji!</p>
-					</a>
-				</div>
-			</div>
-
 		</div>
 	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

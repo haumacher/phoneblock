@@ -137,6 +137,11 @@
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
+	  			<p data-tx="t0025">
+	  				Diese Option kannst Du nur für die Anmeldung verwenden, nachdem Du bereits bei PhoneBlock registriert bist.
+	  				Den PhoneBlock-Nutzernamen erhälst Du, wenn Du Dich entweder über Google oder E-Mail (siehe oben) registrierst.
+	  			</p>
+	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 				<div class="field">

@@ -10,25 +10,10 @@
 			<h1 data-tx="t0001">Questa pagina non può essere visualizzata nel browser</h1>
 
 			<p data-tx="t0002">Dovete inserire il link della rubrica che avete ricevuto quando vi siete <a th:href="@{/login}">registrati</a> come rubrica nel vostro Fritz!Box, come descritto nelle <a th:href="@{/setup}">istruzioni di installazione</a>, insieme al vostro indirizzo e-mail e alla password che vi è stata inviata. Non è possibile visualizzare questo link direttamente nel browser perché le rubriche sono accessibili tramite un protocollo speciale (CardDAV) che il vostro browser non supporta.</p>
-
-			<div class="tile is-ancestor">
-				<div class="tile is-parent is-6">
-					<a class="tile is-child notification is-primary" th:href="@{/login(location='/settings')}">
-						<p class="title" data-tx="t0003">Avete dimenticato i vostri dati di accesso?</p>
-						<p class="subtitle" data-tx="t0004">Basta registrarsi di nuovo e reimpostare la password!</p>
-					</a>
-				</div>
-
-				<div class="tile is-parent is-6 ">
-					<a class="tile is-child notification is-info" th:href="@{/setup}">
-						<p class="title" data-tx="t0005">Ci sono domande?</p>
-						<p class="subtitle" data-tx="t0006">Controllare le istruzioni di installazione!</p>
-					</a>
-				</div>
-			</div>
-
 		</div>
 	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

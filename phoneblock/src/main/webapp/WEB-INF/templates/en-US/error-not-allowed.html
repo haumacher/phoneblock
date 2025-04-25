@@ -10,25 +10,10 @@
 			<h1 data-tx="t0001">This page cannot be displayed in the browser</h1>
 
 			<p data-tx="t0002">You must enter your address book link, which you received during <a th:href="@{/login}">registration</a>, as described in the <a th:href="@{/setup}">installation instructions</a> together with your e-mail address and the password sent to you as an address book in your Fritz!Box You cannot display this link directly in the browser because address books are accessed via a special protocol (CardDAV) that your browser does not support.</p>
-
-			<div class="tile is-ancestor">
-				<div class="tile is-parent is-6">
-					<a class="tile is-child notification is-primary" th:href="@{/login(location='/settings')}">
-						<p class="title" data-tx="t0003">Forgotten your login details?</p>
-						<p class="subtitle" data-tx="t0004">Simply register again and reset your password!</p>
-					</a>
-				</div>
-
-				<div class="tile is-parent is-6 ">
-					<a class="tile is-child notification is-info" th:href="@{/setup}">
-						<p class="title" data-tx="t0005">Any questions?</p>
-						<p class="subtitle" data-tx="t0006">Check the installation instructions!</p>
-					</a>
-				</div>
-			</div>
-
 		</div>
 	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>
