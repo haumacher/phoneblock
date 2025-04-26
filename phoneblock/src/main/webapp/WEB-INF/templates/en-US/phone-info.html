@@ -31,7 +31,7 @@
 	<p data-tx="t0007">Information on the phone number <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-  	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">The phone number is on the white list and cannot be blocked by PhoneBlock. If you still feel harassed by this number, please set up a private block for this number.</p>

@@ -31,7 +31,7 @@
 	<p data-tx="t0007">关于呼叫号码 <th:block th:text="${info.phone}"></th:block> 的信息</p>
   </div>
   <div class="message-body">
-  	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">该电话号码已被列入白名单，无法被 PhoneBlock 屏蔽。如果您仍然觉得受到该号码的骚扰，请为该号码设置私人拦截。</p>

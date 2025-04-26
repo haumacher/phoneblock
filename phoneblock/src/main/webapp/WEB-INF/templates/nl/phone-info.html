@@ -31,7 +31,7 @@
 	<p data-tx="t0007">Informatie over het oproepnummer <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-  	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Het telefoonnummer staat op de witte lijst en kan niet worden geblokkeerd door PhoneBlock. Als u zich nog steeds lastiggevallen voelt door dit nummer, stel dan een privéblokkering in voor dit nummer.</p>

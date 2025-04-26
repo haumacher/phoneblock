@@ -31,7 +31,7 @@
 	<p data-tx="t0007">Information om samtalsnummer <th:block th:text="${info.phone}"></th:block></p>
   </div>
   <div class="message-body">
-  	<p dir="rtl" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
+  	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Telefonnumret finns på den vita listan och kan inte blockeras av PhoneBlock. Om du fortfarande känner dig trakasserad av det här numret, vänligen skapa en privat blockering för det här numret.</p>
