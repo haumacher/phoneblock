@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="195.52873mm"
+   height="121.26598mm"
+   viewBox="0 0 195.52873 121.26598"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="test-system.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.64052329"
+     inkscape:cx="214.66823"
+     inkscape:cy="509.73947"
+     inkscape:window-width="2560"
+     inkscape:window-height="1372"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-7.3641406,-13.450627)">
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:43.2182px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;fill:#ff310b;fill-opacity:0.07825655;stroke-width:0.264582"
+       x="-24.614428"
+       y="88.502449"
+       id="text2344"
+       transform="rotate(-30)"><tspan
+         sodipodi:role="line"
+         id="tspan2342"
+         style="fill:#ff310b;fill-opacity:0.07825655;stroke-width:0.264582"
+         x="-24.614428"
+         y="88.502449">Test-</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff310b;fill-opacity:0.07825655;stroke-width:0.264582"
+         x="-24.614428"
+         y="142.52521"
+         id="tspan2346">System</tspan></text>
+  </g>
+</svg>

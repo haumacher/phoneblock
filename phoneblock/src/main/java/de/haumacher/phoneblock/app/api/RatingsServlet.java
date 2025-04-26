@@ -6,15 +6,14 @@ package de.haumacher.phoneblock.app.api;
 import java.io.IOException;
 import java.util.Arrays;
 
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.Ratings;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.Ratings;
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * {@link HttpServlet} listing all possible ratings.

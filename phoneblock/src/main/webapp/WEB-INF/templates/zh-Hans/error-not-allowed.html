@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">浏览器无法显示此页面</h1>
+
+			<p data-tx="t0002">您必须按照 <a th:href="@{/setup}">安装说明</a>中的描述，输入您在 <a th:href="@{/login}">注册</a>时收到的地址簿链接，以及您的电子邮件地址和发送给您的密码，将其作为 Fritz!Box 中的地址簿。您不能在浏览器中直接显示此链接，因为地址簿是通过特殊协议 (CardDAV) 访问的，而您的浏览器不支持该协议。</p>
+		</div>
+	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

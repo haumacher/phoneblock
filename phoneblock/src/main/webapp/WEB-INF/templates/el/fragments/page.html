@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head th:fragment="head">
+<th:block th:fragment="headContent">
+	<title th:text="${#messages.msg(titleKey)}"></title>
+	
+	<meta content="text/html;charset=utf-8" http-equiv="content-type"/>
+
+	<meta http-equiv="content-language" th:content="${currentLang.tag}"/>
+	<link rel="alternate" th:each="lang : ${languages}" th:href="|https://phoneblock.net${contextPath}${currentPage}?lang=${lang.tag}|" th:hreflang="${lang.tag}" th:unless="${lang == currentLang}"/>	
+	
+	<meta content="width=device-width, initial-scale=1" name="viewport"/>
+	<meta name="description" th:content="${#messages.msg(descriptionKey)}" th:if="${descriptionKey}"/>
+	<meta name="keywords" th:content="${keywords}" th:if="${keywords}"/>
+	<meta content="summary" name="twitter:card"/>
+	<meta content="@bhaumacher" name="twitter:site"/>
+	<meta content="@bhaumacher" name="twitter:creator"/>
+	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"/>
+	
+	<meta name="og:title" th:content="${#messages.msg(titleKey)}"/>
+	<meta name="og:url" th:content="${canonical}"/>
+	<link rel="canonical" th:href="${canonical}"/>
+	<meta name="og:description" th:content="${#messages.msg(descriptionKey)}" th:if="${descriptionKey}"/>
+	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"/>
+	<meta content="website" name="og:type"/>
+	<meta content="de_DE" name="og:locale"/>
+	<meta content="PhoneBlock" name="og:site_name"/>
+	
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulma}/css/bulma.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCollapsible}/css/bulma-collapsible.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.bulmaCalendar}/dist/css/bulma-calendar.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"/>
+	<link rel="stylesheet" th:href="|${contextPath}${deps.flags}/css/flag-icons.min.css|"/>
+	
+	<link data-tx="t0042" href="https://news.phoneblock.net/feed" rel="alternate" title="Ενημερώσεις PhoneBlock" type="application/rss+xml"/>
+	
+	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"/>
+	
+	<script th:src="|${contextPath}${deps.jquery}/jquery.min.js|" type="text/javascript"></script>
+	<script th:src="@{/assets/js/phoneblock.js(v=5)}" type="text/javascript"></script>
+	<script th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|" type="text/javascript"></script>
+	<script th:src="|${contextPath}${deps.bulmaCalendar}/dist/js/bulma-calendar.min.js|" type="text/javascript"></script>
+</th:block>
+</head>
+
+<body th:dir="${currentLang.direction}">
+<section class="hero is-small is-primary" th:fragment="header">
+	<div class="hero-body">
+		<div class="title">
+			<img alt="Λογότυπο PhoneBlock" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"/>
+			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
+			
+			<div class="dropdown is-hoverable">
+			  <div class="dropdown-trigger">
+			    <button aria-controls="dropdown-menu" aria-haspopup="true" class="button lang-select">
+			      <span th:class="|fi fi-${currentLang.flag}|"></span>
+			      <span class="icon is-small">
+			        <i aria-hidden="true" class="fas fa-angle-down"></i>
+			      </span>
+			    </button>
+			  </div>
+			  <div class="dropdown-menu" dir="ltr" id="dropdown-menu" role="menu">
+			    <div class="dropdown-content">
+			      <a class="dropdown-item" th:each="lang : ${languages}" th:href="|?lang=${lang.tag}|"><span th:class="|fi fi-${lang.flag}|"></span> <span th:text="${lang.label}"></span></a>
+			    </div>
+			  </div>
+			</div>			
+		</div>
+		<div class="subtitle" data-tx="t0002">Το φίλτρο spam για το τηλέφωνό σας</div>
+		<a target="_blank" th:href="@{/link/github}">
+			<img alt="Fork μου στο GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
+			<img alt="" class="github-image ltr is-hidden-desktop" data-tx="t0049" height="45" th:src="@{/assets/forkme.png}" width="45"/>
+			<img alt="Fork μου στο GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
+			<img alt="" class="github-image rtl is-hidden-desktop" data-tx="t0055" height="45" th:src="@{/assets/forkme_rtl.png}" width="45"/>
+		</a>
+	</div>
+  <div class="hero-foot">
+  <nav aria-label="κύρια πλοήγηση" class="navbar" data-tx="t0056" role="navigation">
+	<div class="navbar-brand">
+		<div class="navbar-item"> 
+		<div class="control has-icons-left has-icons-right">
+		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Ερευνήστε τον αριθμό τηλεφώνου" type="tel"/>
+		  <span class="icon is-small is-left">
+		    <i class="fas fa-phone"></i>
+		  </span>
+		  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
+		    <i class="fas fa-search"></i>
+		  </span>
+		</div>
+		</div>
+
+		<a aria-expanded="false" aria-label="μενού" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		</a>
+	</div>
+	<div class="navbar-menu" id="navbarBasicExample">
+		<div class="navbar-start">
+			<div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Εγκατάσταση</a>
+
+				<div class="navbar-dropdown">
+					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Τηλεφωνητής</a>
+					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Τηλεφωνικός κατάλογος Blocklist</a>
+					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
+					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
+				</div>
+			</div>
+
+			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">ΣΥΧΝΈΣ ΕΡΩΤΉΣΕΙΣ</a>
+			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Κατάσταση</a>
+
+			<div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link prevent-default" data-tx="t0010">Περισσότερα</a>
+
+				<div class="navbar-dropdown">
+					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Δωρεά στο PhoneBlock</a>
+					<hr class="navbar-divider"/>
+					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API για προγραμματιστές</a>
+					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">Έργο GitHub</a>
+					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Προσθήκη φραγής κλήσεων</a>
+					
+					<hr class="navbar-divider"/>
+					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Αναφορά σφάλματος</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="navbar-end">
+			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Εφαρμογή Answerbot">
+				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
+		    </a>
+
+			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="Στη σελίδα ειδήσεων">
+				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
+		    </a>
+      			
+			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="Ροή RSS">
+				<span class="icon">
+			    	<i class="fa-solid fa-rss"></i>
+		        </span>
+		    </a>
+      			
+			<div class="navbar-item">
+				<div class="buttons">
+					<a class="button is-light" th:href="@{/login(location=${location})}" th:unless="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-right-to-bracket"></i>
+          				</span>
+						<strong data-tx="t0016">Συνδεθείτε</strong>
+					</a>
+					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-user"></i>
+          				</span>
+						<strong data-tx="t0017">Ρυθμίσεις</strong>
+					</a>
+					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
+						<span class="icon">
+							<i class="fa-solid fa-right-from-bracket"></i>
+          				</span>
+						<strong data-tx="t0018">Αποσύνδεση</strong>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
+</div>  
+</section>
+
+<section class="section" th:fragment="actions">
+	<div class="grid is-col-min-15" th:if="${android}">
+		<div class="cell">
+			<a class="card" th:href="@{/setup-android}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0034">PhoneBlock για Android</p>
+				<p class="subtitle" data-tx="t0035">Δεν έχει εγκατασταθεί ακόμα; Τότε κάντε το!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0036">PhoneBlock για το Fritz!Box</p>
+				<p class="subtitle" data-tx="t0037">Απενεργοποιήστε τις διαφημιστικές κλήσεις στο σταθερό τηλέφωνο!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+
+	<div class="grid is-col-min-15" th:if="${iphone}">
+		<div class="cell">
+			<a class="card" th:href="@{/setup-ipone/}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0038">PhoneBlock για iPhone</p>
+				<p class="subtitle" data-tx="t0039">Δεν έχει εγκατασταθεί ακόμα; Τότε κάντε το!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0040">PhoneBlock για το Fritz!Box</p>
+				<p class="subtitle" data-tx="t0041">Απενεργοποιήστε τις διαφημιστικές κλήσεις στο σταθερό τηλέφωνο!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+
+	<div class="grid is-col-min-15" th:if="${fritzbox}">
+		<div class="cell">
+			<a class="card" th:href="@{/anrufbeantworter}">
+			  <div class="card-content has-background-primary">
+				<p class="title" data-tx="t0050">PhoneBlock για το Fritz!Box</p>
+				<p class="subtitle" data-tx="t0051">Απενεργοποιήστε τις διαφημιστικές κλήσεις στο σταθερό τηλέφωνο!</p>
+			  </div>
+			</a>
+		</div>
+	
+		<div class="cell">
+			<a class="card" th:href="@{/setup-android}">
+			  <div class="card-content has-background-info">
+				<p class="title" data-tx="t0052">PhoneBlock για Android</p>
+				<p class="subtitle" data-tx="t0053">Δεν έχει εγκατασταθεί ακόμα; Τότε κάντε το!</p>
+			  </div>
+			</a>
+		</div>
+	</div>
+</section>
+
+
+<th:block th:fragment="footer">
+<section class="section">
+	<div class="content">
+		<h2 data-tx="t0019">Συμμετέχετε!</h2>
+		
+		<p data-tx="t0020">Αν σας αρέσει το PhoneBlock, βοηθήστε να διαδοθεί η λέξη και μοιραστείτε το με τους φίλους σας. Όσο περισσότεροι άνθρωποι συμμετέχουν, τόσο μικρότερη είναι η πιθανότητα να λάβετε ακόμα ένα διαφημιστικό τηλεφώνημα!</p>
+	</div>
+</section>
+  
+<footer class="footer">
+	<div class="content has-text-centered">
+		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. Ο πηγαίος κώδικας διατίθεται υπό την <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. Το περιεχόμενο του ιστότοπου διατίθεται με άδεια χρήσης <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
+		
+		<p data-tx="t0022"><strong>FRITZ!Box</strong> και <strong>FRITZ!OS</strong> είναι σήματα κατατεθέντα της <a target="_blank" th:href="@{/link/avm}">AVM</a>. Το <strong>PhoneBlock</strong> δεν έχει καμία σχέση με αυτό.</p>
+
+		<p>
+			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Προστασία δεδομένων - καμία παρακολούθηση, καμία διαφήμιση, κανένα μπισκότο</a></strong><br/>
+			<strong><a data-tx="t0024" th:href="@{/usage}">Όροι χρήσης</a></strong><br/>
+			<strong><a data-tx="t0025" th:href="@{/impressum}">Εκτύπωση</a></strong>
+		</p>
+	</div>
+</footer>
+
+<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+</th:block>
+
+</body>
+</html>

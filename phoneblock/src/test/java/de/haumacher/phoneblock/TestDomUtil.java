@@ -3,8 +3,10 @@
  */
 package de.haumacher.phoneblock;
 
-import static de.haumacher.phoneblock.util.DomUtil.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static de.haumacher.phoneblock.util.DomUtil.elements;
+import static de.haumacher.phoneblock.util.DomUtil.qname;
+import static de.haumacher.phoneblock.util.DomUtil.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.StringReader;

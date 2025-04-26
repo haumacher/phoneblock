@@ -5,16 +5,15 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Filter requesting basic authentication.
@@ -24,7 +23,6 @@ import de.haumacher.phoneblock.util.ServletUtil;
 @WebFilter(urlPatterns = {
 	"/ab",
 	"/ab/index.html",
-	"/support-banktransfer.jsp",
 })
 public class FormLoginFilter extends LoginFilter {
 
@@ -32,25 +30,12 @@ public class FormLoginFilter extends LoginFilter {
 	
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-		String originalLocation = originalLocation(request);
-		LOG.info("Requesting login for resource: " + originalLocation);
-
-		response.sendRedirect(request.getContextPath() + LoginServlet.PATH + LoginServlet.locationParam(originalLocation, true));
+		LoginServlet.requestLogin(request, response);
 	}
 
-	private String originalLocation(HttpServletRequest request) {
-		StringBuilder location = new StringBuilder();
-		location.append(request.getServletPath());
-		String pathInfo = request.getPathInfo();
-		if (pathInfo != null) {
-			location.append(pathInfo);
-		}
-		String query = request.getQueryString();
-		if (query != null) {
-			location.append('?');
-			location.append(query);
-		}
-		return location.toString();
+	@Override
+	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
+		return authorization.isAccessLogin();
 	}
 
 }

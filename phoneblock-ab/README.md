@@ -20,7 +20,7 @@ anmelden. Natürlich kannst Du den Anrufbeantworter auch lokal bei Dir betreiben
 technischen Vorkenntnissen - einfach weiterlesen.
 
 ## Start as Docker container
-If you don't want to build the code your own, you can use a [pre-built docker container](https://hub.docker.com/repository/docker/phoneblock/answerbot/general)
+If you don't want to build the code your own, you can use a [pre-built docker container](https://hub.docker.com/r/phoneblock/answerbot)
 to start the answerbot locally. Check out the details on the docker page.
 
 ## Howto build and run

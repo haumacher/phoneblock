@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.datenschutz.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Privacybeleid</h1>
+
+			<h2 data-tx="t0002">IP-adres</h2>
+			<p data-tx="t0003">Wanneer u deze site bezoekt, wordt het IP-adres van uw computer tijdelijk opgeslagen in een logbestand voor foutanalyse en automatisch verwijderd na 14 dagen. Deze site verzamelt geen persoonlijke gegevens van bezoekers zonder registratie en bevat geen reclame of trackers van derden.</p>
+
+			<h2 data-tx="t0004">e-mail</h2>
+			<p data-tx="t0005">Wanneer u zich registreert voor een PhoneBlock-account, wordt het e-mailadres dat u opgeeft opgeslagen ten behoeve van de gebruikersverificatie. Het e-mailadres wordt niet doorgegeven aan derden. E-mails worden alleen naar het opgegeven adres gestuurd voor verificatie of voor de werking van PhoneBlock.</p>
+
+			<h2 data-tx="t0006">Cookies</h2>
+			<p data-tx="t0007">Een technisch noodzakelijke sessiecookie wordt ingesteld tijdens sommige interacties met de PhoneBlock-website, bijv. tijdens registratie en de evaluatie van telefoonnummers.</p>
+			<p data-tx="t0008">Als u bij het inloggen de functie "Houd me aangemeld op dit apparaat" activeert, stelt PhoneBlock een permanente cookie in waarmee de site u bij uw volgende bezoek herkent, zodat u automatisch wordt aangemeld zonder dat u uw wachtwoord opnieuw hoeft in te voeren of het aanmeldingsproces van Google hoeft te herhalen. Als u op de knop "Afmelden" klikt, wordt deze cookie verwijderd en moet u bij uw volgende bezoek opnieuw inloggen.</p>
+
+			<h2 data-tx="t0009">Account verwijderen</h2>
+			<p data-tx="t0010">U kunt uw PhoneBlock-account op elk gewenst moment verwijderen in de <a th:href="@{/settings/}">instellingen</a>. Door uw account te verwijderen, worden uw bij PhoneBlock opgeslagen gegevens verwijderd.</p>
+			
+			<h2 data-tx="t0011">Telefoonnummers</h2>
+			<p data-tx="t0012">Als je telefoonnummer per ongeluk is toegevoegd aan de blokkadelijst, kun je natuurlijk een verzoek indienen om het te laten verwijderen. Schrijf een e-mail naar <code dir="ltr">Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code>.</p>
+
+			<h2 data-tx="t0013">Antwoordapparaat</h2>
+			<p data-tx="t0014">Als u het antwoordapparaat <a th:href="@{/anrufbeantworter}">PhoneBlock</a> gebruikt, moet PhoneBlock het IP-adres van uw Fritz!Box permanent opslaan om het antwoordapparaat daar te registreren en de registratie te behouden. Hiervoor hebt u de hostnaam van uw Fritz!Box opgeslagen of de DynDNS-service van PhoneBlock in uw Fritz!Box</p>
+			
+			<p data-tx="t0015">Inkomende oproepen naar je Fritz!Box worden weergegeven op een geregistreerd antwoordapparaat. Het telefoonnummer van de beller wordt doorgestuurd naar het PhoneBlock antwoordapparaat. Dit telefoonnummer wordt gebruikt om het te vergelijken met de database van SPAM-telefoonnummers. Alleen als het telefoonnummer in de SPAM-database staat, zal het antwoordapparaat de oproep accepteren en opslaan in de oproeplijst van uw antwoordapparaat. In alle andere gevallen worden er geen gegevens over de oproep opgeslagen in PhoneBlock.</p>
+			
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

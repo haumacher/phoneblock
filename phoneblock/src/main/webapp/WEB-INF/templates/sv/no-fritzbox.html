@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Ingen Fritz!Box-ruta hittades</h1>
+
+		<p data-tx="t0002">Sökningen hittade inte en Fritz!Box Det kan finnas flera orsaker till detta.</p>
+		
+		<ul>
+			<li data-tx="t0003">Du är inte inloggad på WLAN, är "mobildata" aktivt?</li>
+			<li data-tx="t0004">Din Fritz!Box har inte standardkonfigurationen med namn <code dir="ltr">fritz.box</code> och adress <code dir="ltr">192.168.178.1</code>?</li>
+			<li data-tx="t0005">Du har en annan internetrouter. Kanske kan det också fungera med PhoneBlock, kolla <a th:href="@{/faq}">FAQ</a>!</li>
+		</ul>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

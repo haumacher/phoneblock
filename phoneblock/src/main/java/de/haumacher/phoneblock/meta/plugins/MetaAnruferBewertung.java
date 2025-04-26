@@ -19,10 +19,10 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.crawl.FetchBlockedException;
 import de.haumacher.phoneblock.crawl.FetchService;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.UserComment;
 
 /**
  * Retrieves user comments.
@@ -102,6 +102,7 @@ public class MetaAnruferBewertung extends AbstractMetaSearch {
 				.setPhone(phone)
 				.setRating(negative ? Rating.B_MISSED : Rating.A_LEGITIMATE)
 				.setComment(text)
+				.setLang("de")
 				.setCreated(date.getTime())
 				.setService(getService()));
 		}

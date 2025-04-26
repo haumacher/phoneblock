@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-iphone.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">iPhone-installatie</h1>
+		
+		<p data-tx="t0002">De installatie voegt het PhoneBlock-adresboek toe aan uw contacten. Als je gebeld wordt door een spornummer, wordt dit onmiddellijk weergegeven, bv. "SPAM: 03016637169". Je kunt ook meteen in de gemiste oproepen zien dat het niet de moeite waard is om terug te bellen zonder eerst het nummer te hoeven googelen.</p>
+
+		<p data-tx="t0003">De installatie verloopt in de volgende stappen:</p>
+		
+   		<ol>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Registreren bij PhoneBlock.</a></li>
+   		<li data-tx="t0005">Open "Instellingen" &gt; "Contacten" &gt; "Accounts".</li>
+   		<li data-tx="t0006">Druk op "Account toevoegen" - "Andere" &gt; "CardDAV-account toevoegen".</li>
+   		<li>
+   			<div data-tx="t0007">Voer je toegangsgegevens in en tik op "Doorgaan".</div>
+   			<dl>
+				<dt><b data-tx="t0016">Server</b></dt>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></dd>
+
+				<dt><b data-tx="t0017">Gebruikersnaam</b></dt>
+				<dd>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log in</a> om je gebruikersnaam te zien.</span>
+				</dd>
+
+				<dt><b data-tx="t0019">wachtwoord</b></dt>
+				<dd>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span data-tx="t0020" th:unless="${token}">Direct na de eerste keer inloggen werd weergegeven, kun je een nieuwe aanmaken <a th:href="@{/settings}">in de instellingen</a>.</span>
+				</dd>
+
+				<dt><b data-tx="t0021">Beschrijving van de</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
+   			</dl>
+   		</li>
+   		<li data-tx="t0008">Activeer "Contacten" en tik op "Opslaan".</li>
+		<li data-tx="t0009">Nu zie je oproepen met "SPAM: ..." in je contactlijst en wanneer ze overgaan. Je kunt dan meteen zien of het de moeite waard is om op te nemen of terug te bellen.</li>
+   		</ol>
+
+		<p data-tx="t0010">Heb je je toegangsgegevens niet meer bij de hand? Geen probleem, je hoeft alleen maar <a th:href="@{/settings}">het wachtwoord opnieuw in te stellen</a> in de instellingen.</p>
+   		
+   		<p data-tx="t0011">U kunt elders ook <a th:href="@{/link/carddav-install}">instructies met afbeeldingen</a> vinden. In deze handleiding hoeft u de PhoneBlock-toegangsgegevens alleen te gebruiken in de stap waarin de server, de gebruikersnaam en het wachtwoord worden ingevoerd (zie hierboven).</p>
+   		
+   		<p data-tx="t0012">Als je PhoneBlock alleen op de iPhone gebruikt, kun je ook het aantal vermeldingen <a th:href="@{/settings}">in de instellingen</a> verhogen. Als hier problemen mee zijn, laat het ons dan weten (zie <a th:href="@{/faq}">FAQ</a>).</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

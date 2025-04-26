@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.datenschutz.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Datenschutzerklärung</h1>
+
+			<h2 data-tx="t0002">IP-Addresse</h2>
+			<p data-tx="t0003">
+				Bei Besuch dieser Seite wird die IP-Adresse Deines Rechners zu
+				Zwecken der Fehleranalyse temporär in einem Log-File gespeichert und
+				nach 14 Tagen automatisch wieder gelöscht. Ohne Anmeldung erhebt
+				diese Seite von ihren Besuchern keinerlei personenbezogene Daten und
+				enthält weder Werbung noch Third-Party-Tracker.
+			</p>
+
+			<h2 data-tx="t0004">E-Mail</h2>
+			<p data-tx="t0005">
+				Bei Anmeldung für einen PhoneBlock-Account wird die von Dir
+				angegebene E-Mail-Adresse zum Zwecke der Nutzer-Authentifizierung
+				gespeichert. Die E-Mail-Adresse wird nicht an dritte weitergegeben.
+				Es werden ausschließlich E-Mails zur Authentifizierung oder
+				zum Betrieb von PhoneBlock an die angegebene Adresse geschickt.
+			</p>
+
+			<h2 data-tx="t0006">Cookies</h2>
+			<p data-tx="t0007">
+				Bei einigen Interaktionen mit der PhoneBlock-Webseite, z.B. bei der 
+				Anmeldung und der Bewertung von Telefonnummern wird ein technisch 
+				notwendiges Session-Cookie gesetzt. 
+			</p>
+			<p data-tx="t0008">
+				Wenn Du die Funktion "Auf diesem Gerät angemeldet bleiben" beim Login
+				aktivierst, dann setzt PhoneBlock ein persistentes Cookie, mit dem 
+				Dich die Seite bei Deinem nächsten Besuch wiedererkennt, so dass du 
+				automatisch angemeldet bist, ohne Dein Passwort erneut eingeben, 
+				oder den Google-Loginvorgang wiederholen zu müssen. Wenn Du den "Abmelden"
+				Knopf klickst, wird dieses Cookie wieder gelöscht und Du musst Dich bei 
+				Deinem nächsten Besuch erneut anmelden.
+			</p>
+
+			<h2 data-tx="t0009">Account-Löschung</h2>
+			<p data-tx="t0010">
+				Du kannst Deinen PhoneBlock-Account jederzeit in den 
+				<a th:href="@{/settings/}">Einstellungen</a> 
+				wieder löschen. Mit Löschung deines Accounts werden deine bei PhoneBlock
+				gespeicherten Daten gelöscht. 
+			</p>
+			
+			<h2 data-tx="t0011">Telefonnummern</h2>
+			<p data-tx="t0012">
+				Sollte Deine Telefonnummer irrtümlicherweise auf die Blocklist
+				gelangt sein, kannst Du selbstvertändlich um Löschung ersuchen.
+				Schreib eine E-Mail an 
+				<code dir="ltr">Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code>.
+			</p>
+
+			<h2 data-tx="t0013">Anrufbeantworter</h2>
+			<p data-tx="t0014">
+				Bei der Verwendung des <a th:href="@{/anrufbeantworter}">PhoneBlock-Anrufbeantworters</a>
+				muss PhoneBlock dauerhaft die IP-Adresse Deiner Fritz!Box speichern, um den Anrufbeantworter 
+				dort anzumelden und die Registrierung aufrecht zu erhalten. Hierfür hast Du entweder 
+				den Host-Namen Deiner Fritz!Box hinterlegt, oder den DynDNS-Dienst von PhoneBlock in Deiner
+				Fritz!Box installiert. 
+			</p>
+			
+			<p data-tx="t0015">
+				Ankommende Anrufe an deiner Fritz!Box werden einem angemeldeten Anrufbeantworter 
+				angezeigt. Dabei wird die Telefonnummer des Anrufers an den PhoneBlock-Anrufbeantworter 
+				übermittelt. Diese Telefonnummer wird verwendet, um sie mit der Datenbank der 
+				SPAM-Telefonnummern abzugleichen. Nur wenn die Telefonnummer in der SPAM-Datenbank 
+				enthalten ist, nimmt der Anrufbeantworter den Anruf an und speichert den Anruf in der 
+				Anrufliste Deines Anrufbeantworters. In allen anderen Fällen werden keine Daten zu dem
+				Anruf bei PhoneBlock gepeichert.
+			</p>
+			
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

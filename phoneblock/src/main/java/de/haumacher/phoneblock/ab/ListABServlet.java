@@ -6,11 +6,6 @@ package de.haumacher.phoneblock.ab;
 import java.io.IOException;
 import java.util.List;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +17,10 @@ import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet listing all answerbots of a user.
@@ -35,7 +34,7 @@ public class ListABServlet extends ABApiServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = LoginFilter.getAuthenticatedUser(req);
 		if (login == null) {
 			LOG.warn("Not logged in.");
 			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Not logged in.");

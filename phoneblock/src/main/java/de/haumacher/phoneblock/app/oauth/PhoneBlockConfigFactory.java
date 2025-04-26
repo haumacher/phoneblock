@@ -3,7 +3,6 @@
  */
 package de.haumacher.phoneblock.app.oauth;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,6 @@ import org.pac4j.core.context.WebContextFactory;
 import org.pac4j.core.engine.DefaultSecurityLogic;
 import org.pac4j.core.engine.savedrequest.DefaultSavedRequestHandler;
 import org.pac4j.core.engine.savedrequest.SavedRequestHandler;
-import org.pac4j.core.util.Pac4jConstants;
 import org.pac4j.jee.context.JEEContext;
 import org.pac4j.jee.context.JEEFrameworkParameters;
 import org.pac4j.oidc.client.GoogleOidcClient;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.LoginServlet;
+import de.haumacher.phoneblock.app.UIProperties;
 
 /**
  * {@link ConfigFactory} for authenticating with external services.
@@ -42,12 +41,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
 	
     @Override
     public Config build(final Object... parameters) {
-    	Properties properties = new Properties();
-    	try {
-			properties.load(PhoneBlockConfigFactory.class.getResourceAsStream("/phoneblock.properties"));
-		} catch (IOException ex) {
-			LOG.error("Failed to read configuration properties.", ex);
-		}
+    	Properties properties = UIProperties.APP_PROPERTIES;
     	
     	String contextPath = Application.getContextPath();
     	if (contextPath == null) {
@@ -79,6 +73,13 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
         			String location = locationHandle.get();
 					LOG.info("Saving requested location during OAuth authentication: " + location);
         			ctx.sessionStore().set(ctx.webContext(), LoginServlet.LOCATION_ATTRIBUTE, location);
+        		}
+        		
+        		Optional<String> rememberHandle = ctx.webContext().getRequestParameter(LoginServlet.REMEMBER_ME_PARAM);
+        		if (rememberHandle.isPresent()) {
+        			String remember = rememberHandle.get();
+        			LOG.info("Saving requested remember-me status during OAuth authentication: " + remember);
+        			ctx.sessionStore().set(ctx.webContext(), LoginServlet.REMEMBER_ME_PARAM, remember);
         		}
         		
         		super.save(ctx);

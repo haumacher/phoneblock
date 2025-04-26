@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Cette page ne peut pas être affichée dans le navigateur</h1>
+
+			<p data-tx="t0002">Le lien de ton carnet d'adresses que tu as reçu lors de ton <a th:href="@{/login}">inscription</a> doit être saisi dans ta Fritz!Box comme carnet d'adresses, avec ton adresse e-mail et le mot de passe qui t'a été envoyé, comme décrit dans le <a th:href="@{/setup}"> guide d'installation</a>. Tu ne peux pas afficher ce lien directement dans ton navigateur, car l'accès aux carnets d'adresses se fait via un protocole spécial (CardDAV) que ton navigateur ne supporte pas.</p>
+		</div>
+	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Siden blev ikke fundet.</h1>
+
+			<p data-tx="t0002">Den ønskede side blev ikke fundet. Tjek venligst dine indtastninger og prøv igen!</p>
+
+		</div>
+	</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

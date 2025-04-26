@@ -6,6 +6,14 @@ package de.haumacher.phoneblock.app;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,26 +21,26 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-
 /**
- * {@link HttpServlet} invoked from the <code>signup-code.jsp</code> form after the e-mail verification code has been
- * entered.
+ * {@link HttpServlet} invoked from the signup page when the e-mail verification code is entered.
  */
-@WebServlet(urlPatterns = "/registration-code")
+@WebServlet(urlPatterns = {
+	RegistrationServlet.REGISTER_WEB,
+	RegistrationServlet.REGISTER_MOBILE,
+})
 public class RegistrationServlet extends HttpServlet {
+
+	/**
+	 * Request attribute set, if registration fails.
+	 */
+	public static final String REGISTER_ERROR_ATTR = "errorMessage";
+
+	public static final String REGISTER_WEB = "/register-web";
+	
+	public static final String REGISTER_MOBILE = "/register-mobile";
 
 	private static final String PASSWORD_ATTR = "passwd";
 
-	/**
-	 * The authorization scope "email".
-	 */
-	public static final String IDENTIFIED_BY_EMAIL = "email";
-	
 	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
 	@Override
@@ -41,42 +49,49 @@ public class RegistrationServlet extends HttpServlet {
 		
 		Object expectedCode = req.getSession().getAttribute("code");
 		if (expectedCode == null) {
-			req.setAttribute("message", "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
-			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
+			sendError(req, resp, "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
 			return;
 		}
 		
 		String code = req.getParameter("code");
 		if (code == null || code.trim().isEmpty() || !code.equals(expectedCode)) {
-			req.setAttribute("message", "Der Bestätigungscode stimmt nicht überein.");
-			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
+			sendError(req, resp, "Der Bestätigungscode stimmt nicht überein.");
 			return;
 		}
 		
 		String email = (String) req.getSession().getAttribute("email");
 		
 		String login;
-		String passwd;
 		try {
+			String passwd;
+			
 			DB db = DBService.getInstance();
-			String extId = email.trim().toLowerCase();
-			login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+			login = db.getEmailLogin(email);
 			if (login == null) {
 				login = UUID.randomUUID().toString();
-				passwd = db.createUser(IDENTIFIED_BY_EMAIL, extId, login, email);
+				
+				String displayName = DB.toDisplayName(email);
+				
+				Language language = DefaultController.selectLanguage(req);
+				String dialPrefix = DefaultController.selectDialPrefix(req);
+				
+				passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 				db.setEmail(login, email);
 			} else {
-				passwd = db.resetPassword(login);
+				// No longer known.
+				passwd = null;
 			}
+			
+			String rememberValue = req.getParameter(LoginServlet.REMEMBER_ME_PARAM);
+			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);
+
+			startSetup(req, resp, login, passwd);
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
-			req.setAttribute("message", "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
-			req.getRequestDispatcher("/signup-code.jsp").forward(req, resp);
+			sendError(req, resp, "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
 			return;
 		}
-		
-		startSetup(req, resp, login, passwd);
 	}
 
 	/** 
@@ -84,17 +99,39 @@ public class RegistrationServlet extends HttpServlet {
 	 */
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
-		LoginFilter.setAuthenticatedUser(req, login);
-		req.getSession().setAttribute(PASSWORD_ATTR, passwd);
-		
-		String location = LoginServlet.location(req);
-		if (location != null) {
+		LoginFilter.setSessionUser(req, login);
+
+		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			resp.sendRedirect(req.getContextPath() + "/mobile/login");
+			break;
+		case REGISTER_WEB:
+		default:
+			if (passwd != null) {
+				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+			}
+			
+			String location = LoginServlet.location(req, passwd == null ? SettingsServlet.PATH : "/setup");
 			resp.sendRedirect(req.getContextPath() + location);
-		} else {
-			resp.sendRedirect(req.getContextPath() + "/setup.jsp");
+			break;
 		}
 	}
-	
+
+	private void sendError(HttpServletRequest req, HttpServletResponse resp, String message) throws ServletException, IOException {
+		req.setAttribute(REGISTER_ERROR_ATTR, message);
+		TemplateRenderer.getInstance(req).process(errorPage(req), req, resp);
+	}
+
+	private String errorPage(HttpServletRequest req) {
+		switch (req.getServletPath()) {
+		case REGISTER_MOBILE:
+			return "/mobile/code";
+		case REGISTER_WEB:
+		default:
+			return "/signup-code";
+		}
+	}
+
 	/**
 	 * The password that was newly assigned.
 	 */

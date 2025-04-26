@@ -5,14 +5,10 @@ package de.haumacher.phoneblock.carddav.resource;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -21,11 +17,13 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
+import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.DBSpamReport;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Cache for user address books that keep the data in memory between requests.
@@ -80,13 +78,15 @@ public class AddressBookCache implements ServletContextListener {
 
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			Users users = session.getMapper(Users.class);
-			UserSettings settings = users.getSettings(principal);
+			UserSettings settings = users.getSettingsRaw(principal);
 			
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();
 			boolean wildcards = settings.isWildcards();
+			String dialPrefix = settings.getDialPrefix();
+			boolean national = settings.isNationalOnly();
 
-			ListType listType = ListType.valueOf(minVotes, maxLength, wildcards);
+			ListType listType = ListType.valueOf(dialPrefix, minVotes, maxLength, wildcards, national);
 			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, listType);
 			
 			AddressBookResource addressBook = 
@@ -119,52 +119,6 @@ public class AddressBookCache implements ServletContextListener {
 		}
 	}
 	
-	static final class ListType {
-
-		private final int _minVotes;
-		private final int _maxLength;
-		private final boolean _wildcards;
-
-		public ListType(int minVotes, int maxLength, boolean wildcards) {
-			_minVotes = minVotes;
-			_maxLength = maxLength;
-			_wildcards = wildcards;
-		}
-		
-		public static ListType valueOf(int minVotes, int maxLength, boolean wildcards) {
-			return new ListType(minVotes, maxLength, wildcards);
-		}
-
-		public int getMinVotes() {
-			return _minVotes;
-		}
-
-		public int getMaxLength() {
-			return _maxLength;
-		}
-		
-		public boolean useWildcards() {
-			return _wildcards;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(_maxLength, _minVotes, _wildcards);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			ListType other = (ListType) obj;
-			return _maxLength == other._maxLength && _minVotes == other._minVotes && _wildcards == other._wildcards;
-		}
-	}
-
 	private List<NumberBlock> getCommonNumbers(SpamReports reports, ListType listType) {
 		List<NumberBlock> cachedNumbers = _numberCache.lookup(listType);
 		if (cachedNumbers != null) {
@@ -177,14 +131,37 @@ public class AddressBookCache implements ServletContextListener {
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
 			ListType listType) {
-		List<DBSpamReport> result = reports.getReports();
+		boolean nationalOnly = listType.isNationalOnly();
+		String dialPrefix = listType.getDialPrefix();
+		
+		// For legacy compatibility, since numbers in DB are stored in German national format.
+		boolean isGerman = "+49".equals(dialPrefix);
+		
+		List<DBNumberInfo> result = reports.getReports();
 		long now = System.currentTimeMillis();
 		NumberTree numberTree = new NumberTree();
-		for (DBSpamReport report : result) {
+		for (DBNumberInfo report : result) {
 			String phone = report.getPhone();
 			
+			if (isGerman) {
+				if (nationalOnly && phone.startsWith("00")) {
+					continue;
+				}
+			} else {
+				// Numbers are stored in German national format, internationalize them.
+				if (phone.startsWith("00")) {
+					phone = "+" + phone.substring(2);
+				} else {
+					phone = "+49" + phone.substring(1);
+				}
+				
+				if (nationalOnly && !phone.startsWith(dialPrefix)) {
+					continue;
+				}
+			}
+			
 			int votes = report.getVotes();
-			int ageInDays = (int) ((now - report.getLastUpdate()) / 1000 / 60 / 60 / 24);
+			int ageInDays = (int) ((now - report.getUpdated()) / 1000 / 60 / 60 / 24);
 			
 			numberTree.insert(phone, votes, ageInDays);
 		}
@@ -207,7 +184,7 @@ public class AddressBookCache implements ServletContextListener {
 			numberTree.markWildcards();
 		}
 		
-		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength());
+		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
 	}
 	
 	private static final class Cache<K, V> {

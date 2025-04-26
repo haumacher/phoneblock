@@ -6,7 +6,7 @@ RUN adduser --system  --uid 999 --group --home /opt/phoneblock phoneblock
 USER phoneblock
 RUN mkdir  /opt/phoneblock/bin /opt/phoneblock/conversation /opt/phoneblock/recordings
 COPY --chown=phoneblock:phoneblock .phoneblock.docker /opt/phoneblock/.phoneblock
-COPY --chown=phoneblock:phoneblock target/phoneblock-ab-1.5.0-SNAPSHOT-jar-with-dependencies.jar /opt/phoneblock/bin/phoneblock-ab.jar
+COPY --chown=phoneblock:phoneblock target/phoneblock-ab-*-jar-with-dependencies.jar /opt/phoneblock/bin/phoneblock-ab.jar
 
 WORKDIR /opt/phoneblock/
 ENTRYPOINT ["java", "-jar", "/opt/phoneblock/bin/phoneblock-ab.jar"]

@@ -14,10 +14,10 @@ realm=fritz.box
 #force-rport=yes
 
 # The user name for registering the IP phone device configured in your Fritz!Box
-user=phoneblock
+sip-user=phoneblock
 
 # The password for registering the IP phone device configured in your Fritz!Box
-passwd=<fill-out-here>
+sip-passwd=<fill-out-here>
 
 # The local ports used by the answerbot 
 host-port=55060
@@ -33,7 +33,7 @@ prefer-ipv4=no
 # Host IPv4 address added to the via header. If your device uses a static IPv4 address you can add it here.
 # If not set phoneblock tries to detect your IPv4 address automatically by using the the IPv4 you use to connect to the
 # router, which provides your internet connection.
-viaAddr4=
+via-addr=
 
 # Host IPv6 address used in communication with an IPv6 counterpart in the via header.
 # If your device uses a static IPv6 address you can add it here.
@@ -74,9 +74,5 @@ test-prefix=*
 # https://phoneblock.net/phoneblock/signup.jsp for this.
 send-rating=no
 
-# Your PhoneBlock username.
-phoneblock-username=
-
-# Your PhoneBlock password
-phoneblock-password=
-
+# Your API key for accessing the PhoneBlock API.
+phoneblock-api-key=

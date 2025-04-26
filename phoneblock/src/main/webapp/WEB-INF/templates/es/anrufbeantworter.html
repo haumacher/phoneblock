@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.anrufbeantworter.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="Logotipo del contestador automático PhoneBlock" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+		</div>
+	
+		<h1 data-tx="t0001">Instalación como contestador automático</h1>
+		
+		<p data-tx="t0002">PhoneBlock le ofrece un contestador inteligente que automáticamente sólo contesta la llamada si el número de la persona que llama aparece en la <a th:href="@{/status}">base de datos de SPAM</a> de PhoneBlock. Al igual que para la <a th:href="@{/setup}">configuración de la lista de bloqueo</a>, no necesita su propio dispositivo u ordenador para ello. Usted crea un contestador automático PhoneBlock aquí en el sitio web y lo registra a través de Internet en su Fritz!Box u otro router de Internet con capacidad VOIP. Puede saber exactamente cómo funciona el contestador automático PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">aquí</a>.</p>
+		
+		<p data-tx="t0003">Los siguientes pasos le llevarán a su contestador automático PhoneBlock:</p>
+		
+		<ol>
+			<li><a data-tx="t0004" href="#register">Registrarse en PhoneBlock</a></li>
+			<li><a data-tx="t0005" href="#create">Crear contestador automático</a></li>
+			<li><a data-tx="t0006" href="#dyndns">Configurar DynDNS en Fritz!Box</a></li>
+			<li><a data-tx="t0007" href="#sip">¡Configuración del dispositivo de telefonía en el Fritz!Box</a></li>
+			<li><a data-tx="t0008" href="#enable">Conectar el contestador automático PhoneBlock</a></li>
+			<li><a data-tx="t0009" href="#test">Prueba del contestador automático</a></li>
+		</ol>
+		
+		 <p data-tx="t0010">Las instrucciones le guiarán paso a paso a través de la configuración. La configuración en el Fritz!Box no es fácil, pero si sigue exactamente el procedimiento aquí descrito, nada puede salir mal.</p>
+		 
+		<h2 data-tx="t0011" id="register">Paso 1: Registrarse en PhoneBlock</h2>
+
+		<p data-tx="t0012">A partir de aquí, necesitará tres ventanas (o pestañas) del navegador. ¡Una para esta guía, otra para la aplicación del contestador automático PhoneBlock y otra para la interfaz de configuración de su Fritz!Box</p>
+		
+		<p data-tx="t0013" th:if="${loggedIn}">En primer lugar, es necesario registrarse o iniciar sesión en PhoneBlock para iniciar la configuración.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			    <span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+			    </span>
+				<span data-tx="t0014">Conectarse</span>			
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0015" unless:if="${loggedIn}">Has iniciado sesión como <code dir="ltr" th:text="${userName}"></code>, genial, ¡vamos al siguiente paso!</p>
+		
+		<h2 data-tx="t0016" id="create">Paso 2: Crear contestador automático</h2>
+		
+		<p data-tx="t0017">Al hacer clic aquí se abre una ventana con la aplicación <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock contestador automático</a>. Cuando la abres por primera vez, la lista de tus contestadores automáticos está vacía y hay un botón en la parte inferior derecha con el que puedes crear un contestador automático. Pulsa este botón.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0018">Abrir la aplicación</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Configurar DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0019" id="dyndns">Paso 4: Configurar DynDNS</h2>
+		
+		<p data-tx="t0020">A través de "DynDNS" su contestador automático Fritz!Box informa a PhoneBlock de su dirección IP. ¡Esto es necesario para que el contestador automático PhoneBlock puede encontrar su Fritz!Box</p>
+		
+		<h3 data-tx="t0021">Activar PhoneBlock DynDNS</h3>
+		
+		<p data-tx="t0022">Active el interruptor "Usar PhoneBlock DynDNS" en la aplicación <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">máquina contestadora</a> (si sabe cómo funciona y ya utiliza otro proveedor de DynDNS, también puede introducir directamente el nombre de host de su Fritz!Box).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Configurar DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0023">En la página siguiente, confirme con "Activar DynDNS".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Configurar DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0024">Ahora recibirá los datos de acceso para el PhoneBlock DynDNS, que puede introducir en su Fritz!Box (ver más abajo).</p>
+
+		<h3 data-tx="t0025">Introduzca los datos de acceso en la casilla ¡Fritz!Box</h3>
+		
+		<p data-tx="t0026">Este enlace <a class="showFB" href="http://fritz.box" target="fritzbox">abre una ventana para su Fritz!Box</a>. Inicie sesión allí con su contraseña de Fritz!Box. ¡Si nunca ha hecho esto antes, encontrará la contraseña en la parte inferior del Fritz!Box</p>
+		
+		<p data-tx="t0027">En su <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>, vaya a "Internet &gt; Acciones" en la barra lateral y seleccione la pestaña "DynDNS".</p>
+
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0028">Abrir Fritz!Box</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Configurar DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0029">Copie los datos de "Actualizar url", "Nombre de dominio", "Nombre de usuario" y "Contraseña" de la <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplicación del contestador automático</a> e introdúzcalos en su <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Y confirma con "Aplicar" (punto 5 de la imagen inferior).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Configurar DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0030">Comprobar DynDNS</h3>
+
+		<p data-tx="t0031">Ahora vuelva a la <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplicación del contestador automático</a> y compruebe la configuración (punto 6 de la imagen anterior). Si PhoneBlock ha encontrado su Fritz!Box, pasará a la página siguiente con los datos de acceso al contestador automático real.</p>
+		
+		<h2 data-tx="t0032" id="sip">¡Paso 4: Configurar el contestador automático en el Fritz!Box</h2>
+		
+		<p data-tx="t0033">¡El contestador automático está ahora configurado como un dispositivo de telefonía en el Fritz!Box Para ello, abra de nuevo su interfaz <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
+
+		<h3 data-tx="t0034">Configuración del aparato de telefonía</h3>
+
+		<p data-tx="t0035">Vaya a "Telefonía &gt; Dispositivos de telefonía" en la barra lateral y haga clic en el botón "Configurar nuevo dispositivo".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Configurar el dispositivo" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0036">Seleccione el tipo de dispositivo</h3>
+
+		<p data-tx="t0037">Seleccione la opción "Teléfono (con y sin contestador automático)" y haga clic en "Siguiente". ¡Nota: <b>no</b> seleccione la opción obvia "Contestador automático", ya que sólo se puede utilizar para configurar contestadores automáticos instalados de forma permanente en el Fritz!Box</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Crear dispositivo" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0038">Configurar el teléfono IP</h3>
+
+		<p data-tx="t0039">En la página "Conectar teléfono", seleccione la opción "LAN/WLAN (teléfono IP)" y dé al nuevo dispositivo el nombre "PhoneBlock" en el campo de texto inferior. A continuación, haz clic en "Siguiente".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Crear teléfono IP" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040">Transferencia de datos de acceso</h3>
+
+		<p data-tx="t0041">En la siguiente página "Aplicar configuración en teléfono IP" se le pedirá "Nombre de usuario" y "Contraseña". Copie los datos correspondientes que aparecen en la <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplicación del contestador automático&lt;/x1 Haga clic en "Siguiente".</a></p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Datos del usuario" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0042">Ajustes para llamadas salientes</h3>
+
+		<p data-tx="t0043">En la página "Configurar teléfono para llamadas salientes", sólo tiene que hacer clic en "Siguiente". El contestador automático PhoneBlock no necesita un número de teléfono para llamadas salientes porque nunca hace llamadas activamente. Desactivaremos este número en un paso posterior para que su contestador automático realmente no pueda realizar ninguna llamada.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Llamadas salientes" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0044">Seleccione los números que desea proteger</h3>
+
+		<p data-tx="t0045">En la página "Configurar los ajustes del teléfono para las llamadas entrantes", debes dejar el ajuste por defecto "Aceptar todas las llamadas". Si sólo quieres proteger ciertos números de las llamadas de SPAM, también puedes seleccionar los números para los que el contestador automático verá una llamada en absoluto. Haz clic en "Siguiente".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Números protegidos" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0046">Confirmar configuración</h3>
+
+		<p data-tx="t0047">Ahora accederá a la página de resumen "Aplicar ajustes". Puede volver a comprobar los ajustes realizados y confirmarlos con "Aplicar".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Comprobar ajustes" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0048">Finalizar la configuración del dispositivo</h3>
+
+		<p data-tx="t0049">Ha vuelto a la "Vista general de dispositivos". Ahora debería ver su nuevo contestador automático "PhoneBlock" en la lista. Sin embargo, antes de que pueda encender el contestador automático, necesita realizar más ajustes. Para ello, haga clic en el lápiz de edición al final de la línea PhoneBlock.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Editar contestador automático" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050">Detener las llamadas salientes</h3>
+
+		<p data-tx="t0051">En el campo de selección "Llamadas salientes", ahora puede seleccionar la última entrada vacía para asegurarse de que su contestador automático no pueda realizar llamadas de forma independiente. <b>No</b> haga clic en el botón Aplicar de la parte inferior, sino en la segunda pestaña "Datos de inicio de sesión". Ahora se le preguntará si desea guardar los cambios. Haga clic en "Aplicar" en este cuadro de diálogo.</p>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Impedir las llamadas salientes" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  		</div>
+			<div class="column">
+	  			<img alt="Confirme" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0052">Permitir el inicio de sesión desde Internet</h3>
+
+		<p data-tx="t0053">En la pestaña "Datos de inicio de sesión", ahora debe activar la opción "Permitir inicio de sesión desde Internet" y copiar de nuevo la contraseña de la <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplicación del contestador automático</a> e introducirla en el campo "Contraseña". Sólo entonces haz clic en el botón "Aplicar".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Acceso desde Internet" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0054" id="enable">Paso 5: Encender el contestador automático</h2>
+		
+		<p data-tx="t0055">La configuración de tu contestador automático ha finalizado. Vuelve a la <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplicación de contestador automático</a> y enciende tu nuevo contestador.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Acceso desde Internet" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0056">Enhorabuena, si todo ha ido bien, el contestador automático debe aparecer ahora en verde como "encendido" en la <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">aplicación de contestador automático</a>. Las próximas llamadas desagradables pueden discutir con PhoneBlock en el futuro.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Contestador automático conectado" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0057" id="test">Paso 6: Probar el contestador automático</h2>
+
+		<p data-tx="t0058">Si desea probar cómo funciona una llamada con el contestador automático PhoneBlock, que no es tan habitual, puede llamarlo desde un teléfono conectado directamente al Fritz!Box (por ejemplo, un teléfono inalámbrico DECT) a través del <b>número interno</b> del contestador automático. El contestador automático siempre acepta este tipo de llamadas de prueba. <b>Importante:</b> Esto funciona <b>sólo</b> a través del número interno del contestador automático (normalmente empieza por "**"). Puede encontrar el número interno en la vista general de dispositivos de su Fritz!Box en la línea "PhoneBlock". ¿Por qué no intenta estimar un sistema fotovoltaico para él? ¡Diviértase!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Contestador automático conectado" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  		</div>
+		</div>
+		
+	</div>
+</section>
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

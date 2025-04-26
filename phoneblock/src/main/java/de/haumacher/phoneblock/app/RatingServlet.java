@@ -4,7 +4,20 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.location.LocationService;
+import de.haumacher.phoneblock.location.model.Country;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,40 +25,54 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
-import de.haumacher.phoneblock.db.model.Rating;
-
 /**
  * Servlet accepting ratings from the web UI.
  */
-@WebServlet(urlPatterns = "/rating")
+@WebServlet(urlPatterns = RatingServlet.PATH)
 public class RatingServlet extends HttpServlet {
 	
+	public static final String PATH = "/rating";
 	private static final Logger LOG = LoggerFactory.getLogger(RatingServlet.class);
+	public static final String CAPTCHA_ERROR_ATTR = "captchaError";
+	public static final String ENTERED_RATING_ATTR = "enteredRating";
+	public static final String ENTERED_COMMENT_ATTR = "enteredComment";
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("utf-8");
         
 		String phoneText = req.getParameter("phone");
-		
-		String phoneId = NumberAnalyzer.toId(phoneText);
-		if (phoneId == null) {
+
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		
+		String phoneId = NumberAnalyzer.getPhoneId(number);
+        
 		String ratingName = req.getParameter("rating");
-		
 		String comment = req.getParameter("comment");
+
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		String dialPrefix = null;
+        if (userName == null) {
+    		String captcha = req.getParameter("captcha");
+    		if (captcha == null || captcha.trim().isEmpty()) {
+    			sendFailure(req, resp, phoneId, ratingName, comment, "Du musst den Sicherheitscode eingeben.");
+    			return;
+    		}
+
+    		HttpSession session = req.getSession();
+    		String captchaExpected = (String) session.getAttribute("captcha");
+    		session.removeAttribute("captcha");
+    		if (!captcha.trim().equals(captchaExpected)) {
+    			sendFailure(req, resp, phoneId, ratingName, comment, "Der Sicherheitscode stimmt nicht überein.");
+    			return;
+    		}
+    		
+    		dialPrefix = LocationService.getInstance().getDialPrefix(req);
+        }
+        
 		if (comment != null) {
 			comment = comment.trim();
 			if (comment.isEmpty()) {
@@ -58,33 +85,13 @@ public class RatingServlet extends HttpServlet {
 		if (session.getAttribute(ratingAttr) == null) {
 			if (ratingName != null || comment != null) {
 				Rating rating = ratingName != null ? Rating.valueOf(ratingName) : Rating.B_MISSED;
+				
+				Language language = DefaultController.selectLanguage(req);
+
 				DB db = DBService.getInstance();
-				db.addRating(phoneId, rating, comment, System.currentTimeMillis());
+				db.addRating(userName, number, dialPrefix, rating, comment, language.tag, System.currentTimeMillis());
 				
 				LOG.info("Recorded rating: " + phoneId + " (" + rating + ")");
-				
-				String userName = LoginFilter.getAuthenticatedUser(req.getSession());
-				if (userName != null) {
-					try (SqlSession tx = db.openSession()) {
-						Users users = tx.getMapper(Users.class);
-						Long userId = users.getUserId(userName);
-						if (userId != null) {
-							BlockList blocklist = tx.getMapper(BlockList.class);
-							long owner = userId.longValue();
-							if (rating == Rating.A_LEGITIMATE) {
-								blocklist.addExclude(owner, phoneId);
-								blocklist.removePersonalization(owner, phoneId);
-							} else {
-								if (blocklist.getPersonalization(owner, phoneId) == null) {
-									blocklist.addPersonalization(owner, phoneId);
-								}
-								blocklist.removeExclude(owner, phoneId);
-							}
-							
-							tx.commit();
-						}
-					}
-				}
 				
 				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}
@@ -93,6 +100,15 @@ public class RatingServlet extends HttpServlet {
 		}
 		
 		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "?link=true");
+	}
+
+	private void sendFailure(HttpServletRequest req, HttpServletResponse resp, String phoneId, String rating, String comment, String message)
+			throws ServletException, IOException {
+		HttpSession session = req.getSession();
+		session.setAttribute(CAPTCHA_ERROR_ATTR, message);
+		session.setAttribute(ENTERED_RATING_ATTR, rating);
+		session.setAttribute(ENTERED_COMMENT_ATTR, comment);
+		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "/?link=true#writeRating" );
 	}
 
 	/**

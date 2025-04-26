@@ -1,15 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_answerbot_ui/base_path.dart'
+  if (dart.library.html) 'package:phoneblock_answerbot_ui/base_path_web.dart';
+import 'package:phoneblock_answerbot_ui/Api.dart';
 import 'package:phoneblock_answerbot_ui/BotSetupForm.dart';
 import 'package:phoneblock_answerbot_ui/CallListView.dart';
-import 'package:phoneblock_answerbot_ui/Debug.dart';
 import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
+import 'package:phoneblock_answerbot_ui/LoginScreen.dart';
 import 'package:phoneblock_answerbot_ui/TitleRow.dart';
 import 'package:phoneblock_answerbot_ui/httpAddons.dart';
 import 'package:phoneblock_answerbot_ui/proto.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_answerbot_ui/sendRequest.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -33,17 +37,23 @@ class AnswerBotListState extends State<AnswerBotList> {
     requestBotList();
   }
 
-  void requestBotList() {
+  void requestBotList() async {
+    var headers = await apiHeaders();
+    if (kDebugMode) {
+      debugPrint("Requesting bot list, authorization=${headers["Authorization"]}.");
+    }
     http.get(Uri.parse('$basePath/ab/list'),
-      headers: {
-        if (debugUser) 'Authorization': authHeader,
-      },
+      headers: headers,
     ).then(processResponse);
   }
 
   void processResponse(http.Response response) {
     setState(() {
       if (response.statusCode == 401) {
+        if (kDebugMode) {
+          debugPrint("Unauthorized: ${response.body}");
+        }
+
         loginRequired = true;
         return;
       }
@@ -92,7 +102,10 @@ class AnswerBotListState extends State<AnswerBotList> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton(
-                          onPressed: () => login(context),
+                          onPressed: () async {
+                            await login(context);
+                            requestBotList();
+                          },
                           child: const Text("Login")
                       )
                     ]
@@ -210,8 +223,17 @@ class AnswerBotListState extends State<AnswerBotList> {
     );
   }
 
-  void login(BuildContext context) {
-    launchUrl(Uri.parse("$basePath/login?locationAfterLogin=/ab/"));
+  Future<void> login(BuildContext context) async {
+    if (kIsWeb) {
+      launchUrl(Uri.parse("$basePath/login?locationAfterLogin=/ab/"), webOnlyWindowName: "_self");
+    } else {
+      String authToken = await Navigator.push(context, MaterialPageRoute(builder: showLogin));
+      await storeAuthToken(authToken);
+    }
+  }
+
+  Widget showLogin(BuildContext context) {
+    return LoginScreen();
   }
 
   bool setupComplete(AnswerbotInfo bot) => isSet(bot.host) || isSet(bot.ip4) || isSet(bot.ip6);

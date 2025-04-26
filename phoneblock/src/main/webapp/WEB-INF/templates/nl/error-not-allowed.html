@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Deze pagina kan niet worden weergegeven in de browser</h1>
+
+			<p data-tx="t0002">Je moet de adresboeklink die je hebt ontvangen toen je je <a th:href="@{/login}">registreerde</a> als adresboek in je Fritz!Box invoeren zoals beschreven in de <a th:href="@{/setup}">installatie-instructies</a>, samen met je e-mailadres en het wachtwoord dat je is toegestuurd. Je kunt deze link niet rechtstreeks in de browser weergeven omdat adresboeken toegankelijk zijn via een speciaal protocol (CardDAV) dat je browser niet ondersteunt.</p>
+		</div>
+	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

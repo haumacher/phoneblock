@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.faq.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Pytania i odpowiedzi dotyczące PhoneBlock</h1>
+
+		<h2 data-tx="t0002">Czy PhoneBlock jest darmowy?</h2>
+		<p data-tx="t0003">Tak, obecnie nie trzeba nic płacić za korzystanie z PhoneBlock. Jednak działanie PhoneBlock wiąże się z kosztami wynajmu serwera, dostępu do Internetu i rejestracji domeny. Aby pokryć te koszty, byłoby miło, gdybyś mógł przekazać <b><a th:href="@{/support}">drobną darowiznę</a></b>.</p>
+		
+		<p data-tx="t0004">Przez długi czas PhoneBlock działał na <a href="https://www.raspberrypi.com/">Raspberry PI 4</a> na moim biurku i dlatego nie powodował prawie żadnych dodatkowych kosztów (poza moim połączeniem internetowym i rejestracją domeny). Jednak ze względu na rosnącą liczbę użytkowników, a przede wszystkim w celu zapewnienia lepszej dostępności usługi, PhoneBlock został przeniesiony do <a href="https://www.hetzner.com/">Hetzner Cloud</a> (lokalizacja serwera Falkenstein, Niemcy). Za pomocą <a href="https://hetzner.cloud/?ref=XcWUSVoJ3AU8">tego linku otrzymasz 20 € kredytu w chmurze od Hetznera w prezencie</a> - a jeśli faktycznie go użyjesz i zapłacisz za niego, PhoneBlock otrzyma pierwsze 10 €, które wydasz jako kredyt w chmurze.</p>
+
+		<h2 data-tx="t0005">Jaka jest różnica między PhoneBlock a "<a target="_blank" th:href="@{/link/tellows}">nie przeszkadzać</a>"?</h2>
+		<p data-tx="t0006">Automatyczna sekretarka <a th:href="@{/anrufbeantworter}">PhoneBlock</a> nie rozpoznaje limitu rozmiaru książki telefonicznej czarnej listy. Przyjmuje połączenia dla wszystkich numerów na liście blokowania. Nie jest konieczne aktualizowanie listy blokowanych numerów w urządzeniu Fritz!Box każdej nocy, lista blokowanych numerów jest zawsze aktualna.</p>
+		
+		<p data-tx="t0007">Automatyczną sekretarkę <a th:href="@{/anrufbeantworter}">PhoneBlock</a> można zainstalować w dowolnym routerze internetowym obsługującym VOIP, nawet jeśli router nie obsługuje protokołu CardDAV dla internetowych książek telefonicznych.</p>
+		
+		<p data-tx="t0008">W przypadku obu ofert można skonfigurować <a th:href="@{/setup}">blocklist jako internetową książkę telefoniczną</a> w Fritz!Box i zablokować numery w tej książce telefonicznej. PhoneBlock oferuje również opcję personalizacji listy blokowania i jest również bezpłatny (patrz wyżej).</p>
+		
+		<p data-tx="t0009">Możesz samodzielnie dodawać numery do swojej spersonalizowanej listy blokowania, a co ważniejsze, możesz także wykluczać numery z blokowania (patrz także "Numer został zablokowany przez pomyłkę, co robić?" poniżej). Jest to interesujące, jeśli PhoneBlock dodał do listy blokowanych numerów numer, na który użytkownik chciałby otrzymywać połączenia. Na przykład numer od dostawcy Internetu może łatwo trafić na listę blokowanych, jeśli wiele osób czuje się zirytowanych połączeniami zwrotnymi z tego numeru, ale czekasz na oddzwonienie. Jest to również bardzo dobrze wyjaśnione w tym <a target="_blank" th:href="@{/link/tellows-problems}">filmie YouTube</a>. Dzięki PhoneBlock możesz dostosować swoją listę blokowania, numery, które sam na niej umieściłeś, pozostaną zablokowane, a numery, które dodałeś do białej listy, z pewnością nie zostaną zablokowane.</p>
+
+		<h2 data-tx="t0010">Mój Fritz!Box Box nie obsługuje jeszcze CardDAV, czy nadal mogę korzystać z PhoneBlock?</h2>
+		<p data-tx="t0011">Tak, są dwie możliwości:</p>
+		<ol>
+		<li data-tx="t0012">Używaj automatycznej sekretarki PhoneBlock (obecnie wciąż w fazie testów beta) zamiast książki telefonicznej. Automatyczna sekretarka PhoneBlock jest zarejestrowana w Fritz!Box jak telefon internetowy i zawsze odpowiada, gdy dzwoni numer SPAM, tak szybko, że telefon nie dzwoni lub dzwoni bardzo krótko. Automatyczna sekretarka PhoneBlock jest obecnie dostępna tylko w systemie testowym, który wymaga oddzielnej rejestracji: <a th:href="@{/anrufbeantworter}">Do systemu testowego automatycznej sekretarki</a>. Jeśli udało Ci się pomyślnie zainstalować automatyczną sekretarkę - lub miałeś z tym problemy - daj nam znać, aby nowe narzędzie stało się ogólnie dostępne tak szybko, jak to możliwe.</li>
+		<li data-tx="t0013">Użyj narzędzia <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>, aby załadować listę blokad do programu Fritz!Box Potrzebny będzie jednak komputer, na którym można zainstalować program. SpamBlockUp może również użyć listy blokad PhoneBlock i załadować ją do Fritz!Box Aby uzyskać szczegółowe informacje, skontaktuj się z autorem tego programu. PhoneBlock nie jest powiązany z programem SpamBlockUp.</li>
+		</ol>
+
+		<h2 data-tx="t0014">Nie mam Fritz!Box box, czy nadal mogę używać PhoneBlock?</h2>
+		
+		<p data-tx="t0015">Automatyczną sekretarkę <a th:href="@{/anrufbeantworter}">PhoneBlock</a> można zainstalować w dowolnym routerze internetowym obsługującym VOIP, nawet jeśli router nie obsługuje protokołu CardDAV dla internetowych książek telefonicznych. Zainstaluj automatyczną sekretarkę jako normalny telefon VOIP, który loguje się do skrzynki przez Internet.</p>
+		
+		<p data-tx="t0016">Aby zaimportować listę blokad jako książkę telefoniczną, router internetowy/system telefoniczny musi mieć możliwość subskrybowania książki telefonicznej za pośrednictwem protokołu <code dir="ltr">CardDAV</code> i automatycznego odrzucania wszystkich połączeń z numeru w określonej książce telefonicznej (lub przekazywania ich do automatycznej sekretarki). Aby dowiedzieć się, czy jest to możliwe w przypadku posiadanego systemu telefonicznego, należy zapoznać się z instrukcją obsługi lub zapytać operatora telefonicznego. Jeśli udało Ci się zainstalować listę blokad w innym routerze, poinformuj nas o tym, abyśmy mogli dostosować instrukcję instalacji.</p>
+
+		<h2 data-tx="t0017">Czy mogę używać PhoneBlock na telefonie komórkowym z systemem Android?</h2>
+		<p data-tx="t0018">Tak, masz tutaj dwie opcje: (a) zasubskrybować książkę adresową PhoneBlock lub (b) skonfigurować SpamBlocker i zintegrować tam bazę danych PhoneBlock.</p>
+		<p data-tx="t0019">Jeśli subskrybujesz książkę adresową <a th:href="@{/setup-android}">PhoneBlock</a>, możesz bezpośrednio z połączenia sprawdzić, czy warto odebrać połączenie lub oddzwonić w przypadku nieodebranego połączenia. Nie jest jednak możliwe bezpośrednie odrzucanie połączeń spamowych.</p>
+		<p data-tx="t0020">Jeśli zainstalujesz <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, możesz zintegrować tam bazę danych PhoneBlock. SpamBlocker może następnie porównać numer z bazą danych PhoneBlock, gdy połączenie zostanie odebrane i odrzucić połączenie bezpośrednio, jeśli jest zgodne. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> jest niezależną aplikacją, prosimy o bezpośredni kontakt z deweloperem w przypadku jakichkolwiek problemów.</p>
+		
+		<h2 data-tx="t0021">Czy mogę używać PhoneBlock na iPhonie?</h2>
+		<p data-tx="t0022">Tak, w przypadku iPhone'a można to zrobić nawet bez instalowania dodatkowych aplikacji. Spójrz na <a th:href="@{/setup-iphone}">instrukcje instalacji</a> tutaj.</p>
+
+		<h2 data-tx="t0023" id="Error26">Mój FritzBox! zgłasza "Błąd 26" podczas konfiguracji</h2>
+		
+		<p data-tx="t0024">Nie jest jasne, skąd bierze się ten błąd i co oznacza. Jednak użytkownicy zgłaszają, że poniższe kroki i tak pomagają skonfigurować PhoneBlock:</p>
+		
+		<ol>
+			<li data-tx="t0025">Ponowne całkowite usunięcie książki telefonicznej</li>
+			<li data-tx="t0026">Uruchom ponownie urządzenie i sprawdź, czy książka telefoniczna rzeczywiście została usunięta. Jeśli nie, powtórz usuwanie.</li>
+			<li data-tx="t0027">Odtwórz książkę telefoniczną. Upewnij się, że adres serwera został poprawnie skopiowany. Upewnij się, że na początku i na końcu nazwy użytkownika i hasła nie ma spacji.</li>
+		</ol>
+		
+		<p data-tx="t0028">Uwaga: W przypadku zmiany hasła dostępu do PhoneBlock nie wystarczy ustawienie nowego hasła w ustawieniach książki telefonicznej. Wygląda na to, że Fritz!Box box ma problem z aktualizacją danych dostępu. Zamiast tego należy usunąć książkę telefoniczną i skonfigurować ją ponownie.</p>
+
+		<h2 data-tx="t0029" id="disposable-mail">Dlaczego nie mogę zarejestrować się przy użyciu jednorazowego adresu e-mail?</h2>
+		<p data-tx="t0030">Korzystanie z PhoneBlock wiąże się z ciągłym zużywaniem mocy obliczeniowej i przepustowości łącza internetowego, ponieważ lista blokad jest aktualizowana codziennie. Działanie PhoneBlock zużywa obecnie około 500 GB danych miesięcznie. Jest to obecnie bezpłatne. Jeśli jednak coś nie będzie działało "gładko" podczas działania, oczekuję, że będzie można się z Tobą skontaktować w celu rozwiązania wszelkich problemów. Jeśli zarejestrujesz się przy użyciu jednorazowego adresu, nie będzie to możliwe. Rejestracja przy użyciu adresu jednorazowego byłaby tak samo dobra, jak brak rejestracji w ogóle.</p>
+
+		<h2 data-tx="t0031">Kiedy numer jest blokowany przez PhoneBlock?</h2>
+		<p data-tx="t0032">Jeśli użytkownik sam doda numer do listy blokowanych połączeń, połączenia z tego numeru zostaną natychmiast zablokowane. Jednak inni subskrybenci listy blokowania PhoneBlock nie otrzymają natychmiast tego numeru na swojej liście blokowania. Nowy numer zostanie rozesłany do wszystkich subskrybentów dopiero wtedy, gdy co najmniej trzech subskrybentów również zablokuje ten numer. Dokładne zasady dotyczące tego, kiedy numer jest dodawany do listy blokowanych i kiedy jest z niej usuwany, są nadal finalizowane. Jedno jest jednak pewne: numer, który sam dodałeś do listy zablokowanych, pozostanie dla ciebie zablokowany.</p>
+		
+		<h2 data-tx="t0033">Co mogę zrobić, jeśli mimo blokady PhoneBlock nadal otrzymuję połączenia spamowe?</h2>
+		<p data-tx="t0034">Zawsze pojawiają się nowe numery spamowe, więc PhoneBlock nie może zapewnić 100% ochrony. <a th:href="@{/block}">Dodaj nowego niechcianego rozmówcę do listy blokowanych</a> i pomóż innym szybko pozbyć się szkodnika!</p>
+
+		<h2 data-tx="t0035">Numer został zablokowany przez pomyłkę, co powinienem zrobić?</h2>
+		<p data-tx="t0036">Nie ma problemu, otwórz <a th:href="@{/settings/#whitelist}">Twoje ustawienia</a> i dodaj numer do białej listy. Biała lista to lista numerów telefonów, które zostały wyłączone z blokowania. Nigdy nie trafiają one na listę blokowanych numerów, nawet jeśli wiele innych osób czuje się zirytowanych połączeniami z tego numeru i blokuje je.</p>
+
+		<h2 data-tx="t0037">Pomocy, przez pomyłkę dodałem numer do listy zablokowanych!</h2>
+		<p data-tx="t0038">Jeśli utworzysz nowy "kontakt" w książce telefonicznej Fritz!Box, Fritz!Box poinformuje o tym serwer PhoneBlock, który zinterpretuje to jako skargę na ten numer. Ponadto numer ten jest dodawany do osobistej listy blokowania, dzięki czemu nie będzie już przeszkadzał użytkownikowi. Ze względu na skompresowane przechowywanie wielu numerów w kontakcie, niestety nie jest możliwe usunięcie numeru z osobistej listy blokowania w ten sam sposób. Zamiast tego należy zalogować się tutaj na stronie za pomocą danych dostępu i usunąć numer z czarnej listy w <a th:href="@{/settings/#blacklist}">Twoich ustawieniach</a>. Numer powinien zniknąć z listy blokowanych numerów Fritz!Box podczas następnej synchronizacji.</p>
+
+		<h2 data-tx="t0039">Obawiam się, że PhoneBlock zablokuje numery, których potrzebuję, co mogę zrobić?</h2>
+		<p data-tx="t0040">Dzięki PhoneBlock nie musisz koniecznie blokować numerów. Dostępne są następujące opcje:</p>
+		<ol>
+			<li data-tx="t0041">Zamiast blokować, ustaw przekierowanie na automatyczną sekretarkę. Jeśli zadzwoni ktoś, kto naprawdę czegoś od ciebie chce, zostawi wiadomość i będziesz mógł do niego oddzwonić.</li>
+			<li data-tx="t0042">Pomiń całkowicie etap instalacji z blokowaniem. Wystarczy skonfigurować książkę telefoniczną PhoneBlock w Fritz!Box Następnie, na przykład, "SPAM: 03016637169" pojawi się na wyświetlaczu telefonu, gdy otrzymasz połączenie. Możesz wtedy zdecydować, czy odbierzesz połączenie, ponieważ czekasz na oddzwonienie, czy też odepchniesz dzwoniącego.</li>
+		</ol>
+
+		<h2 data-tx="t0043">Czy muszę ręcznie aktualizować książkę telefoniczną?</h2>
+		<p data-tx="t0044">Nie, dzieje się to automatycznie każdej nocy. Skrzynka Fritz!Box kontaktuje się co noc z serwerem PhoneBlock i synchronizuje numery z listy zablokowanych z książką telefoniczną listy zablokowanych. Dzięki temu lista blokowanych numerów jest zawsze aktualna. Jeśli lista blokad nie zostanie pobrana z urządzenia Fritz!Box przez dłuższy czas (z jakiegokolwiek powodu), PhoneBlock wyśle wiadomość e-mail, aby można było sprawdzić konfigurację, zanim lista blokad stanie się nieaktualna.</p>
+
+		<h2 data-tx="t0045">Kiedy dokładnie lista bloków zostanie zaktualizowana?</h2>
+		<p data-tx="t0046">Decyduje o tym Fritz!Box Jeśli nie naciśniesz wyraźnie przycisku "Aktualizuj" w książce telefonicznej listy bloków, skrzynka Fritz!Box wybierze czas między 0 a 6 rano na aktualizację. AVM zrobił to bardzo sprytnie, ponieważ oznacza to, że połączenia są rozprowadzane stosunkowo równomiernie przez całą noc, a obciążenie serwera pozostaje ograniczone.</p>
+		
+		<h2 data-tx="t0047">Uważam, że PhoneBlock jest świetny, czy mogę przekazać darowiznę?</h2>
+		<p data-tx="t0048">Tak, jeśli podoba Ci się PhoneBlock, możesz przekazać <a th:href="@{/support}">niewielką darowiznę</a> na pokrycie bieżących kosztów wynajmu serwera, rejestracji domeny, dostępu do Internetu itp.</p>
+		
+		<p data-tx="t0049">Ale ważne jest również, aby PhoneBlock stał się bardziej znany. Jeśli więc nie możesz lub nie chcesz przekazać darowizny, zamieść linki do strony PhoneBlock na forach, na Facebooku, w komentarzach do artykułów w czasopismach, na swoim blogu lub gdziekolwiek indziej, gdzie uznasz to za stosowne. Tylko jeśli rozprzestrzenianie się PhoneBlock będzie rosło szybciej, projekt będzie miał wpływ na skandaliczny terror telefoniczny, który szaleje w niemieckiej sieci telefonicznej.</p>
+
+		<h2 data-tx="t0050">Mam życzenie, które PhoneBlock zdecydowanie powinien być w stanie spełnić, gdzie mogę to wyrazić?</h2>
+		<p data-tx="t0051">Jeśli masz konto GitHub, możesz otworzyć zgłoszenie na stronie projektu <a target="_blank" th:href="@{/link/issues}">PhoneBlock</a> i opisać swoją prośbę. Zapraszam również do omówienia propozycji ze mną przez e-mail: <code dir="ltr">Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code>.</p>
+		
+		<h2 data-tx="t0052">Jak mogę ponownie odinstalować PhoneBlock?</h2>
+		<p data-tx="t0053">Nie potrzebujesz już PhoneBlock lub nie jesteś z niego zadowolony? Szkoda, może możesz <a target="_blank" th:href="@{/link/issues}">zgłosić sugestię dotyczącą ulepszenia</a>?</p>
+		
+		<p data-tx="t0054">Aby odinstalować, postępuj w taki sam sposób, jak w przypadku instalacji, tylko wstecz. W zależności od tego, jak zainstalowano PhoneBlock (jako <a th:href="@{/setup}">Książka telefoniczna</a> lub jako <a th:href="@{/anrufbeantworter}">Answering Machine</a>, lub oba), należy usunąć odpowiednie ustawienia. W przypadku książki telefonicznej: Usuń blokowanie połączeń (lub przekierowanie połączeń), które dotyczy wszystkich połączeń z książki telefonicznej PhoneBlock. Następnie można usunąć książkę telefoniczną PhoneBlock. W przypadku automatycznej sekretarki: Usuń urządzenie telefoniczne "PhoneBlock", a następnie dezaktywuj odblokowanie DynIP (jeśli nie korzystasz z oddzielnej usługi DynIP). Następnie należy usunąć konto PhoneBlock w <a th:href="@{/settings/}">ustawieniach</a>.</p>
+
+		<h2 data-tx="t0055">Nie ma tu odpowiedzi na moje pytanie, kto może pomóc?</h2>
+		<p data-tx="t0056">Dlaczego nie napiszesz komentarza na stronie <a target="_blank" th:href="@{/link/facebook}">Facebook PhoneBlock</a>, wtedy każdy będzie mógł przeczytać pytanie. Możesz również wysłać mi osobistą wiadomość przez e-mail: <code dir="ltr">Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button></code>.</p>
+	</div>
+</section>
+
+<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

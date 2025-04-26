@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.signup-code.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001">Введіть код</h1>
+	        <p class="subtitle" data-tx="t0002">Підтвердіть адресу електронної пошти.</p>
+	        <div class="content">
+				<p>
+					<div data-tx="t0003">На адресу <code dir="ltr" th:text="${email}"></code> було надіслано електронного листа.</div> 
+					<div data-tx="t0004">Будь ласка, перевірте свою поштову скриньку та введіть код тут.</div> 
+				</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-web}">
+					<div class="field">
+					  <label class="label" data-tx="t0005">Код</label>
+					  <div class="control has-icons-left has-icons-right">
+					    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+					    <input name="rememberMe" th:if="${rememberMe}" th:value="${rememberMe}" type="hidden"/>
+
+					    <input data-tx="t0009" name="code" placeholder="Код підтвердження" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value=""/>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-barcode"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${errorMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+						</span>
+					  </div>
+						<p class="help is-danger" data-tx="t0006" th:if="${errorMessage}"><span th:text="${errorMessage}"></span> <a th:href="|${contextPath}${restartPage}?location=${location}|">Спробуйте ще раз</a>.</p>
+						<p class="help is-info" data-tx="t0007" th:unless="${errorMessage}">Не отримали листа? Будь ласка, перевірте папку "Спам"! <a th:href="|${contextPath}${restartPage}?location=${location}|">Спробуйте ще раз</a>.</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" data-tx="t0008" type="submit">Увійдіть в систему</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

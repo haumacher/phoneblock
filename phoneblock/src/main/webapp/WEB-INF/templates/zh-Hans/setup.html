@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">作为电话簿安装</h1>
+
+<th:block th:unless="${token}">
+		<p data-tx="t0002">要安装拦截列表，您需要一个来自 AVM 的 <a th:href="@{/link/fritzbox}">"FRITZ!Box" 互联网路由器</a>和一个 PhoneBlock 帐户。路由器不一定是最新型号，但您应检查路由器上是否安装了最新的 FRITZ！OS（07.29 或更新版本）。如果没有，请使用以下安装说明检查您的版本是否已提供必要的选项。</p>
+		
+		<p data-tx="t0003">注意：由于 Fritz!Box 的技术限制，无法将整个拦截列表加载到电话簿中。因此，设置 <a th:href="@{/anrufbeantworter}">PhoneBlock 应答机</a> 可以更好地防止垃圾邮件电话。</p>
+		
+		<div class="columns" th:unless="${login}">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/login(location='/setup')}">
+				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">创建 PhoneBlock 账户</button>
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0005" th:if="${login}">您已经注册为 <code dir="ltr" th:text="${userName}"></code>，很好！您可以立即开始使用。</p>
+</th:block>
+
+<div class="columns" th:if="${token}">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <p class="title" data-tx="t0006">您的登录信息</p>
+	        <p class="subtitle" data-tx="t0007">安装时需要以下数据。</p>
+	        <div class="content">
+		
+				<div class="field">
+				  <label class="label" data-tx="t0008">CardDAV 服务器的互联网地址</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0009">用户名</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+				
+				<div class="field">
+				  <label class="label" data-tx="t0010">暗号</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				</div>
+			</div>
+		</article>
+	  </div>
+    </div>
+  </div>
+</div>
+		
+		<h2 data-tx="t0011">登录您的 FRITZ！Box</h2>
+		
+		<p data-tx="t0012">要使用此功能，您必须在家使用无线局域网，或者您的电脑必须通过电缆直接连接到 FRITZ！Box。首先，FRITZ！Box 会询问您的密码。如果您以前从未登录过，您可以在设备底部找到该密码。</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a href="http://fritz.box" target="_blank">
+				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013">登录 FRITZ!Box</button>
+			</a>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0014">创建新的 "Blocklist "电话簿</h2>
+		
+		<p data-tx="t0015">为了让 FRITZ！Box 阻止垃圾电话，它需要自己的电话簿，在其中输入所有不受欢迎来电的号码。将此电话簿称为 "阻止列表"。为此</p>
+		
+		<ol>
+			<li data-tx="t0016">首先导航至 "电话 "部分、</li>
+			<li data-tx="t0017">选择 "电话簿 "菜单项，然后</li>
+			<li data-tx="t0018">然后点击 "新建电话簿 "链接。</li>
+		</ol>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Fritz!Box 通话清单" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0019">输入 PhoneBlock 帐户的登录信息</h2>
+		
+		<p data-tx="t0020">现在你需要 PhoneBlock 账户的登录信息。</p>
+
+		<ul>
+			<li data-tx="t0021"><span class="tag is-danger">1</span> 将用作拦截列表的电话簿命名为 <code dir="ltr">拦截列表</code>。下一步将再次使用该名称。</li>
+
+			<li data-tx="t0022">现在选择<span class="tag is-danger">2</span>选项<i>使用在线提供商的电话簿</i>。</li>
+
+			<li data-tx="t0023">然后可以选择 <span class="tag is-danger">3</span> 提供商 <i>CardDAV 提供商</i>。</li>
+
+			<li data-tx="t0024">差不多完成了，现在是登录数据 <span class="tag is-danger">4</span>。最好用剪贴法传输，以避免输入错误！<ul>
+					<li> 在 <i>Internet address of the CardDAV server</i> 字段中输入 PhoneBlock 地址簿的 URL： <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a> </li>
+
+					<li> 在 <i>Username</i> 字段中输入您在 <a th:href="@{/login(location='/settings')}">registration</a> 时收到的用户名 <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>。</li>
+
+					<li>现在必须在 <i>密码</i>字段中输入您在<a th:href="@{/login(location='/settings')}">注册</a>时收到的密码<th:block th:unless="${token}">，</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>, </th:block> 。</li>
+				    &lt;/x2</ul></li>
+
+			<li data-tx="t0025">现在您可以确认 <span class="tag is-danger">5</span> 新电话簿的创建。请注意在 "电话分配 "下选择 <b>"无电话"</b>！否则您只能在手机联系人中找到垃圾邮件呼叫者。</li>
+		</ul>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="创建新地址簿" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0026">检查是否已创建 "拦截列表</h2>
+		
+		<p data-tx="t0027">如果一切顺利，FRITZ！Box 将加载 PhoneBlock Blocklist 中的所有号码。现在您应该在 "电话/电话簿 "部分有一个新的 "阻止列表 "电话簿。如果您选择 "Blocklist "选项卡，就可以看到当前垃圾来电者的所有号码。</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="显示检索到的拦截列表" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
+		  </div>
+		</div>
+
+		<h2 data-tx="t0028">让 FRITZ!Box 拒绝来自 "阻止列表 "的呼叫</h2>
+		
+		<p data-tx="t0029">在 "电话/呼叫处理 "部分，您现在可以指定新的 "Blocklist "电话簿作为要阻止的号码范围。</p>			
+		
+		<p data-tx="t0030">向下滚动到 "区块编号范围 "子项目，点击 "添加范围 "按钮。</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="添加新的呼叫限制" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0031">在新界面中，选择 "区域 "选项中的 "电话簿"，然后选择新创建的电话簿 "Blocklist "作为要屏蔽的 "电话簿"。</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="阻止拦截列表中电话号码的来电者" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0032">完美！您已经完成了设置。现在，你的手机应该不会再因为不受欢迎的来电而频繁响铃了。如果出现这种情况，您可以轻松地为自己和整个 PhoneBlock 社区将麻烦制造者静音：</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">阻止电话号码</button></a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

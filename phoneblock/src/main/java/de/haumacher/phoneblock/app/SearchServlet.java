@@ -4,15 +4,46 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.ibatis.session.SqlSession;
+
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.SearchResult;
+import de.haumacher.phoneblock.app.api.model.UserComment;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.db.AggregationInfo;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBNumberInfo;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.Ratings;
+import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.location.LocationService;
+import de.haumacher.phoneblock.meta.MetaSearchService;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,30 +51,40 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import org.apache.ibatis.session.SqlSession;
-
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Ratings;
-import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.model.PhoneNumer;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.RatingInfo;
-import de.haumacher.phoneblock.db.model.SearchInfo;
-import de.haumacher.phoneblock.db.model.SearchResult;
-import de.haumacher.phoneblock.db.model.SpamReport;
-import de.haumacher.phoneblock.db.model.UserComment;
-import de.haumacher.phoneblock.meta.MetaSearchService;
-import de.haumacher.phoneblock.util.JspUtil;
-import de.haumacher.phoneblock.util.ServletUtil;
-
 /**
  * Servlet displaying information about a telephone number in the DB.
  */
 @WebServlet(urlPatterns = SearchServlet.NUMS_PREFIX + "/*")
 public class SearchServlet extends HttpServlet {
 	
+	public static final String KEYWORDS_ATTR = "keywords";
+
+	public static final String THANKS_ATTR = "thanks";
+
+	public static final String TITLE_ATTR = "title";
+
+	public static final String RELATED_NUMBERS_ATTR = "relatedNumbers";
+
+	public static final String SEARCHES_ATTR = "searches";
+
+	public static final String RATINGS_ATTR = "ratings";
+
+	public static final String RATING_ATTR = "rating";
+
+	public static final String SUMMARY_ATTR = "summary";
+
+	public static final String NEXT_ATTR = "next";
+
+	public static final String PREV_ATTR = "prev";
+
+	public static final String NUMBER_ATTR = "number";
+
+	public static final String INFO_ATTR = "info";
+
+	public static final String PATH_ATTR = "path";
+
+	public static final String COMMENTS_ATTR = "comments";
+
 	private static final int ONE_SECOND = 1000;
 
 	private static final int ONE_MINUTE = ONE_SECOND * 60;
@@ -54,7 +95,7 @@ public class SearchServlet extends HttpServlet {
 	
 	public static final long ONE_MONTH = ONE_DAY * 30;
 
-	static final String NUMS_PREFIX = "/nums";
+	public static final String NUMS_PREFIX = "/nums";
 	
 	private static final Pattern BOT_PATTERN = Pattern.compile(
 			or("Googlebot"
@@ -62,6 +103,8 @@ public class SearchServlet extends HttpServlet {
 			, "AhrefsBot"
 			, "Amazonbot"
 			, "Applebot"
+			, "archive.org_bot"
+			, "Basilisk"
 			, "bingbot"
 			, "BingPreview"
 			, "Bytespider"
@@ -73,14 +116,17 @@ public class SearchServlet extends HttpServlet {
 			, "DuckDuckGo-Favicons-Bot"
 			, "facebookexternalhit"
 			, "Googlebot-Image"
+			, "ImagesiftBot"
 			, "libwww-perl"
 			, "LinkedInBot"
 			, "MJ12bot"
 			, "Monit"
+			, "OAI-SearchBot"
 			, "PetalBot"
 			, "python"
 			, "SemrushBot"
 			, "SeznamBot"
+			, "TikTokSpider"
 			, "TelegramBot"
 			, "YandexBot"
 			, "YandexImages"
@@ -135,7 +181,8 @@ public class SearchServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String pathInfo = req.getPathInfo();
 		if (pathInfo == null || pathInfo.length() < 1) {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			req.setAttribute(NUMBER_ATTR, "");
+			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
 		
@@ -143,72 +190,181 @@ public class SearchServlet extends HttpServlet {
 		
 		boolean bot = isBot(req);
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
-		
-		SearchResult searchResult = analyze(query, bot, isSeachHit);
-		if (searchResult == null) {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+
+		PhoneNumer number = extractNumber(query);
+		if (number == null) {
+			req.setAttribute(NUMBER_ATTR, query);
+			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
 		
-		sendResult(req, resp, searchResult);
-	}
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
+		if (!phone.equals(query)) {
+			// Normalize the URL in the browser.
+			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+			return;
+		}
 
-	public static SearchResult analyze(String query) {
-		return analyze(query, false, true);
-	}
-
-	private static SearchResult analyze(String query, boolean isBot, boolean isSeachHit) {
-		String phone = NumberAnalyzer.normalizeNumber(query);
-		if (phone.isEmpty() || phone.contains("*")) {
-			return null;
+		DB db = DBService.getInstance();
+		
+		SearchResult searchResult;
+		int minVotes;
+		try (SqlSession session = db.openSession()) {
+			String userName = LoginFilter.getAuthenticatedUser(req);
+			
+			String dialPrefix;
+			if (userName == null) {
+				minVotes = DB.MIN_VOTES;
+				dialPrefix = LocationService.getInstance().getDialPrefix(req);
+			} else {
+				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
+				minVotes = settings.getMinVotes();
+				dialPrefix = settings.getDialPrefix();
+			}
+			
+			Set<String> langs = new HashSet<>();
+			langs.add(DefaultController.selectLanguage(req).tag);
+			for (Enumeration<Locale> locales = req.getLocales(); locales.hasMoreElements(); ) {
+				Locale locale = locales.nextElement();
+				Language language = DefaultController.selectLanguage(locale);
+				langs.add(language.tag);
+			}
+			
+			searchResult = analyzeDb(db, session, number, dialPrefix, isSeachHit, langs);
 		}
 		
-		PhoneNumer number = NumberAnalyzer.analyze(phone);
+		
+		sendResult(req, resp, searchResult, minVotes);
+	}
+
+	public static SearchResult analyze(String query, String userName, String dialPrefix) {
+		PhoneNumer number = extractNumber(query);
 		if (number == null) {
 			return null;
 		}
-		
-		String phoneId = NumberAnalyzer.getPhoneId(number);
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Set<String> langs;
+			if (userName == null) {
+				langs = Collections.singleton(Language.getDefault().tag);
+			} else {
+				Users users = session.getMapper(Users.class);
+				String lang = users.getLocale(userName);
+				dialPrefix = users.getDialPrefix(userName);
+				langs = Collections.singleton(lang);
+			}
 
-		// Note: Search for comments first, since new comments may change the state of the number.
-		List<UserComment> comments = MetaSearchService.getInstance().fetchComments(phoneId, isBot);
+			return analyzeDb(db, session, number, dialPrefix, true, langs);
+		}
+	}
+
+	private static PhoneNumer extractNumber(String query) {
+		String rawPhoneNumber = NumberAnalyzer.normalizeNumber(query);
+		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
+			return null;
+		}
 		
-		SpamReport info;
-		List<? extends SearchInfo> searches;
-		List<? extends RatingInfo> ratingInfos;
+		PhoneNumer number = NumberAnalyzer.analyze(rawPhoneNumber);
+		if (number == null) {
+			return null;
+		}
+		return number;
+	}
+
+	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
+		SpamReports reports = session.getMapper(SpamReports.class);
+		
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
+		NumberInfo numberInfo;
+		PhoneInfo info;
+		List<Integer> searches;
 		String aiSummary;
 		List<String> relatedNumbers;
 		
-		String prev, next;
+		String prev;
+		String next;
 		
-		DB db = DBService.getInstance();
-		try (SqlSession session = db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			boolean commit = false;
-			
+		List<? extends UserComment> comments;
+		
+		// Note: Search for comments first, since new comments may change the state of the number.
+		if (isSeachHit) {
+			comments = MetaSearchService.getInstance().fetchComments(number, dialPrefix).stream().filter(c -> langs.contains(c.getLang())).toList();
+		} else {
+			comments = reports.getComments(phone, langs);
+		}
+		
+		boolean commit = false;
+		
+		// An explicit search from the web front-end is recorded as search, since
+		// multiple users searching for the same unknown number are an indication for a
+		// potential SPAM call.
+		if (isSeachHit) {
 			long now = System.currentTimeMillis();
+			db.addSearchHit(reports, number, dialPrefix, now);
+			commit = true;
+		}
+		
+		numberInfo = db.getPhoneInfo(reports, phone);
+		
+		if (reports.isWhiteListed(phone)) {
+			info = PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
 			
-			if (isSeachHit) {
-				db.addSearchHit(reports, phoneId, now);
-				commit = true;
-			}
+			numberInfo.setCalls(0);
+			numberInfo.setVotes(0);
+			numberInfo.setRatingPing(0);
+			numberInfo.setRatingPoll(0);
+			numberInfo.setRatingAdvertising(0);
+			numberInfo.setRatingGamble(0);
+			numberInfo.setRatingFraud(0);
 			
+			relatedNumbers = Collections.emptyList();
+		} else {
+			AggregationInfo aggregation10 = db.getAggregation10(reports, phone);
+			AggregationInfo aggregation100 = db.getAggregation100(reports, phone);
 			
-			info = db.getPhoneInfo(reports, phoneId);
-			searches = db.getSearches(reports, phoneId);
-			ratingInfos = reports.getRatings(phoneId);
-			aiSummary = reports.getSummary(phoneId);
+			info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
 			
-			relatedNumbers = reports.getRelatedNumbers(phoneId);
-			
-			prev = reports.getPrevPhone(phoneId);
-			next = reports.getNextPhone(phoneId);
-			
-			if (commit) {
-				session.commit();
+			if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
+				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phone.length());
+				
+				if (comments.isEmpty()) {
+					comments = reports.getAllComments(aggregation100.getPrefix(), phone.length(), langs);
+				}
+				
+				if (info.getRating() == Rating.B_MISSED) {
+					DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix(), phone.length());
+					info.setRating(DB.rating(aggregateInfo));
+				}
+			} else {
+				if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
+					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phone.length());
+
+					if (comments.isEmpty()) {
+						comments = reports.getAllComments(aggregation10.getPrefix(), phone.length(), langs);
+					}
+
+					if (info.getRating() == Rating.B_MISSED) {
+						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix(), phone.length());
+						info.setRating(DB.rating(aggregateInfo));
+					}
+				} else {
+					relatedNumbers = Collections.emptyList();
+				}
 			}
 		}
 		
+		searches = db.getSearchHistory(reports, phone, 7);
+		aiSummary = reports.getSummary(phone);
+		
+		prev = reports.getPrevPhone(phone);
+		next = reports.getNextPhone(phone);
+		
+		if (commit) {
+			session.commit();
+		}
+
 		// Ensure that equal number of positive and negative comments are shown (white-listed numbers are an exception).
 		List<UserComment> positive = comments.stream().filter(c -> c.getRating() == Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
 		List<UserComment> negative = comments.stream().filter(c -> c.getRating() != Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
@@ -224,69 +380,80 @@ public class SearchServlet extends HttpServlet {
 			}
 			negativeCnt = Math.min(10 - positiveCnt, negativeCnt);
 		}
-		comments = new ArrayList<>(positive.subList(0, positiveCnt));
-		comments.addAll(negative.subList(0, negativeCnt));
-		comments.sort(COMMENT_ORDER);
+		List<UserComment> shownComments = new ArrayList<>(positive.subList(0, positiveCnt));
+		shownComments.addAll(negative.subList(0, negativeCnt));
+		shownComments.sort(COMMENT_ORDER);
 		
-		Rating topRating = Rating.B_MISSED;
-		int maxVotes = 0;
 		Map<Rating, Integer> ratings = new HashMap<>();
-		for (RatingInfo ratingInfo : ratingInfos) {
-			Rating currentRating = ratingInfo.getRating();
-			int ratingVotes = ratingInfo.getVotes();
-			ratings.put(currentRating, ratingVotes);
-			
-			if (ratingVotes >= maxVotes && currentRating != Rating.A_LEGITIMATE) {
-				topRating = currentRating;
-				maxVotes = ratingVotes;
-			}
-		}
+		ratings.put(Rating.A_LEGITIMATE, numberInfo.getRatingLegitimate());
+		ratings.put(Rating.C_PING, numberInfo.getRatingPing());
+		ratings.put(Rating.D_POLL, numberInfo.getRatingPoll());
+		ratings.put(Rating.E_ADVERTISING, numberInfo.getRatingAdvertising());
+		ratings.put(Rating.F_GAMBLE, numberInfo.getRatingGamble());
+		ratings.put(Rating.G_FRAUD, numberInfo.getRatingFraud());
 		
-		int votes = info.getVotes();
-		if (votes == 0) {
-			topRating = Rating.A_LEGITIMATE;
-		}
+		Rating topRating = info.getRating();
 		
-		return SearchResult.create().setPhoneId(phoneId).setNumber(number).setComments(comments).setInfo(info).setSearches(searches).setAiSummary(aiSummary).setRelatedNumbers(relatedNumbers).setPrev(prev).setNext(next)
-				.setTopRating(topRating).setRatings(ratings);
+		return SearchResult.create()
+				.setPhoneId(phone)
+				.setNumber(number)
+				.setComments(shownComments)
+				.setInfo(info)
+				.setSearches(searches)
+				.setAiSummary(aiSummary)
+				.setRelatedNumbers(relatedNumbers)
+				.setPrev(prev)
+				.setNext(next)
+				.setTopRating(topRating)
+				.setRatings(ratings);
 	}
 
-	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult) throws ServletException, IOException {
+	private void sendResult(HttpServletRequest req, HttpServletResponse resp, SearchResult searchResult, int minVotes) throws ServletException, IOException {
 		String ratingAttribute = RatingServlet.ratingAttribute(searchResult.getPhoneId());
 		if (getSessionAttribute(req, ratingAttribute) != null) {
-			req.setAttribute("thanks", Boolean.TRUE);
+			req.setAttribute(THANKS_ATTR, Boolean.TRUE);
 		}
 		
-		String status = status(searchResult.getInfo().getVotes());
+		PhoneInfo info = searchResult.getInfo();
+		String status = status(info.getVotes(), minVotes);
 		
-		String defaultSummary = defaultSummary(req, searchResult.getInfo());
-		
-		String summary;
-		String description;
-		if (isEmpty(searchResult.getAiSummary())) {
-			summary = null;
-			description = defaultSimpleSummary(searchResult.getInfo());
-		} else {
-			description = summary = JspUtil.quote(searchResult.getAiSummary());
+		// Limit to 10 comments.
+		if (searchResult.getComments().size() > 10) {
+			searchResult.setComments(searchResult.getComments().subList(0, 10));
 		}
 		
-		req.setAttribute("comments", searchResult.getComments());
+		// Shorten comments from meta search.
+		for (UserComment comment : searchResult.getComments()) {
+			if (comment.getService() != null && comment.getComment().length() > 280) {
+				comment.setComment(comment.getComment().substring(0, 277) + "...");
+			}
+
+			// Normalize votes.
+        	int up = Math.max(0, comment.getUp() - comment.getDown());
+          	int down = Math.max(0, comment.getDown() - comment.getUp());
+          	comment.setUp(up).setDown(down);
+		}
+		
+		req.setAttribute(COMMENTS_ATTR, searchResult.getComments());
 
 		// The canonical path of this page.
-		req.setAttribute("path", req.getServletPath() + '/' + searchResult.getPhoneId());
+		req.setAttribute(PATH_ATTR, req.getServletPath() + '/' + searchResult.getPhoneId());
 		
-		req.setAttribute("info", searchResult.getInfo());
-		req.setAttribute("number", searchResult.getNumber());
-		req.setAttribute("prev", searchResult.getPrev());
-		req.setAttribute("next", searchResult.getNext());
-		req.setAttribute("summary", summary);
-		req.setAttribute("defaultSummary", defaultSummary);
-		req.setAttribute("rating", searchResult.getTopRating());
-		req.setAttribute("ratings", searchResult.getRatings());
-		req.setAttribute("searches", searchResult.getSearches());
-		req.setAttribute("relatedNumbers", searchResult.getRelatedNumbers());
-		req.setAttribute("title", status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
-		req.setAttribute("description", description + ". Mit PhoneBlock Werbeanrufe automatisch blockieren, kostenlos und ohne Zusatzhardware.");
+		req.setAttribute(INFO_ATTR, info);
+		req.setAttribute("searchResult", searchResult);
+		req.setAttribute(NUMBER_ATTR, searchResult.getNumber());
+		req.setAttribute(PREV_ATTR, searchResult.getPrev());
+		req.setAttribute(NEXT_ATTR, searchResult.getNext());
+		req.setAttribute(RATING_ATTR, searchResult.getTopRating());
+		Map<Rating, Integer> ratings = searchResult.getRatings();
+		req.setAttribute(RATINGS_ATTR, ratings);
+		List<Integer> searches = searchResult.getSearches();
+		req.setAttribute(SEARCHES_ATTR, searches);
+		req.setAttribute(RELATED_NUMBERS_ATTR, searchResult.getRelatedNumbers());
+		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
+		
+        Language lang = DefaultController.selectLanguage(req);
+		ResourceBundle bundle = ResourceBundle.getBundle("Messages", lang.locale);
 		
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
@@ -302,7 +469,7 @@ public class SearchServlet extends HttpServlet {
 		
 		if (searchResult.getTopRating() != Rating.B_MISSED) {
 			keywords.append(", ");
-			keywords.append(Ratings.getLabel(searchResult.getTopRating()));
+			keywords.append(bundle.getString(Ratings.getLabelKey(searchResult.getTopRating())));
 		}
 		
 		keywords.append(", ");
@@ -313,45 +480,113 @@ public class SearchServlet extends HttpServlet {
 			keywords.append(searchResult.getNumber().getCity());
 		}
 		
-		req.setAttribute("keywords", keywords.toString());
-		ServletUtil.display(req, resp, "/phone-info.jsp");
+		req.setAttribute(KEYWORDS_ATTR, keywords.toString());
+		
+		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
+		req.setAttribute("ratingLabelKey", Ratings.getLabelKey(searchResult.getTopRating()));
+		
+  		String state = info.isWhiteListed() ? 
+  			"whitelisted" : 
+  			(
+  				info.getVotes() <= 0 ? 
+  				(
+  					info.getVotesWildcard() <= 0 ? 
+  						"legitimate" : 
+  						"wildcard"
+  				) : (
+  					info.getVotes() < minVotes ? 
+  						"suspicious" : 
+  						(
+  							info.isArchived() ? 
+  								"archived" : 
+  								"blocked"
+  						)
+  				)
+  			);
+		
+		req.setAttribute("state", state);
+		
+		// Create ratings chart
+		StringBuilder ratingLabels = new StringBuilder();
+		StringBuilder ratingData = new StringBuilder();
+		StringBuilder ratingBackground = new StringBuilder();
+		StringBuilder ratingBorder = new StringBuilder();
+
+		boolean firstRating = true;
+		ratingLabels.append('[');
+		ratingData.append('[');
+		ratingBackground.append('[');
+		ratingBorder.append('[');
+		for (Rating r : Rating.values()) {
+			if (r == Rating.B_MISSED) {
+				continue;
+			}
+			if (firstRating) {
+				firstRating = false;
+			} else {
+				ratingLabels.append(',');
+				ratingData.append(',');
+				ratingBackground.append(',');
+				ratingBorder.append(',');
+			}
+			jsString(ratingLabels, bundle.getString(Ratings.getLabelKey(r)));
+
+			ratingData.append(ratings.getOrDefault(r, 0));
+
+			String rgb = Ratings.getRGB(r);
+			jsString(ratingBackground, "rgba(" + rgb + ", 0.2)");
+
+			jsString(ratingBorder, "rgba(" + rgb + ", 1)");
+		}
+		ratingLabels.append(']');
+		ratingData.append(']');
+		ratingBackground.append(']');
+		ratingBorder.append(']');
+		
+		req.setAttribute("ratingLabels", ratingLabels.toString());
+		req.setAttribute("ratingData", ratingData.toString());
+		req.setAttribute("ratingBackground", ratingBackground.toString());
+		req.setAttribute("ratingBorder", ratingBorder.toString());
+		
+		// Create search chart
+		SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.");
+		Calendar date = new GregorianCalendar();
+		date.add(Calendar.DAY_OF_MONTH, -(searches.size() - 1));
+
+		StringBuilder searchLabels = new StringBuilder();
+		StringBuilder searchData = new StringBuilder();
+
+		boolean first = true;
+
+		searchLabels.append('[');
+		searchData.append('[');
+		for (Integer cnt : searches) {
+			if (first) {
+				first = false;
+			} else {
+				searchLabels.append(',');
+				searchData.append(',');
+			}
+			jsString(searchLabels, fmt.format(date.getTime()));
+			date.add(Calendar.DAY_OF_MONTH, 1);
+			
+			searchData.append(cnt);
+		}
+		searchLabels.append(']');
+		searchData.append(']');
+
+		req.setAttribute("searchLabels", searchLabels.toString());
+		req.setAttribute("searchData", searchData.toString());
+		
+		TemplateRenderer.getInstance(req).process("/phone-info", req, resp);
 	}
 
-	private static boolean isEmpty(String aiSummary) {
-		return aiSummary == null || aiSummary.isBlank();
+	private static void jsString(StringBuilder js, String txt) {
+		js.append('"');
+		js.append(txt.replace("\"", "\\\""));
+		js.append('"');
 	}
 
-	private String defaultSummary(HttpServletRequest req, SpamReport info) {
-		int votes = info.getVotes();
-		if (info.isWhiteListed()) {
-			return "Die Telefonnummer steht auf der weißen Liste und kann von PhoneBlock nicht gesperrt werden. Wenn Du dich trotzdem von dieser Nummer belästigt fühlst, richte bitte eine private Sperre für diese Nummer ein.";
-		}
-		if (votes == 0) {
-			return "Die Telefonnummer ist nicht in der <a href=\"" + req.getContextPath() +
-					"/\">PhoneBlock</a>-Datenbank vorhanden. Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code>" + 
-					info.getPhone() + "</code> sprechen.";
-		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
-			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
-					+ " die für eine Sperrung von ☎ <code>" + info.getPhone() + "</code> sprechen. Die Nummer wird aber noch nicht blockiert.";
-		} else {
-			return "Die Telefonnummer ☎ <code>" + info.getPhone() + "</code> ist eine mehrfach berichtete Quelle von <a href=\"" + req.getContextPath()
-					+ "/status.jsp\">unerwünschten Telefonanrufen</a>. " + votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
-		}
-	}
-
-	private String defaultSimpleSummary(SpamReport info) {
-		int votes = info.getVotes();
-		if (votes == 0) {
-			return "Es gibt keine Beschwerden über die Telefonnummer ☎ " + info.getPhone() + ".";
-		} else if (votes < DB.MIN_VOTES || info.isArchived()) {
-			return "Es gibt bereits " + (votes == 1 ? "eine Stimme" : votes + " Stimmen") 
-					+ " die für eine Sperrung von ☎ " + info.getPhone() + " sprechen. Die Nummer wird aber noch nicht blockiert.";
-		} else {
-			return "Die Telefonnummer ☎ " + info.getPhone() + " ist eine mehrfach berichtete Quelle von unerwünschten Telefonanrufen. " + 
-					votes + " Stimmen sprechen sich für eine Sperrung der Nummer aus.";
-		}
-	}
-	
 	/** 
 	 * Whether the request is from a known bot.
 	 */
@@ -372,10 +607,10 @@ public class SearchServlet extends HttpServlet {
 		return session.getAttribute(attribute);
 	}
 
-	private String status(int votes) {
-		if (votes == 0) {
+	private String status(int votes, int minVotes) {
+		if (votes <= 0) {
 			return "Keine Beschwerden";
-		} else if (votes < DB.MIN_VOTES) {
+		} else if (votes < minVotes) {
 			return "Spamverdacht";
 		} else {
 			return "Blockiert";

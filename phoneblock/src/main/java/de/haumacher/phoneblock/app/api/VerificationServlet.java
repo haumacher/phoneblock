@@ -6,21 +6,22 @@ package de.haumacher.phoneblock.app.api;
 import java.io.IOException;
 import java.util.UUID;
 
+import de.haumacher.msgbuf.json.JsonReader;
+import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import de.haumacher.phoneblock.app.api.model.RegistrationCompletion;
+import de.haumacher.phoneblock.app.api.model.RegistrationResult;
+import de.haumacher.phoneblock.app.api.model.SessionInfo;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.ServletUtil;
+import jakarta.mail.internet.AddressException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import de.haumacher.msgbuf.json.JsonReader;
-import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.app.RegistrationServlet;
-import de.haumacher.phoneblock.app.api.model.RegistrationCompletion;
-import de.haumacher.phoneblock.app.api.model.RegistrationResult;
-import de.haumacher.phoneblock.app.api.model.SessionInfo;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.util.ServletUtil;
 
 /**
  * Servlet completing a user registration.
@@ -45,17 +46,26 @@ public class VerificationServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		String email = sessionInfo.getEmail();
 		
-		String extId = email.trim().toLowerCase();
-		String login = db.getLogin(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId);
+		String login;
 		String password;
-		if (login == null) {
-			login = UUID.randomUUID().toString();
-			password = db.createUser(RegistrationServlet.IDENTIFIED_BY_EMAIL, extId, login, email);
-		} else {
-			password = db.resetPassword(login);
+		try {
+			login = db.getEmailLogin(email);
+			if (login == null) {
+				
+				Language language = DefaultController.selectLanguage(req);
+				String dialPrefix = DefaultController.selectDialPrefix(req);
+				
+				login = UUID.randomUUID().toString();
+				password = db.createUser(login, email, language.tag, dialPrefix);
+				db.setEmail(login, email);
+			} else {
+				password = db.resetPassword(login);
+			}
+		} catch (AddressException e) {
+			ServletUtil.sendError(resp, "Invalid e-mail address.");
+			return;
 		}
 		
-		db.setEmail(login, email);
 		
 		ServletUtil.sendResult(req, resp, RegistrationResult.create().setSession(sessionInfo.getSession()).setLogin(login).setPassword(password));
 	}

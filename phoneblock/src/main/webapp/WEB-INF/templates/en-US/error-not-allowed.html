@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">This page cannot be displayed in the browser</h1>
+
+			<p data-tx="t0002">You must enter your address book link, which you received during <a th:href="@{/login}">registration</a>, as described in the <a th:href="@{/setup}">installation instructions</a> together with your e-mail address and the password sent to you as an address book in your Fritz!Box You cannot display this link directly in the browser because address books are accessed via a special protocol (CardDAV) that your browser does not support.</p>
+		</div>
+	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

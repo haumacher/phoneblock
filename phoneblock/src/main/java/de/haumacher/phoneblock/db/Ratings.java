@@ -3,42 +3,35 @@
  */
 package de.haumacher.phoneblock.db;
 
-import de.haumacher.phoneblock.db.model.RatingInfo;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.RatingInfo;
 
 /**
- * Utilities for {@link de.haumacher.phoneblock.db.model.Rating}s.
+ * Utilities for {@link Rating}s.
  */
 public class Ratings {
 
 	/** 
 	 * The number of votes the given {@link Ratings} is worth.
 	 */
-	public static int getVotes(de.haumacher.phoneblock.db.model.Rating rating) {
+	public static int getVotes(Rating rating) {
         return switch (rating) {
-            case A_LEGITIMATE -> -10;
-            case B_MISSED, G_FRAUD, C_PING, D_POLL, E_ADVERTISING, F_GAMBLE -> 2;
+            case A_LEGITIMATE -> -1;
+            case B_MISSED, G_FRAUD, C_PING, D_POLL, E_ADVERTISING, F_GAMBLE -> 1;
         };
     }
 
 	/**
 	 * The label to display this {@link Ratings}.
 	 */
-	public static String getLabel(de.haumacher.phoneblock.db.model.Rating rating) {
-        return switch (rating) {
-            case A_LEGITIMATE -> "Seriös";
-            case B_MISSED -> "Unbekannt";
-            case C_PING -> "Ping-Anruf";
-            case D_POLL -> "Umfrage";
-            case E_ADVERTISING -> "Werbung";
-            case F_GAMBLE -> "Gewinnspiel";
-            case G_FRAUD -> "Betrug";
-        };
+	public static String getLabelKey(Rating rating) {
+        return "rating." + rating.name();
     }
 
 	/**
 	 * The CSS class for visualizing the given rating.
 	 */
-	public static String getCssClass(de.haumacher.phoneblock.db.model.Rating rating) {
+	public static String getCssClass(Rating rating) {
         return switch (rating) {
             case A_LEGITIMATE -> "is-legitimate";
             case B_MISSED -> "is-missed";
@@ -53,7 +46,7 @@ public class Ratings {
 	/**
 	 * The RGB color values to display the given rating in a chart.
 	 */
-	public static String getRGB(de.haumacher.phoneblock.db.model.Rating rating) {
+	public static String getRGB(Rating rating) {
         return switch (rating) {
             case A_LEGITIMATE -> "72, 199, 142";
             case B_MISSED -> "170, 172, 170";

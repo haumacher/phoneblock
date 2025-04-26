@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-android.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Android-installasjon</h1>
+		
+		<p data-tx="t0002">Installasjonen legger til PhoneBlock-adresseboken i kontaktene dine. Hvis du mottar en oppringning fra et spam-nummer, vises dette umiddelbart, f.eks. "SPAM: 03016637169". Du kan også umiddelbart se i listen over ubesvarte anrop at det ikke er verdt å ringe tilbake, uten å måtte google nummeret først.</p>
+		
+		<p data-tx="t0003">Du kan ikke bruke dette til å blokkere SPAM-anrop (telefonen vil fortsatt ringe, men du vil se at det er et SPAM-anrop). Du kan blokkere SPAM-anrop ved å <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">installere SpamBlocker</a> og integrere PhoneBlock-databasen. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> er en uavhengig app, vennligst kontakt utvikleren direkte hvis du har problemer med den.</p>
+		
+		<p data-tx="t0004">For å synkronisere adresseboken trenger du en app som du kan synkronisere Internett-telefonbøker med. Du kan for eksempel bruke "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>" eller "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Instruksjonene her er skrevet for "PeopleSync", men fremgangsmåten med "DAVx⁵" er svært lik:</p>
+		
+		<h2 data-tx="t0005">Trinn 1: Åpne Playstore og søk etter "PeopleSync"</h2>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Åpne Playstore" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
+	  		</div>
+		
+			<div class="column">
+				<img alt="Søk etter PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" href="#">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0006">Tilbake</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
+		    <span data-tx="t0007">Videre</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

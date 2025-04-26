@@ -5,13 +5,13 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.db.DBService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import de.haumacher.phoneblock.db.DBService;
 
 /**
  * {@link HttpServlet} creating a new password for the currently logged in user.
@@ -40,7 +40,7 @@ public class ResetPasswordServlet extends HttpServlet {
 		String password = DBService.getInstance().resetPassword(login);
 		if (password == null) {
 			req.setAttribute("message", "Nutzername nicht gefunden, bitte versuch Dich neu zu registrieren.");
-			req.getRequestDispatcher("/signup.jsp").forward(req, resp);
+			TemplateRenderer.getInstance(req).process("/login", req, resp);
 			return;
 		}
 		

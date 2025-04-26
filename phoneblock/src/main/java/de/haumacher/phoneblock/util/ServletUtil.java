@@ -5,9 +5,6 @@ package de.haumacher.phoneblock.util;
 
 import java.io.IOException;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 
@@ -15,8 +12,8 @@ import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.msgbuf.xml.XmlSerializable;
-import de.haumacher.phoneblock.app.LoginFilter;
-import de.haumacher.phoneblock.db.DBService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Utility methods for servlet implementations.
@@ -82,31 +79,13 @@ public class ServletUtil {
 		resp.getWriter().write(message);
 	}
 
-	public static boolean checkAuthentication(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String authHeader = req.getHeader("Authorization");
-		if (authHeader != null && !authHeader.isEmpty()) {
-			String userName = DBService.getInstance().basicAuth(authHeader);
-			if (userName != null) {
-				req.setAttribute(LoginFilter.AUTHENTICATED_USER_ATTR, userName);
-				return true;
-			}
-		}
-		
-		sendAuthenticationRequest(resp);
-		return false;
-	}
-	
 	public static String currentPage(HttpServletRequest req) {
 		String currentPage = (String) req.getAttribute(CURRENT_PAGE);
 		if (currentPage == null) {
-			currentPage = req.getRequestURI();
+			String requestURI = req.getRequestURI();
+			currentPage = requestURI.substring(req.getContextPath().length());
 		}
 		return currentPage;
-	}
-
-	public static void display(HttpServletRequest req, HttpServletResponse resp, String page) throws ServletException, IOException {
-		req.setAttribute(CURRENT_PAGE, req.getRequestURI());
-		req.getRequestDispatcher(page).forward(req, resp);
 	}
 
 }

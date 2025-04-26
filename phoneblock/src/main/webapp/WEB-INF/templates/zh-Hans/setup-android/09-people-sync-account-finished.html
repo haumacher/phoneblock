@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">安装安卓系统</h1>
+		
+		<h2 data-tx="t0002">第 7 步：订阅拦截列表</h2>
+		
+		<p data-tx="t0003">选择新创建的账户并激活 "Blocklist "地址簿。现在按下同步按钮。</p>
+		
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="账户已设立" class="image appscreen" data-tx="t0006" th:src="@{/assets/img/peoplesync/09-people-sync-account-finished.png}"/>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="订阅拦截列表" class="image appscreen" data-tx="t0007" th:src="@{/assets/img/peoplesync/10-people-sync-subscribe.png}"/>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/07-people-sync-add}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">返回</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/11-spam-contacts}">
+		    <span data-tx="t0005">更多</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

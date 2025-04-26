@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body th:dir="${currentLang.direction}">
+
+<th:block th:fragment="forms(web)">
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Aanmelden met Google</span></a>
+		</p>
+		<div class="is-collapsible" id="googleLogin">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="get" th:action="@{/oauth/login}">
+
+			    <input name="force_client" th:value="${googleClient}" type="hidden"/>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+	
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0002">Blijf ingelogd op dit apparaat (stelt een <a th:href="@{/datenschutz}">cookie</a> in)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0003">Door te registreren accepteert u de <a th:href="@{/usage}">Gebruiksvoorwaarden</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0004">Doorgaan naar Google</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0005">Als u een Google-account hebt, kunt u deze gebruiken om eenvoudig in te loggen bij PhoneBlock. De eerste keer dat u inlogt met Google, wordt er een PhoneBlock-account aangemaakt. In de toekomst kunt u inloggen met de aangemaakte PhoneBlock-gebruikersnaam of opnieuw via Google.</p>
+				
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>
+
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Aanmelden met e-mail</span></a></p>
+		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
+			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
+	  		<div class="panel-block">
+	  		<div class="content">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+				<div class="field">
+					<label class="label" data-tx="t0007">e-mail</label>
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0020" name="email" placeholder="Uw e-mailadres" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <span class="icon is-small is-left">
+					      <i class="fas fa-envelope"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${emailMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}"></p>
+				</div>
+
+				<div>
+					<label class="label" data-tx="t0019">Beveiligingscode</label>
+
+					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"/>
+
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0022" name="captcha" placeholder="Tekst in de afbeelding hierboven" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-key"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${captchaMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${captchaMessage}" th:text="${captchaMessage}"></p>
+				</div>
+				
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0008">Blijf ingelogd op dit apparaat (stelt een <a th:href="@{/datenschutz}">cookie</a> in)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0009">Door te registreren accepteert u de <a th:href="@{/usage}">Gebruiksvoorwaarden</a>.</div>
+				</div>
+
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0010">Aanvraagcode</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0011">U ontvangt een code op het e-mailadres dat u hebt opgegeven, waarmee u kunt inloggen. De eerste keer inloggen met e-mail creëert een PhoneBlock-account. In de toekomst kunt u dan inloggen met de gegenereerde PhoneBlock-gebruikersnaam of door opnieuw een eenmalige code te sturen.</p>
+			</div>
+			</div>
+			</form>
+		</div>
+	</nav>
+	
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Log in met PhoneBlock-gebruikersnaam</span></a>
+		</p>
+		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
+			<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0025">U kunt deze optie alleen gebruiken om in te loggen nadat u zich al bij PhoneBlock hebt geregistreerd. U ontvangt de PhoneBlock gebruikersnaam wanneer u zich registreert via Google of e-mail (zie hierboven).</p>
+	  		
+				<form method="post" th:action="${contextPath} + ${loginAction}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+				<div class="field">
+				  <p class="control has-icons-left has-icons-right">
+				    <input class="input" data-tx="t0023" placeholder="Gebruikersnaam" th:name="${userNameParam}" type="text"/>
+				    <span class="icon is-small is-left">
+				      <i class="fa-solid fa-user"></i>
+				    </span>
+				    <span class="icon is-small is-right">
+				      <i class="fas fa-check"></i>
+				    </span>
+				  </p>
+				  <p class="help" data-tx="t0013">Gebruik de gebruikersnaam die u hebt gekregen toen u zich bij Google registreerde of uw e-mailadres.</p>
+				</div>
+				<div class="field">
+				  <p class="control has-icons-left">
+				    <input class="input" data-tx="t0024" placeholder="PhoneBlock wachtwoord" th:name="${passwordParam}" type="password"/>
+				    <span class="icon is-small is-left">
+				      <i class="fas fa-lock"></i>
+				    </span>
+				  </p>
+					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">De aanmeldingsgegevens komen niet overeen. Controleer de gegevens en probeer het opnieuw.</p>
+					  <p class="help" data-tx="t0015" th:unless="${loginError}">Het wachtwoord werd je getoond na de eerste keer inloggen. Als je het wachtwoord niet meer bij de hand hebt, kun je inloggen met Google of je e-mailadres, zie hierboven.</p>
+				</div>
+
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0016">Blijf ingelogd op dit apparaat (stelt een <a th:href="@{/datenschutz}">cookie</a> in)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0017">Door te registreren accepteert u de <a th:href="@{/usage}">Gebruiksvoorwaarden</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0018">Inloggen</span>
+				    </button>
+				  </p>
+				</div>
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>	
+</th:block>
+
+</body>
+</html>

@@ -3,7 +3,6 @@
  */
 package de.haumacher.phoneblock.chatgpt;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -11,13 +10,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
+import javax.naming.NamingException;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -30,16 +27,21 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserComment;
 import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
+import de.haumacher.phoneblock.jndi.JNDIProperties;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Service creating summary texts for phone numbers by asking ChatGPT to create a summary of user comments.
@@ -81,19 +83,23 @@ public class ChatGPTService implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
-			Properties properties = new Properties();
-			properties.load(ChatGPTService.class.getResourceAsStream("/phoneblock.properties"));
-			String apiKey = properties.getProperty("chatgpt.secret");
+			JNDIProperties jndi = new JNDIProperties();
+			
+			String apiKey = jndi.lookupString("chatgpt.secret");
+			if (apiKey == null) {
+				LOG.error("No ChatGPT api key, not starting ChatGPTService.");
+				return;
+			}
 			
 			_openai = new OpenAiService(apiKey, Duration.ofMinutes(2));
-		} catch (IOException ex) {
+		} catch (NamingException ex) {
 			LOG.error("Cannot start ChatGPTService.", ex);
 			return;
 		}
 		
 		LOG.info("Starting ChatGPTService.");
 		
-		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heardBeat, 15, 3600, TimeUnit.SECONDS);
+		_heartBeat = _scheduler.scheduler().scheduleWithFixedDelay(this::heardBeat, 15, 3600, TimeUnit.SECONDS);
 		reschedule();
 	}
 
@@ -149,7 +155,7 @@ public class ChatGPTService implements ServletContextListener {
 	 * @throws Throwable If communication or anything else fails.
 	 */
 	private void doProcess() throws Throwable {
-		String phone = nextSummaryRequest();
+		PhoneNumer phone = nextSummaryRequest();
 		if (phone == null) {
 			LOG.info("No summary requests.");
 			exponentialBackoff();
@@ -163,7 +169,9 @@ public class ChatGPTService implements ServletContextListener {
 	/** 
 	 * Creates a new summary for the given number.
 	 */
-	public void createSummary(String phone) {
+	public void createSummary(PhoneNumer number) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		boolean isWhiteListed;
 		List<DBUserComment> comments;
 		
@@ -174,7 +182,7 @@ public class ChatGPTService implements ServletContextListener {
 			session.commit();
 
 			isWhiteListed = reports.isWhiteListed(phone);
-			comments = new ArrayList<>(reports.getComments(phone));
+			comments = new ArrayList<>(reports.getAnyComments(phone));
 		}
 			
 		List<ChatCompletionChoice> answers = createSummary(phone, comments, isWhiteListed);
@@ -183,16 +191,17 @@ public class ChatGPTService implements ServletContextListener {
 		} else {
 			String summary = answers.get(0).getMessage().getContent();
 			
-			storeSummary(db, phone, summary);
+			storeSummary(db, number, summary);
 		}
 	}
 
-	private String nextSummaryRequest() {
+	private PhoneNumer nextSummaryRequest() {
 		DB db = _db.db();
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			return reports.topSummaryRequest();
+			String phone = reports.topSummaryRequest();
+			return NumberAnalyzer.analyze(phone);
 		}
 	}
 
@@ -250,7 +259,9 @@ public class ChatGPTService implements ServletContextListener {
 		return question;
 	}
 
-	private void storeSummary(DB db, String phone, String summary) {
+	private void storeSummary(DB db, PhoneNumer number, String summary) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
@@ -264,7 +275,7 @@ public class ChatGPTService implements ServletContextListener {
 	
 			LOG.info("Created summary for: " + phone);
 			
-			_indexer.publishUpdate(phone);
+			_indexer.publishUpdate(number);
 		}
 	}
 
@@ -272,7 +283,7 @@ public class ChatGPTService implements ServletContextListener {
 		// Reset exponential back-off.
 		_delaySeconds = INITIAL_DELAY_SECONDS;
 		
-		_process = _scheduler.executor().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
+		_process = _scheduler.scheduler().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
 	}
 
 	/** 
@@ -285,7 +296,7 @@ public class ChatGPTService implements ServletContextListener {
 		}
 		
 		LOG.info("Rescheduling with " + _delaySeconds + " seconds delay.");
-		_process = _scheduler.executor().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
+		_process = _scheduler.scheduler().schedule(this::process, _delaySeconds, TimeUnit.SECONDS);
 	}
 
 }

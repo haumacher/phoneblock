@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+	<section class="section">
+		<div class="content">
+			<h1 data-tx="t0001">Diese Seite kann nicht im Browser angezeigt werden</h1>
+
+			<p data-tx="t0002">
+				Deinen Addressbuch-Link, den Du bei der <a th:href="@{/login}">Anmeldung</a>
+				erhalten hast, musst Du wie in der <a th:href="@{/setup}">Installationsanleitung</a> 
+				beschrieben zusammen mit Deiner
+				E-Mail-Adresse und dem Dir zugeschickten Passwort in Deiner
+				Fritz!Box als Adressbuch eintragen. Du kannst diesen Link nicht
+				direkt im Browser anzeigen, weil der Zugriff auf Adressbücher über
+				ein spezielles Protokoll (CardDAV) erfolgt, das Dein Browser nicht
+				unterstützt.
+			</p>
+		</div>
+	</section>
+
+	<section th:replace="~{fragments/page :: actions}"></section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

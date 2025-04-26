@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.3.1"
+		"version": "v1.3.4"
 	},
 	"servers": [
 		{
@@ -17,7 +17,148 @@
 	"paths": {
 		"/num/{num}": {
 			"get": {
-				"summary": "Retrieve information for the given phone number.",
+				"summary": "Checks whether the given phone number in on the blocklist.",
+				"responses": {
+					"200": {
+						"description": "Checks whether the given phone number is in the PhoneBlock database.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"phone": {
+											"type": "string"
+										},
+										"votes": {
+											"type": "integer"
+										},
+										"rating": {
+											"type": "string",
+											"enum": [
+												"A_LEGITIMATE",
+												"B_MISSED",
+												"C_PING",
+												"D_POLL",
+												"E_ADVERTISING",
+												"F_GAMBLE",
+												"G_FRAUD"
+											]
+										}
+									}
+								},
+								"example": {
+									"phone": "0123456789",
+									"votes": 42,
+									"rating": "C_POLL"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "num",
+					"in": "path",
+					"description": "Phone number to inspect",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
+				}
+			]
+		},
+		"/check": {
+			"get": {
+				"summary": "Checks a phone number hash against the SPAM database. This API provides better privacy than the direct lookup with the phone number.",
+				"responses": {
+					"200": {
+						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"phone": {
+											"type": "string"
+										},
+										"votes": {
+											"type": "integer"
+										},
+										"rating": {
+											"type": "string",
+											"enum": [
+												"A_LEGITIMATE",
+												"B_MISSED",
+												"C_PING",
+												"D_POLL",
+												"E_ADVERTISING",
+												"F_GAMBLE",
+												"G_FRAUD"
+											]
+										}
+									}
+								},
+								"example": {
+									"phone": "0123456789",
+									"votes": 42,
+									"rating": "C_POLL"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "sha1",
+					"in": "query",
+					"description": "The hex-encoded SHA1 hash (40 hex digits) of the calling phone number to check for SPAM. The number to hash must be in international format (e.g. '3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC' for the German phone number '+4917650642602'). You can use the /hash API for testing and debugging your hash computation.",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC"
+					}
+				},
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": ["json", "xml"]
+					}
+				}
+			]
+		},
+		"/search/{num}": {
+			"get": {
+				"summary": "Retrieve extensive information for the given phone number.",
 				"responses": {
 					"200": {
 						"description": "Retrieves information for the given phone number from the PhoneBlock database.",
@@ -54,7 +195,13 @@
 							}
 						}
 					}
-				}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"APIKey": []
+					}
+				]
 			},
 			"parameters": [
 				{
@@ -138,11 +285,23 @@
 				},
 				"security": [
 					{
-						"PhoneBlock": []
+						"PhoneBlockUser": [],
+						"APIKey": []
 					}
 				]
 			},
 			"parameters": [
+				{
+					"name": "minVotes",
+					"in": "query",
+					"description": "The minimum votes for a number to be added to the blocklist.",
+					"required": false,
+					"default": "4",
+					"schema": {
+						"type": "integer",
+						"minimum": 2
+					}
+				},
 				{
 					"name": "format",
 					"in": "query",
@@ -377,17 +536,88 @@
 				},
 				"security": [
 					{
-						"PhoneBlock": []
+						"PhoneBlockUser": [],
+						"APIKey": []
 					}
 				]
 			}
+		},
+		"/hash": {
+			"get": {
+				"summary": "Demonstrates hash computation for the /check API (for testing and debugging only, otherwise there is no privacy benefit).",
+				"responses": {
+					"200": {
+						"description": "Computes the encoded SHA1 hash of the given phone number. The phone number is normalized to international format before hash computation. E.g. for '004917650642602', or '017650642602' the hash of '+4917650642602' is computed.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC"
+							}
+						}
+					}
+				}
+			},
+			"parameters": [
+				{
+					"name": "phone",
+					"in": "query",
+					"description": "The phone number to hash.",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"/test": {
+			"get": {
+				"summary": "Checks connection and authentication. Call to this API can be used when setting up a PhoneBlock connection in a third-party app to verify the user has provided valid credentials.",
+				"responses": {
+					"200": {
+						"description": "Checks provided authentication token and returns 'ok' on success.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "ok"
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": []
 		}
 	},
 	"components": {
 		"securitySchemes": {
-			"PhoneBlock": {
+			"PhoneBlockUser": {
+				"description": "A PhoneBlock user name and its password. The method of authorization is deprecated. Better use an API key.",
 				"type": "http",
 				"scheme": "Basic"
+			},
+			"APIKey": {
+				"description": "A PhoneBlock API key created for API access. You can create one from the settings page.",
+				"type": "http",
+				"scheme": "Bearer"
 			}
 		}
 	}

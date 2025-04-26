@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock-parent</artifactId>
-	<version>1.5.0-SNAPSHOT</version>
+	<version>1.7.4-SNAPSHOT</version>
 	
 	<name>PhoneBlock Aggregator</name>
 	<description>Maven aggregator building all parts of PhoneBlock</description>
@@ -31,7 +31,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>1.6.14</tag>
 	</scm>
 	
 	<modules>
@@ -52,7 +52,7 @@
 
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 		
-		<msgbuf.version>1.1.2</msgbuf.version>
+		<msgbuf.version>1.1.7</msgbuf.version>
 	</properties>
 
 	<dependencies>
@@ -149,6 +149,15 @@
 				<configuration>
 					<fork>true</fork>
 				</configuration>
+			</plugin>
+
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-release-plugin</artifactId>
+			    <version>3.1.1</version>
+			    <configuration>
+			        <tagNameFormat>@{project.version}</tagNameFormat>
+			    </configuration>
 			</plugin>
 
 			<plugin>

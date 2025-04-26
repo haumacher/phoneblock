@@ -13,9 +13,9 @@ import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.crawl.FetchBlockedException;
 import de.haumacher.phoneblock.crawl.FetchService;
-import de.haumacher.phoneblock.db.model.UserComment;
 
 /**
  * Algorithm retrieving user comments for phone numbers somewhere in the web. 

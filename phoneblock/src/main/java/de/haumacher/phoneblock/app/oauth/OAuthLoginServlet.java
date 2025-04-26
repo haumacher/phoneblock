@@ -4,14 +4,9 @@
 package de.haumacher.phoneblock.app.oauth;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.pac4j.core.context.FrameworkParameters;
 import org.pac4j.core.context.WebContext;
@@ -29,8 +24,17 @@ import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
+import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.shared.Language;
+import jakarta.mail.internet.AddressException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet receiving user profile information after a successful OAuth login.
@@ -64,9 +68,11 @@ public class OAuthLoginServlet extends HttpServlet {
 		
 		String displayName;
 		String email;
+		Locale locale;
 		if (userProfile instanceof CommonProfile) {
 			CommonProfile commonProfile = (CommonProfile) userProfile;
 			displayName = commonProfile.getDisplayName();
+			locale = commonProfile.getLocale();
 			LOG.info("Received user name: " + displayName);
 			
 			email = commonProfile.getEmail();
@@ -74,15 +80,41 @@ public class OAuthLoginServlet extends HttpServlet {
 		} else {
 			email = null;
 			displayName = null;
+			locale = null;
 		}
 		
-		String extId = userProfile.getId();
+		Language language;
+		if (locale == null) {
+			language = DefaultController.selectLanguage(req);
+		} else {
+			language = DefaultController.selectLanguage(locale);
+		}
+		
+		String googleId = userProfile.getId();
 		
 		Optional<Object> location = sessionStore.get(context, LoginServlet.LOCATION_ATTRIBUTE);
 		
 		DB db = DBService.getInstance();
-		String login = db.getLogin(clientName, extId);
+		String login = db.getGoogleLogin(googleId);
 		if (login == null) {
+			if (email != null && !email.isBlank()) {
+				try {
+					login = db.getEmailLogin(email);
+					if (login != null) {
+						// Link accounts.
+						db.setGoogleId(login, googleId, displayName);
+					}
+				} catch (AddressException e) {
+					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
+					
+					// Do not try again, see below.
+					email = null;
+				}
+			}
+		}
+		
+		if (login == null) {
+			// Create new account.
 			login = UUID.randomUUID().toString();
 			
 			if (displayName == null) {
@@ -93,18 +125,31 @@ public class OAuthLoginServlet extends HttpServlet {
 				}
 			}
 			
-			String passwd = db.createUser(clientName, extId, login, displayName);
-			db.setExtId(login, extId);
+			String dialPrefix = DefaultController.selectDialPrefix(req);
+			
+			String passwd = db.createUser(login, displayName, language.tag, dialPrefix);
+			db.setGoogleId(login, googleId, null);
 			if (email != null) {
-				db.setEmail(login, email);
+				try {
+					db.setEmail(login, email);
+				} catch (AddressException e) {
+					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
+				}
 			}
 			
-			if (location.isEmpty()) {
-				RegistrationServlet.startSetup(req, resp, login, passwd);
-				return;
+			if (location.isPresent()) {
+				req.setAttribute(LoginServlet.LOCATION_ATTRIBUTE, location.get());
 			}
-		} else {
-			LoginFilter.setAuthenticatedUser(req, login);
+			
+			RegistrationServlet.startSetup(req, resp, login, passwd);
+			return;
+		}
+		
+		LoginFilter.setSessionUser(req, login);
+		
+		Optional<Object> remember = sessionStore.get(context, LoginServlet.REMEMBER_ME_PARAM);
+		if (remember.isPresent()) {
+			LoginServlet.processRememberMe(req, resp, db, (String) remember.get(), login);
 		}
 		
 		String path = location.isEmpty() ? SettingsServlet.PATH : (String) location.get();
@@ -116,7 +161,7 @@ public class OAuthLoginServlet extends HttpServlet {
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
-		req.getRequestDispatcher("/login.jsp").forward(req, resp);
+		TemplateRenderer.getInstance(req).process("/login", req, resp);
 	}
 
 }

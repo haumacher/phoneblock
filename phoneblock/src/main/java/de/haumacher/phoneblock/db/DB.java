@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,8 +12,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -21,9 +26,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -33,8 +40,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -47,25 +52,34 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.BlockListEntry;
+import de.haumacher.phoneblock.app.api.model.Blocklist;
+import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.api.model.SearchInfo;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
-import de.haumacher.phoneblock.db.model.BlockListEntry;
-import de.haumacher.phoneblock.db.model.Blocklist;
-import de.haumacher.phoneblock.db.model.PhoneInfo;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.db.model.SearchInfo;
-import de.haumacher.phoneblock.db.model.SpamReport;
-import de.haumacher.phoneblock.db.model.UserComment;
+import de.haumacher.phoneblock.credits.MessageDetails;
+import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.db.settings.Contribution;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import de.haumacher.phoneblock.shared.PhoneHash;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  * The database abstraction layer.
  */
 public class DB {
+
+	static final String TOKEN_VERSION = "pbt_";
 
 	private static final int MAX_COMMENT_LENGTH = 8192;
 
@@ -94,16 +108,22 @@ public class DB {
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList(
-		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES", 
-		"SEARCHCLUSTER", "SEARCHHISTORY"
+		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES"
 	);
 	
 	private SqlSessionFactory _sessionFactory;
 	private DataSource _dataSource;
 
-	private static final String BASIC_PREFIX = "Basic ";
+	private static final String BASIC_AUTH_PREFIX = "Basic ";
 
-	private MessageDigest _sha256;
+	public static final int MIN_AGGREGATE_10 = 4;
+	
+	public static final int MIN_AGGREGATE_100 = 3;
+
+	/**
+	 * One hour in milliseconds.
+	 */
+	public static final long RATE_LIMIT_MS = 1000*60*60;
 
 	private final SecureRandom _rnd;
 	
@@ -145,36 +165,14 @@ public class DB {
 		configuration.addMapper(Domains.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
-		Set<String> tableNames = new HashSet<>();
-		try (SqlSession session = openSession()) {
-			try (ResultSet rset = session.getConnection().getMetaData().getTables(null, "PUBLIC", "%", null)) {
-				while (rset.next()) {
-					String tableName = rset.getString("TABLE_NAME");
-					tableNames.add(tableName);
-				}
-			}
-			
-			if (!tableNames.containsAll(TABLE_NAMES)) {
-				// Set up schema.
-		        ScriptRunner sr = new ScriptRunner(session.getConnection());
-		        sr.setAutoCommit(true);
-		        sr.setDelimiter(";");
-		        sr.runScript(new InputStreamReader(getClass().getResourceAsStream("db-schema.sql"), StandardCharsets.UTF_8));
-			}
-		}
-		
-		try {
-			_sha256 = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException ex) {
-			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
-		}
+		setupSchema();
 		
 		 cleanup();
 
 		 Date timeCleanup = schedule(20, this::cleanup);
 		 LOG.info("Scheduled next DB cleanup: " + timeCleanup);
 		 
-		 Date timeHistory = schedule(0, this::runCleanupSearchHistory);
+		 Date timeHistory = schedule(0, this::runUpdateHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
 		 
 		 if (sendHelpMails && _mailService != null) {
@@ -183,6 +181,298 @@ public class DB {
 		 } else {
 			 LOG.info("Support mails are disabled.");
 		 }
+	}
+
+	private void setupSchema() throws SQLException {
+		Set<String> tableNames = new HashSet<>();
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			
+			Connection connection = session.getConnection();
+			try (ResultSet rset = connection.getMetaData().getTables(null, "PUBLIC", "%", null)) {
+				while (rset.next()) {
+					String tableName = rset.getString("TABLE_NAME");
+					tableNames.add(tableName);
+				}
+			}
+			
+			if (!tableNames.containsAll(TABLE_NAMES)) {
+				runScript(connection, "db-schema.sql");
+			}
+			
+			else if (!tableNames.contains("NUMBERS")) {
+    			LOG.info("Migrating schema to consolidated numbers.");
+    			
+    			runScript(connection, "db-migration-02.sql");
+
+    			LOG.info("Building revision ranges in numbers history.");
+
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+		        	select h.RMIN, h.RMAX, h.PHONE from NUMBERS_HISTORY h
+		        	order by h.PHONE asc, h.RMIN desc
+        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+		        	
+		        	int rows = 0;
+		        	String lastPhone = "";
+		        	int lastRmin = 0;
+		        	try (ResultSet cursor = stmt.executeQuery()) {
+		        		while (cursor.next()) {
+		        			int rmin = cursor.getInt(1);
+		        			String phone = cursor.getString(3);
+		        			
+		        			if (lastPhone.equals(phone)) {
+		        				cursor.updateInt(2, lastRmin - 1);
+		        			} else {
+		        				cursor.updateInt(2, Integer.MAX_VALUE);
+		        			}
+		        			cursor.updateRow();
+		        			rows++;
+		        			
+		        			if (rows % 1000 == 0) {
+		        				LOG.info("Updated rmax of row {}.", rows);
+		        			}
+		        			
+		        			lastPhone = phone;
+		        			lastRmin = rmin;
+		        		}
+		        	}
+		        }
+
+		        connection.commit();
+
+		        LOG.info("Loading ratings today.");
+		        
+		        Map<String, Map<String, Integer>> ratingsToday = new HashMap<>();
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+			        	SELECT r.PHONE, r.RATING, r.COUNT - r.BACKUP FROM RATINGS r WHERE r.COUNT > r.BACKUP;
+	        		""")) {
+		        	try (ResultSet result = stmt.executeQuery()) {
+		        		while (result.next()) {
+		        			ratingsToday.computeIfAbsent(result.getString(1), x -> new HashMap<>()).put(result.getString(2), Integer.valueOf(result.getInt(3)));
+		        		}
+		        	}
+		        }
+		        
+		        LOG.info("Loading searches today.");
+		        
+		        Map<String, Integer> searchesToday = new HashMap<>();
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+			        	SELECT s.PHONE, s.COUNT - s.BACKUP FROM SEARCHES s WHERE s.COUNT - s.BACKUP > 0
+	        		""")) {
+		        	try (ResultSet result = stmt.executeQuery()) {
+		        		while (result.next()) {
+		        			searchesToday.put(result.getString(1), Integer.valueOf(result.getInt(2)));
+		        		}
+		        	}
+		        }
+		        
+		        LOG.info("Aggregating numbers history.");
+
+		        try (PreparedStatement stmt = connection.prepareStatement("""
+		        	select h.RMIN, h.RMAX, h.PHONE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+		        	order by h.PHONE asc, h.RMIN desc
+        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+		        	
+		        	int rows = 0;
+		        	String lastPhone = "";
+		        	
+		        	int calls = 0;
+		        	int votes = 0; 
+		        	int legitimate = 0;
+		        	int ping = 0;
+		        	int poll = 0;
+		        	int advertising = 0;
+		        	int gamble = 0;
+		        	int fraud = 0;
+		        	int searches = 0;
+		        	
+		        	try (ResultSet cursor = stmt.executeQuery()) {
+		        		while (cursor.next()) {
+		        			String phone = cursor.getString(3);
+		        			
+		        			if (!lastPhone.equals(phone)) {
+		        				NumberInfo info = getPhoneInfo(reports, phone);
+		        				calls = info.getCalls();
+		        				votes = info.getVotes();
+		        				legitimate = info.getRatingLegitimate();
+		        				ping = info.getRatingPing();
+		        				poll = info.getRatingPoll();
+		        				advertising = info.getRatingAdvertising();
+		        				gamble = info.getRatingGamble();
+		        				fraud = info.getRatingFraud();
+		        				searches = info.getSearches();
+		        				
+		        				Integer todaySearches = searchesToday.get(phone);
+		        				if (todaySearches != null) {
+		        					searches -= todaySearches.intValue();
+		        				}
+		        				
+		        				Map<String, Integer> todayRatings = ratingsToday.get(phone);
+		        				if (todayRatings != null) {
+		        					for (Entry<String, Integer> entry : todayRatings.entrySet()) {
+		        						switch (entry.getKey()) {
+		        						case "A_LEGITIMATE": legitimate -= entry.getValue().intValue(); break;
+		        						case "C_PING": ping -= entry.getValue().intValue(); break;
+		        						case "D_POLL": poll -= entry.getValue().intValue(); break;
+		        						case "E_ADVERTISING": advertising -= entry.getValue().intValue(); break;
+		        						case "F_GAMBLE": gamble -= entry.getValue().intValue(); break;
+		        						case "G_FRAUD": fraud -= entry.getValue().intValue(); break;
+		        						}
+		        					}
+		        				}
+		        			}
+		        			
+	        				int deltaCalls = cursor.getInt(4);
+	        				int deltaVotes = cursor.getInt(5);
+	        				int deltaLegitimate = cursor.getInt(6);
+	        				int deltaPing = cursor.getInt(7);
+	        				int deltaPoll = cursor.getInt(8);
+	        				int deltaAdvertising = cursor.getInt(9);
+	        				int deltaGamble = cursor.getInt(10);
+	        				int deltaFraud = cursor.getInt(11);
+	        				int deltaSearches = cursor.getInt(12);
+	        				
+	        				cursor.updateInt(4, Math.max(0, calls));
+	        				cursor.updateInt(5, Math.max(0, votes));
+	        				cursor.updateInt(6, Math.max(0, legitimate));
+	        				cursor.updateInt(7, Math.max(0, ping));
+	        				cursor.updateInt(8, Math.max(0, poll));
+	        				cursor.updateInt(9, Math.max(0, advertising));
+	        				cursor.updateInt(10, Math.max(0, gamble));
+	        				cursor.updateInt(11, Math.max(0, fraud));
+	        				cursor.updateInt(12, Math.max(0, searches));
+	        				
+	        				cursor.updateRow();
+		        			rows++;
+		        			
+		        			if (rows % 1000 == 0) {
+		        				LOG.info("Aggregated row {}.", rows);
+		        			}
+
+							calls -=       deltaCalls;
+							votes -=       deltaVotes; 
+							legitimate -=  deltaLegitimate;
+							ping -=        deltaPing;
+							poll -=        deltaPoll;
+							advertising -= deltaAdvertising;
+							gamble -=      deltaGamble;
+							fraud -=       deltaFraud;
+							searches -=    deltaSearches;
+		        			
+		        			lastPhone = phone;
+		        		}
+		        	}
+		        }
+		        
+		        connection.commit();
+
+		        LOG.info("Computing aggregate lastPing for blocks of 10.");
+		        
+		        for (AggregationInfo a : reports.getAllAggregation10().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_10).toList()) {
+		        	String prefix = a.getPrefix();
+					int prefixLength = prefix.length();
+					Long lastPing = reports.getLastPingPrefix(prefix, prefixLength + 1);
+		        	if (lastPing != null) {
+		        		reports.sendPing(prefix, prefixLength + 1, lastPing.longValue());
+		        	} else {
+		        		LOG.warn("Did not find a last ping value for prefix 10: " + prefix);
+		        	}
+		        }
+
+		        connection.commit();
+
+		        LOG.info("Computing aggregate lastPing for blocks of 100.");
+
+		        for (AggregationInfo a : reports.getAllAggregation100().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_100).toList()) {
+		        	String prefix = a.getPrefix();
+					int prefixLength = prefix.length();
+					Long lastPing = reports.getLastPingPrefix(prefix, prefixLength + 2);
+		        	if (lastPing != null) {
+		        		reports.sendPing(prefix, prefixLength + 2, lastPing.longValue());
+		        	} else {
+		        		LOG.warn("Did not find a last ping value for prefix 100: " + prefix);
+		        	}
+		        }
+		        
+		        connection.commit();
+			} else if (!tableNames.contains("PROPERTIES")) {
+				runScript(connection, "db-migration-04.sql");
+				
+				try {
+					MessageDigest digest = PhoneHash.createPhoneDigest();
+					
+					LOG.info("Computing phone hashes.");
+					try (PreparedStatement stmt = connection.prepareStatement("""
+			        	select PHONE, SHA1 from NUMBERS
+	        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+						try (ResultSet result = stmt.executeQuery()) {
+							while (result.next()) {
+								String phone = result.getString(1);
+								
+								PhoneNumer analyzed = NumberAnalyzer.analyze(phone);
+								if (analyzed == null) {
+									LOG.error("Invalid phone number in DB: " + phone);
+									continue;
+								}
+
+								byte[] hash = NumberAnalyzer.getPhoneHash(digest, analyzed);
+								
+								result.updateBinaryStream(2, new ByteArrayInputStream(hash));
+								result.updateRow();
+								
+								digest.reset();
+							}
+						}
+					}
+			        connection.commit();
+
+			        LOG.info("Done computing phone hashes.");
+				} catch (Exception ex) {
+					LOG.error("Failed to compute phone hashes.", ex);
+				}
+			} else {
+				Users users = session.getMapper(Users.class);
+				
+				int version = Integer.parseInt(users.getProperty("db.version"));
+				while (true) {
+					version++;
+					
+					String versionId = Integer.toString(version);
+					while (versionId.length() < 2) {
+						versionId = "0" + versionId;
+					}
+
+					String scriptName = "db-migration-" + versionId + ".sql";
+					InputStream script = migrationScript(scriptName);
+					if (script == null) {
+						break;
+					}
+					
+					runScript(connection, scriptName);
+					users.updateProperty("db.version", Integer.toString(version));
+					session.commit();
+				}
+			}
+		}
+	}
+
+	private void runScript(Connection connection, String scriptName) {
+		try (InputStream in = migrationScript(scriptName)) {
+			LOG.info("Running DB script: {}", scriptName);
+			
+			ScriptRunner sr = new ScriptRunner(connection);
+			sr.setAutoCommit(true);
+			sr.setDelimiter(";");
+			sr.runScript(new InputStreamReader(in, StandardCharsets.UTF_8));
+			
+			LOG.info("Finished DB script: {}", scriptName);
+		} catch (IOException ex) {
+			LOG.error("Problem while running DB script '{}': {}", scriptName, ex.getMessage(), ex);
+		}
+	}
+
+	private InputStream migrationScript(String scriptName) {
+		return getClass().getResourceAsStream(scriptName);
 	}
 
 	private Date schedule(int atHour, Runnable command) {
@@ -199,7 +489,7 @@ public class DB {
 		 long millisFirst = cal.getTimeInMillis();
 		 long initialDelay = millisFirst - millisNow;
 		 
-		_tasks.add(_scheduler.executor().scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
+		_tasks.add(_scheduler.scheduler().scheduleAtFixedRate(command, initialDelay, 24 * 60 * 60 * 1000L, TimeUnit.MILLISECONDS));
 		return cal.getTime();
 	}
 	
@@ -217,14 +507,13 @@ public class DB {
 
 	/**
 	 * Creates a new PhoneBlock user account.
-	 * @param clientName The authorization scope for the new user.
-	 * @param extId The ID in the given authorization scope.
 	 * @param login The user name (e.g. e-mail address) of the new account.
+	 * @param lang The preferred language (locale tag) of the user.
 	 * @return The randomly generated password for the account.
 	 */
-	public String createUser(String clientName, String extId, String login, String displayName) {
+	public String createUser(String login, String displayName, String lang, String dialPrefix) {
 		String passwd = createPassword(20);
-		addUser(clientName, extId, login, displayName, passwd);
+		addUser(login, displayName, lang, dialPrefix, passwd);
 		return passwd;
 	}
 
@@ -250,7 +539,163 @@ public class DB {
 		
 		return buffer.toString();
 	}
+	
+	/**
+	 * Creates a persistent authorization token.
+	 * 
+	 * <p>
+	 * Note: The given template is completed with user ID, password hash, and token.
+	 * </p>
+	 */
+	public void createAuthToken(AuthToken template) {
+		byte[] secret = createSecret();
+		byte[] digest = sha256().digest(secret);
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
 
+			long userId = users.getUserId(template.getUserName());
+			
+			template
+				.setUserId(userId)
+				.setPwHash(digest);
+			
+			List<Long> outdatedIds = users.getOutdatedLoginTokens(userId);
+			if (outdatedIds != null && !outdatedIds.isEmpty()) {
+				int tokens = users.deleteTokens(outdatedIds);
+				
+				LOG.info("Deleted {} outdated login tokens for user {}.", tokens, userId);
+			}
+			
+			users.createAuthToken(template);
+			session.commit();
+		}
+		
+		String token = createToken(template, secret);
+		template.setToken(token);
+	}
+
+	private String createToken(AuthToken template, byte[] secret) throws IOError {
+		return TokenInfo.createToken(template.getId(), secret);
+	}
+
+	private byte[] createSecret() {
+		byte[] secret = new byte[16];
+		_rnd.nextBytes(secret);
+		return secret;
+	}
+	
+	public AuthToken createLoginToken(String login, long now, String userAgent) {
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+			.setImplicit(true)
+			.setAccessLogin(true);
+		createAuthToken(authorization);
+		return authorization;
+	}
+
+	public AuthToken createAPIToken(String login, long now, String userAgent) {
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+				.setAccessDownload(true)
+				.setAccessQuery(true)
+				.setAccessRate(true);
+		createAuthToken(authorization);
+		return authorization;
+	}
+	
+	public static AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
+		return AuthToken.create()
+			.setUserName(login)
+			.setCreated(now)
+			.setLastAccess(now)
+			.setUserAgent(nonNullUA(userAgent));
+	}
+	
+	private static String nonNullUA(String userAgent) {
+		return userAgent == null ? "-" : userAgent;
+	}
+
+	public AuthToken checkAuthToken(String token, long now, String userAgent, boolean renew) {
+		if (!token.startsWith(TOKEN_VERSION)) {
+			return null;
+		}
+		
+		try {
+			TokenInfo tokenInfo = TokenInfo.parse(token);
+			
+			try (SqlSession session = openSession()) {
+				Users users = session.getMapper(Users.class);
+				
+				DBAuthToken result = users.getAuthToken(tokenInfo.id);
+				if (result == null) {
+					LOG.info("Outdated authorization token received: {}", token);
+					return null;
+				}
+				
+				byte[] expectedHash = result.getPwHash();
+				byte[] digest = sha256().digest(tokenInfo.secret);
+				
+				if (!Arrays.equals(digest, expectedHash)) {
+					LOG.info("Invalid authorization token received for user {}: {}", result.getUserId(), token);
+					return null;
+				}
+				
+				result.setUserName(users.getUserName(result.getUserId()));
+				
+				// Remember token, since an update is sent to the client.
+				result.setToken(token);
+				
+				// Rate limit DB modification.
+				if (now - result.getLastAccess() > RATE_LIMIT_MS) {
+					users.updateAuthToken(result.getId(), now, userAgent);
+					result.setLastAccess(now);
+			
+					if (renew) {
+						LOG.info("Renewing autorization token for user {}.", result.getUserName());
+						renewToken(users, result);
+					}
+					
+					session.commit();
+				}
+				
+				return result;
+			}
+		} catch (IOException e) {
+			LOG.info("Failed to parse authorization token: {}", token);
+			return null;
+		}
+	}
+
+	/** Changes the secret to invalidate the old token and exchange it with a new token. */
+	private void renewToken(Users users, DBAuthToken authorization) throws IOError {
+		byte[] newSecret = createSecret();
+		byte[] newHash = sha256().digest(newSecret);
+		
+		String newToken = createToken(authorization, newSecret);
+		authorization.setPwHash(newHash);
+		authorization.setToken(newToken);
+
+		users.updateAuthTokenSecret(authorization.getId(), newHash);
+	}
+
+	public void invalidateAuthToken(long id) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.invalidateAuthToken(id);
+			session.commit();
+		}
+	}
+	
+	public void logoutAll(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			Long userId = users.getUserId(login);
+			if (userId != null) {
+				users.invalidateAllTokens(userId.longValue());
+				session.commit();
+			}
+		}
+	}
+	
 	/** 
 	 * Creates a unique random (numeric) ID with the given length.
 	 */
@@ -266,21 +711,25 @@ public class DB {
 	/** 
 	 * Sets the user's e-mail address.
 	 */
-	public void setEmail(String login, String email) {
+	public void setEmail(String login, String email) throws AddressException {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.setEmail(login, email);
+			users.setEmail(login, canonicalEMail(email));
 			session.commit();
 		}
 	}
 	
 	/** 
 	 * Sets the user's external ID in its OAuth authorization scope.
+	 * @param displayName 
 	 */
-	public void setExtId(String login, String extId) {
+	public void setGoogleId(String login, String googleId, String displayName) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.setExtId(login, extId);
+			users.setGoogleId(login, googleId);
+			if (displayName != null && !displayName.isBlank()) {
+				users.setDisplayName(login, displayName);
+			}
 			session.commit();
 		}
 	}
@@ -302,14 +751,14 @@ public class DB {
 	 * @param votes The votes to add/remove for the given phone number.
 	 * @param time The current time to update the last update time to.
 	 */
-	public void processVotes(String phone, int votes, long time) {
+	public void processVotes(PhoneNumer phone, String dialPrefix, int votes, long time) {
 		if (votes == 0) {
 			return;
 		}
 		
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			processVotesAndPublish(reports, phone, votes, time);
+			processVotesAndPublish(reports, phone, dialPrefix, votes, time);
 			session.commit();
 		}
 	}
@@ -319,8 +768,8 @@ public class DB {
 	 * 
 	 * @return Whether an index update should be performed.
 	 */
-	public boolean processVotesAndPublish(SpamReports reports, String phone, int votes, long time) {
-		boolean updateRequired = processVotes(reports, phone, votes, time);
+	public boolean processVotesAndPublish(SpamReports reports, PhoneNumer phone, String dialPrefix, int votes, long time) {
+		boolean updateRequired = processVotes(reports, phone, dialPrefix, votes, time);
 		if (updateRequired) {
 			_indexer.publishUpdate(phone);
 		}
@@ -330,61 +779,196 @@ public class DB {
 	/**
 	 * Updates the votes for a certain number.
 	 */
-	public boolean processVotes(SpamReports reports, String phone, int votes, long time) {
+	public boolean processVotes(SpamReports reports, PhoneNumer number, String dialPrefix, int votes, long time) {
+		String phone = NumberAnalyzer.getPhoneId(number);
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
 		
-		if (newVotes <= 0) {
-			reports.delete(phone);
-		} else {
-			int rows = reports.addVote(phone, votes, time);
-			if (rows == 0) {
-				reports.addReport(phone, votes, time);
+		int rows = reports.addVote(phone, votes, time);
+		if (rows == 0) {
+			byte[] hash = NumberAnalyzer.getPhoneHash(number);
+			
+			// Number was not yet present, must be added.
+			reports.addReport(phone, hash, votes, time);
+			
+			if (votes > 0) {
+				updateAggregation10(reports, phone, 1, votes);
 			}
+		} else {
+			// Add new votes to aggregation.
+			updateAggregation10(reports, phone, delta(oldVotes, newVotes), votes);
+		}
+		
+		pingRelatedNumbers(reports, phone, time);
+		
+		if (votes > 0) {
+			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, time);
 		}
 		
 		return classify(oldVotes) != classify(newVotes);
 	}
 
+	public void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
+		if (dialPrefix == null) {
+			return;
+		}
+
+		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+		if (cnt == 0) {
+			reports.insertNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+		}
+	}
+
+	/**
+	 * Updates the "last-ping" of all related numbers in the same block.
+	 * 
+	 * <p>
+	 * This ensures that numbers of mass spammers are only archived, if none of their numbers is active anymore.
+	 * </p>
+	 */
+	private void pingRelatedNumbers(SpamReports reports, String phone, long now) {
+		AggregationInfo aggregation10 = getAggregation10(reports, phone);
+		if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
+			String prefix = aggregation10.getPrefix();
+			
+			AggregationInfo aggregation100 = getAggregation100(reports, phone);
+			if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
+				prefix = aggregation100.getPrefix();
+			}
+			reports.sendPing(prefix, phone.length(), now);
+		}
+	}
+
+	private static int delta(int oldVotes, int newVotes) {
+		boolean wasSpam = oldVotes > 0;
+		boolean isSpam = newVotes > 0;
+		return wasSpam ? (isSpam ? 0 : -1) : (isSpam ? 1 : 0);
+	}
+
+	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
+		String prefix = prefix10(phone);
+		
+		int rows = reports.updateAggregation10(prefix, deltaCnt, deltaVotes);
+		if (rows == 0) {
+			if (deltaCnt > 0) {
+				reports.insertAggregation10(prefix, deltaCnt, deltaVotes);
+			}
+			
+			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary. 
+		} else {
+			if (deltaCnt != 0) {
+				// Check, whether an update to the next aggregation level is necessary.
+				AggregationInfo info = reports.getAggregation10(prefix);
+				if (info != null) {
+					int cnt = info.getCnt();
+					int votes = info.getVotes();
+
+					int cntBefore = cnt - deltaCnt;
+					if (cntBefore < MIN_AGGREGATE_10 && cnt >= MIN_AGGREGATE_10) {
+						updateAggregation100(reports, phone, 1, votes);
+					}
+					else if (cntBefore >= MIN_AGGREGATE_10 && cnt < MIN_AGGREGATE_10) {
+						int votesBefore = votes - deltaVotes;
+						
+						updateAggregation100(reports, phone, -1, -votesBefore);
+					}
+				}
+			}
+		}
+	}
+
+	private void updateAggregation100(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
+		String prefix = prefix100(phone);
+
+		int rows = reports.updateAggregation100(prefix, deltaCnt, deltaVotes);
+		if (rows == 0) {
+			if (deltaCnt > 0) {
+				reports.insertAggregation100(prefix, deltaCnt, deltaVotes);
+			}
+		}
+	}
+
 	/** 
 	 * Adds a rating for a phone number.
 	 *
+	 * @param userName The login name of the user creating the rating, or <code>null</code> if the rating is anonymous.
 	 * @param phone The phone number to rate.
 	 * @param rating The user rating.
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
 	 */
-	public void addRating(String phone, Rating rating, String comment, long now) {
+	public void addRating(String userName, PhoneNumer number, String dialPrefix, Rating rating, String comment, String lang, long now) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		boolean updateRequired;
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
+			boolean recordVote = true;
+			Long userIdOptional = null;
+			if (userName != null) {
+				Users users = session.getMapper(Users.class);
+				userIdOptional = users.getUserId(userName);
+				if (userIdOptional == null) {
+					LOG.error("User ID not found for: {}", userName);
+					return;
+				}
+				
+				BlockList blocklist = session.getMapper(BlockList.class);
+				long userId = userIdOptional.longValue();
+				
+				Boolean state = blocklist.getPersonalizationState(userId, phone);
+				
+				boolean block = rating != Rating.A_LEGITIMATE;
+				
+				if (state != null && block == state.booleanValue()) {
+					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
+					recordVote = false;
+				} else {
+					blocklist.removePersonalization(userId, phone);
+					if (block) {
+						blocklist.addPersonalization(userId, phone);
+					} else {
+						blocklist.addExclude(userId, phone);
+					}
+				}
+				
+				DBUserSettings settings = users.getSettingsById(userId);
+				if (lang == null) {
+					lang = settings.getLang();
+				}
+				dialPrefix = settings.getDialPrefix();
+			}
+			
 			UserComment userComment = UserComment.create()
 				.setId(UUID.randomUUID().toString())
+				.setUserId(userIdOptional)
 				.setPhone(phone)
 				.setRating(rating)
 				.setComment(comment)
+				.setLang(lang)
 				.setCreated(now);
 			
-			updateRequired = addRating(reports, userComment);
+			updateRequired = addRating(reports, number, dialPrefix, userComment, recordVote);
 			
 			session.commit();
 		}
 		
 		if (updateRequired) {
-			_indexer.publishUpdate(phone);
+			_indexer.publishUpdate(number);
 		}
 	}
-
+	
 	/** 
 	 * Adds a rating for a phone number without DB commit.
+	 * @param recordVote 
 	 * 
 	 * @return Whether an index update is required.
 	 */
-	public boolean addRating(SpamReports reports, UserComment comment) {
-		boolean updateRequired;
+	public boolean addRating(SpamReports reports, PhoneNumer number, String dialPrefix, UserComment comment, boolean recordVote) {
+		boolean updateRequired = false;
 		
-		String phone = comment.getPhone();
+		String phone = NumberAnalyzer.getPhoneId(number);
 		Rating rating = comment.getRating();
 		String commentText = comment.getComment();
 		long created = comment.getCreated();
@@ -393,24 +977,38 @@ public class DB {
 				// Limit to DB constraint.
 				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
 			}
-			reports.addComment(comment.getId(), phone, rating, commentText, comment.getService(), created);
+			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, comment.getUserId());
 			updateRequired = true;
 		}
 
-		updateRequired = processVotes(reports, phone, Ratings.getVotes(rating), created);
-		if (rating != Rating.B_MISSED) {
-			Rating oldRating = reports.getRating(phone);
-			
-			// Record rating.
-			int rows = reports.incRating(phone, rating, created);
-			if (rows == 0) {
-				reports.addRating(phone, rating, created);
+		if (recordVote) {
+			updateRequired |= processVotes(reports, number, dialPrefix, Ratings.getVotes(rating), created);
+			if (rating != Rating.B_MISSED) {
+				Rating oldRating = rating(reports, phone);
+				
+				// Record rating.
+				reports.incRating(phone, rating, created);
+				
+				Rating newRating = rating(reports, phone);
+				updateRequired |= oldRating != newRating;
 			}
 			
-			Rating newRating = reports.getRating(phone);
-			updateRequired = updateRequired || oldRating != newRating;
+			pingRelatedNumbers(reports, phone, created);
 		}
+		
 		return updateRequired;
+	}
+
+	private Rating rating(SpamReports reports, String phone) {
+		return rating(getPhoneInfo(reports, phone));
+	}
+
+	public NumberInfo getPhoneInfo(SpamReports reports, String phone) {
+		DBNumberInfo result = reports.getPhoneInfo(phone);
+		if (result != null) {
+			return result;
+		}
+		return NumberInfo.create().setPhone(phone);
 	}
 
 	/** 
@@ -420,7 +1018,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			return reports.getRating(phone);
+			return rating(reports, phone);
 		}
 	}
 
@@ -456,74 +1054,56 @@ public class DB {
 	/**
 	 * Looks up all spam reports that were done after the given time in milliseconds since epoch.
 	 */
-	public List<DBSpamReport> getLatestSpamReports(long notBefore) {
+	public List<? extends NumberInfo> getLatestSpamReports(long notBefore) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLatestReports(notBefore);
 		}
 	}
 
-	private static Comparator<? super SearchInfo> byDate = (s1, s2) -> -Long.compare(s1.getLastSearch(), s2.getLastSearch());
+	/**
+	 * Looks up the top searches overall.
+	 */
+	public List<? extends NumberInfo> getTopSearchesOverall(int limit) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			return reports.getTopSearchesOverall(limit);
+		}
+	}
 	
 	/**
 	 * Looks up the latest searches.
 	 */
 	public List<? extends SearchInfo> getTopSearches() {
-		return getTopSearches(3, 3);
+		return getTopSearches(6);
 	}
 	
-	List<? extends SearchInfo> getTopSearches(int cntLatest, int cntSearches) {
+	public List<? extends SearchInfo> getTopSearches(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+		
+			List<DBSearchInfo> searches = reports.getTopSearchesCurrent(limit);
 			
-			int revision = nonNull(reports.getLastRevision());
-			Set<String> yesterdaySearches = revision > 0 ? reports.getTopSearches(revision) : Collections.emptySet();
-			
-			Set<String> topNumbers = reports.getLatestSearchesToday();
-			topNumbers.addAll(yesterdaySearches);
-			
-			if (topNumbers.isEmpty()) {
-				return Collections.emptyList();
-			}
-
-			List<DBSearchInfo> topSearches = reports.getSearchesTodayAll(topNumbers);
-			Map<String, DBSearchInfo> yesterdayByPhone = reports.getSearchesAtAll(revision, topNumbers).stream().collect(Collectors.toMap(i -> i.getPhone(), i -> i));
-			
-			for (DBSearchInfo today : topSearches) {
-				DBSearchInfo yesterday = yesterdayByPhone.get(today.getPhone());
-				if (yesterday == null) {
-					today.setTotal(0);
-				} else {
-					today.setTotal(yesterday.getCount());
-				}
-			}
-
-			topSearches.sort(byDate);
-			
-			List<SearchInfo> result = new ArrayList<>();
-
-			// Latest 3 (most likely from today).
-			int index = Math.min(cntLatest, topSearches.size());
-			result.addAll(topSearches.subList(0, index));
-			
-			// Sort the rest by total amount of searches (from today and yesterday).
-			ArrayList<DBSearchInfo> tail = new ArrayList<>(topSearches.subList(index, topSearches.size())); 
-			tail.sort((s1, s2) -> -Integer.compare(s1.getCount() + s1.getTotal(), s2.getCount() + s2.getTotal()));
-			
-			// Top 3
-			result.addAll(tail.subList(0, Math.min(cntSearches, tail.size())));
-			
-			// Present all in last search order.
-			result.sort(byDate);
-			
-			return result;
+			searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
+			return searches;
 		}
 	}
 	
+	public long midnightYesterday() {
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.add(Calendar.DAY_OF_MONTH, -1);
+		return calendar.getTimeInMillis();
+	}
+
 	/**
 	 * Looks all spam reports.
 	 */
-	public List<DBSpamReport> getAll(int limit) {
+	public List<DBNumberInfo> getAll(int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getAll(limit);
@@ -533,23 +1113,17 @@ public class DB {
 	/**
 	 * Looks up spam reports with the most votes in the last month.
 	 */
-	public List<DBSpamReport> getTopSpamReports(int cnt) {
-		Calendar cal = GregorianCalendar.getInstance();
-		cal.add(Calendar.MONTH, -1);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		long notBefore = cal.getTimeInMillis();
+	public List<DBNumberInfo> getTopSpamReports(int cnt) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getTopSpammers(cnt, notBefore);
+			return reports.getTopSpammers(cnt);
 		}
 	}
 	
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<DBSpamReport> getLatestBlocklistEntries(String login) {
+	public List<DBNumberInfo> getLatestBlocklistEntries(String login) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
@@ -565,41 +1139,127 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Set<String> whiteList = reports.getWhiteList();
-			List<PhoneInfo> numbers = reports.getBlocklist(minVotes)
-					.stream()
-					.collect(Collectors.toMap(s -> s.getPhone(), s -> s, DB::withMaxRating))
-					.values()
+			List<BlockListEntry> numbers = reports.getBlocklist(minVotes)
 					.stream()
 					.filter(s -> !whiteList.contains(s.getPhone()))
-					.map(s -> PhoneInfo.create()
-							.setPhone(s.getPhone())
-							.setVotes(s.getVotes())
-							.setRating(s.getRating()))
-					.sorted((a, b) -> a.getPhone().compareTo(b.getPhone()))
+					.map(DB::toBlocklistEntry)
 					.collect(Collectors.toList());
 			return Blocklist.create().setNumbers(numbers);
 		}
 	}
 	
-	private static BlockListEntry withMaxRating(BlockListEntry a, BlockListEntry b) {
-		return compare(a, b) < 0 ? b : a;
+	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
+		return BlockListEntry.create()
+				.setPhone(n.getPhone())
+				.setVotes(n.getVotes())
+				.setRating(rating(n));
 	}
 
-	private static int compare(BlockListEntry a, BlockListEntry b) {
-		int aCount = a.getCount();
-		int bCount = b.getCount();
-		return aCount < bCount ? -1 : aCount > bCount ? 1 : Integer.compare(a.getRating().ordinal(), b.getRating().ordinal());
+	public static Rating rating(NumberInfo n) {
+		if (n.getVotes() <= 0) {
+			return Rating.A_LEGITIMATE;
+		}
+		
+		Rating result = Rating.B_MISSED;
+		int max = 0;
+
+		{
+			int votes = n.getRatingFraud();
+			if (votes > max) {
+				result = Rating.G_FRAUD;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingGamble();
+			if (votes > max) {
+				result = Rating.F_GAMBLE;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingAdvertising();
+			if (votes > max) {
+				result = Rating.E_ADVERTISING;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingPoll();
+			if (votes > max) {
+				result = Rating.D_POLL;
+				max = votes;
+			}
+		}
+		{
+			int votes = n.getRatingPing();
+			if (votes > max) {
+				result = Rating.C_PING;
+				max = votes;
+			}
+		}
+		
+		return result;
 	}
 
-	private int getMinVotes(SqlSession session, String login) {
-		int minVotes = (login == null) ? MIN_VOTES : getSettings(session, login).getMinVotes();
+	public int getMinVotes(SqlSession session, String login) {
+		int minVotes = (login == null) ? MIN_VOTES : getUserSettingsRaw(session, login).getMinVotes();
 		return minVotes;
 	}
 
-	private DBUserSettings getSettings(SqlSession session, String login) {
+	public DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
 		Users users = session.getMapper(Users.class);
-		DBUserSettings settings = users.getSettings(login);
-		return settings;
+		return users.getSettingsRaw(login);
+	}
+
+	private DBUserSettings getUserSettings(Users users, String login) {
+		DBUserSettings result = users.getSettingsRaw(login);
+
+		// For legacy compatibility (e-mail addresses as display name).
+		result.setDisplayName(DB.toDisplayName(result.getDisplayName()));
+		
+		return result;
+	}
+
+	/**
+	 * Guesses a display name from an e-mail address.
+	 */
+	public static String toDisplayName(String email) {
+		int atIndex = email.indexOf('@');
+		if (atIndex > 0) {
+			email = email.substring(0, atIndex);
+		}
+		
+		StringBuilder result = new StringBuilder();
+		boolean first = true;
+		for (String part : email.replace('.', ' ').replace('_', ' ').split("\\s+")) {
+			if (part.length() == 0) {
+				continue;
+			}
+			
+			if (first) {
+				first = false;
+			} else {
+				result.append(' ');
+			}
+			
+			boolean firstPart = true;
+			for (String subPart : part.split("-")) {
+				if (subPart.length() == 0) {
+					continue;
+				}
+		
+				if (firstPart) {
+					firstPart = false;
+				} else {
+					result.append('-');
+				}
+				result.append(Character.toUpperCase(subPart.charAt(0)));
+				result.append(subPart.substring(1));
+			}
+		}
+		
+		return result.toString();
 	}
 	
 	/**
@@ -609,7 +1269,10 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			int minVotes = getMinVotes(session, login);
-			return new Status(reports.getStatistics(minVotes), nonNull(reports.getTotalVotes()), nonNull(reports.getArchivedReportCount()));
+			return new Status(
+					reports.getStatistics(minVotes), 
+					nonNull(reports.getTotalVotes()), 
+					nonNull(reports.getArchivedReportCount()));
 		}
 	}
 
@@ -646,59 +1309,102 @@ public class DB {
 			return nonNull(reports.getVotes(phone));
 		}
 	}
-	
-	/**
-	 * Info about the given phone number, or <code>null</code>, if the given number is not a known source of spam.
-	 */
-	public SpamReport getPhoneInfo(SpamReports reports, String phone) {
-		if (reports.isWhiteListed(phone)) {
-			return new DBSpamReport(phone, 0, 0, 0).setWhiteListed(true);
-		}
 
-		SpamReport result = reports.getPhoneInfo(phone);
-		if (result == null) {
-			result = reports.getPhoneInfoArchived(phone);
-			if (result == null) {
-				result = new DBSpamReport(phone, 0, 0, 0);
-			} else {
-				result.setArchived(true);
-			}
-		}
-		return result;
-	}
-	
 	public PhoneInfo getPhoneApiInfo(String phone) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			
-			if (reports.isWhiteListed(phone)) {
-				return PhoneInfo.create().setPhone(phone);
-			}
-			
-			PhoneInfo result = reports.getApiPhoneInfo(phone);
-			if (result == null) {
-				result = reports.getApiPhoneInfoArchived(phone);
-				if (result == null) {
-					result = PhoneInfo.create().setPhone(phone);
-				}
-			}
-			return result;
+			return getPhoneApiInfo(reports, phone);
 		}
+	}
+
+	public PhoneInfo getPhoneApiInfo(SpamReports reports, String phone) {
+		if (reports.isWhiteListed(phone)) {
+			return PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
+		}
+
+		NumberInfo info = getPhoneInfo(reports, phone);
+		AggregationInfo aggregation10 = getAggregation10(reports, phone);
+		AggregationInfo aggregation100 = getAggregation100(reports, phone);
+		
+		return getPhoneInfo(info, aggregation10, aggregation100);
+	}
+
+	public PhoneInfo getPhoneInfo(NumberInfo info, AggregationInfo aggregation10, AggregationInfo aggregation100) {
+		PhoneInfo result = PhoneInfo.create()
+			.setPhone(info.getPhone())
+			.setDateAdded(info.getAdded())
+			.setLastUpdate(info.getUpdated());
+		
+		Rating rating = rating(info);
+		int votesWildcard;
+		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
+			votesWildcard = aggregation100.getVotes();
+			if (!info.isActive()) {
+				// Direct votes did not count yet.
+				votesWildcard += info.getVotes();
+			}
+			
+			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
+				// The votes of this number did not yet count to the aggregation of the block.
+				votesWildcard += aggregation10.getVotes();
+			}
+		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
+			votesWildcard = aggregation10.getVotes();
+			if (!info.isActive()) {
+				// Direct votes did not count yet.
+				votesWildcard += info.getVotes();
+			}
+		} else {
+			votesWildcard = info.getVotes();
+			result.setArchived(!info.isActive());
+		}
+		
+		result.setVotes(info.getVotes());
+		result.setVotesWildcard(votesWildcard);
+		result.setRating(rating);
+		
+		return result;
+	}
+
+	public AggregationInfo getAggregation100(SpamReports reports, String phone) {
+		String prefix = prefix100(phone);
+		AggregationInfo result = reports.getAggregation100(prefix);
+		return notNull(prefix, result);
+	}
+
+	public AggregationInfo getAggregation10(SpamReports reports, String phone) {
+		String prefix = prefix10(phone);
+		AggregationInfo result = reports.getAggregation10(prefix);
+		return notNull(prefix, result);
+	}
+
+	public AggregationInfo notNull(String prefix, AggregationInfo result) {
+		return result == null ? new AggregationInfo(prefix, 0, 0) : result;
+	}
+
+	private String prefix10(String phone) {
+		int length = phone.length() - 1;
+		return length < 0 ? "" : phone.substring(0, length);
+	}
+
+	private String prefix100(String phone) {
+		int length = phone.length() - 2;
+		return length < 0 ? "" : phone.substring(0, length);
 	}
 	
 	/**
 	 * Records a search hit for the given phone number.
 	 */
-	public void addSearchHit(String phone) {
+	public void addSearchHit(PhoneNumer phone, String dialPrefix) {
 		long now = System.currentTimeMillis();
-		addSearchHit(phone, now);
+		addSearchHit(phone, dialPrefix, now);
 	}
 
-	void addSearchHit(String phone, long now) {
+	void addSearchHit(PhoneNumer phone, String dialPrefix, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			addSearchHit(reports, phone, now);
+			addSearchHit(reports, phone, dialPrefix, now);
 			
 			session.commit();
 		}
@@ -707,11 +1413,19 @@ public class DB {
 	/**
 	 * Records a search hit for the given phone number.
 	 */
-	public void addSearchHit(SpamReports reports, String phone, long now) {
+	public void addSearchHit(SpamReports reports, PhoneNumer number, String dialPrefix, long now) {
+		String phone = NumberAnalyzer.getPhoneId(number);
+		
 		int rows = reports.incSearchCount(phone, now);
 		if (rows == 0) {
-			reports.addSearchEntry(phone, now);
+			byte[] hash = NumberAnalyzer.getPhoneHash(number);
+			reports.addReport(phone, hash, 0, now);
+			reports.incSearchCount(phone, now);
 		}
+		
+		pingRelatedNumbers(reports, phone, now);
+		
+		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, now);
 	}
 	
 	/**
@@ -721,15 +1435,25 @@ public class DB {
 		for (ScheduledFuture<?> task : _tasks) {
 			task.cancel(false);
 		}
+		
+		if (_dataSource != null) {
+			try (Connection connection = _dataSource.getConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					statement.execute("SHUTDOWN COMPACT");
+				}
+			} catch (Exception ex) {
+				LOG.error("Database shutdown failed.", ex);
+			}
+		}
 	}
 
 	/** 
 	 * Adds the given user with the given password.
 	 */
-	public void addUser(String clientName, String extId, String login, String displayName, String passwd) {
+	public void addUser(String login, String displayName, String lang, String dialPrefix, String passwd) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.addUser(login, clientName, extId, displayName, pwhash(passwd), System.currentTimeMillis());
+			users.addUser(login, displayName, lang, dialPrefix, pwhash(passwd), System.currentTimeMillis());
 			session.commit();
 		}
 	}
@@ -756,16 +1480,36 @@ public class DB {
 	}
 	
 	/** 
-	 * The user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * The local user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * 
+	 * @param googleId the user's ID in the Google OpenID provider.
 	 */
-	public String getLogin(String clientName, String extId) {
+	public String getGoogleLogin(String googleId) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			return users.getLogin(clientName, extId);
+			return users.getGoogleLogin(googleId);
 		}
 	}
 
+	/** 
+	 * The local user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * 
+	 * @param email the user's e-mail address.
+	 */
+	public String getEmailLogin(String email) throws AddressException {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			return users.getEmailLogin(canonicalEMail(email));
+		}
+	}
+
+	private String canonicalEMail(String email) throws AddressException {
+		InternetAddress address = new InternetAddress(email);
+		return address.getAddress().strip().toLowerCase();
+	}
+	
 	/** 
 	 * Sets the last access time for the given user to the given timestamp.
 	 * 
@@ -783,7 +1527,7 @@ public class DB {
 				// This was the first access, send welcome message;
 				MailService mailService = _mailService;
 				if (mailService != null) {
-					DBUserSettings userSettings = users.getSettings(login);
+					DBUserSettings userSettings = getUserSettings(users, login);
 					users.markWelcome(userSettings.getId());
 					session.commit();
 					
@@ -802,7 +1546,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			return users.getSettings(login);
+			return getUserSettings(users, login);
 		}
 	}
 	
@@ -813,25 +1557,26 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
-			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength(), settings.isWildcards());
+			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength(), settings.isWildcards(), settings.getDialPrefix(), settings.isNationalOnly());
 			session.commit();
 		}
 	}
 	
 	/**
 	 * Checks credentials in the given authorization header.
+	 * Ignores whitespaces surrounding username or password.
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
 	public String basicAuth(String authHeader) throws IOException {
-		if (authHeader.startsWith(BASIC_PREFIX)) {
-			String credentials = authHeader.substring(BASIC_PREFIX.length());
+		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
+			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
 			String decoded = new String(decodedBytes, StandardCharsets.UTF_8);
 			int sepIndex = decoded.indexOf(':');
 			if (sepIndex >= 0) {
-				String login = decoded.substring(0, sepIndex);
-				String passwd = decoded.substring(sepIndex + 1);
+				String login = decoded.substring(0, sepIndex).trim();
+				String passwd = decoded.substring(sepIndex + 1).trim();
 				return login(login, passwd);
 			}
 		}
@@ -896,7 +1641,7 @@ public class DB {
 	}
 
 	private byte[] pwhash(String passwd) {
-		return _sha256.digest(passwd.getBytes(StandardCharsets.UTF_8));
+		return sha256().digest(passwd.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/** 
@@ -905,11 +1650,13 @@ public class DB {
 	 * @param principal The current user.
 	 * @param phoneText The phone number to explicitly allow.
 	 */
+	@Deprecated
 	public void deleteEntry(String principal, String phoneText) {
-		String phoneId = NumberAnalyzer.toId(phoneText);
-		if (phoneId == null) {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
 			return;
 		}
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		try (SqlSession session = openSession()) {
 			SpamReports spamreport = session.getMapper(SpamReports.class);
@@ -918,16 +1665,15 @@ public class DB {
 			
 			long currentUser = users.getUserId(principal);
 			
-			boolean wasAddedBefore = blockList.removePersonalization(currentUser, phoneId);
+			Boolean stateBefore = blockList.getPersonalizationState(currentUser, phoneId);
 
-			// For safety reasons, to prevent primary key constraint violation.
-			blockList.removeExclude(currentUser, phoneId);
-			
+			blockList.removePersonalization(currentUser, phoneId);
 			blockList.addExclude(currentUser, phoneId);
 			
-			if (wasAddedBefore) {
-				// Note: Only a spam reporter may revoke his vote. This prevents vandals from deleting the whole list.
-				processVotesAndPublish(spamreport, phoneId, -2, System.currentTimeMillis());
+			if (stateBefore == null || stateBefore.booleanValue()) {
+				// Do not add positive votes, if the number was voted positive before. This prevents vandals 
+				// from deleting the whole list by repeatedly adding numbers to the exclude list.
+				processVotesAndPublish(spamreport, number, "unknown", -1, System.currentTimeMillis());
 			}
 			
 			session.commit();
@@ -938,7 +1684,6 @@ public class DB {
 		LOG.info("Starting DB cleanup.");
 		
 		Calendar cal = GregorianCalendar.getInstance();
-		long now = cal.getTimeInMillis();
 		cal.add(Calendar.DAY_OF_MONTH, -OLD_VOTE_DAYS);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -948,24 +1693,12 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			int cnt = reports.updatePrefixes();
-			LOG.info("Added " + cnt + " new numbers to the prefix table.");
-			
-			int reactivated = reports.reactivateOldReportsWithNewVotes(now);
-			int deletedOld = reports.deleteOldReportsWithNewVotes(now);
 			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
-			int deletedNew = reports.deleteArchivedReports(now);
 			
-			LOG.info("Reactivated " + reactivated + " reports, archived " + archived + " reports.");
-			if (deletedOld != reactivated) {
-				LOG.error("Reactivated " + reactivated + " records but deleted " + deletedOld + " reports from archive.");
-			}
-			if (deletedNew != archived) {
-				LOG.error("Archived " + archived + " records but deleted " + deletedNew + " reports from database.");
-			}
+			LOG.info("Archived " + archived + " reports.");
 			
 			session.commit();
-		} catch (PersistenceException ex) {
+		} catch (Exception ex) {
 			LOG.error("Failed to cleanup DB.", ex);
 		}
 		
@@ -1037,16 +1770,16 @@ public class DB {
 		calendar.add(Calendar.HOUR, -1);
 		calendar.add(Calendar.DAY_OF_MONTH, -2);
 		
-		long lastAccessBefore = calendar.getTimeInMillis();
+		long twoDaysBefore = calendar.getTimeInMillis();
 
 		calendar.add(Calendar.DAY_OF_MONTH, -30);
-		long accessAfter = calendar.getTimeInMillis();
+		long oneMonthBefore = calendar.getTimeInMillis();
 		
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			
 			// Users that did not update the address book for three days.
-			List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(lastAccessBefore, accessAfter, lastAccessBefore);
+			List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(twoDaysBefore, oneMonthBefore, twoDaysBefore);
 			for (DBUserSettings user : inactiveUsers) {
 				// Mark mail as send to prevent mail-bombing a user under all circumstances. Sending
 				// a support mail is not tried again, if the first attempt fails.
@@ -1064,31 +1797,46 @@ public class DB {
 		}
 	}
 	
-	private void runCleanupSearchHistory() {
-		LOG.info("Processing search history.");
-		cleanupSearchHistory(365);
-	}
+	private void runUpdateHistory() {
+		LOG.info("Processing history.");
+		try {
+			updateHistory(365);
+		} catch (Exception ex) {
+			LOG.error("Failed to process history.", ex);
+		}
+		LOG.info("Finished procssing history.");	}
 
 	/** 
 	 * Creates a new snapshot of search history.
 	 */
-	public void cleanupSearchHistory(int maxHistory) {
+	public void updateHistory(int maxHistory) {
 		long now = System.currentTimeMillis();
+		updateHistory(maxHistory, now);
+	}
+
+	public void updateHistory(int maxHistory, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			reports.createRevision(now);
-			int newest = reports.getLastRevision();
-			reports.fillSearchRevision(newest);
-			reports.backupSearches();
+			Rev newRev = new Rev(now);
+			reports.storeRevision(newRev);
 			
-			reports.fillRatingRevision(newest);
-			reports.backupRatings();
+			int newRevId = newRev.getId();
 			
-			int oldest = reports.getOldestRevision();
-			if (newest - oldest >= maxHistory) {
-				reports.cleanSearchCluster(oldest);
-				reports.removeSearchCluster(oldest);
+			Long lastRevDate = reports.getRevisionDate(newRevId - 1);
+			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
+			int updateCnt = reports.outdateHistorySnapshot(newRevId, lastSnapshot);
+			int insertCnt = reports.createHistorySnapshot(newRevId, lastSnapshot);
+			reports.updateSearches(lastSnapshot);
+			
+			LOG.info("Created revision {} with {} new and {} updated search entries.", newRevId, insertCnt - updateCnt, updateCnt);
+			
+			int oldestRev = reports.getOldestRevision();
+			if (newRevId - oldestRev >= maxHistory) {
+				int removedCnt = reports.cleanRevision(oldestRev);
+				reports.removeRevision(oldestRev);
+				
+				LOG.info("Dropped revision {} with {} search entries.", oldestRev, removedCnt);
 			}
 			
 			session.commit();
@@ -1102,13 +1850,55 @@ public class DB {
 	 * The entry last in the list represents the searches recorded today.
 	 * </p>
 	 */
-	public List<Integer> getSearchHistory(String phone) {
+	public List<Integer> getSearchHistory(String phone, int size) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			List<Integer> data = reports.getSearchCountHistory(phone);
-			data.add(nonNull(reports.getCurrentSearchHits(phone)));
-			return data;
+			
+			return getSearchHistory(reports, phone, size);
 		}
+	}
+
+	public List<Integer> getSearchHistory(SpamReports reports, String phone, int size) {
+		List<Integer> result = new ArrayList<>();
+
+		int latestRev;
+		int rev;
+		List<DBNumberHistory> entries;
+		
+		Integer lastRevision = reports.getLastRevision();
+		if (lastRevision != null) {
+			latestRev = lastRevision.intValue();
+			rev = latestRev  - (size - 1);
+			entries = reports.getSearchHistory(rev, phone);
+		} else {
+			latestRev = (size - 1);
+			rev = 0;
+			entries = Collections.emptyList();
+		}
+		
+		int lastCnt = 0;
+		for (DBNumberHistory entry : entries) {
+			while (entry.getRMin() > rev) {
+				result.add(Integer.valueOf(0));
+				rev++;
+			}
+			int current = entry.getSearches();
+			result.add(Integer.valueOf(current - lastCnt));
+			lastCnt = current;
+			rev++;
+		}
+		
+		while (rev <= latestRev) {
+			result.add(Integer.valueOf(0));
+			rev++;
+		}
+		
+		// Add searches today (not yet contained in the history)
+		NumberInfo info = getPhoneInfo(reports, phone);
+		result.add(info.getSearches() - lastCnt);
+		
+		// Drop first, because this entry contains no delta information.
+		return result.subList(1, result.size());
 	}
 
 	/** 
@@ -1137,23 +1927,26 @@ public class DB {
 			long now = System.currentTimeMillis();
 		
 			long userId = users.getUserId(login);
+			String dialPrefix = users.getDialPrefix(login);
 			int cnt = users.updateReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
 			if (cnt == 0) {
 				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
 			}
 			
 			for (String phoneText : callReport.getCallers()) {
-				String phoneId = NumberAnalyzer.toId(phoneText);
-				if (phoneId == null) {
+				PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+				if (number == null) {
 					continue;
 				}
+				
+				String phoneId = NumberAnalyzer.getPhoneId(number);
 				
 				int ok = users.addCall(userId, phoneId, now);
 				if (ok == 0) {
 					users.insertCaller(userId, phoneId, now);
 				}
 				
-				processVotesAndPublish(reports, phoneId, 2, now);
+				processVotesAndPublish(reports, number, dialPrefix, 2, now);
 			}
 			
 			session.commit();
@@ -1195,43 +1988,74 @@ public class DB {
 		}
 	}
 
-	public List<? extends SearchInfo> getSearches(String phone) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			return getSearches(reports, phone);
+	private MessageDigest sha256() {
+		try {
+			return MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException ex) {
+			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
 	}
 
-	public List<? extends SearchInfo> getSearches(SpamReports reports, String phone) {
-		int lastRevision = nonNull(reports.getLastRevision());
-		int startRevision = Math.max(1,  lastRevision - 6);
-		
-		List<DBSearchInfo> dbHistory = reports.getSearchHistory(startRevision, phone);
-		SearchInfo today = reports.getSearchesToday(phone);
-		if (dbHistory.isEmpty() && today == null) {
-			return Collections.emptyList();
+	public static long getLastSearch(Users users) {
+		String value = users.getProperty("imap.lastSearch");
+		long lastSearch;
+		if (value == null) {
+			lastSearch = 0;
+		} else {
+			lastSearch = Long.parseLong(value);
 		}
+		return lastSearch;
+	}
 
-		List<SearchInfo> result = new ArrayList<>();
+	public static void setLastSearch(Users users, long lastSearch) {
+		int ok = users.updateProperty("imap.lastSearch", Long.toString(lastSearch));
+		if (ok == 0) {
+			users.addProperty("imap.lastSearch", Long.toString(lastSearch));
+		}
+	}
+
+	public static boolean processContribution(Users users, MessageDetails messageDetails) {
+		DBContribution existing = users.getContribution(messageDetails.tx);
+		if (existing != null) {
+			LOG.info("Skipping already recorded donation from {}.", messageDetails.sender);
+			return false;
+		}
 		
-		int revision = startRevision;
-		for (DBSearchInfo info : dbHistory) {
-			while (info.getRevision() > revision) {
-				result.add(SearchInfo.create().setRevision(revision++));
-			}
-			result.add(info);
-			revision++;
+		recordContribution(users, messageDetails);
+		return true;
+	}
+
+	private static void recordContribution(Users users, MessageDetails messageDetails) {
+		Long userId;
+		if (messageDetails.uid == null) {
+			userId = unique(messageDetails.sender, users.usersWithDisplayName(messageDetails.sender));
+		} else {
+			userId = unique(messageDetails.uid, users.findUser(messageDetails.uid + "%"));
 		}
-		while (lastRevision > revision) {
-			result.add(SearchInfo.create().setRevision(revision++));
+		
+		LOG.info("Recording donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
+		
+		users.insertContribution(Contribution.create()
+			.setUserId(userId)
+			.setSender(messageDetails.sender)
+			.setAmount(messageDetails.amount)
+			.setReceived(messageDetails.date.getTime())
+			.setMessage(messageDetails.msg)
+			.setTx(messageDetails.tx)
+		);
+		
+		if (userId != null) {
+			users.addContribution(userId.longValue(), messageDetails.amount);
 		}
-		if (today == null) {
-			today = SearchInfo.create();
+	}
+
+	private static Long unique(String uid, List<Long> users) {
+		Long result = users.size() == 1 ? users.get(0) : null;
+		if (result == null) {
+			LOG.warn("User for user {} not found ({} matches).", uid, users.size());
 		}
-		today.setRevision(lastRevision + 1);
-		result.add(today);
 		return result;
 	}
-	
+
+
 }

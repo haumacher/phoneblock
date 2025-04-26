@@ -24,16 +24,6 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	File conversationDir();
 
 	/** 
-	 * Whether to accept anonymous calls.
-	 */
-	boolean getAcceptAnonymous();
-
-	/** 
-	 * The minimum PhoneBlock votes to consider a call as SPAM and accept it. 
-	 */
-	int getMinVotes();
-
-	/** 
 	 * Media format configuration.
 	 */
 	MediaDesc[] getMediaDescs();
@@ -41,7 +31,7 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	/** 
 	 * Whether a {@link #getTestPrefix()} has been configured.
 	 */
-	default boolean hasTestNumber() {
+	default boolean hasTestPrefix() {
 		return getTestPrefix() != null;
 	}
 
@@ -54,9 +44,10 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	 */
 	String getTestPrefix();
 
-	String getPhoneblockUsername();
-
-	String getPhoneblockPassword();
+	/**
+	 * The API key for accessing the phoneblock API.
+	 */
+	String getPhoneBlockAPIKey();
 
 	boolean getSendRatings();
 }

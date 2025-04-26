@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.support-banktransfer.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Faire un don par virement bancaire</h1>
+
+		<p data-tx="t0002">Merci de participer aux frais de PhoneBlock. Si beaucoup participent, un petit montant suffit, par exemple <b>1? par an</b> ou <b>0,01? par appel spam intercepté</b>, mais tu peux choisir toi-même le montant de ta contribution.</p>
+		
+		<p data-tx="t0003">Veuillez utiliser les coordonnées bancaires suivantes pour effectuer votre virement :</p>
+
+		<ul>
+			<li data-tx="t0004">Récepteur : <code dir="ltr" id="receiver" th:text="${props.bank.receiver}"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="receiver_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0005">Numéro de compte : <code dir="ltr" id="account"><span class="token" th:text="${#strings.substring(props.bank.account,0,4)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,4,8)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,8,12)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,12,16)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,16,20)}"></span><span class="token" th:text="${#strings.substring(props.bank.account,20)}"></span></code><a class="copyToClipboard" data-tx="t0010" href="#" id="account_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0006">BIC : <code dir="ltr" id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="bic_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></li>
+			<li data-tx="t0007">Motif de l'utilisation : <code dir="ltr" id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" data-tx="t0012" href="#" id="purpose_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></li>
+		</ul>
+		
+		<p data-tx="t0008">Merci de contribuer à l'utilisation de PhoneBlock!</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

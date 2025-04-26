@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-iphone.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Εγκατάσταση iPhone</h1>
+		
+		<p data-tx="t0002">Η εγκατάσταση προσθέτει το βιβλίο διευθύνσεων του PhoneBlock στις επαφές σας. Εάν λάβετε μια κλήση από έναν αριθμό ανεπιθύμητης αλληλογραφίας, αυτό θα εμφανίζεται αμέσως, π.χ. "SPAM: 03016637169". Μπορείτε επίσης να δείτε αμέσως στις αναπάντητες κλήσεις ότι δεν αξίζει να καλέσετε ξανά, χωρίς να χρειαστεί να γκουγκλάρετε πρώτα τον αριθμό.</p>
+
+		<p data-tx="t0003">Η εγκατάσταση εκτελείται με τα ακόλουθα βήματα:</p>
+		
+   		<ol>
+   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Εγγραφείτε στο PhoneBlock.</a></li>
+   		<li data-tx="t0005">Ανοίξτε τις "Ρυθμίσεις" &gt; "Επαφές" &gt; "Λογαριασμοί".</li>
+   		<li data-tx="t0006">Πατήστε "Προσθήκη λογαριασμού" - "Άλλα" &gt; "Προσθήκη λογαριασμού CardDAV".</li>
+   		<li>
+   			<div data-tx="t0007">Εισάγετε τα δεδομένα πρόσβασης και πατήστε "Συνέχεια".</div>
+   			<dl>
+				<dt><b data-tx="t0016">Διακομιστής</b></dt>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></dd>
+
+				<dt><b data-tx="t0017">Όνομα χρήστη</b></dt>
+				<dd>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Συνδεθείτε</a> για να δείτε το όνομα χρήστη σας.</span>
+				</dd>
+
+				<dt><b data-tx="t0019">κωδικός πρόσβασης</b></dt>
+				<dd>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span data-tx="t0020" th:unless="${token}">Εμφανίστηκε σε εσάς αμέσως μετά την πρώτη σύνδεση, μπορείτε να δημιουργήσετε ένα νέο <a th:href="@{/settings}">στις ρυθμίσεις</a>.</span>
+				</dd>
+
+				<dt><b data-tx="t0021">Περιγραφή του</b></dt>
+				<dd data-tx="t0022">PhoneBlock</dd>		
+   			</dl>
+   		</li>
+   		<li data-tx="t0008">Ενεργοποιήστε την επιλογή "Επαφές" και πατήστε "Αποθήκευση".</li>
+		<li data-tx="t0009">Τώρα θα βλέπετε τις κλήσεις με "SPAM: ..." στο βιβλίο επαφών σας και όταν χτυπούν. Μπορείτε έτσι να δείτε αμέσως αν αξίζει να απαντήσετε ή να καλέσετε πίσω.</li>
+   		</ol>
+
+		<p data-tx="t0010">Δεν έχετε πλέον τα δεδομένα πρόσβασής σας στο χέρι; Δεν πειράζει, απλά <a th:href="@{/settings}">επαναφέρετε τον κωδικό πρόσβασης</a> στις ρυθμίσεις.</p>
+   		
+   		<p data-tx="t0011">Μπορείτε επίσης να βρείτε <a th:href="@{/link/carddav-install}">οδηγίες με εικόνες</a> αλλού. Σε αυτόν τον οδηγό, χρειάζεται να χρησιμοποιήσετε τα δεδομένα πρόσβασης PhoneBlock μόνο στο βήμα όπου εισάγονται ο διακομιστής, το όνομα χρήστη και ο κωδικός πρόσβασης (βλ. παραπάνω).</p>
+   		
+   		<p data-tx="t0012">Εάν χρησιμοποιείτε το PhoneBlock μόνο στο iPhone, μπορείτε επίσης να αυξήσετε τον αριθμό των καταχωρήσεων <a th:href="@{/settings}">στις ρυθμίσεις</a>. Εάν υπάρχουν προβλήματα με αυτό, παρακαλούμε ενημερώστε μας (βλ. <a th:href="@{/faq}">FAQ</a>).</p>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -24,7 +24,7 @@
 
 	<filter>
 		<filter-name>logoutFilter</filter-name>
-		<filter-class>org.pac4j.jee.filter.LogoutFilter</filter-class>
+		<filter-class>de.haumacher.phoneblock.app.PBLogoutFilter</filter-class>
 		
 		<init-param>
 			<param-name>destroySession</param-name>
@@ -151,16 +151,21 @@
 
 	<error-page>
 		<error-code>405</error-code>
-		<location>/error-not-allowed.jsp</location>
+		<location>/error-not-allowed</location>
 	</error-page>
 
 	<error-page>
 		<error-code>501</error-code>
-		<location>/error-not-allowed.jsp</location>
+		<location>/error-not-allowed</location>
+	</error-page>
+
+	<error-page>
+		<error-code>401</error-code>
+		<location>/error-not-authenticated</location>
 	</error-page>
 
 	<error-page>
 		<error-code>404</error-code>
-		<location>/error-not-found.jsp</location>
+		<location>/error-not-found</location>
 	</error-page>
 </web-app>

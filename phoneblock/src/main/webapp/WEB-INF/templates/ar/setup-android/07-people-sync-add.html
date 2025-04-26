@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">تثبيت أندرويد</h1>
+		
+		<h2 data-tx="t0002">الخطوة 4: إضافة دفتر العناوين وإدخال بيانات حساب PhoneBlock</h2>
+		
+		<ol>
+		<li data-tx="t0003">حدّد الخيار "تسجيل الدخول باستخدام عنوان URL واسم المستخدم" وأدخل عنوان دفتر عناوين PhoneBlock باعتباره "عنوان URL الأساسي": <code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0009" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>.</li>
+			
+		<li data-tx="t0004">بالنسبة إلى "اسم المستخدم"، أدخل اسم المستخدم الذي تلقيته عند <a th:href="@{/login(location=${currentPage})}"> تسجيل حظر الهاتف<th:block th:if="${userName}"> (<code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0010" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>).</th:block></a></li>
+			
+		<li data-tx="t0005">تم عرض كلمة المرور لك بعد تسجيل الدخول الأول<th:block th:if="${token}"> (<code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0011" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>).</th:block></li>
+		</ol>
+		
+		<p data-tx="t0006">لم تعد لديك تفاصيل تسجيل الدخول الخاصة بك في متناول اليد؟ لا يهم، ما عليك سوى تسجيل الدخول و <a th:href="@{/login(location='/settings')}"> إعادة تعيين كلمة المرور</a> في الإعدادات.</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="إضافة دفتر العناوين" class="image appscreen" data-tx="t0012" th:src="@{/assets/img/peoplesync/07-people-sync-add.png}"/>
+	  		</div>
+			<div class="column is-two-fifths">
+	  			<img alt="إضافة دفتر العناوين" class="image appscreen" data-tx="t0013" th:src="@{/assets/img/peoplesync/08-people-sync-account.png}"/>
+	  		</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0007">رجوع</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/09-people-sync-account-finished}">
+		    <span data-tx="t0008">المزيد</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

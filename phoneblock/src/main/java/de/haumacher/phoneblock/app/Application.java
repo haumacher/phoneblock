@@ -13,9 +13,6 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,17 +23,22 @@ import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
+import de.haumacher.phoneblock.credits.ImapService;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.dns.DnsService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
 import de.haumacher.phoneblock.jmx.ManagementService;
+import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.WebListener;
 
 /**
  * Central controller of services.
@@ -49,7 +51,7 @@ public class Application implements ServletContextListener {
 	
 	private ServletContextListener[] _services;
 	
-	private static String _contextPath;
+	private static String _contextPath = "/phoneblock";
 	
 	public static String getContextPath() {
 		return _contextPath;
@@ -98,6 +100,7 @@ public class Application implements ServletContextListener {
 		SecureRandomService rnd;
 		SipService sip;
 		_services = new ServletContextListener[] {
+			new LocationService(),
 			rnd = new SecureRandomService(),
 			scheduler = new SchedulerService(),
 			indexer = IndexUpdateService.async(scheduler, IndexUpdateService.tee(
@@ -114,6 +117,7 @@ public class Application implements ServletContextListener {
 			sip = new SipService(scheduler, db, mail),
 			new ManagementService(indexer, db, gpt, sip),
 			new AddressBookCache(),
+			new ImapService(scheduler, db, mail),
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {

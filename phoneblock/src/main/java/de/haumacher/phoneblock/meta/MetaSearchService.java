@@ -14,17 +14,18 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.crawl.FetchService;
-import de.haumacher.phoneblock.db.model.UserComment;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.meta.plugins.AbstractMetaSearch;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * Command line tool to start a meta search.
@@ -67,7 +68,7 @@ public class MetaSearchService implements ServletContextListener {
 		
 		_instance = this;
 		
-		_heartBeat = _scheduler.executor().scheduleWithFixedDelay(this::heartBeat, 1, 10, TimeUnit.MINUTES);
+		_heartBeat = _scheduler.scheduler().scheduleWithFixedDelay(this::heartBeat, 1, 10, TimeUnit.MINUTES);
 	}
 	
 	private void heartBeat() {
@@ -140,15 +141,15 @@ public class MetaSearchService implements ServletContextListener {
 	 * @param bot
 	 *        Whether a bot requested the info.
 	 */
-	public List<UserComment> fetchComments(String phoneId, boolean bot) {
-		return createSearch(phoneId, bot).search().getComments();
+	public List<UserComment> fetchComments(PhoneNumer phoneId, String dialPrefix) {
+		return createSearch(phoneId, dialPrefix).search().getComments();
 	}
 
 	/**
 	 * Schedules a meta search for a given phone number.
 	 */
-	public void scheduleMetaSearch(String phoneId) {
-		_jobs.add(() -> createSearch(phoneId).search().searchPerformed());
+	public void scheduleMetaSearch(PhoneNumer phoneId) {
+		_jobs.add(() -> createSearch(phoneId, null).search().searchPerformed());
 	}
 	
 	/**
@@ -162,8 +163,8 @@ public class MetaSearchService implements ServletContextListener {
 	 * @param phoneId
 	 *        The phone number to search comments and votes for.
 	 */
-	public void scheduleMetaSearch(int votes, long lastVote, String phoneId) {
-		_jobs.add(() -> createSearch(phoneId).addVotes(votes, lastVote).search().searchPerformed());
+	public void scheduleMetaSearch(int votes, long lastVote, PhoneNumer phoneId) {
+		_jobs.add(() -> createSearch(phoneId, null).addVotes(votes, lastVote).search().searchPerformed());
 	}
 
 	private void reSchedule(long now) {
@@ -174,7 +175,7 @@ public class MetaSearchService implements ServletContextListener {
 		
 		LOG.info("Scheduling next meta search in " + Duration.of(delay, ChronoUnit.MILLIS) + ", queue size is: " + _jobs.size());
 		
-		_task = _scheduler.executor().schedule(this::performSearch, delay, TimeUnit.MILLISECONDS);
+		_task = _scheduler.scheduler().schedule(this::performSearch, delay, TimeUnit.MILLISECONDS);
 	}
 
 	private void performSearch() {
@@ -206,18 +207,8 @@ public class MetaSearchService implements ServletContextListener {
 	/** 
 	 * Creates a search for the given phone number.
 	 */
-	private SearchOperation createSearch(String phoneId) {
-		return createSearch(phoneId, false);
-	}
-	
-	/**
-	 * Creates a search for the given phone number.
-	 * 
-	 * @param bot
-	 *        Whether the search is done for a bot.
-	 */
-	private SearchOperation createSearch(String phoneId, boolean bot) {
-		return new SearchOperation(_scheduler, _indexer, _plugins, phoneId, bot);
+	private SearchOperation createSearch(PhoneNumer number, String dialPrefix) {
+		return new SearchOperation(_scheduler, _indexer, _plugins, number, dialPrefix);
 	}
 
 	/** 
@@ -235,7 +226,13 @@ public class MetaSearchService implements ServletContextListener {
 		MetaSearchService searchService = new MetaSearchService(scheduler, new FetchService(), IndexUpdateService.NONE);
 		scheduler.contextInitialized(null);
 		searchService.contextInitialized(null);
-		List<UserComment> comments = searchService.createSearch(args[0]).search().getComments();
+		String phoneText = args[0];
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
+			System.err.println("Invalid number: " + phoneText);
+			return;
+		}
+		List<UserComment> comments = searchService.createSearch(number, "+49").search().getComments();
 		for (var comment : comments) {
 			System.out.println(comment);
 		}

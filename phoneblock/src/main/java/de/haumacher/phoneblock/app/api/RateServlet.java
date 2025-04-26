@@ -5,29 +5,34 @@ package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
 
+import de.haumacher.msgbuf.json.JsonReader;
+import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.RateRequest;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import de.haumacher.msgbuf.json.JsonReader;
-import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.app.api.model.RateRequest;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.model.Rating;
-import de.haumacher.phoneblock.util.ServletUtil;
-
 /**
  * Servlet that adds a rating to a phone number.
  */
-@WebServlet(urlPatterns = "/api/rate")
+@WebServlet(urlPatterns = RateServlet.PATH)
 public class RateServlet extends HttpServlet {
 	
+	public static final String PATH = "/api/rate";
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!ServletUtil.checkAuthentication(req, resp)) {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
 			return;
 		}
 
@@ -35,21 +40,14 @@ public class RateServlet extends HttpServlet {
 
 		String phoneText = rateRequest.getPhone();
 		
-		String phoneId = NumberAnalyzer.toId(phoneText);
-		if (phoneId == null) {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
 		}
 
-		Rating rating;
-		try {
-			rating = Rating.valueOf(rateRequest.getRating());
-		} catch (IllegalArgumentException ex) {
-			ServletUtil.sendError(resp, "Invalid rating.");
-			return;
-		}
-
-		DBService.getInstance().addRating(phoneId, rating, rateRequest.getComment(), System.currentTimeMillis());
+		Rating rating = rateRequest.getRating();
+		DBService.getInstance().addRating(userName, number, null, rating, rateRequest.getComment(), null, System.currentTimeMillis());
 		
 		ServletUtil.sendMessage(resp, HttpServletResponse.SC_OK, "Rating recorded.");
 	}

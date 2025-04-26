@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.impressum.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">版本说明</h1>
+
+		<p data-tx="t0002">PhoneBlock 是一个<a href="https://github.com/haumacher/phoneblock">私人项目</a>，可以帮助您进行数字自卫，抵御电话恐吓和不受欢迎的广告电话。根据<a href="https://www.gesetze-im-internet.de/ddg/__5.html">《数字服务法》</a>，PhoneBlock 既非产品也非商业服务。</p>
+		
+		<p data-tx="t0003">本人（Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button> ）出于个人乐趣和技术兴趣，以个人身份运营本网站。我让您可以免费使用软件，并免费为您提供必要的服务器容量。如果您想为网站的运营成本出一份力，或者只是说声 "谢谢"，欢迎您 "捐赠"<a th:href="@{/support}">小额款项</a>。但是，您这样做并不期望得到任何回报。</p>
+		
+		<p data-tx="t0004">本网站的软件由 Bernhard Haumacher <button class="button is-small is-link is-light showaddr">...</button> 等人开发。如果您有任何问题没有在 <a th:href="@{/faq}"> 常见问题</a> 和 <a th:href="@{/usage}"> 使用条款</a> 中得到解答，请随时与我联系 (<button class="button is-small is-link is-light showaddr">...</button>)。不过，我不希望接受电话或来访，因此电子邮件是唯一的联系方式。如果出现问题，例如您的电话号码不小心被添加到了屏蔽列表中，我将很乐意立即为您提供帮助，不会给您带来任何麻烦。</p>
+
+		</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

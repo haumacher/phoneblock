@@ -9,219 +9,397 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-import de.haumacher.phoneblock.db.model.Rating;
+import de.haumacher.phoneblock.app.api.model.Rating;
 
 /**
  * Interface for the spam report table.
  */
 public interface SpamReports {
 	
-	@Select("select max(LASTUPDATE) from SPAMREPORTS")
+	@Select("select max(UPDATED) from NUMBERS")
 	Long getLastUpdate();
 	
-	@Insert("insert into SPAMREPORTS (PHONE, VOTES, LASTUPDATE, DATEADDED) values (#{phone}, #{votes}, #{now}, #{now})")
-	void addReport(String phone, int votes, long now);
+	@Insert("""
+			insert into NUMBERS (PHONE, SHA1, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED)
+			values (#{phone}, #{hash}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now})
+			""")
+	void addReport(String phone, byte[] hash, int votes, long now);
 	
-	@Update("update SPAMREPORTS set VOTES = VOTES + #{delta}, LASTUPDATE = CASEWHEN(#{now} > LASTUPDATE, #{now}, LASTUPDATE) where PHONE = #{phone}")
+	@Select("""
+			select PHONE from NUMBERS where SHA1=#{hash}
+			""")
+	String resolvePhoneHash(byte[] hash);
+	
+	@Update("""
+			update NUMBERS set 
+				VOTES = VOTES + #{delta},
+				DOWN_VOTES = DOWN_VOTES + CASEWHEN(#{delta} > 0, #{delta}, 0),
+				UP_VOTES = UP_VOTES + CASEWHEN(#{delta} < 0, 0 - #{delta}, 0),
+				UPDATED = GREATEST(UPDATED, #{now}),
+				LASTPING = GREATEST(LASTPING, #{now}),
+				ACTIVE = CASEWHEN(#{delta} > 0, true, ACTIVE)
+			where PHONE = #{phone}
+			""")
 	int addVote(String phone, int delta, long now);
-
-	@Select("select count(1) from SPAMREPORTS where PHONE = #{phone}")
+	
+	@Insert("""
+			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, VOTES, CALLS, LASTACCESS) 
+			values (#{phone}, #{dialPrefix}, #{searches}, #{votes}, #{calls}, #{now})
+			""")
+	int insertNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	
+	@Update("""
+			update NUMBERS_LOCALE set 
+				SEARCHES = SEARCHES + #{searches},
+				VOTES = VOTES + #{votes},
+				CALLS = CALLS + #{calls},
+				LASTACCESS = #{now}
+			where PHONE = #{phone} and DIAL = #{dialPrefix}
+			""")
+	int updateNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	
+	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
+	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
+	
+	@Update("update NUMBERS_AGGREGATION_100 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
+	int updateAggregation100(String prefix, int deltaCnt, int deltaVotes);
+	
+	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
+	int insertAggregation10(String prefix, int cnt, int votes);
+	
+	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
+	int insertAggregation100(String prefix, int cnt, int votes);
+	
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
+	AggregationInfo getAggregation10(String prefix);
+	
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10")
+	List<AggregationInfo> getAllAggregation10();
+	
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
+	AggregationInfo getAggregation100(String prefix);
+	
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100")
+	List<AggregationInfo> getAllAggregation100();
+	
+	@Select("""
+			SELECT max(s.LASTPING) 
+			FROM NUMBERS s
+			WHERE s.PHONE > #{prefix}
+			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND LENGTH(s.PHONE) = #{expectedLength}
+			AND s.VOTES > 0
+			""")
+	Long getLastPingPrefix(String prefix, int expectedLength);
+	
+	@Select("""
+			SELECT s.PHONE FROM NUMBERS s
+			WHERE s.PHONE > #{prefix}
+			AND s.PHONE < concat(#{prefix}, 'Z')
+			AND LENGTH(s.PHONE) = #{expectedLength}
+			AND s.VOTES > 0
+			order by s.PHONE
+			""")
+	List<String> getRelatedNumbers(String prefix, int expectedLength);
+	
+	@Update("""
+			update NUMBERS s
+			set
+				s.LASTPING = GREATEST(s.LASTPING, #{now})
+			where s.PHONE > #{prefix}
+			and s.PHONE < concat(#{prefix}, 'Z')
+			and LENGTH(s.PHONE) = #{expectedLength}
+			and s.VOTES > 0
+			""")
+	void sendPing(String prefix, int expectedLength, long now);
+	
+	@Select("""
+			select count(1) from NUMBERS
+			where PHONE = #{phone}
+			""")
 	boolean isKnown(String phone);
 
-	@Select("select VOTES from SPAMREPORTS where PHONE = #{phone}")
+	@Select("""
+			select VOTES from NUMBERS
+			where PHONE = #{phone}
+			""")
 	Integer getVotes(String phone);
 
-	@Select("SELECT SUM(s.VOTES) FROM SPAMREPORTS s")
+	@Select("SELECT SUM(s.DOWN_VOTES) + SUM(s.UP_VOTES) FROM NUMBERS s")
 	Integer getTotalVotes();
 	
 	@Select("SELECT SUM(s.COUNT) FROM RATINGS s")
 	Integer getTotalRatings();
 	
-	@Select("SELECT SUM(s.COUNT) FROM SEARCHES s")
+	@Select("SELECT SUM(s.SEARCHES) FROM NUMBERS s")
 	Integer getTotalSearches();
 	
-	@Select("SELECT COUNT(1) FROM OLDREPORTS o")
+	@Select("""
+			SELECT COUNT(1) FROM NUMBERS o
+			where not ACTIVE
+			""")
 	Integer getArchivedReportCount();
 	
-	@Select("SELECT COUNT(1) FROM SPAMREPORTS s")
+	@Select("""
+			SELECT COUNT(1) FROM NUMBERS s
+			where ACTIVE
+			""")
 	Integer getActiveReportCount();
 	
-	@Delete("delete FROM SPAMREPORTS where PHONE = #{phone}")
-	void delete(String phone);
-	
-	@Update("UPDATE SPAMREPORTS s"
-			+ " SET s.VOTES = s.VOTES + (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE)"
-			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(x.VOTES) FROM OLDREPORTS x WHERE s.PHONE = x.PHONE) > 0")
-	int reactivateOldReportsWithNewVotes(long now);
-	
-	@Delete("DELETE FROM OLDREPORTS o "
-			+ " WHERE (SELECT SUM(s.VOTES) FROM SPAMREPORTS s WHERE s.LASTUPDATE <= #{now} AND s.PHONE = o.PHONE) > 0")
-	int deleteOldReportsWithNewVotes(long now);
-	
-	@Insert("INSERT INTO OLDREPORTS ("
-			+ "SELECT * FROM SPAMREPORTS s WHERE "
-			+ "CASE "
-			+ "WHEN s.LASTUPDATE >= #{before} THEN 1=0 "
-			+ "ELSE s.VOTES - (#{before} - s.LASTUPDATE)/1000/60/60/24/7/#{weekPerVote} < #{minVotes} "
-			+ "END"
-			+ ")")
+	@Update("""
+			update NUMBERS s
+			set ACTIVE=false
+			where ACTIVE
+			and s.LASTPING < #{before}
+			and s.VOTES - (#{before} - s.LASTPING)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
+			""")
 	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
 	
-	@Delete("DELETE FROM SPAMREPORTS s "
-			+ " WHERE s.LASTUPDATE <= #{now} AND (SELECT SUM(o.VOTES) FROM OLDREPORTS o WHERE s.PHONE = o.PHONE) > 0")
-	int deleteArchivedReports(long now);
+	@Update("""
+			update NUMBERS s
+			set
+				CALLS = CALLS + 1,
+				s.UPDATED = greatest(s.UPDATED, #{now}), 
+				s.LASTPING = greatest(s.LASTPING, #{now}) 
+			where
+				PHONE = #{phone}
+			""")
+	void recordCall(String phone, long now);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where LASTUPDATE >= #{after} order by LASTUPDATE desc")
-	List<DBSpamReport> getLatestReports(long after);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			where UPDATED >= #{after} and VOTES > 0 and ACTIVE
+			order by UPDATED desc
+			""")
+	List<DBNumberInfo> getLatestReports(long after);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS order by LASTUPDATE desc limit #{limit}")
-	List<DBSpamReport> getAll(int limit);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			where VOTES > 0 and ACTIVE
+			order by UPDATED desc
+			limit #{limit}
+			""")
+	List<DBNumberInfo> getAll(int limit);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS where PHONE = #{phone}")
-	DBSpamReport getPhoneInfo(String phone);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			where s.PHONE = #{phone}
+			""")
+	DBNumberInfo getPhoneInfo(String phone);
 	
-	@Select("SELECT * FROM SPAMREPORTS s \n"
-			+ "	WHERE s.PHONE > #{phone}\n"
-			+ "	ORDER BY s.PHONE \n"
-			+ "	LIMIT 1")
+	@Select("""
+			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES) 
+			from NUMBERS s
+			where 
+				s.PHONE > #{prefix}
+				and s.PHONE < concat(#{prefix}, 'Z')
+				and LENGTH(s.PHONE) = #{expectedLength}
+			""")
+	DBNumberInfo getPhoneInfoAggregate(String prefix, int expectedLength);
+	
+	@Select("""
+			select s.PHONE from NUMBERS s
+			WHERE s.PHONE > #{phone}
+			ORDER BY s.PHONE
+			LIMIT 1
+			""")
 	String getNextPhone(String phone);
 
-	@Select("SELECT * FROM SPAMREPORTS s \n"
-			+ "	WHERE s.PHONE < #{phone}\n"
-			+ "	ORDER BY s.PHONE DESC \n"
-			+ "	LIMIT 1")
+	@Select("""
+			select s.PHONE from NUMBERS s
+			WHERE s.PHONE < #{phone}
+			ORDER BY s.PHONE DESC
+			LIMIT 1
+			""")
 	String getPrevPhone(String phone);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from OLDREPORTS where PHONE = #{phone}")
-	DBSpamReport getPhoneInfoArchived(String phone);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			WHERE ACTIVE
+			ORDER BY s.VOTES DESC LIMIT #{cnt}
+			""")
+	List<DBNumberInfo> getTopSpammers(int cnt);
 	
-	@Select("SELECT PHONE, VOTES, LASTUPDATE, DATEADDED FROM SPAMREPORTS s"
-			+ " WHERE s.LASTUPDATE >= #{notBefore}"
-			+ " ORDER BY s.VOTES DESC LIMIT #{cnt}")
-	List<DBSpamReport> getTopSpammers(int cnt, long notBefore);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			ORDER BY s.SEARCHES DESC LIMIT #{cnt}
+			""")
+	List<DBNumberInfo> getTopSearchesOverall(int cnt);
 	
-	@Select("SELECT x.* FROM SPAMREPORTS x"
-			+ " WHERE VOTES >= #{minVotes} AND DATEADDED > 0 ORDER BY DATEADDED DESC LIMIT 10")
-	List<DBSpamReport> getLatestBlocklistEntries(int minVotes);
-	
-	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end, case when r.COUNT is null then 0 else r.COUNT end from SPAMREPORTS s"
-			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
-			+ " where s.VOTES >= #{minVotes}"
-			+ " order by s.PHONE")
-	List<DBBlockListEntry> getBlocklist(int minVotes);
-	
-	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end rating, case when r.COUNT is null then 0 else r.COUNT end count from SPAMREPORTS s"
-			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
-			+ " where s.PHONE = #{phone}"
-			+ " order by count desc, rating desc"
-			+ " limit 1")
-	DBPhoneInfo getApiPhoneInfo(String phone);
-	
-	@Select("select s.PHONE, s.VOTES, case when r.RATING is null then 'B_MISSED' else r.RATING end rating, case when r.COUNT is null then 0 else r.COUNT end count from OLDREPORTS s"
-			+ " left outer join RATINGS r on r.PHONE = s.PHONE"
-			+ " where s.PHONE = #{phone}"
-			+ " order by count desc, rating desc"
-			+ " limit 1")
-	DBPhoneInfo getApiPhoneInfoArchived(String phone);
-	
-	@Select("SELECT x.PHONE FROM SEARCHES x"
-			+ " LEFT OUTER JOIN SPAMREPORTS r"
-			+ " ON x.PHONE = r.PHONE"
-			+ " WHERE x.COUNT - x.BACKUP > 0"
-			+ " AND NOT r.PHONE IS NULL"
-			+ " ORDER BY x.LASTUPDATE DESC"
-			+ " LIMIT 5")
-	Set<String> getLatestSearchesToday();
-	
-	@Select("SELECT x.PHONE FROM SEARCHHISTORY x"
-			+ " LEFT OUTER JOIN SPAMREPORTS r"
-			+ " ON x.PHONE = r.PHONE"
-			+ " WHERE x.CLUSTER=#{revision}"
-			+ " AND NOT r.PHONE IS NULL"
-			+ " ORDER BY x.COUNT DESC"
-			+ " LIMIT 5")
-	Set<String> getTopSearches(int revision);
-	
-	@Select("SELECT x.CLUSTER, x.PHONE, x.COUNT, 0, x.LASTUPDATE FROM SEARCHHISTORY x"
-			+ " where x.CLUSTER >= #{revision} and x.PHONE = #{phone} order by x.CLUSTER")
-	List<DBSearchInfo> getSearchHistory(int revision, String phone);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			WHERE ACTIVE and VOTES >= #{minVotes} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
+			""")
+	List<DBNumberInfo> getLatestBlocklistEntries(int minVotes);
 
-	@Select("SELECT 0 revision, x.PHONE phone, x.COUNT - x.BACKUP count, x.COUNT total, x.LASTUPDATE lastUpdate FROM SEARCHES x where x.PHONE = #{phone}")
-	DBSearchInfo getSearchesToday(String phone);
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			where s.ACTIVE and s.VOTES >= #{minVotes}
+			order by s.PHONE
+			""")
+	List<DBNumberInfo> getBlocklist(int minVotes);
 	
-	@Select({
-		"<script>",
-		"SELECT 0 revision, x.PHONE, x.COUNT - x.BACKUP count, x.COUNT total, x.LASTUPDATE FROM SEARCHES x where ",
-		"    <foreach item=\"item\" index=\"index\" collection=\"numbers\"",
-		"        open=\"x.PHONE in (\" separator=\",\" close=\")\">",
-		"          #{item}",
-		"    </foreach>",
-		"</script>"})
-	List<DBSearchInfo> getSearchesTodayAll(Collection<String> numbers);
+	@Select("""
+			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
+			where s.VOTES > 0
+			order by s.SEARCHES_CURRENT desc
+			limit #{limit}
+			""")
+	List<DBSearchInfo> getTopSearchesCurrent(int limit);
 	
-	@Select({
-		"<script>",
-		"SELECT x.CLUSTER revision, x.PHONE phone, x.COUNT count, 0 total, x.LASTUPDATE lastUpdate FROM SEARCHHISTORY x where x.CLUSTER=#{revision} and ",
-		"    <foreach item=\"item\" index=\"index\" collection=\"numbers\"",
-		"        open=\"x.PHONE in (\" separator=\",\" close=\")\" nullable=\"true\">",
-		"          #{item}",
-		"    </foreach>",
-		"</script>"})
-	List<DBSearchInfo> getSearchesAtAll(int revision, Collection<String> numbers);
+	/**
+	 * Retrieves all historic versions for the given number not older than the given revision.
+	 * 
+	 * <p>
+	 * Note: There is no entry for revisions in which the number has not changed from it's previous version.
+	 * </p>
+	 */
+	@Select("""
+			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.RMAX >= #{revision} and h.PHONE = #{phone} order by h.RMIN
+			""")
+	List<DBNumberHistory> getSearchHistory(int revision, String phone);
+
+	/**
+	 * The newest history entry for the given number that is not newer than the requested revision.
+	 */
+	@Select("""
+			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.RMIN <= #{rev} and h.RMAX >= #{rev} and h.PHONE = #{phone}
+			""")
+	DBNumberHistory getHistoryEntry(String phone, int rev);
+
+	@Select("""
+			select h.RMIN, h.RMAX, h.PHONE, h.ACTIVE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
+			where h.RMIN = #{rev}
+			""")
+	List<DBNumberHistory> getHistoryEntries(int rev);
 	
-	@Select("select PHONE, VOTES, LASTUPDATE, DATEADDED from SPAMREPORTS")
-	List<DBSpamReport> getReports();
+	@Select(
+		"""
+		<script>
+		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+		where s.PHONE in 
+		    <foreach item="item" index="index" collection="numbers" open="(" separator="," close=")">
+		        #{item}
+		    </foreach>
+		</script>
+		""")
+	List<DBNumberInfo> getNumbers(Collection<String> numbers);
+
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+			where ACTIVE
+			""")
+	List<DBNumberInfo> getReports();
 	
-	@Select("select PHONE from WHITELIST")
+	@Select("""
+			select PHONE from WHITELIST
+			""")
 	Set<String> getWhiteList();
 	
-	@Select("select count(1) from WHITELIST where PHONE = #{phone}")
+	@Select("""
+			select count(1) from WHITELIST
+			where PHONE = #{phone}
+			""")
 	boolean isWhiteListed(String phone);
 	
-	@Select("select PHONE from SPAMREPORTS where VOTES >= #{minVotes}")
+	@Select("""
+			select PHONE from NUMBERS
+			where ACTIVE and VOTES >= #{minVotes}
+			""")
 	List<String> getBlockList(int minVotes);
 	
-	@Select("SELECT COUNT(1) cnt, CASE WHEN s.VOTES < #{minVotes} THEN 0 WHEN s.VOTES < 6 THEN 1 ELSE 2 END confidence FROM SPAMREPORTS s GROUP BY confidence ORDER BY confidence DESC")
+	@Select("""
+			SELECT CASE WHEN s.VOTES < #{minVotes} THEN 'reported' ELSE 'blocked' END state, COUNT(1) cnt FROM NUMBERS s
+			where s.ACTIVE and s.VOTES > 0
+			GROUP BY state
+			ORDER BY state
+			""")
 	List<Statistics> getStatistics(int minVotes);
-
-	@Select("select s.COUNT from RATINGS s where s.PHONE=#{phone} and s.RATING=#{rating}")
-	Integer getRatingCount(String phone, Rating rating);
 	
-	@Select("select s.RATING from RATINGS s where s.PHONE=#{phone} order by s.COUNT desc, s.RATING desc limit 1")
-	Rating getRating(String phone);
-	
-	@Select("select s.PHONE, s.RATING, s.COUNT from RATINGS s where s.PHONE=#{phone} order by s.RATING")
-	List<DBRatingInfo> getRatings(String phone);
-
-	@Insert("insert into RATINGS (PHONE, RATING, COUNT, LASTUPDATE) values (#{phone}, #{rating}, 1, #{now})")
-	void addRating(String phone, Rating rating, long now);
-	
-	@Update("update RATINGS s set s.COUNT = s.COUNT + 1, LASTUPDATE=#{now} where s.PHONE=#{phone} and s.RATING=#{rating}")
+	@Update("""
+			update NUMBERS s
+			set 
+				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', 1, 0), 
+				s.PING = s.PING + casewhen(#{rating}='C_PING', 1, 0), 
+				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', 1, 0), 
+				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', 1, 0), 
+				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', 1, 0), 
+				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', 1, 0), 
+				s.UPDATED = greatest(s.UPDATED, #{now}), 
+				s.LASTPING = greatest(s.LASTPING, #{now}) 
+			where s.PHONE = #{phone}
+			""")
 	int incRating(String phone, Rating rating, long now);
 	
-	@Update("update SEARCHES s set s.COUNT = s.COUNT + 1, LASTUPDATE=#{now} where s.PHONE=#{phone}")
+	@Update("""
+			update NUMBERS s
+			set 
+				s.SEARCHES = s.SEARCHES + 1, 
+				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1, 
+				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}), 
+				s.LASTPING = GREATEST(s.LASTPING, #{now})
+			where s.PHONE=#{phone}
+			""")
 	int incSearchCount(String phone, long now);
 
-	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.SERVICE, s.CREATED, s.UP, s.DOWN from COMMENTS s where s.PHONE=#{phone}")
-	List<DBUserComment> getComments(String phone);
+	@Select("""
+			<script>
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			from COMMENTS s 
+			where s.PHONE=#{phone} and s.LOCALE in 
+			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
+			""")
+	List<DBUserComment> getComments(String phone, Collection<String> langs);
 	
-	@Insert("insert into COMMENTS (ID, PHONE, RATING, COMMENT, SERVICE, CREATED) values (#{id}, #{phone}, #{rating}, #{comment}, #{service}, #{created})")
-	void addComment(String id, String phone, Rating rating, String comment, String service, long created);
+	@Select("""
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			from COMMENTS s 
+			where s.PHONE=#{phone}
+			""")
+	List<DBUserComment> getAnyComments(String phone);
+	
+	@Select("""
+			<script>
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
+			from COMMENTS s 
+			where 
+				s.PHONE &gt; #{prefix}
+				and s.PHONE &lt; concat(#{prefix}, 'Z')
+				and LENGTH(s.PHONE) = #{expectedLength}
+				and s.LOCALE in 
+			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
+			        #{item}
+			    </foreach>
+			</script>
+			""")
+	List<DBUserComment> getAllComments(String prefix, int expectedLength, Collection<String> langs);
+	
+	@Insert("""
+			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID) 
+			values (#{id}, #{phone}, #{rating}, #{comment}, #{lang}, #{service}, #{created}, #{userId})
+			""")
+	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
 	
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);
 	
-	@Select("select s.LASTUPDATE from META_UPDATE s where s.PHONE=#{phone}")
+	@Select("select s.LASTMETA from NUMBERS s where s.PHONE=#{phone}")
 	Long getLastMetaSearch(String phone);
 	
-	@Update("update META_UPDATE s set s.LASTUPDATE=#{lastUpdate} where s.PHONE=#{phone}")
+	@Update("update NUMBERS s set s.LASTMETA=#{lastUpdate} where s.PHONE=#{phone}")
 	int setLastMetaSearch(String phone, long lastUpdate);
 	
-	@Insert("insert into META_UPDATE (PHONE, LASTUPDATE) values (#{phone}, #{lastUpdate})")
-	void insertLastMetaSearch(String phone, long lastUpdate);
+	@Insert("insert into NUMBERS (PHONE, SHA1, ADDED, LASTMETA) values (#{phone}, #{hash}, #{now}, #{now})")
+	void insertLastMetaSearch(String phone, byte[] hash, long now);
 	
 	@Select("SELECT PHONE FROM SUMMARY_REQUEST sr ORDER BY sr.PRIORITY LIMIT 1")
 	String topSummaryRequest();
@@ -229,18 +407,20 @@ public interface SpamReports {
 	@Delete("DELETE FROM SUMMARY_REQUEST WHERE PHONE = #{phone}")
 	int dropSummaryRequest(String phone);
 	
-	@Insert("INSERT INTO SUMMARY_REQUEST (PHONE) \n"
-			+ "SELECT PHONE FROM (\n"
-			+ "	SELECT c.PHONE PHONE, COUNT(1) cnt, MAX(c.CREATED) lastComment, MAX(s.CREATED) lastSummary FROM COMMENTS c\n"
-			+ "	LEFT OUTER JOIN SUMMARY s \n"
-			+ "	ON s.PHONE = c.PHONE \n"
-			+ "	LEFT OUTER JOIN SUMMARY_REQUEST sr \n"
-			+ "	ON sr.PHONE = c.PHONE\n"
-			+ "	WHERE sr.PHONE IS NULL \n"
-			+ "	GROUP BY c.PHONE\n"
-			+ ")\n"
-			+ "WHERE cnt > 5 AND (lastSummary IS NULL OR lastSummary + 7 * 24 * 60 * 60 * 1000 < lastComment)\n"
-			+ "ORDER BY cnt DESC")
+	@Insert("""
+			INSERT INTO SUMMARY_REQUEST (PHONE)
+			SELECT PHONE FROM (
+				SELECT c.PHONE PHONE, COUNT(1) cnt, MAX(c.CREATED) lastComment, MAX(s.CREATED) lastSummary FROM COMMENTS c
+				LEFT OUTER JOIN SUMMARY s
+				ON s.PHONE = c.PHONE
+				LEFT OUTER JOIN SUMMARY_REQUEST sr
+				ON sr.PHONE = c.PHONE
+				WHERE sr.PHONE IS NULL
+				GROUP BY c.PHONE
+			)
+			WHERE cnt > 5 AND (lastSummary IS NULL OR lastSummary + 7 * 24 * 60 * 60 * 1000 < lastComment)
+			ORDER BY cnt DESC
+			""")
 	int scheduleSummaryRequests();
 	
 	@Select("select COMMENT from SUMMARY s where s.PHONE = #{phone}")
@@ -252,54 +432,55 @@ public interface SpamReports {
 	@Update("UPDATE SUMMARY SET COMMENT = #{comment}, CREATED = #{created} WHERE PHONE = #{phone}")
 	int updateSummary(String phone, String comment, Long created);
 	
-	@Insert("insert into SEARCHES (PHONE, LASTUPDATE) values (#{phone}, #{now})")
-	void addSearchEntry(String phone, long now);
+	@Insert("insert into REVISION (CREATED) values (#{date})")
+	@Options(useGeneratedKeys = true, keyColumn = "ID", keyProperty = "id")
+	void storeRevision(Rev newRev);
 	
-	@Insert("insert into SEARCHCLUSTER (CREATED) values (#{now})")
-	void createRevision(long now);
-	
-	@Select("select max(ID) from SEARCHCLUSTER")
+	@Select("select max(ID) from REVISION")
 	Integer getLastRevision();
 	
-	@Select("select min(ID) from SEARCHCLUSTER")
+	@Select("select CREATED from REVISION where id=#{rev}")
+	Long getRevisionDate(int rev);
+	
+	@Select("select min(ID) from REVISION")
 	int getOldestRevision();
-	
-	@Insert("insert into RATINGHISTORY (select #{id}, s.PHONE, s.RATING, s.COUNT - s.BACKUP from RATINGS s where s.COUNT > s.BACKUP)")
-	void fillRatingRevision(int id);
-	
-	@Update("update RATINGS s set s.BACKUP = s.COUNT")
-	void backupRatings();
-	
-	@Insert("insert into SEARCHHISTORY (select #{id}, s.PHONE, s.COUNT - s.BACKUP, s.LASTUPDATE from SEARCHES s where s.COUNT > s.BACKUP)")
-	void fillSearchRevision(int id);
-	
-	@Update("update SEARCHES s set s.BACKUP = s.COUNT")
-	void backupSearches();
-	
-	@Delete("delete from SEARCHHISTORY where CLUSTER=#{id}")
-	void cleanSearchCluster(int id);
-	
-	@Delete("delete from SEARCHCLUSTER where ID=#{id}")
-	void removeSearchCluster(int id);
 
-	@Select("select case when s.COUNT is NULL then 0 else s.COUNT end from SEARCHCLUSTER c left outer join SEARCHHISTORY s on s.PHONE=#{phone} and s.CLUSTER = c.ID order by c.ID")
-	List<Integer> getSearchCountHistory(String phone);
+	@Update("""
+			update NUMBERS_HISTORY 
+			set 
+				RMAX = #{rev} - 1
+			where
+				PHONE in (select s.PHONE from NUMBERS s where s.LASTPING > #{lastSnapshot}) and
+				RMAX = 0x7fffffff
+			""")
+	int outdateHistorySnapshot(int rev, long lastSnapshot);
 	
-	@Select("select s.COUNT - s.BACKUP from SEARCHES s where s.PHONE=#{phone}")
-	Integer getCurrentSearchHits(String phone);
+	@Insert("""
+			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, ACTIVE, CALLS, VOTES, DOWN_VOTES, UP_VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
+				select #{rev}, 0x7fffffff, s.PHONE, s.ACTIVE, s.CALLS, s.VOTES, s.DOWN_VOTES, s.UP_VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
+				where s.LASTPING > #{lastSnapshot}
+			)
+			""")
+	int createHistorySnapshot(int rev, long lastSnapshot);
+	
+	/**
+	 * Remove the backup (searches yesterday) from the current searches. Store the searches from the currently completed day into the backup.
+	 * @param lastSnapshot Time when the last revision was created.
+	 * @return The number of updated lines.
+	 */
+	@Update("""
+			update NUMBERS s
+			set
+				s.SEARCHES_BACKUP = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP,
+				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP
+			where s.LASTPING > #{lastSnapshot}
+			""")
+	int updateSearches(long lastSnapshot);
+	
+	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id}")
+	int cleanRevision(int id);
+	
+	@Delete("delete from REVISION where ID=#{id}")
+	void removeRevision(int id);
 
-	@Insert("INSERT INTO PREFIX (PHONE, PREFIX) (\n"
-			+ "    SELECT s.PHONE, SUBSTRING(s.PHONE, 0, LENGTH(s.PHONE) - 2) PREFIX \n"
-			+ "    FROM SPAMREPORTS s\n"
-			+ "    LEFT OUTER JOIN PREFIX p \n"
-			+ "    ON p.PHONE = s.PHONE \n"
-			+ "    WHERE s.VOTES > 0 AND p.PHONE IS NULL \n"
-			+ ")")
-	int updatePrefixes();
-	
-	@Select("SELECT p.PHONE FROM PREFIX p \n"
-			+ "WHERE NOT p.PHONE = #{phone} \n"
-			+ "AND p.PREFIX = SUBSTRING(#{phone}, 0, LENGTH(#{phone}) - 2) order by p.PHONE")
-	List<String> getRelatedNumbers(String phone);
-	
 }

@@ -6,6 +6,10 @@ allprojects {
 }
 
 rootProject.buildDir = '../build'
+
+dependencies {
+}
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }

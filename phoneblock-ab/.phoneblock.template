@@ -40,11 +40,8 @@ sip-user=<fill-in-here>
 # VOIP telephone created in the Fritz!Box).
 sip-passwd=<fill-in-here>
 
-# The user name of your phoneblock account.
-phoneblock-username=<fill-in-here>
-
-# The password of your phoneblock account.
-phoneblock-password=<fill-in-here>
+# Your API key for accessing the PhoneBlock API. Create one at https://phoneblock.net/phoneblock/settings
+phoneblock-api-key=
 
 # The format of the conversation media stord in the directories in ./conversation/*
 # The default format for telefony calls are 8bit PCMA encoded WAV files. When

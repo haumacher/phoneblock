@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{../fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">تثبيت أندرويد</h1>
+		
+		<h2 data-tx="t0002">الخطوة 2: تثبيت برنامج "PeopleSync" وفتحه</h2>
+
+		<p data-tx="t0003"><a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a> ليس له علاقة بـ PhoneBlock، بالمناسبة. هذا التطبيق يتيح فقط الوصول إلى دفتر عناوين الإنترنت عبر بروتوكول CardDAV تحت أندرويد. لذا إذا كانت لديك مشاكل مع هذا التطبيق، يُرجى الاتصال بالشركة المصنعة له مباشرةً.</p>
+
+		<div class="columns">
+			<div class="column is-two-fifths">
+	  			<img alt="تثبيت برنامج PeopleSync" class="image appscreen" data-tx="t0006" th:src="@{/assets/img/peoplesync/03-people-sync-install.png}"/>
+	  		</div>
+		
+			<div class="column is-two-fifths">
+				<img alt="فتح مزامنة الأشخاص" class="image appscreen" data-tx="t0007" th:src="@{/assets/img/peoplesync/04-people-sync-open.png}"/>
+			</div>
+		</div>
+		
+		<p class="buttons is-centered">
+		  <a class="button" th:href="@{/setup-android}">
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-left"></i>
+		    </span>
+		    <span data-tx="t0004">رجوع</span>
+		  </a>
+		  
+		  <a class="button is-primary" th:href="@{/setup-android/05-people-sync-accept}">
+		    <span data-tx="t0005">المزيد</span>
+		    <span class="icon">
+		      <i class="fa-solid fa-caret-right"></i>
+		    </span>
+		  </a>
+		</p>
+	</div>
+</section>
+<div th:replace="~{../fragments/page :: footer}"></div>
+</body>
+</html>

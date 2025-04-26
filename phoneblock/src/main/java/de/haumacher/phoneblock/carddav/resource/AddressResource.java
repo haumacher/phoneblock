@@ -3,12 +3,11 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.util.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.appendElement;
+import static de.haumacher.phoneblock.util.DomUtil.appendText;
 
 import java.io.IOException;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.ibatis.session.SqlSession;
@@ -19,6 +18,7 @@ import org.w3c.dom.Element;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.answerbot.AnswerBot;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -29,6 +29,8 @@ import ezvcard.VCard;
 import ezvcard.VCardVersion;
 import ezvcard.io.text.VCardReader;
 import ezvcard.property.Telephone;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link Resource} representing an individual entry in an {@link AddressBookResource}.
@@ -125,6 +127,7 @@ public class AddressResource extends Resource {
 			Users users = session.getMapper(Users.class);
 			
 			long currentUser = users.getUserId(_principal);
+			String dialPrefix = users.getDialPrefix(_principal);
 			
 			if (card.getTelephoneNumbers().size() > 1) {
 				LOG.warn("Prevent putting card with multiple numbers: " + card);
@@ -132,20 +135,22 @@ public class AddressResource extends Resource {
 				for (Telephone phone : card.getTelephoneNumbers()) {
 					String phoneText = phone.getText();
 					
-					String phoneId = NumberAnalyzer.toId(phoneText);
-					if (phoneId == null) {
+					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+					if (number == null) {
 						continue;
 					}
+					String phoneId = NumberAnalyzer.getPhoneId(number);
 					
-					LOG.info("Adding to block list: " + phoneId);
-					
-					blockList.removeExclude(currentUser, phoneId);
-					
-					// Safety, prevent duplicate key constraint violation.
-					blockList.removePersonalization(currentUser, phoneId);
-					
-					blockList.addPersonalization(currentUser, phoneId);
-					db.processVotesAndPublish(spamreport, phoneId, 2, System.currentTimeMillis());
+					Boolean state = blockList.getPersonalizationState(currentUser, phoneId);
+					if (state == null || !state.booleanValue()) {
+						LOG.info("Adding to block list: " + phoneId);
+						
+						// Safety, prevent duplicate key constraint violation.
+						blockList.removePersonalization(currentUser, phoneId);
+						blockList.addPersonalization(currentUser, phoneId);
+						
+						db.processVotesAndPublish(spamreport, number, dialPrefix, 2, System.currentTimeMillis());
+					}
 				}
 				
 				session.commit();

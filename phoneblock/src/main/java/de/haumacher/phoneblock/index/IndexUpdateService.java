@@ -3,10 +3,11 @@
  */
 package de.haumacher.phoneblock.index;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-
-import de.haumacher.phoneblock.scheduler.SchedulerService;
 
 /**
  * Service notifying an index about a changed URL in the application.
@@ -41,8 +42,8 @@ public interface IndexUpdateService extends ServletContextListener {
 	/**
 	 * Sends the given phone number to the indexer service.
 	 */
-	default void publishUpdate(String phone) {
-		publishPathUpdate("/nums/" + phone);
+	default void publishUpdate(PhoneNumer phone) {
+		publishPathUpdate("/nums/" + NumberAnalyzer.getPhoneId(phone));
 	}
 
 	/**

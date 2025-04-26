@@ -3,7 +3,7 @@
  */
 package de.haumacher.phoneblock.carddav.schema;
 
-import static de.haumacher.phoneblock.util.DomUtil.*;
+import static de.haumacher.phoneblock.util.DomUtil.qname;
 
 import javax.xml.namespace.QName;
 

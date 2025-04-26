@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.model.Blocklist;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,14 +22,18 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * {@link HttpServlet} serving the blocklist.
  */
-@WebServlet(urlPatterns = "/api/blocklist")
+@WebServlet(urlPatterns = BlocklistServlet.PATH)
 public class BlocklistServlet extends HttpServlet {
+	
+	public static final String PATH = "/api/blocklist";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!ServletUtil.checkAuthentication(req, resp)) {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
 			return;
 		}
 		
@@ -42,12 +46,16 @@ public class BlocklistServlet extends HttpServlet {
 				ServletUtil.sendError(resp, "Invalid minVotes parameter.");
 				return;
 			}
+			
+			if (minVotes < 2) {
+				ServletUtil.sendError(resp, "Parameter minVotes must be 2 or greater.");
+				return;
+			}
 		}
 		DB db = DBService.getInstance();
 		Blocklist result = db.getBlockListAPI(minVotes);
 		
 		String userAgent = req.getHeader("User-Agent");
-		String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
 		LOG.info("Sending blocklist to user '" + userName + "' (agent '" + userAgent + "')");
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent);
 		

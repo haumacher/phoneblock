@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body th:dir="${currentLang.direction}">
+
+<th:block th:fragment="forms(web)">
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">تسجيل الدخول باستخدام Google</span></a>
+		</p>
+		<div class="is-collapsible" id="googleLogin">
+			<div class="panel-block">
+	  		<div class="content">
+				<form method="get" th:action="@{/oauth/login}">
+
+			    <input name="force_client" th:value="${googleClient}" type="hidden"/>
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+	
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0002">ابق مسجلاً للدخول على هذا الجهاز (يضبط <a th:href="@{/datenschutz}"> كوكي</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0003">بالتسجيل، فإنك توافق على <a th:href="@{/usage}"> شروط الاستخدام</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0004">المتابعة إلى جوجل</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0005">إذا كان لديك حساب Google، يمكنك استخدامه لتسجيل الدخول إلى PhoneBlock بسهولة. في المرة الأولى التي تقوم فيها بتسجيل الدخول باستخدام Google، يتم إنشاء حساب PhoneBlock. في المستقبل، يمكنك إما تسجيل الدخول باستخدام اسم مستخدم PhoneBlock الذي تم إنشاؤه أو مرة أخرى عبر Google.</p>
+				
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>
+
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">تسجيل الدخول بالبريد الإلكتروني</span></a></p>
+		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
+			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
+	  		<div class="panel-block">
+	  		<div class="content">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+				<div class="field">
+					<label class="label" data-tx="t0007">البريد الإلكتروني</label>
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0020" name="email" placeholder="عنوان بريدك الإلكتروني" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <span class="icon is-small is-left">
+					      <i class="fas fa-envelope"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${emailMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${emailMessage}" th:text="${emailMessage}"></p>
+				</div>
+
+				<div>
+					<label class="label" data-tx="t0019">رمز الأمان</label>
+
+					<img alt="كابتشا" data-tx="t0021" th:src="${captchaSrc}"/>
+
+					<div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0022" name="captcha" placeholder="النص في الصورة أعلاه" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-key"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${captchaMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+					    </span>
+					</div>
+					<p class="help is-danger" th:if="${captchaMessage}" th:text="${captchaMessage}"></p>
+				</div>
+				
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0008">ابق مسجلاً للدخول على هذا الجهاز (يضبط <a th:href="@{/datenschutz}"> كوكي</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0009">بالتسجيل، فإنك توافق على <a th:href="@{/usage}"> شروط الاستخدام</a>.</div>
+				</div>
+
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0010">طلب الرمز</span>
+				    </button>
+				  </p>
+				</div>
+				
+				<p class="help" data-tx="t0011">ستتلقى رمزاً على عنوان البريد الإلكتروني الذي أدخلته، والذي يمكنك استخدامه لتسجيل الدخول. يؤدي تسجيل الدخول الأول باستخدام البريد الإلكتروني إلى إنشاء حساب PhoneBlock. في المستقبل، يمكنك بعد ذلك تسجيل الدخول باستخدام اسم مستخدم PhoneBlock الذي تم إنشاؤه أو عن طريق إرسال رمز لمرة واحدة مرة أخرى.</p>
+			</div>
+			</div>
+			</form>
+		</div>
+	</nav>
+	
+	<nav class="panel">
+		<p class="panel-heading has-background-grey-lighter">
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">تسجيل الدخول باستخدام اسم مستخدم PhoneBlock</span></a>
+		</p>
+		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
+			<div class="panel-block">
+	  		<div class="content">
+	  			<p data-tx="t0025">يمكنك استخدام هذا الخيار فقط لتسجيل الدخول بعد أن تكون قد سجلت بالفعل في PhoneBlock. ستتلقى اسم مستخدم PhoneBlock عند التسجيل إما عبر Google أو البريد الإلكتروني (انظر أعلاه).</p>
+	  		
+				<form method="post" th:action="${contextPath} + ${loginAction}">
+			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+				<div class="field">
+				  <p class="control has-icons-left has-icons-right">
+				    <input class="input" data-tx="t0023" placeholder="اسم المستخدم" th:name="${userNameParam}" type="text"/>
+				    <span class="icon is-small is-left">
+				      <i class="fa-solid fa-user"></i>
+				    </span>
+				    <span class="icon is-small is-right">
+				      <i class="fas fa-check"></i>
+				    </span>
+				  </p>
+				  <p class="help" data-tx="t0013">استخدم اسم المستخدم الذي تلقيته عند تسجيلك في Google أو عنوان بريدك الإلكتروني.</p>
+				</div>
+				<div class="field">
+				  <p class="control has-icons-left">
+				    <input class="input" data-tx="t0024" placeholder="كلمة مرور PhoneBlock" th:name="${passwordParam}" type="password"/>
+				    <span class="icon is-small is-left">
+				      <i class="fas fa-lock"></i>
+				    </span>
+				  </p>
+					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">تفاصيل تسجيل الدخول غير متطابقة، يرجى التحقق من الإدخالات والمحاولة مرة أخرى.</p>
+					  <p class="help" data-tx="t0015" th:unless="${loginError}">تم عرض كلمة المرور لك بعد تسجيل الدخول الأول. إذا لم تعد كلمة المرور في متناول يدك، ما عليك سوى تسجيل الدخول باستخدام Google أو عنوان بريدك الإلكتروني، انظر أعلاه.</p>
+				</div>
+
+				<div class="field" th:if="${web}">
+				  <div class="control">
+	  				<label class="checkbox">
+					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
+					  <span data-tx="t0016">ابق مسجلاً للدخول على هذا الجهاز (يضبط <a th:href="@{/datenschutz}"> كوكي</a>)</span>
+					</label>
+				  </div>
+				</div>
+
+				<div class="field">
+				  <div class="control" data-tx="t0017">بالتسجيل، فإنك توافق على <a th:href="@{/usage}"> شروط الاستخدام</a>.</div>
+				</div>
+				
+				<div class="field is-grouped">
+				  <p class="control">
+				    <button class="button is-primary" type="submit">
+			          <span class="icon">
+					      <i class="fa-solid fa-right-to-bracket"></i>
+					  </span>
+				      <span data-tx="t0018">تسجيل الدخول</span>
+				    </button>
+				  </p>
+				</div>
+				</form>
+			</div>
+			</div>
+		</div>
+	</nav>	
+</th:block>
+
+</body>
+</html>

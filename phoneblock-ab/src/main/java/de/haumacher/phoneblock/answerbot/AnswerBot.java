@@ -39,9 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
-import de.haumacher.msgbuf.io.StringW;
-import de.haumacher.msgbuf.json.JsonWriter;
-import de.haumacher.phoneblock.app.api.model.RateRequest;
 import org.mjsip.config.OptionParser;
 import org.mjsip.media.MediaDesc;
 import org.mjsip.media.MediaSpec;
@@ -51,6 +48,7 @@ import org.mjsip.sip.address.NameAddress;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.call.ExtendedCall;
 import org.mjsip.sip.header.Analyzer;
+import org.mjsip.sip.header.Header;
 import org.mjsip.sip.header.ToHeader;
 import org.mjsip.sip.message.SipMessage;
 import org.mjsip.sip.provider.SipConfig;
@@ -63,15 +61,19 @@ import org.mjsip.ua.MultipleUAS;
 import org.mjsip.ua.UserAgent;
 import org.mjsip.ua.UserAgentListener;
 import org.mjsip.ua.UserAgentListenerAdapter;
-import org.mjsip.ua.UserOptions;
 import org.mjsip.ua.registration.RegistrationClient;
 import org.mjsip.ua.registration.RegistrationLogger;
 import org.mjsip.ua.streamer.StreamerFactory;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.msgbuf.io.StringW;
 import de.haumacher.msgbuf.json.JsonReader;
+import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.app.api.model.RateRequest;
+import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.shared.PhoneHash;
 
 /**
  * {@link AnswerBot} is a VOIP server that automatically accepts incoming calls, sends an audio file and records
@@ -106,12 +108,17 @@ public class AnswerBot extends MultipleUAS {
 
 	private AnswerbotOptions _botConfig;
 
-	private Function<String, UserOptions> _configForUser;
+	private Function<String, CustomerOptions> _configForUser;
 
-	/** 
-	 * Creates an {@link AnswerBot}. 
+	/**
+	 * Creates an {@link AnswerBot}.
+	 * 
+	 * @param configForUser Function that retrieves the configuration for a SIP
+	 *                      user. When a call arrives, the message contains the name
+	 *                      of the registered answerbot. This user name is used, to
+	 *                      retrieve the configuration options for that user.
 	 */
-	public AnswerBot(SipProvider sip_provider, AnswerbotOptions botOptions, Function<String, UserOptions> configForUser, PortPool portPool) {
+	public AnswerBot(SipProvider sip_provider, AnswerbotOptions botOptions, Function<String, CustomerOptions> configForUser, PortPool portPool) {
 		super(sip_provider, portPool, botOptions);
 		_configForUser = configForUser;
 		_botConfig = botOptions;
@@ -172,6 +179,8 @@ public class AnswerBot extends MultipleUAS {
 	
 	@Override
 	protected void onInviteReceived(SipMessage msg) {
+		LOG.debug("Received invite.\n=== Message start ===\n{}\n=== Message end ===", msg);
+		
 		ToHeader toHeader = msg.getToHeader();
 		if (toHeader == null) {
 			LOG.warn("Missing To: header, ignoring.");
@@ -187,35 +196,57 @@ public class AnswerBot extends MultipleUAS {
 			LOG.warn("No user name in To: header, ignoring.");
 			return;
 		}
-		UserOptions user = _configForUser.apply(userName);
+		CustomerOptions user = _configForUser.apply(userName);
 		if (user == null) {
 			LOG.warn("No configuration for user '" + userName + "', ignoring.");
 			return;
 		}
 		
-		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(userName, msg));
+		final UserAgent ua = new UserAgent(sip_provider, _portPool, _config.forUser(user), createCallHandler(user, userName, msg));
 		
 		// since there is still no proper method to init the UA with an incoming call, trick it by using the onNewIncomingCall() callback method
 		new ExtendedCall(sip_provider,msg,ua);
 	}
 	
-	protected UserAgentListener createCallHandler(String userName, SipMessage msg) {
+	protected UserAgentListener createCallHandler(CustomerOptions user, String userName, SipMessage msg) {
 		String from = msg.getFromUser();
 		if (from == null) {
-			// An anonymous call, accept.
-			if (_botConfig.getAcceptAnonymous()) {
+			// An anonymous call, accept only if enabled in configuration.
+			if (user.getAcceptAnonymous()) {
 				LOG.info("Accepting anonymous call.");
 				return spamHandler(userName, "<anonymous>");
 			} else {
-				LOG.info("Not accepting anonymous call.");
+				LOG.info("Rejecting anonymous call.");
 				return rejectHandler();
 			}
 		}
 		
-		LOG.info("Incomming call from: " + from);
+		if (from.startsWith("*") || (_botConfig.hasTestPrefix() && from.startsWith(_botConfig.getTestPrefix()))) {
+			Header header = msg.getHeader("P-Called-Party-ID");
+			String calledParty;
+			if (header != null) {
+				calledParty = header.getValue();
+				
+				// Note: Filtering broadcast calls not work, since the P-Called-Party-ID is
+				// always **9, even if the local number of the answerbot (e.g. **621) is called.
 
-		if (from.startsWith("*") || (_botConfig.hasTestNumber() && from.startsWith(_botConfig.getTestPrefix()))) {
+//				if (calledParty != null) {
+//					SipURI uri = SipURI.parseAddress(calledParty);
+//					if (uri != null) {
+//						String calledUser = uri.getUserName();
+//						if (calledUser != null && calledUser.startsWith("**9")) {
+//							// Broadcast call, ignore.
+//							LOG.info("Rejecting broadcast call ({}).", calledParty);
+//							return rejectHandler();
+//						}
+//					}
+//				}
+			} else {
+				calledParty = "-";
+			}
+
 			// A local test call, accept.
+			LOG.info("Accepting test call from {} to {} for {}.", from, calledParty, userName);
 			return spamHandler(userName, from);
 		} else {
 			String fromLabel;
@@ -233,38 +264,64 @@ public class AnswerBot extends MultipleUAS {
 			
 			if (!fromLabel.isEmpty() && !fromLabel.equals(from)) {
 				if (!fromLabel.startsWith(SPAM_MARKER)) {
-					LOG.info("Ignoring call with local address book entry: " + anonymize(fromLabel));
+					LOG.info("Ignoring call with local address book entry.");
 					return rejectHandler();
 				}
 			}
 			
-			NumberInfo info;
-			try {
-				URL url = new URL("https://phoneblock.net/phoneblock/api/num/" + from + "?format=json");
-				URLConnection connection = url.openConnection();
-				connection.addRequestProperty("accept", "application/json");
-				connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);
-				try (InputStream in = connection.getInputStream()) {
-					info = NumberInfo.readNumberInfo(new JsonReader(new ReaderAdapter(new InputStreamReader(in))));
-				}
-			} catch (IOException ex) {
-				LOG.warn("Contacting PhoneBlock failed: " + ex.getMessage());
+			PhoneInfo info = fetchPhoneInfo(user, from);
+			if (info == null) {
+				LOG.info("Ignoring call from {}, failed to retrieve rating.", from);
 				return rejectHandler();
 			}
 			
-			if (info.getVotes() < _botConfig.getMinVotes()) {
+			int votes = user.getWildcard() ? info.getVotesWildcard() : info.getVotes();
+			if (votes < user.getMinVotes()) {
 				// Not considered SPAM.
-				LOG.info("Not spam: " + from + " (" + info.getVotes() + " votes)");
+				if (votes == 0) {
+					LOG.info("Ignoring legitimate call.");
+				} else {
+					LOG.info("Ignoring potential SPAM call from {} due to vote restriction ({} < {}).", from, votes, user.getMinVotes());
+				}
 				return rejectHandler();
+			} else {
+				LOG.info("Accepting SPAM call from {} ({} votes).", from, votes);
+				return spamHandler(userName, from);
 			}
-			
-			return spamHandler(userName, from);
 		}
 	}
 
-	private static String anonymize(String label) {
-		int length = label.length();
-		return length <= 5 ? label : label.substring(0, 2) + "..." + label.substring(length - 2);
+	/**
+	 * Retrieve a rating for the given number.
+	 * 
+	 * @param customerOptions Information about the answerbot owner.
+	 * @param from The number that is calling.
+	 * @return Information for the calling number, <code>null</code> if no
+	 *         information can be retrieved. In the later case, the call is ignored.
+	 */
+	protected PhoneInfo fetchPhoneInfo(CustomerOptions customerOptions, String from) {
+		try {
+			String internationalForm = PhoneHash.toInternationalForm(from);
+			if (internationalForm == null) {
+				// Not a valid number.
+				return null;
+			}
+			
+			byte[] hashData = PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
+			String encodeHash = PhoneHash.encodeHash(hashData);
+			
+			URL url = new URL("https://phoneblock.net/phoneblock/api/check?sha1=" + encodeHash + "&format=json");
+			
+			URLConnection connection = url.openConnection();
+			addAuthorization(connection);
+			connection.addRequestProperty("accept", "application/json");
+			try (InputStream in = connection.getInputStream()) {
+				return PhoneInfo.readPhoneInfo(new JsonReader(new ReaderAdapter(new InputStreamReader(in))));
+			}
+		} catch (IOException ex) {
+			LOG.warn("Contacting PhoneBlock failed for {}: {}", from, ex.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -327,17 +384,12 @@ public class AnswerBot extends MultipleUAS {
 				URL url = new URL("https://phoneblock.net/phoneblock/api/rate?format=json");
 				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 				connection.addRequestProperty("accept", "application/json");
-				String version = "PhoneBlock-AB/" + VERSION;
-				connection.addRequestProperty("User-Agent", version);
-				String auth = _botConfig.getPhoneblockUsername() + ":" + _botConfig.getPhoneblockPassword();
-				byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
-				String authHeader = "Basic " + new String(encodedAuth);
-				connection.setRequestProperty("Authorization", authHeader);
+				addAuthorization(connection);
 				connection.setRequestMethod("POST");
 				connection.setDoOutput(true);
 				try (OutputStream out = connection.getOutputStream()) {
 					RateRequest rateRequest = RateRequest.create().setPhone(from)
-							.setRating(seconds > 1 ? "B_MISSED" : "C_PING").setComment(version);
+							.setRating(seconds > 1 ? Rating.B_MISSED : Rating.C_PING);
 					StringW stringWriter = new StringW();
 					JsonWriter jsonWriter = new JsonWriter(stringWriter);
 					rateRequest.writeContent(jsonWriter);
@@ -359,6 +411,11 @@ public class AnswerBot extends MultipleUAS {
 				LOG.warn("Sending spam call to PhoneBlock failed: {}", ex.getMessage());
 			}
 		}
+	}
+
+	private void addAuthorization(URLConnection connection) {
+		connection.addRequestProperty("User-Agent", "PhoneBlock-AB/" + VERSION);
+		connection.setRequestProperty("Authorization", "Bearer " + _botConfig.getPhoneBlockAPIKey());
 	}
 
 	/**
@@ -390,7 +447,7 @@ public class AnswerBot extends MultipleUAS {
 		
 		sipConfig.normalize();
 		botConfig.normalize();
-
+		
 		SipProvider sipProvider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
 		new AnswerBot(sipProvider, botConfig, (id) -> userConfig, portConfig.createPool());
 		

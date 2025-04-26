@@ -5,29 +5,26 @@ package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
 
+import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.SearchServlet;
+import de.haumacher.phoneblock.app.api.model.SearchResult;
+import de.haumacher.phoneblock.location.LocationService;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import de.haumacher.phoneblock.analysis.NumberAnalyzer;
-import de.haumacher.phoneblock.app.SearchServlet;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.model.PhoneInfo;
-import de.haumacher.phoneblock.db.model.PhoneNumer;
-import de.haumacher.phoneblock.db.model.SearchResult;
-import de.haumacher.phoneblock.meta.MetaSearchService;
-import de.haumacher.phoneblock.util.ServletUtil;
-
 /**
  * Servlet for search API returning the info from the web search in a machine readable form.
  */
-@WebServlet(urlPatterns = SearchApiServlet.PREFIX + "/*")
+@WebServlet(urlPatterns = SearchApiServlet.PATTERN)
 public class SearchApiServlet extends HttpServlet {
 
-	static final String PREFIX = "/api/search";
+	public static final String PREFIX = "/api/search";
+	
+	public static final String PATTERN = SearchApiServlet.PREFIX + "/*";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -37,8 +34,17 @@ public class SearchApiServlet extends HttpServlet {
 			return;
 		}
 		
+		String dialPrefix;
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			dialPrefix = LocationService.getInstance().getDialPrefix(req);
+		} else {
+			// Resolved later.
+			dialPrefix = null;
+		}
+		
 		String query = pathInfo.substring(1);
-		SearchResult searchResult = SearchServlet.analyze(query);
+		SearchResult searchResult = SearchServlet.analyze(query, userName, dialPrefix);
 		
 		if (searchResult == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");

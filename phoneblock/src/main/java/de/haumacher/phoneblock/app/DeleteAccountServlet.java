@@ -5,14 +5,15 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
+import org.pac4j.core.util.Pac4jConstants;
+
+import de.haumacher.phoneblock.db.DBService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import de.haumacher.phoneblock.db.DBService;
 
 /**
  * {@link HttpServlet} deleting the account of the currently logged in user.
@@ -40,7 +41,7 @@ public class DeleteAccountServlet extends HttpServlet {
 		}
 		
 		DBService.getInstance().deleteUser(login);
-		resp.sendRedirect(req.getContextPath() + "/logout");
+		resp.sendRedirect(req.getContextPath() + "/logout" + "?" + Pac4jConstants.URL + "=" + req.getContextPath());
 	}
 
 	private void showSettings(HttpServletRequest req, HttpServletResponse resp) throws IOException {

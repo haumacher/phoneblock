@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://jetty.org/configure_10_0.dtd">
+
+<!-- Copy this file to `/phoneblock/src/test/jetty/jetty-env.xml` and fill out accordingly to allow local startup/debugging. -->
+<Configure class="org.eclipse.jetty.ee10.webapp.WebAppContext">
+
+	<!-- Syntax: EnvEntry (String jndiName, Object objToBind, boolean overrideWebXml) -->
+
+	<!-- DB settings -->
+	<New id="db-url" class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>db/url</Arg>
+		<Arg type="java.lang.String">jdbc:h2:./target/h2</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<!-- SMTP settings -->
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>smtp/user</Arg>
+		<Arg type="java.lang.String">user</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>smtp/password</Arg>
+		<Arg type="java.lang.String">password</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>smtp/properties/smtp.test-only</Arg>
+		<Arg type="java.lang.String">true</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+<!-- IMAP settings -->
+<!-- 
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/credits.active</Arg>
+		<Arg type="java.lang.String">true</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/mail.imap.user</Arg>
+		<Arg type="java.lang.String">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/mail.imap.password</Arg>
+		<Arg type="java.lang.String">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/mail.imaps.host</Arg>
+		<Arg type="java.lang.String">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/mail.imaps.port</Arg>
+		<Arg type="java.lang.Integer">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/mail.imaps.ssl.enable</Arg>
+		<Arg type="java.lang.String">true</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>imap/mail.imaps.usesocketchannels</Arg>
+		<Arg type="java.lang.String">true</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>credits/active</Arg>
+		<Arg type="java.lang.String">true</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>credits/sendmails</Arg>
+		<Arg type="java.lang.String">true</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+ -->
+
+</Configure>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.anrufbeantworter.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<div class="logo-animation">
+			<img alt="PhoneBlock answering machine logo" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+		</div>
+	
+		<h1 data-tx="t0001">Installation as answering machine</h1>
+		
+		<p data-tx="t0002">PhoneBlock offers you an intelligent answering machine that automatically only answers the call if the caller's number is listed in PhoneBlock's <a th:href="@{/status}">SPAM database</a>. Just like for the <a th:href="@{/setup}">setup of the blocklist</a>, you do not need your own device or computer for this. You create a PhoneBlock answering machine here on the website and register it via the Internet on your Fritz!Box or another VOIP-capable Internet router. You can find out exactly how the PhoneBlock answering machine works <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">here</a>.</p>
+		
+		<p data-tx="t0003">The following steps will take you to your PhoneBlock answering machine:</p>
+		
+		<ol>
+			<li><a data-tx="t0004" href="#register">Register with PhoneBlock</a></li>
+			<li><a data-tx="t0005" href="#create">Create answering machine</a></li>
+			<li><a data-tx="t0006" href="#dyndns">Set up DynDNS in the Fritz!Box</a></li>
+			<li><a data-tx="t0007" href="#sip">Setting up the telephony device in the Fritz!Box</a></li>
+			<li><a data-tx="t0008" href="#enable">Switching on the PhoneBlock answering machine</a></li>
+			<li><a data-tx="t0009" href="#test">Test answering machine</a></li>
+		</ol>
+		
+		 <p data-tx="t0010">The instructions will guide you step by step through the setup. The configuration in the Fritz!Box is not easy, but if you follow the procedure described here exactly, nothing can go wrong.</p>
+		 
+		<h2 data-tx="t0011" id="register">Step 1: Register with PhoneBlock</h2>
+
+		<p data-tx="t0012">From here on, you will need three browser windows (or tabs). One for this guide, one for the PhoneBlock answering machine app and one for the configuration interface of your Fritz!Box</p>
+		
+		<p data-tx="t0013" th:if="${loggedIn}">First you need to register or log in to PhoneBlock to start the setup.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			    <span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+			    </span>
+				<span data-tx="t0014">Log in</span>			
+			</a>
+		  </div>
+		</div>
+		<p data-tx="t0015" unless:if="${loggedIn}">You are logged in as <code dir="ltr" th:text="${userName}"></code>, great, let's move on to the next step!</p>
+		
+		<h2 data-tx="t0016" id="create">Step 2: Create answering machine</h2>
+		
+		<p data-tx="t0017">Clicking here opens a window with the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock answering machine app</a>. When you open it for the first time, the list of your answering machines is empty and there is a button at the bottom right with which you can create an answering machine. Press this plus button.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showAB" target="phoneblock-ab" th:href="@{/ab/}">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0018">Open app</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Set up DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0019" id="dyndns">Step 4: Set up DynDNS</h2>
+		
+		<p data-tx="t0020">Your Fritz!Box box tells PhoneBlock its IP address via "DynDNS". This is necessary so that the PhoneBlock answering machine can find your Fritz!Box</p>
+		
+		<h3 data-tx="t0021">Activate PhoneBlock DynDNS</h3>
+		
+		<p data-tx="t0022">Activate the "Use PhoneBlock DynDNS" switch in the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> (if you know your way around and are already using a different DynDNS provider, you can also enter the host name of your Fritz!Box)</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Set up DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0023">On the next page, confirm with "Activate DynDNS".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Set up DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0024">You will now receive access data for the PhoneBlock DynDNS, which you can enter in your Fritz!Box (see below).</p>
+
+		<h3 data-tx="t0025">Enter login data in the Fritz!Box</h3>
+		
+		<p data-tx="t0026">This link <a class="showFB" href="http://fritz.box" target="fritzbox">opens a window for your Fritz!Box</a>. Log in there with your Fritz!Box password. If you have never done this before, you will find the password on the bottom of the Fritz!Box</p>
+		
+		<p data-tx="t0027">In your <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>, navigate to "Internet &gt; Shares" in the sidebar and select the "DynDNS" tab.</p>
+
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a class="button is-medium is-primary is-fullwidth showFB" href="http://fritz.box" target="fritzbox">
+			    <span class="icon">
+					<i class="fa-solid fa-arrow-up-right-from-square"></i>
+			    </span>
+				<span data-tx="t0028">Open Fritz!Box</span>			
+			</a>
+		  </div>
+		</div>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Set up DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0029">Copy the data for "Update-Url", "Domain name", "User name" and "Password" from the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> and enter them in your <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. And confirm with "Apply" (point 5 in the image below).</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Set up DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0030">Check DynDNS</h3>
+
+		<p data-tx="t0031">Now go back to the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> and check the settings (point 6 in the picture above). If PhoneBlock has found your Fritz!Box, you will be taken to the next page with the access data for the actual answering machine.</p>
+		
+		<h2 data-tx="t0032" id="sip">Step 4: Setting up the answering machine in the Fritz!Box</h2>
+		
+		<p data-tx="t0033">The answering machine is now set up as a telephony device in the Fritz!Box To do this, open your <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box interface</a> again.</p>
+
+		<h3 data-tx="t0034">Setting up the telephony device</h3>
+
+		<p data-tx="t0035">Navigate to "Telephony &gt; Telephony devices" in the sidebar and click the "Set up new device" button.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Set up device" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0036">Select the type of device</h3>
+
+		<p data-tx="t0037">Select the option "Telephone (with and without answering machine)" and click on "Next". Note: Do <b>not</b> select the obvious option "Answering machine", as this can only be used to configure answering machines that are permanently installed in the Fritz!Box</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Create device" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0038">Configuring the IP telephone</h3>
+
+		<p data-tx="t0039">On the "Connect phone" page, select the "LAN/WLAN (IP phone)" option and give the new device the name "PhoneBlock" in the text field below. Then click on "Next".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Create IP telephone" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040">Transfer access data</h3>
+
+		<p data-tx="t0041">On the next page "Apply settings in IP phone" you will be asked for "User name" and "Password". Copy the corresponding data here that is displayed in the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app&lt;/x1 Click on "Next".</a></p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="User data" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  		</div>
+		</div>
+		
+		<h3 data-tx="t0042">Settings for outgoing calls</h3>
+
+		<p data-tx="t0043">On the page "Set up phone for outgoing calls" you can simply click "Next". The PhoneBlock answering machine does not need a phone number for outgoing calls because it never actively makes calls. We will deactivate this number in a later step so that your answering machine really cannot make any calls.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Outgoing calls" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0044">Select numbers to be protected</h3>
+
+		<p data-tx="t0045">On the "Set up phone settings for incoming calls" page, you should leave the default setting "Accept all calls". If you only want to protect certain numbers from SPAM calls, you can also select the numbers for which the answering machine will see a call at all. Click on "Next".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Protected numbers" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0046">Confirm configuration</h3>
+
+		<p data-tx="t0047">You will now be taken to the "Apply settings" summary page. You can check the settings you have made again and confirm them with "Apply".</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Check settings" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0048">Finish configuring the device</h3>
+
+		<p data-tx="t0049">You are back in the "Device overview". You should now see your new answering machine "PhoneBlock" in the list. However, before you can switch on the answering machine, you need to make further settings. To do this, click on the edit pencil at the end of the PhoneBlock line.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Edit answering machine" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050">Stop outgoing calls</h3>
+
+		<p data-tx="t0051">In the "Outgoing calls" selection field, you can now select the last empty entry to ensure that your answering machine cannot make calls on its own. Do <b>not</b> click on the Apply button at the bottom, but on the second tab "Login data". You will now be asked whether you want to save the changes. Click on "Apply" in this dialog.</p>
+		
+		<div class="columns">
+			<div class="column">
+	  			<img alt="Prevent outgoing calls" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  		</div>
+			<div class="column">
+	  			<img alt="Confirm" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0052">Allow login from the Internet</h3>
+
+		<p data-tx="t0053">In the "Login data" tab, you must now activate the "Allow login from the Internet" option and copy the password from the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> again and enter it in the "Password" field. Only then click on the "Apply" button.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Access from the Internet" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0054" id="enable">Step 5: Switching on the answering machine</h2>
+		
+		<p data-tx="t0055">The configuration of your answering machine is now complete. Switch back to the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> and switch on your new answering machine.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Access from the Internet" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  		</div>
+		</div>
+		
+		<p data-tx="t0056">Congratulations, if everything went well, the answering machine in the <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">answering machine app</a> should now be displayed in green as "switched on". The next unpleasant callers can discuss with PhoneBlock in the future.</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Answering machine connected" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  		</div>
+		</div>
+		
+		<h2 data-tx="t0057" id="test">Step 6: Test the answering machine</h2>
+
+		<p data-tx="t0058">If you want to try out how a call with the not quite everyday PhoneBlock answering machine works, you can call it from a telephone connected directly to the Fritz!Box (e.g. a DECT cordless telephone) via the <b>internal number</b> of the answering machine. The answering machine always accepts such test calls. <b>Important:</b> This works <b>only</b> via the internal number of the answering machine (usually starts with "**"). You can find the internal number in the device overview of your Fritz!Box in the "PhoneBlock" line. Why don't you try to estimate a photovoltaic system for him? Have fun!</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Answering machine connected" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  		</div>
+		</div>
+		
+	</div>
+</section>
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

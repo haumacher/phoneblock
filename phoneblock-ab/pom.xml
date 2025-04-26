@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.haumacher</groupId>
 		<artifactId>phoneblock-parent</artifactId>
-		<version>1.5.0-SNAPSHOT</version>
+		<version>1.7.4-SNAPSHOT</version>
 	</parent>
 	
 	<artifactId>phoneblock-ab</artifactId>
@@ -33,7 +33,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>1.6.14</tag>
   	</scm>
 
 	<properties>
@@ -49,10 +49,24 @@
 		<dependency>	
 		    <groupId>org.mjsip</groupId>
 			<artifactId>mjsip-ua</artifactId>
-		    <version>1.9.0-SNAPSHOT</version>
+		    <version>2.0.4</version>
 		</dependency>
 	</dependencies>
 	
+	<repositories>
+		<repository>
+			<id>github</id>
+			<name>GitHub haumacher/mjSIP Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/haumacher/mjSIP</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 

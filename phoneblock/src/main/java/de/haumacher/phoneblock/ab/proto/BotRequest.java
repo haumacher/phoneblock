@@ -17,6 +17,9 @@ public abstract class BotRequest extends SetupRequest {
 		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.CheckDynDns}.*/
 		R visit(de.haumacher.phoneblock.ab.proto.CheckDynDns self, A arg) throws E;
 
+		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.UpdateAnswerBot}.*/
+		R visit(de.haumacher.phoneblock.ab.proto.UpdateAnswerBot self, A arg) throws E;
+
 		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.EnableAnswerBot}.*/
 		R visit(de.haumacher.phoneblock.ab.proto.EnableAnswerBot self, A arg) throws E;
 
@@ -103,6 +106,7 @@ public abstract class BotRequest extends SetupRequest {
 			case EnterHostName.ENTER_HOST_NAME__TYPE: result = de.haumacher.phoneblock.ab.proto.EnterHostName.readEnterHostName(in); break;
 			case SetupDynDns.SETUP_DYN_DNS__TYPE: result = de.haumacher.phoneblock.ab.proto.SetupDynDns.readSetupDynDns(in); break;
 			case CheckDynDns.CHECK_DYN_DNS__TYPE: result = de.haumacher.phoneblock.ab.proto.CheckDynDns.readCheckDynDns(in); break;
+			case UpdateAnswerBot.UPDATE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.UpdateAnswerBot.readUpdateAnswerBot(in); break;
 			case EnableAnswerBot.ENABLE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.EnableAnswerBot.readEnableAnswerBot(in); break;
 			case DisableAnswerBot.DISABLE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.DisableAnswerBot.readDisableAnswerBot(in); break;
 			case DeleteAnswerBot.DELETE_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.DeleteAnswerBot.readDeleteAnswerBot(in); break;

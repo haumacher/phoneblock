@@ -3,15 +3,11 @@
  */
 package de.haumacher.phoneblock.db;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.jdbcx.JdbcDataSource;
@@ -21,9 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.index.IndexUpdateService;
-import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * {@link ServletContextListener} starting the database.
@@ -180,14 +178,6 @@ public class DBService implements ServletContextListener {
         	}
 		} finally {
 			if (_pool != null) {
-				try (Connection connection = _pool.getConnection()) {
-					try (Statement statement = connection.createStatement()) {
-						statement.execute("SHUTDOWN");
-					}
-				} catch (Exception ex) {
-					LOG.error("Database shutdown failed.", ex);
-				}
-
 				try {
 					_pool.dispose();
 					_pool = null;

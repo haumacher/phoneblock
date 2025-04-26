@@ -44,17 +44,8 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--silence-db", usage = "The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 	private double silenceDb = -30;
 
-	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
-	private boolean _acceptAnonymous = false;
-
-	@Option(name = "--min-votes", handler = GreaterThanZeroIntOptionHandler.class, usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
-	private int _minVotes = 4;
-
-	@Option(name = "--phoneblock-username", usage = "phoneblock username")
-	private String _phoneblockUsername;
-
-	@Option(name = "--phoneblock-password", usage = "phoneblock password")
-	private String _phoneblockPassword;
+	@Option(name = "--phoneblock-api-key", usage = "API key for accessing the PhoneBlock API.", required = true)
+	private String _phoneblockApiKey;
 
 	@Option(name = "--send-rating", handler = YesNoHandler.class, usage = "Enables the report of spam calls to the phoneblock project")
 	private boolean _sendRatings = false;
@@ -132,30 +123,6 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	}
 	
 	@Override
-	public boolean getAcceptAnonymous() {
-		return _acceptAnonymous;
-	}
-	
-	/**
-	 * @see #getAcceptAnonymous()
-	 */
-	public void setAcceptAnonymous(boolean acceptAnonymous) {
-		_acceptAnonymous = acceptAnonymous;
-	}
-	
-	@Override
-	public int getMinVotes() {
-		return _minVotes;
-	}
-	
-	/**
-	 * @see #getMinVotes()
-	 */
-	public void setMinVotes(int minVotes) {
-		_minVotes = minVotes;
-	}
-	
-	@Override
 	public String getTestPrefix() {
 		return _testPrefix;
 	}
@@ -212,11 +179,7 @@ public class AnswerbotConfig implements AnswerbotOptions {
 			System.exit(1);
 		}
 		_testPrefix = getNoneBlank(_testPrefix);
-		_phoneblockUsername = getNoneBlank(_phoneblockUsername);
-		_phoneblockPassword = getNoneBlank(_phoneblockPassword);
-		if (_phoneblockUsername == null || _phoneblockPassword == null) {
-			_sendRatings = false;
-		}
+		_phoneblockApiKey = getNoneBlank(_phoneblockApiKey);
 	}
 
 	private static String getNoneBlank(String s) {
@@ -224,21 +187,12 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	}
 
 	@Override
-	public String getPhoneblockUsername() {
-		return _phoneblockUsername;
+	public String getPhoneBlockAPIKey() {
+		return _phoneblockApiKey;
 	}
 
-	public void setPhoneblockUsername(String phoneblockUsername) {
-		_phoneblockUsername = phoneblockUsername;
-	}
-
-	@Override
-	public String getPhoneblockPassword() {
-		return _phoneblockPassword;
-	}
-
-	public void setPhoneblockPassword(String phoneblockPassword) {
-		_phoneblockPassword = phoneblockPassword;
+	public void setPhoneBlockAPIKey(String key) {
+		_phoneblockApiKey = key;
 	}
 
 	@Override

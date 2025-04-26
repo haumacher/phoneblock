@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.block.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Bloquer un numéro de téléphone</h1>
+	
+		<p data-tx="t0002">Un autre casse-pieds s'est tout de même glissé à travers le réseau PhoneBlock? C'est ennuyeux, mais pas de problème, tu vas bientôt t'en débarrasser. Pour cela, il te suffit d'ajouter le numéro de l'importun à la "Blocklist". Pour ce faire, connecte-toi à ta Fritz!Box.</p>
+		
+		<div class="columns">
+		  <div class="column is-half is-offset-one-quarter">
+			<a href="http://fritz.box" target="_blank"><button class="button is-medium is-primary is-fullwidth" data-tx="t0003">Se connecter à la FRITZ!Box</button></a>
+		  </div>
+		</div>
+		
+		<h2 data-tx="t0004">Afficher la liste des appelants</h2>
+		
+		<p data-tx="t0005">Dans l'interface utilisateur de ta FRITZ!Box, tu peux voir tous les appelants de la dernière période. Si tout s'est bien passé, la liste ressemble à l'illustration ci-dessous. Un appel indésirable a été identifié, marqué comme spam et l'appel a été rejeté (l'appel est représenté par un X rouge).</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Liste d'appels de la Fritz!Box" class="image" data-tx="t0021" th:src="@{/assets/img/block/07-spam-caller.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0006">Dans ce cas, il n'y a rien à faire. L'appelant indésirable se trouve déjà sur la "blocklist" et ne peut plus te déranger.</p>
+		
+		<h2 data-tx="t0007">Nouvelle entrée "Blocklist</h2>
+		
+		<p data-tx="t0008">Si l'emmerdeur a un nouveau numéro de téléphone ou si un nouveau terroriste téléphonique a commencé son business, tu peux encore recevoir un appel indésirable. Dans ce cas, tu peux ajouter ici une nouvelle entrée à la "liste de blocage".</p>
+		
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<div class="tile is-ancestor">
+		      <div class="tile is-parent">
+		      	<article class="tile is-child notification is-danger">
+			        <p class="title" data-tx="t0009">Attention!</p>
+			        <p class="subtitle" data-tx="t0010">Ne pas inscrire d'ennemis personnels!</p>
+			        <div class="content">
+			          <p data-tx="t0011">Une inscription dans la "BlockList" bloque l'appelant non seulement pour toi, mais aussi pour tous les membres de la communauté PhoneBlock! Si tu ne veux plus recevoir d'appels de ta belle-mère, inscris son numéro dans la liste locale des appels bloqués de ta FRITZ!Box, mais pas dans la "Blocklist" de PhoneBlock!</p>
+			          
+			          <p data-tx="t0012">En cas d'infraction, ton compte sera irrévocablement bloqué sans avertissement préalable!</p>
+			        </div>
+			  	</article>
+			  </div>
+			</div>
+	    </div>
+	 </div>
+	 
+	 <p data-tx="t0013">Tu es donc sûr que tu as reçu un appel publicitaire que tu n'as pas commandé et que personne d'autre ne souhaite recevoir? Alors vas-y - bloque le numéro...</p>
+		
+	<p data-tx="t0014">Un numéro est bloqué en créant une nouvelle entrée dans le répertoire téléphonique appelée "Blocklist". Ta FRITZ!Box télécharge cette nouvelle entrée sur le serveur PhoneBlock et tous les autres membres connectés de la communauté PhoneBlock reçoivent également cette entrée dans leur liste de blocage. Pour faire une nouvelle entrée dans le répertoire, clique sur l'icône du répertoire à la fin de la ligne contenant le numéro de l'appel indésirable.</p>
+	
+	<p data-tx="t0015">Sélectionne maintenant le répertoire téléphonique "Blocklist" :</p>
+	
+	<div class="columns">
+	  <div class="column is-8 is-offset-2">
+		<img alt="Marquer un appel comme indésirable" class="image" data-tx="t0022" th:src="@{/assets/img/block/08-mark-as-spam.png}"/>
+	  </div>
+	</div>
+	
+	<p data-tx="t0016">Clique sur "Suivant" et sélectionne "Créer à nouveau" :</p>
+	
+	<div class="columns">
+	  <div class="column is-8 is-offset-2">
+		<img alt="Créer une nouvelle entrée dans la blocklist" class="image" data-tx="t0023" th:src="@{/assets/img/block/09-create-entry-create.png}"/>
+	  </div>
+	</div>
+	
+	<p data-tx="t0017">Sur le masque suivant, saisis encore un nom de ton choix et clique sur "OK". Après la synchronisation avec le serveur PhoneBlock, le nom sera remplacé par "SPAM : numéro d'appel", tu n'as donc pas besoin de te donner la peine de saisir quelque chose de joli :</p>
+	
+	<p data-tx="t0018"><b>Important:</b> Lors d'une nouvelle entrée dans la Blocklist, tu ne peux effectuer que <b>un numéro</b> par entrée du répertoire téléphonique. PhoneBlock classe alors le numéro de téléphone dans le bon bloc. Un numéro que tu as inscrit ne peut pas contenir <b>un joker ("*")</b>. Les numéros joker ne sont créés par PhoneBlock lui-même que lorsqu'il y a beaucoup de plaintes concernant des numéros de téléphone très proches les uns des autres.</p>
+	
+	<p data-tx="t0019"><b>Important:</b> Tu ne dois pas modifier les entrées existantes de la Blocklist <b>(ni ajouter ni supprimer des numéros), sinon PhoneBlock rejettera tes modifications lors de la prochaine synchronisation. Si tu veux supprimer un numéro de la Blocklist, ajoute plutôt une entrée à ta <a th:href="@{/settings/#whitelist}">Whitelist dans les paramètres</a>.</b></p>
+
+	<div class="columns">
+	  <div class="column is-8 is-offset-2">
+		<img alt="Reprendre une nouvelle entrée dans la liste des blocs" class="image" data-tx="t0024" th:src="@{/assets/img/block/10-add-entry-save.png}"/>
+	  </div>
+	</div>
+	
+	<p data-tx="t0020">C'est terminé! Tu t'es débarrassé, ainsi que toute la communauté PhoneBlock, d'une autre emmerdeuse, merci!</p>
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
