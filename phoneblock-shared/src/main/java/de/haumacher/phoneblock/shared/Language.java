@@ -1,7 +1,5 @@
 package de.haumacher.phoneblock.shared;
 
-import static de.haumacher.phoneblock.shared.Language.lang;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -55,7 +53,7 @@ public class Language {
 		}
 	}
 	
-	private static final Language DEFAULT_LANG = LANGUAGES[0];
+	private static final Language DEFAULT_LANG = LANG_BY_TAG.get("en-US");
 	
 	public final String tag;
 	public final String flag;

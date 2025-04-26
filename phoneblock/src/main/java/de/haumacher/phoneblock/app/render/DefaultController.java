@@ -154,8 +154,14 @@ public class DefaultController implements WebController {
         	}
         	
     		// Use browser default
-    		List<LanguageRange> acceptLanguage = LanguageRange.parse(request.getHeader("Accept-Language"));
-    		Locale locale = Locale.lookup(acceptLanguage, Language.supportedLocales());
+    		String acceptLanguageHeader = request.getHeader("Accept-Language");
+    		Locale locale;
+    		if (acceptLanguageHeader == null) {
+				locale = null;
+    		} else {
+    			List<LanguageRange> acceptLanguage = LanguageRange.parse(acceptLanguageHeader);
+    			locale = Locale.lookup(acceptLanguage, Language.supportedLocales());
+    		}
     		if (locale == null) {
     			lang = Language.getDefault();
     		} else {
