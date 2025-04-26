@@ -194,3 +194,15 @@ button.showaddr:before {
 button.showaddr:after {
 	content: ">";
 }
+
+/* Fix dark mode issue. When explicitly selecting a background, Bulma does not adjust the color rendered on that background. */
+.has-background-primary {
+	--bulma-text: var(--bulma-primary-invert);
+	--bulma-text-strong: var(--bulma-primary-invert);
+}
+
+/* Fix dark mode issue. When explicitly selecting a background, Bulma does not adjust the color rendered on that background. */
+.has-background-info {
+	--bulma-text: var(--bulma-info-invert);
+	--bulma-text-strong: var(--bulma-info-invert);
+}
