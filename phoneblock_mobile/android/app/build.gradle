@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "de.haumacher.phoneblock_mobile"
-    compileSdk 34 // flutter.compileSdkVersion
+    compileSdk 35 // flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {
