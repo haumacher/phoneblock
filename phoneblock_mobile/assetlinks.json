@@ -1,0 +1,11 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "de.haumacher.phoneblock_answerbot_ui",
+    "sha256_cert_fingerprints": [
+      "95:BD:97:FC:4B:E4:0B:4F:54:86:B7:9E:53:ED:60:7C:4C:88:2E:E6:18:5B:CA:67:2D:D9:65:D7:AD:0C:E1:E7",
+      "A5:2D:36:52:E7:90:03:0B:55:CE:E3:F5:9C:B7:9B:63:11:F0:F3:67:93:97:1E:3B:2D:BA:73:C7:22:50:21:7F"
+    ]
+  }
+}]
