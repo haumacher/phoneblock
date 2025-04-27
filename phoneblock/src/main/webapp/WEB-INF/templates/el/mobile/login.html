@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.mobile.login.title})}"></head>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.login.title})}"></head>
 
 <body th:dir="${currentLang.direction}">
-<div th:replace="~{fragments/page :: header-mobile}"></div>
+<div th:replace="~{../fragments/page :: header-mobile}"></div>
 
 <section class="section">
 	<div class="content">
@@ -14,7 +14,7 @@
 	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">Πρέπει πρώτα να εγγραφείτε στο PhoneBlock ή να δημιουργήσετε έναν λογαριασμό PhoneBlock. Χρειάζεστε έναν λογαριασμό PhoneBlock για να μπορεί το κινητό σας τηλέφωνο να χρησιμοποιεί τη βάση δεδομένων PhoneBlock για να φιλτράρει τις κλήσεις.</p>
 	</div>
 
-	<div th:if="${#strings.isEmpty(login)}" th:replace="~{fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	<div th:if="${#strings.isEmpty(login)}" th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
 	</div>
 
 	<th:block th:unless="${#strings.isEmpty(login)}">
@@ -33,6 +33,6 @@
 	</th:block>
 </section>
 
-<div th:replace="~{fragments/page :: footer-mobile}"></div>
+<div th:replace="~{../fragments/page :: footer-mobile}"></div>
 </body>
 </html>

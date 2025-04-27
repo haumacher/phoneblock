@@ -1,6 +1,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
@@ -38,7 +40,6 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
 		
-		req.setAttribute("token", loginToken.getToken());
-		TemplateRenderer.getInstance(req).process("/mobile/response", req, resp);
+		resp.sendRedirect(req.getContextPath() + "/mobile/response" + "?token=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));
 	}
 }

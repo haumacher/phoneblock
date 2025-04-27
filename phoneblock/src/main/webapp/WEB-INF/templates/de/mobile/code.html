@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.mobile.code.title})}"></head>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.code.title})}"></head>
 
 <body th:dir="${currentLang.direction}">
-<div th:replace="~{fragments/page :: header-mobile}"></div>
+<div th:replace="~{../fragments/page :: header-mobile}"></div>
 
 <section class="section">
 <div class="content">
@@ -22,7 +22,7 @@
 				<p data-tx="t0004">
 					Bitte kopiere den Code aus der E-Mail und gib ihn hier ein, um Deine E-Mail-Adresse zu bestätigen.
 				</p>
-				<form action="@{/register-mobile}" enctype="application/x-www-form-urlencoded" method="post">
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
 					<div class="field">
 						<label class="label" data-tx="t0005">Code</label>
 						<div class="control has-icons-left has-icons-right">
@@ -55,6 +55,6 @@
 </div>
 </section>
 
-<div th:replace="~{fragments/page :: footer-mobile}"></div>
+<div th:replace="~{../fragments/page :: footer-mobile}"></div>
 </body>
 </html>

@@ -27,6 +27,7 @@ public class TemplateRenderer {
     static {
         controllersByURL = new HashMap<String, WebController>();
         controllersByURL.put("/login", new LoginController());
+        controllersByURL.put("/mobile/login", new LoginController());
         controllersByURL.put("/status", new StatusController());
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
         controllersByURL.put("/phone-info", new PhoneInfoController());

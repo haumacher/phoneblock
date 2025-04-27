@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.mobile.response.title})}"></head>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.response.title})}"></head>
 
 <body th:dir="${currentLang.direction}">
-<div th:replace="~{fragments/page :: header-mobile}"></div>
+<div th:replace="~{../fragments/page :: header-mobile}"></div>
 
 <section class="section">
 <div class="content">
@@ -17,6 +17,6 @@
 </div>
 </section>
 
-<div th:replace="~{fragments/page :: footer-mobile}"></div>
+<div th:replace="~{../fragments/page :: footer-mobile}"></div>
 </body>
 </html>

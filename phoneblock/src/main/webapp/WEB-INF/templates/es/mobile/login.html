@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.mobile.login.title})}"></head>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.login.title})}"></head>
 
 <body th:dir="${currentLang.direction}">
-<div th:replace="~{fragments/page :: header-mobile}"></div>
+<div th:replace="~{../fragments/page :: header-mobile}"></div>
 
 <section class="section">
 	<div class="content">
@@ -14,7 +14,7 @@
 	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">Primero debe registrarse en PhoneBlock o crear una cuenta PhoneBlock. Necesita una cuenta PhoneBlock para que su teléfono móvil pueda utilizar la base de datos PhoneBlock para filtrar las llamadas.</p>
 	</div>
 
-	<div th:if="${#strings.isEmpty(login)}" th:replace="~{fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	<div th:if="${#strings.isEmpty(login)}" th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
 	</div>
 
 	<th:block th:unless="${#strings.isEmpty(login)}">
@@ -33,6 +33,6 @@
 	</th:block>
 </section>
 
-<div th:replace="~{fragments/page :: footer-mobile}"></div>
+<div th:replace="~{../fragments/page :: footer-mobile}"></div>
 </body>
 </html>
