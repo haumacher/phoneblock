@@ -13,6 +13,7 @@ import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -73,7 +74,7 @@ public class RegistrationServlet extends HttpServlet {
 				String displayName = DB.toDisplayName(email);
 				
 				Language language = DefaultController.selectLanguage(req);
-				String dialPrefix = DefaultController.selectDialPrefix(req);
+				String dialPrefix = DefaultController.selectDialPrefix(req, language);
 				
 				passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 				db.setEmail(login, email);

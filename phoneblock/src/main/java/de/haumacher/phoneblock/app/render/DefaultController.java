@@ -100,7 +100,7 @@ public class DefaultController implements WebController {
 		
 		request.setAttribute("template", i18nTemplate);
 		
-        resolveDialPrefix(request);
+        resolveDialPrefix(request, lang);
 		
 		final IServletWebExchange webExchange = renderer.buildExchange(request, response);
         WebContext ctx = new WebContext(webExchange, lang.locale);
@@ -196,12 +196,12 @@ public class DefaultController implements WebController {
         return lang;
 	}
 
-	private static void resolveDialPrefix(HttpServletRequest request) {
-		String dialPrefix = selectDialPrefix(request);
+	private static void resolveDialPrefix(HttpServletRequest request, Language lang) {
+		String dialPrefix = selectDialPrefix(request, lang);
 		request.setAttribute("currentDialPrefix", dialPrefix);
 	}
 	
-	public static String selectDialPrefix(HttpServletRequest request) {
+	public static String selectDialPrefix(HttpServletRequest request, Language lang) {
 		String selectedPrefix = request.getParameter(DIAL_PREFIX_ATTR);
 		String dialPrefix = null;
 		if (selectedPrefix == null) {
@@ -240,6 +240,10 @@ public class DefaultController implements WebController {
 					tx.commit();
 				}
 			}
+		}
+		
+		if (dialPrefix == null) {
+			dialPrefix = lang.dialPrefix;
 		}
 		
 		return dialPrefix;
