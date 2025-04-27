@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
 
     <application
-        android:label="phoneblock_mobile"
+        android:label="PhoneBlock mobile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:targetApi="31">
