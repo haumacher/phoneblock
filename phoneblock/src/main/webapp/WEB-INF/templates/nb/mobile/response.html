@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.mobile.response.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header-mobile}"></div>
+
+<section class="section">
+<div class="content">
+
+<h1 data-tx="t0001">Du er vellykket logget inn</h1>
+
+<p data-tx="t0002">Ditt autorisasjonstoken: <code id="token" th:text="${token}"></code>.</p>
+
+<p data-tx="t0003">Innloggingen din til PhoneBlock var vellykket. Hvis denne siden ikke lukkes automatisk, kan det være noe galt med mobilapplikasjonen din.</p>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer-mobile}"></div>
+</body>
+</html>

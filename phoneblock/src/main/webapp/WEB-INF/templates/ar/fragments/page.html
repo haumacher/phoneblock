@@ -169,6 +169,16 @@
 </div>  
 </section>
 
+<section class="hero is-small is-primary" th:fragment="header-mobile">
+	<div class="hero-body">
+		<p class="title">
+			<img alt="شعار فون بلوك" class="logo-image" data-tx="t0058" th:src="@{/assets/img/app-logo.svg}"/>
+			<span data-tx="t0059">تحرير ترجمات هذه الصفحة</span>
+		</p>
+		<p class="subtitle" data-tx="t0060">فلتر الرسائل غير المرغوب فيها لهاتفك</p>
+	</div>
+</section>
+
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">
@@ -250,8 +260,8 @@
 		<p>
 			<strong><a data-tx="t0023" th:href="@{/datenschutz}">حماية البيانات - لا تتبع ولا إعلانات ولا بسكويت</a></strong><br/>
 			<th:block th:unless="${#strings.equals(currentLang.tag, 'de')}">
-			<strong><a data-tx="t0058" th:href="@{link/deepl}">ترجمات من موقع deepl.com، شكراً لك!</a></strong><br/>
-			<strong><a data-tx="t0059" th:href="|${contextPath}/link/translations${template}|">تحرير ترجمات هذه الصفحة</a></strong><br/>
+			<strong><a data-tx="t0061" th:href="@{link/deepl}">ترجمات من موقع deepl.com، شكراً لك!</a></strong><br/>
+			<strong><a data-tx="t0062" th:href="|${contextPath}/link/translations${template}|">تحرير ترجمات هذه الصفحة</a></strong><br/>
 			</th:block>
 			<strong><a data-tx="t0024" th:href="@{/usage}">شروط الاستخدام</a></strong><br/>
 			<strong><a data-tx="t0025" th:href="@{/impressum}">بصمة</a></strong>
@@ -260,6 +270,9 @@
 </footer>
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+</th:block>
+
+<th:block th:fragment="footer-mobile">
 </th:block>
 
 </body>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.mobile.response.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header-mobile}"></div>
+
+<section class="section">
+<div class="content">
+
+<h1 data-tx="t0001">Tu es inscrit(e) avec succès</h1>
+
+<p data-tx="t0002">Ton jeton d'autorisation : <code id="token" th:text="${token}"></code></p>
+
+<p data-tx="t0003">Ton inscription à PhoneBlock a réussi. Si cette page ne se ferme pas automatiquement, il se peut que quelque chose ne fonctionne pas avec ton application mobile.</p>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer-mobile}"></div>
+</body>
+</html>

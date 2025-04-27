@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.mobile.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header-mobile}"></div>
+
+<section class="section">
+	<div class="content">
+	<h1 data-tx="t0001">PhoneBlock-Account verknüpfen</h1>
+	
+	<p data-tx="t0002">
+		Hier verbindest du Deinen PhoneBlock-Account mit Deinem Mobilgerät.
+	</p>
+
+	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">
+		Du musst Dich zuerst bei PhoneBlock anmelden bzw. einen PhoneBlock-Account erstellen.
+		Du benötigst einen PhoneBlock-Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
+		für die Filterung von Anrufen nutzen kann.
+	</p>
+	</div>
+
+	<div th:if="${#strings.isEmpty(login)}" th:replace="~{fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	</div>
+
+	<th:block th:unless="${#strings.isEmpty(login)}">
+	<form method="post" th:action="@{/create-token}">
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" type="submit">
+	          <span class="icon">
+			      <i class="fa-solid fa-link"></i>
+			  </span>
+		      <span data-tx="t0004">PhoneBlock-Account verknüpfen</span>
+		    </button>
+		  </p>
+		</div>
+	</form>	
+	</th:block>
+</section>
+
+<div th:replace="~{fragments/page :: footer-mobile}"></div>
+</body>
+</html>

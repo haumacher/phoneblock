@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.mobile.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header-mobile}"></div>
+
+<section class="section">
+	<div class="content">
+	<h1 data-tx="t0001">链接 PhoneBlock 账户</h1>
+	
+	<p data-tx="t0002">在这里，您可以将 PhoneBlock 账户与移动设备连接起来。</p>
+
+	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">您必须首先在 PhoneBlock 注册或创建一个 PhoneBlock 账户。您需要一个 PhoneBlock 帐户，这样您的手机才能使用 PhoneBlock 数据库过滤来电。</p>
+	</div>
+
+	<div th:if="${#strings.isEmpty(login)}" th:replace="~{fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	</div>
+
+	<th:block th:unless="${#strings.isEmpty(login)}">
+	<form method="post" th:action="@{/create-token}">
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" type="submit">
+	          <span class="icon">
+			      <i class="fa-solid fa-link"></i>
+			  </span>
+		      <span data-tx="t0004">链接 PhoneBlock 账户</span>
+		    </button>
+		  </p>
+		</div>
+	</form>	
+	</th:block>
+</section>
+
+<div th:replace="~{fragments/page :: footer-mobile}"></div>
+</body>
+</html>
