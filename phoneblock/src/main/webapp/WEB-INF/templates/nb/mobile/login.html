@@ -9,15 +9,19 @@
 	<div class="content">
 	<h1 data-tx="t0001">Koble til PhoneBlock-konto</h1>
 	
+	<p data-tx="t0005" th:unless="${#strings.isEmpty(userName)}">Du er logget inn på PhoneBlock som <code th:text="${userName}"></code>.</p>
+	
 	<p data-tx="t0002">Her kobler du PhoneBlock-kontoen din til mobilenheten din.</p>
 
-	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">Du må først registrere deg hos PhoneBlock eller opprette en PhoneBlock-konto. Du trenger en PhoneBlock-konto for at mobiltelefonen din skal kunne bruke PhoneBlock-databasen til å filtrere anrop.</p>
+	<p data-tx="t0003" th:if="${#strings.isEmpty(userName)}">Du må først registrere deg hos PhoneBlock eller opprette en PhoneBlock-konto. Du trenger en PhoneBlock-konto for at mobiltelefonen din skal kunne bruke PhoneBlock-databasen til å filtrere anrop.</p>
 	</div>
 
-	<div th:if="${#strings.isEmpty(login)}" th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	<th:block th:if="${#strings.isEmpty(userName)}">
+	<div th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
 	</div>
+	</th:block>
 
-	<th:block th:unless="${#strings.isEmpty(login)}">
+	<th:block th:unless="${#strings.isEmpty(userName)}">
 	<form method="post" th:action="@{/create-token}">
 		<div class="field is-grouped">
 		  <p class="control">

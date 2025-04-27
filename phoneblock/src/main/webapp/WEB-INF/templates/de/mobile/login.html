@@ -9,21 +9,27 @@
 	<div class="content">
 	<h1 data-tx="t0001">PhoneBlock-Account verknüpfen</h1>
 	
+	<p data-tx="t0005" th:unless="${#strings.isEmpty(userName)}">
+		Du bist als <code th:text="${userName}"></code> bei PhoneBlock angemeldet.
+	</p>
+	
 	<p data-tx="t0002">
 		Hier verbindest du Deinen PhoneBlock-Account mit Deinem Mobilgerät.
 	</p>
 
-	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">
+	<p data-tx="t0003" th:if="${#strings.isEmpty(userName)}">
 		Du musst Dich zuerst bei PhoneBlock anmelden bzw. einen PhoneBlock-Account erstellen.
 		Du benötigst einen PhoneBlock-Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
 		für die Filterung von Anrufen nutzen kann.
 	</p>
 	</div>
 
-	<div th:if="${#strings.isEmpty(login)}" th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	<th:block th:if="${#strings.isEmpty(userName)}">
+	<div th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
 	</div>
+	</th:block>
 
-	<th:block th:unless="${#strings.isEmpty(login)}">
+	<th:block th:unless="${#strings.isEmpty(userName)}">
 	<form method="post" th:action="@{/create-token}">
 		<div class="field is-grouped">
 		  <p class="control">

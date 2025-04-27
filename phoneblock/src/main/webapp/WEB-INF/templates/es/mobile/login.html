@@ -9,15 +9,19 @@
 	<div class="content">
 	<h1 data-tx="t0001">Vincular cuenta PhoneBlock</h1>
 	
+	<p data-tx="t0005" th:unless="${#strings.isEmpty(userName)}">Has iniciado sesión en PhoneBlock como <code th:text="${userName}"></code>.</p>
+	
 	<p data-tx="t0002">Aquí conectas tu cuenta PhoneBlock con tu dispositivo móvil.</p>
 
-	<p data-tx="t0003" th:if="${#strings.isEmpty(login)}">Primero debe registrarse en PhoneBlock o crear una cuenta PhoneBlock. Necesita una cuenta PhoneBlock para que su teléfono móvil pueda utilizar la base de datos PhoneBlock para filtrar las llamadas.</p>
+	<p data-tx="t0003" th:if="${#strings.isEmpty(userName)}">Primero debe registrarse en PhoneBlock o crear una cuenta PhoneBlock. Necesita una cuenta PhoneBlock para que su teléfono móvil pueda utilizar la base de datos PhoneBlock para filtrar las llamadas.</p>
 	</div>
 
-	<div th:if="${#strings.isEmpty(login)}" th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
+	<th:block th:if="${#strings.isEmpty(userName)}">
+	<div th:replace="~{../fragments/login-forms :: forms(web=false, location='/mobile/login')}">
 	</div>
+	</th:block>
 
-	<th:block th:unless="${#strings.isEmpty(login)}">
+	<th:block th:unless="${#strings.isEmpty(userName)}">
 	<form method="post" th:action="@{/create-token}">
 		<div class="field is-grouped">
 		  <p class="control">
