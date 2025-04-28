@@ -145,15 +145,11 @@ public class AddressBookCache implements ServletContextListener {
 			
 			if (isGerman) {
 				if (nationalOnly && phone.startsWith("00")) {
+					// Only non-German numbers are stored with country prefix in the DB.
 					continue;
 				}
 			} else {
-				// Numbers are stored in German national format, internationalize them.
-				if (phone.startsWith("00")) {
-					phone = "+" + phone.substring(2);
-				} else {
-					phone = "+49" + phone.substring(1);
-				}
+				phone = toInternationalFormat(phone);
 				
 				if (nationalOnly && !phone.startsWith(dialPrefix)) {
 					continue;
@@ -169,14 +165,20 @@ public class AddressBookCache implements ServletContextListener {
 		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 
 		Set<String> whitelist = reports.getWhiteList();
 		for (String phone : whitelist) {
+			phone = isGerman ? phone : toInternationalFormat(phone);
+			
 			numberTree.insert(phone, -1_000_000, 0);
 		}
 		for (String phone : exclusions) {
+			phone = isGerman ? phone : toInternationalFormat(phone);
+
 			numberTree.insert(phone, -1_000_000, 0);
 		}
 		
 		// Make sure to override whitelist entries with personal blacklist entries.
 		for (String phone : personalizations) {
+			phone = isGerman ? phone : toInternationalFormat(phone);
+
 			numberTree.insert(phone, 10_000_000, 0);
 		}
 		
@@ -185,6 +187,17 @@ public class AddressBookCache implements ServletContextListener {
 		}
 		
 		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
+	}
+
+	private static String toInternationalFormat(String phone) {
+		// Numbers are stored in German national format, internationalize them.
+		if (phone.startsWith("00")) {
+			phone = "+" + phone.substring(2);
+		} else {
+			// The number is a national German number (that must start with a single zero).
+			phone = "+49" + phone.substring(1);
+		}
+		return phone;
 	}
 	
 	private static final class Cache<K, V> {
