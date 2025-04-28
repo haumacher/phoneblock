@@ -327,7 +327,10 @@ message SpamReport {
 }
 
 message PhoneNumer {
-	@Nullable
+	/** The representation stored in the database. */
+	string id;
+	
+	/** The local number with country ID prefx. */
 	string shortcut;
 	
 	string plus;

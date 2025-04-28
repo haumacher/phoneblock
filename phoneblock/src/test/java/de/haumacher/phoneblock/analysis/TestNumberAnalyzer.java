@@ -17,10 +17,10 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 class TestNumberAnalyzer {
 	
 	@ParameterizedTest
-	@CsvSource({"+1684" + "123456789,Amerikanisch-Samoa",
-			"+49" + "308154" + ",Deutschland",
-			"+49" + "704187650,Deutschland",
-			"+1" + "241" + "123456789,Vereinigte Staaten oder Kanada",
+	@CsvSource({"+1684" + "123456789,American Samoa",
+			"+49" + "308154" + ",Germany",
+			"+49" + "704187650,Germany",
+			"+1" + "241" + "123456789,'Canada, United States of America'",
 	})
 	void testCountry(String phone, String label) {
 		PhoneNumer info = NumberAnalyzer.analyze(phone);

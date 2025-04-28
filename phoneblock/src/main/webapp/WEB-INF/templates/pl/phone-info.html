@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', info.phone)})}"></th:block>
+<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', number.shortcut)})}"></th:block>
 
 <script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>
@@ -11,7 +11,7 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">Numer telefonu ☎ <th:block th:text="${info.phone}"></th:block></h1>
+	<h1 data-tx="t0001">Numer telefonu ☎ <th:block th:text="${number.plus}"></th:block></h1>
 
 	<p>
 		<th:block th:switch="${state}">
@@ -28,18 +28,18 @@
 
 <article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
-	<p data-tx="t0007">Informacje o numerze połączenia <th:block th:text="${info.phone}"></th:block></p>
+	<p data-tx="t0007">Informacje o numerze połączenia <th:block th:text="${number.zeroZero}"></th:block></p>
   </div>
   <div class="message-body">
   	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
   	<p data-tx="t0035" th:case="'whitelisted'">Numer telefonu znajduje się na białej liście i nie może zostać zablokowany przez PhoneBlock. Jeśli nadal czujesz się nękany przez ten numer, ustaw prywatną blokadę dla tego numeru.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Numer telefonu nie znajduje się w bazie danych <a th:href="@{/status}">PhoneBlock</a>. Jak dotąd nie ma głosów za zablokowaniem ☎ <code dir="ltr" th:text="${info.phone}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Sam numer telefonu nie znajduje się w bazie danych <a th:href="@{/status}">PhoneBlock</a>. Jednak numer ☎ <code dir="ltr" th:text="${info.phone}"></code> pochodzi z bloku numerów z podejrzeniem spamu. <th:block th:if="${info.votesWildcard == 1}"> Głosowano za zablokowaniem bloku numerów. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Jest <th:block th:text="${info.votesWildcard}"></th:block> głosów za zablokowaniem bloku numerów. </th:block></p>
-  	<p data-tx="t0038" th:case="'suspicious'">Są już <th:block th:text="${info.votes}"></th:block> głosy za zablokowaniem ☎ <code dir="ltr" th:text="${info.phone}"></code>. Jednak numer nie został jeszcze zablokowany.</p>  	
-  	<p data-tx="t0039" th:case="'archived'">Istnieją <th:block th:text="${info.votes}"></th:block> stare głosy, które przemawiały za zablokowaniem ☎ <code dir="ltr" th:text="${info.phone}"></code>. Jednak numer nie jest już zablokowany.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Numer telefonu ☎ <code dir="ltr" th:text="${info.phone}"></code> jest wielokrotnie zgłaszanym źródłem <a th:href="@{/status}">niepożądanych połączeń telefonicznych</a>. <th:block th:text="${info.votes}"></th:block> Głosy opowiadają się za zablokowaniem numeru.</p>
+  	<p data-tx="t0036" th:case="'legitimate'">Numer telefonu nie znajduje się w bazie danych <a th:href="@{/status}">PhoneBlock</a>. Jak dotąd nie ma głosów za zablokowaniem ☎ <code dir="ltr" th:text="${number.shortcut}"></code>.</p>
+  	<p data-tx="t0037" th:case="'wildcard'">Sam numer telefonu nie znajduje się w bazie danych <a th:href="@{/status}">PhoneBlock</a>. Jednak numer ☎ <code dir="ltr" th:text="${number.shortcut}"></code> pochodzi z bloku numerów z podejrzeniem spamu. <th:block th:if="${info.votesWildcard == 1}"> Głosowano za zablokowaniem bloku numerów. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Jest <th:block th:text="${info.votesWildcard}"></th:block> głosów za zablokowaniem bloku numerów. </th:block></p>
+  	<p data-tx="t0038" th:case="'suspicious'">Są już <th:block th:text="${info.votes}"></th:block> głosy za zablokowaniem ☎ <code dir="ltr" th:text="${number.shortcut}"></code>. Jednak numer nie został jeszcze zablokowany.</p>  	
+  	<p data-tx="t0039" th:case="'archived'">Istnieją <th:block th:text="${info.votes}"></th:block> stare głosy, które przemawiały za zablokowaniem ☎ <code dir="ltr" th:text="${number.shortcut}"></code>. Jednak numer nie jest już zablokowany.</p>
+  	<p data-tx="t0040" th:case="'blocked'">Numer telefonu ☎ <code dir="ltr" th:text="${number.shortcut}"></code> jest wielokrotnie zgłaszanym źródłem <a th:href="@{/status}">niepożądanych połączeń telefonicznych</a>. <th:block th:text="${info.votes}"></th:block> Głosy opowiadają się za zablokowaniem numeru.</p>
   	</th:block>
 
 	<ul>
@@ -54,7 +54,7 @@
 		
 		<li data-tx="t0013" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Ostatnia skarga od: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
 
-		<li data-tx="t0014" th:if="${info.dateAdded} &gt; 0">Liczba aktywnych od: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
+		<li data-tx="t0014" th:if="${info.votes} &gt; 0 and ${info.dateAdded} &gt; 0">Liczba aktywnych od: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
 	</ul>
   </div>
 </article>
@@ -97,7 +97,7 @@
 		</div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
-	<p data-tx="t0020">Liczba ☎ <th:block th:text="${info.phone}"></th:block> może należeć do tego samego połączenia, co następujące liczby w bazie danych:</p>
+	<p data-tx="t0020">Liczba ☎ <th:block th:text="${number.shortcut}"></th:block> może należeć do tego samego połączenia, co następujące liczby w bazie danych:</p>
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
@@ -106,15 +106,15 @@
 	</blockquote>
 </th:block>	
 
-	<h2 data-tx="t0022" id="writeRating">Napisz opinię o <th:block th:text="${info.phone}"></th:block></h2>
+	<h2 data-tx="t0022" id="writeRating">Napisz opinię o <th:block th:text="${number.plus}"></th:block></h2>
 	
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Dziękuję za ocenę, pomagasz innym, którzy również są powołani.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Czy zostałeś wezwany przez ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>? Powiedz innym, czego mogą oczekiwać od ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Jeśli przeszkadzają Ci połączenia z ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code>, <a th:href="@{/setup}">zainstaluj PhoneBlock</a> i zostaw opinię o ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024">Czy zostałeś wezwany przez ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>? Powiedz innym, czego mogą oczekiwać od ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Jeśli przeszkadzają Ci połączenia z ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>, <a th:href="@{/setup}">zainstaluj PhoneBlock</a> i zostaw opinię o ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
-		<input name="phone" th:value="${info.phone}" type="hidden"/>
+		<input name="phone" th:value="${number.shortcut}" type="hidden"/>
 		
 		<div class="buttons">
 		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">

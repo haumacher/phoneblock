@@ -16,7 +16,7 @@ message Country {
 	string MARC;
 
 	@Name("is_independent")
-	string is_independent;
+	bool independent;
 
 	@Name("ISO3166-1-numeric")
 	string ISO3166_1_numeric;

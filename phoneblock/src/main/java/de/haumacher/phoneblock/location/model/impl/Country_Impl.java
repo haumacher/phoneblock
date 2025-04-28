@@ -23,7 +23,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private String _mARC = "";
 
-	private String _isIndependent = "";
+	private boolean _independent = false;
 
 	private String _iSO31661Numeric = "";
 
@@ -231,20 +231,20 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	@Override
-	public final String getIsIndependent() {
-		return _isIndependent;
+	public final boolean isIndependent() {
+		return _independent;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country setIsIndependent(String value) {
-		internalSetIsIndependent(value);
+	public de.haumacher.phoneblock.location.model.Country setIndependent(boolean value) {
+		internalSetIndependent(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getIsIndependent()} without chain call utility. */
-	protected final void internalSetIsIndependent(String value) {
-		_listener.beforeSet(this, IS_INDEPENDENT__PROP, value);
-		_isIndependent = value;
+	/** Internal setter for {@link #isIndependent()} without chain call utility. */
+	protected final void internalSetIndependent(boolean value) {
+		_listener.beforeSet(this, INDEPENDENT__PROP, value);
+		_independent = value;
 	}
 
 	@Override
@@ -1163,7 +1163,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			DIAL_PREFIXES__PROP, 
 			ISO_3166_1_ALPHA_3__PROP, 
 			MARC__PROP, 
-			IS_INDEPENDENT__PROP, 
+			INDEPENDENT__PROP, 
 			ISO_3166_1_NUMERIC__PROP, 
 			GAUL__PROP, 
 			FIPS__PROP, 
@@ -1228,7 +1228,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case DIAL_PREFIXES__PROP: return getDialPrefixes();
 			case ISO_3166_1_ALPHA_3__PROP: return getISO31661Alpha3();
 			case MARC__PROP: return getMARC();
-			case IS_INDEPENDENT__PROP: return getIsIndependent();
+			case INDEPENDENT__PROP: return isIndependent();
 			case ISO_3166_1_NUMERIC__PROP: return getISO31661Numeric();
 			case GAUL__PROP: return getGAUL();
 			case FIPS__PROP: return getFIPS();
@@ -1291,7 +1291,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case DIAL_PREFIXES__PROP: internalSetDialPrefixes(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
 			case ISO_3166_1_ALPHA_3__PROP: internalSetISO31661Alpha3((String) value); break;
 			case MARC__PROP: internalSetMARC((String) value); break;
-			case IS_INDEPENDENT__PROP: internalSetIsIndependent((String) value); break;
+			case INDEPENDENT__PROP: internalSetIndependent((boolean) value); break;
 			case ISO_3166_1_NUMERIC__PROP: internalSetISO31661Numeric((String) value); break;
 			case GAUL__PROP: internalSetGAUL((String) value); break;
 			case FIPS__PROP: internalSetFIPS((String) value); break;
@@ -1366,8 +1366,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getISO31661Alpha3());
 		out.name(MARC__PROP);
 		out.value(getMARC());
-		out.name(IS_INDEPENDENT__PROP);
-		out.value(getIsIndependent());
+		out.name(INDEPENDENT__PROP);
+		out.value(isIndependent());
 		out.name(ISO_3166_1_NUMERIC__PROP);
 		out.value(getISO31661Numeric());
 		out.name(GAUL__PROP);
@@ -1490,7 +1490,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			break;
 			case ISO_3166_1_ALPHA_3__PROP: setISO31661Alpha3(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MARC__PROP: setMARC(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case IS_INDEPENDENT__PROP: setIsIndependent(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case INDEPENDENT__PROP: setIndependent(in.nextBoolean()); break;
 			case ISO_3166_1_NUMERIC__PROP: setISO31661Numeric(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case GAUL__PROP: setGAUL(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case FIPS__PROP: setFIPS(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -1583,8 +1583,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getISO31661Alpha3());
 		out.name(MARC__ID);
 		out.value(getMARC());
-		out.name(IS_INDEPENDENT__ID);
-		out.value(getIsIndependent());
+		out.name(INDEPENDENT__ID);
+		out.value(isIndependent());
 		out.name(ISO_3166_1_NUMERIC__ID);
 		out.value(getISO31661Numeric());
 		out.name(GAUL__ID);
@@ -1725,7 +1725,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			break;
 			case ISO_3166_1_ALPHA_3__ID: setISO31661Alpha3(in.nextString()); break;
 			case MARC__ID: setMARC(in.nextString()); break;
-			case IS_INDEPENDENT__ID: setIsIndependent(in.nextString()); break;
+			case INDEPENDENT__ID: setIndependent(in.nextBoolean()); break;
 			case ISO_3166_1_NUMERIC__ID: setISO31661Numeric(in.nextString()); break;
 			case GAUL__ID: setGAUL(in.nextString()); break;
 			case FIPS__ID: setFIPS(in.nextString()); break;
@@ -1803,8 +1803,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** XML attribute or element name of a {@link #getMARC} property. */
 	private static final String MARC__XML_ATTR = "MARC";
 
-	/** XML attribute or element name of a {@link #getIsIndependent} property. */
-	private static final String IS_INDEPENDENT__XML_ATTR = "is_independent";
+	/** XML attribute or element name of a {@link #isIndependent} property. */
+	private static final String INDEPENDENT__XML_ATTR = "is_independent";
 
 	/** XML attribute or element name of a {@link #getISO31661Numeric} property. */
 	private static final String ISO_3166_1_NUMERIC__XML_ATTR = "ISO3166-1-numeric";
@@ -1976,7 +1976,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.writeAttribute(DIAL_PREFIXES__XML_ATTR, getDialPrefixes().stream().map(x -> x).collect(java.util.stream.Collectors.joining(", ")));
 		out.writeAttribute(ISO_3166_1_ALPHA_3__XML_ATTR, getISO31661Alpha3());
 		out.writeAttribute(MARC__XML_ATTR, getMARC());
-		out.writeAttribute(IS_INDEPENDENT__XML_ATTR, getIsIndependent());
+		out.writeAttribute(INDEPENDENT__XML_ATTR, Boolean.toString(isIndependent()));
 		out.writeAttribute(ISO_3166_1_NUMERIC__XML_ATTR, getISO31661Numeric());
 		out.writeAttribute(GAUL__XML_ATTR, getGAUL());
 		out.writeAttribute(FIPS__XML_ATTR, getFIPS());
@@ -2081,8 +2081,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 				setMARC(value);
 				break;
 			}
-			case IS_INDEPENDENT__XML_ATTR: {
-				setIsIndependent(value);
+			case INDEPENDENT__XML_ATTR: {
+				setIndependent(Boolean.parseBoolean(value));
 				break;
 			}
 			case ISO_3166_1_NUMERIC__XML_ATTR: {
@@ -2314,8 +2314,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 				setMARC(in.getElementText());
 				break;
 			}
-			case IS_INDEPENDENT__XML_ATTR: {
-				setIsIndependent(in.getElementText());
+			case INDEPENDENT__XML_ATTR: {
+				setIndependent(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			case ISO_3166_1_NUMERIC__XML_ATTR: {

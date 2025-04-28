@@ -43,11 +43,15 @@ public class Countries {
 				Country country = Country.create();
 	        	for (Entry<String, String> attr : line.entrySet()) {
 	        		switch (attr.getKey()) {
-	        		case "Languages": {
+	        		case Country.INDEPENDENT__PROP: {
+	        			country.setIndependent("Yes".equals(attr.getValue()));
+	        			break;
+	        		}
+	        		case Country.LANGUAGES__PROP: {
 	        			country.set(attr.getKey(), Arrays.stream(attr.getValue().split(",")).map(String::strip).filter(l -> !l.isEmpty()).toList());
 	        			break;
 	        		}
-	        		case "Dial": {
+	        		case Country.DIAL_PREFIXES__PROP: {
 	        			country.set(attr.getKey(), Arrays.stream(attr.getValue().split(","))
 	        					.map(String::strip)
 	        					.map(p -> p.replace("-", ""))

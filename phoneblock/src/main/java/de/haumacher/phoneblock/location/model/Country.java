@@ -27,8 +27,8 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/** @see #getMARC() */
 	String MARC__PROP = "MARC";
 
-	/** @see #getIsIndependent() */
-	String IS_INDEPENDENT__PROP = "is_independent";
+	/** @see #isIndependent() */
+	String INDEPENDENT__PROP = "is_independent";
 
 	/** @see #getISO31661Numeric() */
 	String ISO_3166_1_NUMERIC__PROP = "ISO3166-1-numeric";
@@ -195,8 +195,8 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/** Identifier for the property {@link #getMARC()} in binary format. */
 	static final int MARC__ID = 4;
 
-	/** Identifier for the property {@link #getIsIndependent()} in binary format. */
-	static final int IS_INDEPENDENT__ID = 5;
+	/** Identifier for the property {@link #isIndependent()} in binary format. */
+	static final int INDEPENDENT__ID = 5;
 
 	/** Identifier for the property {@link #getISO31661Numeric()} in binary format. */
 	static final int ISO_3166_1_NUMERIC__ID = 6;
@@ -389,12 +389,12 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	 */
 	de.haumacher.phoneblock.location.model.Country setMARC(String value);
 
-	String getIsIndependent();
+	boolean isIndependent();
 
 	/**
-	 * @see #getIsIndependent()
+	 * @see #isIndependent()
 	 */
-	de.haumacher.phoneblock.location.model.Country setIsIndependent(String value);
+	de.haumacher.phoneblock.location.model.Country setIndependent(boolean value);
 
 	String getISO31661Numeric();
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', info.phone)})}"></th:block>
+<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', number.shortcut)})}"></th:block>
 
 <script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>
@@ -11,7 +11,7 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">Rufnummer ☎ <th:block th:text="${info.phone}"></th:block></h1>
+	<h1 data-tx="t0001">Rufnummer ☎ <th:block th:text="${number.plus}"></th:block></h1>
 
 	<p>
 		<th:block th:switch="${state}">
@@ -28,7 +28,7 @@
 
 <article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
-	<p data-tx="t0007">Information zur Rufnummer <th:block th:text="${info.phone}"></th:block></p>
+	<p data-tx="t0007">Information zur Rufnummer <th:block th:text="${number.zeroZero}"></th:block></p>
   </div>
   <div class="message-body">
   	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
@@ -40,11 +40,11 @@
   	</p>
   	<p data-tx="t0036" th:case="'legitimate'">
   		Die Telefonnummer ist nicht in der <a th:href="@{/status}">PhoneBlock-Datenbank</a> enthalten. 
-  		Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${info.phone}"></code> sprechen.
+  		Es gibt bisher keine Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${number.shortcut}"></code> sprechen.
 	</p>
   	<p data-tx="t0037" th:case="'wildcard'">
   		Die Telefonnummer selbst ist nicht in der <a th:href="@{/status}">PhoneBlock-Datenbank</a> enthalten. 
-  		Die Nummer ☎ <code dir="ltr" th:text="${info.phone}"></code> stammt aber aus einem Nummernblock mit Spam-Verdacht.
+  		Die Nummer ☎ <code dir="ltr" th:text="${number.shortcut}"></code> stammt aber aus einem Nummernblock mit Spam-Verdacht.
   		<th:block th:if="${info.votesWildcard == 1}">
 		Es spricht eine Stimme für die Sperrung des Nummernblocks.
 		</th:block>
@@ -53,15 +53,15 @@
 		</th:block>
   	</p>
   	<p data-tx="t0038" th:case="'suspicious'">
-  		Es gibt bereits <th:block th:text="${info.votes}"></th:block> Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${info.phone}"></code> sprechen.
+  		Es gibt bereits <th:block th:text="${info.votes}"></th:block> Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${number.shortcut}"></code> sprechen.
   		Die Nummer wird aber noch nicht blockiert.
 	</p>  	
   	<p data-tx="t0039" th:case="'archived'">
-  		Es gibt zwar <th:block th:text="${info.votes}"></th:block> alte Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${info.phone}"></code> sprachen.
+  		Es gibt zwar <th:block th:text="${info.votes}"></th:block> alte Stimmen, die für eine Sperrung von ☎ <code dir="ltr" th:text="${number.shortcut}"></code> sprachen.
   		Die Nummer wird aber nicht mehr blockiert.
   	</p>
   	<p data-tx="t0040" th:case="'blocked'">
-		Die Telefonnummer ☎ <code dir="ltr" th:text="${info.phone}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status}">unerwünschten Telefonanrufen</a>.
+		Die Telefonnummer ☎ <code dir="ltr" th:text="${number.shortcut}"></code> ist eine mehrfach berichtete Quelle von <a th:href="@{/status}">unerwünschten Telefonanrufen</a>.
 		<th:block th:text="${info.votes}"></th:block> Stimmen sprechen sich für eine Sperrung der Nummer aus.
   	</p>
   	</th:block>
@@ -95,7 +95,7 @@
 			Letzte Beschwerde vom: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block>
 		</li>
 
-		<li data-tx="t0014" th:if="${info.dateAdded} &gt; 0">
+		<li data-tx="t0014" th:if="${info.votes} &gt; 0 and ${info.dateAdded} &gt; 0">
 			Nummer aktiv seit: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block>
 		</li>
 	</ul>
@@ -142,7 +142,7 @@
 		</div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
-	<p data-tx="t0020">Die Nummer ☎ <th:block th:text="${info.phone}"></th:block> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
+	<p data-tx="t0020">Die Nummer ☎ <th:block th:text="${number.shortcut}"></th:block> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
@@ -151,7 +151,7 @@
 	</blockquote>
 </th:block>	
 
-	<h2 data-tx="t0022" id="writeRating">Schreib eine Bewertung für <th:block th:text="${info.phone}"></th:block></h2>
+	<h2 data-tx="t0022" id="writeRating">Schreib eine Bewertung für <th:block th:text="${number.plus}"></th:block></h2>
 	
 	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">
 	  Danke für Deine Bewertung, Du hilfst damit anderen, die ebenfalls angerufen werden. 
@@ -159,15 +159,15 @@
 	
 <th:block th:unless="${thanks}">
 	<p data-tx="t0024">
-		Du wurdest von ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code> angerufen? 
+		Du wurdest von ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code> angerufen? 
 		Sag anderen, was sie von ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code> zu erwarten haben.
-		Wenn Du Dich von Anrufen von ☎ <code dir="ltr"><th:block th:text="${info.phone}"></th:block></code> belästigt fühlst, 
+		Wenn Du Dich von Anrufen von ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code> belästigt fühlst, 
 		<a th:href="@{/setup}">installiere PhoneBlock</a> 
 		und gibt eine Bewertung für ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code> ab:
 	</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
-		<input name="phone" th:value="${info.phone}" type="hidden"/>
+		<input name="phone" th:value="${number.shortcut}" type="hidden"/>
 		
 		<div class="buttons">
 		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">

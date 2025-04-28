@@ -9,7 +9,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +25,8 @@ import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.location.Countries;
+import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.PhoneHash;
 
 /**
@@ -29,260 +35,6 @@ import de.haumacher.phoneblock.shared.PhoneHash;
 public class NumberAnalyzer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(NumberAnalyzer.class);
-
-	/**
-	 * @see "https://de.wikipedia.org/wiki/L%C3%A4ndervorwahlliste_sortiert_nach_Nummern"
-	 */
-	private static final String[][] PREFIXES = { 
-		{"+1", "Vereinigte Staaten oder Kanada"},
-		{"+1242", "Bahamas"},
-		{"+1246", "Barbados"},
-		{"+1264", "Anguilla"},
-		{"+1268", "Antigua und Barbuda"},
-		{"+1284", "Britische Jungferninseln"},
-		{"+1340", "Amerikanische Jungferninseln"},
-		{"+1345", "Kaimaninseln"},
-		{"+1441", "Bermuda"},
-		{"+1473", "Grenada"},
-		{"+1649", "Turks- und Caicosinseln"},
-		{"+1664", "Montserrat"},
-		{"+1670", "Nördliche Marianen"},
-		{"+1671", "Guam"},
-		{"+1684", "Amerikanisch-Samoa"},
-		{"+1721", "Sint Maarten"},
-		{"+1758", "St. Lucia"},
-		{"+1767", "Dominica"},
-		{"+1784", "St. Vincent und die Grenadinen"},
-		{"+1787", "Puerto Rico"},
-		{"+1808", "Hawaii"},
-		{"+1809", "Dominikanische Republik"},
-		{"+1829", "Dominikanische Republik"},
-		{"+1849", "Dominikanische Republik"},
-		{"+1868", "Trinidad und Tobago"},
-		{"+1869", "St. Kitts und Nevis"},
-		{"+1876", "Jamaika"},
-		{"+1939", "Puerto Rico"},
-		{"+20", "Ägypten"},
-		{"+211", "Südsudan"},
-		{"+212", "Marokko"},
-		{"+213", "Algerien"},
-		{"+216", "Tunesien"},
-		{"+218", "Libyen"},
-		{"+220", "Gambia"},
-		{"+221", "Senegal"},
-		{"+222", "Mauretanien"},
-		{"+223", "Mali"},
-		{"+224", "Guinea"},
-		{"+225", "Elfenbeinküste"},
-		{"+226", "Burkina Faso"},
-		{"+227", "Niger"},
-		{"+228", "Togo"},
-		{"+229", "Benin"},
-		{"+230", "Mauritius"},
-		{"+231", "Liberia"},
-		{"+232", "Sierra Leone"},
-		{"+233", "Ghana"},
-		{"+234", "Nigeria"},
-		{"+235", "Tschad"},
-		{"+236", "Zentralafrikanische Republik"},
-		{"+237", "Kamerun"},
-		{"+238", "Kap Verde"},
-		{"+239", "São Tomé und Príncipe"},
-		{"+240", "Äquatorialguinea"},
-		{"+241", "Gabun"},
-		{"+242", "Republik Kongo"},
-		{"+243", "Demokratische Republik Kongo"},
-		{"+244", "Angola"},
-		{"+245", "Guinea-Bissau"},
-		{"+246", "Britisches Territorium im Indischen Ozean"},
-		{"+247", "Ascension"},
-		{"+248", "Seychellen"},
-		{"+249", "Sudan"},
-		{"+250", "Ruanda"},
-		{"+251", "Äthiopien"},
-		{"+252", "Somalia"},
-		{"+253", "Dschibuti"},
-		{"+254", "Kenia"},
-		{"+255", "Tansania"},
-		{"+256", "Uganda"},
-		{"+257", "Burundi"},
-		{"+258", "Mosambik"},
-		{"+260", "Sambia"},
-		{"+261", "Madagaskar"},
-		{"+262", "Französische Gebiete im Indischen Ozean, darunter  Réunion,  Mayotte"},
-		{"+263", "Simbabwe"},
-		{"+264", "Namibia"},
-		{"+265", "Malawi"},
-		{"+266", "Lesotho"},
-		{"+267", "Botswana"},
-		{"+268", "Eswatini"},
-		{"+269", "Komoren"},
-		{"+27", "Südafrika"},
-		{"+290", "St. Helena"},
-		{"+2908", "Tristan da Cunha"},
-		{"+291", "Eritrea"},
-		{"+297", "Aruba"},
-		{"+298", "Färöer"},
-		{"+299", "Grönland"},
-		{"+30", "Griechenland"},
-		{"+31", "Niederlande"},
-		{"+32", "Belgien"},
-		{"+33", "Frankreich"},
-		{"+34", "Spanien"},
-		{"+350", "Gibraltar"},
-		{"+351", "Portugal"},
-		{"+352", "Luxemburg"},
-		{"+353", "Irland"},
-		{"+354", "Island"},
-		{"+355", "Albanien"},
-		{"+356", "Malta"},
-		{"+357", "Zypern"},
-		{"+358", "Finnland"},
-		{"+359", "Bulgarien"},
-		{"+36", "Ungarn"},
-		{"+370", "Litauen"},
-		{"+371", "Lettland"},
-		{"+372", "Estland"},
-		{"+373", "Moldau"},
-		{"+374", "Armenien einschließlich  Arzach"},
-		{"+375", "Belarus"},
-		{"+376", "Andorra"},
-		{"+377", "Monaco"},
-		{"+378", "San Marino"},
-		{"+379", "Vatikanstadt"},
-		{"+380", "Ukraine"},
-		{"+381", "Serbien"},
-		{"+382", "Montenegro"},
-		{"+383", "Kosovo"},
-		{"+385", "Kroatien"},
-		{"+386", "Slowenien"},
-		{"+387", "Bosnien und Herzegowina"},
-		{"+389", "Nordmazedonien"},
-		{"+39", "Italien"},
-		{"+3906", "Vatikanstadt"},
-		{"+40", "Rumänien"},
-		{"+41", "Schweiz"},
-		{"+420", "Tschechien"},
-		{"+421", "Slowakei"},
-		{"+423", "Liechtenstein"},
-		{"+43", "Österreich"},
-		{"+44", "Vereinigtes Königreich"},
-		{"+45", "Dänemark"},
-		{"+46", "Schweden"},
-		{"+47", "Norwegen"},
-		{"+48", "Polen"},
-		{"+49", "Deutschland"},
-		{"+500", "Falklandinseln"},
-		{"+501", "Belize"},
-		{"+502", "Guatemala"},
-		{"+503", "El Salvador"},
-		{"+504", "Honduras"},
-		{"+505", "Nicaragua"},
-		{"+506", "Costa Rica"},
-		{"+507", "Panama"},
-		{"+508", "Saint-Pierre und Miquelon"},
-		{"+509", "Haiti"},
-		{"+51", "Peru"},
-		{"+52", "Mexiko"},
-		{"+53", "Kuba"},
-		{"+54", "Argentinien"},
-		{"+55", "Brasilien"},
-		{"+56", "Chile"},
-		{"+57", "Kolumbien"},
-		{"+58", "Venezuela"},
-		{"+590", "Guadeloupe,  St. Martin,  Saint-Barthélemy"},
-		{"+591", "Bolivien"},
-		{"+592", "Guyana"},
-		{"+593", "Ecuador"},
-		{"+594", "Französisch-Guayana"},
-		{"+595", "Paraguay"},
-		{"+596", "Martinique"},
-		{"+597", "Suriname"},
-		{"+598", "Uruguay"},
-		{"+599", "Bonaire,  Curaçao, Saba und Sint Eustatius"},
-		{"+60", "Malaysia"},
-		{"+61", "Australien"},
-		{"+62", "Indonesien"},
-		{"+63", "Philippinen"},
-		{"+64", "Neuseeland"},
-		{"+65", "Singapur"},
-		{"+66", "Thailand"},
-		{"+670", "Osttimor"},
-		{"+672", "Australische Außengebiete: Antarktis,  Norfolkinsel"},
-		{"+673", "Brunei"},
-		{"+674", "Nauru"},
-		{"+675", "Papua-Neuguinea"},
-		{"+676", "Tonga"},
-		{"+677", "Salomonen"},
-		{"+678", "Vanuatu"},
-		{"+679", "Fidschi"},
-		{"+680", "Palau"},
-		{"+681", "Wallis und Futuna"},
-		{"+682", "Cookinseln"},
-		{"+683", "Niue"},
-		{"+685", "Samoa"},
-		{"+686", "Kiribati, Gilbertinseln"},
-		{"+687", "Neukaledonien"},
-		{"+688", "Tuvalu, Elliceinseln"},
-		{"+689", "Französisch-Polynesien"},
-		{"+690", "Tokelau"},
-		{"+691", "Mikronesien"},
-		{"+692", "Marshallinseln"},
-		{"+7", "Russland"},
-		{"+7840", "Abchasien"},
-		{"+7940", "Abchasien"},
-		{"+800", "Internationale Free-Phone-Dienste"},
-		{"+808", "Internationale Service-Dienste"},
-		{"+81", "Japan"},
-		{"+82", "Südkorea"},
-		{"+84", "Vietnam"},
-		{"+850", "Nordkorea"},
-		{"+852", "Hongkong"},
-		{"+853", "Macau"},
-		{"+855", "Kambodscha"},
-		{"+856", "Laos"},
-		{"+86", "Volksrepublik China"},
-		{"+870", "Inmarsat Single Number Access"},
-		{"+878", "Persönliche Rufnummern"},
-		{"+880", "Bangladesch"},
-		{"+881", "Globales mobiles Satellitensystem"},
-		{"+882", "Internationale Netzwerke"},
-		{"+883", "Internationale Netzwerke"},
-		{"+886", "Taiwan"},
-		{"+888", "OCHA, für Telecommunications for Disaster Relief"},
-		{"+90", "Türkei,  Türkische Republik Nordzypern"},
-		{"+91", "Indien"},
-		{"+92", "Pakistan"},
-		{"+93", "Afghanistan"},
-		{"+94", "Sri Lanka"},
-		{"+95", "Myanmar"},
-		{"+960", "Malediven"},
-		{"+961", "Libanon"},
-		{"+962", "Jordanien"},
-		{"+963", "Syrien"},
-		{"+964", "Irak"},
-		{"+965", "Kuwait"},
-		{"+966", "Saudi-Arabien"},
-		{"+967", "Jemen"},
-		{"+968", "Oman"},
-		{"+970", "Palästina"},
-		{"+971", "Vereinigte Arabische Emirate"},
-		{"+972", "Israel"},
-		{"+973", "Bahrain"},
-		{"+974", "Katar"},
-		{"+975", "Bhutan"},
-		{"+976", "Mongolei"},
-		{"+977", "Nepal"},
-		{"+979", "Internationale Premium-Rate-Dienste"},
-		{"+98", "Iran"},
-		{"+991", "International Telecommunications Public Correspondence Service Trials"},
-		{"+992", "Tadschikistan"},
-		{"+993", "Turkmenistan"},
-		{"+994", "Aserbaidschan"},
-		{"+995", "Georgien"},
-		{"+996", "Kirgisistan"},
-		{"+998", "Usbekistan"},
-	};
 
 	private static Node PREFIX_TREE = buildTree();
 
@@ -329,24 +81,38 @@ public class NumberAnalyzer {
 			return null;
 		}
 		result.setPlus(plus);
-		result.setZeroZero("00" + plus.substring(1));
-		
-		if (plus.startsWith("+49")) {
-			result.setShortcut("0" + plus.substring(3));
-		}
+		String zeroZero = "00" + plus.substring(1);
+		result.setZeroZero(zeroZero);
 		
 		PrefixInfo info = findInfo(plus);
 		
-		if (info.getCountryCode() == null || plus.charAt(info.getCountryCode().length()) == '0') {
+		String countryCode = info.getCountryCode();
+		if (countryCode == null || plus.charAt(countryCode.length()) == '0') {
 			// A city code cannot start with a zero.
 			return null;
 		}
 		
-		result.setCountryCode(info.getCountryCode());
-		result.setCountry(info.getCountry());
+		result.setCountryCode(countryCode);
+		List<Country> countries = info.getCountries();
 		result.setCityCode(info.getCityCode());
 		result.setCity(info.getCity());
-	
+		
+		if (countries.isEmpty()) {
+			// There is no shortcut.
+			result.setCountry("Unknown");
+			result.setShortcut(plus);
+			result.setId(zeroZero);
+		} else {
+			result.setCountry(countries.stream().map(c -> c.getOfficialNameEn()).collect(Collectors.joining(", ")));
+			String national = "0" + plus.substring(countryCode.length());
+			result.setShortcut("(" + countries.stream().map(c -> c.getISO31661Alpha2()).collect(Collectors.joining(", ")) + ") " + national);
+			if ("+49".equals(countryCode)) {
+				result.setId(national);
+			} else {
+				result.setId(zeroZero);
+			}
+		}
+		
 		return result;
 	}
 
@@ -354,18 +120,24 @@ public class NumberAnalyzer {
 	 * Creates an database ID for the given analyzed {@link PhoneNumer}.
 	 */
 	public static String getPhoneId(PhoneNumer number) {
-		String shortcut = number.getShortcut();
-		return shortcut == null ? number.getZeroZero() : shortcut;
+		return number.getId();
 	}
 
 	private static Node buildTree() {
 		Node root = new Node('+');
-		root._country = "Unbekannt";
-		for (String[] entry : PREFIXES) {
-			Node node = root.enter(entry[0], 1);
-			assert node._contryCode == null : "Anbiguous country code: " + node._contryCode;
-			node._contryCode = entry[0];
-			node._country = entry[1];
+		root._countries = null;
+		for (Country country : Countries.all()) {
+			for (String dialPrefix : country.getDialPrefixes()) {
+				Node node = root.enter(dialPrefix, 1);
+				node._contryCode = dialPrefix;
+				if (node._countries.isEmpty()) {
+					node._countries = Collections.singletonList(country);
+				} else {
+					ArrayList<Country> update = new ArrayList<>(node._countries);
+					update.add(country);
+					node._countries = update.stream().filter(c -> c.isIndependent()).toList();
+				}
+			}
 		}
 		
 		// See https://www.bundesnetzagentur.de/SharedDocs/Downloads/DE/Sachgebiete/Telekommunikation/Unternehmen_Institutionen/Nummerierung/Rufnummern/ONRufnr/Vorwahlverzeichnis_ONB.zip.html
@@ -393,7 +165,7 @@ public class NumberAnalyzer {
 		        		Node node = germany.enter(cityCode, 0);
 		        		assert node._cityCode == null : "Anbiguous city code: " + node._cityCode;
 		        		node._contryCode = germany.getCountryCode();
-		        		node._country = germany.getCountry();
+		        		node._countries = germany.getCountries();
 		        		node._cityCode = "0" + cityCode;
 		        		node._city = city;
 		        	}
@@ -419,7 +191,7 @@ public class NumberAnalyzer {
 		/**
 		 * The label for the {@link #getCountryCode()}.
 		 */
-		public String getCountry();
+		public List<Country> getCountries();
 		
 		/** 
 		 * The local dial prefix.
@@ -439,7 +211,7 @@ public class NumberAnalyzer {
 		char _ch;
 		
 		String _contryCode;
-		String _country;
+		List<Country> _countries = Collections.emptyList();
 		String _cityCode;
 		String _city;
 		Node[] _suffixes;
@@ -457,8 +229,8 @@ public class NumberAnalyzer {
 		}
 		
 		@Override
-		public String getCountry() {
-			return _country;
+		public List<Country> getCountries() {
+			return _countries;
 		}
 		
 		@Override
