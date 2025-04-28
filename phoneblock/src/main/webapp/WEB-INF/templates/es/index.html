@@ -69,12 +69,15 @@
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			  <input id="context-path" th:value="@{/}" type="hidden"/>
-			<a class="button is-medium is-info is-fullwidth" href="#" id="search-fritzbox">
+			  <input id="context-path" th:value="${contextPath}" type="hidden"/>
+			<a class="button is-medium is-info is-fullwidth state-initial" href="#" id="search-fritzbox">
 				<span class="icon is-small is-left">
 					<i class="fa-solid fa-magnifying-glass"></i>
 				</span>
-				<span data-tx="t0013">Buscar en Fritz!Box</span>
+				<span class="display-initial" data-tx="t0013">Buscar en Fritz!Box</span>
+				<span class="display-searching" data-tx="t0017">Espera un momento...</span>
+				<span class="display-success" data-tx="t0018">Lo encontré, ¡empieza!</span>
+				<span class="display-failed" data-tx="t0019">No encontrado, ¿qué hacer?</span>
 			</a>
 		  </div>
 		</div>

@@ -134,6 +134,26 @@ body.test-system {
     float: right;
 }
 
+.display-initial,
+.display-searching,
+.display-success,
+.display-failed {
+	display: none;
+}
+	
+.state-initial .display-initial {
+	display: initial;
+}
+.state-searching .display-searching {
+	display: initial;
+}
+.state-success .display-success {
+	display: initial;
+}
+.state-failed .display-failed {
+	display: initial;
+}
+
 .related-numbers {
     display: flex;
     flex-wrap: wrap;

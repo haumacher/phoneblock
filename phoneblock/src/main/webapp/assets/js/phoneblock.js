@@ -143,25 +143,28 @@ function checkFritzBox(contextPath, button) {
 		return true;
 	}
 	
+	button.classList.remove("state-initial");
 	button.classList.add("is-loading");
-	button.textContent = "Moment..."
-
+	button.classList.add("state-searching");
+	
 	var image = new Image();
 	
 	image.onload = function() {
 		button.classList.remove("is-loading");
+		button.classList.remove("state-searching");
 		button.classList.remove("is-info");
 		button.classList.add("is-primary");
-		button.textContent = "Gefunden, leg los!"
-		document.getElementById("search-fritzbox").href="setup.jsp";
+		button.classList.add("state-success");
+		document.getElementById("search-fritzbox").href= contextPath + "/anrufbeantworter";
 		document.getElementById("fritzbox").src = contextPath + "/assets/img/fritzbox-found.png";
 	}
 	image.onerror = function() {
 		button.classList.remove("is-loading");
+		button.classList.remove("state-searching");
 		button.classList.remove("is-info");
 		button.classList.add("is-danger");
-		button.textContent = "Nicht gefunden, was tun?";
-		document.getElementById("search-fritzbox").href="no-fritzbox.jsp";
+		button.classList.add("state-failed");
+		document.getElementById("search-fritzbox").href= contextPath + "/no-fritzbox";
 		document.getElementById("fritzbox").src = contextPath + "/assets/img/fritzbox-not-found.png";
 	}
 	
@@ -174,11 +177,13 @@ function getContextBasePath() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-	let link = document.getElementById('search-fritzbox');
-	if (link) {
-		link.addEventListener('click', function (event) {
-			event.preventDefault();
-			const result = checkFritzBox(getContextBasePath(), this);
+	let button = document.getElementById('search-fritzbox');
+	if (button) {
+		button.addEventListener('click', function (event) {
+			if (button.classList.contains("state-initial")) {
+				event.preventDefault();
+				const result = checkFritzBox(getContextBasePath(), button);
+			}
 		});
 	}
 });
