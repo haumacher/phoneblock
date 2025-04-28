@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 
@@ -35,7 +36,7 @@ public class UserAdd {
 		} else {
 			login = args[0];
 		}
-		String passwd = db.createUser(login, login, "de", "+49");
+		String passwd = db.createUser(login, login, "de", NumberAnalyzer.GERMAN_DIAL_PREFIX);
 		
 		System.out.println(passwd);
 		

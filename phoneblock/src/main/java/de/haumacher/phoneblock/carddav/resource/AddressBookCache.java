@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
@@ -146,7 +147,7 @@ public class AddressBookCache implements ServletContextListener {
 		String dialPrefix = listType.getDialPrefix();
 		
 		// For legacy compatibility, since numbers in DB are stored in German national format.
-		boolean isGerman = "+49".equals(dialPrefix);
+		boolean isGerman = NumberAnalyzer.GERMAN_DIAL_PREFIX.equals(dialPrefix);
 		
 		List<DBNumberInfo> result = reports.getReports();
 		NumberTree numberTree = new NumberTree();
@@ -205,7 +206,7 @@ public class AddressBookCache implements ServletContextListener {
 			phone = "+" + phone.substring(2);
 		} else {
 			// The number is a national German number (that must start with a single zero).
-			phone = "+49" + phone.substring(1);
+			phone = NumberAnalyzer.GERMAN_DIAL_PREFIX + phone.substring(1);
 		}
 		return phone;
 	}

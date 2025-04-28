@@ -34,6 +34,12 @@ import de.haumacher.phoneblock.shared.PhoneHash;
  */
 public class NumberAnalyzer {
 
+	/**
+	 * The dial prefix for Germany. For historical reasons, German phone numbers are
+	 * stored in national format in the database.
+	 */
+	public static final String GERMAN_DIAL_PREFIX = "+49";
+
 	private static final Logger LOG = LoggerFactory.getLogger(NumberAnalyzer.class);
 
 	private static Node PREFIX_TREE = buildTree();
@@ -42,18 +48,26 @@ public class NumberAnalyzer {
 	 * Creates a database ID for the given phone number, or <code>null</code> if the number is invalid. 
 	 */
 	public static String toId(String phoneText) {
-		PhoneNumer number = parsePhoneNumber(phoneText);
+		return toId(phoneText, GERMAN_DIAL_PREFIX);
+	}
+	
+	public static String toId(String phoneText, String dialPrefix) {
+		PhoneNumer number = parsePhoneNumber(phoneText, dialPrefix);
 		return number == null ? null : getPhoneId(number);
 	}
 
 	public static PhoneNumer parsePhoneNumber(String phoneText) {
+		return parsePhoneNumber(phoneText, GERMAN_DIAL_PREFIX);
+	}
+	
+	public static PhoneNumer parsePhoneNumber(String phoneText, String dialPrefix) {
 		String phoneNumber = normalizeNumber(phoneText);
 		if (phoneNumber.contains("*")) {
 			LOG.warn("Ignoring number with wildcard: " + phoneText);
 			return null;
 		}
 		
-		return analyze(phoneNumber, "+49");
+		return analyze(phoneNumber, dialPrefix);
 	}
 
 	/**
@@ -70,7 +84,7 @@ public class NumberAnalyzer {
 	}
 
 	public static PhoneNumer analyze(String phone) {
-		return analyze(phone, "+49");
+		return analyze(phone, GERMAN_DIAL_PREFIX);
 	}
 	
 	/**
@@ -111,7 +125,7 @@ public class NumberAnalyzer {
 			result.setCountry(countries.stream().map(c -> c.getOfficialNameEn()).collect(Collectors.joining(", ")));
 			String national = "0" + plus.substring(countryCode.length());
 			result.setShortcut("(" + countries.stream().map(c -> c.getISO31661Alpha2()).collect(Collectors.joining(", ")) + ") " + national);
-			if ("+49".equals(countryCode)) {
+			if (GERMAN_DIAL_PREFIX.equals(countryCode)) {
 				result.setId(national);
 			} else {
 				result.setId(zeroZero);
@@ -148,7 +162,7 @@ public class NumberAnalyzer {
 		// See https://www.bundesnetzagentur.de/SharedDocs/Downloads/DE/Sachgebiete/Telekommunikation/Unternehmen_Institutionen/Nummerierung/Rufnummern/ONRufnr/Vorwahlverzeichnis_ONB.zip.html
 		try (InputStream in = NumberAnalyzer.class.getResourceAsStream("NVONB.INTERNET.20220727.ONB.csv")) {
 			try (Reader r = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-				Node germany = root.find("+49", 1, root);
+				Node germany = root.find(GERMAN_DIAL_PREFIX, 1, root);
 				
 				ICSVParser parser = new CSVParserBuilder().withSeparator(';').withStrictQuotes(false).build();
 		        try (CSVReader csv = new CSVReaderBuilder(r).withCSVParser(parser).build()) {

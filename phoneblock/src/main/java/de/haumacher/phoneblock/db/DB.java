@@ -1644,42 +1644,6 @@ public class DB {
 		return sha256().digest(passwd.getBytes(StandardCharsets.UTF_8));
 	}
 
-	/** 
-	 * Explicitly allows a certain number by storing an exclude to the global blocklist.
-	 *
-	 * @param principal The current user.
-	 * @param phoneText The phone number to explicitly allow.
-	 */
-	@Deprecated
-	public void deleteEntry(String principal, String phoneText) {
-		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
-		if (number == null) {
-			return;
-		}
-		String phoneId = NumberAnalyzer.getPhoneId(number);
-		
-		try (SqlSession session = openSession()) {
-			SpamReports spamreport = session.getMapper(SpamReports.class);
-			BlockList blockList = session.getMapper(BlockList.class);
-			Users users = session.getMapper(Users.class);
-			
-			long currentUser = users.getUserId(principal);
-			
-			Boolean stateBefore = blockList.getPersonalizationState(currentUser, phoneId);
-
-			blockList.removePersonalization(currentUser, phoneId);
-			blockList.addExclude(currentUser, phoneId);
-			
-			if (stateBefore == null || stateBefore.booleanValue()) {
-				// Do not add positive votes, if the number was voted positive before. This prevents vandals 
-				// from deleting the whole list by repeatedly adding numbers to the exclude list.
-				processVotesAndPublish(spamreport, number, "unknown", -1, System.currentTimeMillis());
-			}
-			
-			session.commit();
-		}
-	}
-
 	private void cleanup() {
 		LOG.info("Starting DB cleanup.");
 		

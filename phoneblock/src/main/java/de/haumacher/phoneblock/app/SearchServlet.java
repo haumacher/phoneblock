@@ -296,7 +296,7 @@ public class SearchServlet extends HttpServlet {
 	}
 
 	private static PhoneNumer extractNumber(String query) {
-		return extractNumber(query, "+49");
+		return extractNumber(query, NumberAnalyzer.GERMAN_DIAL_PREFIX);
 	}
 	
 	private static PhoneNumer extractNumber(String query, String dialPrefix) {

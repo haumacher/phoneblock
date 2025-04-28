@@ -232,7 +232,7 @@ public class MetaSearchService implements ServletContextListener {
 			System.err.println("Invalid number: " + phoneText);
 			return;
 		}
-		List<UserComment> comments = searchService.createSearch(number, "+49").search().getComments();
+		List<UserComment> comments = searchService.createSearch(number, NumberAnalyzer.GERMAN_DIAL_PREFIX).search().getComments();
 		for (var comment : comments) {
 			System.out.println(comment);
 		}

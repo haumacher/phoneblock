@@ -192,14 +192,17 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					BlockList blocklist = session.getMapper(BlockList.class);
 					Users users = session.getMapper(Users.class);
 					
-					String phoneId = NumberAnalyzer.toId(from);
+					// Find out the ID of the owning user, to look up the personalizations.
+					String botName = customerOptions.getSipUser();
+					long userId = users.getAnswerBotUserId(botName);
+
+					DBUserSettings settings = users.getSettingsById(userId);
+					
+					String phoneId = NumberAnalyzer.toId(from, settings.getDialPrefix());
 					if (phoneId == null) {
 						return null;
 					}
 					
-					// Find out the ID of the owning user, to look up the personalizations.
-					String botName = customerOptions.getSipUser();
-					long userId = users.getAnswerBotUserId(botName);
 					Boolean state = blocklist.getPersonalizationState(userId, phoneId);
 					
 					PhoneInfo info;
@@ -222,7 +225,6 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 						if (info.getVotes() > 0) {
 							long now = System.currentTimeMillis();
 							reports.recordCall(info.getPhone(), now);
-							DBUserSettings settings = users.getSettingsById(userId);
 							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(), 0, 0, 1, now);
 							session.commit();
 						}

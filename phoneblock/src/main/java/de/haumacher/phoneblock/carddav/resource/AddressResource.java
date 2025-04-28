@@ -135,7 +135,7 @@ public class AddressResource extends Resource {
 				for (Telephone phone : card.getTelephoneNumbers()) {
 					String phoneText = phone.getText();
 					
-					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
 					if (number == null) {
 						continue;
 					}
