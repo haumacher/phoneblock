@@ -10,6 +10,10 @@ import java.security.NoSuchAlgorithmException;
 public class PhoneHash {
 
 	public static String toInternationalForm(String phone) {
+		return toInternationalForm(phone, "+49");
+	}
+	
+	public static String toInternationalForm(String phone, String dialPrefix) {
 		String plus;
 		if (phone.startsWith("00")) {
 			if (phone.startsWith("000")) {
@@ -18,7 +22,7 @@ public class PhoneHash {
 			}
 			plus = "+" + phone.substring(2);
 		} else if (phone.startsWith("0")) {
-			plus = "+49" + phone.substring(1);
+			plus = dialPrefix + phone.substring(1);
 		} else if (phone.startsWith("+")) {
 			plus = phone;
 		} else {

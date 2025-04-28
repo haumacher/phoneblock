@@ -54,7 +54,7 @@ import jakarta.servlet.http.HttpSession;
 /**
  * Servlet displaying information about a telephone number in the DB.
  */
-@WebServlet(urlPatterns = SearchServlet.NUMS_PREFIX + "/*")
+@WebServlet(urlPatterns = {SearchServlet.NUMS_PREFIX, SearchServlet.NUMS_PREFIX + "/*"})
 public class SearchServlet extends HttpServlet {
 	
 	public static final String KEYWORDS_ATTR = "keywords";
@@ -177,6 +177,43 @@ public class SearchServlet extends HttpServlet {
 		}
 	};
 
+	/**
+	 * The user has pressed the search button on the web page, guess the dial prefix or national numbers.
+	 */
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+
+		String query = req.getParameter("num");
+		if (query == null || query.isBlank()) {
+			req.setAttribute(NUMBER_ATTR, query);
+			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
+			return;
+		}
+		
+		String dialPrefix;
+		if (userName == null) {
+			dialPrefix = LocationService.getInstance().getDialPrefix(req);
+		} else {
+			DB db = DBService.getInstance();
+			try (SqlSession session = db.openSession()) {
+				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
+				dialPrefix = settings.getDialPrefix();
+			}
+		}
+		
+		PhoneNumer number = extractNumber(query, dialPrefix);
+		if (number == null) {
+			req.setAttribute(NUMBER_ATTR, query);
+			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
+			return;
+		}
+		
+		// Send to display page.
+		String phone = NumberAnalyzer.getPhoneId(number);
+		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+	}
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String pathInfo = req.getPathInfo();
@@ -234,7 +271,6 @@ public class SearchServlet extends HttpServlet {
 			searchResult = analyzeDb(db, session, number, dialPrefix, isSeachHit, langs);
 		}
 		
-		
 		sendResult(req, resp, searchResult, minVotes);
 	}
 
@@ -260,12 +296,16 @@ public class SearchServlet extends HttpServlet {
 	}
 
 	private static PhoneNumer extractNumber(String query) {
+		return extractNumber(query, "+49");
+	}
+	
+	private static PhoneNumer extractNumber(String query, String dialPrefix) {
 		String rawPhoneNumber = NumberAnalyzer.normalizeNumber(query);
 		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
 			return null;
 		}
 		
-		PhoneNumer number = NumberAnalyzer.analyze(rawPhoneNumber);
+		PhoneNumer number = NumberAnalyzer.analyze(rawPhoneNumber, dialPrefix);
 		if (number == null) {
 			return null;
 		}

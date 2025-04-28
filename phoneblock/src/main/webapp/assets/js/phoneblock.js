@@ -44,18 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-	const searchInput = document.getElementById("pb-seach-input");
-	if (searchInput != null) {
-		searchInput.addEventListener("keypress", function(event) {
-		  if (event.key === "Enter") {
-		    event.preventDefault();
-		    
-		    document.getElementById("pb-seach-button").click();
-		  }
-		}); 
-		makeSearchButton("pb-seach-button", "pb-seach-input");
-	}
-	
 	var contextPath = getContextPath();
 	if (contextPath == "/pb-test") {
 		document.body.classList.add("test-system");
@@ -79,25 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});	
 	}
 });
-
-function makeSearchButton(buttonId, inputId) {
-	document.getElementById(buttonId).addEventListener("click", function(event) {
-		searchNumber(inputId);
-	});
-	
-	document.getElementById(inputId).addEventListener("keypress", function(event) {
-	  if (event.key === "Enter") {
-	    event.preventDefault();
-		searchNumber(inputId);
-	  }
-	});
-}
-
-function searchNumber(inputId) {
-	var number = document.getElementById(inputId).value;
-	displayNumber(number, false);
-	return false;
-}
 
 function displayNumber(number, link) {
   var location = document.location;

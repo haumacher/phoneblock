@@ -53,7 +53,7 @@ public class NumberAnalyzer {
 			return null;
 		}
 		
-		return analyze(phoneNumber);
+		return analyze(phoneNumber, "+49");
 	}
 
 	/**
@@ -69,13 +69,18 @@ public class NumberAnalyzer {
 		return NORMALIZE_PATTERN.matcher(phoneNumber).replaceAll("");
 	}
 
+	public static PhoneNumer analyze(String phone) {
+		return analyze(phone, "+49");
+	}
+	
 	/**
 	 * Analyzes the given (normalized) phone number.
+	 * @param dialPrefix The users local dial prefix.
 	 */
-	public static PhoneNumer analyze(String phone) {
+	public static PhoneNumer analyze(String phone, String dialPrefix) {
 		PhoneNumer result = PhoneNumer.create();
 		
-		String plus = PhoneHash.toInternationalForm(phone);
+		String plus = PhoneHash.toInternationalForm(phone, dialPrefix);
 		if (plus == null) {
 			// Not a valid number.
 			return null;

@@ -77,16 +77,18 @@
   <div class="hero-foot">
   <nav aria-label="κύρια πλοήγηση" class="navbar" data-tx="t0056" role="navigation">
 	<div class="navbar-brand">
-		<div class="navbar-item"> 
+		<div class="navbar-item">
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/nums}">
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" data-tx="t0045" id="pb-seach-input" placeholder="Ερευνήστε τον αριθμό τηλεφώνου" type="tel"/>
+		  <input class="input is-rounded" data-tx="t0045" name="num" placeholder="Ερευνήστε τον αριθμό τηλεφώνου" type="tel"/>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
-		  <span class="icon is-small is-right is-clickable" id="pb-seach-button">
+		  <button class="icon is-small is-right is-clickable" type="submit">
 		    <i class="fas fa-search"></i>
-		  </span>
+		  </button>
 		</div>
+		</form>
 		</div>
 
 		<a aria-expanded="false" aria-label="μενού" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
