@@ -26,7 +26,7 @@ import jakarta.servlet.ServletContextListener;
 /**
  * {@link ServletContextListener} starting the database.
  */
-public class DBService implements ServletContextListener {
+public class DBService implements IDBService, ServletContextListener {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DBService.class);
 
@@ -154,6 +154,7 @@ public class DBService implements ServletContextListener {
 	/** 
 	 * Access to the database.
 	 */
+	@Override
 	public DB db() {
 		return INSTANCE;
 	}

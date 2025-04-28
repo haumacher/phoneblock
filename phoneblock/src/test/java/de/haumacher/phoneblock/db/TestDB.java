@@ -46,7 +46,7 @@ import de.haumacher.phoneblock.scheduler.SchedulerService;
 /**
  * Test case for {@link DB}.
  */
-class TestDB {
+public class TestDB {
 	
 	private DB _db;
 	private SchedulerService _scheduler;
@@ -602,7 +602,7 @@ class TestDB {
 		}
 	}
 
-	private DataSource createTestDataSource() {
+	public static DataSource createTestDataSource() {
 		JdbcDataSource result = new JdbcDataSource();
 		result.setUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
 		result.setUser("foo");

@@ -116,7 +116,7 @@ public class Application implements ServletContextListener {
 			gpt = new ChatGPTService(db, scheduler, indexer),
 			sip = new SipService(scheduler, db, mail),
 			new ManagementService(indexer, db, gpt, sip),
-			new AddressBookCache(),
+			new AddressBookCache(db),
 			new ImapService(scheduler, db, mail),
 		};
 		

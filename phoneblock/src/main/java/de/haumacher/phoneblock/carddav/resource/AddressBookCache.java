@@ -18,7 +18,7 @@ import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DBNumberInfo;
-import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.IDBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -39,6 +39,12 @@ public class AddressBookCache implements ServletContextListener {
 	private final Cache<ListType, List<NumberBlock>> _numberCache = new Cache<>("common");
 
 	private static AddressBookCache _instance;
+
+	private IDBService _db;
+	
+	public AddressBookCache(IDBService db) {
+		_db = db;
+	}
 	
 	/**
 	 * The system-wide {@link AddressBookCache}.
@@ -76,7 +82,15 @@ public class AddressBookCache implements ServletContextListener {
 			return cachedResult;
 		}
 
-		try (SqlSession session = DBService.getInstance().openSession()) {
+		long now = System.currentTimeMillis();
+		List<NumberBlock> phoneNumbers = loadNumbers(principal, now);
+		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers);
+		return _userCache.put(principal, addressBook);
+	}
+
+	List<NumberBlock> loadNumbers(String principal, long now) {
+		List<NumberBlock> phoneNumbers;
+		try (SqlSession session = _db.db().openSession()) {
 			Users users = session.getMapper(Users.class);
 			UserSettings settings = users.getSettingsRaw(principal);
 			
@@ -87,15 +101,12 @@ public class AddressBookCache implements ServletContextListener {
 			boolean national = settings.isNationalOnly();
 
 			ListType listType = ListType.valueOf(dialPrefix, minVotes, maxLength, wildcards, national);
-			List<NumberBlock> phoneNumbers = loadNumbers(session, users, principal, listType);
-			
-			AddressBookResource addressBook = 
-				new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers);
-			return _userCache.put(principal, addressBook);
+			phoneNumbers = loadNumbers(session, users, principal, listType, now);
 		}
+		return phoneNumbers;
 	}
 
-	private List<NumberBlock> loadNumbers(SqlSession session, Users users, String principal, ListType listType) {
+	private List<NumberBlock> loadNumbers(SqlSession session, Users users, String principal, ListType listType, long now) {
 		SpamReports reports = session.getMapper(SpamReports.class);
 		BlockList blocklist = session.getMapper(BlockList.class);
 		
@@ -105,32 +116,32 @@ public class AddressBookCache implements ServletContextListener {
 		Set<String> exclusions = blocklist.getExcluded(userId);
 		
 		if (personalizations.isEmpty() && exclusions.isEmpty()) {
-			return getCommonNumbers(reports, listType);
+			return getCommonNumbers(reports, listType, now);
 		}
 		
-		return loadNumbers(reports, personalizations, exclusions, listType);
+		return loadNumbers(reports, personalizations, exclusions, listType, now);
 	}
 
-	public List<NumberBlock> lookupBlockList(ListType listType) {
-		try (SqlSession session = DBService.getInstance().openSession()) {
+	public List<NumberBlock> lookupBlockList(ListType listType, long now) {
+		try (SqlSession session = _db.db().openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			return getCommonNumbers(reports, listType);
+			return getCommonNumbers(reports, listType, now);
 		}
 	}
 	
-	private List<NumberBlock> getCommonNumbers(SpamReports reports, ListType listType) {
+	private List<NumberBlock> getCommonNumbers(SpamReports reports, ListType listType, long now) {
 		List<NumberBlock> cachedNumbers = _numberCache.lookup(listType);
 		if (cachedNumbers != null) {
 			return cachedNumbers;
 		}
 		
-		List<NumberBlock> numbers = loadNumbers(reports, Collections.emptyList(), Collections.emptySet(), listType);
+		List<NumberBlock> numbers = loadNumbers(reports, Collections.emptyList(), Collections.emptySet(), listType, now);
 		return _numberCache.put(listType, numbers);
 	}
 
 	private List<NumberBlock> loadNumbers(SpamReports reports, List<String> personalizations, Set<String> exclusions,
-			ListType listType) {
+			ListType listType, long now) {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
 		
@@ -138,7 +149,6 @@ public class AddressBookCache implements ServletContextListener {
 		boolean isGerman = "+49".equals(dialPrefix);
 		
 		List<DBNumberInfo> result = reports.getReports();
-		long now = System.currentTimeMillis();
 		NumberTree numberTree = new NumberTree();
 		for (DBNumberInfo report : result) {
 			String phone = report.getPhone();
