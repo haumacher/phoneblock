@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', number.shortcut)})}"></th:block>
+<th:block th:replace="~{fragments/page :: headContent(title=${#messages.msg('page.phone-info.title__nr', number.plus)})}"></th:block>
 
 <script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>
@@ -114,7 +114,7 @@
 	<p data-tx="t0024">هل تم استدعاؤك من قبل ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>؟ أخبر الآخرين بما يجب أن تتوقعه من ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. إذا كنت منزعجًا من المكالمات الواردة من ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>، فقم بتثبيت PhoneBlock <a th:href="@{/setup}"> واترك تعليقًا لـ ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</a></p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
-		<input name="phone" th:value="${number.shortcut}" type="hidden"/>
+		<input name="phone" th:value="${number.id}" type="hidden"/>
 		
 		<div class="buttons">
 		  	<label th:class="|button is-rounded ${rating.cssClass}|" th:each="rating : ${ratings}">
