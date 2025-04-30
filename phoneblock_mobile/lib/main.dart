@@ -2,23 +2,75 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_android/shared_preferences_android.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-const String PHONE_BLOCK_CONNECT_URL = 'https://phoneblock.net/pb-test/mobile/login.jsp';
+const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
+
+const String PHONE_BLOCK_CONNECT_URL =
+  'https://phoneblock.net$contextPath/mobile/login';
 
 void main() {
-  AppState state = AppState(calls: [
-    Call(phone: "0123456789", type: Type.iNCOMING, started: 1, duration: 2),
-    Call(phone: "0123456789", type: Type.mISSED),
-    Call(phone: "0123456789", type: Type.oUTGOING, started: 1, duration: 2),
-    Call(phone: "0123456789", type: Type.bLOCKED, rating: Rating.gAMBLE),
-  ]);
+  runApp(MaterialApp.router(routerConfig: router));
+}
 
-  runApp(PhoneBlockApp(state));
+final router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (_, __) => const TestPhoneBlockMobile(),
+      routes: [
+        GoRoute(
+          path: '$contextPath/mobile/response',
+          redirect: (context, state) {
+            var token = state.pathParameters["token"];
+            if (token != null) {
+              if (kDebugMode) {
+                print("Token received: $token");
+              }
+
+              setAuthToken(token);
+              return '/verify-token';
+            } else {
+              return '/';
+            }
+          },
+        ),
+
+        GoRoute(
+          path: '/verify-token',
+          builder: (context, state) => Scaffold(
+            appBar: AppBar(title: const Text('Login callback')),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: Text("Token received, verifying..."),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  ],
+);
+
+class TestPhoneBlockMobile extends StatelessWidget {
+  const TestPhoneBlockMobile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    AppState state = AppState(calls: [
+      Call(phone: "0123456789", type: Type.iNCOMING, started: 1, duration: 2),
+      Call(phone: "0123456789", type: Type.mISSED),
+      Call(phone: "0123456789", type: Type.oUTGOING, started: 1, duration: 2),
+      Call(phone: "0123456789", type: Type.bLOCKED, rating: Rating.gAMBLE),
+    ]);
+    return PhoneBlockApp(state);
+  }
 }
 
 class PhoneBlockApp extends StatelessWidget {
@@ -47,52 +99,49 @@ class SetupPage extends StatefulWidget {
   }
 }
 
+const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
+
 class SetupState extends State<SetupPage> {
-
-  static const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
-
-  final SharedPreferencesAsync _preferences = SharedPreferencesAsync(
-      options: const SharedPreferencesAsyncAndroidOptions(
-        backend: SharedPreferencesAndroidBackendLibrary.SharedPreferences,
-        originalSharedPreferencesOptions: AndroidSharedPreferencesStoreOptions(
-            fileName: 'de.haumacher.phoneblock_mobile.Preferences')));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Setup PhoneBlock mobile"),),
+        title: const Text("PhoneBlock Mobile: Setup"),),
       body: Center(
         child: Column(
           children: [
             ElevatedButton(
-                onPressed: registerPhoneBlock,
+                onPressed: () {
+                  registerPhoneBlock(context);
+                },
                 child: const Text("Mit PhoneBlock verbinden")),
             ElevatedButton(
                 onPressed: requestPermission,
-                child: const Text("Berechtigung erteilen Anrufe zu filtern")),
+                child: const Text("Berechtigung erteilen um Anrufe zu filtern")),
           ])
       ),
     );
   }
 
-  void registerPhoneBlock() async {
-    String? token = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-
-    if (token != null) {
-      setAuthToken(token);
-    }
-  }
-
   void requestPermission() async {
     bool granted = await platform.invokeMethod("requestPermission");
   }
+}
 
-  void setAuthToken(String token) {
-    platform.invokeMethod("setAuthToken", token);
+void setAuthToken(String token) {
+  platform.invokeMethod("setAuthToken", token);
+}
+
+Future<String?> getAuthToken() async {
+  return platform.invokeMethod("getAuthToken");
+}
+
+void registerPhoneBlock(BuildContext context) async {
+  bool ok = await launchUrl(Uri.parse(PHONE_BLOCK_CONNECT_URL));
+  if (!ok) {
+    const snackBar = SnackBar(content: Text('Failed to open PhoneBlock.'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
 
@@ -151,10 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     print("Login is selected.");
                   }
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
+                  registerPhoneBlock(context);
                 } else if (value == 1){
                   if (kDebugMode) {
                     print("My account menu is selected.");
@@ -404,89 +450,6 @@ Icon icon(Rating rating) {
     case Rating.aDVERTISING: return const Icon(Icons.ondemand_video);
     case Rating.gAMBLE: return const Icon(Icons.videogame_asset_off);
     case Rating.fRAUD: return const Icon(Icons.warning);
-  }
-}
-
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Connect to PhoneBlock"),),
-      body: const LoginWidget(),
-    );
-  }
-}
-
-class LoginWidget extends StatefulWidget {
-  const LoginWidget({super.key});
-
-  @override
-  State<StatefulWidget> createState() => LoginState();
-}
-
-class LoginState extends State<LoginWidget> {
-  late final WebViewController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller =
-      WebViewController.fromPlatformCreationParams(
-          const PlatformWebViewControllerCreationParams()
-      )
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            debugPrint('WebView is loading (progress : $progress%)');
-          },
-          onPageStarted: (String url) {
-            debugPrint('Page started loading: $url');
-          },
-          onPageFinished: (String url) {
-            debugPrint('Page finished loading: $url');
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint(
-                '''
-                Page resource error:
-                  code: ${error.errorCode}
-                  description: ${error.description}
-                  errorType: ${error.errorType}
-                  isForMainFrame: ${error.isForMainFrame}
-                ''');
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            if (!request.url.startsWith('https://phoneblock.net/')) {
-              debugPrint('blocking navigation to ${request.url}');
-              return NavigationDecision.prevent;
-            }
-            debugPrint('allowing navigation to ${request.url}');
-            return NavigationDecision.navigate;
-          },
-          onHttpError: (HttpResponseError error) {
-            debugPrint('Error occurred on page: ${error.response?.statusCode}');
-          },
-          onUrlChange: (UrlChange change) {
-            debugPrint('url change to ${change.url}');
-          },
-        ),
-      )
-      ..addJavaScriptChannel('TokenResult',
-        onMessageReceived: (JavaScriptMessage message) {
-          debugPrint('Received token: ${message.message}');
-          Navigator.of(context).pop(message.message);
-        },
-      )
-      ..loadRequest(Uri.parse(PHONE_BLOCK_CONNECT_URL));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return WebViewWidget(controller: _controller);
   }
 }
 

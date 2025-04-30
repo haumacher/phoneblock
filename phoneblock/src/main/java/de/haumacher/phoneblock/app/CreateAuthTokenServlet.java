@@ -15,13 +15,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Servlet for requesting a fresh authorization token to use for API access.
+ * Servlet for requesting a fresh authorization token to use for API access from a mobile application.
+ * 
+ * <p>
+ * Upon success, control flow is redirected to {@value #MOBILE_RESPONSE} with the token passed as 
+ * {@value #TOKEN_PARAM} parameter. This URL should be redirected to the native app running on the 
+ * mobile device.
+ * </p>
  */
 @WebServlet(urlPatterns = CreateAuthTokenServlet.CREATE_TOKEN)
 public class CreateAuthTokenServlet extends HttpServlet {
 
 	public static final String CREATE_TOKEN = "/create-token";
 	
+	private static final String MOBILE_RESPONSE = "/mobile/response";
+	
+	private static final String TOKEN_PARAM = "token";
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");
@@ -40,6 +50,6 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
 		
-		resp.sendRedirect(req.getContextPath() + "/mobile/response" + "?token=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));
+		resp.sendRedirect(req.getContextPath() + MOBILE_RESPONSE + "?" + TOKEN_PARAM + "=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));
 	}
 }
