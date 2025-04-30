@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
 
     <application
-        android:label="PhoneBlock mobile"
+        android:label="PhoneBlock Mobile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:targetApi="31">
@@ -27,6 +27,19 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="phoneblock.net" />
+                <data android:path="/phoneblock/mobile/response" />
+                <data android:path="/pb-test/mobile/response" />
             </intent-filter>
         </activity>
 

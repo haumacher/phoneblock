@@ -13,7 +13,6 @@ import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,7 +22,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * {@link HttpServlet} invoked from the signup page when the e-mail verification code is entered.
+ * {@link HttpServlet} invoked from the e-mail verification page <code>/code</code> when the e-mail verification code is entered.
+ * 
+ * <p>
+ * If the verification code is correct, the flow is redirected back to <code>/mobile/login</code> a mobile account linking 
+ * operation is in process. The next step then is to create an access token and transfer this token to the mobile app, see 
+ * {@link CreateAuthTokenServlet#CREATE_TOKEN}.
+ * </p>
  */
 @WebServlet(urlPatterns = {
 	RegistrationServlet.REGISTER_WEB,
