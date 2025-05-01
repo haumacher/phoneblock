@@ -13,3 +13,4 @@ scp phoneblock/target/phoneblock-*.war phoneblock.net:/var/lib/tomcat10/webapps/
 
 mvn release:clean
 
+ssh phoneblock.net tail -f /var/log/tomcat10/phoneblock.log

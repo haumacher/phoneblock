@@ -11,3 +11,4 @@ mvn clean install
 
 scp phoneblock/target/phoneblock-*.war phoneblock.net:/var/lib/tomcat10/webapps/pb-test.war
 
+ssh phoneblock.net tail -f /var/log/tomcat10/pb-test.log
