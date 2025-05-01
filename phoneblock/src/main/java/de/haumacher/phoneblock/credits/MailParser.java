@@ -100,7 +100,33 @@ public class MailParser {
 			throw new IllegalArgumentException("No amount given.");
 		}
 		
-		String msg = hasMessage ? tables.get(2).selectXpath("tbody[1]/tr[1]/td[1]/table[1]/tbody[1]/tr[1]/td[2]/p[1]/span[1]").text() : "";
+		String msg;
+		if (hasMessage) {
+			msg = tables.get(2).selectXpath("tbody[1]/tr[1]/td[1]/table[1]/tbody[1]/tr[1]/td[2]/p[1]/span[1]").text();
+		} else {
+			// <table width="100%" cellspacing="0" cellpadding="0" border="0">
+			//  <tbody>
+			//   <tr>
+			//    <td style="padding:0px 14px 14px 14px">
+			//     <table id="cartDetails" cellspacing="0" cellpadding="0" border="0" width="100%" dir="ltr" style="font-size:14px;padding:0px 10px">
+			//      <tbody>
+			//       <tr>
+			//        <td width="45%"><strong>Mitteilung von Eberhard Loy</strong></td>
+			//        <td align="right" width="55%">Kleine Spende. 1ff260be-1cd0-4ab8-86e7-154f</td>
+			//       </tr>
+			//      </tbody>
+			//     </table></td>
+			//   </tr>
+			//  </tbody>
+			// </table>
+			Element msgTable = tables.get(5);
+			Elements labelValue = msgTable.selectXpath("tbody[1]/tr[1]/td[1]/table[1]/tbody[1]/tr[1]/td");
+			if (labelValue.size() >= 2 && labelValue.get(0).text().startsWith("Mitteilung von ")) {
+				msg = labelValue.get(1).text();
+			} else {
+				msg = "";
+			}
+		}
 		
 		Element detailsTable = tables.get(hasMessage ? 4 : 2);
 		

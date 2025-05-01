@@ -57,6 +57,18 @@ public class TestMailParser {
 		assertEquals(null, details.uid);
 	}
 	
+	@Test
+	public void testParseWithMessageNew() throws FileNotFoundException, IOException, MessagingException, ParseException {
+		MessageDetails details = new MailParser().parse(load("mail4.txt"));
+		
+		assertEquals("EEEEEEEEEEEE", details.sender);
+		assertEquals(new GregorianCalendar(2025, 4, 1).getTime(), details.date);
+		assertEquals(100, details.amount);
+		assertEquals("aaaaaaaa-bbbb MMMMMMMMMMMMMMMMMMMMMMMMMMMMM", details.msg);
+		assertEquals("99999999999999999", details.tx);
+		assertEquals("aaaaaaaa-bbbb", details.uid);
+	}
+	
 	private Message load(String resource) throws MessagingException, IOException {
 		Session session = Session.getInstance(new Properties());
 		
