@@ -68,7 +68,7 @@
 			<tbody>
 				<tr th:each="report : ${searches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).plus}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).shortcut}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.count}"></td>
@@ -94,7 +94,7 @@
 			<tbody>
 				<tr th:each="report : ${reports}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).plus}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).shortcut}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -123,7 +123,7 @@
 			<tbody>
 				<tr th:each="report : ${newlyBlocked}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).plus}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).shortcut}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -149,7 +149,7 @@
 			<tbody>
 				<tr th:each="report : ${topSpammers}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).plus}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).shortcut}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -175,7 +175,7 @@
 			<tbody>
 				<tr th:each="report : ${topSearches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).plus}"></th:block></a>
+						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}">☎ <th:block th:text="${#converters.analyze(report.phone).shortcut}"></th:block></a>
 					</td>
 					
 					<td th:text="${report.searches}"></td>
