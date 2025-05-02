@@ -249,6 +249,10 @@
 
 		<p>
 			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Protection des données - Pas de traçage, pas de publicité, pas de biscuits</a></strong><br/>
+			<th:block th:unless="${#strings.equals(currentLang.tag, 'de')}">
+			<strong><a data-tx="t0058" th:href="@{link/deepl}">Traductions de deepl.com, merci !</a></strong><br/>
+			<strong><a data-tx="t0059" th:href="|${contextPath}/link/translations${template}|">Modifier les traductions de cette page</a></strong><br/>
+			</th:block>
 			<strong><a data-tx="t0024" th:href="@{/usage}">Conditions d'utilisation</a></strong><br/>
 			<strong><a data-tx="t0025" th:href="@{/impressum}">Mentions légales</a></strong>
 		</p>

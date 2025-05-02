@@ -249,6 +249,10 @@
 
 		<p>
 			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Προστασία δεδομένων - καμία παρακολούθηση, καμία διαφήμιση, κανένα μπισκότο</a></strong><br/>
+			<th:block th:unless="${#strings.equals(currentLang.tag, 'de')}">
+			<strong><a data-tx="t0058" th:href="@{link/deepl}">Μεταφράσεις από το deepl.com, ευχαριστώ!</a></strong><br/>
+			<strong><a data-tx="t0059" th:href="|${contextPath}/link/translations${template}|">Επεξεργασία μεταφράσεων αυτής της σελίδας</a></strong><br/>
+			</th:block>
 			<strong><a data-tx="t0024" th:href="@{/usage}">Όροι χρήσης</a></strong><br/>
 			<strong><a data-tx="t0025" th:href="@{/impressum}">Εκτύπωση</a></strong>
 		</p>

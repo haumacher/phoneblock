@@ -97,6 +97,8 @@ public class DefaultController implements WebController {
 			return false;
 		}
 		
+		request.setAttribute("template", i18nTemplate);
+		
         resolveDialPrefix(request);
 		
 		final IServletWebExchange webExchange = renderer.buildExchange(request, response);
