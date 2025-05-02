@@ -223,8 +223,29 @@
 	</th:block>
 		
 	</form>
-	
 	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0095">Block number</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0096" name="add-bl" placeholder="New SPAM number" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0098">You can enter one or more SPAM telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. The numbers will then be added to your personal blocklist.</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0099" type="submit">Add</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+	
 </section>
 
 <section class="section">
@@ -263,7 +284,7 @@
 	    <input class="input" data-tx="t0088" name="add-wl" placeholder="New exception" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">You can enter one or more telephone numbers here, separated by commas, in any format: 07041-123456789, +49171123456789, 0034 123456789</p>
+	  <p class="help" data-tx="t0056">You can enter one or more telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. These numbers will then no longer be blocked.</p>
 	</div>
 	
 	<div class="field is-grouped">

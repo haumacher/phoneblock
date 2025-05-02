@@ -223,8 +223,29 @@
 	</th:block>
 		
 	</form>
-	
 	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0095">Numer bloku</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0096" name="add-bl" placeholder="Nowy numer SPAM" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0098">Można tu wprowadzić jeden lub więcej numerów telefonów SPAM, oddzielonych przecinkami, w dowolnym formacie: 07041-123456789, +49171123456789, 0034 123456789. Numery te zostaną następnie dodane do osobistej listy blokowania.</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0099" type="submit">Dodaj</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+	
 </section>
 
 <section class="section">
@@ -263,7 +284,7 @@
 	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nowy wyjątek" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">Można tu wprowadzić jeden lub więcej numerów telefonów, oddzielonych przecinkami, w dowolnym formacie: 07041-123456789, +49171123456789, 0034 123456789.</p>
+	  <p class="help" data-tx="t0056">Można wprowadzić jeden lub więcej numerów telefonów oddzielonych przecinkami w dowolnym formacie: 07041-123456789, +49171123456789, 0034 123456789. Numery te nie będą już blokowane.</p>
 	</div>
 	
 	<div class="field is-grouped">

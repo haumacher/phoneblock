@@ -223,8 +223,29 @@
 	</th:block>
 		
 	</form>
-	
 	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0095">Blocknummer</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0096" name="add-bl" placeholder="Nytt SPAM-nummer" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0098">Här kan du ange ett eller flera SPAM-telefonnummer, åtskilda med kommatecken, i valfritt format: 07041-123456789, +49171123456789, 0034 123456789. Numren läggs sedan till i din personliga blockeringslista.</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0099" type="submit">Lägg till</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+	
 </section>
 
 <section class="section">
@@ -263,7 +284,7 @@
 	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nytt undantag" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">Här kan du ange ett eller flera telefonnummer, åtskilda med kommatecken, i valfritt format: 07041-123456789, +49171123456789, 0034 123456789</p>
+	  <p class="help" data-tx="t0056">Du kan ange ett eller flera telefonnummer åtskilda med kommatecken i valfritt format: 07041-123456789, +49171123456789, 0034 123456789. Dessa nummer kommer då inte längre att blockeras.</p>
 	</div>
 	
 	<div class="field is-grouped">

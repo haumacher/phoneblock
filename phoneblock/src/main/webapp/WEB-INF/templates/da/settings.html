@@ -223,8 +223,29 @@
 	</th:block>
 		
 	</form>
-	
 	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0095">Bloknummer</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0096" name="add-bl" placeholder="Nyt SPAM-nummer" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0098">Du kan indtaste et eller flere SPAM-telefonnumre her, adskilt af kommaer, i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Numrene vil derefter blive føjet til din personlige blokeringsliste.</p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0099" type="submit">Tilføj</button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+	
 </section>
 
 <section class="section">
@@ -263,7 +284,7 @@
 	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Ny undtagelse" type="tel"/>
 	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">Du kan indtaste et eller flere telefonnumre her, adskilt af kommaer, i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789</p>
+	  <p class="help" data-tx="t0056">Du kan indtaste et eller flere telefonnumre adskilt af kommaer i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Disse numre vil så ikke længere blive blokeret.</p>
 	</div>
 	
 	<div class="field is-grouped">
