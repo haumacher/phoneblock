@@ -292,8 +292,35 @@
 	</th:block>
 		
 	</form>
-	
 	</div>
+	
+	<div class="content">
+	<form method="post" th:action="@{/update-settings(action='lists')}">
+
+	<div class="field">
+	  <label class="label" data-tx="t0095">Nummer blockieren</label>
+	  <p class="control has-icons-left">
+	    <input class="input" data-tx="t0096" name="add-bl" placeholder="Neue SPAM-Nummer" type="tel"/>
+	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	  </p>
+	  <p class="help" data-tx="t0098">
+	  	Du kannst hier eine oder mehrere SPAM-Telefonnummern mit Komma getrennt in beliebigem 
+	  	Format eingeben: 07041-123456789, +49171123456789, 0034 123456789. Die Nummer werden 
+	  	dann zu Deiner persönlichen Blockliste hinzugefügt. 
+	  </p>
+	</div>
+	
+	<div class="field is-grouped">
+	  <p class="control">
+	    <button class="button is-primary" data-tx="t0099" type="submit">
+	      Hinzufügen
+	    </button>
+	  </p>
+	</div>
+	
+	</form>
+	</div>
+	
 </section>
 
 <section class="section">
@@ -338,7 +365,8 @@
 	  </p>
 	  <p class="help" data-tx="t0056">
 	  	Du kannst hier eine oder mehrere Telefonnummern mit Komma getrennt in beliebigem 
-	  	Format eingeben: 07041-123456789, +49171123456789, 0034 123456789 
+	  	Format eingeben: 07041-123456789, +49171123456789, 0034 123456789. Diese Nummer werden 
+	  	dann bei Dir sicher nicht mehr blockiert.
 	  </p>
 	</div>
 	

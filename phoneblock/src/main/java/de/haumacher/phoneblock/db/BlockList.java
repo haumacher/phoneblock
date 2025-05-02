@@ -69,7 +69,9 @@ public interface BlockList {
 	boolean removePersonalization(long userId, String phone);
 	
 	/**
-	 * Retrieves the personalization state of a phone number
+	 * Retrieves the personalization state of a phone number. 
+	 * 
+	 * @return <code>true</code> if blocked, <code>false</code> if white-listed, or <code>null</code> if not personalized.
 	 */
 	@Select("""
 			select BLOCKED 

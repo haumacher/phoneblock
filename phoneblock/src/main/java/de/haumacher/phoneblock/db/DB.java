@@ -925,7 +925,9 @@ public class DB {
 					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
 					recordVote = false;
 				} else {
-					blocklist.removePersonalization(userId, phone);
+					if (state != null) {
+						blocklist.removePersonalization(userId, phone);
+					}
 					if (block) {
 						blocklist.addPersonalization(userId, phone);
 					} else {

@@ -11,11 +11,15 @@ import java.util.Map.Entry;
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -121,7 +125,10 @@ public class SettingsServlet extends HttpServlet {
 			Users users = session.getMapper(Users.class);
 			Long userId = users.getUserId(userName);
 			if (userId != null) {
-				int owner = userId.intValue();
+				long owner = userId.longValue();
+				
+				DBUserSettings settings = users.getSettingsById(owner);
+				String dialPrefix = settings.getDialPrefix();
 				
 				BlockList blocklist = session.getMapper(BlockList.class);
 				for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
@@ -129,13 +136,27 @@ public class SettingsServlet extends HttpServlet {
 					if (key.equals("add-wl")) {
 						String addValues = entry.getValue()[0];
 						for (String value : addValues.split("[,;]")) {
-							String phone = NumberAnalyzer.toId(value);
+							String phone = NumberAnalyzer.toId(value, dialPrefix);
 							if (phone == null) {
 								continue;
 							}
 							
-							blocklist.removePersonalization(owner, phone);
-							blocklist.addExclude(owner, phone);
+							long now = System.currentTimeMillis();
+							PhoneNumer number = NumberAnalyzer.analyze(phone);
+							db.addRating(userName, number, dialPrefix, Rating.A_LEGITIMATE, null, settings.getLang(), now);
+						}
+					}
+					else if (key.equals("add-bl")) {
+						String addValues = entry.getValue()[0];
+						for (String value : addValues.split("[,;]")) {
+							String phone = NumberAnalyzer.toId(value, dialPrefix);
+							if (phone == null) {
+								continue;
+							}
+							
+							long now = System.currentTimeMillis();
+							PhoneNumer number = NumberAnalyzer.analyze(phone);
+							db.addRating(userName, number, dialPrefix, Rating.B_MISSED, null, settings.getLang(), now);
 						}
 					}
 					else if (key.startsWith("bl-")) {
