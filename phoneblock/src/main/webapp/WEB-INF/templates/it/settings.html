@@ -210,8 +210,8 @@
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Avete bloccato esplicitamente questi numeri. È possibile annullare un blocco accidentale qui:</p>
 	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${#converters.analyze(number).plus}"></th:block>
+		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
 		</label>
 	</div>
 
@@ -239,8 +239,8 @@
 	<p data-tx="t0052">Avete esplicitamente escluso questi numeri dal blocco:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${#converters.analyze(number).plus}"></th:block>
+		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
 		</label>
 	</div>
 	

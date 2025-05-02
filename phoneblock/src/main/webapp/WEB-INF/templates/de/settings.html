@@ -277,8 +277,8 @@
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">Diese Nummern hast Du explizit gesperrt. Eine versehentlich eingetragene Sperre kannst Du hier aufheben:</p>
 	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${#converters.analyze(number).plus}"></th:block>
+		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
 		</label>
 	</div>
 
@@ -310,8 +310,8 @@
 	<p data-tx="t0052">Diese Nummern hast Du explizit von der Sperrung ausgenommen:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${#converters.analyze(number).plus}"></th:block>
+		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
 		</label>
 	</div>
 	

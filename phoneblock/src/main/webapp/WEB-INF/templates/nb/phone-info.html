@@ -239,8 +239,8 @@
 	</div>
 	<div class="media-content">
 	  <div class="content">
-		<p class="commentHeader">
-		  <strong data-tx="t0030">☎ <th:block th:text="${comment.phone}"> </th:block></strong>
+		<p class="commentHeader" th:with="phoneInfo=${#converters.analyze(comment.phone)}">
+		  <strong data-tx="t0030">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"> </th:span></strong>
 		  <small>
 		  <a target="_blank" th:href="@{/link/{service}/{phone}(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}" th:unless="${#strings.isEmpty(comment.service)}"></a>
 		  <span data-tx="t0031" th:if="${#strings.isEmpty(comment.service)}">PhoneBlock</span>

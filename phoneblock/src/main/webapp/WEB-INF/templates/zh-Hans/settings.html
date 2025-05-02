@@ -210,8 +210,8 @@
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048">您已明确阻止了这些号码。您可以在此取消意外阻止：</p>
 	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:block th:text="${#converters.analyze(number).plus}"></th:block>
+		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
 		</label>
 	</div>
 
@@ -239,8 +239,8 @@
 	<p data-tx="t0052">您已明确将这些数字排除在拦截范围之外：</p>
 
 	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:block th:text="${#converters.analyze(number).plus}"></th:block>
+		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
 		</label>
 	</div>
 	
