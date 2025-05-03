@@ -87,15 +87,6 @@
 		    <version>7.3.2</version>
 		</dependency>
 
-<!-- Official version of ip2location-java with missing module name declaration -->
-<!--
-		<dependency>
-		    <groupId>com.ip2location</groupId>
-		    <artifactId>ip2location-java</artifactId>
-		    <version>8.12.3</version>
-		</dependency>
--->
-
 		<dependency>
 		    <groupId>com.ip2location</groupId>
 		    <artifactId>ip2location-java</artifactId>
