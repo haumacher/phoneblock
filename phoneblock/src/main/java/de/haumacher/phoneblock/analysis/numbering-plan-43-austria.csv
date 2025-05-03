@@ -1,0 +1,1070 @@
+prefix;maxDigits;minDigits;usage;info
+1;13;4;local network code;Wien
+2142;13;7;local network code;Gattendorf
+2143;13;7;local network code;Kittsee
+2144;13;7;local network code;Deutsch Jahrndorf
+2145;13;7;local network code;Prellenkirchen
+2146;13;7;local network code;Nickelsdorf
+2147;13;7;local network code;Zurndorf
+2160;13;7;local network code;Jois
+2162;13;7;local network code;Bruck an der Leitha
+2163;13;7;local network code;Petronell-Carnuntum
+2164;13;7;local network code;Rohrau
+2165;13;7;local network code;Hainburg a.d. Donau
+2166;13;7;local network code;Parndorf
+2167;13;7;local network code;Neusiedl am See
+2168;13;7;local network code;Mannersdorf am Leithagebirge
+2169;13;7;local network code;Trautmannsdorf an der Leitha
+2172;13;7;local network code;Frauenkirchen
+2173;13;7;local network code;Gols
+2174;13;7;local network code;Wallern im Burgenland
+2175;13;7;local network code;Apetlon
+2176;13;7;local network code;Tadten
+2177;13;7;local network code;Podersdorf am See
+2212;13;7;local network code;Orth an der Donau
+2213;13;7;local network code;Lassee
+2214;13;7;local network code;Kopfstetten
+2215;13;7;local network code;Probstdorf
+2216;13;7;local network code;Leopoldsdorf im Marchfelde
+2230;13;7;local network code;Schwadorf
+2231;13;7;local network code;Purkersdorf
+2232;13;7;local network code;Fischamend
+2233;13;7;local network code;Preßbaum
+2234;13;7;local network code;Gramatneusiedl
+2235;13;7;local network code;Maria-Lanzendorf
+2236;13;7;local network code;Mödling
+2237;13;7;local network code;Gaaden
+2238;13;7;local network code;Kaltenleutgeben
+2239;13;7;local network code;Breitenfurt bei Wien
+2242;13;7;local network code;Sankt Andrä-Wördern
+2243;13;7;local network code;Klosterneuburg
+2244;13;7;local network code;Langenzersdorf
+2245;13;7;local network code;Wolkersdorf im Weinviertel
+2246;13;7;local network code;Gerasdorf bei Wien
+2247;13;7;local network code;Deutsch-Wagram
+2248;13;7;local network code;Markgrafneusiedl
+2249;13;7;local network code;Groß-Enzersdorf
+2252;13;7;local network code;Baden
+2253;13;7;local network code;Oberwaltersdorf
+2254;13;7;local network code;Ebreichsdorf
+2255;13;7;local network code;Deutsch Brodersdorf
+2256;13;7;local network code;Leobersdorf
+2257;13;7;local network code;Klausen-Leopoldsdorf
+2258;13;7;local network code;Alland
+2259;13;7;local network code;Münchendorf
+2262;13;7;local network code;Korneuburg
+2263;13;7;local network code;Großrußbach
+2264;13;7;local network code;Rückersdorf (Harmannsdorf)
+2265;13;7;local network code;Hausleiten
+2266;13;7;local network code;Stockerau
+2267;13;7;local network code;Sierndorf
+2268;13;7;local network code;Großmugl
+2269;13;7;local network code;Niederfellabrunn
+2271;13;7;local network code;Ried am Riederberg
+2272;13;7;local network code;Tulln an der Donau
+2273;13;7;local network code;Tulbing
+2274;13;7;local network code;Sieghartskirchen
+2275;13;7;local network code;Atzenbrugg
+2276;13;7;local network code;Reidling
+2277;13;7;local network code;Zwentendorf
+2278;13;7;local network code;Absdorf
+2279;13;7;local network code;Kirchberg am Wagram
+2282;13;7;local network code;Gänserndorf
+2283;13;7;local network code;Angern an der March
+2284;13;7;local network code;Oberweiden
+2285;13;7;local network code;Marchegg
+2286;13;7;local network code;Obersiebenbrunn
+2287;13;7;local network code;Strasshof an der Nordbahn
+2288;13;7;local network code;Auersthal
+2289;13;7;local network code;Matzen
+2522;13;7;local network code;Laa an der Thaya
+2523;13;7;local network code;Kirchstetten (Neudorf bei Staatz)
+2524;13;7;local network code;Kautendorf
+2525;13;7;local network code;Gnadendorf
+2526;13;7;local network code;Stronsdorf
+2527;13;7;local network code;Wulzeshofen
+2532;13;7;local network code;Zistersdorf
+2533;13;7;local network code;Neusiedl an der Zaya
+2534;13;7;local network code;Niedersulz
+2535;13;7;local network code;Hohenau an der March
+2536;13;7;local network code;Drösing
+2538;13;7;local network code;Velm-Götzendorf
+2552;13;7;local network code;Poysdorf
+2554;13;7;local network code;Stützenhofen
+2555;13;7;local network code;Herrnbaumgarten
+2556;13;7;local network code;Großkrut
+2557;13;7;local network code;Bernhardsthal
+2572;13;7;local network code;Mistelbach
+2573;13;7;local network code;Wilfersdorf
+2574;13;7;local network code;Gaweinstal
+2575;13;7;local network code;Ladendorf
+2576;13;7;local network code;Ernstbrunn
+2577;13;7;local network code;Asparn an der Zaya
+2610;13;7;local network code;Horitschon
+2611;13;7;local network code;Mannersdorf an der Rabnitz
+2612;13;7;local network code;Oberpullendorf
+2613;13;7;local network code;Deutschkreutz
+2614;13;7;local network code;Kleinwarasdorf
+2615;13;7;local network code;Lutzmannsburg
+2616;13;7;local network code;Lockenhaus
+2617;13;7;local network code;Draßmarkt
+2618;13;7;local network code;Markt Sankt Martin
+2619;13;7;local network code;Lackendorf
+2620;13;7;local network code;Willendorf
+2621;13;7;local network code;Sieggraben
+2622;13;7;local network code;Wiener Neustadt
+2623;13;7;local network code;Pottendorf
+2624;13;7;local network code;Ebenfurth
+2625;13;7;local network code;Bad Sauerbrunn
+2626;13;7;local network code;Mattersburg
+2627;13;7;local network code;Pitten
+2628;13;7;local network code;Felixdorf
+2629;13;7;local network code;Warth (Niederösterreich)
+2630;13;7;local network code;Ternitz
+2631;13;7;local network code;Pöttsching
+2632;13;7;local network code;Pernitz
+2633;13;7;local network code;Markt Piesting
+2634;13;7;local network code;Gutenstein
+2635;13;7;local network code;Neunkirchen
+2636;13;7;local network code;Puchberg am Schneeberg
+2637;13;7;local network code;Grünbach am Schneeberg
+2638;13;7;local network code;Winzendorf-Muthmannsdorf
+2639;13;7;local network code;Bad Fischau
+2641;13;7;local network code;Kirchberg am Wechsel
+2642;13;7;local network code;Aspangberg-Sankt Peter
+2643;13;7;local network code;Lichtenegg
+2644;13;7;local network code;Grimmenstein
+2645;13;7;local network code;Wiesmath
+2646;13;7;local network code;Kirchschlag in der Buckligen Welt
+2647;13;7;local network code;Krumbach (Niederösterreich)
+2648;13;7;local network code;Hochneukirchen
+2649;13;7;local network code;Mönichkirchen
+2662;13;7;local network code;Gloggnitz
+2663;13;7;local network code;Schottwien
+2664;13;7;local network code;Semmering
+2665;13;7;local network code;Prein an der Rax
+2666;13;7;local network code;Reichenau
+2667;13;7;local network code;Schwarzau im Gebirge
+2672;13;7;local network code;Berndorf
+2673;13;7;local network code;Altenmarkt an der Triesting
+2674;13;7;local network code;Weißenbach an der Triesting
+2680;13;7;local network code;Sankt Margarethen im Burgenland
+2682;13;7;local network code;Eisenstadt
+2683;13;7;local network code;Purbach am Neusiedler See
+2684;13;7;local network code;Schützen am Gebirge
+2685;13;7;local network code;Rust
+2686;13;7;local network code;Draßburg
+2687;13;7;local network code;Siegendorf
+2688;13;7;local network code;Steinbrunn
+2689;13;7;local network code;Hornstein
+2711;13;7;local network code;Dürnstein
+2712;13;7;local network code;Aggsbach
+2713;13;7;local network code;Spitz
+2714;13;7;local network code;Rossatz
+2715;13;7;local network code;Weißenkirchen in der Wachau
+2716;13;7;local network code;Gföhl
+2717;13;7;local network code;Unter-Meisling
+2718;13;7;local network code;Lichtenau im Waldviertel
+2719;13;7;local network code;Droß
+2722;13;7;local network code;Kirchberg an der Pielach
+2723;13;7;local network code;Rabenstein an der Pielach
+2724;13;7;local network code;Schwarzenbach an der Pielach
+2725;13;7;local network code;Frankenfels
+2726;13;7;local network code;Puchenstuben
+2728;13;7;local network code;Wienerbruck
+2731;13;7;local network code;Idolsberg
+2732;13;7;local network code;Krems an der Donau
+2733;13;7;local network code;Schönberg am Kamp
+2734;13;7;local network code;Langenlois
+2735;13;7;local network code;Hadersdorf am Kamp
+2736;13;7;local network code;Paudorf
+2738;13;7;local network code;Fels am Wagram
+2739;13;7;local network code;Tiefenfucha
+2741;13;7;local network code;Flinsbach
+2742;13;7;local network code;Sankt Pölten
+2743;13;7;local network code;Böheimkirchen
+2744;13;7;local network code;Kasten bei Böheimkirchen
+2745;13;7;local network code;Pyhra
+2746;13;7;local network code;Wilhelmsburg
+2747;13;7;local network code;Ober-Grafendorf
+2748;13;7;local network code;Kilb
+2749;13;7;local network code;Prinzersdorf
+2752;13;7;local network code;Melk
+2753;13;7;local network code;Gansbach
+2754;13;7;local network code;Loosdorf
+2755;13;7;local network code;Mank
+2756;13;7;local network code;Sankt Leonhard am Forst
+2757;13;7;local network code;Pöchlarn
+2758;13;7;local network code;Pöggstall
+2762;13;7;local network code;Lilienfeld
+2763;13;7;local network code;Sankt Veit an der Gölsen
+2764;13;7;local network code;Hainfeld
+2765;13;7;local network code;Kaumberg
+2766;13;7;local network code;Kleinzell
+2767;13;7;local network code;Hohenberg
+2768;13;7;local network code;Sankt Aegyd am Neuwalde
+2769;13;7;local network code;Türnitz
+2772;13;7;local network code;Neulengbach
+2773;13;7;local network code;Eichgraben
+2774;13;7;local network code;Innermanzing
+2782;13;7;local network code;Herzogenburg
+2783;13;7;local network code;Traismauer
+2784;13;7;local network code;Perschling
+2786;13;7;local network code;Oberwölbling
+2812;13;7;local network code;Groß Gerungs
+2813;13;7;local network code;Arbesbach
+2814;13;7;local network code;Langschlag
+2815;13;7;local network code;Großschönau
+2816;13;7;local network code;Karlstift
+2822;13;7;local network code;Zwettl-Niederösterreich
+2823;13;7;local network code;Großglobnitz
+2824;13;7;local network code;Allentsteig
+2825;13;7;local network code;Göpfritz an der Wild
+2826;13;7;local network code;Rastenfeld
+2827;13;7;local network code;Schönbach
+2828;13;7;local network code;Rappottenstein
+2829;13;7;local network code;Schweiggers
+2841;13;7;local network code;Vitis
+2842;13;7;local network code;Waidhofen an der Thaya
+2843;13;7;local network code;Dobersberg
+2844;13;7;local network code;Karlstein an der Thaya
+2845;13;7;local network code;Weikertschlag an der Thaya (Raabs an der Thaya)
+2846;13;7;local network code;Raabs an der Thaya
+2847;13;7;local network code;Groß-Siegharts
+2848;13;7;local network code;Pfaffenschlag bei Waidhofen a.d.Thaya
+2849;13;7;local network code;Schwarzenau
+2852;13;7;local network code;Gmünd
+2853;13;7;local network code;Schrems
+2854;13;7;local network code;Kirchberg am Walde
+2855;13;7;local network code;Waldenstein
+2856;13;7;local network code;Weitra
+2857;13;7;local network code;Bad Großpertholz
+2858;13;7;local network code;Moorbad Harbach
+2859;13;7;local network code;Brand-Nagelberg
+2862;13;7;local network code;Heidenreichstein
+2863;13;7;local network code;Eggern
+2864;13;7;local network code;Kautzen
+2865;13;7;local network code;Litschau
+2872;13;7;local network code;Ottenschlag
+2873;13;7;local network code;Kottes
+2874;13;7;local network code;Martinsberg
+2875;13;7;local network code;Grafenschlag
+2876;13;7;local network code;Els
+2877;13;7;local network code;Grainbrunn
+2878;13;7;local network code;Traunstein
+2912;13;7;local network code;Geras
+2913;13;7;local network code;Hötzelsdorf
+2914;13;7;local network code;Japons
+2915;13;7;local network code;Drosendorf-Zissersdorf
+2916;13;7;local network code;Riegersburg (Hardegg)
+2942;13;7;local network code;Retz
+2943;13;7;local network code;Obritz
+2944;13;7;local network code;Haugsdorf
+2945;13;7;local network code;Zellerndorf
+2946;13;7;local network code;Pulkau
+2947;13;7;local network code;Theras
+2948;13;7;local network code;Weitersfeld
+2949;13;7;local network code;Niederfladnitz
+2951;13;7;local network code;Guntersdorf
+2952;13;7;local network code;Hollabrunn
+2953;13;7;local network code;Nappersdorf
+2954;13;7;local network code;Göllersdorf
+2955;13;7;local network code;Großweikersdorf
+2956;13;7;local network code;Ziersdorf
+2957;13;7;local network code;Hohenwarth
+2958;13;7;local network code;Maissau
+2959;13;7;local network code;Sitzendorf an der Schmida
+2982;13;7;local network code;Horn
+2983;13;7;local network code;Sigmundsherberg
+2984;13;7;local network code;Eggenburg
+2985;13;7;local network code;Gars am Kamp
+2986;13;7;local network code;Irnfritz
+2987;13;7;local network code;Sankt Leonhard am Hornerwald
+2988;13;7;local network code;Neupölla
+2989;13;7;local network code;Brunn an der Wild
+3112;13;7;local network code;Gleisdorf
+3113;13;7;local network code;Pischelsdorf in der Steiermark
+3114;13;7;local network code;Markt Hartmannsdorf
+3115;13;7;local network code;Studenzen
+3116;13;7;local network code;Kirchbach in Steiermark
+3117;13;7;local network code;Eggersdorf bei Graz
+3118;13;7;local network code;Sinabelkirchen
+3119;13;7;local network code;Sankt Marein bei Graz
+3123;13;7;local network code;Sankt Oswald bei Plankenwarth
+3124;13;7;local network code;Gratkorn
+3125;13;7;local network code;Übelbach
+3126;13;7;local network code;Frohnleiten
+3127;13;7;local network code;Peggau
+3132;13;7;local network code;Kumberg
+3133;13;7;local network code;Nestelbach
+3134;13;7;local network code;Heiligenkreuz am Waasen
+3135;13;7;local network code;Kalsdorf bei Graz
+3136;13;7;local network code;Dobl
+3137;13;7;local network code;Söding
+3140;13;7;local network code;Sankt Martin am Wöllmißberg
+3141;13;7;local network code;Hirschegg
+3142;13;7;local network code;Voitsberg
+3143;13;7;local network code;Krottendorf
+3144;13;7;local network code;Köflach
+3145;13;7;local network code;Edelschrott
+3146;13;7;local network code;Modriach
+3147;13;7;local network code;Salla
+3148;13;7;local network code;Kainach bei Voitsberg
+3149;13;7;local network code;Geistthal
+3150;13;7;local network code;Paldau
+3151;13;7;local network code;Gnas
+3152;13;7;local network code;Feldbach
+3153;13;7;local network code;Riegersburg
+3155;13;7;local network code;Fehring
+3157;13;7;local network code;Kapfenstein
+3158;13;7;local network code;Sankt Anna am Aigen
+3159;13;7;local network code;Bad Gleichenberg
+316;13;6;local network code;Graz
+3170;13;7;local network code;Fischbach
+3171;13;7;local network code;Gasen
+3172;13;7;local network code;Weiz
+3173;13;7;local network code;Ratten
+3174;13;7;local network code;Birkfeld
+3175;13;7;local network code;Anger
+3176;13;7;local network code;Stubenberg
+3177;13;7;local network code;Puch bei Weiz
+3178;13;7;local network code;Sankt Ruprecht an der Raab
+3179;13;7;local network code;Passail
+3182;13;7;local network code;Wildon
+3183;13;7;local network code;Sankt Georgen an der Stiefing
+3184;13;7;local network code;Wolfsberg im Schwarzautal
+3185;13;7;local network code;Preding
+3322;13;7;local network code;Güssing
+3323;13;7;local network code;Eberau
+3324;13;7;local network code;Strem
+3325;13;7;local network code;Heiligenkreuz im Lafnitztal
+3326;13;7;local network code;Stegersbach
+3327;13;7;local network code;Sankt Michael im Burgenland
+3328;13;7;local network code;Kukmirn
+3329;13;7;local network code;Jennersdorf
+3331;13;7;local network code;Sankt Lorenzen am Wechsel
+3332;13;7;local network code;Hartberg
+3333;13;7;local network code;Sebersdorf
+3334;13;7;local network code;Kaindorf
+3335;13;7;local network code;Pöllau
+3336;13;7;local network code;Waldbach
+3337;13;7;local network code;Vorau
+3338;13;7;local network code;Lafnitz
+3339;13;7;local network code;Friedberg
+3352;13;7;local network code;Oberwart
+3353;13;7;local network code;Oberschützen
+3354;13;7;local network code;Bernstein
+3355;13;7;local network code;Stadtschlaining
+3356;13;7;local network code;Markt Allhau
+3357;13;7;local network code;Pinkafeld
+3358;13;7;local network code;Litzelsdorf
+3359;13;7;local network code;Loipersdorf-Kitzladen
+3362;13;7;local network code;Großpetersdorf
+3363;13;7;local network code;Rechnitz
+3364;13;7;local network code;Hannersdorf
+3365;13;7;local network code;Deutsch Schützen-Eisenberg
+3366;13;7;local network code;Kohfidisch
+3382;13;7;local network code;Fürstenfeld
+3383;13;7;local network code;Burgau
+3385;13;7;local network code;Ilz
+3386;13;7;local network code;Großsteinbach
+3387;13;7;local network code;Söchau
+3452;13;7;local network code;Leibnitz
+3453;13;7;local network code;Ehrenhausen
+3454;13;7;local network code;Leutschach
+3455;13;7;local network code;Arnfels
+3456;13;7;local network code;Fresing
+3457;13;7;local network code;Gleinstätten
+3460;13;7;local network code;Soboth
+3461;13;7;local network code;Trahütten
+3462;13;7;local network code;Deutschlandsberg
+3463;13;7;local network code;Stainz
+3464;13;7;local network code;Groß Sankt Florian
+3465;13;7;local network code;Pölfing-Brunn
+3466;13;7;local network code;Eibiswald
+3467;13;7;local network code;Schwanberg
+3468;13;7;local network code;Sankt Oswald ob Eibiswald
+3469;13;7;local network code;Sankt Oswald im Freiland
+3472;13;7;local network code;Mureck
+3473;13;7;local network code;Straden
+3474;13;7;local network code;Deutsch Goritz
+3475;13;7;local network code;Hürth
+3476;13;7;local network code;Bad Radkersburg
+3477;13;7;local network code;Sankt Peter am Ottersbach
+3512;13;7;local network code;Knittelfeld
+3513;13;7;local network code;Bischoffeld
+3514;13;7;local network code;Seckau
+3515;13;7;local network code;Sankt Lorenzen bei Knittelfeld
+3516;13;7;local network code;Kleinlobming
+3532;13;7;local network code;Murau
+3533;13;7;local network code;Turrach
+3534;13;7;local network code;Stadl an der Mur
+3535;13;7;local network code;Krakaudorf
+3536;13;7;local network code;Sankt Peter am Kammersberg
+3537;13;7;local network code;Sankt Georgen ob Murau
+3571;13;7;local network code;Möderbrugg
+3572;13;7;local network code;Judenburg
+3573;13;7;local network code;Fohnsdorf
+3574;13;7;local network code;Pusterwald
+3575;13;7;local network code;Sankt Johann am Tauern
+3576;13;7;local network code;Bretstein
+3577;13;7;local network code;Zeltweg
+3578;13;7;local network code;Obdach
+3579;13;7;local network code;Pöls
+3581;13;7;local network code;Oberwölz
+3582;13;7;local network code;Scheifling
+3583;13;7;local network code;Unzmarkt
+3584;13;7;local network code;Neumarkt in Steiermark
+3585;13;7;local network code;Sankt Lambrecht
+3586;13;7;local network code;Mühlen
+3587;13;7;local network code;Schönberg-Lachtal
+3588;13;7;local network code;Katsch an der Mur
+3611;13;7;local network code;Johnsbach
+3612;13;7;local network code;Liezen
+3613;13;7;local network code;Admont
+3614;13;7;local network code;Rottenmann
+3615;13;7;local network code;Trieben
+3616;13;7;local network code;Selzthal
+3617;13;7;local network code;Gaishorn am See
+3618;13;7;local network code;Hohentauern
+3619;13;7;local network code;Oppenberg
+3622;13;7;local network code;Bad Aussee
+3623;13;7;local network code;Bad Mitterndorf
+3624;13;7;local network code;Pichl-Kainisch
+3631;13;7;local network code;Unterlaussa
+3632;13;7;local network code;Sankt Gallen
+3633;13;7;local network code;Landl
+3634;13;7;local network code;Hieflau
+3635;13;7;local network code;Radmer
+3636;13;7;local network code;Wildalpen
+3637;13;7;local network code;Gams bei Hieflau
+3638;13;7;local network code;Palfau
+3680;13;7;local network code;Donnersbachwald
+3682;13;7;local network code;Stainach
+3683;13;7;local network code;Donnersbach
+3684;13;7;local network code;Sankt Martin am Grimming
+3685;13;7;local network code;Gröbming
+3686;13;7;local network code;Haus
+3687;13;7;local network code;Schladming
+3688;13;7;local network code;Tauplitz
+3689;13;7;local network code;Sankt Nikolai im Sölktal
+3832;13;7;local network code;Kraubath an der Mur
+3833;13;7;local network code;Traboch
+3834;13;7;local network code;Wald am Schoberpaß
+3842;13;7;local network code;Leoben
+3843;13;7;local network code;Sankt Michael in Obersteiermark
+3844;13;7;local network code;Kammern im Liesingtal
+3845;13;7;local network code;Mautern in Steiermark
+3846;13;7;local network code;Kalwang
+3847;13;7;local network code;Trofaiach
+3848;13;7;local network code;Eisenerz
+3849;13;7;local network code;Vordernberg
+3852;13;7;local network code;Mürzzuschlag
+3853;13;7;local network code;Spital am Semmering
+3854;13;7;local network code;Langenwang
+3855;13;7;local network code;Krieglach
+3856;13;7;local network code;Veitsch
+3857;13;7;local network code;Neuberg an der Mürz
+3858;13;7;local network code;Mitterdorf im Mürztal
+3859;13;7;local network code;Mürzsteg
+3861;13;7;local network code;Aflenz
+3862;13;7;local network code;Bruck an der Mur
+3863;13;7;local network code;Turnau
+3864;13;7;local network code;Sankt Marein im Mürztal
+3865;13;7;local network code;Kindberg
+3866;13;7;local network code;Breitenau am Hochlantsch
+3867;13;7;local network code;Pernegg an der Mur
+3868;13;7;local network code;Tragöß
+3869;13;7;local network code;Sankt Katharein an der Laming
+3882;13;7;local network code;Mariazell
+3883;13;7;local network code;Terz
+3884;13;7;local network code;Wegscheid
+3885;13;7;local network code;Greith
+3886;13;7;local network code;Weichselboden
+4212;13;7;local network code;Sankt Veit an der Glan
+4213;13;7;local network code;Launsdorf
+4214;13;7;local network code;Brückl
+4215;13;7;local network code;Liebenfels
+4220;13;7;local network code;Köttmannsdorf
+4221;13;7;local network code;Gallizien
+4223;13;7;local network code;Maria Saal
+4224;13;7;local network code;Pischeldorf
+4225;13;7;local network code;Grafenstein
+4226;13;7;local network code;Sankt Margareten im Rosental
+4227;13;7;local network code;Ferlach
+4228;13;7;local network code;Feistritz im Rosental
+4229;13;7;local network code;Krumpendorf am Wörther See
+4230;13;7;local network code;Globasnitz
+4231;13;7;local network code;Mittertrixen
+4232;13;7;local network code;Völkermarkt
+4233;13;7;local network code;Griffen
+4234;13;7;local network code;Ruden
+4235;13;7;local network code;Bleiburg
+4236;13;7;local network code;Eberndorf
+4237;13;7;local network code;Miklauzhof
+4238;13;7;local network code;Eisenkappel-Vellach
+4239;13;7;local network code;Sankt Kanzian am Klopeiner See
+4240;13;7;local network code;Bad Kleinkirchheim
+4242;13;7;local network code;Villach
+4243;13;7;local network code;Bodensdorf
+4244;13;7;local network code;Bad Bleiberg
+4245;13;7;local network code;Feistritz an der Drau
+4246;13;7;local network code;Radenthein
+4247;13;7;local network code;Afritz
+4248;13;7;local network code;Treffen
+4252;13;7;local network code;Wernberg
+4253;13;7;local network code;Sankt Jakob im Rosental
+4254;13;7;local network code;Faak am See
+4255;13;7;local network code;Arnoldstein
+4256;13;7;local network code;Nötsch im Gailtal
+4257;13;7;local network code;Fürnitz
+4258;13;7;local network code;Gummern
+4262;13;7;local network code;Treibach
+4263;13;7;local network code;Hüttenberg
+4264;13;7;local network code;Klein Sankt Paul
+4265;13;7;local network code;Weitensfeld im Gurktal
+4266;13;7;local network code;Straßburg
+4267;13;7;local network code;Metnitz
+4268;13;7;local network code;Friesach
+4269;13;7;local network code;Flattnitz
+4271;13;7;local network code;Steuerberg
+4272;13;7;local network code;Pörtschach am Wörther See
+4273;13;7;local network code;Reifnitz
+4274;13;7;local network code;Velden am Wörther See
+4275;13;7;local network code;Ebene Reichenau
+4276;13;7;local network code;Feldkirchen in Kärnten
+4277;13;7;local network code;Glanegg
+4278;13;7;local network code;Gnesau
+4279;13;7;local network code;Sirnitz
+4282;13;7;local network code;Hermagor
+4283;13;7;local network code;Sankt Stefan im Gailtal
+4284;13;7;local network code;Kirchbach
+4285;13;7;local network code;Tröpolach
+4286;13;7;local network code;Weißbriach
+4350;13;7;local network code;Bad Sankt Leonhard im Lavanttal
+4352;13;7;local network code;Wolfsberg
+4353;13;7;local network code;Prebl
+4354;13;7;local network code;Preitenegg
+4355;13;7;local network code;Gemmersdorf
+4356;13;7;local network code;Lavamünd
+4357;13;7;local network code;Sankt Paul im Lavanttal
+4358;13;7;local network code;Sankt Andrä
+4359;13;7;local network code;Reichenfels
+463;13;6;local network code;Klagenfurt
+4710;13;7;local network code;Oberdrauburg
+4712;13;7;local network code;Greifenburg
+4713;13;7;local network code;Techendorf
+4714;13;7;local network code;Dellach im Drautal
+4715;13;7;local network code;Kötschach-Mauthen
+4716;13;7;local network code;Lesachtal
+4717;13;7;local network code;Steinfeld
+4718;13;7;local network code;Dellach
+4732;13;7;local network code;Gmünd in Kärnten
+4733;13;7;local network code;Malta
+4734;13;7;local network code;Rennweg
+4735;13;7;local network code;Kremsbrücke
+4736;13;7;local network code;Innerkrems
+4761;13;7;local network code;Stockenboi
+4762;13;7;local network code;Spittal an der Drau
+4766;13;7;local network code;Millstatt
+4767;13;7;local network code;Rothenthurn
+4768;13;7;local network code;Kleblach-Lind
+4769;13;7;local network code;Möllbrücke
+4782;13;7;local network code;Obervellach
+4783;13;7;local network code;Reißeck
+4784;13;7;local network code;Mallnitz
+4785;13;7;local network code;Außerfragant
+4822;13;7;local network code;Winklern
+4823;13;7;local network code;Tresdorf (Rangersdorf)
+4824;13;7;local network code;Heiligenblut
+4825;13;7;local network code;Großkirchheim
+4826;13;7;local network code;Mörtschach
+4842;13;7;local network code;Sillian
+4843;13;7;local network code;Außervillgraten
+4846;13;7;local network code;Abfaltersbach
+4847;13;7;local network code;Obertilliach
+4848;13;7;local network code;Kartitsch
+4852;13;7;local network code;Lienz
+4853;13;7;local network code;Ainet
+4855;13;7;local network code;Assling
+4858;13;7;local network code;Nikolsdorf
+4872;13;7;local network code;Huben
+4873;13;7;local network code;Sankt Jakob in Defereggen
+4874;13;7;local network code;Virgen
+4875;13;7;local network code;Matrei in Osttirol
+4876;13;7;local network code;Kals am Großglockner
+4877;13;7;local network code;Prägraten am Großvenediger
+4879;13;7;local network code;Sankt Veit in Defereggen
+501;13;5;location independent corporate numbers;
+502;13;5;location independent corporate numbers;
+503;13;5;location independent corporate numbers;
+504;13;5;location independent corporate numbers;
+505;13;5;location independent corporate numbers;
+506;13;5;location independent corporate numbers;
+507;13;5;location independent corporate numbers;
+508;13;5;location independent corporate numbers;
+509;13;5;location independent corporate numbers;
+512;13;6;local network code;Innsbruck
+517;13;5;location independent corporate numbers;
+5212;13;7;local network code;Seefeld in Tirol
+5213;13;7;local network code;Scharnitz
+5214;13;7;local network code;Leutasch
+5223;13;7;local network code;Hall in Tirol
+5224;13;7;local network code;Wattens
+5225;13;7;local network code;Fulpmes
+5226;13;7;local network code;Neustift im Stubaital
+5230;13;7;local network code;Sellrain
+5232;13;7;local network code;Kematen in Tirol
+5234;13;7;local network code;Axams
+5236;13;7;local network code;Gries im Sellrain
+5238;13;7;local network code;Zirl
+5239;13;7;local network code;Kühtai
+5242;13;7;local network code;Schwaz
+5243;13;7;local network code;Maurach
+5244;13;7;local network code;Jenbach
+5245;13;7;local network code;Hinterriß
+5246;13;7;local network code;Achenkirch
+5248;13;7;local network code;Steinberg am Rofan
+5252;13;7;local network code;Oetz
+5253;13;7;local network code;Längenfeld
+5254;13;7;local network code;Sölden
+5255;13;7;local network code;Umhausen
+5256;13;7;local network code;Untergurgl
+5262;13;7;local network code;Telfs
+5263;13;7;local network code;Silz
+5264;13;7;local network code;Mieming
+5265;13;7;local network code;Nassereith
+5266;13;7;local network code;Ötztal-Bahnhof
+5272;13;7;local network code;Steinach am Brenner
+5273;13;7;local network code;Matrei am Brenner
+5274;13;7;local network code;Gries am Brenner
+5275;13;7;local network code;Trins
+5276;13;7;local network code;Gschnitz
+5278;13;7;local network code;Navis
+5279;13;7;local network code;Sankt Jodok am Brenner
+5280;13;7;local network code;Hochfügen
+5282;13;7;local network code;Zell am Ziller
+5283;13;7;local network code;Kaltenbach
+5284;13;7;local network code;Gerlos
+5285;13;7;local network code;Mayrhofen
+5286;13;7;local network code;Ginzling
+5287;13;7;local network code;Tux
+5288;13;7;local network code;Fügen
+5289;13;7;local network code;Häusling
+5331;13;7;local network code;Brandenberg
+5332;13;7;local network code;Wörgl
+5333;13;7;local network code;Söll
+5334;13;7;local network code;Westendorf
+5335;13;7;local network code;Hopfgarten im Brixental
+5336;13;7;local network code;Alpbach
+5337;13;7;local network code;Brixlegg
+5338;13;7;local network code;Kundl
+5339;13;7;local network code;Wildschönau
+5352;13;7;local network code;Sankt Johann in Tirol
+5353;13;7;local network code;Waidring
+5354;13;7;local network code;Fieberbrunn
+5355;13;7;local network code;Jochberg
+5356;13;7;local network code;Kitzbühel
+5357;13;7;local network code;Kirchberg in Tirol
+5358;13;7;local network code;Ellmau
+5359;13;7;local network code;Hochfilzen
+5372;13;7;local network code;Kufstein
+5373;13;7;local network code;Ebbs
+5374;13;7;local network code;Walchsee
+5375;13;7;local network code;Kössen
+5376;13;7;local network code;Thiersee
+5412;13;7;local network code;Imst
+5413;13;7;local network code;Sankt Leonhard im Pitztal
+5414;13;7;local network code;Wenns
+5417;13;7;local network code;Roppen
+5418;13;7;local network code;Schönwies
+5441;13;7;local network code;See
+5442;13;7;local network code;Landeck
+5443;13;7;local network code;Galtür
+5444;13;7;local network code;Ischgl
+5445;13;7;local network code;Kappl
+5446;13;7;local network code;Sankt Anton am Arlberg
+5447;13;7;local network code;Flirsch
+5448;13;7;local network code;Pettneu am Arlberg
+5449;13;7;local network code;Fließ
+5472;13;7;local network code;Prutz
+5473;13;7;local network code;Nauders
+5474;13;7;local network code;Pfunds
+5475;13;7;local network code;Feichten
+5476;13;7;local network code;Serfaus
+5477;13;7;local network code;Tösens
+5510;13;7;local network code;Damüls
+5512;13;7;local network code;Egg
+5513;13;7;local network code;Hittisau
+5514;13;7;local network code;Bezau
+5515;13;7;local network code;Au
+5516;13;7;local network code;Doren
+5517;13;7;local network code;Riezlern
+5518;13;7;local network code;Mellau
+5519;13;7;local network code;Schröcken
+5522;13;7;local network code;Feldkirch
+5523;13;7;local network code;Götzis
+5524;13;7;local network code;Satteins
+5525;13;7;local network code;Nenzing
+5526;13;7;local network code;Laterns
+5550;13;7;local network code;Thüringen
+5552;13;7;local network code;Bludenz
+5553;13;7;local network code;Raggal
+5554;13;7;local network code;Sonntag
+5556;13;7;local network code;Schruns
+5557;13;7;local network code;Sankt Gallenkirch
+5558;13;7;local network code;Gaschurn
+5559;13;7;local network code;Brand
+5572;13;7;local network code;Dornbirn
+5573;13;7;local network code;Hörbranz
+5574;13;7;local network code;Bregenz
+5575;13;7;local network code;Langen bei Bregenz
+5576;13;7;local network code;Hohenems
+5577;13;7;local network code;Lustenau
+5578;13;7;local network code;Höchst
+5579;13;7;local network code;Alberschwende
+5582;13;7;local network code;Klösterle
+5583;13;7;local network code;Lech
+5585;13;7;local network code;Dalaas
+5632;13;7;local network code;Stanzach
+5633;13;7;local network code;Hägerau
+5634;13;7;local network code;Elbigenalp
+5635;13;7;local network code;Elmen
+5672;13;7;local network code;Reutte
+5673;13;7;local network code;Ehrwald
+5674;13;7;local network code;Bichlbach
+5675;13;7;local network code;Tannheim
+5676;13;7;local network code;Jungholz
+5677;13;7;local network code;Vils
+5678;13;7;local network code;Weißenbach am Lech
+57;13;5;location independent corporate numbers;
+59;13;5;location independent corporate numbers;
+6131;13;7;local network code;Obertraun
+6132;13;7;local network code;Bad Ischl
+6133;13;7;local network code;Ebensee
+6134;13;7;local network code;Hallstatt
+6135;13;7;local network code;Bad Goisern
+6136;13;7;local network code;Gosau
+6137;13;7;local network code;Strobl
+6138;13;7;local network code;Sankt Wolfgang im Salzkammergut
+6212;13;7;local network code;Seekirchen am Wallersee
+6213;13;7;local network code;Oberhofen am Irrsee
+6214;13;7;local network code;Henndorf am Wallersee
+6215;13;7;local network code;Straßwalchen
+6216;13;7;local network code;Neumarkt am Wallersee
+6217;13;7;local network code;Mattsee
+6219;13;7;local network code;Obertrum am See
+6221;13;7;local network code;Koppl
+6223;13;7;local network code;Anthering
+6224;13;7;local network code;Hintersee
+6225;13;7;local network code;Eugendorf
+6226;13;7;local network code;Fuschl am See
+6227;13;7;local network code;Sankt Gilgen
+6228;13;7;local network code;Faistenau
+6229;13;7;local network code;Hof bei Salzburg
+6232;13;7;local network code;Mondsee
+6233;13;7;local network code;Oberwang
+6234;13;7;local network code;Zell am Moos
+6235;13;7;local network code;Thalgau
+6240;13;7;local network code;Krispl
+6241;13;7;local network code;Sankt Koloman
+6242;13;7;local network code;Rußbach am Paß Gschütt
+6243;13;7;local network code;Abtenau
+6244;13;7;local network code;Golling an der Salzach
+6245;13;7;local network code;Hallein
+6246;13;7;local network code;Grödig
+6247;13;7;local network code;Großgmain
+6272;13;7;local network code;Oberndorf bei Salzburg
+6274;13;7;local network code;Lamprechtshausen
+6276;13;7;local network code;Nußdorf am Haunsberg
+6277;13;7;local network code;Sankt Pantaleon
+6278;13;7;local network code;Ostermiething
+6412;13;7;local network code;Sankt Johann im Pongau
+6413;13;7;local network code;Wagrain
+6414;13;7;local network code;Großarl
+6415;13;7;local network code;Schwarzach im Pongau
+6416;13;7;local network code;Lend
+6417;13;7;local network code;Hüttschlag
+6418;13;7;local network code;Kleinarl
+6432;13;7;local network code;Bad Hofgastein
+6433;13;7;local network code;Dorfgastein
+6434;13;7;local network code;Bad Gastein
+6452;13;7;local network code;Radstadt
+6453;13;7;local network code;Filzmoos
+6454;13;7;local network code;Mandling
+6455;13;7;local network code;Untertauern
+6456;13;7;local network code;Obertauern
+6457;13;7;local network code;Flachau
+6458;13;7;local network code;Hüttau
+6461;13;7;local network code;Dienten am Hochkönig
+6462;13;7;local network code;Bischofshofen
+6463;13;7;local network code;Annaberg-Lungötz
+6466;13;7;local network code;Werfenweng
+6467;13;7;local network code;Mühlbach am Hochkönig
+6468;13;7;local network code;Werfen
+6470;13;7;local network code;Atzmannsdorf
+6471;13;7;local network code;Tweng
+6472;13;7;local network code;Mauterndorf
+6473;13;7;local network code;Mariapfarr
+6474;13;7;local network code;Tamsweg
+6475;13;7;local network code;Ramingstein
+6476;13;7;local network code;Sankt Margarethen im Lungau
+6477;13;7;local network code;Sankt Michael im Lungau
+6478;13;7;local network code;Zederhaus
+6479;13;7;local network code;Muhr
+6483;13;7;local network code;Göriach
+6484;13;7;local network code;Lessach
+650;13;7;mobile services;
+651;13;7;mobile services;
+652;13;7;mobile services;
+653;13;7;mobile services;
+6541;13;7;local network code;Saalbach
+6542;13;7;local network code;Zell am See
+6543;13;7;local network code;Taxenbach
+6544;13;7;local network code;Rauris
+6545;13;7;local network code;Bruck an der Großglocknerstraße
+6546;13;7;local network code;Fusch an der Großglocknerstraße
+6547;13;7;local network code;Kaprun
+6548;13;7;local network code;Niedernsill
+6549;13;7;local network code;Piesendorf
+655;13;7;mobile services;
+6562;13;7;local network code;Mittersill
+6563;13;7;local network code;Uttendorf
+6564;13;7;local network code;Krimml
+6565;13;7;local network code;Neukirchen am Großvenediger
+6566;13;7;local network code;Bramberg am Wildkogel
+657;13;7;mobile services;
+6582;13;7;local network code;Saalfelden am Steinernen Meer
+6583;13;7;local network code;Leogang
+6584;13;7;local network code;Maria Alm am Steinernen Meer
+6588;13;7;local network code;Lofer
+6589;13;7;local network code;Unken
+659;13;7;mobile services;
+660;13;7;mobile services;
+661;13;7;mobile services;
+662;13;6;local network code;Salzburg
+663;13;7;mobile services;
+664;13;7;mobile services;
+665;13;7;mobile services;
+666;13;7;mobile services;
+667;13;7;mobile services;
+668;13;7;mobile services;
+669;13;7;mobile services;
+67;13;7;mobile services;
+68;13;7;mobile services;
+69;13;7;mobile services;
+711;13;9;service number;TA premium rate services
+718;13;9;service number;Online Service Numbers
+720;13;9;local network code;location independent numbers
+7211;13;7;local network code;Reichenau im Mühlkreis
+7212;13;7;local network code;Zwettl an der Rodl
+7213;13;7;local network code;Bad Leonfelden
+7214;13;7;local network code;Reichenthal
+7215;13;7;local network code;Hellmonsödt
+7216;13;7;local network code;Helfenberg
+7217;13;7;local network code;Sankt Veit im Mühlkreis
+7218;13;7;local network code;Großtraberg
+7219;13;7;local network code;Vorderweißenbach
+7221;13;7;local network code;Hörsching
+7223;13;7;local network code;Enns
+7224;13;7;local network code;Sankt Florian
+7225;13;7;local network code;Hargelsberg
+7226;13;7;local network code;Wilhering
+7227;13;7;local network code;Neuhofen an der Krems
+7228;13;7;local network code;Kematen an der Krems
+7229;13;7;local network code;Traun
+7230;13;7;local network code;Altenberg bei Linz
+7231;13;7;local network code;Herzogsdorf
+7232;13;7;local network code;Sankt Martin im Mühlkreis
+7233;13;7;local network code;Feldkirchen an der Donau
+7234;13;7;local network code;Ottensheim
+7235;13;7;local network code;Gallneukirchen
+7236;13;7;local network code;Pregarten
+7237;13;7;local network code;Sankt Georgen an der Gusen
+7238;13;7;local network code;Mauthausen
+7239;13;7;local network code;Lichtenberg
+7240;13;7;local network code;Sipbachzell
+7241;13;7;local network code;Steinerkirchen an der Traun
+7242;13;7;local network code;Wels
+7243;13;7;local network code;Marchtrenk
+7244;13;7;local network code;Sattledt
+7245;13;7;local network code;Lambach
+7246;13;7;local network code;Gunskirchen
+7247;13;7;local network code;Kematen am Innbach
+7248;13;7;local network code;Grieskirchen
+7249;13;7;local network code;Bad Schallerbach
+7250;13;7;local network code;Maria Neustift
+7251;13;7;local network code;Schiedlberg
+7252;13;7;local network code;Steyr
+7253;13;7;local network code;Wolfern
+7254;13;7;local network code;Großraming
+7255;13;7;local network code;Losenstein
+7256;13;7;local network code;Ternberg
+7257;13;7;local network code;Grünburg
+7258;13;7;local network code;Bad Hall
+7259;13;7;local network code;Sierning
+7260;13;7;local network code;Waldhausen
+7261;13;7;local network code;Schönau im Mühlkreis
+7262;13;7;local network code;Perg
+7263;13;7;local network code;Bad Zell
+7264;13;7;local network code;Windhaag bei Perg
+7265;13;7;local network code;Pabneukirchen
+7266;13;7;local network code;Bad Kreuzen
+7267;13;7;local network code;Mönchdorf
+7268;13;7;local network code;Grein
+7269;13;7;local network code;Baumgartenberg
+7272;13;7;local network code;Eferding
+7273;13;7;local network code;Aschach an der Donau
+7274;13;7;local network code;Alkoven
+7276;13;7;local network code;Peuerbach
+7277;13;7;local network code;Waizenkirchen
+7278;13;7;local network code;Neukirchen am Walde
+7279;13;7;local network code;Haibach ob der Donau
+7280;13;7;local network code;Schwarzenberg am Böhmerwald
+7281;13;7;local network code;Aigen im Mühlkreis
+7282;13;7;local network code;Neufelden
+7283;13;7;local network code;Sarleinsbach
+7284;13;7;local network code;Oberkappel
+7285;13;7;local network code;Hofkirchen im Mühlkreis
+7286;13;7;local network code;Lembach im Mühlkreis
+7287;13;7;local network code;Peilstein im Mühlviertel
+7288;13;7;local network code;Ulrichsberg
+7289;13;7;local network code;Rohrbach in Oberösterreich
+732;13;6;local network code;Linz
+7353;13;7;local network code;Gaflenz
+7355;13;7;local network code;Weyer
+7357;13;7;local network code;Kleinreifling
+7412;13;7;local network code;Ybbs an der Donau
+7413;13;7;local network code;Marbach an der Donau
+7414;13;7;local network code;Weins-Isperdorf
+7415;13;7;local network code;Altenmarkt (Yspertal)
+7416;13;7;local network code;Wieselburg
+7432;13;7;local network code;Strengberg
+7433;13;7;local network code;Wallsee
+7434;13;7;local network code;Haag
+7435;13;7;local network code;Sankt Valentin
+7442;13;7;local network code;Waidhofen an der Ybbs
+7443;13;7;local network code;Ybbsitz
+7444;13;7;local network code;Opponitz
+7445;13;7;local network code;Hollenstein an der Ybbs
+7448;13;7;local network code;Kematen an der Ybbs
+7471;13;7;local network code;Neustadtl an der Donau
+7472;13;7;local network code;Amstetten
+7473;13;7;local network code;Blindenmarkt
+7474;13;7;local network code;Euratsfeld
+7475;13;7;local network code;Hausmening (Neuhofen an der Ybbs)
+7476;13;7;local network code;Aschbach-Markt
+7477;13;7;local network code;Sankt Peter in der Au
+7478;13;7;local network code;Oed-Oehling
+7479;13;7;local network code;Ardagger
+7480;13;7;local network code;Langau (Gaming)
+7482;13;7;local network code;Scheibbs
+7483;13;7;local network code;Oberndorf an der Melk
+7484;13;7;local network code;Göstling an der Ybbs
+7485;13;7;local network code;Gaming
+7486;13;7;local network code;Lunz am See
+7487;13;7;local network code;Gresten
+7488;13;7;local network code;Steinakirchen am Forst
+7489;13;7;local network code;Purgstall an der Erlauf
+7562;13;7;local network code;Windischgarsten
+7563;13;7;local network code;Spital am Pyhrn
+7564;13;7;local network code;Hinterstoder
+7565;13;7;local network code;Sankt Pankraz
+7566;13;7;local network code;Rosenau am Hengstpaß
+7582;13;7;local network code;Kirchdorf an der Krems
+7583;13;7;local network code;Kremsmünster
+7584;13;7;local network code;Molln
+7585;13;7;local network code;Klaus an der Pyhrnbahn
+7586;13;7;local network code;Pettenbach
+7587;13;7;local network code;Wartberg an der Krems
+7588;13;7;local network code;Ried im Traunkreis
+7612;13;7;local network code;Gmunden
+7613;13;7;local network code;Laakirchen
+7614;13;7;local network code;Vorchdorf
+7615;13;7;local network code;Scharnstein
+7616;13;7;local network code;Grünau im Almtal
+7617;13;7;local network code;Traunkirchen
+7618;13;7;local network code;Neukirchen (Altmünster)
+7619;13;7;local network code;Kirchham
+7662;13;7;local network code;Seewalchen am Attersee
+7663;13;7;local network code;Steinbach am Attersee
+7664;13;7;local network code;Weyregg am Attersee
+7665;13;7;local network code;Unterach am Attersee
+7666;13;7;local network code;Attersee
+7667;13;7;local network code;Sankt Georgen im Attergau
+7672;13;7;local network code;Vöcklabruck
+7673;13;7;local network code;Schwanenstadt
+7674;13;7;local network code;Attnang-Puchheim
+7675;13;7;local network code;Ampflwang im Hausruckwald
+7676;13;7;local network code;Ottnang am Hausruck
+7682;13;7;local network code;Vöcklamarkt
+7683;13;7;local network code;Frankenburg am Hausruck
+7684;13;7;local network code;Frankenmarkt
+7711;13;7;local network code;Suben
+7712;13;7;local network code;Schärding
+7713;13;7;local network code;Schardenberg
+7714;13;7;local network code;Esternberg
+7716;13;7;local network code;Münzkirchen
+7717;13;7;local network code;Sankt Aegidi
+7718;13;7;local network code;Waldkirchen am Wesen
+7719;13;7;local network code;Taufkirchen an der Pram
+7722;13;7;local network code;Braunau am Inn
+7723;13;7;local network code;Altheim
+7724;13;7;local network code;Mauerkirchen
+7727;13;7;local network code;Ach
+7728;13;7;local network code;Schwand im Innkreis
+7729;13;7;local network code;Neukirchen an der Enknach
+7732;13;7;local network code;Haag am Hausruck
+7733;13;7;local network code;Neumarkt im Hausruckkreis
+7734;13;7;local network code;Hofkirchen an der Trattnach
+7735;13;7;local network code;Gaspoltshofen
+7736;13;7;local network code;Pram
+7742;13;7;local network code;Mattighofen
+7743;13;7;local network code;Maria Schmolln
+7744;13;7;local network code;Munderfing
+7745;13;7;local network code;Lochen
+7746;13;7;local network code;Friedburg
+7747;13;7;local network code;Kirchberg bei Mattighofen
+7748;13;7;local network code;Eggelsberg
+7750;13;7;local network code;Andrichsfurt
+7751;13;7;local network code;Sankt Martin im Innkreis
+7752;13;7;local network code;Ried im Innkreis
+7753;13;7;local network code;Eberschwang
+7754;13;7;local network code;Waldzell
+7755;13;7;local network code;Mettmach
+7757;13;7;local network code;Gurten
+7758;13;7;local network code;Obernberg am Inn
+7759;13;7;local network code;Antiesenhofen
+7762;13;7;local network code;Raab
+7763;13;7;local network code;Kopfing im Innkreis
+7764;13;7;local network code;Riedau
+7765;13;7;local network code;Lambrechten
+7766;13;7;local network code;Andorf
+7767;13;7;local network code;Eggerding
+780;13;9;service number;numbers for convergent services
+7941;13;7;local network code;Neumarkt im Mühlkreis
+7942;13;7;local network code;Freistadt
+7943;13;7;local network code;Windhaag bei Freistadt
+7944;13;7;local network code;Sandl
+7945;13;7;local network code;Sankt Oswald bei Freistadt
+7946;13;7;local network code;Gutau
+7947;13;7;local network code;Kefermarkt
+7948;13;7;local network code;Hirschbach im Mühlkreis
+7949;13;7;local network code;Rainbach im Mühlkreis
+7952;13;7;local network code;Weitersfelden
+7953;13;7;local network code;Liebenau
+7954;13;7;local network code;Sankt Georgen am Walde
+7955;13;7;local network code;Königswiesen
+7956;13;7;local network code;Unterweißenbach
+800;13;9;service number;Freephone Services
+804;13;9;service number;Online Service Numbers
+810;13;9;service number;Services with Regulated Maximum Tariffs
+820;13;9;service number;Services with Regulated Maximum Tariffs
+821;13;9;service number;Services with Regulated Maximum Tariffs
+828;13;8;service number;Services with Regulated Maximum Tariffs
+89;13;4;routing number;
+900;13;9;service number;Premium Rate Services
+901;13;9;service number;Premium Rate Services
+930;13;9;service number;Premium Rate Services
+931;13;9;service number;Premium Rate Services
+939;13;9;service number;Premium Rate Services, Dialer

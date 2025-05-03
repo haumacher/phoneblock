@@ -46,6 +46,8 @@
 		<li data-tx="t0008">التهجئات البديلة: <th:block th:if="${number.shortcut}"> <code dir="ltr" th:text="${number.shortcut}"></code>،  <code dir="ltr" th:text="${number.plus}"></code>، <code dir="ltr" th:text="${number.zeroZero}"></code></th:block></li>
 		<li data-tx="t0009">البلد: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
+		<li data-tx="t0050" th:if="${number.usage}">نوع الرقم: &lt;س1/س1/س1&gt;</li>
+
 		<li data-tx="t0010" th:if="${number.city}">المدينة: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">الأصوات المؤيدة للحظر: <th:block th:text="${info.votes}"></th:block></li>

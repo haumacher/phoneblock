@@ -46,6 +46,8 @@
 		<li data-tx="t0008">其他拼写：<th:block th:if="${number.shortcut}"> <code dir="ltr" th:text="${number.shortcut}"></code>, </th:block> <code dir="ltr" th:text="${number.plus}"></code>, <code dir="ltr" th:text="${number.zeroZero}"></code></li>
 		<li data-tx="t0009">国家：<th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
+		<li data-tx="t0050" th:if="${number.usage}">数字类型： <th:block th:text="${number.usage}"></th:block></li>
+
 		<li data-tx="t0010" th:if="${number.city}">城市：<th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
 		<li data-tx="t0011" th:if="${info.votes} &gt; 0">赞成封杀的票数：<th:block th:text="${info.votes}">&lt;/x1</th:block></li>

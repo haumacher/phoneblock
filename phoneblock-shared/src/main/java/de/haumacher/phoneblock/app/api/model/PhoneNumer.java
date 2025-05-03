@@ -36,6 +36,9 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getCity() */
 	public static final String CITY__PROP = "city";
 
+	/** @see #getUsage() */
+	public static final String USAGE__PROP = "usage";
+
 	private String _id = "";
 
 	private String _shortcut = "";
@@ -51,6 +54,8 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	private String _cityCode = null;
 
 	private String _city = null;
+
+	private String _usage = null;
 
 	/**
 	 * Creates a {@link PhoneNumer} instance.
@@ -225,6 +230,34 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return _city != null;
 	}
 
+	/**
+	 * The kind of number
+	 */
+	public final String getUsage() {
+		return _usage;
+	}
+
+	/**
+	 * @see #getUsage()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setUsage(String value) {
+		internalSetUsage(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getUsage()} without chain call utility. */
+	protected final void internalSetUsage(String value) {
+		_listener.beforeSet(this, USAGE__PROP, value);
+		_usage = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getUsage()} has a value.
+	 */
+	public final boolean hasUsage() {
+		return _usage != null;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -261,7 +294,8 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			COUNTRY_CODE__PROP, 
 			COUNTRY__PROP, 
 			CITY_CODE__PROP, 
-			CITY__PROP));
+			CITY__PROP, 
+			USAGE__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -279,6 +313,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case COUNTRY__PROP: return getCountry();
 			case CITY_CODE__PROP: return getCityCode();
 			case CITY__PROP: return getCity();
+			case USAGE__PROP: return getUsage();
 			default: return null;
 		}
 	}
@@ -294,6 +329,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case COUNTRY__PROP: internalSetCountry((String) value); break;
 			case CITY_CODE__PROP: internalSetCityCode((String) value); break;
 			case CITY__PROP: internalSetCity((String) value); break;
+			case USAGE__PROP: internalSetUsage((String) value); break;
 		}
 	}
 
@@ -332,6 +368,10 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			out.name(CITY__PROP);
 			out.value(getCity());
 		}
+		if (hasUsage()) {
+			out.name(USAGE__PROP);
+			out.value(getUsage());
+		}
 	}
 
 	@Override
@@ -345,6 +385,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case COUNTRY__PROP: setCountry(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CITY_CODE__PROP: setCityCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CITY__PROP: setCity(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case USAGE__PROP: setUsage(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -376,6 +417,9 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** XML attribute or element name of a {@link #getCity} property. */
 	private static final String CITY__XML_ATTR = "city";
 
+	/** XML attribute or element name of a {@link #getUsage} property. */
+	private static final String USAGE__XML_ATTR = "usage";
+
 	@Override
 	public String getXmlTagName() {
 		return PHONE_NUMER__XML_ELEMENT;
@@ -397,6 +441,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.writeAttribute(COUNTRY__XML_ATTR, getCountry());
 		out.writeAttribute(CITY_CODE__XML_ATTR, getCityCode());
 		out.writeAttribute(CITY__XML_ATTR, getCity());
+		out.writeAttribute(USAGE__XML_ATTR, getUsage());
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -466,6 +511,10 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 				setCity(value);
 				break;
 			}
+			case USAGE__XML_ATTR: {
+				setUsage(value);
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -505,6 +554,10 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			}
 			case CITY__XML_ATTR: {
 				setCity(in.getElementText());
+				break;
+			}
+			case USAGE__XML_ATTR: {
+				setUsage(in.getElementText());
 				break;
 			}
 			default: {

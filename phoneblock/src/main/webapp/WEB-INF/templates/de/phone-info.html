@@ -79,6 +79,10 @@
 			Land: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)
 		</li>
 
+		<li data-tx="t0050" th:if="${number.usage}">
+			Art der Nummer: <th:block th:text="${number.usage}"></th:block>
+		</li>
+
 		<li data-tx="t0010" th:if="${number.city}">
 			Stadt: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)
 		</li>

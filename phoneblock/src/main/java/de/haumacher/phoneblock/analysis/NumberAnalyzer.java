@@ -24,6 +24,7 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
+import de.haumacher.phoneblock.analysis.model.NationalDestinationCode;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.location.model.Country;
@@ -111,10 +112,25 @@ public class NumberAnalyzer {
 			return null;
 		}
 		
+		int maxDigits = info.getMaxDigits();
+		if (maxDigits >= 0) {
+			if (plus.length() > maxDigits + countryCode.length()) {
+				return null;
+			}
+		}
+		
+		int minDigits = info.getMinDigits();
+		if (minDigits >= 0) {
+			if (plus.length() < minDigits + countryCode.length()) {
+				return null;
+			}
+		}
+		
 		result.setCountryCode(countryCode);
 		List<Country> countries = info.getCountries();
 		result.setCityCode(info.getCityCode());
 		result.setCity(info.getCity());
+		result.setUsage(info.getUsage());
 		
 		if (countries.isEmpty()) {
 			// There is no shortcut.
@@ -159,10 +175,19 @@ public class NumberAnalyzer {
 			}
 		}
 		
+		loadNumberingPlan(root, GERMAN_DIAL_PREFIX, "numbering-plan-49-germany.csv");
+		loadNumberingPlan(root, "+43", "numbering-plan-43-austria.csv");
+		loadNumberingPlan(root, "+39", "numbering-plan-39-italy.csv");
+		
+		return root;
+	}
+
+	private static void loadNumberingPlan(Node root, String dialPrefix, String resource) {
+		// See https://www.itu.int/oth/T0202.aspx?lang=en&parent=T0202
 		// See https://www.bundesnetzagentur.de/SharedDocs/Downloads/DE/Sachgebiete/Telekommunikation/Unternehmen_Institutionen/Nummerierung/Rufnummern/ONRufnr/Vorwahlverzeichnis_ONB.zip.html
-		try (InputStream in = NumberAnalyzer.class.getResourceAsStream("NVONB.INTERNET.20220727.ONB.csv")) {
+		try (InputStream in = NumberAnalyzer.class.getResourceAsStream(resource)) {
 			try (Reader r = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-				Node germany = root.find(GERMAN_DIAL_PREFIX, 1, root);
+				Node countryNode = root.find(dialPrefix, 1, root);
 				
 				ICSVParser parser = new CSVParserBuilder().withSeparator(';').withStrictQuotes(false).build();
 		        try (CSVReader csv = new CSVReaderBuilder(r).withCSVParser(parser).build()) {
@@ -174,29 +199,45 @@ public class NumberAnalyzer {
 		        			break;
 		        		}
 		        		
-		        		if (!"1".equals(line[2])) {
-		        			continue;
+		        		String prefix = line[0].replaceAll("[^0-9]", "");
+		        		int maxDigits = line[1].isBlank() ? -1 : Integer.parseInt(line[1]);
+		        		int minDigits = line[2].isBlank() ? -1 : Integer.parseInt(line[2]);
+		        		String usage = line[3];
+		        		String info = line[4];
+		        		
+		        		NationalDestinationCode code = NationalDestinationCode.create()
+		        				.setMaxDigits(maxDigits)
+		        				.setMinDigits(minDigits)
+		        				.setUsage(usage)
+		        				.setInfo(info);
+		        		
+		        		Node node = countryNode.enter(prefix, 0);
+		        		if (node._cityCode != null) {
+		        			// Ambiguous city code
+		        			
+		        			node._city = join(node._city, info);
+		        			node._info.setUsage(join(node._info.getUsage(), usage));
+		        			node._info.setInfo(join(node._info.getInfo(), info));
+		        		} else {
+		        			node._cityCode = "0" + prefix;
+		        			
+		        			node._contryCode = countryNode.getCountryCode();
+		        			node._countries = countryNode.getCountries();
+		        			node._city = info;
+		        			node._info = code;
 		        		}
-		        		
-		        		String cityCode = line[0];
-		        		String city = line[1];
-		        		
-		        		Node node = germany.enter(cityCode, 0);
-		        		assert node._cityCode == null : "Anbiguous city code: " + node._cityCode;
-		        		node._contryCode = germany.getCountryCode();
-		        		node._countries = germany.getCountries();
-		        		node._cityCode = "0" + cityCode;
-		        		node._city = city;
 		        	}
 				}				
 			}
 		} catch (CsvValidationException | IOException ex) {
 			LOG.error("Failed to read phone prefix list.", ex);
 		}
-		
-		return root;
 	}
 	
+	private static String join(String a, String b) {
+		return a == null || a.isBlank() ? b : b == null || b.isBlank() ? a : a.equals(b) ? a : a + ", " + b;
+	}
+
 	private static PrefixInfo findInfo(String phone) {
 		return PREFIX_TREE.find(phone, 1, PREFIX_TREE);
 	}
@@ -222,6 +263,12 @@ public class NumberAnalyzer {
 		 */
 		String getCity();
 		
+		int getMinDigits();
+		
+		int getMaxDigits();
+		
+		String getUsage();
+		
 	}
 	
 	private static class Node implements PrefixInfo {
@@ -233,6 +280,7 @@ public class NumberAnalyzer {
 		List<Country> _countries = Collections.emptyList();
 		String _cityCode;
 		String _city;
+		NationalDestinationCode _info;
 		Node[] _suffixes;
 		
 		/** 
@@ -260,6 +308,21 @@ public class NumberAnalyzer {
 		@Override
 		public String getCity() {
 			return _city;
+		}
+		
+		@Override
+		public int getMaxDigits() {
+			return _info == null ? -1 : _info.getMaxDigits();
+		}
+		
+		@Override
+		public int getMinDigits() {
+			return _info == null ? -1 : _info.getMinDigits();
+		}
+		
+		@Override
+		public String getUsage() {
+			return _info == null ? null : _info.getUsage();
 		}
 
 		private Node enter(String prefix, int pos) {

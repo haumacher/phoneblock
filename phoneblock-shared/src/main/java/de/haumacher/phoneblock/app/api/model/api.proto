@@ -341,8 +341,13 @@ message PhoneNumer {
 	
 	@Nullable
 	string cityCode;
+	
 	@Nullable
 	string city;
+	
+	/** The kind of number */
+	@Nullable
+	string usage;
 }
 
 message SearchResult {

@@ -1,0 +1,9 @@
+package de.haumacher.phoneblock.analysis.model;
+
+message NationalDestinationCode {
+	string prefix;
+	int maxDigits;
+	int minDigits;
+	string usage;
+	string info;
+}

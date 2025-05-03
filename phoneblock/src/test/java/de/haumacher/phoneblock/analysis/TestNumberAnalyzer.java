@@ -31,7 +31,9 @@ class TestNumberAnalyzer {
 	@ParameterizedTest
 	@CsvSource({"+49" + "704128,Mühlacker",
 			"+49" + "704187650,Mühlacker",
-			"+49-7041 87650,Mühlacker"
+			"+49-7041 87650,Mühlacker",
+			"+43720072491,location independent numbers",
+			"+39123456789,Lanzo Torinese"
 	})
 	void testCity(String phone, String label) {
 		PhoneNumer info = NumberAnalyzer.analyze(phone);
