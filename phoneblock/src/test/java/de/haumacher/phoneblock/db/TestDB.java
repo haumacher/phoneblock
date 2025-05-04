@@ -141,7 +141,7 @@ public class TestDB {
 		addRating(null, "091000000", Rating.C_PING, null, now++);
 		addRating(null, "011000000", Rating.C_PING, null, now++);
 		addRating(null, "021000000", Rating.C_PING, null, now++);
-		addRating(null, "031000000", Rating.C_PING, null, now++);
+		addRating(null, "033000000", Rating.C_PING, null, now++);
 		addRating(null, "041000000", Rating.C_PING, null, now++);
 		addRating(null, "051000000", Rating.C_PING, null, now++);
 		
@@ -152,7 +152,7 @@ public class TestDB {
 		
 		addSearchHit("011000000", now++);
 		addSearchHit("021000000", now++);
-		addSearchHit("031000000", now++);
+		addSearchHit("033000000", now++);
 		_db.updateHistory(30, now++);
 		
 		// Today
