@@ -111,13 +111,20 @@ public class NumberAnalyzer {
 			// A city code cannot start with a zero.
 			return null;
 		}
-		
-		int maxDigits = info.getMaxDigits();
-		if (maxDigits >= 0) {
-			if (plus.length() > maxDigits + countryCode.length()) {
-				return null;
-			}
-		}
+
+		// Numbers seen in real live seem to exceed the maximum digit size in the numbering plan. 
+		// E.g. +49-9131-9235017072 from Erlangen(9131)/Germany(49) is a number observed by many users, 
+		// even if the numbering plan for Germany states that numbers with the prefix 9131 have 
+		// a maximum length of 11 digits (9131-9235017-072). Does this mean that the suffix (072) that 
+		// exceeds the digits in the numbering plan is a direct dialing suffix for the 
+		// connection 9131-9235017?
+		// 
+//		int maxDigits = info.getMaxDigits();
+//		if (maxDigits >= 0) {
+//			if (plus.length() > maxDigits + countryCode.length()) {
+//				return null;
+//			}
+//		}
 		
 		int minDigits = info.getMinDigits();
 		if (minDigits >= 0) {

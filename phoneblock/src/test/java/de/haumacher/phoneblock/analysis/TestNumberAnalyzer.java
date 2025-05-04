@@ -33,7 +33,8 @@ class TestNumberAnalyzer {
 			"+49" + "704187650,Mühlacker",
 			"+49-7041 87650,Mühlacker",
 			"+43720072491,location independent numbers",
-			"+39123456789,Lanzo Torinese"
+			"+39123456789,Lanzo Torinese",
+			"+49 9131 9235017072,Erlangen"
 	})
 	void testCity(String phone, String label) {
 		PhoneNumer info = NumberAnalyzer.analyze(phone);
