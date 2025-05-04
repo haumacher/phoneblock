@@ -6,57 +6,126 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
-
-const String PHONE_BLOCK_CONNECT_URL =
-  'https://phoneblock.net$contextPath/mobile/login';
+const String pbBaseUrl = 'https://phoneblock.net$contextPath';
+const String pbLoginUrl = '$pbBaseUrl/mobile/login';
+const String pbApiTest = '$pbBaseUrl/api/test';
 
 void main() {
-  runApp(MaterialApp.router(routerConfig: router));
+  runApp(MaterialApp.router(
+      routerConfig: router,
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color.fromARGB(255, 0, 209, 178),
+          foregroundColor: Colors.white,
+        ),
+      ),
+  ));
 }
 
 final router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (_, __) => const TestPhoneBlockMobile(),
+      builder: (context, state) {
+        return const TestPhoneBlockMobile();
+      },
       routes: [
         GoRoute(
           path: '$contextPath/mobile/response',
-          redirect: (context, state) {
-            var token = state.pathParameters["token"];
-            if (token != null) {
-              if (kDebugMode) {
-                print("Token received: $token");
-              }
-
-              setAuthToken(token);
-              return '/verify-token';
+          builder: (context, state) {
+            var token = state.uri.queryParameters["token"];
+            if (kDebugMode) {
+              print("Token received (${state.path}): $token");
+            }
+            if (token == null) {
+              return LoginFailed();
             } else {
-              return '/';
+              return VerifyLogin(token);
             }
           },
-        ),
-
-        GoRoute(
-          path: '/verify-token',
-          builder: (context, state) => Scaffold(
-            appBar: AppBar(title: const Text('Login callback')),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Center(
-                  child: Text("Token received, verifying..."),
-                ),
-              ],
-            ),
-          ),
         ),
       ],
     ),
   ],
 );
+
+class VerifyLogin extends StatefulWidget {
+  final String token;
+
+  const VerifyLogin(this.token, {super.key});
+
+  @override
+  State<StatefulWidget> createState() => VerifyLoginState();
+}
+
+class VerifyLoginState extends State<VerifyLogin> {
+  late Future<http.Response> checkResult;
+
+  @override
+  void initState() {
+    super.initState();
+
+    var token = widget.token;
+    setAuthToken(token);
+
+    checkResult = http.get(Uri.parse(pbApiTest),
+      headers: {
+        "Authorization": "Bearer $token"
+      }
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Überprüfe Login'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(
+            child: FutureBuilder(
+              future: checkResult,
+              builder: (context, state) {
+                if (state.hasData) {
+                  return Text("Login successful.");
+                } else if (state.hasError) {
+                  return Text("Token verification failed: ${state.error}");
+                } else {
+                  return Text("Verifying token...");
+                }
+              }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LoginFailed extends StatelessWidget {
+  const LoginFailed({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login fehlgeschlagen'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(
+            child: Text("No login token received."),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class TestPhoneBlockMobile extends StatelessWidget {
   const TestPhoneBlockMobile({super.key});
@@ -69,24 +138,7 @@ class TestPhoneBlockMobile extends StatelessWidget {
       Call(phone: "0123456789", type: Type.oUTGOING, started: 1, duration: 2),
       Call(phone: "0123456789", type: Type.bLOCKED, rating: Rating.gAMBLE),
     ]);
-    return PhoneBlockApp(state);
-  }
-}
-
-class PhoneBlockApp extends StatelessWidget {
-  final AppState state;
-
-  const PhoneBlockApp(this.state, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PhoneBlock Mobile',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: SetupPage(),
-    );
+    return SetupPage();
   }
 }
 
@@ -138,7 +190,7 @@ Future<String?> getAuthToken() async {
 }
 
 void registerPhoneBlock(BuildContext context) async {
-  bool ok = await launchUrl(Uri.parse(PHONE_BLOCK_CONNECT_URL));
+  bool ok = await launchUrl(Uri.parse(pbLoginUrl));
   if (!ok) {
     const snackBar = SnackBar(content: Text('Failed to open PhoneBlock.'));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);

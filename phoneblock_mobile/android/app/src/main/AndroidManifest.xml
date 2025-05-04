@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="PhoneBlock Mobile"
@@ -35,11 +36,14 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="phoneblock.net" />
-                <data android:path="/phoneblock/mobile/response" />
-                <data android:path="/pb-test/mobile/response" />
+                <data
+                    android:scheme="https"
+                    android:host="phoneblock.net"
+                    android:path="/pb-test/mobile/response" />
+                <data
+                    android:scheme="https"
+                    android:host="phoneblock.net"
+                    android:path="/phoneblock/mobile/response" />
             </intent-filter>
         </activity>
 
