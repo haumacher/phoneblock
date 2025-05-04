@@ -10,6 +10,7 @@ import android.telecom.CallScreeningService;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +28,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class CallChecker extends CallScreeningService {
 
     ScheduledExecutorService _pool;
@@ -119,8 +121,11 @@ public class CallChecker extends CallScreeningService {
         }, 4500, TimeUnit.MILLISECONDS);
     }
 
-    private static @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
-        URL url = new URL("https://phoneblock.net/pb-test/api/num/" + number + "?format=json");
+    private @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
+        SharedPreferences prefs = MainActivity.getPreferences(this);
+        String queryUrl = prefs.getString("query_url", "https://phoneblock.net/phoneblock/api/num/{num}?format=json");
+
+        URL url = new URL(queryUrl.replace("{num}", number));
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Authorization", "Bearer: " + authToken);
         connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
