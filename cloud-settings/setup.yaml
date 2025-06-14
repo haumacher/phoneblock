@@ -9,8 +9,8 @@ users:
 packages:
   - fail2ban
   - ufw
-  - tomcat9
-  - tomcat9-admin
+  - tomcat10
+  - tomcat10-admin
   - apache2
   - certbot
   - python3-certbot-apache
@@ -21,14 +21,11 @@ packages:
 package_update: true
 package_upgrade: true
 runcmd:
-  - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
-  - systemctl enable fail2ban
   - ufw allow OpenSSH
   - ufw allow http
   - ufw allow https
   - ufw enable
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
-  - sed -i '$a AllowUsers admin' /etc/ssh/sshd_config
   - sed -i -e '/^ServerTokens/s/^.*$/ServerTokens Prod/' /etc/apache2/conf-enabled/security.conf
   - sed -i -e '/^ServerSignature/s/^.*$/ServerSignature Off/' /etc/apache2/conf-enabled/security.conf
   - a2enmod proxy
@@ -36,6 +33,9 @@ runcmd:
   - service apache2 reload
   - reboot
 
+#  - sed -i '$a AllowUsers admin' /etc/ssh/sshd_config
+#  - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
+#  - systemctl enable fail2ban
 
 #  - sed -i -e '/^#MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
 #  - sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
