@@ -184,10 +184,25 @@ message AnswerbotInfo {
 	/** The password for DynDNS registration of the box. */
 	@Nullable
 	string dyndnsPassword;
+	
+	/** The retention period for automatic call cleanup (NEVER, WEEK, MONTH, QUARTER, YEAR). */
+	string retentionPeriod;
 }
 
 /** Clears the calls answered so far. */
 message ClearCallList extends BotRequest {
+}
+
+/** Sets the retention policy for automatic call cleanup. */
+message SetRetentionPolicy extends BotRequest {
+	/** The retention period (NEVER, WEEK, MONTH, QUARTER, YEAR). */
+	string period;
+}
+
+/** Deletes calls older than the specified time for a bot. */
+message DeleteOldCalls extends BotRequest {
+	/** Timestamp before which calls should be deleted. */
+	long cutoffTime;
 }
 
 

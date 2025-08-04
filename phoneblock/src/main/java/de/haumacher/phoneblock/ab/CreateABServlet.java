@@ -27,15 +27,18 @@ import de.haumacher.phoneblock.ab.proto.ClearCallList;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerBot;
 import de.haumacher.phoneblock.ab.proto.CreateAnswerbotResponse;
 import de.haumacher.phoneblock.ab.proto.DeleteAnswerBot;
+import de.haumacher.phoneblock.ab.proto.DeleteOldCalls;
 import de.haumacher.phoneblock.ab.proto.DisableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnterHostName;
 import de.haumacher.phoneblock.ab.proto.ListCalls;
 import de.haumacher.phoneblock.ab.proto.ListCallsResponse;
+import de.haumacher.phoneblock.ab.proto.SetRetentionPolicy;
 import de.haumacher.phoneblock.ab.proto.SetupDynDns;
 import de.haumacher.phoneblock.ab.proto.SetupDynDnsResponse;
 import de.haumacher.phoneblock.ab.proto.SetupRequest;
 import de.haumacher.phoneblock.ab.proto.UpdateAnswerBot;
+import de.haumacher.phoneblock.answerbot.RetentionPeriod;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBCallInfo;
@@ -438,6 +441,65 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			users.clearCallList(botId);
 			users.clearCallCounter(botId);
 			session.commit();
+		}
+		
+		sendOk(resp);
+		return null;
+	}
+
+	@Override
+	public Void visit(SetRetentionPolicy self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		String login = context.login;
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
+			
+			// Validate retention period
+			try {
+				RetentionPeriod period = RetentionPeriod.valueOf(self.getPeriod());
+				users.updateRetentionPolicy(botId, period.name());
+				session.commit();
+				
+				LOG.info("Updated retention policy for bot {} (user: {}): period={}", 
+					botId, login, period);
+			} catch (IllegalArgumentException ex) {
+				LOG.warn("Invalid retention period '{}' for user: {}", self.getPeriod(), login);
+				sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid retention period: " + self.getPeriod());
+				return null;
+			}
+		}
+		
+		sendOk(resp);
+		return null;
+	}
+
+	@Override
+	public Void visit(DeleteOldCalls self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		String login = context.login;
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
+			
+			long cutoffTime = self.getCutoffTime();
+			if (cutoffTime <= 0) {
+				sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid cutoff time.");
+				return null;
+			}
+			
+			int deleted = users.deleteCallsOlderThan(botId, cutoffTime);
+			session.commit();
+			
+			LOG.info("Manually deleted {} old call records for bot {} (user: {})", deleted, botId, login);
 		}
 		
 		sendOk(resp);
