@@ -83,6 +83,8 @@ abstract class SetupRequest extends _JsonObject {
 			case "CheckAnswerBot": result = CheckAnswerBot(); break;
 			case "ListCalls": result = ListCalls(); break;
 			case "ClearCallList": result = ClearCallList(); break;
+			case "SetRetentionPolicy": result = SetRetentionPolicy(); break;
+			case "DeleteOldCalls": result = DeleteOldCalls(); break;
 			default: result = null;
 		}
 
@@ -204,6 +206,8 @@ abstract class BotRequestVisitor<R, A> {
 	R visitCheckAnswerBot(CheckAnswerBot self, A arg);
 	R visitListCalls(ListCalls self, A arg);
 	R visitClearCallList(ClearCallList self, A arg);
+	R visitSetRetentionPolicy(SetRetentionPolicy self, A arg);
+	R visitDeleteOldCalls(DeleteOldCalls self, A arg);
 }
 
 ///  Base class for all requests targeting a single answer bot.
@@ -241,6 +245,8 @@ abstract class BotRequest extends SetupRequest {
 			case "CheckAnswerBot": result = CheckAnswerBot(); break;
 			case "ListCalls": result = ListCalls(); break;
 			case "ClearCallList": result = ClearCallList(); break;
+			case "SetRetentionPolicy": result = SetRetentionPolicy(); break;
+			case "DeleteOldCalls": result = DeleteOldCalls(); break;
 			default: result = null;
 		}
 
@@ -912,6 +918,9 @@ class AnswerbotInfo extends _JsonObject {
 		///  The password for DynDNS registration of the box.
 		String? dyndnsPassword;
 
+		///  The retention period for automatic call cleanup (NEVER, WEEK, MONTH, QUARTER, YEAR).
+		String retentionPeriod;
+
 		/// Creates a AnswerbotInfo.
 		AnswerbotInfo({
 				this.id = 0, 
@@ -933,7 +942,8 @@ class AnswerbotInfo extends _JsonObject {
 				this.ip4, 
 				this.ip6, 
 				this.dyndnsUser, 
-				this.dyndnsPassword, 
+				this.dyndnsPassword,
+				this.retentionPeriod = "NEVER",
 		});
 
 		/// Parses a AnswerbotInfo from a string source.
@@ -1034,6 +1044,10 @@ class AnswerbotInfo extends _JsonObject {
 					dyndnsPassword = json.expectString();
 					break;
 				}
+				case "retentionPeriod": {
+					retentionPeriod = json.expectString();
+					break;
+				}
 				default: super._readProperty(key, json);
 			}
 		}
@@ -1119,6 +1133,9 @@ class AnswerbotInfo extends _JsonObject {
 				json.addKey("dyndnsPassword");
 				json.addString(_dyndnsPassword);
 			}
+
+			json.addKey("retentionPeriod");
+			json.addString(retentionPeriod);
 		}
 
 	}
@@ -1147,6 +1164,106 @@ class ClearCallList extends BotRequest {
 
 	@override
 	R visitBotRequest<R, A>(BotRequestVisitor<R, A> v, A arg) => v.visitClearCallList(this, arg);
+
+}
+
+///  Sets the retention policy for automatic call cleanup.
+class SetRetentionPolicy extends BotRequest {
+	///  The retention period (NEVER, WEEK, MONTH, QUARTER, YEAR).
+	String period;
+
+	/// Creates a SetRetentionPolicy.
+	SetRetentionPolicy({
+			super.id, 
+			this.period = "NEVER", 
+	});
+
+	/// Parses a SetRetentionPolicy from a string source.
+	static SetRetentionPolicy? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a SetRetentionPolicy instance from the given reader.
+	static SetRetentionPolicy read(JsonReader json) {
+		SetRetentionPolicy result = SetRetentionPolicy();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "SetRetentionPolicy";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "period": {
+				period = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("period");
+		json.addString(period);
+	}
+
+	@override
+	R visitBotRequest<R, A>(BotRequestVisitor<R, A> v, A arg) => v.visitSetRetentionPolicy(this, arg);
+
+}
+
+///  Deletes calls older than the specified time for a bot.
+class DeleteOldCalls extends BotRequest {
+	///  Timestamp before which calls should be deleted.
+	int cutoffTime;
+
+	/// Creates a DeleteOldCalls.
+	DeleteOldCalls({
+			super.id, 
+			this.cutoffTime = 0, 
+	});
+
+	/// Parses a DeleteOldCalls from a string source.
+	static DeleteOldCalls? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a DeleteOldCalls instance from the given reader.
+	static DeleteOldCalls read(JsonReader json) {
+		DeleteOldCalls result = DeleteOldCalls();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "DeleteOldCalls";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "cutoffTime": {
+				cutoffTime = json.expectInt();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("cutoffTime");
+		json.addNumber(cutoffTime);
+	}
+
+	@override
+	R visitBotRequest<R, A>(BotRequestVisitor<R, A> v, A arg) => v.visitDeleteOldCalls(this, arg);
 
 }
 

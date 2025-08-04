@@ -163,6 +163,38 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
               const Padding(
                 padding: EdgeInsets.only(top: groupSpacing),
+                child: Group("Anruf-Aufbewahrung"),
+              ),
+
+              DropdownButtonFormField<String>(
+                items: const [
+                  DropdownMenuItem(value: "NEVER", child: Text("Niemals löschen")),
+                  DropdownMenuItem(value: "WEEK", child: Text("Nach 1 Woche löschen")),
+                  DropdownMenuItem(value: "MONTH", child: Text("Nach 1 Monat löschen")),
+                  DropdownMenuItem(value: "QUARTER", child: Text("Nach 3 Monaten löschen")),
+                  DropdownMenuItem(value: "YEAR", child: Text("Nach 1 Jahr löschen")),
+                ],
+                decoration: const InputDecoration(
+                    labelText: 'Automatische Löschung',
+                    helperText: "Nach welcher Zeit sollen alte Anrufprotokolle automatisch gelöscht werden? 'Niemals löschen' deaktiviert die automatische Löschung."
+                ),
+                value: bot.retentionPeriod,
+                onChanged: (value) {
+                  setState(() {
+                    bot.retentionPeriod = value ?? "NEVER";
+                  });
+                },
+              ),
+
+              ElevatedButton(
+                onPressed: () async {
+                  await updateRetentionPolicy(bot);
+                }, 
+                child: const Text("Aufbewahrungseinstellungen speichern"),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.only(top: groupSpacing),
                 child: const Group("DNS Settings"),),
 
               InfoField('DNS-Einstellung', internalDynDns ? "PhoneBlock-DNS" : "Anderer Anbieter oder Domainname",
@@ -306,6 +338,45 @@ class AnswerBotViewState extends State<AnswerBotView> {
           pd.update(value: n, msg: "$errorMessage Versuche erneut...");
         }
       }
+    }
+  }
+
+  Future<void> updateRetentionPolicy(AnswerbotInfo bot) async {
+    ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(max: 1, msg: 'Speichere Aufbewahrungseinstellungen...');
+
+    var response = await sendRequest(
+      SetRetentionPolicy(
+        id: bot.id,
+        period: bot.retentionPeriod,
+      ));
+
+    pd.close();
+
+    if (!context.mounted) return;
+
+    if (response.statusCode != 200) {
+      showErrorDialog(context, response, 'Fehler beim Speichern der Aufbewahrungseinstellungen.',
+        "Speichern fehlgeschlagen: ${response.body}");
+    } else {
+      String message = bot.retentionPeriod == "NEVER" 
+        ? "Automatische Löschung deaktiviert"
+        : "Aufbewahrungseinstellungen gespeichert (${_getRetentionDisplayName(bot.retentionPeriod)})";
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  String _getRetentionDisplayName(String period) {
+    switch (period) {
+      case "WEEK": return "1 Woche";
+      case "MONTH": return "1 Monat";
+      case "QUARTER": return "3 Monate";
+      case "YEAR": return "1 Jahr";
+      case "NEVER": return "Niemals";
+      default: return period;
     }
   }
 
