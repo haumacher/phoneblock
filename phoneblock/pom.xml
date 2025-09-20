@@ -515,18 +515,18 @@
 				   <goal>run</goal>
 				 </goals>
 				 <configuration>
-				   <tasks>
+				   <target>
 				     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
-				   </tasks>
+				   </target>
 				 </configuration>
                </execution>
                <execution>
 			     <id>unzip-ip6-database</id>
 			     <phase>process-resources</phase>
                  <configuration>
-                   <tasks>
+                   <target>
                      <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
-                   </tasks>
+                   </target>
                  </configuration>
                  <goals>
                    <goal>run</goal>
