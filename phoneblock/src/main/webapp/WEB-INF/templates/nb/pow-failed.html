@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Forbindelsen avbrutt</h1>
+
+		<p data-tx="t0002">PhoneBlock kan ikke bekrefte at dette ikke er en automatisert masseforespørsel. Derfor kan ikke innholdet på siden vises. Hvis du ikke er en robot, kan du omgå kontrollen ved å logge inn på PhoneBlock. Det beste er å aktivere alternativet "forbli innlogget" når du logger inn. Da vil ikke dette problemet oppstå neste gang du besøker nettstedet.</p>
+		
+		<p data-tx="t0003">Vi beklager ulempene, men PhoneBlock-nettstedet blir angrepet av utrolig mange steder på Internett med masseforespørsler som vil begrense tilgjengeligheten av nettstedet sterkt uten denne kontrollen. For at PhoneBlock skal kunne fortsette å tilbys gratis (eller på <a th:href="@{/support}">donasjonsbasis</a>), er disse tiltakene dessverre uunngåelige.</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">Logg inn</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Connection interrupted</h1>
+
+		<p data-tx="t0002">PhoneBlock cannot verify that this is not an automated bulk request. Therefore, the page content cannot be displayed. If you are not a robot, you can bypass the check by logging in to PhoneBlock. It is best to activate the option "stay logged in" when you log in. Then this problem will not occur the next time you visit the website.</p>
+		
+		<p data-tx="t0003">Please excuse the inconvenience, but the PhoneBlock website is being attacked by an incredible number of places on the Internet with mass queries, which would severely limit the availability of the site without this check. In order for PhoneBlock to continue to be offered free of charge (or on a <a th:href="@{/support}">donation basis</a>), these measures are unfortunately unavoidable.</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">Log in</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

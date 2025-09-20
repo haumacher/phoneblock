@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Connessione interrotta</h1>
+
+		<p data-tx="t0002">PhoneBlock non può verificare che non si tratti di una richiesta di massa automatizzata. Pertanto, il contenuto della pagina non può essere visualizzato. Se non siete un robot, potete aggirare il controllo effettuando il login a PhoneBlock. È meglio attivare l'opzione "resta connesso" al momento dell'accesso, in modo che il problema non si verifichi alla prossima visita del sito web.</p>
+		
+		<p data-tx="t0003">Vi preghiamo di scusare l'inconveniente, ma il sito web di PhoneBlock viene attaccato da un numero incredibile di posti su Internet con richieste di massa che limiterebbero gravemente la disponibilità del sito senza questo controllo. Affinché PhoneBlock possa continuare a essere offerto gratuitamente (o su base <a th:href="@{/support}">donativa</a>), queste misure sono purtroppo inevitabili.</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">Accedi</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

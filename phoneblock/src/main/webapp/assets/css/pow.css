@@ -1,0 +1,73 @@
+:root {
+  --bg: #f7f7f9;
+  --text: #111;
+  --muted: #6b7280;
+  --spinner-size: 72px;
+  --spinner-stroke: 8px;
+}
+
+html,body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Center content */
+.center {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  text-align: center;
+}
+
+.message {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* SVG spinner sizing */
+.spinner {
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  display: inline-block;
+}
+
+/* For users with reduced motion, disable rotation */
+@media (prefers-reduced-motion: reduce) {
+  .rotating { animation: none !important; transform: none !important; }
+}
+
+/* Fallback CSS spinner (invisible if SVG rotating used) */
+.css-spinner {
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  border-radius: 50%;
+  border: var(--spinner-stroke) solid rgba(0,0,0,0.08);
+  border-top-color: rgba(0,0,0,0.5);
+  animation: spin 1s linear infinite;
+  box-sizing: border-box;
+  display: none; /* prefer SVG; shown if SVG not supported */
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* small screens tweak */
+@media (max-width:420px) {
+  :root { --spinner-size: 56px; --spinner-stroke: 6px; }
+  .message { font-size: 1rem; }
+}

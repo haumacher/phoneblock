@@ -3,16 +3,23 @@ package de.haumacher.phoneblock.app.render;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.TemplateEngine;
@@ -43,6 +50,7 @@ import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.oauth.OAuthLoginServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.random.SecureRandomService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletContext;
@@ -52,11 +60,14 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebFilter(urlPatterns = {
 	"/*",
 })
 public class ContentFilter extends LoginFilter {
+
+	private static final Logger LOG = LoggerFactory.getLogger(LoginFilter.class);
 	
 	public static final String TEMPLATES_PATH = "/WEB-INF/templates";
 
@@ -66,9 +77,20 @@ public class ContentFilter extends LoginFilter {
 	
 	private static final Map<String, String> LEGACY_PAGES;
 	
+	private static final Set<String> NO_POW;
+	
 	static {
 		LEGACY_PAGES = new HashMap<>();
 		LEGACY_PAGES.put("/signup.jsp", "/login.jsp");
+		
+		NO_POW = new HashSet<>();
+		NO_POW.add("/");
+		NO_POW.add("/login");
+		NO_POW.add("/login-web");
+		NO_POW.add(LoginServlet.PATH);
+		NO_POW.add(RegistrationServlet.REGISTER_WEB);
+		NO_POW.add(RegistrationServlet.REGISTER_MOBILE);
+		NO_POW.add("/support");
 	}
 
 	public void init(final FilterConfig filterConfig) throws ServletException {
@@ -102,10 +124,82 @@ public class ContentFilter extends LoginFilter {
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		if (!SearchServlet.isBot(request)) {
+			String uri = request.getRequestURI().substring(request.getContextPath().length());
+			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars")) {
+				render(request, response, chain);
+				return;
+			};
+			
+			// Not a well-known bot and no authenticated user. This might be a problematic bulk query, request a proof of work.
+			HttpSession session = request.getSession();
+			String challenge = (String) session.getAttribute("challenge");
+			if (challenge == null) {
+				challenge = createChallenge();
+				session.setAttribute("challenge", challenge);
+				
+				// Append challenge to request parameters through redirect.
+			    StringBuilder redirect = new StringBuilder(request.getRequestURI());
+			    redirect.append("?");
+
+			    String queryString = request.getQueryString();
+			    String challengeParam = "challenge=" + challenge;
+			    if (queryString == null || queryString.isEmpty()) {
+			        redirect.append(challengeParam);
+			    } else {
+			        redirect.append(queryString).append("&").append(challengeParam);
+			    }
+			    response.sendRedirect(redirect.toString());
+			} else {
+				String solution = request.getParameter("solution");
+				if (solution != null) {
+					// Challenge was used, next request creates new challenge.
+					session.removeAttribute("challenge");
+					
+					// Check solution.
+					if (solution.equals("0")) {
+						LOG.warn("Prove of work computation failed.");
+					} else {
+						try {
+							MessageDigest digest = MessageDigest.getInstance("SHA-256");
+							byte[] hash = digest.digest((challenge + solution).getBytes(StandardCharsets.UTF_8));
+							if (hash[0] == 0 && hash[1] == 0) {
+								// OK
+								render(request, response, chain);
+								return;
+							} else {
+								// Not OK.
+							}
+						} catch (NoSuchAlgorithmException ex) {
+							LOG.error("No hash algorithm found.", ex);
+						}
+					}
+					
+					TemplateRenderer.getInstance(request).process("/pow-failed", request, response);
+				} else {
+					// No solution yet, request proof of work.
+					TemplateRenderer.getInstance(request).process("/pow", request, response);
+				}
+			}
+			
+			// Request has been processed.
+			return;
+		}
+		
 		// Continue without login, login is optional.
 		render(request, response, chain);
 	}
 	
+	private String createChallenge() {
+		SecureRandom rnd = SecureRandomService.getInstance().getRnd();
+		StringBuilder buffer = new StringBuilder();
+		for (int n = 0; n < 32; n++) {
+			char ch = (char) ('A' + rnd.nextInt(26));
+			buffer.append(ch);
+		}
+		return buffer.toString();
+	}
+
 	@Override
 	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, String userName, FilterChain chain)
 			throws IOException, ServletException {
