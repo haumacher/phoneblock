@@ -505,35 +505,41 @@
 			    </execution>
 			  </executions>
 			</plugin>
-            <plugin>
-             <artifactId>maven-antrun-plugin</artifactId>
-             <executions>
-               <execution>
-			     <id>unzip-ip4-database</id>
-			     <phase>process-resources</phase>
-				 <goals>
-				   <goal>run</goal>
-				 </goals>
-				 <configuration>
-				   <target>
-				     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
-				   </target>
-				 </configuration>
-               </execution>
-               <execution>
-			     <id>unzip-ip6-database</id>
-			     <phase>process-resources</phase>
-                 <configuration>
-                   <target>
-                     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
-                   </target>
-                 </configuration>
-                 <goals>
-                   <goal>run</goal>
-                 </goals>
-               </execution>
-             </executions>
-           </plugin>			
+			
+			<plugin>
+			  <groupId>org.codehaus.mojo</groupId>
+			  <artifactId>truezip-maven-plugin</artifactId>
+			  <version>1.2</version>
+			  <executions>
+			    <execution>
+			      <id>unzip-ip4-database</id>
+			      <goals>
+			        <goal>copy</goal>
+			      </goals>
+			      <phase>process-resources</phase>
+			      <configuration>
+			        <fileset>
+			          <directory>${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP</directory>
+			          <outputDirectory>${project.build.directory}/IP2LOCATION</outputDirectory>
+			        </fileset>
+			      </configuration>
+			    </execution>
+
+			    <execution>
+			      <id>unzip-ip6-database</id>
+			      <goals>
+			        <goal>copy</goal>
+			      </goals>
+			      <phase>process-resources</phase>
+			      <configuration>
+			        <fileset>
+			          <directory>${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP</directory>
+			          <outputDirectory>${project.build.directory}/IP2LOCATION</outputDirectory>
+			        </fileset>
+			      </configuration>
+			    </execution>
+			  </executions>
+			</plugin>
 			
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
