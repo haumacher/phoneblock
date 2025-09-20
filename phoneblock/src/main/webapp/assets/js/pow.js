@@ -9,11 +9,12 @@ async function prove(challenge, difficulty = 2) {
 	try {
 		let solution = 1;
 		while (true) {
-		    const hashBuffer = await digestMessage(challenge + (solution++));
+		    const hashBuffer = await digestMessage(challenge + solution);
 			const hashArray = Array.from(new Uint8Array(hashBuffer));
 			if (check(hashArray, difficulty)) {
 				return solution;
 			}
+			solution++;
 		}
 	} catch (ex) {
 		return 0;
