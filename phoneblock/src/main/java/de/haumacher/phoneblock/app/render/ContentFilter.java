@@ -85,12 +85,17 @@ public class ContentFilter extends LoginFilter {
 		
 		NO_POW = new HashSet<>();
 		NO_POW.add("/");
+		NO_POW.add("/support");
 		NO_POW.add("/login");
 		NO_POW.add("/login-web");
 		NO_POW.add(LoginServlet.PATH);
 		NO_POW.add(RegistrationServlet.REGISTER_WEB);
 		NO_POW.add(RegistrationServlet.REGISTER_MOBILE);
-		NO_POW.add("/support");
+		NO_POW.add(RatingServlet.PATH);
+		NO_POW.add(CreateAuthTokenServlet.CREATE_TOKEN);
+		NO_POW.add(ErrorServlet.NOT_ALLOWED_PATH);
+		NO_POW.add(ErrorServlet.NOT_AUTHENTICATED_PATH);
+		NO_POW.add(ErrorServlet.NOT_FOUND_PATH);
 	}
 
 	public void init(final FilterConfig filterConfig) throws ServletException {
@@ -126,7 +131,7 @@ public class ContentFilter extends LoginFilter {
 			throws IOException, ServletException {
 		if (!SearchServlet.isBot(request)) {
 			String uri = request.getRequestURI().substring(request.getContextPath().length());
-			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars")) {
+			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars") || uri.startsWith("/oauth") || uri.startsWith("/api")) {
 				render(request, response, chain);
 				return;
 			};
