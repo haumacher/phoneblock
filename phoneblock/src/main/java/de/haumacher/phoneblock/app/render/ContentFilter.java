@@ -145,16 +145,33 @@ public class ContentFilter extends LoginFilter {
 				
 				// Append challenge to request parameters through redirect.
 			    StringBuilder redirect = new StringBuilder(request.getRequestURI());
-			    redirect.append("?");
 
-			    String queryString = request.getQueryString();
-			    String challengeParam = "challenge=" + challenge;
-			    if (queryString == null || queryString.isEmpty()) {
-			        redirect.append(challengeParam);
-			    } else {
-			        redirect.append(queryString).append("&").append(challengeParam);
+			    boolean first = true;
+			    for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+			    	String name = entry.getKey();
+			    	
+			    	// Filter out old solutions. This happens, when a page is reloaded.
+					if ("solution".equals(name)) {
+			    		continue;
+			    	}
+
+					for (String value : entry.getValue()) {
+				        redirect
+				        	.append(first ? '?' : '&')
+				        	.append(URLEncoder.encode(name, StandardCharsets.UTF_8))
+				        	.append('=')
+				        	.append(URLEncoder.encode(value, StandardCharsets.UTF_8));
+				        first = false;
+			    	}
 			    }
-			    response.sendRedirect(redirect.toString());
+			    
+			    // Add challenge.
+		        redirect
+		        	.append(first ? '?' : '&')
+		        	.append("challenge=")
+		        	.append(challenge);
+
+		        response.sendRedirect(redirect.toString());
 			} else {
 				String solution = request.getParameter("solution");
 				if (solution != null) {
