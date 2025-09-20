@@ -131,7 +131,7 @@ public class ContentFilter extends LoginFilter {
 			throws IOException, ServletException {
 		if (!SearchServlet.isBot(request)) {
 			String uri = request.getRequestURI().substring(request.getContextPath().length());
-			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars") || uri.startsWith("/oauth") || uri.startsWith("/api")) {
+			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars") || uri.startsWith("/oauth") || uri.startsWith("/api") || !request.getMethod().equals("GET")) {
 				render(request, response, chain);
 				return;
 			};
