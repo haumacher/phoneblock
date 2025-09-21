@@ -167,7 +167,7 @@ public class ContentFilter extends LoginFilter {
 			
 			String challenge = (String) session.getAttribute(POW_CHALLENGE_ATTR);
 			String solution = request.getParameter(POW_SOLUTION_PARAM);
-			if (solution != null) {
+			if (challenge != null && solution != null) {
 				// Challenge was used, next request creates new challenge.
 				session.removeAttribute(POW_CHALLENGE_ATTR);
 				
@@ -209,10 +209,13 @@ public class ContentFilter extends LoginFilter {
 			    for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
 			    	String name = entry.getKey();
 			    	
-			    	// Filter out old solutions. This happens, when a page is reloaded.
+			    	// Filter out old challenges and solutions. This happens, when a page is reloaded.
 					if (POW_SOLUTION_PARAM.equals(name)) {
 			    		continue;
 			    	}
+					if (POW_CHALLENGE_ATTR.equals(name)) {
+						continue;
+					}
 
 					for (String value : entry.getValue()) {
 				        redirect
@@ -227,7 +230,8 @@ public class ContentFilter extends LoginFilter {
 			    // Add challenge.
 		        redirect
 		        	.append(first ? '?' : '&')
-		        	.append("challenge=")
+		        	.append(POW_CHALLENGE_ATTR)
+		        	.append('=')
 		        	.append(challenge);
 
 		        response.sendRedirect(redirect.toString());
