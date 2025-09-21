@@ -6,9 +6,12 @@ async function digestMessage(message) {
 }
 
 async function prove(challenge, difficulty = 2) {
+	// Five times the expected number of attempts.
+	const limit = 5 * (1 << difficulty*8);
+	
 	try {
 		let solution = 1;
-		while (true) {
+		while (solution < limit) {
 		    const hashBuffer = await digestMessage(challenge + solution);
 			const hashArray = Array.from(new Uint8Array(hashBuffer));
 			if (check(hashArray, difficulty)) {
