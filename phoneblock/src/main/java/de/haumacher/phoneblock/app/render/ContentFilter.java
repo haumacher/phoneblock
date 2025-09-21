@@ -165,8 +165,38 @@ public class ContentFilter extends LoginFilter {
 				return;
 			}
 			
-			// Create or check prove-of-work challenge.
 			String challenge = (String) session.getAttribute(POW_CHALLENGE_ATTR);
+			String solution = request.getParameter(POW_SOLUTION_PARAM);
+			if (solution != null) {
+				// Challenge was used, next request creates new challenge.
+				session.removeAttribute(POW_CHALLENGE_ATTR);
+				
+				// Check solution.
+				if (solution.equals("0")) {
+					LOG.warn("Prove of work computation failed.");
+				} else {
+					// Test validity of solution.
+					try {
+						MessageDigest digest = MessageDigest.getInstance("SHA-256");
+						byte[] hash = digest.digest((challenge + solution).getBytes(StandardCharsets.UTF_8));
+						if (hash[0] == 0 && hash[1] == 0) {
+							// OK
+							session.setAttribute(POW_COUNTER_ATTR, POW_VALIDITY);
+							render(request, response, chain);
+							return;
+						} else {
+							// Not OK.
+						}
+					} catch (NoSuchAlgorithmException ex) {
+						LOG.error("No hash algorithm found.", ex);
+					}
+				}
+				
+				TemplateRenderer.getInstance(request).process("/pow-failed", request, response);
+				return;
+			}			
+			
+			// Create or check prove-of-work challenge.
 			String challengeParam = (String) request.getParameter(POW_CHALLENGE_ATTR);
 			if (challenge == null || !challenge.equals(challengeParam)) {
 				challenge = createChallenge();
@@ -201,41 +231,11 @@ public class ContentFilter extends LoginFilter {
 		        	.append(challenge);
 
 		        response.sendRedirect(redirect.toString());
-			} else {
-				String solution = request.getParameter(POW_SOLUTION_PARAM);
-				if (solution != null) {
-					// Challenge was used, next request creates new challenge.
-					session.removeAttribute(POW_CHALLENGE_ATTR);
-					
-					// Check solution.
-					if (solution.equals("0")) {
-						LOG.warn("Prove of work computation failed.");
-					} else {
-						// Test validity of solution.
-						try {
-							MessageDigest digest = MessageDigest.getInstance("SHA-256");
-							byte[] hash = digest.digest((challenge + solution).getBytes(StandardCharsets.UTF_8));
-							if (hash[0] == 0 && hash[1] == 0) {
-								// OK
-								session.setAttribute(POW_COUNTER_ATTR, POW_VALIDITY);
-								render(request, response, chain);
-								return;
-							} else {
-								// Not OK.
-							}
-						} catch (NoSuchAlgorithmException ex) {
-							LOG.error("No hash algorithm found.", ex);
-						}
-					}
-					
-					TemplateRenderer.getInstance(request).process("/pow-failed", request, response);
-				} else {
-					// No solution yet, request proof of work.
-					TemplateRenderer.getInstance(request).process("/pow", request, response);
-				}
+		        return;
 			}
 			
-			// Request has been processed.
+			// Let the client solve the challenge.
+			TemplateRenderer.getInstance(request).process("/pow", request, response);
 			return;
 		}
 		
