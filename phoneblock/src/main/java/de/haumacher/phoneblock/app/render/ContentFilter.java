@@ -67,6 +67,14 @@ import jakarta.servlet.http.HttpSession;
 })
 public class ContentFilter extends LoginFilter {
 
+	private static final String POW_CHALLENGE_ATTR = "challenge";
+	
+	private static final String POW_SOLUTION_PARAM = "solution";
+
+	private static final String POW_COUNTER_ATTR = "pow-counter";
+
+	private static final int POW_VALIDITY = 10;
+	
 	private static final Logger LOG = LoggerFactory.getLogger(LoginFilter.class);
 	
 	public static final String TEMPLATES_PATH = "/WEB-INF/templates";
@@ -138,10 +146,24 @@ public class ContentFilter extends LoginFilter {
 			
 			// Not a well-known bot and no authenticated user. This might be a problematic bulk query, request a proof of work.
 			HttpSession session = request.getSession();
-			String challenge = (String) session.getAttribute("challenge");
+			Integer counter = (Integer) session.getAttribute(POW_COUNTER_ATTR);
+			if (counter != null) {
+				// Check still valid.
+				int next = counter.intValue() - 1;
+				if (next > 0) {
+					session.setAttribute(POW_COUNTER_ATTR, next);
+				} else {
+					session.removeAttribute(POW_COUNTER_ATTR);
+				}
+				render(request, response, chain);
+				return;
+			}
+			
+			// Create or check prove-of-work challenge.
+			String challenge = (String) session.getAttribute(POW_CHALLENGE_ATTR);
 			if (challenge == null) {
 				challenge = createChallenge();
-				session.setAttribute("challenge", challenge);
+				session.setAttribute(POW_CHALLENGE_ATTR, challenge);
 				
 				// Append challenge to request parameters through redirect.
 			    StringBuilder redirect = new StringBuilder(request.getRequestURI());
@@ -151,7 +173,7 @@ public class ContentFilter extends LoginFilter {
 			    	String name = entry.getKey();
 			    	
 			    	// Filter out old solutions. This happens, when a page is reloaded.
-					if ("solution".equals(name)) {
+					if (POW_SOLUTION_PARAM.equals(name)) {
 			    		continue;
 			    	}
 
@@ -173,20 +195,22 @@ public class ContentFilter extends LoginFilter {
 
 		        response.sendRedirect(redirect.toString());
 			} else {
-				String solution = request.getParameter("solution");
+				String solution = request.getParameter(POW_SOLUTION_PARAM);
 				if (solution != null) {
 					// Challenge was used, next request creates new challenge.
-					session.removeAttribute("challenge");
+					session.removeAttribute(POW_CHALLENGE_ATTR);
 					
 					// Check solution.
 					if (solution.equals("0")) {
 						LOG.warn("Prove of work computation failed.");
 					} else {
+						// Test validity of solution.
 						try {
 							MessageDigest digest = MessageDigest.getInstance("SHA-256");
 							byte[] hash = digest.digest((challenge + solution).getBytes(StandardCharsets.UTF_8));
 							if (hash[0] == 0 && hash[1] == 0) {
 								// OK
+								session.setAttribute(POW_COUNTER_ATTR, POW_VALIDITY);
 								render(request, response, chain);
 								return;
 							} else {
