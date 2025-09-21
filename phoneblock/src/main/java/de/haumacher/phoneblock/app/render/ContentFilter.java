@@ -137,7 +137,7 @@ public class ContentFilter extends LoginFilter {
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		if (!SearchServlet.isBot(request)) {
+		if (!SearchServlet.isGoodBot(request)) {
 			String uri = request.getRequestURI().substring(request.getContextPath().length());
 			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars") || uri.startsWith("/oauth") || uri.startsWith("/api") || !request.getMethod().equals("GET")) {
 				render(request, response, chain);
