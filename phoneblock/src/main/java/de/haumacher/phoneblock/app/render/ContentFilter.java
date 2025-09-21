@@ -139,7 +139,13 @@ public class ContentFilter extends LoginFilter {
 			throws IOException, ServletException {
 		if (!SearchServlet.isGoodBot(request)) {
 			String uri = request.getRequestURI().substring(request.getContextPath().length());
-			if (NO_POW.contains(uri) || uri.startsWith("/assets") || uri.startsWith("/webjars") || uri.startsWith("/oauth") || uri.startsWith("/api") || !request.getMethod().equals("GET")) {
+			if (NO_POW.contains(uri) 
+					|| !request.getMethod().equals("GET")
+					|| uri.startsWith("/assets") 
+					|| uri.startsWith("/webjars")
+					|| uri.startsWith("/oauth")
+					|| uri.startsWith("/api")
+					|| uri.startsWith(CardDavServlet.DIR_NAME)) {
 				render(request, response, chain);
 				return;
 			};
