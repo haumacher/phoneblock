@@ -146,6 +146,8 @@ public class SearchServlet extends HttpServlet {
 			// Anything that sounds like a bot.
 			, "bot"
 			, "seo"
+			, "spider"
+			, "crawler"
 
 			// , "SEOkicks"
 			// , "AhrefsBot"
