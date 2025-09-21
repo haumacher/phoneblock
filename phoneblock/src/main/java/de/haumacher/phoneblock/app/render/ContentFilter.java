@@ -161,7 +161,8 @@ public class ContentFilter extends LoginFilter {
 			
 			// Create or check prove-of-work challenge.
 			String challenge = (String) session.getAttribute(POW_CHALLENGE_ATTR);
-			if (challenge == null) {
+			String challengeParam = (String) request.getParameter(POW_CHALLENGE_ATTR);
+			if (challenge == null || !challenge.equals(challengeParam)) {
 				challenge = createChallenge();
 				session.setAttribute(POW_CHALLENGE_ATTR, challenge);
 				
