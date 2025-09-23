@@ -166,13 +166,13 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 child: Group("Anruf-Aufbewahrung"),
               ),
 
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<RetentionPeriod>(
                 items: const [
-                  DropdownMenuItem(value: "NEVER", child: Text("Niemals löschen")),
-                  DropdownMenuItem(value: "WEEK", child: Text("Nach 1 Woche löschen")),
-                  DropdownMenuItem(value: "MONTH", child: Text("Nach 1 Monat löschen")),
-                  DropdownMenuItem(value: "QUARTER", child: Text("Nach 3 Monaten löschen")),
-                  DropdownMenuItem(value: "YEAR", child: Text("Nach 1 Jahr löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.never, child: Text("Niemals löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.week, child: Text("Nach 1 Woche löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.month, child: Text("Nach 1 Monat löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.quarter, child: Text("Nach 3 Monaten löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.year, child: Text("Nach 1 Jahr löschen")),
                 ],
                 decoration: const InputDecoration(
                     labelText: 'Automatische Löschung',
@@ -181,7 +181,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 value: bot.retentionPeriod,
                 onChanged: (value) {
                   setState(() {
-                    bot.retentionPeriod = value ?? "NEVER";
+                    bot.retentionPeriod = value ?? RetentionPeriod.never;
                   });
                 },
               ),
@@ -369,14 +369,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
     }
   }
 
-  String _getRetentionDisplayName(String period) {
+  String _getRetentionDisplayName(RetentionPeriod period) {
     switch (period) {
-      case "WEEK": return "1 Woche";
-      case "MONTH": return "1 Monat";
-      case "QUARTER": return "3 Monate";
-      case "YEAR": return "1 Jahr";
-      case "NEVER": return "Niemals";
-      default: return period;
+      case RetentionPeriod.week: return "1 Woche";
+      case RetentionPeriod.month: return "1 Monat";
+      case RetentionPeriod.quarter: return "3 Monate";
+      case RetentionPeriod.year: return "1 Jahr";
+      case RetentionPeriod.never: return "Niemals";
+      default: return period.name;
     }
   }
 
