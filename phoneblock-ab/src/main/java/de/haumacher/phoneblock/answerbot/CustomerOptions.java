@@ -42,10 +42,4 @@ public interface CustomerOptions extends RegistrationOptions, UserOptions {
 	 * Whether to accept anonymous calls.
 	 */
 	boolean getAcceptAnonymous();
-	
-	/** 
-	 * The retention period for automatic call cleanup.
-	 * NEVER means no automatic cleanup (default).
-	 */
-	RetentionPeriod getRetentionPeriod();
 }

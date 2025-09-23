@@ -186,7 +186,7 @@ message AnswerbotInfo {
 	string dyndnsPassword;
 	
 	/** The retention period for automatic call cleanup (NEVER, WEEK, MONTH, QUARTER, YEAR). */
-	string retentionPeriod;
+	RetentionPeriod retentionPeriod;
 }
 
 /** Clears the calls answered so far. */
@@ -196,15 +196,26 @@ message ClearCallList extends BotRequest {
 /** Sets the retention policy for automatic call cleanup. */
 message SetRetentionPolicy extends BotRequest {
 	/** The retention period (NEVER, WEEK, MONTH, QUARTER, YEAR). */
-	string period;
+	RetentionPeriod period;
 }
 
-/** Deletes calls older than the specified time for a bot. */
-message DeleteOldCalls extends BotRequest {
-	/** Timestamp before which calls should be deleted. */
-	long cutoffTime;
+/** Specification when old calls should be deleted automatically. */
+enum RetentionPeriod {
+    /** Never delete calls automatically */
+    NEVER;
+    
+    /** Delete calls older than one week */
+    WEEK;
+    
+    /** Delete calls older than one month */
+    MONTH;
+    
+    /** Delete calls older than three months */
+    QUARTER;
+    
+    /** Delete calls older than one year */
+    YEAR;
 }
-
 
 /** Result of the {@link de.haumacher.phoneblock.ab.ListABServlet}. */
 message ListAnswerbotResponse {

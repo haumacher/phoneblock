@@ -87,13 +87,3 @@ conversation=./conversation
 # calling number in not on the blocklist.
 #test-prefix=
 
-# Call retention policy - automatically delete old call records
-# How long to keep call records before automatic deletion
-# Valid values: NEVER, WEEK, MONTH, QUARTER, YEAR
-# NEVER = no automatic deletion (default for backwards compatibility)
-# WEEK = delete calls older than 7 days
-# MONTH = delete calls older than 30 days  
-# QUARTER = delete calls older than 90 days
-# YEAR = delete calls older than 365 days
-retention-period=NEVER
-

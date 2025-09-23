@@ -453,15 +453,6 @@ public class AnswerBot extends MultipleUAS {
 		
 		RegistrationClient rc = new RegistrationClient(sipProvider, userConfig, new RegistrationLogger());
 		rc.loopRegister(userConfig);
-		
-		// Start the call retention service for automatic cleanup
-		RetentionPeriod retentionPeriod = userConfig.getRetentionPeriod();
-		if (retentionPeriod.isEnabled()) {
-			LOG.info("Starting call retention service with period: " + retentionPeriod);
-			CallRetentionService.getInstance().start();
-		} else {
-			LOG.info("Call retention service disabled (period: " + retentionPeriod + ")");
-		}
 	}
 
 }

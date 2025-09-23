@@ -84,7 +84,6 @@ abstract class SetupRequest extends _JsonObject {
 			case "ListCalls": result = ListCalls(); break;
 			case "ClearCallList": result = ClearCallList(); break;
 			case "SetRetentionPolicy": result = SetRetentionPolicy(); break;
-			case "DeleteOldCalls": result = DeleteOldCalls(); break;
 			default: result = null;
 		}
 
@@ -207,7 +206,6 @@ abstract class BotRequestVisitor<R, A> {
 	R visitListCalls(ListCalls self, A arg);
 	R visitClearCallList(ClearCallList self, A arg);
 	R visitSetRetentionPolicy(SetRetentionPolicy self, A arg);
-	R visitDeleteOldCalls(DeleteOldCalls self, A arg);
 }
 
 ///  Base class for all requests targeting a single answer bot.
@@ -246,7 +244,6 @@ abstract class BotRequest extends SetupRequest {
 			case "ListCalls": result = ListCalls(); break;
 			case "ClearCallList": result = ClearCallList(); break;
 			case "SetRetentionPolicy": result = SetRetentionPolicy(); break;
-			case "DeleteOldCalls": result = DeleteOldCalls(); break;
 			default: result = null;
 		}
 
@@ -919,7 +916,7 @@ class AnswerbotInfo extends _JsonObject {
 		String? dyndnsPassword;
 
 		///  The retention period for automatic call cleanup (NEVER, WEEK, MONTH, QUARTER, YEAR).
-		String retentionPeriod;
+		RetentionPeriod retentionPeriod;
 
 		/// Creates a AnswerbotInfo.
 		AnswerbotInfo({
@@ -942,8 +939,8 @@ class AnswerbotInfo extends _JsonObject {
 				this.ip4, 
 				this.ip6, 
 				this.dyndnsUser, 
-				this.dyndnsPassword,
-				this.retentionPeriod = "NEVER",
+				this.dyndnsPassword, 
+				this.retentionPeriod = RetentionPeriod.never, 
 		});
 
 		/// Parses a AnswerbotInfo from a string source.
@@ -1045,7 +1042,7 @@ class AnswerbotInfo extends _JsonObject {
 					break;
 				}
 				case "retentionPeriod": {
-					retentionPeriod = json.expectString();
+					retentionPeriod = readRetentionPeriod(json);
 					break;
 				}
 				default: super._readProperty(key, json);
@@ -1135,7 +1132,7 @@ class AnswerbotInfo extends _JsonObject {
 			}
 
 			json.addKey("retentionPeriod");
-			json.addString(retentionPeriod);
+			writeRetentionPeriod(json, retentionPeriod);
 		}
 
 	}
@@ -1170,12 +1167,12 @@ class ClearCallList extends BotRequest {
 ///  Sets the retention policy for automatic call cleanup.
 class SetRetentionPolicy extends BotRequest {
 	///  The retention period (NEVER, WEEK, MONTH, QUARTER, YEAR).
-	String period;
+	RetentionPeriod period;
 
 	/// Creates a SetRetentionPolicy.
 	SetRetentionPolicy({
 			super.id, 
-			this.period = "NEVER", 
+			this.period = RetentionPeriod.never, 
 	});
 
 	/// Parses a SetRetentionPolicy from a string source.
@@ -1197,7 +1194,7 @@ class SetRetentionPolicy extends BotRequest {
 	void _readProperty(String key, JsonReader json) {
 		switch (key) {
 			case "period": {
-				period = json.expectString();
+				period = readRetentionPeriod(json);
 				break;
 			}
 			default: super._readProperty(key, json);
@@ -1209,7 +1206,7 @@ class SetRetentionPolicy extends BotRequest {
 		super._writeProperties(json);
 
 		json.addKey("period");
-		json.addString(period);
+		writeRetentionPeriod(json, period);
 	}
 
 	@override
@@ -1217,54 +1214,42 @@ class SetRetentionPolicy extends BotRequest {
 
 }
 
-///  Deletes calls older than the specified time for a bot.
-class DeleteOldCalls extends BotRequest {
-	///  Timestamp before which calls should be deleted.
-	int cutoffTime;
+///  Specification when old calls should be deleted automatically.
+enum RetentionPeriod {
+	///  Never delete calls automatically
+	never,
+	///  Delete calls older than one week
+	week,
+	///  Delete calls older than one month
+	month,
+	///  Delete calls older than three months
+	quarter,
+	///  Delete calls older than one year
+	year,
+}
 
-	/// Creates a DeleteOldCalls.
-	DeleteOldCalls({
-			super.id, 
-			this.cutoffTime = 0, 
-	});
-
-	/// Parses a DeleteOldCalls from a string source.
-	static DeleteOldCalls? fromString(String source) {
-		return read(JsonReader.fromString(source));
+/// Writes a value of RetentionPeriod to a JSON stream.
+void writeRetentionPeriod(JsonSink json, RetentionPeriod value) {
+	switch (value) {
+		case RetentionPeriod.never: json.addString("NEVER"); break;
+		case RetentionPeriod.week: json.addString("WEEK"); break;
+		case RetentionPeriod.month: json.addString("MONTH"); break;
+		case RetentionPeriod.quarter: json.addString("QUARTER"); break;
+		case RetentionPeriod.year: json.addString("YEAR"); break;
+		default: throw ("No such literal: " + value.name);
 	}
+}
 
-	/// Reads a DeleteOldCalls instance from the given reader.
-	static DeleteOldCalls read(JsonReader json) {
-		DeleteOldCalls result = DeleteOldCalls();
-		result._readContent(json);
-		return result;
+/// Reads a value of RetentionPeriod from a JSON stream.
+RetentionPeriod readRetentionPeriod(JsonReader json) {
+	switch (json.expectString()) {
+		case "NEVER": return RetentionPeriod.never;
+		case "WEEK": return RetentionPeriod.week;
+		case "MONTH": return RetentionPeriod.month;
+		case "QUARTER": return RetentionPeriod.quarter;
+		case "YEAR": return RetentionPeriod.year;
+		default: return RetentionPeriod.never;
 	}
-
-	@override
-	String _jsonType() => "DeleteOldCalls";
-
-	@override
-	void _readProperty(String key, JsonReader json) {
-		switch (key) {
-			case "cutoffTime": {
-				cutoffTime = json.expectInt();
-				break;
-			}
-			default: super._readProperty(key, json);
-		}
-	}
-
-	@override
-	void _writeProperties(JsonSink json) {
-		super._writeProperties(json);
-
-		json.addKey("cutoffTime");
-		json.addNumber(cutoffTime);
-	}
-
-	@override
-	R visitBotRequest<R, A>(BotRequestVisitor<R, A> v, A arg) => v.visitDeleteOldCalls(this, arg);
-
 }
 
 ///  Result of the {@link de.haumacher.phoneblock.ab.ListABServlet}.

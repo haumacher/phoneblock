@@ -50,9 +50,6 @@ public class CustomerConfig implements CustomerOptions {
 	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
 	private boolean _acceptAnonymous = false;
 
-	@Option(name = "--retention-period", usage = "The period after which call records are automatically deleted (NEVER, WEEK, MONTH, QUARTER, YEAR). NEVER disables automatic cleanup.")
-	private RetentionPeriod _retentionPeriod = RetentionPeriod.NEVER;
-
 	@Override
 	public SipURI getRegistrar() {
 		return registrar;
@@ -146,17 +143,5 @@ public class CustomerConfig implements CustomerOptions {
 	 */
 	public void setAcceptAnonymous(boolean acceptAnonymous) {
 		_acceptAnonymous = acceptAnonymous;
-	}
-	
-	@Override
-	public RetentionPeriod getRetentionPeriod() {
-		return _retentionPeriod;
-	}
-	
-	/**
-	 * @see #getRetentionPeriod()
-	 */
-	public void setRetentionPeriod(RetentionPeriod retentionPeriod) {
-		_retentionPeriod = retentionPeriod;
 	}
 }

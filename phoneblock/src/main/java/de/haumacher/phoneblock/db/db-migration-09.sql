@@ -6,12 +6,12 @@ ALTER TABLE ANSWERBOT_SIP
 ADD COLUMN RETENTION_PERIOD VARCHAR(10) DEFAULT 'NEVER';
 
 -- Create index for efficient retention cleanup queries
-CREATE INDEX idx_answerbot_retention 
+CREATE INDEX ANSWERBOT_RETENTION_IDX 
 ON ANSWERBOT_SIP (RETENTION_PERIOD) 
 WHERE RETENTION_PERIOD != 'NEVER';
 
 -- Create index for efficient call cleanup by timestamp
-CREATE INDEX idx_answerbot_calls_started 
+CREATE INDEX ANSWERBOT_CALLS_STARTED_IDX
 ON ANSWERBOT_CALLS (ABID, STARTED);
 
 -- Optional: Set some existing bots to use monthly retention

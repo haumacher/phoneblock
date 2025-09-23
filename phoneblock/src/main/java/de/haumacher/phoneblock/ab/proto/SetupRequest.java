@@ -40,6 +40,9 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 
 		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.ClearCallList}. */
 		CLEAR_CALL_LIST,
+
+		/** Type literal for {@link de.haumacher.phoneblock.ab.proto.SetRetentionPolicy}. */
+		SET_RETENTION_POLICY,
 		;
 
 	}
@@ -79,6 +82,7 @@ public abstract class SetupRequest extends de.haumacher.msgbuf.data.AbstractData
 			case CheckAnswerBot.CHECK_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.CheckAnswerBot.readCheckAnswerBot(in); break;
 			case ListCalls.LIST_CALLS__TYPE: result = de.haumacher.phoneblock.ab.proto.ListCalls.readListCalls(in); break;
 			case ClearCallList.CLEAR_CALL_LIST__TYPE: result = de.haumacher.phoneblock.ab.proto.ClearCallList.readClearCallList(in); break;
+			case SetRetentionPolicy.SET_RETENTION_POLICY__TYPE: result = de.haumacher.phoneblock.ab.proto.SetRetentionPolicy.readSetRetentionPolicy(in); break;
 			default: in.skipValue(); result = null; break;
 		}
 		in.endArray();
