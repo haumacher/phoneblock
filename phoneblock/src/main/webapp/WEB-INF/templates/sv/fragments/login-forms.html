@@ -75,7 +75,7 @@
 					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"/>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0022" name="captcha" placeholder="Text i bilden ovan" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <input autocomplete="off" data-tx="t0022" name="captcha" placeholder="Text i bilden ovan" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>

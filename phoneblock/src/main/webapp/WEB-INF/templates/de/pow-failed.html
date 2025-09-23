@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Verbindung unterbrochen</h1>
+
+		<p data-tx="t0002">
+			PhoneBlock kann nicht überprüfen, ob dies keine automatisierte Massenabfrage ist. Daher kann der 
+			Seiteninhalt leider nicht angezeigt werden. Wenn Du kein Roboter sein solltest, dann kannst Du die 
+			Überprüfung umgehen, indem Du Dich bei PhoneBlock anmeldest. Am besten aktivierst Du bei der 
+			Anmeldung die Option "angemeldet bleiben", dann tritt dieses Problem beim nächsten Besuch der 
+			Webseite gar nicht erst auf.
+		</p>
+		
+		<p data-tx="t0003">
+			Bitte entschuldige die Unannehmlichkeiten, aber die PhoneBlock-Webseite wird von unfassbar vielen 
+			Rechnern im Internet mit Massenabfragen angegriffen, welche die Verfügbarkeit der Seite ohne diesen
+			Check stark einschränken würden. Damit PhoneBlock weiterhin kostenlos (bzw. auf <a th:href="@{/support}">Spendenbasis</a>) 
+			angeboten werden kann, sind diese Maßnahmen leider unumgänglich. 
+		</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">Anmelden</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

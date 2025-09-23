@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Połączenie przerwane</h1>
+
+		<p data-tx="t0002">PhoneBlock nie może zweryfikować, czy nie jest to automatyczne żądanie zbiorcze. Dlatego zawartość strony nie może zostać wyświetlona. Jeśli nie jesteś robotem, możesz ominąć sprawdzanie, logując się do PhoneBlock. Najlepiej jest aktywować opcję "pozostań zalogowany" podczas logowania. Wtedy ten problem nie wystąpi przy następnej wizycie na stronie.</p>
+		
+		<p data-tx="t0003">Prosimy o wybaczenie niedogodności, ale strona PhoneBlock jest atakowana przez niewiarygodną liczbę komputerów w Internecie z masowymi zapytaniami, co poważnie ograniczyłoby dostępność strony bez tej kontroli. Aby PhoneBlock mógł być nadal oferowany bezpłatnie (lub na zasadzie <a th:href="@{/support}">darowizny</a>), środki te są niestety nieuniknione.</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">Zaloguj się</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

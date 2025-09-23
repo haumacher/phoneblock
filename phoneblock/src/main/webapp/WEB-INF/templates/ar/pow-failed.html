@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">انقطاع الاتصال</h1>
+
+		<p data-tx="t0002">لا يمكن ل PhoneBlock التحقق من أن هذا ليس طلبًا جماعيًا آليًا. لذلك، لا يمكن عرض محتوى الصفحة. إذا لم تكن روبوتًا، فيمكنك تجاوز التحقق من خلال تسجيل الدخول إلى PhoneBlock. من الأفضل تفعيل خيار "البقاء مسجلاً للدخول" عند تسجيل الدخول. عندها لن تحدث هذه المشكلة في المرة التالية التي تزور فيها الموقع الإلكتروني.</p>
+		
+		<p data-tx="t0003">يرجى الاعتذار عن الإزعاج، لكن موقع PhoneBlock يتعرض لهجوم عدد لا يصدق من أجهزة الكمبيوتر على الإنترنت مع استفسارات جماعية، مما سيحد بشدة من توفر الموقع بدون هذا الفحص. حتى يتسنى الاستمرار في تقديم PhoneBlock مجانًا (أو على أساس التبرع)، فإن هذه الإجراءات لا مفر منها للأسف.</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">تسجيل الدخول</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
