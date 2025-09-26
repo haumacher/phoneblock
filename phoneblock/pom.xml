@@ -335,10 +335,6 @@
   </repositories>
 
 	<build>
-		<filters>
-			<filter>.phoneblock</filter>
-		</filters>
-	
 		<resources>
 			<resource>
 				<directory>${project.build.sourceDirectory}</directory>
@@ -348,7 +344,6 @@
 			</resource>
 			<resource>
 				<directory>${project.basedir}/src/main/resources-filtered</directory>
-				<filtering>true</filtering>
 			</resource>
 		</resources>
 
