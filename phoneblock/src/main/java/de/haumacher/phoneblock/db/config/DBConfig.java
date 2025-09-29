@@ -30,6 +30,9 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/** @see #isSendHelpMails() */
 	public static final String SEND_HELP_MAILS__PROP = "sendHelpMails";
 
+	/** @see #isSendWelcomeMails() */
+	public static final String SEND_WELCOME_MAILS__PROP = "sendWelcomeMails";
+
 	/** Identifier for the property {@link #getUrl()} in binary format. */
 	static final int URL__ID = 1;
 
@@ -45,6 +48,9 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	/** Identifier for the property {@link #isSendHelpMails()} in binary format. */
 	static final int SEND_HELP_MAILS__ID = 5;
 
+	/** Identifier for the property {@link #isSendWelcomeMails()} in binary format. */
+	static final int SEND_WELCOME_MAILS__ID = 6;
+
 	private String _url = "";
 
 	private String _user = "";
@@ -54,6 +60,8 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	private int _port = 0;
 
 	private boolean _sendHelpMails = false;
+
+	private boolean _sendWelcomeMails = false;
 
 	/**
 	 * Creates a {@link DBConfig} instance.
@@ -169,6 +177,27 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		_sendHelpMails = value;
 	}
 
+	/**
+	 * Whether to send welcome mails after the blocklist has been synchronized the first time.
+	 */
+	public final boolean isSendWelcomeMails() {
+		return _sendWelcomeMails;
+	}
+
+	/**
+	 * @see #isSendWelcomeMails()
+	 */
+	public de.haumacher.phoneblock.db.config.DBConfig setSendWelcomeMails(boolean value) {
+		internalSetSendWelcomeMails(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isSendWelcomeMails()} without chain call utility. */
+	protected final void internalSetSendWelcomeMails(boolean value) {
+		_listener.beforeSet(this, SEND_WELCOME_MAILS__PROP, value);
+		_sendWelcomeMails = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -202,7 +231,8 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 			USER__PROP, 
 			PASSWORD__PROP, 
 			PORT__PROP, 
-			SEND_HELP_MAILS__PROP));
+			SEND_HELP_MAILS__PROP, 
+			SEND_WELCOME_MAILS__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -217,6 +247,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 			case PASSWORD__PROP: return getPassword();
 			case PORT__PROP: return getPort();
 			case SEND_HELP_MAILS__PROP: return isSendHelpMails();
+			case SEND_WELCOME_MAILS__PROP: return isSendWelcomeMails();
 			default: return null;
 		}
 	}
@@ -229,6 +260,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 			case PASSWORD__PROP: internalSetPassword((String) value); break;
 			case PORT__PROP: internalSetPort((int) value); break;
 			case SEND_HELP_MAILS__PROP: internalSetSendHelpMails((boolean) value); break;
+			case SEND_WELCOME_MAILS__PROP: internalSetSendWelcomeMails((boolean) value); break;
 		}
 	}
 
@@ -257,6 +289,8 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		out.value(getPort());
 		out.name(SEND_HELP_MAILS__PROP);
 		out.value(isSendHelpMails());
+		out.name(SEND_WELCOME_MAILS__PROP);
+		out.value(isSendWelcomeMails());
 	}
 
 	@Override
@@ -267,6 +301,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 			case PASSWORD__PROP: setPassword(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PORT__PROP: setPort(in.nextInt()); break;
 			case SEND_HELP_MAILS__PROP: setSendHelpMails(in.nextBoolean()); break;
+			case SEND_WELCOME_MAILS__PROP: setSendWelcomeMails(in.nextBoolean()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -296,6 +331,8 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		out.value(getPort());
 		out.name(SEND_HELP_MAILS__ID);
 		out.value(isSendHelpMails());
+		out.name(SEND_WELCOME_MAILS__ID);
+		out.value(isSendWelcomeMails());
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -329,6 +366,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 			case PASSWORD__ID: setPassword(in.nextString()); break;
 			case PORT__ID: setPort(in.nextInt()); break;
 			case SEND_HELP_MAILS__ID: setSendHelpMails(in.nextBoolean()); break;
+			case SEND_WELCOME_MAILS__ID: setSendWelcomeMails(in.nextBoolean()); break;
 			default: in.skipValue(); 
 		}
 	}
