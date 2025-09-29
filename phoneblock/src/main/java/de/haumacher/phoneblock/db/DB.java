@@ -1736,7 +1736,7 @@ public class DB {
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.HOUR, 0);
 		calendar.add(Calendar.HOUR, -1);
-		calendar.add(Calendar.DAY_OF_MONTH, -2);
+		calendar.add(Calendar.DAY_OF_MONTH, -3);
 		
 		long twoDaysBefore = calendar.getTimeInMillis();
 
