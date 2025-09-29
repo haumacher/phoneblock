@@ -1533,7 +1533,7 @@ public class DB {
 					DBUserSettings userSettings = getUserSettings(users, login);
 					users.markWelcome(userSettings.getId());
 					session.commit();
-					
+
 					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(userSettings));
 				} else {
 					LOG.info("Not sending welcome mail to '{}': {}", login, 
@@ -1748,6 +1748,10 @@ public class DB {
 			
 			// Users that did not update the address book for three days.
 			List<DBUserSettings> inactiveUsers = users.getNewInactiveUsers(twoDaysBefore, oneMonthBefore, twoDaysBefore);
+			if (inactiveUsers.size() > 50) {
+				LOG.warn("Excessive amount of inactive users found ({}), not sending help mails.", inactiveUsers.size());
+				return;
+			}
 			for (DBUserSettings user : inactiveUsers) {
 				// Mark mail as send to prevent mail-bombing a user under all circumstances. Sending
 				// a support mail is not tried again, if the first attempt fails.
