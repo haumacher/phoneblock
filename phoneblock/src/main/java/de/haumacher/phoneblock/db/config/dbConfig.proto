@@ -19,4 +19,7 @@ message DBConfig {
 	
 	/** Whether to automatically send help mails when a period of inactivity is detected. */
 	boolean sendHelpMails;
+	
+	/** Whether to send welcome mails after the blocklist has been synchronized the first time. */
+	boolean sendWelcomeMails;
 }

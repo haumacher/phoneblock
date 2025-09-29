@@ -122,7 +122,7 @@ public class DBService implements IDBService, ServletContextListener {
 		}
 		
 		_pool = JdbcConnectionPool.create(dataSource);
-		INSTANCE = new DB(_rnd.getRnd(), config.isSendHelpMails(), _pool, _indexer, _scheduler, _mail == null ? null : _mail.getMailService());
+		INSTANCE = new DB(_rnd.getRnd(), config, _pool, _indexer, _scheduler, _mail == null ? null : _mail.getMailService());
 	}
 
 	protected int defaultDbPort() {

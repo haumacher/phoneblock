@@ -63,6 +63,7 @@ import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.callreport.model.CallReport;
 import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.credits.MessageDetails;
+import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.Contribution;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -135,10 +136,10 @@ public class DB {
 
 	private MailService _mailService;
 
-	private boolean _sendHelpMails;
+	private DBConfig _config;
 
 	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException {
-		this(new SecureRandom(), false, dataSource, IndexUpdateService.NONE, scheduler, null);
+		this(new SecureRandom(), DBConfig.create(), dataSource, IndexUpdateService.NONE, scheduler, null);
 	}
 	
 	/** 
@@ -147,9 +148,9 @@ public class DB {
 	 *
 	 * @param dataSource
 	 */
-	public DB(SecureRandom rnd, boolean sendHelpMails, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
+	public DB(SecureRandom rnd, DBConfig config, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
 		_rnd = rnd;
-		_sendHelpMails = sendHelpMails;
+		_config = config;
 		_dataSource = dataSource;
 		_indexer = indexer;
 		_scheduler = scheduler;
@@ -175,7 +176,7 @@ public class DB {
 		 Date timeHistory = schedule(0, this::runUpdateHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
 		 
-		 if (sendHelpMails && _mailService != null) {
+		 if (_config.isSendHelpMails() && _mailService != null) {
 			 Date supportMails = schedule(18, this::sendSupportMails);
 			 LOG.info("Scheduled support mails: " + supportMails);
 		 } else {
@@ -1528,14 +1529,15 @@ public class DB {
 			if (before == null || before.longValue() == 0) {
 				// This was the first access, send welcome message;
 				MailService mailService = _mailService;
-				if (mailService != null) {
+				if (mailService != null && _config.isSendWelcomeMails()) {
 					DBUserSettings userSettings = getUserSettings(users, login);
 					users.markWelcome(userSettings.getId());
 					session.commit();
 					
 					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(userSettings));
 				} else {
-					LOG.info("Cannot send welcome mail to '" + login + "', since there is no mail service.");
+					LOG.info("Not sending welcome mail to '{}': {}", login, 
+						mailService == null ? "No mail service." : "Welcome mails are disabled.");
 				}
 			}
 		}
