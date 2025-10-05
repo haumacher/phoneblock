@@ -37,7 +37,16 @@ public class MainActivity extends FlutterActivity {
                 setAuthToken((String) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "getAuthToken":
+                result.success(getAuthToken());
+                break;
         }
+    }
+
+    private String getAuthToken() {
+        SharedPreferences prefs = getPreferences(this);
+        return prefs.getString("auth_token", null);
     }
 
     private void setAuthToken(String authToken) {
