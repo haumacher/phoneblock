@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.code.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001">تأكيد عنوان البريد الإلكتروني</h1>
+	        <p class="subtitle" data-tx="t0002">أدخل الرمز من البريد الإلكتروني.</p>
+	        <div class="content">
+				<p data-tx="t0003">تم إرسال بريد إلكتروني إلى العنوان <code th:text="${email}"></code>.</p>
+				<p data-tx="t0004">يرجى التحقق من صندوق بريدك ونسخ الرمز وإدخاله هنا. سيؤدي ذلك إلى تأكيد عنوان بريدك الإلكتروني.</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<div class="field">
+						<label class="label" data-tx="t0005">الكود</label>
+						<div class="control has-icons-left has-icons-right">
+							<input data-tx="t0006" name="code" placeholder="رمز التأكيد" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<span class="icon is-small is-left">
+							  <i class="fa-solid fa-barcode"></i>
+							</span>
+							<span class="icon is-small is-right" th:if="${message != null}">
+							  <i class="fas fa-exclamation-triangle"></i>
+							</span>
+						</div>
+
+						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">حاول مرة أخرى</a>.</p>
+
+						<p class="help" data-tx="t0008" th:if="${message == null}"><span> لم يتم استلام أي بريد إلكتروني؟ يُرجى التحقق من مجلد الرسائل غير المرغوب فيها! </span>  حاول مرة أخرى.</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" data-tx="t0009" type="submit">إنشاء حساب</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+</body>
+</html>

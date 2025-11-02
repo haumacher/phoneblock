@@ -14,42 +14,42 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title">E-Mail-Adresse bestätigen</h1>
-	        <p class="subtitle">Code aus E-Mail eingeben.</p>
+	        <h1 class="title" data-tx="t0001">E-Mail-Adresse bestätigen</h1>
+	        <p class="subtitle" data-tx="t0002">Code aus E-Mail eingeben.</p>
 	        <div class="content">
-				<p>
+				<p data-tx="t0003">
 					Eine E-Mail wurde an die Adresse <code th:text="${email}"></code> gesendet. 
 				</p>
-				<p>
+				<p data-tx="t0004">
 					Bitte schau in Deiner Mailbox nach, kopiere den Code und gib ihn hier ein. Damit bestätigst 
 					Du Deine E-Mail-Adresse.
 				</p>
-				<form th:action="@{/register-mobile}" method="post" enctype="application/x-www-form-urlencoded">
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
 					<div class="field">
-						<label class="label">Code</label>
+						<label class="label" data-tx="t0005">Code</label>
 						<div class="control has-icons-left has-icons-right">
-							<input name="code" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" placeholder="Bestätigungscode" value=""/>
+							<input data-tx="t0006" name="code" placeholder="Bestätigungscode" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
 							<span class="icon is-small is-left">
 							  <i class="fa-solid fa-barcode"></i>
 							</span>
-							<span th:if="${message != null}" class="icon is-small is-right">
+							<span class="icon is-small is-right" th:if="${message != null}">
 							  <i class="fas fa-exclamation-triangle"></i>
 							</span>
 						</div>
 
-						<p th:if="${message != null}" class="help is-danger">
+						<p class="help is-danger" data-tx="t0007" th:if="${message != null}">
 							<span th:text="${message}"></span>
 							<a th:href="@{/mobile/login}">Nochmal probieren</a>.								
 						</p>
 
-						<p th:if="${message == null}" class="help">
+						<p class="help" data-tx="t0008" th:if="${message == null}">
 							<span>Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!</span>
 							<a th:href="@{/mobile/login}">Nochmal probieren</a>.								
 						</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" type="submit">Account erstellen</button>
+				    	<button class="button is-link" data-tx="t0009" type="submit">Account erstellen</button>
 					</div>
 				</form>
 	        </div>

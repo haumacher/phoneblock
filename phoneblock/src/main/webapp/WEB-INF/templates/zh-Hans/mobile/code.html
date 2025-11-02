@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.code.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001">确认电子邮件地址</h1>
+	        <p class="subtitle" data-tx="t0002">输入电子邮件中的代码。</p>
+	        <div class="content">
+				<p data-tx="t0003">已向 <code th:text="${email}"></code> 发送电子邮件。</p>
+				<p data-tx="t0004">请检查您的邮箱，复制代码并在此处输入。这将确认您的电子邮件地址。</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<div class="field">
+						<label class="label" data-tx="t0005">代码</label>
+						<div class="control has-icons-left has-icons-right">
+							<input data-tx="t0006" name="code" placeholder="确认代码" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<span class="icon is-small is-left">
+							  <i class="fa-solid fa-barcode"></i>
+							</span>
+							<span class="icon is-small is-right" th:if="${message != null}">
+							  <i class="fas fa-exclamation-triangle"></i>
+							</span>
+						</div>
+
+						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">再试一次</a>。</p>
+
+						<p class="help" data-tx="t0008" th:if="${message == null}"><span>未收到电子邮件？请检查您的垃圾邮件文件夹！</span> <a th:href="@{/mobile/login}">再试一次</a>。</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" data-tx="t0009" type="submit">创建账户</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+</body>
+</html>

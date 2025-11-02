@@ -4,13 +4,13 @@
 </head>
 <body>
 
-<section th:fragment="header" class="hero is-small is-primary">
+<section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" th:src="@{/assets/img/app-logo.svg}" class="logo-image"/>
-			<span>PhoneBlock</span>
+			<img alt="PhoneBlock Logo" class="logo-image" data-tx="t0001" th:src="@{/assets/img/app-logo.svg}"/>
+			<span data-tx="t0002">PhoneBlock</span>
 		</p>
-		<p class="subtitle">Der Spam-Filter fürs Telefon</p>
+		<p class="subtitle" data-tx="t0003">Der Spam-Filter fürs Telefon</p>
 	</div>
 
 	<div class="hero-foot">
