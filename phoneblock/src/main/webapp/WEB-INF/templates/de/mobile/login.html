@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+	<h1>PhoneBlock-Account verknüpfen</h1>
+	
+	<div th:if="${userName == null}">
+		<p>
+			Um Deinen PhoneBlock-Account mit Deinem Mobilgerät zu verknüpfen, musst Dich zuerst anmelden 
+			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
+			für die Filterung von Anrufen nutzen kann.
+		</p>
+	
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+	</div>
+
+	<div th:if="${userName != null}">
+		<p>
+			Jetzt kannst Du Deinen PhoneBlock-Account <code th:text="${userName}"></code> mit Deinem Mobilgerät verbinden:
+		</p>
+	
+		<form th:action="@{/create-token}" method="post">
+			<div class="field is-grouped">
+			  <p class="control">
+			    <button class="button is-primary" type="submit">
+		          <span class="icon">
+				      <i class="fa-solid fa-link"></i>
+				  </span>
+			      <span>PhoneBlock-Account verknüpfen</span>
+			    </button>
+			  </p>
+			</div>
+		</form>	
+	</div>
+	
+</div>
+</section>
+
+<script type="text/javascript" th:src="@{/assets/js/bulma.js}"></script>
+
+</body>
+</html>

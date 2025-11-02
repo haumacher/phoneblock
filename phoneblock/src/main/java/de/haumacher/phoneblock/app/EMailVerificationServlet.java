@@ -56,6 +56,11 @@ public class EMailVerificationServlet extends HttpServlet {
 	
 	
 	private static final Logger LOG = LoggerFactory.getLogger(EMailVerificationServlet.class);
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendRedirect(req.getContextPath() + failurePage(req));
+	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -161,7 +166,7 @@ public class EMailVerificationServlet extends HttpServlet {
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case LOGIN_MOBILE: 
-			return "/mobile-login";
+			return "/mobile/login";
 		case LOGIN_WEB: 
 		default:
 			return "/login";
@@ -171,7 +176,7 @@ public class EMailVerificationServlet extends HttpServlet {
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 			case LOGIN_MOBILE: 
-				return "/mobile-code";
+				return "/mobile/code";
 			case LOGIN_WEB: 
 			default:
 				return "/signup-code"; 

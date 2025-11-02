@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -255,6 +256,12 @@ public class DefaultController implements WebController {
 	}
 
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
+		// Use request attributes as template variables.
+		for (Enumeration<String> it = request.getAttributeNames(); it.hasMoreElements(); ) {
+			String attribute = it.nextElement();
+			ctx.setVariable(attribute, request.getAttribute(attribute));
+		}
+		
 		HttpSession session = request.getSession(false);
 		String userName = LoginFilter.getAuthenticatedUser(session);
   		String token = RegistrationServlet.getPassword(session);

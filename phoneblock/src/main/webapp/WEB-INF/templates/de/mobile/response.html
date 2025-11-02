@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.response.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<h1>Du bist erfolgreich angemeldet</h1>
+
+<p>
+	Dein Authorisierungstoken: <code id="token" th:text="${loginToken}"></code>
+</p>
+
+<p>
+	Deine Anmeldung an PhoneBlock war erfolgreich. Diese Seite sollte sich automatisch schließen und Dein 
+	Mobilgerät sollte die Verbindung mit PhoneBlock herstellen. Wenn Dies nicht passiert, dann ist 
+	möglicherweise etwas mit Deiner mobilen Anwendung nicht in Ordnung.
+</p>
+
+</div>
+</section>
+
+<script type="text/javascript" th:src="@{/assets/js/mobile-response.js}"></script>
+
+</body>
+</html>
