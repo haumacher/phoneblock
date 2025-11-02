@@ -145,6 +145,7 @@ public class ContentFilter extends LoginFilter {
 					|| uri.startsWith("/webjars")
 					|| uri.startsWith("/oauth")
 					|| uri.startsWith("/api")
+					|| uri.startsWith("/mobile") 
 					|| uri.startsWith(CardDavServlet.DIR_NAME)) {
 				render(request, response, chain);
 				return;
