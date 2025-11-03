@@ -11,40 +11,7 @@
 	
 	<p data-tx="t0002">Puede bloquear llamadas telefónicas no deseadas <em>automáticamente</em> si instala PhoneBlock.</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-			    </span>
-				<span data-tx="t0003">Contestador automático</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span data-tx="t0004">Guía telefónica de Fritz!Box</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span data-tx="t0005">Para Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
-			    </span>
-				<span data-tx="t0006">Para iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 	<p data-tx="t0007">Con PhoneBlock, su teléfono permanece en silencio durante este tipo de llamadas. Cada día se añaden varios números. Comparte la página <a th:href="@{/}">PhoneBlock</a> en FaceBook, por ejemplo, para que el mayor número posible de personas pueda unirse y acabar con el terror telefónico.</p>
 	

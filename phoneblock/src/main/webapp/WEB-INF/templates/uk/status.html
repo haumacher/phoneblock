@@ -11,40 +11,7 @@
 	
 	<p data-tx="t0002">Ви можете блокувати небажані дзвінки <em>автоматично</em>, якщо встановите PhoneBlock.</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-			    </span>
-				<span data-tx="t0003">Автовідповідач</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span data-tx="t0004">Телефонна книга Fritz!Box</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span data-tx="t0005">Для Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
-			    </span>
-				<span data-tx="t0006">Для iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 	<p data-tx="t0007">З PhoneBlock ваш телефон буде мовчати під час таких дзвінків. Щодня додається кілька номерів. Поділіться сторінкою <a th:href="@{/}">PhoneBlock</a>, наприклад, у Facebook, щоб якомога більше людей могли приєднатися і покласти край телефонному терору.</p>
 	

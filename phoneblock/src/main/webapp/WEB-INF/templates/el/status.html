@@ -11,40 +11,7 @@
 	
 	<p data-tx="t0002">Μπορείτε να μπλοκάρετε τις ανεπιθύμητες τηλεφωνικές κλήσεις <em>αυτόματα</em> εάν εγκαταστήσετε το PhoneBlock.</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-			    </span>
-				<span data-tx="t0003">Τηλεφωνητής</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span data-tx="t0004">Fritz!Box τηλεφωνικός κατάλογος</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span data-tx="t0005">Για Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
-			    </span>
-				<span data-tx="t0006">Για iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 	<p data-tx="t0007">Με το PhoneBlock, το τηλέφωνό σας παραμένει αθόρυβο κατά τη διάρκεια τέτοιων κλήσεων. Κάθε μέρα προστίθενται αρκετοί αριθμοί. Μοιραστείτε τη σελίδα <a th:href="@{/}">PhoneBlock</a> στο FaceBook, για παράδειγμα, έτσι ώστε όσο το δυνατόν περισσότεροι άνθρωποι να συμμετάσχουν και να τερματίσουν την τηλεφωνική τρομοκρατία.</p>
 	

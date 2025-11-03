@@ -63,40 +63,7 @@
 
 	<p data-tx="t0015">Du kan blokere uønskede telefonopkald <em>automatisk</em>, hvis du installerer PhoneBlock:</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-				<span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-				</span>
-				<span data-tx="t0016">Telefonsvarer</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
-				<span class="icon">
-					<i class="fa-solid fa-phone"></i>
-				</span>
-				<span data-tx="t0017">Fritz!Box telefonbog</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-				</span>
-				<span data-tx="t0018">Til Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-				<span class="icon">
-					<i class="fa-brands fa-apple"></i>
-				</span>
-				<span data-tx="t0019">Til iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
 	<p data-tx="t0020">Tallet ☎ <th:block th:text="${number.shortcut}"></th:block> kan tilhøre den samme forbindelse som de følgende tal i databasen:</p>

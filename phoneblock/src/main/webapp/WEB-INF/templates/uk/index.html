@@ -15,40 +15,7 @@
 
 		<p data-tx="t0002">Ваш номер телефону також потрапив до рук нечесних торговців адресами і ви постійно отримуєте настирливі дзвінки, які хочуть "оптимізувати" ваш рахунок за електроенергію, дати вам пораду щодо сонячної системи, оголосити про черговий грандіозний приз або запропонувати інші "привілеї"? Тоді <b>PhoneBlock</b> - це саме те, що вам потрібно!</p>
 
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-			    </span>
-				<span data-tx="t0003">Автовідповідач</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span data-tx="t0004">Телефонна книга Fritz!Box</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span data-tx="t0005">Для Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
-			    </span>
-				<span data-tx="t0006">Для iPhone</span>
-			</a>
-		  </div>
-		</div>
+		<div th:replace="~{fragments/page :: buttons}"></div>
 
 		<h2 data-tx="t0007">Як працює PhoneBlock?</h2>
 

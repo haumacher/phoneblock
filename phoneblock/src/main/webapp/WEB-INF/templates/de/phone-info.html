@@ -110,40 +110,7 @@
 		Unerwünschte Telefonanrufe kannst Du <em>automatisch blockieren</em>, wenn Du PhoneBlock installierst: 
 	</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-				<span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-				</span>
-				<span data-tx="t0016">Anrufbeantworter</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
-				<span class="icon">
-					<i class="fa-solid fa-phone"></i>
-				</span>
-				<span data-tx="t0017">Fritz!Box Telefonbuch</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-				</span>
-				<span data-tx="t0018">Für Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-				<span class="icon">
-					<i class="fa-brands fa-apple"></i>
-				</span>
-				<span data-tx="t0019">Für iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
 	<p data-tx="t0020">Die Nummer ☎ <th:block th:text="${number.shortcut}"></th:block> könnte zum selben Anschluss gehören wie die folgenden Nummern in der Datenbank:</p>

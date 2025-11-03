@@ -170,6 +170,49 @@
 </div>  
 </section>
 
+<div class="columns" th:fragment="buttons">
+  <div class="column is-one-fifth">
+	<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
+	    <span class="icon">
+			<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
+	    </span>
+		<span data-tx="t0061">Answering machine</span>			
+	</a>
+  </div>
+  <div class="column is-one-fifth">
+	<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
+	    <span class="icon">
+			<i class="fa-solid fa-phone"></i>
+	    </span>
+		<span data-tx="t0062">Block list</span>			
+	</a>
+  </div>
+  <div class="column is-one-fifth">
+	<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
+	    <span class="icon">
+			<i class="fa-solid fa-mobile-screen"></i>
+	    </span>
+		<span data-tx="t0063">Android</span>
+	</a>
+  </div>
+  <div class="column is-one-fifth">
+	<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
+	    <span class="icon">
+			<i class="fa-brands fa-apple"></i>
+	    </span>
+		<span data-tx="t0064">iPhone</span>
+	</a>
+  </div>
+  <div class="column is-one-fifth">
+	<a class="button is-medium is-info is-fullwidth" th:href="@{/setup-switchboard}">
+	    <span class="icon">
+			<i class="fa-solid fa-asterisk"></i>
+	    </span>
+		<span data-tx="t0065">Telephone system</span>
+	</a>
+  </div>
+</div>
+
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">
