@@ -115,6 +115,7 @@ public class SearchServlet extends HttpServlet {
 			, "archive.org_bot"
 
 			, "OAI-SearchBot" // OpenAI's web crawler
+			, "ChatGPT-User" // OpenAI's web agent
 			, "Bytespider" // Crawler operated by ByteDance
 			
 			// Social media
