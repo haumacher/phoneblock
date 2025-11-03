@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.code.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001">E-mailadres bevestigen</h1>
+	        <p class="subtitle" data-tx="t0002">Voer de code uit de e-mail in.</p>
+	        <div class="content">
+				<p data-tx="t0003">Er is een e-mail verzonden naar het adres <code th:text="${email}"></code>.</p>
+				<p data-tx="t0004">Controleer je mailbox, kopieer de code en voer deze hier in. Hiermee wordt uw e-mailadres bevestigd.</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<div class="field">
+						<label class="label" data-tx="t0005">Code</label>
+						<div class="control has-icons-left has-icons-right">
+							<input data-tx="t0006" name="code" placeholder="Bevestigingscode" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<span class="icon is-small is-left">
+							  <i class="fa-solid fa-barcode"></i>
+							</span>
+							<span class="icon is-small is-right" th:if="${message != null}">
+							  <i class="fas fa-exclamation-triangle"></i>
+							</span>
+						</div>
+
+						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">Probeer het opnieuw</a>.</p>
+
+						<p class="help" data-tx="t0008" th:if="${message == null}"><span>Geen e-mail ontvangen? Controleer je spamfolder! </span> <a th:href="@{/mobile/login}">Probeer opnieuw</a>.</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" data-tx="t0009" type="submit">Account aanmaken</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+</body>
+</html>

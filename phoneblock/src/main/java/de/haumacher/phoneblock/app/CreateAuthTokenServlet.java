@@ -22,7 +22,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.sendRedirect(req.getContextPath() + "/mobile/login.jsp");
+		resp.sendRedirect(req.getContextPath() + "/mobile/login");
 	}
 	
 	@Override
@@ -38,7 +38,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
 		
-		req.setAttribute("token", loginToken.getToken());
+		req.setAttribute("loginToken", loginToken.getToken());
 		TemplateRenderer.getInstance(req).process("/mobile/response", req, resp);
 	}
 }
