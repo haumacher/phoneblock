@@ -229,7 +229,6 @@ public class LoginServlet extends HttpServlet {
 	 */
 	public static void requestLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String originalLocation = originalLocation(request);
-		LOG.info("Requesting login for resource: " + originalLocation);
 		
 		// Forward language
 		String langSpec;
