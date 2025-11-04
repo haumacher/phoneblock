@@ -90,15 +90,11 @@ func (t *IPTracker) GetChallengeCount() int {
 	return len(t.challengeIPs)
 }
 
-// readExistingFirewallRules reads existing UFW rules and returns blocked IPs
-func readExistingFirewallRules() ([]string, error) {
-	out, err := exec.Command("ufw", "status", "numbered").CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("failed to read ufw status: %w, output: %s", err, string(out))
-	}
-
-	var blockedIPs []string
-	lines := strings.Split(string(out), "\n")
+// parseUFWOutput parses UFW status output and returns blocked IPs (deduplicated)
+func parseUFWOutput(output string) []string {
+	// Use a map to deduplicate IPs
+	seenIPs := make(map[string]bool)
+	lines := strings.Split(output, "\n")
 
 	// Look for lines like: "[ 1] DENY IN            192.168.1.1"
 	// or: "[ 1] Anywhere                   DENY IN     192.168.1.1"
@@ -113,13 +109,29 @@ func readExistingFirewallRules() ([]string, error) {
 		if len(matches) > 1 {
 			ip := matches[1]
 			// Validate it's a real IP (not "Anywhere" or other text)
-			if strings.Contains(ip, ".") || strings.Contains(ip, ":") {
-				blockedIPs = append(blockedIPs, ip)
+			if (strings.Contains(ip, ".") || strings.Contains(ip, ":")) && ip != "0.0.0.0" {
+				seenIPs[ip] = true
 			}
 		}
 	}
 
-	return blockedIPs, nil
+	// Convert map to slice
+	var blockedIPs []string
+	for ip := range seenIPs {
+		blockedIPs = append(blockedIPs, ip)
+	}
+
+	return blockedIPs
+}
+
+// readExistingFirewallRules reads existing UFW rules and returns blocked IPs
+func readExistingFirewallRules() ([]string, error) {
+	out, err := exec.Command("ufw", "status", "numbered").CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read ufw status: %w, output: %s", err, string(out))
+	}
+
+	return parseUFWOutput(string(out)), nil
 }
 
 // blockIP blocks an IP using ufw

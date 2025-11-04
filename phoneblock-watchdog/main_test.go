@@ -216,3 +216,103 @@ func TestExtractTimestamp(t *testing.T) {
 		t.Errorf("extractTimestamp() = %v, expected %v", result, expected)
 	}
 }
+
+func TestParseUFWOutput(t *testing.T) {
+	tests := []struct {
+		name        string
+		ufwOutput   string
+		expectedIPs []string
+	}{
+		{
+			name: "Single IPv4 rule",
+			ufwOutput: `Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] Anywhere                   DENY IN     192.168.1.100`,
+			expectedIPs: []string{"192.168.1.100"},
+		},
+		{
+			name: "Multiple IPv4 rules",
+			ufwOutput: `Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] Anywhere                   DENY IN     192.168.1.100
+[ 2] Anywhere                   DENY IN     10.0.0.50
+[ 3] Anywhere                   DENY IN     172.16.0.1`,
+			expectedIPs: []string{"192.168.1.100", "10.0.0.50", "172.16.0.1"},
+		},
+		{
+			name: "IPv6 rules",
+			ufwOutput: `Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] Anywhere                   DENY IN     2001:db8::1
+[ 2] Anywhere                   DENY IN     fe80::1`,
+			expectedIPs: []string{"2001:db8::1", "fe80::1"},
+		},
+		{
+			name: "Mixed IPv4 and IPv6",
+			ufwOutput: `Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] Anywhere                   DENY IN     192.168.1.100
+[ 2] Anywhere                   DENY IN     2001:db8::1`,
+			expectedIPs: []string{"192.168.1.100", "2001:db8::1"},
+		},
+		{
+			name: "Rules with ALLOW should be ignored",
+			ufwOutput: `Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    192.168.1.50
+[ 2] Anywhere                   DENY IN     192.168.1.100`,
+			expectedIPs: []string{"192.168.1.100"},
+		},
+		{
+			name: "Duplicate IP rules (should deduplicate)",
+			ufwOutput: `Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] Anywhere                   DENY IN     192.168.1.100
+[ 2] Anywhere (v6)              DENY IN     192.168.1.100`,
+			expectedIPs: []string{"192.168.1.100"},
+		},
+		{
+			name:        "Empty firewall",
+			ufwOutput:   `Status: active`,
+			expectedIPs: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Call the production code
+			parsedIPs := parseUFWOutput(tt.ufwOutput)
+
+			// Check if we got the expected IPs (order doesn't matter due to map)
+			if len(parsedIPs) != len(tt.expectedIPs) {
+				t.Errorf("Expected %d IPs, got %d: %v", len(tt.expectedIPs), len(parsedIPs), parsedIPs)
+				return
+			}
+
+			// Create a map of expected IPs for easy lookup
+			expectedMap := make(map[string]bool)
+			for _, ip := range tt.expectedIPs {
+				expectedMap[ip] = true
+			}
+
+			// Check that all parsed IPs are in expected set
+			for _, ip := range parsedIPs {
+				if !expectedMap[ip] {
+					t.Errorf("Unexpected IP found: %s", ip)
+				}
+			}
+		})
+	}
+}
