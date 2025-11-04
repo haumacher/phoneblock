@@ -147,7 +147,6 @@ public class ContentFilter extends LoginFilter {
 					|| uri.startsWith("/oauth")
 					|| uri.startsWith("/api")
 					|| uri.startsWith("/mobile") 
-					|| uri.startsWith("/ab") 
 					|| uri.startsWith("/resource-not-found") 
 					|| uri.endsWith(".png") 
 					|| uri.endsWith(".svg") 
