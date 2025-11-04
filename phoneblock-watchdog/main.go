@@ -21,11 +21,12 @@ import (
 type IPInfo struct {
 	LastAccess        time.Time
 	Count             int
-	LastReportedCount int       // Count value when last reported
-	LastReported      time.Time // Last time this IP was included in a status report
-	Blocked           bool      // Whether this IP is currently blocked by firewall
-	BlockedAt         time.Time // When this IP was blocked
-	LastBlockCheck    int       // Count value when last checked for blocking
+	LastReportedCount int           // Count value when last reported
+	LastReported      time.Time     // Last time this IP was included in a status report
+	Blocked           bool          // Whether this IP is currently blocked by firewall
+	BlockedAt         time.Time     // When this IP was blocked
+	LastBlockCheck    int           // Count value when last checked for blocking
+	BlockDuration     time.Duration // Current block duration (doubles on each re-block)
 }
 
 type IPTracker struct {
@@ -89,6 +90,38 @@ func (t *IPTracker) GetChallengeCount() int {
 	return len(t.challengeIPs)
 }
 
+// readExistingFirewallRules reads existing UFW rules and returns blocked IPs
+func readExistingFirewallRules() ([]string, error) {
+	out, err := exec.Command("ufw", "status", "numbered").CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read ufw status: %w, output: %s", err, string(out))
+	}
+
+	var blockedIPs []string
+	lines := strings.Split(string(out), "\n")
+
+	// Look for lines like: "[ 1] DENY IN            192.168.1.1"
+	// or: "[ 1] Anywhere                   DENY IN     192.168.1.1"
+	denyRegex := regexp.MustCompile(`DENY.*?(?:from\s+)?([0-9a-fA-F:\.]+)`)
+
+	for _, line := range lines {
+		if !strings.Contains(line, "DENY") {
+			continue
+		}
+
+		matches := denyRegex.FindStringSubmatch(line)
+		if len(matches) > 1 {
+			ip := matches[1]
+			// Validate it's a real IP (not "Anywhere" or other text)
+			if strings.Contains(ip, ".") || strings.Contains(ip, ":") {
+				blockedIPs = append(blockedIPs, ip)
+			}
+		}
+	}
+
+	return blockedIPs, nil
+}
+
 // blockIP blocks an IP using ufw
 func blockIP(ip string) error {
 	cmd := fmt.Sprintf("ufw deny from %s", ip)
@@ -112,7 +145,7 @@ func unblockIP(ip string) error {
 }
 
 // ManageFirewallRules checks all IPs and manages firewall rules
-func (t *IPTracker) ManageFirewallRules(threshold int) {
+func (t *IPTracker) ManageFirewallRules(threshold int, initialBlockDuration time.Duration) {
 	if !t.firewallEnabled {
 		return
 	}
@@ -121,11 +154,14 @@ func (t *IPTracker) ManageFirewallRules(threshold int) {
 	defer t.mu.Unlock()
 
 	now := time.Now()
-	blockDuration := 30 * time.Minute
+	maxBlockDuration := 30 * 24 * time.Hour // 1 month
+	maxUnblocksPerCycle := 10
+	unblockedCount := 0
 
 	for ip, info := range t.challengeIPs {
-		// Check if IP should be unblocked (blocked for more than 30 minutes)
-		if info.Blocked && now.Sub(info.BlockedAt) >= blockDuration {
+		// Check if IP should be unblocked
+		// Limit to maxUnblocksPerCycle per run
+		if info.Blocked && now.Sub(info.BlockedAt) >= info.BlockDuration && unblockedCount < maxUnblocksPerCycle {
 			if err := unblockIP(ip); err != nil {
 				log.Printf("Error unblocking IP %s: %v", ip, err)
 			} else {
@@ -133,6 +169,8 @@ func (t *IPTracker) ManageFirewallRules(threshold int) {
 				info.BlockedAt = time.Time{}
 				// Update LastBlockCheck to current count to prevent immediate re-blocking
 				info.LastBlockCheck = info.Count
+				unblockedCount++
+				// Keep BlockDuration for next time (it will be doubled if blocked again)
 			}
 		}
 
@@ -148,32 +186,74 @@ func (t *IPTracker) ManageFirewallRules(threshold int) {
 				info.BlockedAt = now
 				// Update LastBlockCheck when blocking
 				info.LastBlockCheck = info.Count
+
+				// Calculate new block duration (exponential backoff)
+				if info.BlockDuration == 0 {
+					// First time blocking this IP
+					info.BlockDuration = initialBlockDuration
+				} else {
+					// Double the duration, up to max
+					info.BlockDuration = info.BlockDuration * 2
+					if info.BlockDuration > maxBlockDuration {
+						info.BlockDuration = maxBlockDuration
+					}
+				}
 			}
 		}
 	}
 }
 
-// CleanupFirewallRules removes all firewall rules created by this program
-func (t *IPTracker) CleanupFirewallRules() {
+// LoadExistingFirewallRules reads UFW rules and marks IPs as blocked
+func (t *IPTracker) LoadExistingFirewallRules(initialBlockDuration time.Duration, threshold int) {
 	if !t.firewallEnabled {
+		return
+	}
+
+	blockedIPs, err := readExistingFirewallRules()
+	if err != nil {
+		log.Printf("Warning: failed to read existing firewall rules: %v", err)
+		return
+	}
+
+	if len(blockedIPs) == 0 {
+		log.Printf("No existing firewall rules found")
 		return
 	}
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	log.Printf("Cleaning up firewall rules...")
+	now := time.Now()
 	count := 0
-	for ip, info := range t.challengeIPs {
-		if info.Blocked {
-			if err := unblockIP(ip); err != nil {
-				log.Printf("Error cleaning up rule for IP %s: %v", ip, err)
-			} else {
-				count++
+
+	for _, ip := range blockedIPs {
+		// Check if this IP is already being tracked
+		if info, exists := t.challengeIPs[ip]; exists {
+			// IP is already in our tracking, mark it as blocked
+			info.Blocked = true
+			info.BlockedAt = now
+			info.BlockDuration = initialBlockDuration
+			// Ensure count is at least the threshold (if it's lower, set to threshold+1)
+			if info.Count <= threshold {
+				info.Count = threshold + 1
 			}
+			count++
+		} else {
+			// IP is in firewall but not in our tracking
+			// Add it to tracking so it can be managed
+			// Set count to threshold+1 to be consistent with blocking logic
+			t.challengeIPs[ip] = &IPInfo{
+				LastAccess:    now,
+				Count:         threshold + 1, // Must be > threshold to be blocked
+				Blocked:       true,
+				BlockedAt:     now,
+				BlockDuration: initialBlockDuration,
+			}
+			count++
 		}
 	}
-	log.Printf("Removed %d firewall rules", count)
+
+	log.Printf("Loaded %d existing firewall rules", count)
 }
 
 // Extract IP from Apache access log line
@@ -426,6 +506,7 @@ func main() {
 	// Define command line flags
 	minAccesses := flag.Int("min-accesses", 5, "Minimum number of challenge accesses to trigger reporting")
 	enableFirewall := flag.Bool("enable-firewall", false, "Enable automatic firewall blocking using ufw")
+	initialBlockMinutes := flag.Int("initial-block-minutes", 30, "Initial blocking duration in minutes (doubles on each re-block, max 30 days)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <apache-access-log-file>\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Options:\n")
@@ -447,15 +528,20 @@ func main() {
 
 	log.Printf("Starting with minimum access threshold: %d", *minAccesses)
 	if *enableFirewall {
-		log.Printf("Firewall management: ENABLED (30 minute block duration)")
+		log.Printf("Firewall management: ENABLED (initial block: %d minutes, doubles on re-block, max: 30 days)", *initialBlockMinutes)
 	} else {
 		log.Printf("Firewall management: DISABLED")
 	}
+
+	initialBlockDuration := time.Duration(*initialBlockMinutes) * time.Minute
 
 	// Read existing log content
 	if err := readExistingLog(logFile, tracker); err != nil {
 		log.Printf("Warning: failed to read existing log: %v", err)
 	}
+
+	// Load existing firewall rules from previous runs
+	tracker.LoadExistingFirewallRules(initialBlockDuration, *minAccesses)
 
 	// Mark all IPs as reported before starting tail (to establish baseline)
 	tracker.mu.Lock()
@@ -466,7 +552,7 @@ func main() {
 	tracker.mu.Unlock()
 
 	// Initial firewall management
-	tracker.ManageFirewallRules(*minAccesses)
+	tracker.ManageFirewallRules(*minAccesses, initialBlockDuration)
 
 	// Print initial status (show all IPs)
 	printStatus(tracker, true, *minAccesses)
@@ -479,7 +565,7 @@ func main() {
 	ticker := time.NewTicker(1 * time.Minute)
 	go func() {
 		for range ticker.C {
-			tracker.ManageFirewallRules(*minAccesses)
+			tracker.ManageFirewallRules(*minAccesses, initialBlockDuration)
 			printStatus(tracker, false, *minAccesses)
 		}
 	}()
@@ -498,7 +584,7 @@ func main() {
 		log.Printf("\nReceived signal: %v", sig)
 		log.Printf("Shutting down gracefully...")
 		ticker.Stop()
-		tracker.CleanupFirewallRules()
+		log.Printf("Firewall rules remain active (will be reloaded on next startup)")
 		log.Printf("Shutdown complete")
 		os.Exit(0)
 	}
