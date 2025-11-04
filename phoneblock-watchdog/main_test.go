@@ -124,7 +124,7 @@ func TestProcessLogLine(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tracker := NewIPTracker()
+			tracker := NewIPTracker(false)
 
 			// Add a dummy challenge entry for solution test
 			if tt.expectSolution {

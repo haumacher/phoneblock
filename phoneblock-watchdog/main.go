@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"os/signal"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/nxadm/tail"
@@ -20,16 +23,21 @@ type IPInfo struct {
 	Count             int
 	LastReportedCount int       // Count value when last reported
 	LastReported      time.Time // Last time this IP was included in a status report
+	Blocked           bool      // Whether this IP is currently blocked by firewall
+	BlockedAt         time.Time // When this IP was blocked
+	LastBlockCheck    int       // Count value when last checked for blocking
 }
 
 type IPTracker struct {
 	mu               sync.RWMutex
 	challengeIPs     map[string]*IPInfo // IPs that accessed challenge=
+	firewallEnabled  bool               // Whether to manage firewall rules
 }
 
-func NewIPTracker() *IPTracker {
+func NewIPTracker(firewallEnabled bool) *IPTracker {
 	return &IPTracker{
-		challengeIPs:     make(map[string]*IPInfo),
+		challengeIPs:    make(map[string]*IPInfo),
+		firewallEnabled: firewallEnabled,
 	}
 }
 
@@ -79,6 +87,93 @@ func (t *IPTracker) GetChallengeCount() int {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	return len(t.challengeIPs)
+}
+
+// blockIP blocks an IP using ufw
+func blockIP(ip string) error {
+	cmd := fmt.Sprintf("ufw deny from %s", ip)
+	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to block IP %s: %w, output: %s", ip, err, string(out))
+	}
+	log.Printf("[FIREWALL] Blocked IP: %s", ip)
+	return nil
+}
+
+// unblockIP unblocks an IP using ufw
+func unblockIP(ip string) error {
+	cmd := fmt.Sprintf("ufw delete deny from %s", ip)
+	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to unblock IP %s: %w, output: %s", ip, err, string(out))
+	}
+	log.Printf("[FIREWALL] Unblocked IP: %s", ip)
+	return nil
+}
+
+// ManageFirewallRules checks all IPs and manages firewall rules
+func (t *IPTracker) ManageFirewallRules(threshold int) {
+	if !t.firewallEnabled {
+		return
+	}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	now := time.Now()
+	blockDuration := 30 * time.Minute
+
+	for ip, info := range t.challengeIPs {
+		// Check if IP should be unblocked (blocked for more than 30 minutes)
+		if info.Blocked && now.Sub(info.BlockedAt) >= blockDuration {
+			if err := unblockIP(ip); err != nil {
+				log.Printf("Error unblocking IP %s: %v", ip, err)
+			} else {
+				info.Blocked = false
+				info.BlockedAt = time.Time{}
+				// Update LastBlockCheck to current count to prevent immediate re-blocking
+				info.LastBlockCheck = info.Count
+			}
+		}
+
+		// Check if IP should be blocked:
+		// - Not already blocked
+		// - Count exceeds threshold
+		// - Has NEW accesses since last block check (Count > LastBlockCheck)
+		if !info.Blocked && info.Count > threshold && info.Count > info.LastBlockCheck {
+			if err := blockIP(ip); err != nil {
+				log.Printf("Error blocking IP %s: %v", ip, err)
+			} else {
+				info.Blocked = true
+				info.BlockedAt = now
+				// Update LastBlockCheck when blocking
+				info.LastBlockCheck = info.Count
+			}
+		}
+	}
+}
+
+// CleanupFirewallRules removes all firewall rules created by this program
+func (t *IPTracker) CleanupFirewallRules() {
+	if !t.firewallEnabled {
+		return
+	}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	log.Printf("Cleaning up firewall rules...")
+	count := 0
+	for ip, info := range t.challengeIPs {
+		if info.Blocked {
+			if err := unblockIP(ip); err != nil {
+				log.Printf("Error cleaning up rule for IP %s: %v", ip, err)
+			} else {
+				count++
+			}
+		}
+	}
+	log.Printf("Removed %d firewall rules", count)
 }
 
 // Extract IP from Apache access log line
@@ -330,6 +425,7 @@ func printStatus(tracker *IPTracker, showAll bool, minAccesses int) {
 func main() {
 	// Define command line flags
 	minAccesses := flag.Int("min-accesses", 5, "Minimum number of challenge accesses to trigger reporting")
+	enableFirewall := flag.Bool("enable-firewall", false, "Enable automatic firewall blocking using ufw")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <apache-access-log-file>\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Options:\n")
@@ -344,12 +440,17 @@ func main() {
 	}
 
 	logFile := flag.Arg(0)
-	tracker := NewIPTracker()
+	tracker := NewIPTracker(*enableFirewall)
 
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	log.Printf("Starting with minimum access threshold: %d", *minAccesses)
+	if *enableFirewall {
+		log.Printf("Firewall management: ENABLED (30 minute block duration)")
+	} else {
+		log.Printf("Firewall management: DISABLED")
+	}
 
 	// Read existing log content
 	if err := readExistingLog(logFile, tracker); err != nil {
@@ -360,22 +461,45 @@ func main() {
 	tracker.mu.Lock()
 	for _, info := range tracker.challengeIPs {
 		info.LastReportedCount = info.Count
+		info.LastBlockCheck = info.Count
 	}
 	tracker.mu.Unlock()
+
+	// Initial firewall management
+	tracker.ManageFirewallRules(*minAccesses)
 
 	// Print initial status (show all IPs)
 	printStatus(tracker, true, *minAccesses)
 
-	// Start periodic status reporting (every 1 minute, only show new activity)
+	// Setup signal handling for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start periodic status reporting and firewall management (every 1 minute)
 	ticker := time.NewTicker(1 * time.Minute)
 	go func() {
 		for range ticker.C {
+			tracker.ManageFirewallRules(*minAccesses)
 			printStatus(tracker, false, *minAccesses)
 		}
 	}()
 
-	// Start tailing the log file
-	if err := tailLogFile(logFile, tracker); err != nil {
-		log.Fatalf("Failed to tail log file: %v", err)
+	// Start tailing the log file in a goroutine
+	done := make(chan error, 1)
+	go func() {
+		done <- tailLogFile(logFile, tracker)
+	}()
+
+	// Wait for either an error or a signal
+	select {
+	case err := <-done:
+		log.Fatalf("Log tailing stopped: %v", err)
+	case sig := <-sigChan:
+		log.Printf("\nReceived signal: %v", sig)
+		log.Printf("Shutting down gracefully...")
+		ticker.Stop()
+		tracker.CleanupFirewallRules()
+		log.Printf("Shutdown complete")
+		os.Exit(0)
 	}
 }
