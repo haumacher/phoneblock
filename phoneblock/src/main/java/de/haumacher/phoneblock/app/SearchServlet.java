@@ -110,6 +110,8 @@ public class SearchServlet extends HttpServlet {
 			, "YandexImages"
 			, "YandexRenderResourcesBot"
 			
+			, "Qwantbot" // French search engine.
+			
 			, "Amazonbot"
 			, "Applebot"
 			, "archive.org_bot"
