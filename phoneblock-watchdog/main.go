@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -374,6 +375,7 @@ func tailLogFile(filename string, tracker *IPTracker) error {
 		ReOpen:    true,
 		MustExist: false,
 		Poll:      true,
+		Location:  &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}, // Start from end of file
 	}
 
 	t, err := tail.TailFile(filename, config)
@@ -381,7 +383,7 @@ func tailLogFile(filename string, tracker *IPTracker) error {
 		return fmt.Errorf("failed to tail file: %w", err)
 	}
 
-	log.Printf("Starting to monitor log file: %s", filename)
+	log.Printf("Starting to monitor log file for new entries: %s", filename)
 
 	for line := range t.Lines {
 		if line.Err != nil {
