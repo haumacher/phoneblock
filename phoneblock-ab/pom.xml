@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.haumacher</groupId>
 		<artifactId>phoneblock-parent</artifactId>
-		<version>1.7.13-SNAPSHOT</version>
+		<version>1.7.13</version>
 	</parent>
 	
 	<artifactId>phoneblock-ab</artifactId>
@@ -33,7 +33,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-		<tag>1.6.14</tag>
+		<tag>1.7.13</tag>
   	</scm>
 
 	<properties>
