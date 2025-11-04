@@ -141,12 +141,19 @@ public class ContentFilter extends LoginFilter {
 			String uri = request.getRequestURI().substring(request.getContextPath().length());
 			if (NO_POW.contains(uri) 
 					|| !request.getMethod().equals("GET")
+					|| uri.startsWith(CardDavServlet.DIR_NAME)
 					|| uri.startsWith("/assets") 
 					|| uri.startsWith("/webjars")
 					|| uri.startsWith("/oauth")
 					|| uri.startsWith("/api")
 					|| uri.startsWith("/mobile") 
-					|| uri.startsWith(CardDavServlet.DIR_NAME)) {
+					|| uri.startsWith("/ab") 
+					|| uri.startsWith("/resource-not-found") 
+					|| uri.endsWith(".png") 
+					|| uri.endsWith(".svg") 
+					|| uri.endsWith(".css") 
+					|| uri.endsWith(".js") 
+			) {
 				render(request, response, chain);
 				return;
 			};
