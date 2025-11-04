@@ -397,7 +397,8 @@ func tailLogFile(filename string, tracker *IPTracker) error {
 }
 
 // Read existing log file content before tailing
-func readExistingLog(filename string, tracker *IPTracker) error {
+// If maxLines is 0, read the entire file
+func readExistingLog(filename string, tracker *IPTracker, maxLines int) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -408,14 +409,29 @@ func readExistingLog(filename string, tracker *IPTracker) error {
 	}
 	defer file.Close()
 
-	// Use a circular buffer to keep only the last 5000 lines in memory
-	const maxLines = 5000
+	scanner := bufio.NewScanner(file)
+	totalLines := 0
+
+	// If maxLines is 0, read all lines directly
+	if maxLines == 0 {
+		for scanner.Scan() {
+			processLogLine(scanner.Text(), tracker)
+			totalLines++
+		}
+
+		if err := scanner.Err(); err != nil {
+			return fmt.Errorf("error reading file: %w", err)
+		}
+
+		log.Printf("Processed all %d existing log lines", totalLines)
+		return nil
+	}
+
+	// Use a circular buffer to keep only the last maxLines in memory
 	lines := make([]string, maxLines)
 	writeIndex := 0
-	totalLines := 0
 	wrapped := false
 
-	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		lines[writeIndex] = scanner.Text()
 		writeIndex++
@@ -522,6 +538,7 @@ func main() {
 	enableFirewall := flag.Bool("enable-firewall", false, "Enable automatic firewall blocking using ufw")
 	initialBlockMinutes := flag.Int("initial-block-minutes", 30, "Initial blocking duration in minutes (doubles on each re-block, max 30 days)")
 	continuousMode := flag.Bool("continuous", false, "Enable continuous mode (tail log file and monitor indefinitely)")
+	limit := flag.Int("limit", 0, "Number of lines to read from end of log file initially (0 = read entire file)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <apache-access-log-file>\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Options:\n")
@@ -554,7 +571,7 @@ func main() {
 	initialBlockDuration := time.Duration(*initialBlockMinutes) * time.Minute
 
 	// Read existing log content
-	if err := readExistingLog(logFile, tracker); err != nil {
+	if err := readExistingLog(logFile, tracker, *limit); err != nil {
 		log.Printf("Warning: failed to read existing log: %v", err)
 	}
 
