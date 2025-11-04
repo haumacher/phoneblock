@@ -316,3 +316,140 @@ func TestParseUFWOutput(t *testing.T) {
 		})
 	}
 }
+
+func TestBlockingLogicWithLogLines(t *testing.T) {
+	tests := []struct {
+		name            string
+		logLines        []string
+		threshold       int
+		expectedBlocked bool
+		expectedCount   int
+	}{
+		{
+			name: "Below threshold - should not block",
+			logLines: []string{
+				`192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc1 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:31 +0000] "GET /page?challenge=abc2 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:32 +0000] "GET /page?challenge=abc3 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:33 +0000] "GET /page?challenge=abc4 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			},
+			threshold:       5,
+			expectedBlocked: false,
+			expectedCount:   4,
+		},
+		{
+			name: "At threshold - should not block (needs >threshold)",
+			logLines: []string{
+				`192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc1 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:31 +0000] "GET /page?challenge=abc2 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:32 +0000] "GET /page?challenge=abc3 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:33 +0000] "GET /page?challenge=abc4 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:34 +0000] "GET /page?challenge=abc5 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			},
+			threshold:       5,
+			expectedBlocked: false,
+			expectedCount:   5,
+		},
+		{
+			name: "Above threshold - should block",
+			logLines: []string{
+				`192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc1 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:31 +0000] "GET /page?challenge=abc2 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:32 +0000] "GET /page?challenge=abc3 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:33 +0000] "GET /page?challenge=abc4 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:34 +0000] "GET /page?challenge=abc5 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:35 +0000] "GET /page?challenge=abc6 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			},
+			threshold:       5,
+			expectedBlocked: true,
+			expectedCount:   6,
+		},
+		{
+			name: "Above threshold but with solution - should not block",
+			logLines: []string{
+				`192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc1 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:31 +0000] "GET /page?challenge=abc2 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:32 +0000] "GET /page?challenge=abc3 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:33 +0000] "GET /page?challenge=abc4 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:34 +0000] "GET /page?challenge=abc5 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:35 +0000] "GET /page?challenge=abc6 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:36 +0000] "GET /submit?solution=xyz789 HTTP/1.1" 200 567 "-" "Mozilla/5.0"`,
+			},
+			threshold:       5,
+			expectedBlocked: false,
+			expectedCount:   0, // IP removed after solution
+		},
+		{
+			name: "Many challenges without solution - should block",
+			logLines: []string{
+				`192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc1 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:31 +0000] "GET /page?challenge=abc2 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:32 +0000] "GET /page?challenge=abc3 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:33 +0000] "GET /page?challenge=abc4 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:34 +0000] "GET /page?challenge=abc5 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:35 +0000] "GET /page?challenge=abc6 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:36 +0000] "GET /page?challenge=abc7 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:37 +0000] "GET /page?challenge=abc8 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:38 +0000] "GET /page?challenge=abc9 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:39 +0000] "GET /page?challenge=abc10 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			},
+			threshold:       5,
+			expectedBlocked: true,
+			expectedCount:   10,
+		},
+		{
+			name: "Challenge in referer should be ignored",
+			logLines: []string{
+				`192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc1 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:31 +0000] "GET /other HTTP/1.1" 200 1234 "http://example.com?challenge=ref" "Mozilla/5.0"`,
+				`192.168.1.100 - - [03/Nov/2025:10:15:32 +0000] "GET /page?challenge=abc2 HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			},
+			threshold:       2,
+			expectedBlocked: false,
+			expectedCount:   2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create tracker with firewall disabled for testing
+			tracker := NewIPTracker(false)
+
+			// Process all log lines
+			for _, logLine := range tt.logLines {
+				processLogLine(logLine, tracker)
+			}
+
+			// Get tracked IPs
+			ips := tracker.GetChallengeIPs()
+
+			// If solution was provided, IP should be removed
+			if tt.expectedCount == 0 {
+				if len(ips) != 0 {
+					t.Errorf("Expected IP to be removed after solution, but %d IPs are still tracked", len(ips))
+				}
+				return
+			}
+
+			// Check that IP is tracked with correct count
+			ipInfo, exists := ips["192.168.1.100"]
+			if !exists {
+				t.Errorf("IP 192.168.1.100 not tracked")
+				return
+			}
+
+			if ipInfo.Count != tt.expectedCount {
+				t.Errorf("Expected count %d, got %d", tt.expectedCount, ipInfo.Count)
+			}
+
+			// Simulate blocking logic from ManageFirewallRules
+			// Condition: !info.Blocked && info.Count > threshold && info.Count > info.LastBlockCheck
+			shouldBlock := !ipInfo.Blocked && ipInfo.Count > tt.threshold && ipInfo.Count > ipInfo.LastBlockCheck
+
+			if shouldBlock != tt.expectedBlocked {
+				t.Errorf("Expected blocked=%v, but blocking logic would block=%v (count=%d, threshold=%d, lastBlockCheck=%d)",
+					tt.expectedBlocked, shouldBlock, ipInfo.Count, tt.threshold, ipInfo.LastBlockCheck)
+			}
+		})
+	}
+}
