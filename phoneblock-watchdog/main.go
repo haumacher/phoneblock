@@ -521,10 +521,14 @@ func main() {
 	minAccesses := flag.Int("min-accesses", 5, "Minimum number of challenge accesses to trigger reporting")
 	enableFirewall := flag.Bool("enable-firewall", false, "Enable automatic firewall blocking using ufw")
 	initialBlockMinutes := flag.Int("initial-block-minutes", 30, "Initial blocking duration in minutes (doubles on each re-block, max 30 days)")
+	continuousMode := flag.Bool("continuous", false, "Enable continuous mode (tail log file and monitor indefinitely)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <apache-access-log-file>\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\nModes:\n")
+		fmt.Fprintf(os.Stderr, "  Without --continuous: Process existing log file and exit\n")
+		fmt.Fprintf(os.Stderr, "  With --continuous:    Monitor log file continuously\n")
 	}
 	flag.Parse()
 
@@ -570,6 +574,15 @@ func main() {
 
 	// Print initial status (show all IPs)
 	printStatus(tracker, true, *minAccesses)
+
+	// If not in continuous mode, exit after processing existing log
+	if !*continuousMode {
+		log.Printf("One-time processing complete. Use --continuous to monitor log file continuously.")
+		os.Exit(0)
+	}
+
+	// Continuous mode: monitor log file indefinitely
+	log.Printf("Continuous mode enabled - monitoring log file...")
 
 	// Setup signal handling for graceful shutdown
 	sigChan := make(chan os.Signal, 1)
