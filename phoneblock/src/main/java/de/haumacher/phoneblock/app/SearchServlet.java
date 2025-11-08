@@ -102,6 +102,7 @@ public class SearchServlet extends HttpServlet {
 			or("Googlebot"
 			, "AdsBot-Google"
 			, "Googlebot-Image"
+			, "Google-Read-Aloud"
 
 			, "bingbot"
 			, "BingPreview"
@@ -127,6 +128,7 @@ public class SearchServlet extends HttpServlet {
 			, "meta-externalagent"
 			, "TikTokSpider"
 			, "TelegramBot"
+			, "WhatsApp"
 
 			// Monitoring
 			, "upz-bot"
