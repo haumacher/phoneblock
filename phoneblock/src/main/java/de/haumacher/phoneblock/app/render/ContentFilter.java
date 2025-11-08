@@ -206,6 +206,13 @@ public class ContentFilter extends LoginFilter {
 			
 			// Create or check prove-of-work challenge.
 			String challengeParam = (String) request.getParameter(POW_CHALLENGE_ATTR);
+			if (challenge == null && challengeParam != null) {
+				// The browser does not accept the session cookie. Deliver a manual retry page.
+				// Otherwise this creates an endless redirect loop and the client is immediately
+				// added to the firewall blocklist.
+				TemplateRenderer.getInstance(request).process("/pow-failed", request, response);
+				return;
+			}
 			if (challenge == null || !challenge.equals(challengeParam)) {
 				challenge = createChallenge();
 				session.setAttribute(POW_CHALLENGE_ATTR, challenge);

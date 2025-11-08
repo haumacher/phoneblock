@@ -10,17 +10,19 @@
 		<h1 data-tx="t0001">Verbindung unterbrochen</h1>
 
 		<p data-tx="t0002">
-			PhoneBlock kann nicht überprüfen, ob dies keine automatisierte Massenabfrage ist. Daher kann der 
+			PhoneBlock kann nicht überprüfen, ob dies keine automatisierte Massenabfrage ist (dein Browser 
+			akzeptiert u.U. das technische Session-Cookie nicht). Daher kann der 
 			Seiteninhalt leider nicht angezeigt werden. Wenn Du kein Roboter sein solltest, dann kannst Du die 
-			Überprüfung umgehen, indem Du Dich bei PhoneBlock anmeldest. Am besten aktivierst Du bei der 
-			Anmeldung die Option "angemeldet bleiben", dann tritt dieses Problem beim nächsten Besuch der 
-			Webseite gar nicht erst auf.
+			Überprüfung umgehen, indem Du Dich <a th:href="@{/login}">bei PhoneBlock anmeldest</a>. Am besten 
+			aktivierst Du bei der Anmeldung die Option "angemeldet bleiben", dann tritt dieses Problem beim 
+			nächsten Besuch der Webseite gar nicht erst auf.
 		</p>
 		
 		<p data-tx="t0003">
 			Bitte entschuldige die Unannehmlichkeiten, aber die PhoneBlock-Webseite wird von unfassbar vielen 
-			Rechnern im Internet mit Massenabfragen angegriffen, welche die Verfügbarkeit der Seite ohne diesen
-			Check stark einschränken würden. Damit PhoneBlock weiterhin kostenlos (bzw. auf <a th:href="@{/support}">Spendenbasis</a>) 
+			Bots mit Massenabfragen angegriffen, welche die Verfügbarkeit der Seite ohne diesen
+			Check stark einschränken bzw. den Betrieb von PhoneBlock unmöglich machen würden. 
+			Damit PhoneBlock weiterhin kostenlos (bzw. auf <a th:href="@{/support}">Spendenbasis</a>) 
 			angeboten werden kann, sind diese Maßnahmen leider unumgänglich. 
 		</p>
 		
