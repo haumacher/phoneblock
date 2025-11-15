@@ -1,6 +1,7 @@
 package de.haumacher.phoneblock.ab;
 
 import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
+import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 
 public class DBAnswerbotInfo extends AnswerbotInfo {
 	
@@ -11,6 +12,7 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 			boolean registered, String msg, 
 			int newCalls, int callsAccepted, long talkTime,
 			String userName, String password, 
+			RetentionPeriod retentionPeriod,
 			String dyndnsUser, String dyndnsPassword
 	) {
 		setId(id);
@@ -36,6 +38,8 @@ public class DBAnswerbotInfo extends AnswerbotInfo {
 
 		setUserName(userName);
 		setPassword(password);
+
+		setRetentionPeriod(retentionPeriod);
 
 		setDyndnsUser(dyndnsUser);
 		setDyndnsPassword(dyndnsPassword);

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tinylog.configuration.Configuration;
 
+import de.haumacher.phoneblock.ab.CallRetentionService;
 import de.haumacher.phoneblock.ab.SipService;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.chatgpt.ChatGPTService;
@@ -118,6 +119,7 @@ public class Application implements ServletContextListener {
 			new ManagementService(indexer, db, gpt, sip),
 			new AddressBookCache(db),
 			new ImapService(scheduler, db, mail),
+			new CallRetentionService(scheduler, db)
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {

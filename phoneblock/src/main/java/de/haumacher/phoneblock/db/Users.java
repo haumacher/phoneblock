@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
+import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.Contribution;
 
@@ -401,6 +402,7 @@ public interface Users {
 				s.REGISTERED, s.REGISTER_MSG, 
 				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
 				s.USERNAME, s.PASSWD, 
+				s.RETENTION_PERIOD,
 				d.DYNDNS_USER, d.DYNDNS_PASSWD 
 			from ANSWERBOT_SIP s  
 			left outer join ANSWERBOT_DYNDNS d 
@@ -417,6 +419,7 @@ public interface Users {
 				s.REGISTERED, s.REGISTER_MSG, 
 				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
 				s.USERNAME, s.PASSWD, 
+				s.RETENTION_PERIOD,
 				d.DYNDNS_USER, d.DYNDNS_PASSWD 
 			from ANSWERBOT_SIP s  
 			left outer join ANSWERBOT_DYNDNS d 
@@ -425,6 +428,26 @@ public interface Users {
 			""")
 	DBAnswerbotInfo getAnswerBot(long id);
 	
+	/** 
+	 * Gets all answerbots that have retention enabled (period != 'NEVER') for cleanup.
+	 */
+	@Select("""
+			select 
+				s.ID, s.USERID, 
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
+				s.REGISTERED, s.REGISTER_MSG, 
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
+				s.USERNAME, s.PASSWD, 
+				s.RETENTION_PERIOD,
+				d.DYNDNS_USER, d.DYNDNS_PASSWD 
+			from ANSWERBOT_SIP s  
+			left outer join ANSWERBOT_DYNDNS d 
+			on d.ABID=s.ID  
+			where s.RETENTION_PERIOD != 'NEVER'
+			""")
+	List<DBAnswerbotInfo> getAnswerbotsWithRetention();
+
 	@Update("""
 			update ANSWERBOT_SIP s
 			set
@@ -465,5 +488,21 @@ public interface Users {
 	
 	@Update("update ANSWERBOT_SIP set NEW_CALLS=NEW_CALLS + 1, CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
 	void recordCallSummary(long id, long duration);
+
+	/** 
+	 * Updates the retention policy for an answerbot.
+	 */
+	@Update("update ANSWERBOT_SIP set RETENTION_PERIOD=#{period} where ID=#{id}")
+	void updateRetentionPolicy(long id, RetentionPeriod period);
+	
+	/** 
+	 * Deletes call records older than the specified timestamp for a bot.
+	 * 
+	 * @param abId The answerbot ID
+	 * @param cutoffTime Timestamp before which calls should be deleted
+	 * @return Number of records deleted
+	 */
+	@Delete("delete from ANSWERBOT_CALLS where ABID=#{abId} and STARTED < #{cutoffTime}")
+	int deleteCallsOlderThan(long abId, long cutoffTime);
 
 }
