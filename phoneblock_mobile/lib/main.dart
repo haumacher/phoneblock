@@ -460,7 +460,8 @@ class LoginState extends State<LoginWidget> {
                 ''');
           },
           onNavigationRequest: (NavigationRequest request) {
-            if (!request.url.startsWith('https://phoneblock.net/')) {
+            if (!request.url.startsWith('https://phoneblock.net/')
+                && !request.url.startsWith('https://accounts.google.com/')) {
               debugPrint('blocking navigation to ${request.url}');
               return NavigationDecision.prevent;
             }
