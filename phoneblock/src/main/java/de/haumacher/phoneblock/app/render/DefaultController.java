@@ -260,6 +260,12 @@ public class DefaultController implements WebController {
 	}
 
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
+		// Use request parameters as template variables (at least as default values).
+		for (Enumeration<String> it = request.getParameterNames(); it.hasMoreElements(); ) {
+			String attribute = it.nextElement();
+			ctx.setVariable(attribute, request.getParameter(attribute));
+		}
+
 		// Use request attributes as template variables.
 		for (Enumeration<String> it = request.getAttributeNames(); it.hasMoreElements(); ) {
 			String attribute = it.nextElement();

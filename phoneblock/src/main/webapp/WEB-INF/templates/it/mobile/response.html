@@ -9,16 +9,22 @@
 <section class="section">
 <div class="content">
 
-<h1 data-tx="t0001">L'accesso è stato effettuato con successo</h1>
+<h1 data-tx="t0001">Finalizzare il collegamento</h1>
 
-<p data-tx="t0002">Il suo token di autorizzazione: <code id="token" th:text="${loginToken}"></code></p>
+<p data-tx="t0002">Se vedete questa pagina, il vostro browser non ha inoltrato il link alla vostra applicazione PhoneBlock. È necessario farlo manualmente aprendo questa pagina "nell'app". Aprite il menu in basso:</p>
 
-<p data-tx="t0003">Il vostro accesso a PhoneBlock è avvenuto con successo. Questa pagina dovrebbe chiudersi automaticamente e il vostro dispositivo mobile dovrebbe connettersi a PhoneBlock. Se ciò non accade, potrebbe esserci qualcosa di sbagliato nell'applicazione mobile.</p>
+<img alt="Aprire il menu" data-tx="t0003" th:src="@{/assets/img/mobile/connect-1.png}"/>
+	
+<p data-tx="t0004">E selezionare l'opzione "Apri con app":</p>
+
+<img alt="Opzione &quot;Aprire con l'app" data-tx="t0005" th:src="@{/assets/img/mobile/connect-2.png}"/>
+
+<p data-tx="t0006">Il token di autorizzazione: <code id="loginToken" th:text="${loginToken}"></code><a class="copyToClipboard" data-tx="t0007" id="loginToken_" title="Copia negli appunti."><i class="fa-solid fa-copy"></i></a></p>
 
 </div>
 </section>
 
-<script th:src="@{/assets/js/mobile-response.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

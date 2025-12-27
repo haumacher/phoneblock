@@ -9,16 +9,22 @@
 <section class="section">
 <div class="content">
 
-<h1 data-tx="t0001">您已成功登录</h1>
+<h1 data-tx="t0001">最后确定链接</h1>
 
-<p data-tx="t0002">您的授权令牌： <code id="token" th:text="${loginToken}"></code></p>
+<p data-tx="t0002">如果您看到此页面，说明您的浏览器没有将链接转发到 PhoneBlock 应用程序。您必须在 "应用程序 "中手动打开此页面。打开底部菜单：</p>
 
-<p data-tx="t0003">您已成功登录 PhoneBlock。此页面应该会自动关闭，你的移动设备应该会连接到 PhoneBlock。如果没有出现这种情况，则可能是你的移动应用程序出了问题。</p>
+<img alt="打开菜单" data-tx="t0003" th:src="@{/assets/img/mobile/connect-1.png}"/>
+	
+<p data-tx="t0004">然后选择 "用应用程序打开 "选项：</p>
+
+<img alt="选项 &quot;用应用程序打开" data-tx="t0005" th:src="@{/assets/img/mobile/connect-2.png}"/>
+
+<p data-tx="t0006">您的授权令牌： <code id="loginToken" th:text="${loginToken}"></code><a class="copyToClipboard" data-tx="t0007" id="loginToken_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></p>
 
 </div>
 </section>
 
-<script th:src="@{/assets/js/mobile-response.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

@@ -36,14 +36,14 @@ final router = GoRouter(
         GoRoute(
           path: '$contextPath/mobile/response',
           builder: (context, state) {
-            var token = state.uri.queryParameters["token"];
+            var loginToken = state.uri.queryParameters["loginToken"];
             if (kDebugMode) {
-              print("Token received (${state.path}): $token");
+              print("Token received (${state.path}): $loginToken");
             }
-            if (token == null) {
+            if (loginToken == null) {
               return LoginFailed();
             } else {
-              return VerifyLogin(token);
+              return VerifyLogin(loginToken);
             }
           },
         ),
