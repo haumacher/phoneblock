@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_android/shared_preferences_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-const String PHONE_BLOCK_CONNECT_URL = 'https://phoneblock.net/pb-test/mobile/login.jsp';
+const String PHONE_BLOCK_CONNECT_URL = 'https://phoneblock.net/phoneblock/mobile/login';
 
 void main() {
   AppState state = AppState(calls: [
