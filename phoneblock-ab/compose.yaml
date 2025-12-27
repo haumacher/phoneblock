@@ -23,6 +23,7 @@ services:
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
     volumes:
-      - ./conversation:/opt/phoneblock/conversation
+      # Default conversation files are built-in. Only map them if you want to use a custom conversation.
+      # - ./conversation:/opt/phoneblock/conversation
       - ./recordings:/opt/phoneblock/recordings
     restart: unless-stopped
