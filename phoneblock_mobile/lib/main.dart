@@ -345,7 +345,7 @@ class _SetupWizardState extends State<SetupWizard> {
       body: Stepper(
         currentStep: _currentStep.index,
         controlsBuilder: (context, details) {
-          // Only show "Fertig" button on the final step when setup is complete
+          // Show "Done" button only on the final step when all prerequisites are met
           if (_currentStep == SetupStep.complete && _hasAuthToken && _hasPermission) {
             return Padding(
               padding: const EdgeInsets.only(top: 16),
@@ -355,7 +355,7 @@ class _SetupWizardState extends State<SetupWizard> {
               ),
             );
           }
-          // No buttons for other steps
+          // Hide default stepper controls - users navigate by tapping step content buttons
           return const SizedBox.shrink();
         },
         onStepTapped: (step) {
