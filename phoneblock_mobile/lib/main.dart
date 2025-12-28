@@ -15,7 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'l10n/app_localizations.dart';
 
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
 const String pbBaseUrl = 'https://phoneblock.net$contextPath';
