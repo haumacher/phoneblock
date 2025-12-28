@@ -513,7 +513,6 @@ class _MainScreenState extends State<MainScreen> {
       floatingActionButton: _screenedCalls.isNotEmpty
           ? FloatingActionButton(
               onPressed: _deleteAllCalls,
-              backgroundColor: Colors.red,
               tooltip: 'Alle löschen',
               child: const Icon(Icons.delete_sweep),
             )
