@@ -102,11 +102,16 @@ class _AppLauncherState extends State<AppLauncher> {
   }
 }
 
-// Setup wizard steps enum for better readability
+/// Setup wizard steps for better readability and type safety.
 enum SetupStep {
-  welcome,      // Step 0: Welcome and PhoneBlock account connection
-  permission,   // Step 1: Call screening permission request
-  complete;     // Step 2: Setup completion
+  /// Welcome screen and PhoneBlock account connection via OAuth.
+  welcome,
+
+  /// Call screening permission request step.
+  permission,
+
+  /// Setup completion confirmation.
+  complete;
 }
 
 // Setup wizard with multiple steps
