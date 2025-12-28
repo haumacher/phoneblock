@@ -199,32 +199,34 @@ class _SetupWizardState extends State<SetupWizard> {
       body: Stepper(
         currentStep: _currentStep.index,
         controlsBuilder: (context, details) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: ElevatedButton(
-              onPressed: details.onStepContinue,
-              child: Text(
-                _currentStep == SetupStep.complete ? 'Fertig' : 'Weiter',
+          // Only show "Fertig" button on the final step when setup is complete
+          if (_currentStep == SetupStep.complete && _hasAuthToken && _hasPermission) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: ElevatedButton(
+                onPressed: _finishSetup,
+                child: const Text('Fertig'),
               ),
-            ),
-          );
-        },
-        onStepContinue: () {
-          if (_currentStep == SetupStep.welcome && _hasAuthToken) {
-            setState(() {
-              _currentStep = SetupStep.permission;
-            });
-          } else if (_currentStep == SetupStep.permission && _hasPermission) {
-            setState(() {
-              _currentStep = SetupStep.complete;
-            });
-          } else if (_currentStep == SetupStep.complete) {
-            _finishSetup();
+            );
           }
+          // No buttons for other steps
+          return const SizedBox.shrink();
         },
         onStepTapped: (step) {
+          final tappedStep = SetupStep.values[step];
+
           setState(() {
-            _currentStep = SetupStep.values[step];
+            // If tapping the current step and it's completed, collapse it by moving to next incomplete step
+            if (tappedStep == _currentStep) {
+              if (tappedStep == SetupStep.welcome && _hasAuthToken) {
+                _currentStep = SetupStep.permission;
+              } else if (tappedStep == SetupStep.permission && _hasPermission) {
+                _currentStep = SetupStep.complete;
+              }
+            } else {
+              // Otherwise, expand the tapped step
+              _currentStep = tappedStep;
+            }
           });
         },
         steps: [
