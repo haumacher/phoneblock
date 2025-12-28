@@ -160,11 +160,21 @@ public class MainActivity extends FlutterActivity {
                 // Save back to SharedPreferences
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
-                // Update notification to show number of pending calls
-                int pendingCount = callsArray.length();
-                updatePendingCallsNotification(context, pendingCount);
-
-                Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber + " (pending count: " + pendingCount + ")");
+                // Only show notification for blocked SPAM calls
+                // Regular calls are already notified by the phone app
+                if (wasBlocked) {
+                    // Count only blocked calls for notification
+                    int blockedCount = 0;
+                    for (int i = 0; i < callsArray.length(); i++) {
+                        if (callsArray.getJSONObject(i).getBoolean("wasBlocked")) {
+                            blockedCount++;
+                        }
+                    }
+                    updatePendingCallsNotification(context, blockedCount);
+                    Log.d(MainActivity.class.getName(), "Stored blocked SPAM call for later sync: " + phoneNumber + " (blocked count: " + blockedCount + ")");
+                } else {
+                    Log.d(MainActivity.class.getName(), "Stored non-blocked call for later sync: " + phoneNumber);
+                }
             } catch (JSONException e) {
                 Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
             }
