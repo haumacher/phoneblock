@@ -2122,6 +2122,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: const Text("Version"),
                   subtitle: Text(appVersion),
                 ),
+                ListTile(
+                  title: const Text("Entwickler"),
+                  subtitle: const Text("Bernhard Haumacher"),
+                ),
+                ListTile(
+                  title: const Text("Website"),
+                  subtitle: const Text("phoneblock.net"),
+                  onTap: () async {
+                    final url = Uri.parse('https://phoneblock.net');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                ),
+                ListTile(
+                  title: const Text("Quellcode"),
+                  subtitle: const Text("Open Source (GPL-3.0)"),
+                  onTap: () async {
+                    final url = Uri.parse('https://github.com/hduelme/phoneblock');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "PhoneBlock ist ein Open-Source Projekt ohne Tracking, "
+                    "ohne Werbung und ohne Cookies. Der Dienst wird durch "
+                    "Spenden finanziert.",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ],
             ),
     );
