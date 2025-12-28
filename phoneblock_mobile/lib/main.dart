@@ -579,9 +579,6 @@ class _MainScreenState extends State<MainScreen> {
           size: 32,
         ),
       ),
-      confirmDismiss: (direction) async {
-        return await _showDeleteConfirmation(context, call);
-      },
       onDismissed: (direction) {
         _deleteCall(call);
       },
@@ -638,32 +635,6 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  /// Shows a confirmation dialog before deleting a call.
-  Future<bool?> _showDeleteConfirmation(BuildContext context, ScreenedCall call) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Anruf löschen?'),
-          content: Text(
-            'Möchten Sie den Eintrag für ${call.phoneNumber} wirklich löschen?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Abbrechen'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Löschen'),
-            ),
-          ],
-        );
-      },
     );
   }
 
