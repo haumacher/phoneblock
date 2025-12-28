@@ -133,6 +133,13 @@ class _SetupWizardState extends State<SetupWizard> {
     _checkCurrentState();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh state when widget becomes visible (e.g., after returning from OAuth)
+    _checkCurrentState();
+  }
+
   Future<void> _checkCurrentState() async {
     String? authToken = await getAuthToken();
     bool hasPermission = await checkPermission();
@@ -159,6 +166,8 @@ class _SetupWizardState extends State<SetupWizard> {
         const SnackBar(content: Text('Fehler beim Öffnen von PhoneBlock.')),
       );
     }
+    // Note: _hasAuthToken will be updated when user returns via deep link
+    // and the SetupWizard rebuilds after VerifyLogin sets the token
   }
 
   Future<void> _requestPermission() async {
