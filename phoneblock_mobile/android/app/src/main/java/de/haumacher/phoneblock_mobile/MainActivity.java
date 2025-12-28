@@ -225,11 +225,6 @@ public class MainActivity extends FlutterActivity {
                 setMinRangeVotes((Integer) methodCall.arguments);
                 result.success(null);
                 break;
-
-            case "testBadge":
-                testBadge((Integer) methodCall.arguments);
-                result.success(null);
-                break;
         }
     }
 
@@ -327,12 +322,6 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putInt("min_range_votes", minRangeVotes).apply();
         Log.d(MainActivity.class.getName(), "setMinRangeVotes: " + minRangeVotes);
-    }
-
-    private void testBadge(int count) {
-        Log.d(MainActivity.class.getName(), "Testing notification with count: " + count);
-        updatePendingCallsNotification(this, count);
-        Log.d(MainActivity.class.getName(), "Notification test completed");
     }
 
     public static SharedPreferences getPreferences(Context context) {
