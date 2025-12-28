@@ -91,14 +91,19 @@ public class MainActivity extends FlutterActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_PERMISSION_ID) {
-            if (resultCode == android.app.Activity.RESULT_OK) {
-                Log.d(MainActivity.class.getName(), "Permission granted.");
-                _requestPermissionResult.success(Boolean.TRUE);
+            if (_requestPermissionResult != null) {
+                if (resultCode == android.app.Activity.RESULT_OK) {
+                    Log.d(MainActivity.class.getName(), "Permission granted.");
+                    _requestPermissionResult.success(Boolean.TRUE);
+                } else {
+                    Log.d(MainActivity.class.getName(), "Permission denied.");
+                    _requestPermissionResult.success(Boolean.FALSE);
+                }
+                _requestPermissionResult = null;
             } else {
-                Log.d(MainActivity.class.getName(), "Permission denied.");
-                _requestPermissionResult.success(Boolean.FALSE);
+                Log.w(MainActivity.class.getName(), "Permission result received but no callback registered. " +
+                        "This can happen if permission was granted to a different app or activity was recreated.");
             }
-            _requestPermissionResult = null;
         }
     }
 }
