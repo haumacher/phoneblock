@@ -810,7 +810,11 @@ class _MainScreenState extends State<MainScreen> {
             ],
           ),
           onTap: () {
-            Future.delayed(Duration.zero, () => _reportAsLegitimate(context, call));
+            Future.delayed(Duration.zero, () {
+              if (context.mounted) {
+                _reportAsLegitimate(context, call);
+              }
+            });
           },
         ),
       );
@@ -826,7 +830,11 @@ class _MainScreenState extends State<MainScreen> {
             ],
           ),
           onTap: () {
-            Future.delayed(Duration.zero, () => _reportAsSpam(context, call));
+            Future.delayed(Duration.zero, () {
+              if (context.mounted) {
+                _reportAsSpam(context, call);
+              }
+            });
           },
         ),
       );
@@ -1389,7 +1397,7 @@ Future<bool> validateAuthToken() async {
 
 void registerPhoneBlock(BuildContext context) async {
   bool ok = await launchUrl(Uri.parse(pbLoginUrl));
-  if (!ok) {
+  if (!ok && context.mounted) {
     final snackBar = SnackBar(content: Text(context.l10n.failedToOpenPhoneBlock));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
