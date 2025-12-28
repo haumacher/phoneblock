@@ -796,6 +796,22 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
+    // View on PhoneBlock option
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.open_in_browser, color: Colors.blue),
+            SizedBox(width: 12),
+            Text('Auf PhoneBlock ansehen'),
+          ],
+        ),
+        onTap: () {
+          Future.delayed(Duration.zero, () => _viewOnPhoneBlock(call));
+        },
+      ),
+    );
+
     // Always show delete option
     items.add(
       PopupMenuItem(
@@ -1127,6 +1143,37 @@ class _MainScreenState extends State<MainScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Fehler beim Löschen des Anrufs'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Opens the phone number on PhoneBlock website.
+  Future<void> _viewOnPhoneBlock(ScreenedCall call) async {
+    try {
+      final url = Uri.parse('$pbBaseUrl/nums/${call.phoneNumber}');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Browser konnte nicht geöffnet werden'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error opening PhoneBlock URL: $e');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fehler beim Öffnen des Browsers'),
             backgroundColor: Colors.red,
           ),
         );
