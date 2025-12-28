@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:phoneblock_mobile/state.dart';
 
 /// Represents a screened call record stored in the database.
 class ScreenedCall {
@@ -8,6 +9,7 @@ class ScreenedCall {
   final DateTime timestamp;
   final bool wasBlocked; // true if blocked as SPAM, false if accepted as legitimate
   final int votes; // Number of votes from PhoneBlock database
+  final Rating? rating; // The type of spam (e.g., PING, POLL, ADVERTISING, etc.)
 
   ScreenedCall({
     this.id,
@@ -15,16 +17,24 @@ class ScreenedCall {
     required this.timestamp,
     required this.wasBlocked,
     required this.votes,
+    this.rating,
   });
 
   /// Converts database map to ScreenedCall object.
   factory ScreenedCall.fromMap(Map<String, dynamic> map) {
+    Rating? rating;
+    final ratingStr = map['rating'] as String?;
+    if (ratingStr != null) {
+      rating = _parseRating(ratingStr);
+    }
+
     return ScreenedCall(
       id: map['id'] as int?,
       phoneNumber: map['phoneNumber'] as String,
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
       wasBlocked: (map['wasBlocked'] as int) == 1,
       votes: map['votes'] as int,
+      rating: rating,
     );
   }
 
@@ -36,7 +46,35 @@ class ScreenedCall {
       'timestamp': timestamp.millisecondsSinceEpoch,
       'wasBlocked': wasBlocked ? 1 : 0,
       'votes': votes,
+      'rating': rating != null ? _ratingToString(rating!) : null,
     };
+  }
+
+  /// Converts Rating enum to string for storage.
+  static String _ratingToString(Rating rating) {
+    switch (rating) {
+      case Rating.aLEGITIMATE: return 'A_LEGITIMATE';
+      case Rating.uNKNOWN: return 'UNKNOWN';
+      case Rating.pING: return 'PING';
+      case Rating.pOLL: return 'POLL';
+      case Rating.aDVERTISING: return 'ADVERTISING';
+      case Rating.gAMBLE: return 'GAMBLE';
+      case Rating.fRAUD: return 'FRAUD';
+    }
+  }
+
+  /// Parses string from database to Rating enum.
+  static Rating? _parseRating(String ratingStr) {
+    switch (ratingStr) {
+      case 'A_LEGITIMATE': return Rating.aLEGITIMATE;
+      case 'UNKNOWN': return Rating.uNKNOWN;
+      case 'PING': return Rating.pING;
+      case 'POLL': return Rating.pOLL;
+      case 'ADVERTISING': return Rating.aDVERTISING;
+      case 'GAMBLE': return Rating.gAMBLE;
+      case 'FRAUD': return Rating.fRAUD;
+      default: return null;
+    }
   }
 }
 
@@ -61,8 +99,9 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -74,7 +113,8 @@ class ScreenedCallsDatabase {
         phoneNumber TEXT NOT NULL,
         timestamp INTEGER NOT NULL,
         wasBlocked INTEGER NOT NULL,
-        votes INTEGER NOT NULL
+        votes INTEGER NOT NULL,
+        rating TEXT
       )
     ''');
 
@@ -83,6 +123,14 @@ class ScreenedCallsDatabase {
       CREATE INDEX idx_screened_calls_timestamp
       ON screened_calls(timestamp DESC)
     ''');
+  }
+
+  /// Upgrades the database schema.
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add rating column in version 2
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN rating TEXT');
+    }
   }
 
   /// Inserts a new screened call record.
@@ -134,11 +182,19 @@ class ScreenedCallsDatabase {
   }
 
   /// Updates all screened calls with the given phone number to mark as blocked.
-  Future<int> updateCallsByPhoneNumber(String phoneNumber, bool wasBlocked) async {
+  Future<int> updateCallsByPhoneNumber(String phoneNumber, bool wasBlocked, {Rating? rating}) async {
     final db = await database;
+    final updateData = <String, dynamic>{
+      'wasBlocked': wasBlocked ? 1 : 0,
+    };
+
+    if (rating != null) {
+      updateData['rating'] = ScreenedCall._ratingToString(rating);
+    }
+
     return await db.update(
       'screened_calls',
-      {'wasBlocked': wasBlocked ? 1 : 0},
+      updateData,
       where: 'phoneNumber = ?',
       whereArgs: [phoneNumber],
     );

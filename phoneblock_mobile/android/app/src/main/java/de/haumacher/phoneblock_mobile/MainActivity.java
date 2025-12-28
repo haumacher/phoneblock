@@ -51,8 +51,9 @@ public class MainActivity extends FlutterActivity {
      * @param phoneNumber The phone number that was screened
      * @param wasBlocked true if the call was blocked as SPAM, false if accepted
      * @param votes Number of votes from PhoneBlock database
+     * @param rating The rating/category of the call (e.g., "C_PING", "E_ADVERTISING", null for legitimate)
      */
-    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, String rating) {
         long timestamp = System.currentTimeMillis();
 
         // Check if Flutter is active
@@ -63,6 +64,9 @@ public class MainActivity extends FlutterActivity {
             data.put("wasBlocked", wasBlocked);
             data.put("votes", votes);
             data.put("timestamp", timestamp);
+            if (rating != null) {
+                data.put("rating", rating);
+            }
 
             _instance._channel.invokeMethod("onCallScreened", data);
         } else {
@@ -80,6 +84,9 @@ public class MainActivity extends FlutterActivity {
                 callJson.put("wasBlocked", wasBlocked);
                 callJson.put("votes", votes);
                 callJson.put("timestamp", timestamp);
+                if (rating != null) {
+                    callJson.put("rating", rating);
+                }
 
                 // Add to array
                 callsArray.put(callJson);
@@ -146,6 +153,9 @@ public class MainActivity extends FlutterActivity {
                 data.put("wasBlocked", callJson.getBoolean("wasBlocked"));
                 data.put("votes", callJson.getInt("votes"));
                 data.put("timestamp", callJson.getLong("timestamp"));
+                if (callJson.has("rating")) {
+                    data.put("rating", callJson.getString("rating"));
+                }
                 results.add(data);
             }
         } catch (JSONException e) {

@@ -24,6 +24,20 @@ const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 /// This allows the UI to react to new screening results in real-time.
 final callScreenedStreamController = StreamController<ScreenedCall>.broadcast();
 
+/// Parses rating string from PhoneBlock service API response.
+Rating? _parseRatingFromService(String ratingStr) {
+  switch (ratingStr) {
+    case 'A_LEGITIMATE': return Rating.aLEGITIMATE;
+    case 'B_MISSED': return Rating.uNKNOWN;
+    case 'C_PING': return Rating.pING;
+    case 'D_POLL': return Rating.pOLL;
+    case 'E_ADVERTISING': return Rating.aDVERTISING;
+    case 'F_GAMBLE': return Rating.gAMBLE;
+    case 'G_FRAUD': return Rating.fRAUD;
+    default: return null;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -35,6 +49,13 @@ void main() async {
       final wasBlocked = args['wasBlocked'] as bool;
       final votes = args['votes'] as int;
       final timestamp = args['timestamp'] as int;
+      final ratingStr = args['rating'] as String?;
+
+      // Parse rating if available
+      Rating? rating;
+      if (ratingStr != null) {
+        rating = _parseRatingFromService(ratingStr);
+      }
 
       // Store the screened call in database
       final screenedCall = ScreenedCall(
@@ -42,6 +63,7 @@ void main() async {
         timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
         wasBlocked: wasBlocked,
         votes: votes,
+        rating: rating,
       );
 
       await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -50,7 +72,7 @@ void main() async {
       callScreenedStreamController.add(screenedCall);
 
       if (kDebugMode) {
-        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes)');
+        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rating: $ratingStr)');
       }
     }
   });
@@ -81,17 +103,26 @@ Future<void> syncStoredScreeningResults() async {
     if (storedCalls != null && storedCalls is List) {
       for (var callData in storedCalls) {
         final data = callData as Map;
+        final ratingStr = data['rating'] as String?;
+
+        // Parse rating if available
+        Rating? rating;
+        if (ratingStr != null) {
+          rating = _parseRatingFromService(ratingStr);
+        }
+
         final screenedCall = ScreenedCall(
           phoneNumber: data['phoneNumber'] as String,
           timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
           wasBlocked: data['wasBlocked'] as bool,
           votes: data['votes'] as int,
+          rating: rating,
         );
 
         await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
         if (kDebugMode) {
-          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked})');
+          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rating: $ratingStr)');
         }
       }
 
@@ -572,9 +603,23 @@ class _MainScreenState extends State<MainScreen> {
   /// Builds a single call list item.
   Widget _buildCallListItem(ScreenedCall call) {
     final isSpam = call.wasBlocked;
-    final color = isSpam ? Colors.red : Colors.green;
-    final icon = isSpam ? Icons.block : Icons.check_circle;
-    final label = isSpam ? 'SPAM' : 'Legitim';
+
+    // Use rating-specific color and icon if available, otherwise default colors
+    Color color;
+    IconData iconData;
+    String labelText;
+
+    if (call.rating != null && isSpam) {
+      // Use rating-specific styling
+      color = bgColor(call.rating!);
+      iconData = icon(call.rating!).icon!;
+      labelText = (label(call.rating!) as Text).data!;
+    } else {
+      // Default styling
+      color = isSpam ? Colors.red : Colors.green;
+      iconData = isSpam ? Icons.block : Icons.check_circle;
+      labelText = isSpam ? 'SPAM' : 'Legitim';
+    }
 
     return Dismissible(
       key: Key('call_${call.id}'),
@@ -602,7 +647,7 @@ class _MainScreenState extends State<MainScreen> {
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: color.withOpacity(0.1),
-              child: Icon(icon, color: color),
+              child: Icon(iconData, color: color),
             ),
             title: Text(
               call.phoneNumber,
@@ -640,7 +685,7 @@ class _MainScreenState extends State<MainScreen> {
                 border: Border.all(color: color, width: 1.5),
               ),
               child: Text(
-                label,
+                labelText,
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.bold,
@@ -742,10 +787,11 @@ class _MainScreenState extends State<MainScreen> {
 
       if (mounted) {
         if (response.statusCode == 200) {
-          // Update all calls with this phone number to mark as blocked
+          // Update all calls with this phone number to mark as blocked with the rating
           await ScreenedCallsDatabase.instance.updateCallsByPhoneNumber(
             call.phoneNumber,
             true, // Mark as blocked/SPAM
+            rating: rating, // Store the rating type
           );
 
           // Reload the calls list to reflect the change

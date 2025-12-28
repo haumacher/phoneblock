@@ -86,6 +86,7 @@ public class CallChecker extends CallScreeningService {
                 JSONObject json = queryPhoneBlock(number, authToken);
                 boolean archived = json.getBoolean("archived");
                 int votes = json.getInt("votes");
+                String rating = json.optString("rating", null);
 
                 if (votes >= minVotes && !archived) {
                     if (canceled.compareAndSet(false, true)) {
@@ -94,10 +95,10 @@ public class CallChecker extends CallScreeningService {
                             timeoutFuture[0].cancel(false);
                         }
                         Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + votes + " votes)");
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + votes + " votes, rating: " + rating + ")");
                             respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
                             // Report blocked call (persists even when app is not running)
-                            MainActivity.reportScreenedCall(CallChecker.this, number, true, votes);
+                            MainActivity.reportScreenedCall(CallChecker.this, number, true, votes, rating);
                         });
                     }
                     return;
@@ -111,7 +112,7 @@ public class CallChecker extends CallScreeningService {
                             Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
                             acceptCall(callDetails);
                             // Report accepted call (persists even when app is not running)
-                            MainActivity.reportScreenedCall(CallChecker.this, number, false, votes);
+                            MainActivity.reportScreenedCall(CallChecker.this, number, false, votes, rating);
                         });
                     }
                     return;
