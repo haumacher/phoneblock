@@ -275,4 +275,49 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get setupCompleteMessage =>
       'Einrichtung abgeschlossen!\n\nPhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. Die App prüft automatisch eingehende Anrufe und blockiert bekannte Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\nDrücken Sie \"Fertig\", um zur Hauptansicht zu gelangen.';
+
+  @override
+  String get verifyingLoginTitle => 'Überprüfe Login';
+
+  @override
+  String get loginSuccessMessage => 'Login erfolgreich!';
+
+  @override
+  String get redirectingToSetup => 'Weiterleitung zur Einrichtung...';
+
+  @override
+  String tokenVerificationFailed(String error) {
+    return 'Token-Überprüfung fehlgeschlagen: $error';
+  }
+
+  @override
+  String get backToSetup => 'Zurück zur Einrichtung';
+
+  @override
+  String get tokenBeingVerified => 'Token wird überprüft...';
+
+  @override
+  String get failedToOpenPhoneBlock =>
+      'PhoneBlock konnte nicht geöffnet werden.';
+
+  @override
+  String get ratingLegitimate => 'Legitim';
+
+  @override
+  String get ratingAdvertising => 'Werbung';
+
+  @override
+  String get ratingSpam => 'SPAM';
+
+  @override
+  String get ratingPingCall => 'Ping-Anruf';
+
+  @override
+  String get ratingGamble => 'Gewinnspiel';
+
+  @override
+  String get ratingFraud => 'Betrug';
+
+  @override
+  String get ratingPoll => 'Umfrage';
 }

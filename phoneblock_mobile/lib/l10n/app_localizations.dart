@@ -565,6 +565,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einrichtung abgeschlossen!\n\nPhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. Die App prüft automatisch eingehende Anrufe und blockiert bekannte Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\nDrücken Sie \"Fertig\", um zur Hauptansicht zu gelangen.'**
   String get setupCompleteMessage;
+
+  /// Title for login verification screen
+  ///
+  /// In de, this message translates to:
+  /// **'Überprüfe Login'**
+  String get verifyingLoginTitle;
+
+  /// Login success message
+  ///
+  /// In de, this message translates to:
+  /// **'Login erfolgreich!'**
+  String get loginSuccessMessage;
+
+  /// Redirecting to setup message
+  ///
+  /// In de, this message translates to:
+  /// **'Weiterleitung zur Einrichtung...'**
+  String get redirectingToSetup;
+
+  /// Token verification failed message
+  ///
+  /// In de, this message translates to:
+  /// **'Token-Überprüfung fehlgeschlagen: {error}'**
+  String tokenVerificationFailed(String error);
+
+  /// Back to setup button
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück zur Einrichtung'**
+  String get backToSetup;
+
+  /// Token being verified message
+  ///
+  /// In de, this message translates to:
+  /// **'Token wird überprüft...'**
+  String get tokenBeingVerified;
+
+  /// Failed to open PhoneBlock error
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock konnte nicht geöffnet werden.'**
+  String get failedToOpenPhoneBlock;
+
+  /// Legitimate rating label
+  ///
+  /// In de, this message translates to:
+  /// **'Legitim'**
+  String get ratingLegitimate;
+
+  /// Advertising rating label
+  ///
+  /// In de, this message translates to:
+  /// **'Werbung'**
+  String get ratingAdvertising;
+
+  /// SPAM rating label
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM'**
+  String get ratingSpam;
+
+  /// Ping call rating label
+  ///
+  /// In de, this message translates to:
+  /// **'Ping-Anruf'**
+  String get ratingPingCall;
+
+  /// Gamble/Prize draw rating label
+  ///
+  /// In de, this message translates to:
+  /// **'Gewinnspiel'**
+  String get ratingGamble;
+
+  /// Fraud rating label
+  ///
+  /// In de, this message translates to:
+  /// **'Betrug'**
+  String get ratingFraud;
+
+  /// Poll/Survey rating label
+  ///
+  /// In de, this message translates to:
+  /// **'Umfrage'**
+  String get ratingPoll;
 }
 
 class _AppLocalizationsDelegate

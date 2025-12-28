@@ -274,4 +274,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get setupCompleteMessage =>
       'Setup complete!\n\nPhoneBlock Mobile is now ready to block spam calls. The app automatically checks incoming calls and blocks known spam numbers based on the PhoneBlock database.\n\nPress \"Done\" to go to the main screen.';
+
+  @override
+  String get verifyingLoginTitle => 'Verifying Login';
+
+  @override
+  String get loginSuccessMessage => 'Login successful!';
+
+  @override
+  String get redirectingToSetup => 'Redirecting to setup...';
+
+  @override
+  String tokenVerificationFailed(String error) {
+    return 'Token verification failed: $error';
+  }
+
+  @override
+  String get backToSetup => 'Back to setup';
+
+  @override
+  String get tokenBeingVerified => 'Token is being verified...';
+
+  @override
+  String get failedToOpenPhoneBlock => 'Failed to open PhoneBlock.';
+
+  @override
+  String get ratingLegitimate => 'Legitimate';
+
+  @override
+  String get ratingAdvertising => 'Advertising';
+
+  @override
+  String get ratingSpam => 'SPAM';
+
+  @override
+  String get ratingPingCall => 'Ping call';
+
+  @override
+  String get ratingGamble => 'Prize draw';
+
+  @override
+  String get ratingFraud => 'Fraud';
+
+  @override
+  String get ratingPoll => 'Survey';
 }

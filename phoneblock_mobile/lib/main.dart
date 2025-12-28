@@ -647,7 +647,7 @@ class _MainScreenState extends State<MainScreen> {
       // Use rating-specific styling
       color = bgColor(call.rating!);
       iconData = icon(call.rating!).icon!;
-      labelText = (label(call.rating!) as Text).data!;
+      labelText = (label(context, call.rating!) as Text).data!;
     } else {
       // Default styling (also used for Rating.uNKNOWN)
       color = isSpam ? Colors.red : Colors.green;
@@ -1086,7 +1086,7 @@ class _MainScreenState extends State<MainScreen> {
                   .where((r) => r != Rating.aLEGITIMATE) // Exclude legitimate
                   .map((rating) => ListTile(
                         leading: icon(rating),
-                        title: label(rating),
+                        title: label(context, rating),
                         tileColor: bgColor(rating).withOpacity(0.1),
                         onTap: () {
                           Navigator.of(context).pop(rating);
@@ -1262,7 +1262,7 @@ class VerifyLoginState extends State<VerifyLogin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Überprüfe Login'),
+        title: Text(AppLocalizations.of(context)!.verifyingLoginTitle),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -1276,14 +1276,14 @@ class VerifyLoginState extends State<VerifyLogin> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.go('/setup');
                   });
-                  return const Column(
+                  return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 64),
-                      SizedBox(height: 16),
-                      Text("Login erfolgreich!", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text("Weiterleitung zur Einrichtung..."),
+                      const Icon(Icons.check_circle, color: Colors.green, size: 64),
+                      const SizedBox(height: 16),
+                      Text(AppLocalizations.of(context)!.loginSuccessMessage, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(AppLocalizations.of(context)!.redirectingToSetup),
                     ],
                   );
                 } else if (state.hasError) {
@@ -1292,21 +1292,21 @@ class VerifyLoginState extends State<VerifyLogin> {
                     children: [
                       const Icon(Icons.error, color: Colors.red, size: 64),
                       const SizedBox(height: 16),
-                      Text("Token-Überprüfung fehlgeschlagen: ${state.error}"),
+                      Text(AppLocalizations.of(context)!.tokenVerificationFailed(state.error.toString())),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => context.go('/setup'),
-                        child: const Text('Zurück zur Einrichtung'),
+                        child: Text(AppLocalizations.of(context)!.backToSetup),
                       ),
                     ],
                   );
                 } else {
-                  return const Column(
+                  return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text("Token wird überprüft..."),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(AppLocalizations.of(context)!.tokenBeingVerified),
                     ],
                   );
                 }
@@ -1430,292 +1430,20 @@ Future<bool> validateAuthToken() async {
 void registerPhoneBlock(BuildContext context) async {
   bool ok = await launchUrl(Uri.parse(pbLoginUrl));
   if (!ok) {
-    const snackBar = SnackBar(content: Text('Failed to open PhoneBlock.'));
+    final snackBar = SnackBar(content: Text(AppLocalizations.of(context)!.failedToOpenPhoneBlock));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  final AppState state;
-
-  const MyHomePage(this.state, {super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  _MyHomePageState();
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("PhoneBlock mobile"),
-        actions: [
-          PopupMenuButton(
-            icon: const Icon(Icons.menu),
-              itemBuilder: (context){
-                return [
-                  const PopupMenuItem<int>(
-                    value: 0,
-                    child: Text("Login"),
-                  ),
-
-                  const PopupMenuItem<int>(
-                    value: 1,
-                    child: Text("My Account"),
-                  ),
-
-                  const PopupMenuItem<int>(
-                    value: 2,
-                    child: Text("Settings"),
-                  ),
-
-                  const PopupMenuItem<int>(
-                    value: 3,
-                    child: Text("Logout"),
-                  ),
-                ];
-              },
-              onSelected:(value){
-                if (value == 0) {
-                  if (kDebugMode) {
-                    print("Login is selected.");
-                  }
-
-                  registerPhoneBlock(context);
-                } else if (value == 1){
-                  if (kDebugMode) {
-                    print("My account menu is selected.");
-                  }
-                }else if(value == 2){
-                  if (kDebugMode) {
-                    print("Settings menu is selected.");
-                  }
-                }else if(value == 3){
-                  if (kDebugMode) {
-                    print("Logout menu is selected.");
-                  }
-                }
-              }
-          ),
-      ],
-      ),
-      body: ListView(
-        children: widget.state.calls.map((call) =>
-          Dismissible(key: Key(call.phone), child:
-            ListTile(
-              leading: icon(call.type),
-              title : Row(mainAxisSize: MainAxisSize.min, children: [
-                hint(call.rating),
-                Text(call.label ?? call.phone)
-              ]),
-              subtitle: duration(call),
-              trailing: action(call),
-            ),
-            onDismissed: (direction) => {debugPrint("Dismissed: ${call.phone}") },
-          )
-        ).toList(),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: fetchBlocklist,
-            tooltip: 'Update Blocklist',
-            child: const Icon(Icons.cloud_download),
-          ),
-        ],
-      ) // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-
-  Widget duration(Call call) {
-    if (call.started == 0) {
-      return const Text("");
-    }
-    var date = DateTime.fromMillisecondsSinceEpoch(call.started);
-
-    DateFormat format = createFormat(date);
-    return Text(format.format(date));
-  }
-
-  DateFormat createFormat(DateTime date) {
-    var now = DateTime.now();
-    var today = DateTime(now.year, now.month, now.day);
-    var yesterday = today.subtract(const Duration(days: 1));
-    var thisYear = DateTime(today.year);
-    
-    DateFormat format;
-    if (date.isBefore(thisYear)) {
-      format = DateFormat('hh:mm dd.MM.yyyy');
-    } else if (date.isBefore(yesterday)) {
-      format = DateFormat('hh:mm dd.MM.');
-    } else if (date.isBefore(today)) {
-      format = DateFormat('hh:mm gestern');
-    } else {
-      format = DateFormat('hh:mm heute');
-    }
-    return format;
-  }
-
-  Widget action(Call call) {
-    switch (call.type) {
-      case Type.iNCOMING:
-        return IconButton(icon: const Icon(Icons.block, color: Colors.redAccent,),
-            onPressed: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => RateScreen(call)),
-            )
-        );
-      case Type.mISSED:
-        return IconButton(
-            icon: const Icon(Icons.manage_search, color: Colors.blueAccent,),
-            onPressed: () {
-              if (kDebugMode) {
-                print('Report as spam: ${call.phone}');
-              }
-            });
-      case Type.bLOCKED:
-        return IconButton(
-            icon: const Icon(Icons.playlist_add, color: Colors.redAccent,),
-            onPressed: () {
-              if (kDebugMode) {
-                print('Record call: ${call.phone}');
-              }
-            });
-      case Type.oUTGOING:
-        return const SizedBox.shrink();
-    }
-  }
-
-  Widget hint(Rating rating) {
-    if (rating == Rating.uNKNOWN || rating == Rating.aLEGITIMATE) {
-      return const SizedBox.shrink();
-    }
-    return Padding(padding: const EdgeInsets.only(right: 5),
-        child: Container(
-          decoration: BoxDecoration(
-              color: bgColor(rating),
-              borderRadius: const BorderRadius.all(Radius.circular(10))
-          ),
-          child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: label(rating)),
-        ));
-    }
-
-  Icon icon(Type type) {
-    switch (type) {
-      case Type.bLOCKED: return const Icon(Icons.phone_disabled, color: Colors.redAccent);
-      case Type.oUTGOING: return const Icon(Icons.phone_forwarded, color: Colors.green);
-      case Type.mISSED: return const Icon(Icons.phone_missed, color: Colors.blueAccent);
-      case Type.iNCOMING: return const Icon(Icons.phone_callback, color: Colors.green);
-    }
-  }
-
-  void fetchBlocklist() async {
-    if (await FlutterContacts.requestPermission()) {
-      if (kDebugMode) {
-        print("Permission OK");
-      }
-      var allGroups = await FlutterContacts.getGroups();
-      if (kDebugMode) {
-        print("Groups: $allGroups");
-      }
-
-      List<Group> spamGroups = [];
-      for (var group in allGroups) {
-        if (group.name == "SPAM") {
-          spamGroups.add(group);
-        }
-      }
-
-      if (kDebugMode) {
-        print("SPAM groups: $spamGroups");
-      }
-
-      var allContacts = await FlutterContacts.getContacts(withGroups: true);
-      var spamContacts = allContacts.where((contact) => containsAny(spamGroups, contact.groups));
-      for (var contact in spamContacts) {
-        if (kDebugMode) {
-          for (var num in contact.phones) {
-            print("Found SPAM number: $num");
-          }
-        }
-        await contact.delete();
-      }
-
-      while (spamGroups.length > 1) {
-        Group duplicate = spamGroups.removeLast();
-        await FlutterContacts.deleteGroup(duplicate);
-      }
-
-      Group spamGroup = spamGroups.firstOrNull ?? await createSpamGroup();
-
-      var photo = Uint8List.sublistView(await rootBundle.load("assets/images/spam_icon.png"));
-
-      var pb = Contact(
-        name: Name(last: "ZZ SPAM"),
-        phones: [
-          Phone("012345679", label: PhoneLabel.work),
-          Phone("0234567891", label: PhoneLabel.work),
-        ],
-        groups: [spamGroup],
-        photo: photo,
-      );
-      pb = await pb.insert();
-
-      if (kDebugMode) {
-        print("Created contact $pb");
-      }
-
-      if (kDebugMode) {
-        print("Update OK");
-      }
-    } else {
-      if (kDebugMode) {
-        print("Permission denied");
-      }
-    }
-  }
-
-  /// Whether [all] contains any element of [some].
-  bool containsAny(List all, List some) {
-    for (Object x in some) {
-      if (all.contains(x)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  Future<Group> createSpamGroup() async {
-    Group spamGroup = Group("phoneblock-spam", "SPAM");
-    spamGroup = await FlutterContacts.insertGroup(spamGroup);
-    if (kDebugMode) {
-      print("Created SPAM group: $spamGroup");
-    }
-    return spamGroup;
-  }
-
-}
-
-Widget label(Rating rating) {
+Widget label(BuildContext context, Rating rating) {
   switch (rating) {
-    case Rating.aLEGITIMATE: return const Text("Legitim", style: TextStyle(color: Colors.white));
-    case Rating.aDVERTISING: return const Text("Werbung", style: TextStyle(color: Color.fromRGBO(0,0,0,.7)));
-    case Rating.uNKNOWN: return const Text("SPAM", style: TextStyle(color: Colors.white));
-    case Rating.pING: return const Text("Ping-Anruf", style: TextStyle(color: Colors.white));
-    case Rating.gAMBLE: return const Text("Gewinnspiel", style: TextStyle(color: Colors.white));
-    case Rating.fRAUD: return const Text("Betrug", style: TextStyle(color: Colors.white));
-    case Rating.pOLL: return const Text("Umfrage", style: TextStyle(color: Colors.white));
+    case Rating.aLEGITIMATE: return Text(AppLocalizations.of(context)!.ratingLegitimate, style: const TextStyle(color: Colors.white));
+    case Rating.aDVERTISING: return Text(AppLocalizations.of(context)!.ratingAdvertising, style: const TextStyle(color: Color.fromRGBO(0,0,0,.7)));
+    case Rating.uNKNOWN: return Text(AppLocalizations.of(context)!.ratingSpam, style: const TextStyle(color: Colors.white));
+    case Rating.pING: return Text(AppLocalizations.of(context)!.ratingPingCall, style: const TextStyle(color: Colors.white));
+    case Rating.gAMBLE: return Text(AppLocalizations.of(context)!.ratingGamble, style: const TextStyle(color: Colors.white));
+    case Rating.fRAUD: return Text(AppLocalizations.of(context)!.ratingFraud, style: const TextStyle(color: Colors.white));
+    case Rating.pOLL: return Text(AppLocalizations.of(context)!.ratingPoll, style: const TextStyle(color: Colors.white));
   }
 }
 
@@ -1781,7 +1509,7 @@ class RateScreen extends StatelessWidget {
         },
         child: Row(mainAxisSize: MainAxisSize.max, children: [
           Padding(padding: const EdgeInsets.only(right: 10), child: icon(rating)),
-          label(rating)
+          label(context, rating)
         ]),
       ),
     );

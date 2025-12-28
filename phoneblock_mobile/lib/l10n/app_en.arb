@@ -155,5 +155,33 @@
 
   "permissionGrantedSuccessfully": "✓ Permission successfully granted",
 
-  "setupCompleteMessage": "Setup complete!\n\nPhoneBlock Mobile is now ready to block spam calls. The app automatically checks incoming calls and blocks known spam numbers based on the PhoneBlock database.\n\nPress \"Done\" to go to the main screen."
+  "setupCompleteMessage": "Setup complete!\n\nPhoneBlock Mobile is now ready to block spam calls. The app automatically checks incoming calls and blocks known spam numbers based on the PhoneBlock database.\n\nPress \"Done\" to go to the main screen.",
+
+  "verifyingLoginTitle": "Verifying Login",
+
+  "loginSuccessMessage": "Login successful!",
+
+  "redirectingToSetup": "Redirecting to setup...",
+
+  "tokenVerificationFailed": "Token verification failed: {error}",
+
+  "backToSetup": "Back to setup",
+
+  "tokenBeingVerified": "Token is being verified...",
+
+  "failedToOpenPhoneBlock": "Failed to open PhoneBlock.",
+
+  "ratingLegitimate": "Legitimate",
+
+  "ratingAdvertising": "Advertising",
+
+  "ratingSpam": "SPAM",
+
+  "ratingPingCall": "Ping call",
+
+  "ratingGamble": "Prize draw",
+
+  "ratingFraud": "Fraud",
+
+  "ratingPoll": "Survey"
 }

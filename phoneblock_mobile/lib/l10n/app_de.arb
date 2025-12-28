@@ -439,5 +439,80 @@
   "setupCompleteMessage": "Einrichtung abgeschlossen!\n\nPhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. Die App prüft automatisch eingehende Anrufe und blockiert bekannte Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\nDrücken Sie \"Fertig\", um zur Hauptansicht zu gelangen.",
   "@setupCompleteMessage": {
     "description": "Setup complete message"
+  },
+
+  "verifyingLoginTitle": "Überprüfe Login",
+  "@verifyingLoginTitle": {
+    "description": "Title for login verification screen"
+  },
+
+  "loginSuccessMessage": "Login erfolgreich!",
+  "@loginSuccessMessage": {
+    "description": "Login success message"
+  },
+
+  "redirectingToSetup": "Weiterleitung zur Einrichtung...",
+  "@redirectingToSetup": {
+    "description": "Redirecting to setup message"
+  },
+
+  "tokenVerificationFailed": "Token-Überprüfung fehlgeschlagen: {error}",
+  "@tokenVerificationFailed": {
+    "description": "Token verification failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "backToSetup": "Zurück zur Einrichtung",
+  "@backToSetup": {
+    "description": "Back to setup button"
+  },
+
+  "tokenBeingVerified": "Token wird überprüft...",
+  "@tokenBeingVerified": {
+    "description": "Token being verified message"
+  },
+
+  "failedToOpenPhoneBlock": "PhoneBlock konnte nicht geöffnet werden.",
+  "@failedToOpenPhoneBlock": {
+    "description": "Failed to open PhoneBlock error"
+  },
+
+  "ratingLegitimate": "Legitim",
+  "@ratingLegitimate": {
+    "description": "Legitimate rating label"
+  },
+
+  "ratingAdvertising": "Werbung",
+  "@ratingAdvertising": {
+    "description": "Advertising rating label"
+  },
+
+  "ratingSpam": "SPAM",
+  "@ratingSpam": {
+    "description": "SPAM rating label"
+  },
+
+  "ratingPingCall": "Ping-Anruf",
+  "@ratingPingCall": {
+    "description": "Ping call rating label"
+  },
+
+  "ratingGamble": "Gewinnspiel",
+  "@ratingGamble": {
+    "description": "Gamble/Prize draw rating label"
+  },
+
+  "ratingFraud": "Betrug",
+  "@ratingFraud": {
+    "description": "Fraud rating label"
+  },
+
+  "ratingPoll": "Umfrage",
+  "@ratingPoll": {
+    "description": "Poll/Survey rating label"
   }
 }
