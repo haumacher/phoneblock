@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -151,8 +150,10 @@ Future<void> syncStoredScreeningResults() async {
       // Clear the stored results from SharedPreferences after syncing
       await platform.invokeMethod('clearStoredScreeningResults');
 
-      if (kDebugMode && storedCalls.isNotEmpty) {
-        print('Synced ${storedCalls.length} stored screening results');
+      if (kDebugMode) {
+        if (storedCalls.isNotEmpty) {
+          print('Synced ${storedCalls.length} stored screening results');
+        }
       }
     }
   } catch (e) {
@@ -908,7 +909,7 @@ class _MainScreenState extends State<MainScreen> {
     try {
       String? token = await getAuthToken();
       if (token == null) {
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.notLoggedIn),
@@ -942,7 +943,7 @@ class _MainScreenState extends State<MainScreen> {
         body: jsonBody,
       );
 
-      if (mounted) {
+      if (context.mounted) {
         if (response.statusCode == 200) {
           // Update all calls with this phone number to mark as legitimate
           await ScreenedCallsDatabase.instance.updateCallsByPhoneNumber(
@@ -974,7 +975,7 @@ class _MainScreenState extends State<MainScreen> {
         print('Error reporting legitimate: $e');
       }
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.reportError(e.toString())),
@@ -996,7 +997,7 @@ class _MainScreenState extends State<MainScreen> {
     try {
       String? token = await getAuthToken();
       if (token == null) {
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.notLoggedIn),
@@ -1030,7 +1031,7 @@ class _MainScreenState extends State<MainScreen> {
         body: jsonBody,
       );
 
-      if (mounted) {
+      if (context.mounted) {
         if (response.statusCode == 200) {
           // Update all calls with this phone number to mark as blocked with the rating
           await ScreenedCallsDatabase.instance.updateCallsByPhoneNumber(
@@ -1062,7 +1063,7 @@ class _MainScreenState extends State<MainScreen> {
         print('Error reporting spam: $e');
       }
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.reportError(e.toString())),
