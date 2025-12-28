@@ -102,6 +102,13 @@ class _AppLauncherState extends State<AppLauncher> {
   }
 }
 
+// Setup wizard steps enum for better readability
+enum SetupStep {
+  welcome,      // Step 0: Welcome and PhoneBlock account connection
+  permission,   // Step 1: Call screening permission request
+  complete;     // Step 2: Setup completion
+}
+
 // Setup wizard with multiple steps
 class SetupWizard extends StatefulWidget {
   const SetupWizard({super.key});
@@ -111,7 +118,7 @@ class SetupWizard extends StatefulWidget {
 }
 
 class _SetupWizardState extends State<SetupWizard> {
-  int _currentStep = 0;
+  SetupStep _currentStep = SetupStep.welcome;
   bool _hasAuthToken = false;
   bool _hasPermission = false;
 
@@ -131,11 +138,11 @@ class _SetupWizardState extends State<SetupWizard> {
 
       // Start at the first incomplete step
       if (!_hasAuthToken) {
-        _currentStep = 0;
+        _currentStep = SetupStep.welcome;
       } else if (!_hasPermission) {
-        _currentStep = 1;
+        _currentStep = SetupStep.permission;
       } else {
-        _currentStep = 2;
+        _currentStep = SetupStep.complete;
       }
     });
   }
@@ -158,7 +165,7 @@ class _SetupWizardState extends State<SetupWizard> {
 
       if (granted) {
         setState(() {
-          _currentStep = 2;
+          _currentStep = SetupStep.complete;
         });
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -185,37 +192,37 @@ class _SetupWizardState extends State<SetupWizard> {
         title: const Text('PhoneBlock Mobile - Einrichtung'),
       ),
       body: Stepper(
-        currentStep: _currentStep,
+        currentStep: _currentStep.index,
         onStepContinue: () {
-          if (_currentStep == 0 && _hasAuthToken) {
+          if (_currentStep == SetupStep.welcome && _hasAuthToken) {
             setState(() {
-              _currentStep = 1;
+              _currentStep = SetupStep.permission;
             });
-          } else if (_currentStep == 1 && _hasPermission) {
+          } else if (_currentStep == SetupStep.permission && _hasPermission) {
             setState(() {
-              _currentStep = 2;
+              _currentStep = SetupStep.complete;
             });
-          } else if (_currentStep == 2) {
+          } else if (_currentStep == SetupStep.complete) {
             _finishSetup();
           }
         },
         onStepCancel: () {
-          if (_currentStep > 0) {
+          if (_currentStep.index > 0) {
             setState(() {
-              _currentStep--;
+              _currentStep = SetupStep.values[_currentStep.index - 1];
             });
           }
         },
         onStepTapped: (step) {
           setState(() {
-            _currentStep = step;
+            _currentStep = SetupStep.values[step];
           });
         },
         steps: [
           Step(
             title: const Text('Willkommen'),
             subtitle: const Text('PhoneBlock-Konto verbinden'),
-            isActive: _currentStep >= 0,
+            isActive: _currentStep.index >= SetupStep.welcome.index,
             state: _hasAuthToken ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +259,7 @@ class _SetupWizardState extends State<SetupWizard> {
           Step(
             title: const Text('Berechtigungen'),
             subtitle: const Text('Anrufe filtern erlauben'),
-            isActive: _currentStep >= 1,
+            isActive: _currentStep.index >= SetupStep.permission.index,
             state: _hasPermission ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +295,7 @@ class _SetupWizardState extends State<SetupWizard> {
           Step(
             title: const Text('Fertig'),
             subtitle: const Text('Einrichtung abgeschlossen'),
-            isActive: _currentStep >= 2,
+            isActive: _currentStep.index >= SetupStep.complete.index,
             state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
