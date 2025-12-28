@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
 import 'package:phoneblock_mobile/api.dart' as api;
@@ -723,14 +724,20 @@ class _MainScreenState extends State<MainScreen> {
         comment: '', // No comment for now
       );
 
-      // Call the rate API using the RateRequest's built-in JSON serialization
+      // Serialize to JSON using writeContent() (not toString() which includes type info)
+      final buffer = StringBuffer();
+      final jsonWriter = jsonStringWriter(buffer);
+      rateRequest.writeContent(jsonWriter);
+      final jsonBody = buffer.toString();
+
+      // Call the rate API
       final response = await http.post(
         Uri.parse('$pbBaseUrl/api/rate'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: rateRequest.toString(),
+        body: jsonBody,
       );
 
       if (mounted) {
