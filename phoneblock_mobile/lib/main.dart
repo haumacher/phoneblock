@@ -824,6 +824,35 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Reports a call as legitimate.
   Future<void> _reportAsLegitimate(BuildContext context, ScreenedCall call) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Als legitim melden?'),
+          content: Text(
+            'Möchten Sie ${call.phoneNumber} wirklich als legitime Nummer melden?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              child: const Text('Melden'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // User cancelled
+    if (confirmed != true) {
+      return;
+    }
+
     try {
       String? token = await getAuthToken();
       if (token == null) {
