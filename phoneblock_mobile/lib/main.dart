@@ -13,8 +13,8 @@ import 'package:phoneblock_mobile/api.dart' as api;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-const String appVersion = '1.0.0';
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
 const String pbBaseUrl = 'https://phoneblock.net$contextPath';
 const String pbLoginUrl = '$pbBaseUrl/mobile/login';
@@ -1780,10 +1780,16 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
   @override
   void initState() {
     super.initState();
+    _initializeWebView();
+  }
+
+  Future<void> _initializeWebView() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final version = packageInfo.version;
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent('PhoneBlockMobile/$appVersion')
+      ..setUserAgent('PhoneBlockMobile/$version')
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
