@@ -640,10 +640,6 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Deletes a call from the database and updates the UI.
   Future<void> _deleteCall(ScreenedCall call) async {
-    // Store the deleted call and its index for potential undo
-    final deletedCall = call;
-    final deletedIndex = _screenedCalls.indexOf(call);
-
     // Remove from UI immediately
     setState(() {
       _screenedCalls.remove(call);
@@ -655,65 +651,18 @@ class _MainScreenState extends State<MainScreen> {
         await ScreenedCallsDatabase.instance.deleteScreenedCall(call.id!);
       }
 
-      // Show undo snackbar
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${call.phoneNumber} gelöscht'),
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'Rückgängig',
-              onPressed: () {
-                _undoDelete(deletedCall, deletedIndex);
-              },
-            ),
-          ),
-        );
+      if (kDebugMode) {
+        print('Deleted call: ${call.phoneNumber}');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error deleting call: $e');
       }
 
-      // Re-add the call if deletion failed
-      setState(() {
-        _screenedCalls.insert(deletedIndex, deletedCall);
-      });
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Fehler beim Löschen des Anrufs'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  /// Undoes a call deletion by re-inserting it into the database.
-  Future<void> _undoDelete(ScreenedCall call, int index) async {
-    try {
-      // Re-insert into database
-      final restoredCall = await ScreenedCallsDatabase.instance.insertScreenedCall(call);
-
-      // Re-add to UI at original position
-      setState(() {
-        _screenedCalls.insert(index, restoredCall);
-      });
-
-      if (kDebugMode) {
-        print('Restored call: ${call.phoneNumber}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error restoring call: $e');
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fehler beim Wiederherstellen des Anrufs'),
             backgroundColor: Colors.red,
           ),
         );
