@@ -1930,51 +1930,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  /// Handle logout.
-  Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Abmelden"),
-          content: const Text("Möchten Sie sich wirklich abmelden?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text("Abbrechen"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text("Abmelden"),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      await platform.invokeMethod("setAuthToken", null);
-      if (mounted) {
-        context.go("/");
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error logging out: $e");
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Fehler beim Abmelden"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2043,26 +1998,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   title: const Text("Version"),
                   subtitle: Text(appVersion),
-                ),
-                const Divider(),
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Konto",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text(
-                    "Abmelden",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onTap: _handleLogout,
                 ),
               ],
             ),
