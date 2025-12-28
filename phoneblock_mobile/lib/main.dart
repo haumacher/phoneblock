@@ -26,6 +26,9 @@ const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 /// This allows the UI to react to new screening results in real-time.
 final callScreenedStreamController = StreamController<ScreenedCall>.broadcast();
 
+/// Global app version string, initialized at startup from package info.
+late String appVersion;
+
 /// Parses rating string from PhoneBlock service API response.
 Rating? _parseRatingFromService(String ratingStr) {
   switch (ratingStr) {
@@ -42,6 +45,10 @@ Rating? _parseRatingFromService(String ratingStr) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize app version from package info
+  final packageInfo = await PackageInfo.fromPlatform();
+  appVersion = packageInfo.version;
 
   // Set up listener for screening results from CallChecker
   platform.setMethodCallHandler((call) async {
@@ -1780,16 +1787,10 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
-  }
-
-  Future<void> _initializeWebView() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    final version = packageInfo.version;
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent('PhoneBlockMobile/$version')
+      ..setUserAgent('PhoneBlockMobile/$appVersion')
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
