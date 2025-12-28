@@ -76,15 +76,15 @@ class _AppLauncherState extends State<AppLauncher> {
   }
 
   Future<void> _checkSetupState() async {
-    // Check if auth token exists
-    String? authToken = await getAuthToken();
+    // Validate auth token (checks existence and validity)
+    bool hasValidToken = await validateAuthToken();
 
     // Check if permission is granted
     bool hasPermission = await checkPermission();
 
     // Navigate based on setup state
     if (mounted) {
-      if (authToken != null && hasPermission) {
+      if (hasValidToken && hasPermission) {
         context.go('/main');
       } else {
         context.go('/setup');
@@ -141,11 +141,11 @@ class _SetupWizardState extends State<SetupWizard> {
   }
 
   Future<void> _checkCurrentState() async {
-    String? authToken = await getAuthToken();
+    bool hasValidToken = await validateAuthToken();
     bool hasPermission = await checkPermission();
 
     setState(() {
-      _hasAuthToken = authToken != null;
+      _hasAuthToken = hasValidToken;
       _hasPermission = hasPermission;
 
       // Start at the first incomplete step
@@ -540,6 +540,29 @@ Future<bool> checkPermission() async {
   } catch (e) {
     if (kDebugMode) {
       print("Error checking permission: $e");
+    }
+    return false;
+  }
+}
+
+/// Validates that the auth token is valid by testing it against the API.
+/// Returns true if token exists and is valid, false otherwise.
+Future<bool> validateAuthToken() async {
+  try {
+    String? token = await getAuthToken();
+    if (token == null) {
+      return false;
+    }
+
+    final response = await http.get(
+      Uri.parse(pbApiTest),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    return response.statusCode == 200;
+  } catch (e) {
+    if (kDebugMode) {
+      print("Error validating auth token: $e");
     }
     return false;
   }
