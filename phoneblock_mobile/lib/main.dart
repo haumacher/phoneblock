@@ -224,8 +224,23 @@ class _SetupWizardState extends State<SetupWizard> {
                 _currentStep = SetupStep.complete;
               }
             } else {
-              // Otherwise, expand the tapped step
-              _currentStep = tappedStep;
+              // Only allow expanding steps that can be started
+              bool canExpand = false;
+
+              if (tappedStep == SetupStep.welcome) {
+                // Welcome step can always be expanded
+                canExpand = true;
+              } else if (tappedStep == SetupStep.permission) {
+                // Permission step can only be expanded if auth is complete
+                canExpand = _hasAuthToken;
+              } else if (tappedStep == SetupStep.complete) {
+                // Complete step can only be expanded if permission is granted
+                canExpand = _hasAuthToken && _hasPermission;
+              }
+
+              if (canExpand) {
+                _currentStep = tappedStep;
+              }
             }
           });
         },
