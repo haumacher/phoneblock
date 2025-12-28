@@ -332,12 +332,12 @@ class _SetupWizardState extends State<SetupWizard> {
             subtitle: const Text('Einrichtung abgeschlossen'),
             isActive: _hasAuthToken && _hasPermission, // Active when both prerequisites met
             state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
-            content: Column(
+            content: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
-                const SizedBox(height: 16),
-                const Text(
+                Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+                SizedBox(height: 16),
+                Text(
                   'Einrichtung abgeschlossen!\n\n'
                   'PhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. '
                   'Die App prüft automatisch eingehende Anrufe und blockiert bekannte '
@@ -345,16 +345,6 @@ class _SetupWizardState extends State<SetupWizard> {
                   'Drücken Sie "Fertig", um zur Hauptansicht zu gelangen.',
                   style: TextStyle(fontSize: 14),
                 ),
-                const SizedBox(height: 16),
-                if (_hasAuthToken && _hasPermission)
-                  ElevatedButton.icon(
-                    onPressed: _finishSetup,
-                    icon: const Icon(Icons.arrow_forward),
-                    label: const Text('Fertig'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                  ),
               ],
             ),
           ),
