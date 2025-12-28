@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
+import 'package:phoneblock_mobile/api.dart' as api;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -715,14 +716,21 @@ class _MainScreenState extends State<MainScreen> {
         return;
       }
 
-      // Call the rate API
+      // Create RateRequest with proper Rating enum from api.dart
+      final rateRequest = api.RateRequest(
+        phone: call.phoneNumber,
+        rating: _convertRating(rating),
+        comment: '', // No comment for now
+      );
+
+      // Call the rate API using the RateRequest's built-in JSON serialization
       final response = await http.post(
         Uri.parse('$pbBaseUrl/api/rate'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: '{"phone":"${call.phoneNumber}","rating":"${_ratingToString(rating)}"}',
+        body: rateRequest.toString(),
       );
 
       if (mounted) {
@@ -792,16 +800,16 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// Converts Rating enum to API string format.
-  String _ratingToString(Rating rating) {
+  /// Converts state.Rating enum to api.Rating enum.
+  api.Rating _convertRating(Rating rating) {
     switch (rating) {
-      case Rating.aLEGITIMATE: return 'A_LEGITIMATE';
-      case Rating.uNKNOWN: return 'UNKNOWN';
-      case Rating.pING: return 'PING';
-      case Rating.pOLL: return 'POLL';
-      case Rating.aDVERTISING: return 'ADVERTISING';
-      case Rating.gAMBLE: return 'GAMBLE';
-      case Rating.fRAUD: return 'FRAUD';
+      case Rating.aLEGITIMATE: return api.Rating.aLegitimate;
+      case Rating.uNKNOWN: return api.Rating.bMissed;
+      case Rating.pING: return api.Rating.cPing;
+      case Rating.pOLL: return api.Rating.dPoll;
+      case Rating.aDVERTISING: return api.Rating.eAdvertising;
+      case Rating.gAMBLE: return api.Rating.fGamble;
+      case Rating.fRAUD: return api.Rating.gFraud;
     }
   }
 

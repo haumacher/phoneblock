@@ -4,6 +4,9 @@ option NoInterfaces;
 option NoBinary;
 option NoReflection;
 
+// Generator has problems with repeated primitive types.
+// option DartLib = "../../../../phoneblock_mobile/lib/api.dart";
+
 /**
  * Information that must be requested to start a registration process.
  */
