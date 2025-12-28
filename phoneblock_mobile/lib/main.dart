@@ -428,8 +428,56 @@ class _SetupWizardState extends State<SetupWizard> {
 }
 
 // Main screen (placeholder for now)
-class MainScreen extends StatelessWidget {
+/// Main screen displaying the list of screened calls.
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  List<ScreenedCall> _screenedCalls = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadScreenedCalls();
+    _setupCallScreeningListener();
+  }
+
+  /// Loads screened calls from the database.
+  Future<void> _loadScreenedCalls() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final calls = await ScreenedCallsDatabase.instance.getAllScreenedCalls();
+      setState(() {
+        _screenedCalls = calls;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading screened calls: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Sets up listener to update list when new calls are screened.
+  void _setupCallScreeningListener() {
+    platform.setMethodCallHandler((call) async {
+      if (call.method == 'onCallScreened') {
+        // Reload the list when a new call is screened
+        await _loadScreenedCalls();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -437,10 +485,139 @@ class MainScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('PhoneBlock Mobile'),
       ),
-      body: const Center(
-        child: Text('Hauptansicht - wird in Task 3 implementiert'),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _screenedCalls.isEmpty
+              ? _buildEmptyState()
+              : _buildCallsList(),
+    );
+  }
+
+  /// Builds the empty state when no calls have been screened yet.
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.phone_disabled,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Noch keine Anrufe gefiltert',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Eingehende Anrufe werden automatisch auf Spam geprüft und hier angezeigt.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  /// Builds the list of screened calls.
+  Widget _buildCallsList() {
+    return ListView.builder(
+      itemCount: _screenedCalls.length,
+      itemBuilder: (context, index) {
+        final call = _screenedCalls[index];
+        return _buildCallListItem(call);
+      },
+    );
+  }
+
+  /// Builds a single call list item.
+  Widget _buildCallListItem(ScreenedCall call) {
+    final isSpam = call.wasBlocked;
+    final color = isSpam ? Colors.red : Colors.green;
+    final icon = isSpam ? Icons.block : Icons.check_circle;
+    final label = isSpam ? 'SPAM' : 'Legitim';
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.1),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(
+          call.phoneNumber,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              _formatTimestamp(call.timestamp),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${call.votes} ${call.votes == 1 ? "Meldung" : "Meldungen"}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color, width: 1.5),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Formats the timestamp for display.
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final callDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+    final timeFormat = DateFormat('HH:mm');
+    final dateFormat = DateFormat('dd.MM.yyyy');
+
+    if (callDate == today) {
+      return 'Heute, ${timeFormat.format(timestamp)}';
+    } else if (callDate == yesterday) {
+      return 'Gestern, ${timeFormat.format(timestamp)}';
+    } else {
+      return '${dateFormat.format(timestamp)}, ${timeFormat.format(timestamp)}';
+    }
   }
 }
 
