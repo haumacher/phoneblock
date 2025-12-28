@@ -198,6 +198,17 @@ class _SetupWizardState extends State<SetupWizard> {
       ),
       body: Stepper(
         currentStep: _currentStep.index,
+        controlsBuilder: (context, details) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: ElevatedButton(
+              onPressed: details.onStepContinue,
+              child: Text(
+                _currentStep == SetupStep.complete ? 'Fertig' : 'Weiter',
+              ),
+            ),
+          );
+        },
         onStepContinue: () {
           if (_currentStep == SetupStep.welcome && _hasAuthToken) {
             setState(() {
@@ -209,13 +220,6 @@ class _SetupWizardState extends State<SetupWizard> {
             });
           } else if (_currentStep == SetupStep.complete) {
             _finishSetup();
-          }
-        },
-        onStepCancel: () {
-          if (_currentStep.index > 0) {
-            setState(() {
-              _currentStep = SetupStep.values[_currentStep.index - 1];
-            });
           }
         },
         onStepTapped: (step) {
