@@ -33,6 +33,10 @@ public class MainActivity extends FlutterActivity {
                 requestPermission(result);
                 break;
 
+            case "checkPermission":
+                result.success(checkPermission());
+                break;
+
             case "setAuthToken":
                 setAuthToken((String) methodCall.arguments);
                 result.success(null);
@@ -60,6 +64,16 @@ public class MainActivity extends FlutterActivity {
 
     private static final int REQUEST_PERMISSION_ID = 1;
     private MethodChannel.Result _requestPermissionResult;
+
+    public boolean checkPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            RoleManager roleManager = (RoleManager) getSystemService(ROLE_SERVICE);
+            return roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING);
+        } else {
+            // Older Android versions don't require this permission
+            return true;
+        }
+    }
 
     public void requestPermission(MethodChannel.Result result) {
         Log.d(MainActivity.class.getName(), "requestPermission");

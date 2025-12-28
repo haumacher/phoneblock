@@ -30,9 +30,17 @@ final router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) {
-        return const TestPhoneBlockMobile();
+        return const AppLauncher();
       },
       routes: [
+        GoRoute(
+          path: 'setup',
+          builder: (context, state) => const SetupWizard(),
+        ),
+        GoRoute(
+          path: 'main',
+          builder: (context, state) => const MainScreen(),
+        ),
         GoRoute(
           path: '$contextPath/mobile/response',
           builder: (context, state) {
@@ -51,6 +59,285 @@ final router = GoRouter(
     ),
   ],
 );
+
+// App launcher that checks setup state and routes accordingly
+class AppLauncher extends StatefulWidget {
+  const AppLauncher({super.key});
+
+  @override
+  State<AppLauncher> createState() => _AppLauncherState();
+}
+
+class _AppLauncherState extends State<AppLauncher> {
+  @override
+  void initState() {
+    super.initState();
+    _checkSetupState();
+  }
+
+  Future<void> _checkSetupState() async {
+    // Check if auth token exists
+    String? authToken = await getAuthToken();
+
+    // Check if permission is granted
+    bool hasPermission = await checkPermission();
+
+    // Navigate based on setup state
+    if (mounted) {
+      if (authToken != null && hasPermission) {
+        context.go('/main');
+      } else {
+        context.go('/setup');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+// Setup wizard with multiple steps
+class SetupWizard extends StatefulWidget {
+  const SetupWizard({super.key});
+
+  @override
+  State<SetupWizard> createState() => _SetupWizardState();
+}
+
+class _SetupWizardState extends State<SetupWizard> {
+  int _currentStep = 0;
+  bool _hasAuthToken = false;
+  bool _hasPermission = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCurrentState();
+  }
+
+  Future<void> _checkCurrentState() async {
+    String? authToken = await getAuthToken();
+    bool hasPermission = await checkPermission();
+
+    setState(() {
+      _hasAuthToken = authToken != null;
+      _hasPermission = hasPermission;
+
+      // Start at the first incomplete step
+      if (!_hasAuthToken) {
+        _currentStep = 0;
+      } else if (!_hasPermission) {
+        _currentStep = 1;
+      } else {
+        _currentStep = 2;
+      }
+    });
+  }
+
+  Future<void> _connectToPhoneBlock() async {
+    bool ok = await launchUrl(Uri.parse(pbLoginUrl));
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Fehler beim Öffnen von PhoneBlock.')),
+      );
+    }
+  }
+
+  Future<void> _requestPermission() async {
+    try {
+      bool granted = await platform.invokeMethod("requestPermission");
+      setState(() {
+        _hasPermission = granted;
+      });
+
+      if (granted) {
+        setState(() {
+          _currentStep = 2;
+        });
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Berechtigung wurde nicht erteilt.')),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error requesting permission: $e");
+      }
+    }
+  }
+
+  void _finishSetup() {
+    if (_hasAuthToken && _hasPermission) {
+      context.go('/main');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('PhoneBlock Mobile - Einrichtung'),
+      ),
+      body: Stepper(
+        currentStep: _currentStep,
+        onStepContinue: () {
+          if (_currentStep == 0 && _hasAuthToken) {
+            setState(() {
+              _currentStep = 1;
+            });
+          } else if (_currentStep == 1 && _hasPermission) {
+            setState(() {
+              _currentStep = 2;
+            });
+          } else if (_currentStep == 2) {
+            _finishSetup();
+          }
+        },
+        onStepCancel: () {
+          if (_currentStep > 0) {
+            setState(() {
+              _currentStep--;
+            });
+          }
+        },
+        onStepTapped: (step) {
+          setState(() {
+            _currentStep = step;
+          });
+        },
+        steps: [
+          Step(
+            title: const Text('Willkommen'),
+            subtitle: const Text('PhoneBlock-Konto verbinden'),
+            isActive: _currentStep >= 0,
+            state: _hasAuthToken ? StepState.complete : StepState.indexed,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Willkommen bei PhoneBlock Mobile!\n\n'
+                  'Diese App hilft Ihnen, Spam-Anrufe automatisch zu blockieren. '
+                  'Dazu benötigen Sie ein kostenloses Konto bei PhoneBlock.net.\n\n'
+                  'Verbinden Sie Ihr PhoneBlock-Konto, um fortzufahren:',
+                  style: TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _connectToPhoneBlock,
+                  icon: Icon(_hasAuthToken ? Icons.check_circle : Icons.link),
+                  label: Text(_hasAuthToken
+                    ? 'Mit PhoneBlock verbunden'
+                    : 'Mit PhoneBlock verbinden'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _hasAuthToken ? Colors.green : null,
+                  ),
+                ),
+                if (_hasAuthToken)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      '✓ Konto erfolgreich verbunden',
+                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Step(
+            title: const Text('Berechtigungen'),
+            subtitle: const Text('Anrufe filtern erlauben'),
+            isActive: _currentStep >= 1,
+            state: _hasPermission ? StepState.complete : StepState.indexed,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Um Spam-Anrufe automatisch zu blockieren, benötigt '
+                  'PhoneBlock Mobile die Berechtigung, eingehende Anrufe zu prüfen.\n\n'
+                  'Diese Berechtigung ist erforderlich, damit die App funktioniert:',
+                  style: TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _requestPermission,
+                  icon: Icon(_hasPermission ? Icons.check_circle : Icons.security),
+                  label: Text(_hasPermission
+                    ? 'Berechtigung erteilt'
+                    : 'Berechtigung erteilen'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _hasPermission ? Colors.green : null,
+                  ),
+                ),
+                if (_hasPermission)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      '✓ Berechtigung erfolgreich erteilt',
+                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Step(
+            title: const Text('Fertig'),
+            subtitle: const Text('Einrichtung abgeschlossen'),
+            isActive: _currentStep >= 2,
+            state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+                const SizedBox(height: 16),
+                const Text(
+                  'Einrichtung abgeschlossen!\n\n'
+                  'PhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. '
+                  'Die App prüft automatisch eingehende Anrufe und blockiert bekannte '
+                  'Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\n'
+                  'Drücken Sie "Fertig", um zur Hauptansicht zu gelangen.',
+                  style: TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                if (_hasAuthToken && _hasPermission)
+                  ElevatedButton.icon(
+                    onPressed: _finishSetup,
+                    icon: const Icon(Icons.arrow_forward),
+                    label: const Text('Fertig'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Main screen (placeholder for now)
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('PhoneBlock Mobile'),
+      ),
+      body: const Center(
+        child: Text('Hauptansicht - wird in Task 3 implementiert'),
+      ),
+    );
+  }
+}
 
 class VerifyLogin extends StatefulWidget {
   final String token;
@@ -92,11 +379,43 @@ class VerifyLoginState extends State<VerifyLogin> {
               future: checkResult,
               builder: (context, state) {
                 if (state.hasData) {
-                  return Text("Login successful.");
+                  // Login successful, redirect to setup wizard
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context.go('/setup');
+                  });
+                  return const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 64),
+                      SizedBox(height: 16),
+                      Text("Login erfolgreich!", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      Text("Weiterleitung zur Einrichtung..."),
+                    ],
+                  );
                 } else if (state.hasError) {
-                  return Text("Token verification failed: ${state.error}");
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error, color: Colors.red, size: 64),
+                      const SizedBox(height: 16),
+                      Text("Token-Überprüfung fehlgeschlagen: ${state.error}"),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.go('/setup'),
+                        child: const Text('Zurück zur Einrichtung'),
+                      ),
+                    ],
+                  );
                 } else {
-                  return Text("Verifying token...");
+                  return const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text("Token wird überprüft..."),
+                    ],
+                  );
                 }
               }),
           ),
@@ -132,12 +451,6 @@ class TestPhoneBlockMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppState state = AppState(calls: [
-      Call(phone: "0123456789", type: Type.iNCOMING, started: 1, duration: 2),
-      Call(phone: "0123456789", type: Type.mISSED),
-      Call(phone: "0123456789", type: Type.oUTGOING, started: 1, duration: 2),
-      Call(phone: "0123456789", type: Type.bLOCKED, rating: Rating.gAMBLE),
-    ]);
     return SetupPage();
   }
 }
@@ -177,7 +490,7 @@ class SetupState extends State<SetupPage> {
   }
 
   void requestPermission() async {
-    bool granted = await platform.invokeMethod("requestPermission");
+    await platform.invokeMethod("requestPermission");
   }
 }
 
@@ -187,6 +500,17 @@ void setAuthToken(String token) {
 
 Future<String?> getAuthToken() async {
   return platform.invokeMethod("getAuthToken");
+}
+
+Future<bool> checkPermission() async {
+  try {
+    return await platform.invokeMethod("checkPermission");
+  } catch (e) {
+    if (kDebugMode) {
+      print("Error checking permission: $e");
+    }
+    return false;
+  }
 }
 
 void registerPhoneBlock(BuildContext context) async {
