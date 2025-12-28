@@ -544,34 +544,44 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('PhoneBlock Mobile'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) {
+          return;
+        }
+        // Exit app when back button/gesture is used on main screen
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('PhoneBlock Mobile'),
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _screenedCalls.isEmpty
+                ? _buildEmptyState()
+                : _buildCallsList(),
+        floatingActionButton: _screenedCalls.isNotEmpty
+            ? FloatingActionButton(
+                onPressed: _deleteAllCalls,
+                tooltip: 'Alle löschen',
+                child: const Icon(Icons.delete_sweep),
+              )
+            : null,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _screenedCalls.isEmpty
-              ? _buildEmptyState()
-              : _buildCallsList(),
-      floatingActionButton: _screenedCalls.isNotEmpty
-          ? FloatingActionButton(
-              onPressed: _deleteAllCalls,
-              tooltip: 'Alle löschen',
-              child: const Icon(Icons.delete_sweep),
-            )
-          : null,
     );
   }
 
