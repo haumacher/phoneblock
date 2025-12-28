@@ -667,6 +667,18 @@ class _MainScreenState extends State<MainScreen> {
         PopupMenuItem(
           child: Row(
             children: [
+              Icon(Icons.report, color: Colors.orange),
+              SizedBox(width: 12),
+              Text('Als SPAM melden'),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () => _reportAsSpam(context, call));
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
               Icon(Icons.delete, color: Colors.red),
               SizedBox(width: 12),
               Text('Löschen'),
@@ -679,6 +691,118 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ],
     );
+  }
+
+  /// Shows rating selection dialog and reports the call as spam.
+  Future<void> _reportAsSpam(BuildContext context, ScreenedCall call) async {
+    final rating = await _showRatingDialog(context);
+
+    if (rating == null) {
+      return; // User cancelled
+    }
+
+    try {
+      String? token = await getAuthToken();
+      if (token == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Nicht angemeldet. Bitte melden Sie sich an.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Call the rate API
+      final response = await http.post(
+        Uri.parse('$pbBaseUrl/api/rate'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: '{"phone":"${call.phoneNumber}","rating":"${_ratingToString(rating)}"}',
+      );
+
+      if (mounted) {
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${call.phoneNumber} als SPAM gemeldet'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Fehler beim Melden: ${response.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error reporting spam: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Melden: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Shows a dialog to select spam rating.
+  Future<Rating?> _showRatingDialog(BuildContext context) async {
+    return showDialog<Rating>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('SPAM-Kategorie wählen'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: Rating.values
+                  .where((r) => r != Rating.aLEGITIMATE) // Exclude legitimate
+                  .map((rating) => ListTile(
+                        leading: icon(rating),
+                        title: label(rating),
+                        tileColor: bgColor(rating).withOpacity(0.1),
+                        onTap: () {
+                          Navigator.of(context).pop(rating);
+                        },
+                      ))
+                  .toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Abbrechen'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Converts Rating enum to API string format.
+  String _ratingToString(Rating rating) {
+    switch (rating) {
+      case Rating.aLEGITIMATE: return 'A_LEGITIMATE';
+      case Rating.uNKNOWN: return 'UNKNOWN';
+      case Rating.pING: return 'PING';
+      case Rating.pOLL: return 'POLL';
+      case Rating.aDVERTISING: return 'ADVERTISING';
+      case Rating.gAMBLE: return 'GAMBLE';
+      case Rating.fRAUD: return 'FRAUD';
+    }
   }
 
   /// Deletes all calls from the database and updates the UI.
