@@ -16,7 +16,7 @@ const String pbApiTest = '$pbBaseUrl/api/test';
 
 const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set up listener for screening results from CallChecker
@@ -44,6 +44,10 @@ void main() {
     }
   });
 
+  // Sync any stored screening results from SharedPreferences to database
+  // This handles calls that were screened while the app was not running
+  await syncStoredScreeningResults();
+
   runApp(MaterialApp.router(
       routerConfig: router,
       theme: ThemeData(
@@ -53,6 +57,45 @@ void main() {
         ),
       ),
   ));
+}
+
+/// Syncs screening results stored in SharedPreferences to the SQLite database.
+/// This is necessary because CallChecker can screen calls even when the Flutter
+/// app is not running, storing results in SharedPreferences for later sync.
+Future<void> syncStoredScreeningResults() async {
+  try {
+    // Get all stored screening results from native side
+    final storedCalls = await platform.invokeMethod('getStoredScreeningResults');
+
+    if (storedCalls != null && storedCalls is List) {
+      for (var callData in storedCalls) {
+        final data = callData as Map;
+        final screenedCall = ScreenedCall(
+          phoneNumber: data['phoneNumber'] as String,
+          timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
+          wasBlocked: data['wasBlocked'] as bool,
+          votes: data['votes'] as int,
+        );
+
+        await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+        if (kDebugMode) {
+          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked})');
+        }
+      }
+
+      // Clear the stored results from SharedPreferences after syncing
+      await platform.invokeMethod('clearStoredScreeningResults');
+
+      if (kDebugMode && storedCalls.isNotEmpty) {
+        print('Synced ${storedCalls.length} stored screening results');
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error syncing stored screening results: $e');
+    }
+  }
 }
 
 final router = GoRouter(

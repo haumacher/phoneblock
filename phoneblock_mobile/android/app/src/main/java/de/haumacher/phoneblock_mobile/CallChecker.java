@@ -89,15 +89,15 @@ public class CallChecker extends CallScreeningService {
                         Handler.createAsync(Looper.getMainLooper()).post(() -> {
                             Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + votes + " votes)");
                             respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
-                            // Report blocked call to Flutter
-                            MainActivity.reportScreenedCall(number, true, votes);
+                            // Report blocked call (persists even when app is not running)
+                            MainActivity.reportScreenedCall(CallChecker.this, number, true, votes);
                         });
                     }
                     return;
                 } else {
                     Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
-                    // Report accepted call to Flutter
-                    MainActivity.reportScreenedCall(number, false, votes);
+                    // Report accepted call (persists even when app is not running)
+                    MainActivity.reportScreenedCall(CallChecker.this, number, false, votes);
                 }
             } catch (MalformedURLException e) {
                 Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock URL, cannot screen call: " + number);

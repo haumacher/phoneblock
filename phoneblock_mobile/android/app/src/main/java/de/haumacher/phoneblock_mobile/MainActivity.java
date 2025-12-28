@@ -39,17 +39,30 @@ public class MainActivity extends FlutterActivity {
      * Reports a screened call result to Flutter.
      * Called by CallChecker when a call is screened.
      *
+     * This method stores the screening result in SharedPreferences first (so it persists
+     * even when the app is not running), then notifies Flutter if it's active.
+     *
+     * @param context The context (usually the CallChecker service)
      * @param phoneNumber The phone number that was screened
      * @param wasBlocked true if the call was blocked as SPAM, false if accepted
      * @param votes Number of votes from PhoneBlock database
      */
-    public static void reportScreenedCall(String phoneNumber, boolean wasBlocked, int votes) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes) {
+        long timestamp = System.currentTimeMillis();
+
+        // Store in SharedPreferences for persistence (works even when app is not running)
+        SharedPreferences prefs = getPreferences(context);
+        String key = "screened_call_" + timestamp;
+        String value = phoneNumber + "|" + wasBlocked + "|" + votes + "|" + timestamp;
+        prefs.edit().putString(key, value).apply();
+
+        // Also notify Flutter if it's active
         if (_instance != null && _instance._channel != null) {
             java.util.Map<String, Object> data = new java.util.HashMap<>();
             data.put("phoneNumber", phoneNumber);
             data.put("wasBlocked", wasBlocked);
             data.put("votes", votes);
-            data.put("timestamp", System.currentTimeMillis());
+            data.put("timestamp", timestamp);
 
             _instance._channel.invokeMethod("onCallScreened", data);
         }
@@ -73,7 +86,64 @@ public class MainActivity extends FlutterActivity {
             case "getAuthToken":
                 result.success(getAuthToken());
                 break;
+
+            case "getStoredScreeningResults":
+                result.success(getStoredScreeningResults());
+                break;
+
+            case "clearStoredScreeningResults":
+                clearStoredScreeningResults();
+                result.success(null);
+                break;
         }
+    }
+
+    /**
+     * Retrieves all stored screening results from SharedPreferences.
+     * These are calls that were screened while the Flutter app was not running.
+     *
+     * @return List of maps containing screening result data
+     */
+    private java.util.List<java.util.Map<String, Object>> getStoredScreeningResults() {
+        java.util.List<java.util.Map<String, Object>> results = new java.util.ArrayList<>();
+        SharedPreferences prefs = getPreferences(this);
+
+        java.util.Map<String, ?> all = prefs.getAll();
+        for (java.util.Map.Entry<String, ?> entry : all.entrySet()) {
+            if (entry.getKey().startsWith("screened_call_") && entry.getValue() instanceof String) {
+                String value = (String) entry.getValue();
+                String[] parts = value.split("\\|");
+
+                if (parts.length == 4) {
+                    java.util.Map<String, Object> data = new java.util.HashMap<>();
+                    data.put("phoneNumber", parts[0]);
+                    data.put("wasBlocked", Boolean.parseBoolean(parts[1]));
+                    data.put("votes", Integer.parseInt(parts[2]));
+                    data.put("timestamp", Long.parseLong(parts[3]));
+                    results.add(data);
+                }
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Clears all stored screening results from SharedPreferences.
+     * Called after syncing to the Flutter database.
+     */
+    private void clearStoredScreeningResults() {
+        SharedPreferences prefs = getPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        java.util.Map<String, ?> all = prefs.getAll();
+        for (String key : all.keySet()) {
+            if (key.startsWith("screened_call_")) {
+                editor.remove(key);
+            }
+        }
+
+        editor.apply();
     }
 
     private String getAuthToken() {
