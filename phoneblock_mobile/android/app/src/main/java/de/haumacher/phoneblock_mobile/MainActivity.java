@@ -8,6 +8,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
@@ -63,12 +67,30 @@ public class MainActivity extends FlutterActivity {
             _instance._channel.invokeMethod("onCallScreened", data);
         } else {
             // Flutter is NOT running - store in SharedPreferences for later sync
-            SharedPreferences prefs = getPreferences(context);
-            String key = "screened_call_" + timestamp;
-            String value = phoneNumber + "|" + wasBlocked + "|" + votes + "|" + timestamp;
-            prefs.edit().putString(key, value).apply();
+            try {
+                SharedPreferences prefs = getPreferences(context);
 
-            Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber);
+                // Get existing array of stored calls
+                String storedCallsJson = prefs.getString("pending_screened_calls", "[]");
+                JSONArray callsArray = new JSONArray(storedCallsJson);
+
+                // Create new call JSON object
+                JSONObject callJson = new JSONObject();
+                callJson.put("phoneNumber", phoneNumber);
+                callJson.put("wasBlocked", wasBlocked);
+                callJson.put("votes", votes);
+                callJson.put("timestamp", timestamp);
+
+                // Add to array
+                callsArray.put(callJson);
+
+                // Save back to SharedPreferences
+                prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
+
+                Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber);
+            } catch (JSONException e) {
+                Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
+            }
         }
     }
 
@@ -110,23 +132,24 @@ public class MainActivity extends FlutterActivity {
      */
     private java.util.List<java.util.Map<String, Object>> getStoredScreeningResults() {
         java.util.List<java.util.Map<String, Object>> results = new java.util.ArrayList<>();
-        SharedPreferences prefs = getPreferences(this);
 
-        java.util.Map<String, ?> all = prefs.getAll();
-        for (java.util.Map.Entry<String, ?> entry : all.entrySet()) {
-            if (entry.getKey().startsWith("screened_call_") && entry.getValue() instanceof String) {
-                String value = (String) entry.getValue();
-                String[] parts = value.split("\\|");
+        try {
+            SharedPreferences prefs = getPreferences(this);
+            String storedCallsJson = prefs.getString("pending_screened_calls", "[]");
+            JSONArray callsArray = new JSONArray(storedCallsJson);
 
-                if (parts.length == 4) {
-                    java.util.Map<String, Object> data = new java.util.HashMap<>();
-                    data.put("phoneNumber", parts[0]);
-                    data.put("wasBlocked", Boolean.parseBoolean(parts[1]));
-                    data.put("votes", Integer.parseInt(parts[2]));
-                    data.put("timestamp", Long.parseLong(parts[3]));
-                    results.add(data);
-                }
+            for (int i = 0; i < callsArray.length(); i++) {
+                JSONObject callJson = callsArray.getJSONObject(i);
+
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("phoneNumber", callJson.getString("phoneNumber"));
+                data.put("wasBlocked", callJson.getBoolean("wasBlocked"));
+                data.put("votes", callJson.getInt("votes"));
+                data.put("timestamp", callJson.getLong("timestamp"));
+                results.add(data);
             }
+        } catch (JSONException e) {
+            Log.e(MainActivity.class.getName(), "Error reading stored screening results", e);
         }
 
         return results;
@@ -138,16 +161,7 @@ public class MainActivity extends FlutterActivity {
      */
     private void clearStoredScreeningResults() {
         SharedPreferences prefs = getPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        java.util.Map<String, ?> all = prefs.getAll();
-        for (String key : all.keySet()) {
-            if (key.startsWith("screened_call_")) {
-                editor.remove(key);
-            }
-        }
-
-        editor.apply();
+        prefs.edit().remove("pending_screened_calls").apply();
     }
 
     private String getAuthToken() {
