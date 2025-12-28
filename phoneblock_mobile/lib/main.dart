@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +17,10 @@ const String pbLoginUrl = '$pbBaseUrl/mobile/login';
 const String pbApiTest = '$pbBaseUrl/api/test';
 
 const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
+
+/// Global stream controller to broadcast when new calls are screened.
+/// This allows the UI to react to new screening results in real-time.
+final callScreenedStreamController = StreamController<ScreenedCall>.broadcast();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +43,9 @@ void main() async {
       );
 
       await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+      // Notify any listeners (e.g., MainScreen) about the new call
+      callScreenedStreamController.add(screenedCall);
 
       if (kDebugMode) {
         print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes)');
@@ -439,12 +448,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
   bool _isLoading = true;
+  StreamSubscription<ScreenedCall>? _callScreenedSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadScreenedCalls();
     _setupCallScreeningListener();
+  }
+
+  @override
+  void dispose() {
+    _callScreenedSubscription?.cancel();
+    super.dispose();
   }
 
   /// Loads screened calls from the database.
@@ -471,10 +487,14 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Sets up listener to update list when new calls are screened.
   void _setupCallScreeningListener() {
-    platform.setMethodCallHandler((call) async {
-      if (call.method == 'onCallScreened') {
-        // Reload the list when a new call is screened
-        await _loadScreenedCalls();
+    _callScreenedSubscription = callScreenedStreamController.stream.listen((screenedCall) {
+      // Add the new call to the beginning of the list (most recent first)
+      setState(() {
+        _screenedCalls.insert(0, screenedCall);
+      });
+
+      if (kDebugMode) {
+        print('MainScreen received new screened call: ${screenedCall.phoneNumber}');
       }
     });
   }
