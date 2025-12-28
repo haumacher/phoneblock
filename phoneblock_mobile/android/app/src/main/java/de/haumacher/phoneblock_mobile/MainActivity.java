@@ -1,10 +1,15 @@
 package de.haumacher.phoneblock_mobile;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
+import androidx.core.app.NotificationCompat;
 
 import androidx.annotation.NonNull;
 
@@ -16,11 +21,12 @@ import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-import me.leolin.shortcutbadger.ShortcutBadger;
 
 public class MainActivity extends FlutterActivity {
 
     public static final String CALL_CHECKER_CHANNEL = "de.haumacher.phoneblock_mobile/call_checker";
+    private static final String NOTIFICATION_CHANNEL_ID = "pending_calls";
+    private static final int NOTIFICATION_ID = 1;
 
     private MethodChannel _channel;
     private static MainActivity _instance;
@@ -32,6 +38,65 @@ public class MainActivity extends FlutterActivity {
         _instance = this;
         _channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CALL_CHECKER_CHANNEL);
         _channel.setMethodCallHandler(this::processMessage);
+
+        // Create notification channel for pending calls
+        createNotificationChannel();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "Pending Filtered Calls",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Shows number of calls filtered while app was closed");
+            channel.setShowBadge(true);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    /**
+     * Shows or updates a notification displaying the count of pending screened calls.
+     * @param context Application context
+     * @param count Number of pending calls
+     */
+    private static void updatePendingCallsNotification(Context context, int count) {
+        NotificationManager notificationManager =
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (count == 0) {
+            // No pending calls - remove notification
+            notificationManager.cancel(NOTIFICATION_ID);
+            return;
+        }
+
+        // Create intent to launch app when notification is tapped
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        // Build notification
+        String title = count == 1 ? "1 neuer gefilterter Anruf" : count + " neue gefilterte Anrufe";
+        String text = "Tippen zum Öffnen der App";
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_menu_call)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setNumber(count)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)  // Make it persistent
+            .setAutoCancel(false)  // Don't dismiss on tap
+            .setContentIntent(pendingIntent);
+
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     @Override
@@ -95,10 +160,11 @@ public class MainActivity extends FlutterActivity {
                 // Save back to SharedPreferences
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
-                // Update app badge to show number of pending calls
-                ShortcutBadger.applyCount(context, callsArray.length());
+                // Update notification to show number of pending calls
+                int pendingCount = callsArray.length();
+                updatePendingCallsNotification(context, pendingCount);
 
-                Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber + " (badge count: " + callsArray.length() + ")");
+                Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber + " (pending count: " + pendingCount + ")");
             } catch (JSONException e) {
                 Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
             }
@@ -159,6 +225,11 @@ public class MainActivity extends FlutterActivity {
                 setMinRangeVotes((Integer) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "testBadge":
+                testBadge((Integer) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -204,9 +275,9 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().remove("pending_screened_calls").apply();
 
-        // Clear the app badge since all pending calls have been synced
-        ShortcutBadger.removeCount(this);
-        Log.d(MainActivity.class.getName(), "Cleared app badge after syncing pending calls");
+        // Clear the notification since all pending calls have been synced
+        updatePendingCallsNotification(this, 0);
+        Log.d(MainActivity.class.getName(), "Cleared pending calls notification after syncing");
     }
 
     private String getAuthToken() {
@@ -256,6 +327,12 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putInt("min_range_votes", minRangeVotes).apply();
         Log.d(MainActivity.class.getName(), "setMinRangeVotes: " + minRangeVotes);
+    }
+
+    private void testBadge(int count) {
+        Log.d(MainActivity.class.getName(), "Testing notification with count: " + count);
+        updatePendingCallsNotification(this, count);
+        Log.d(MainActivity.class.getName(), "Notification test completed");
     }
 
     public static SharedPreferences getPreferences(Context context) {

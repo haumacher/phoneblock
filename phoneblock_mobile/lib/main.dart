@@ -2185,6 +2185,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+                if (kDebugMode)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await platform.invokeMethod('testBadge', 5);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Notification test: 5 pending calls')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.bug_report),
+                      label: const Text('Test Notification (Debug)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      ),
+                    ),
+                  ),
               ],
             ),
     );
