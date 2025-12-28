@@ -109,6 +109,50 @@ Details about the implementation approach and any relevant notes.
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
+### Code Documentation
+**IMPORTANT**: Always use documentation comments (`///` in Dart, `/** */` in Java) instead of regular comments when documenting:
+- Public classes, methods, and functions
+- Enum types and their values
+- Public properties and fields
+- Complex algorithms or business logic
+
+**Dart Documentation Comments:**
+```dart
+/// A brief description of what this class does.
+///
+/// More detailed explanation if needed, including usage examples.
+class MyClass {
+  /// The user's display name.
+  final String name;
+
+  /// Creates a new instance with the given [name].
+  MyClass(this.name);
+}
+
+/// Enum representing setup wizard steps.
+enum SetupStep {
+  /// Welcome screen and account connection.
+  welcome,
+
+  /// Permission request step.
+  permission,
+}
+```
+
+**Java Documentation Comments:**
+```java
+/**
+ * Checks if the call screening permission is currently granted.
+ *
+ * @return true if permission is granted, false otherwise
+ */
+public boolean checkPermission() {
+    // implementation
+}
+```
+
+Documentation comments allow IDEs to show inline help and enable dartdoc/javadoc to generate API documentation.
+
 ### Platform Channel Communication
 The app uses Flutter MethodChannel to communicate between Dart and Android native code. The channel name is `de.haumacher.phoneblock_mobile/call_checker` and is defined in both MainActivity.java and main.dart.
 
