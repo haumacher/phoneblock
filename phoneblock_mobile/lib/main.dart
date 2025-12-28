@@ -5,6 +5,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phoneblock_mobile/state.dart';
+import 'package:phoneblock_mobile/storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,7 +14,36 @@ const String pbBaseUrl = 'https://phoneblock.net$contextPath';
 const String pbLoginUrl = '$pbBaseUrl/mobile/login';
 const String pbApiTest = '$pbBaseUrl/api/test';
 
+const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Set up listener for screening results from CallChecker
+  platform.setMethodCallHandler((call) async {
+    if (call.method == 'onCallScreened') {
+      final args = call.arguments as Map;
+      final phoneNumber = args['phoneNumber'] as String;
+      final wasBlocked = args['wasBlocked'] as bool;
+      final votes = args['votes'] as int;
+      final timestamp = args['timestamp'] as int;
+
+      // Store the screened call in database
+      final screenedCall = ScreenedCall(
+        phoneNumber: phoneNumber,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+        wasBlocked: wasBlocked,
+        votes: votes,
+      );
+
+      await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+      if (kDebugMode) {
+        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes)');
+      }
+    }
+  });
+
   runApp(MaterialApp.router(
       routerConfig: router,
       theme: ThemeData(
@@ -495,8 +525,6 @@ class SetupPage extends StatefulWidget {
     return SetupState();
   }
 }
-
-const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 
 class SetupState extends State<SetupPage> {
 

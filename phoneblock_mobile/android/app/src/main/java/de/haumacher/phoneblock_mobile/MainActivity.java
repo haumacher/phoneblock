@@ -18,13 +18,41 @@ public class MainActivity extends FlutterActivity {
     public static final String CALL_CHECKER_CHANNEL = "de.haumacher.phoneblock_mobile/call_checker";
 
     private MethodChannel _channel;
+    private static MainActivity _instance;
 
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
 
+        _instance = this;
         _channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CALL_CHECKER_CHANNEL);
         _channel.setMethodCallHandler(this::processMessage);
+    }
+
+    @Override
+    protected void onDestroy() {
+        _instance = null;
+        super.onDestroy();
+    }
+
+    /**
+     * Reports a screened call result to Flutter.
+     * Called by CallChecker when a call is screened.
+     *
+     * @param phoneNumber The phone number that was screened
+     * @param wasBlocked true if the call was blocked as SPAM, false if accepted
+     * @param votes Number of votes from PhoneBlock database
+     */
+    public static void reportScreenedCall(String phoneNumber, boolean wasBlocked, int votes) {
+        if (_instance != null && _instance._channel != null) {
+            java.util.Map<String, Object> data = new java.util.HashMap<>();
+            data.put("phoneNumber", phoneNumber);
+            data.put("wasBlocked", wasBlocked);
+            data.put("votes", votes);
+            data.put("timestamp", System.currentTimeMillis());
+
+            _instance._channel.invokeMethod("onCallScreened", data);
+        }
     }
 
     private void processMessage(MethodCall methodCall, MethodChannel.Result result) {
