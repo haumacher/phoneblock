@@ -257,7 +257,7 @@ class _SetupWizardState extends State<SetupWizard> {
           Step(
             title: const Text('Willkommen'),
             subtitle: const Text('PhoneBlock-Konto verbinden'),
-            isActive: _currentStep.index >= SetupStep.welcome.index,
+            isActive: true, // Welcome step is always available
             state: _hasAuthToken ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +294,7 @@ class _SetupWizardState extends State<SetupWizard> {
           Step(
             title: const Text('Berechtigungen'),
             subtitle: const Text('Anrufe filtern erlauben'),
-            isActive: _currentStep.index >= SetupStep.permission.index,
+            isActive: _hasAuthToken, // Active when auth is complete (prerequisite met)
             state: _hasPermission ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,7 +330,7 @@ class _SetupWizardState extends State<SetupWizard> {
           Step(
             title: const Text('Fertig'),
             subtitle: const Text('Einrichtung abgeschlossen'),
-            isActive: _currentStep.index >= SetupStep.complete.index,
+            isActive: _hasAuthToken && _hasPermission, // Active when both prerequisites met
             state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
