@@ -1325,63 +1325,17 @@ class LoginFailed extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login fehlgeschlagen'),
+        title: Text(AppLocalizations.of(context)!.loginFailed),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Center(
-            child: Text("No login token received."),
+            child: Text(AppLocalizations.of(context)!.noLoginTokenReceived),
           ),
         ],
       ),
     );
-  }
-}
-
-class TestPhoneBlockMobile extends StatelessWidget {
-  const TestPhoneBlockMobile({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SetupPage();
-  }
-}
-
-class SetupPage extends StatefulWidget {
-  const SetupPage({super.key});
-
-  @override
-  State<StatefulWidget> createState() {
-    return SetupState();
-  }
-}
-
-class SetupState extends State<SetupPage> {
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("PhoneBlock Mobile: Setup"),),
-      body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  registerPhoneBlock(context);
-                },
-                child: const Text("Mit PhoneBlock verbinden")),
-            ElevatedButton(
-                onPressed: requestPermission,
-                child: const Text("Berechtigung erteilen um Anrufe zu filtern")),
-          ])
-      ),
-    );
-  }
-
-  void requestPermission() async {
-    await platform.invokeMethod("requestPermission");
   }
 }
 
@@ -1663,9 +1617,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Einstellung gespeichert"),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.settingSaved),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -1675,8 +1629,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Fehler beim Speichern"),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorSaving),
             backgroundColor: Colors.red,
           ),
         );
@@ -1703,8 +1657,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Fehler beim Speichern"),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorSaving),
             backgroundColor: Colors.red,
           ),
         );
@@ -1727,9 +1681,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Einstellung gespeichert"),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.settingSaved),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -1739,8 +1693,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Fehler beim Speichern"),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorSaving),
             backgroundColor: Colors.red,
           ),
         );

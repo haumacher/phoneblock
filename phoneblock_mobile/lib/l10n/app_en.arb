@@ -183,5 +183,11 @@
 
   "ratingFraud": "Fraud",
 
-  "ratingPoll": "Survey"
+  "ratingPoll": "Survey",
+
+  "noLoginTokenReceived": "No login token received.",
+
+  "settingSaved": "Setting saved",
+
+  "errorSaving": "Error saving"
 }

@@ -649,6 +649,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Umfrage'**
   String get ratingPoll;
+
+  /// Error message when no login token is received
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Login-Token empfangen.'**
+  String get noLoginTokenReceived;
+
+  /// Success message when setting is saved
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellung gespeichert'**
+  String get settingSaved;
+
+  /// Error message when saving fails
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Speichern'**
+  String get errorSaving;
 }
 
 class _AppLocalizationsDelegate

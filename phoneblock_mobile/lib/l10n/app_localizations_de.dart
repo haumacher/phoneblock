@@ -320,4 +320,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get ratingPoll => 'Umfrage';
+
+  @override
+  String get noLoginTokenReceived => 'Kein Login-Token empfangen.';
+
+  @override
+  String get settingSaved => 'Einstellung gespeichert';
+
+  @override
+  String get errorSaving => 'Fehler beim Speichern';
 }

@@ -514,5 +514,20 @@
   "ratingPoll": "Umfrage",
   "@ratingPoll": {
     "description": "Poll/Survey rating label"
+  },
+
+  "noLoginTokenReceived": "Kein Login-Token empfangen.",
+  "@noLoginTokenReceived": {
+    "description": "Error message when no login token is received"
+  },
+
+  "settingSaved": "Einstellung gespeichert",
+  "@settingSaved": {
+    "description": "Success message when setting is saved"
+  },
+
+  "errorSaving": "Fehler beim Speichern",
+  "@errorSaving": {
+    "description": "Error message when saving fails"
   }
 }
