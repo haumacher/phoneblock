@@ -78,7 +78,10 @@ public class CallChecker extends CallScreeningService {
 
         AtomicBoolean canceled = new AtomicBoolean();
 
-        ScheduledFuture<?> future = _pool.schedule(() -> {
+        // Array to hold timeout future reference (needs to be final for lambda access)
+        final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
+
+        ScheduledFuture<?> queryFuture = _pool.schedule(() -> {
             try {
                 JSONObject json = queryPhoneBlock(number, authToken);
                 boolean archived = json.getBoolean("archived");
@@ -86,6 +89,10 @@ public class CallChecker extends CallScreeningService {
 
                 if (votes >= minVotes && !archived) {
                     if (canceled.compareAndSet(false, true)) {
+                        // Cancel timeout since we got a result
+                        if (timeoutFuture[0] != null) {
+                            timeoutFuture[0].cancel(false);
+                        }
                         Handler.createAsync(Looper.getMainLooper()).post(() -> {
                             Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + votes + " votes)");
                             respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
@@ -95,33 +102,47 @@ public class CallChecker extends CallScreeningService {
                     }
                     return;
                 } else {
-                    Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
-                    // Report accepted call (persists even when app is not running)
-                    MainActivity.reportScreenedCall(CallChecker.this, number, false, votes);
+                    if (canceled.compareAndSet(false, true)) {
+                        // Cancel timeout since we got a result
+                        if (timeoutFuture[0] != null) {
+                            timeoutFuture[0].cancel(false);
+                        }
+                        Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
+                            acceptCall(callDetails);
+                            // Report accepted call (persists even when app is not running)
+                            MainActivity.reportScreenedCall(CallChecker.this, number, false, votes);
+                        });
+                    }
+                    return;
                 }
             } catch (MalformedURLException e) {
                 Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock URL, cannot screen call: " + number);
             } catch (IOException ex) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Failed to query PhoneBlock, cannot screen call: " + number, ex);
+                Log.d(CallChecker.class.getName(), "onScreenCall: failed to query PhoneBlock, cannot screen call: " + number, ex);
             } catch (JSONException ex) {
                 Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock result, cannot screen call: " + number, ex);
             }
 
             if (canceled.compareAndSet(false, true)) {
+                // Cancel timeout since we're handling the error
+                if (timeoutFuture[0] != null) {
+                    timeoutFuture[0].cancel(false);
+                }
                 Handler.createAsync(Looper.getMainLooper()).post(() -> {
                     acceptCall(callDetails);
                 });
             }
         }, 0, TimeUnit.MILLISECONDS);
 
-        _pool.schedule(() -> {
+        timeoutFuture[0] = _pool.schedule(() -> {
             if (canceled.compareAndSet(false, true)) {
                 Handler.createAsync(Looper.getMainLooper()).post(() -> {
                     Log.d(CallChecker.class.getName(), "onScreenCall: PhoneBlock query timeout, cannot screen call: " + number);
                     acceptCall(callDetails);
                 });
             }
-            future.cancel(true);
+            queryFuture.cancel(true);
         }, 4500, TimeUnit.MILLISECONDS);
     }
 
