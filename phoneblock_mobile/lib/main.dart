@@ -1224,9 +1224,9 @@ class _MainScreenState extends State<MainScreen> {
     final dateFormat = DateFormat('dd.MM.yyyy');
 
     if (callDate == today) {
-      return 'Heute, ${timeFormat.format(timestamp)}';
+      return context.l10n.todayTime(timeFormat.format(timestamp));
     } else if (callDate == yesterday) {
-      return 'Gestern, ${timeFormat.format(timestamp)}';
+      return context.l10n.yesterdayTime(timeFormat.format(timestamp));
     } else {
       return '${dateFormat.format(timestamp)}, ${timeFormat.format(timestamp)}';
     }

@@ -193,5 +193,9 @@
 
   "ratePhoneNumber": "Rate {phoneNumber}",
 
-  "reportsCount": "{count, plural, =1{1 report} other{{count} reports}}"
+  "reportsCount": "{count, plural, =1{1 report} other{{count} reports}}",
+
+  "todayTime": "Today, {time}",
+
+  "yesterdayTime": "Yesterday, {time}"
 }

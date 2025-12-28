@@ -343,4 +343,14 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String todayTime(String time) {
+    return 'Today, $time';
+  }
+
+  @override
+  String yesterdayTime(String time) {
+    return 'Yesterday, $time';
+  }
 }

@@ -679,6 +679,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Meldung} other{{count} Meldungen}}'**
   String reportsCount(int count);
+
+  /// Today with time
+  ///
+  /// In de, this message translates to:
+  /// **'Heute, {time}'**
+  String todayTime(String time);
+
+  /// Yesterday with time
+  ///
+  /// In de, this message translates to:
+  /// **'Gestern, {time}'**
+  String yesterdayTime(String time);
 }
 
 class _AppLocalizationsDelegate

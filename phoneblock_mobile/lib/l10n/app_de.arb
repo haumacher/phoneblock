@@ -549,5 +549,25 @@
         "type": "int"
       }
     }
+  },
+
+  "todayTime": "Heute, {time}",
+  "@todayTime": {
+    "description": "Today with time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "yesterdayTime": "Gestern, {time}",
+  "@yesterdayTime": {
+    "description": "Yesterday with time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   }
 }

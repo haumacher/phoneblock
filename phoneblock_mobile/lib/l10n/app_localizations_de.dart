@@ -345,4 +345,14 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String todayTime(String time) {
+    return 'Heute, $time';
+  }
+
+  @override
+  String yesterdayTime(String time) {
+    return 'Gestern, $time';
+  }
 }
