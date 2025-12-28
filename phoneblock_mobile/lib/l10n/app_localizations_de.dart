@@ -329,4 +329,20 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get errorSaving => 'Fehler beim Speichern';
+
+  @override
+  String ratePhoneNumber(String phoneNumber) {
+    return '$phoneNumber bewerten';
+  }
+
+  @override
+  String reportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Meldungen',
+      one: '1 Meldung',
+    );
+    return '$_temp0';
+  }
 }

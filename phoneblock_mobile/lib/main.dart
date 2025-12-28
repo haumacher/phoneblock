@@ -653,7 +653,7 @@ class _MainScreenState extends State<MainScreen> {
       // Default styling (also used for Rating.uNKNOWN)
       color = isSpam ? Colors.red : Colors.green;
       iconData = isSpam ? Icons.block : Icons.check_circle;
-      labelText = isSpam ? 'SPAM' : 'Legitim';
+      labelText = isSpam ? context.l10n.ratingSpam : context.l10n.ratingLegitimate;
     }
 
     return Dismissible(
@@ -672,7 +672,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              isSpam ? 'Als legitim melden' : 'Als SPAM melden',
+              isSpam ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -686,12 +686,12 @@ class _MainScreenState extends State<MainScreen> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              'Löschen',
-              style: TextStyle(
+              context.l10n.delete,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -757,7 +757,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${call.votes} ${call.votes == 1 ? "Meldung" : "Meldungen"}',
+                  context.l10n.reportsCount(call.votes),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -1435,7 +1435,7 @@ class RateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rate ${call.phone}'),
+        title: Text(context.l10n.ratePhoneNumber(call.phone)),
       ),
       body: Center(
         child: Column(

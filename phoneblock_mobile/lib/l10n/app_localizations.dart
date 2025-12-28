@@ -667,6 +667,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fehler beim Speichern'**
   String get errorSaving;
+
+  /// Title for rating screen
+  ///
+  /// In de, this message translates to:
+  /// **'{phoneNumber} bewerten'**
+  String ratePhoneNumber(String phoneNumber);
+
+  /// Number of reports for a phone number
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Meldung} other{{count} Meldungen}}'**
+  String reportsCount(int count);
 }
 
 class _AppLocalizationsDelegate

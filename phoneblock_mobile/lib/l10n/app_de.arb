@@ -529,5 +529,25 @@
   "errorSaving": "Fehler beim Speichern",
   "@errorSaving": {
     "description": "Error message when saving fails"
+  },
+
+  "ratePhoneNumber": "{phoneNumber} bewerten",
+  "@ratePhoneNumber": {
+    "description": "Title for rating screen",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "reportsCount": "{count, plural, =1{1 Meldung} other{{count} Meldungen}}",
+  "@reportsCount": {
+    "description": "Number of reports for a phone number",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

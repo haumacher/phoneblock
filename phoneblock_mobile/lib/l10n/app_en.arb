@@ -189,5 +189,9 @@
 
   "settingSaved": "Setting saved",
 
-  "errorSaving": "Error saving"
+  "errorSaving": "Error saving",
+
+  "ratePhoneNumber": "Rate {phoneNumber}",
+
+  "reportsCount": "{count, plural, =1{1 report} other{{count} reports}}"
 }

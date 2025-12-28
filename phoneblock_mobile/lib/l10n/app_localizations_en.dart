@@ -327,4 +327,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSaving => 'Error saving';
+
+  @override
+  String ratePhoneNumber(String phoneNumber) {
+    return 'Rate $phoneNumber';
+  }
+
+  @override
+  String reportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reports',
+      one: '1 report',
+    );
+    return '$_temp0';
+  }
 }
