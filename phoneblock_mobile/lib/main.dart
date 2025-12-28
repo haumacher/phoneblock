@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/l10n_extensions.dart';
 
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
 const String pbBaseUrl = 'https://phoneblock.net$contextPath';
@@ -299,7 +300,7 @@ class _SetupWizardState extends State<SetupWizard> {
     bool ok = await launchUrl(Uri.parse(pbLoginUrl));
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.errorOpeningPhoneBlock)),
+        SnackBar(content: Text(context.l10n.errorOpeningPhoneBlock)),
       );
     }
     // Note: _hasAuthToken will be updated when user returns via deep link
@@ -319,7 +320,7 @@ class _SetupWizardState extends State<SetupWizard> {
         });
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.permissionNotGranted)),
+          SnackBar(content: Text(context.l10n.permissionNotGranted)),
         );
       }
     } catch (e) {
@@ -339,7 +340,7 @@ class _SetupWizardState extends State<SetupWizard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.setupTitle),
+        title: Text(context.l10n.setupTitle),
       ),
       body: Stepper(
         currentStep: _currentStep.index,
@@ -350,7 +351,7 @@ class _SetupWizardState extends State<SetupWizard> {
               padding: const EdgeInsets.only(top: 16),
               child: ElevatedButton(
                 onPressed: _finishSetup,
-                child: Text(AppLocalizations.of(context)!.done),
+                child: Text(context.l10n.done),
               ),
             );
           }
@@ -391,15 +392,15 @@ class _SetupWizardState extends State<SetupWizard> {
         },
         steps: [
           Step(
-            title: Text(AppLocalizations.of(context)!.welcome),
-            subtitle: Text(AppLocalizations.of(context)!.connectPhoneBlockAccount),
+            title: Text(context.l10n.welcome),
+            subtitle: Text(context.l10n.connectPhoneBlockAccount),
             isActive: true, // Welcome step is always available
             state: _hasAuthToken ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.welcomeMessage,
+                  context.l10n.welcomeMessage,
                   style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 16),
@@ -407,8 +408,8 @@ class _SetupWizardState extends State<SetupWizard> {
                   onPressed: _connectToPhoneBlock,
                   icon: Icon(_hasAuthToken ? Icons.check_circle : Icons.link),
                   label: Text(_hasAuthToken
-                    ? AppLocalizations.of(context)!.connectedToPhoneBlock
-                    : AppLocalizations.of(context)!.connectToPhoneBlock),
+                    ? context.l10n.connectedToPhoneBlock
+                    : context.l10n.connectToPhoneBlock),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _hasAuthToken ? Colors.green : null,
                   ),
@@ -417,7 +418,7 @@ class _SetupWizardState extends State<SetupWizard> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      AppLocalizations.of(context)!.accountConnectedSuccessfully,
+                      context.l10n.accountConnectedSuccessfully,
                       style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -425,15 +426,15 @@ class _SetupWizardState extends State<SetupWizard> {
             ),
           ),
           Step(
-            title: Text(AppLocalizations.of(context)!.permissions),
-            subtitle: Text(AppLocalizations.of(context)!.allowCallFiltering),
+            title: Text(context.l10n.permissions),
+            subtitle: Text(context.l10n.allowCallFiltering),
             isActive: _hasAuthToken, // Active when auth is complete (prerequisite met)
             state: _hasPermission ? StepState.complete : StepState.indexed,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.permissionsMessage,
+                  context.l10n.permissionsMessage,
                   style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 16),
@@ -441,8 +442,8 @@ class _SetupWizardState extends State<SetupWizard> {
                   onPressed: _requestPermission,
                   icon: Icon(_hasPermission ? Icons.check_circle : Icons.security),
                   label: Text(_hasPermission
-                    ? AppLocalizations.of(context)!.permissionGranted
-                    : AppLocalizations.of(context)!.grantPermission),
+                    ? context.l10n.permissionGranted
+                    : context.l10n.grantPermission),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _hasPermission ? Colors.green : null,
                   ),
@@ -451,7 +452,7 @@ class _SetupWizardState extends State<SetupWizard> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      AppLocalizations.of(context)!.permissionGrantedSuccessfully,
+                      context.l10n.permissionGrantedSuccessfully,
                       style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -459,8 +460,8 @@ class _SetupWizardState extends State<SetupWizard> {
             ),
           ),
           Step(
-            title: Text(AppLocalizations.of(context)!.done),
-            subtitle: Text(AppLocalizations.of(context)!.setupComplete),
+            title: Text(context.l10n.done),
+            subtitle: Text(context.l10n.setupComplete),
             isActive: _hasAuthToken && _hasPermission, // Active when both prerequisites met
             state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
             content: Column(
@@ -469,7 +470,7 @@ class _SetupWizardState extends State<SetupWizard> {
                 const Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
                 const SizedBox(height: 16),
                 Text(
-                  AppLocalizations.of(context)!.setupCompleteMessage,
+                  context.l10n.setupCompleteMessage,
                   style: const TextStyle(fontSize: 14),
                 ),
               ],
@@ -558,7 +559,7 @@ class _MainScreenState extends State<MainScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.appTitle),
+          title: Text(context.l10n.appTitle),
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
@@ -580,7 +581,7 @@ class _MainScreenState extends State<MainScreen> {
         floatingActionButton: _screenedCalls.isNotEmpty
             ? FloatingActionButton(
                 onPressed: _deleteAllCalls,
-                tooltip: AppLocalizations.of(context)!.deleteAll,
+                tooltip: context.l10n.deleteAll,
                 child: const Icon(Icons.delete_sweep),
               )
             : null,
@@ -603,7 +604,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              AppLocalizations.of(context)!.noCallsYet,
+              context.l10n.noCallsYet,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -611,7 +612,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.of(context)!.noCallsDescription,
+              context.l10n.noCallsDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -804,7 +805,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.reportAsLegitimate),
+              Text(context.l10n.reportAsLegitimate),
             ],
           ),
           onTap: () {
@@ -820,7 +821,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Icon(Icons.report, color: Colors.orange),
               SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.reportAsSpam),
+              Text(context.l10n.reportAsSpam),
             ],
           ),
           onTap: () {
@@ -837,7 +838,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(Icons.open_in_browser, color: Colors.blue),
             SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.viewOnPhoneBlockMenu),
+            Text(context.l10n.viewOnPhoneBlockMenu),
           ],
         ),
         onTap: () {
@@ -853,7 +854,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(Icons.delete, color: Colors.red),
             SizedBox(width: 12),
-            Text(AppLocalizations.of(context)!.deleteCall),
+            Text(context.l10n.deleteCall),
           ],
         ),
         onTap: () {
@@ -880,19 +881,19 @@ class _MainScreenState extends State<MainScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.confirmReportLegitimate),
+          title: Text(context.l10n.confirmReportLegitimate),
           content: Text(
-            AppLocalizations.of(context)!.confirmReportLegitimateMessage(call.phoneNumber),
+            context.l10n.confirmReportLegitimateMessage(call.phoneNumber),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(AppLocalizations.of(context)!.cancel),
+              child: Text(context.l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: Colors.green),
-              child: Text(AppLocalizations.of(context)!.report),
+              child: Text(context.l10n.report),
             ),
           ],
         );
@@ -910,7 +911,7 @@ class _MainScreenState extends State<MainScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.notLoggedIn),
+              content: Text(context.l10n.notLoggedIn),
               backgroundColor: Colors.red,
             ),
           );
@@ -955,14 +956,14 @@ class _MainScreenState extends State<MainScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.reportedAsLegitimate(call.phoneNumber)),
+              content: Text(context.l10n.reportedAsLegitimate(call.phoneNumber)),
               backgroundColor: Colors.green,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.reportError(response.statusCode.toString())),
+              content: Text(context.l10n.reportError(response.statusCode.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -976,7 +977,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.reportError(e.toString())),
+            content: Text(context.l10n.reportError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -998,7 +999,7 @@ class _MainScreenState extends State<MainScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.notLoggedIn),
+              content: Text(context.l10n.notLoggedIn),
               backgroundColor: Colors.red,
             ),
           );
@@ -1043,14 +1044,14 @@ class _MainScreenState extends State<MainScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.reportedAsSpam(call.phoneNumber)),
+              content: Text(context.l10n.reportedAsSpam(call.phoneNumber)),
               backgroundColor: Colors.green,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.reportError(response.statusCode.toString())),
+              content: Text(context.l10n.reportError(response.statusCode.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -1064,7 +1065,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.reportError(e.toString())),
+            content: Text(context.l10n.reportError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -1078,7 +1079,7 @@ class _MainScreenState extends State<MainScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.selectSpamCategory),
+          title: Text(context.l10n.selectSpamCategory),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1098,7 +1099,7 @@ class _MainScreenState extends State<MainScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(AppLocalizations.of(context)!.cancel),
+              child: Text(context.l10n.cancel),
             ),
           ],
         );
@@ -1141,7 +1142,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorDeletingAllCalls),
+            content: Text(context.l10n.errorDeletingAllCalls),
             backgroundColor: Colors.red,
           ),
         );
@@ -1176,7 +1177,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorDeletingCall),
+            content: Text(context.l10n.errorDeletingCall),
             backgroundColor: Colors.red,
           ),
         );
@@ -1191,7 +1192,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.notLoggedInShort),
+            content: Text(context.l10n.notLoggedInShort),
             backgroundColor: Colors.red,
           ),
         );
@@ -1262,7 +1263,7 @@ class VerifyLoginState extends State<VerifyLogin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.verifyingLoginTitle),
+        title: Text(context.l10n.verifyingLoginTitle),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -1281,9 +1282,9 @@ class VerifyLoginState extends State<VerifyLogin> {
                     children: [
                       const Icon(Icons.check_circle, color: Colors.green, size: 64),
                       const SizedBox(height: 16),
-                      Text(AppLocalizations.of(context)!.loginSuccessMessage, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(context.l10n.loginSuccessMessage, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Text(AppLocalizations.of(context)!.redirectingToSetup),
+                      Text(context.l10n.redirectingToSetup),
                     ],
                   );
                 } else if (state.hasError) {
@@ -1292,11 +1293,11 @@ class VerifyLoginState extends State<VerifyLogin> {
                     children: [
                       const Icon(Icons.error, color: Colors.red, size: 64),
                       const SizedBox(height: 16),
-                      Text(AppLocalizations.of(context)!.tokenVerificationFailed(state.error.toString())),
+                      Text(context.l10n.tokenVerificationFailed(state.error.toString())),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => context.go('/setup'),
-                        child: Text(AppLocalizations.of(context)!.backToSetup),
+                        child: Text(context.l10n.backToSetup),
                       ),
                     ],
                   );
@@ -1306,7 +1307,7 @@ class VerifyLoginState extends State<VerifyLogin> {
                     children: [
                       const CircularProgressIndicator(),
                       const SizedBox(height: 16),
-                      Text(AppLocalizations.of(context)!.tokenBeingVerified),
+                      Text(context.l10n.tokenBeingVerified),
                     ],
                   );
                 }
@@ -1325,13 +1326,13 @@ class LoginFailed extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.loginFailed),
+        title: Text(context.l10n.loginFailed),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Center(
-            child: Text(AppLocalizations.of(context)!.noLoginTokenReceived),
+            child: Text(context.l10n.noLoginTokenReceived),
           ),
         ],
       ),
@@ -1384,20 +1385,20 @@ Future<bool> validateAuthToken() async {
 void registerPhoneBlock(BuildContext context) async {
   bool ok = await launchUrl(Uri.parse(pbLoginUrl));
   if (!ok) {
-    final snackBar = SnackBar(content: Text(AppLocalizations.of(context)!.failedToOpenPhoneBlock));
+    final snackBar = SnackBar(content: Text(context.l10n.failedToOpenPhoneBlock));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
 
 Widget label(BuildContext context, Rating rating) {
   switch (rating) {
-    case Rating.aLEGITIMATE: return Text(AppLocalizations.of(context)!.ratingLegitimate, style: const TextStyle(color: Colors.white));
-    case Rating.aDVERTISING: return Text(AppLocalizations.of(context)!.ratingAdvertising, style: const TextStyle(color: Color.fromRGBO(0,0,0,.7)));
-    case Rating.uNKNOWN: return Text(AppLocalizations.of(context)!.ratingSpam, style: const TextStyle(color: Colors.white));
-    case Rating.pING: return Text(AppLocalizations.of(context)!.ratingPingCall, style: const TextStyle(color: Colors.white));
-    case Rating.gAMBLE: return Text(AppLocalizations.of(context)!.ratingGamble, style: const TextStyle(color: Colors.white));
-    case Rating.fRAUD: return Text(AppLocalizations.of(context)!.ratingFraud, style: const TextStyle(color: Colors.white));
-    case Rating.pOLL: return Text(AppLocalizations.of(context)!.ratingPoll, style: const TextStyle(color: Colors.white));
+    case Rating.aLEGITIMATE: return Text(context.l10n.ratingLegitimate, style: const TextStyle(color: Colors.white));
+    case Rating.aDVERTISING: return Text(context.l10n.ratingAdvertising, style: const TextStyle(color: Color.fromRGBO(0,0,0,.7)));
+    case Rating.uNKNOWN: return Text(context.l10n.ratingSpam, style: const TextStyle(color: Colors.white));
+    case Rating.pING: return Text(context.l10n.ratingPingCall, style: const TextStyle(color: Colors.white));
+    case Rating.gAMBLE: return Text(context.l10n.ratingGamble, style: const TextStyle(color: Colors.white));
+    case Rating.fRAUD: return Text(context.l10n.ratingFraud, style: const TextStyle(color: Colors.white));
+    case Rating.pOLL: return Text(context.l10n.ratingPoll, style: const TextStyle(color: Colors.white));
   }
 }
 
@@ -1618,7 +1619,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.settingSaved),
+            content: Text(context.l10n.settingSaved),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -1630,7 +1631,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorSaving),
+            content: Text(context.l10n.errorSaving),
             backgroundColor: Colors.red,
           ),
         );
@@ -1658,7 +1659,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorSaving),
+            content: Text(context.l10n.errorSaving),
             backgroundColor: Colors.red,
           ),
         );
@@ -1682,7 +1683,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.settingSaved),
+            content: Text(context.l10n.settingSaved),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -1694,7 +1695,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorSaving),
+            content: Text(context.l10n.errorSaving),
             backgroundColor: Colors.red,
           ),
         );
@@ -1706,7 +1707,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.settingsTitle),
+        title: Text(context.l10n.settingsTitle),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -1715,7 +1716,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    AppLocalizations.of(context)!.callScreening,
+                    context.l10n.callScreening,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1724,9 +1725,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 ListTile(
-                  title: Text(AppLocalizations.of(context)!.minReportsCount),
+                  title: Text(context.l10n.minReportsCount),
                   subtitle: Text(
-                    AppLocalizations.of(context)!.callsBlockedAfterReports(_minVotes),
+                    context.l10n.callsBlockedAfterReports(_minVotes),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   trailing: SizedBox(
@@ -1759,8 +1760,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // Range blocking toggle
                 SwitchListTile(
-                  title: Text(AppLocalizations.of(context)!.blockNumberRanges),
-                  subtitle: Text(AppLocalizations.of(context)!.blockNumberRangesDescription),
+                  title: Text(context.l10n.blockNumberRanges),
+                  subtitle: Text(context.l10n.blockNumberRangesDescription),
                   value: _blockRanges,
                   onChanged: (value) {
                     _saveBlockRanges(value);
@@ -1770,9 +1771,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Range threshold (only shown when toggle is active)
                 if (_blockRanges)
                   ListTile(
-                    title: Text(AppLocalizations.of(context)!.minSpamReportsInRange),
+                    title: Text(context.l10n.minSpamReportsInRange),
                     subtitle: Text(
-                      AppLocalizations.of(context)!.rangesBlockedAfterReports(_minRangeVotes),
+                      context.l10n.rangesBlockedAfterReports(_minRangeVotes),
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     trailing: SizedBox(
@@ -1805,7 +1806,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
                   child: Text(
-                    AppLocalizations.of(context)!.about,
+                    context.l10n.about,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1816,20 +1817,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: Text(AppLocalizations.of(context)!.version),
+                  title: Text(context.l10n.version),
                   subtitle: Text(appVersion),
                 ),
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: Text(AppLocalizations.of(context)!.developer),
-                  subtitle: Text(AppLocalizations.of(context)!.developerName),
+                  title: Text(context.l10n.developer),
+                  subtitle: Text(context.l10n.developerName),
                 ),
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: Text(AppLocalizations.of(context)!.website),
-                  subtitle: Text(AppLocalizations.of(context)!.websiteUrl),
+                  title: Text(context.l10n.website),
+                  subtitle: Text(context.l10n.websiteUrl),
                   onTap: () async {
                     final url = Uri.parse('https://phoneblock.net');
                     if (await canLaunchUrl(url)) {
@@ -1840,8 +1841,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: Text(AppLocalizations.of(context)!.sourceCode),
-                  subtitle: Text(AppLocalizations.of(context)!.sourceCodeLicense),
+                  title: Text(context.l10n.sourceCode),
+                  subtitle: Text(context.l10n.sourceCodeLicense),
                   onTap: () async {
                     final url = Uri.parse('https://github.com/haumacher/phoneblock');
                     if (await canLaunchUrl(url)) {
@@ -1852,7 +1853,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
-                    AppLocalizations.of(context)!.aboutDescription,
+                    context.l10n.aboutDescription,
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
@@ -1871,7 +1872,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                     icon: const Icon(Icons.favorite),
-                    label: Text(AppLocalizations.of(context)!.donate),
+                    label: Text(context.l10n.donate),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
