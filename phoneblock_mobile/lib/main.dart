@@ -955,12 +955,14 @@ class _MainScreenState extends State<MainScreen> {
           // Reload the calls list to reflect the change
           await _loadScreenedCalls();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.reportedAsLegitimate(call.phoneNumber)),
-              backgroundColor: Colors.green,
-            ),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.l10n.reportedAsLegitimate(call.phoneNumber)),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1043,12 +1045,14 @@ class _MainScreenState extends State<MainScreen> {
           // Reload the calls list to reflect the change
           await _loadScreenedCalls();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.reportedAsSpam(call.phoneNumber)),
-              backgroundColor: Colors.green,
-            ),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.l10n.reportedAsSpam(call.phoneNumber)),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
