@@ -2108,7 +2108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 const Divider(),
                 const Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
                   child: Text(
                     "Über",
                     style: TextStyle(
@@ -2119,14 +2119,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 ListTile(
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
                   title: const Text("Version"),
                   subtitle: Text(appVersion),
                 ),
                 ListTile(
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
                   title: const Text("Entwickler"),
                   subtitle: const Text("Bernhard Haumacher"),
                 ),
                 ListTile(
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
                   title: const Text("Website"),
                   subtitle: const Text("phoneblock.net"),
                   onTap: () async {
@@ -2137,10 +2143,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 ListTile(
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
                   title: const Text("Quellcode"),
                   subtitle: const Text("Open Source (GPL-3.0)"),
                   onTap: () async {
-                    final url = Uri.parse('https://github.com/hduelme/phoneblock');
+                    final url = Uri.parse('https://github.com/haumacher/phoneblock');
                     if (await canLaunchUrl(url)) {
                       await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
@@ -2149,9 +2157,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
-                    "PhoneBlock ist ein Open-Source Projekt ohne Tracking, "
-                    "ohne Werbung und ohne Cookies. Der Dienst wird durch "
-                    "Spenden finanziert.",
+                    "PhoneBlock ist ein Open-Source Projekt ohne Tracking "
+                    "und ohne Werbung. Der Dienst wird durch Spenden finanziert.",
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
