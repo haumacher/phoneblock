@@ -1853,36 +1853,49 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   int _minVotes = 4;
+  bool _blockRanges = false;
+  int _minRangeVotes = 10;
   bool _isLoading = true;
   late TextEditingController _minVotesController;
+  late TextEditingController _minRangeVotesController;
 
   @override
   void initState() {
     super.initState();
     _minVotesController = TextEditingController(text: _minVotes.toString());
+    _minRangeVotesController = TextEditingController(text: _minRangeVotes.toString());
     _loadSettings();
   }
 
   @override
   void dispose() {
     _minVotesController.dispose();
+    _minRangeVotesController.dispose();
     super.dispose();
   }
 
   /// Load settings from SharedPreferences.
   Future<void> _loadSettings() async {
     try {
-      final result = await platform.invokeMethod("getMinVotes");
+      final minVotesResult = await platform.invokeMethod("getMinVotes");
+      final blockRangesResult = await platform.invokeMethod("getBlockRanges");
+      final minRangeVotesResult = await platform.invokeMethod("getMinRangeVotes");
+
       if (kDebugMode) {
-        print("Loaded minVotes from SharedPreferences: $result");
+        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult");
       }
+
       setState(() {
-        _minVotes = result ?? 4;
+        _minVotes = minVotesResult ?? 4;
+        _blockRanges = blockRangesResult ?? false;
+        _minRangeVotes = minRangeVotesResult ?? 10;
         _minVotesController.text = _minVotes.toString();
+        _minRangeVotesController.text = _minRangeVotes.toString();
         _isLoading = false;
       });
+
       if (kDebugMode) {
-        print("Set _minVotes to: $_minVotes, controller text: ${_minVotesController.text}");
+        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes");
       }
     } catch (e) {
       if (kDebugMode) {
@@ -1918,6 +1931,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (kDebugMode) {
         print("Error saving min votes: $e");
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Fehler beim Speichern"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Save block ranges setting.
+  Future<void> _saveBlockRanges(bool value) async {
+    if (kDebugMode) {
+      print("Saving blockRanges: $value");
+    }
+    try {
+      await platform.invokeMethod("setBlockRanges", value);
+      if (kDebugMode) {
+        print("Successfully saved blockRanges to SharedPreferences: $value");
+      }
+      setState(() {
+        _blockRanges = value;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving block ranges: $e");
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Fehler beim Speichern"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Save minimum range votes setting.
+  Future<void> _saveMinRangeVotes(int value) async {
+    if (kDebugMode) {
+      print("Saving minRangeVotes: $value");
+    }
+    try {
+      await platform.invokeMethod("setMinRangeVotes", value);
+      if (kDebugMode) {
+        print("Successfully saved minRangeVotes to SharedPreferences: $value");
+      }
+      setState(() {
+        _minRangeVotes = value;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Einstellung gespeichert"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving min range votes: $e");
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1983,6 +2060,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+                const Divider(),
+
+                // Range blocking toggle
+                SwitchListTile(
+                  title: const Text("Nummernbereiche blockieren"),
+                  subtitle: const Text("Blockiere Bereiche mit vielen SPAM-Meldungen"),
+                  value: _blockRanges,
+                  onChanged: (value) {
+                    _saveBlockRanges(value);
+                  },
+                ),
+
+                // Range threshold (only shown when toggle is active)
+                if (_blockRanges)
+                  ListTile(
+                    title: const Text("Minimale SPAM-Meldungen im Bereich"),
+                    subtitle: Text(
+                      "Bereiche werden ab $_minRangeVotes Meldungen blockiert",
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                    trailing: SizedBox(
+                      width: 80,
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                        controller: _minRangeVotesController,
+                        onChanged: (value) {
+                          final newValue = int.tryParse(value);
+                          if (newValue != null && newValue > 0) {
+                            setState(() {
+                              _minRangeVotes = newValue;
+                            });
+                          }
+                        },
+                        onSubmitted: (value) {
+                          final newValue = int.tryParse(value);
+                          if (newValue != null && newValue > 0) {
+                            _saveMinRangeVotes(newValue);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
                 const Divider(),
                 const Padding(
                   padding: EdgeInsets.all(16.0),

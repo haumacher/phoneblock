@@ -137,6 +137,24 @@ public class MainActivity extends FlutterActivity {
                 setMinVotes((Integer) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "getBlockRanges":
+                result.success(getBlockRanges());
+                break;
+
+            case "setBlockRanges":
+                setBlockRanges((Boolean) methodCall.arguments);
+                result.success(null);
+                break;
+
+            case "getMinRangeVotes":
+                result.success(getMinRangeVotes());
+                break;
+
+            case "setMinRangeVotes":
+                setMinRangeVotes((Integer) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -204,6 +222,32 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putInt("min_votes", minVotes).apply();
         Log.d(MainActivity.class.getName(), "setMinVotes: " + minVotes);
+    }
+
+    private boolean getBlockRanges() {
+        SharedPreferences prefs = getPreferences(this);
+        boolean value = prefs.getBoolean("block_ranges", false);
+        Log.d(MainActivity.class.getName(), "getBlockRanges: " + value);
+        return value;
+    }
+
+    private void setBlockRanges(boolean blockRanges) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putBoolean("block_ranges", blockRanges).apply();
+        Log.d(MainActivity.class.getName(), "setBlockRanges: " + blockRanges);
+    }
+
+    private int getMinRangeVotes() {
+        SharedPreferences prefs = getPreferences(this);
+        int value = prefs.getInt("min_range_votes", 10);
+        Log.d(MainActivity.class.getName(), "getMinRangeVotes: " + value);
+        return value;
+    }
+
+    private void setMinRangeVotes(int minRangeVotes) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putInt("min_range_votes", minRangeVotes).apply();
+        Log.d(MainActivity.class.getName(), "setMinRangeVotes: " + minRangeVotes);
     }
 
     public static SharedPreferences getPreferences(Context context) {
