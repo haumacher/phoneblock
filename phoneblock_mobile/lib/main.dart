@@ -398,30 +398,27 @@ class _SetupWizardState extends State<SetupWizard> {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Willkommen bei PhoneBlock Mobile!\n\n'
-                  'Diese App hilft Ihnen, Spam-Anrufe automatisch zu blockieren. '
-                  'Dazu benötigen Sie ein kostenloses Konto bei PhoneBlock.net.\n\n'
-                  'Verbinden Sie Ihr PhoneBlock-Konto, um fortzufahren:',
-                  style: TextStyle(fontSize: 14),
+                Text(
+                  AppLocalizations.of(context)!.welcomeMessage,
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _connectToPhoneBlock,
                   icon: Icon(_hasAuthToken ? Icons.check_circle : Icons.link),
                   label: Text(_hasAuthToken
-                    ? 'Mit PhoneBlock verbunden'
-                    : 'Mit PhoneBlock verbinden'),
+                    ? AppLocalizations.of(context)!.connectedToPhoneBlock
+                    : AppLocalizations.of(context)!.connectToPhoneBlock),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _hasAuthToken ? Colors.green : null,
                   ),
                 ),
                 if (_hasAuthToken)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      '✓ Konto erfolgreich verbunden',
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                      AppLocalizations.of(context)!.accountConnectedSuccessfully,
+                      style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                     ),
                   ),
               ],
@@ -435,29 +432,27 @@ class _SetupWizardState extends State<SetupWizard> {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Um Spam-Anrufe automatisch zu blockieren, benötigt '
-                  'PhoneBlock Mobile die Berechtigung, eingehende Anrufe zu prüfen.\n\n'
-                  'Diese Berechtigung ist erforderlich, damit die App funktioniert:',
-                  style: TextStyle(fontSize: 14),
+                Text(
+                  AppLocalizations.of(context)!.permissionsMessage,
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _requestPermission,
                   icon: Icon(_hasPermission ? Icons.check_circle : Icons.security),
                   label: Text(_hasPermission
-                    ? 'Berechtigung erteilt'
-                    : 'Berechtigung erteilen'),
+                    ? AppLocalizations.of(context)!.permissionGranted
+                    : AppLocalizations.of(context)!.grantPermission),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _hasPermission ? Colors.green : null,
                   ),
                 ),
                 if (_hasPermission)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      '✓ Berechtigung erfolgreich erteilt',
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                      AppLocalizations.of(context)!.permissionGrantedSuccessfully,
+                      style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                     ),
                   ),
               ],
@@ -468,18 +463,14 @@ class _SetupWizardState extends State<SetupWizard> {
             subtitle: Text(AppLocalizations.of(context)!.setupComplete),
             isActive: _hasAuthToken && _hasPermission, // Active when both prerequisites met
             state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
-            content: const Column(
+            content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
-                SizedBox(height: 16),
+                const Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+                const SizedBox(height: 16),
                 Text(
-                  'Einrichtung abgeschlossen!\n\n'
-                  'PhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. '
-                  'Die App prüft automatisch eingehende Anrufe und blockiert bekannte '
-                  'Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\n'
-                  'Drücken Sie "Fertig", um zur Hauptansicht zu gelangen.',
-                  style: TextStyle(fontSize: 14),
+                  AppLocalizations.of(context)!.setupCompleteMessage,
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),

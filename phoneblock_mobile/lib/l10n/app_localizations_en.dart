@@ -246,4 +246,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String rangesBlockedAfterReports(int count) {
     return 'Ranges will be blocked after $count reports';
   }
+
+  @override
+  String get welcomeMessage =>
+      'Welcome to PhoneBlock Mobile!\n\nThis app helps you automatically block spam calls. To use it, you need a free account at PhoneBlock.net.\n\nConnect your PhoneBlock account to continue:';
+
+  @override
+  String get connectToPhoneBlock => 'Connect to PhoneBlock';
+
+  @override
+  String get connectedToPhoneBlock => 'Connected to PhoneBlock';
+
+  @override
+  String get accountConnectedSuccessfully => '✓ Account successfully connected';
+
+  @override
+  String get permissionsMessage =>
+      'To automatically block spam calls, PhoneBlock Mobile needs permission to screen incoming calls.\n\nThis permission is required for the app to work:';
+
+  @override
+  String get permissionGranted => 'Permission granted';
+
+  @override
+  String get permissionGrantedSuccessfully =>
+      '✓ Permission successfully granted';
+
+  @override
+  String get setupCompleteMessage =>
+      'Setup complete!\n\nPhoneBlock Mobile is now ready to block spam calls. The app automatically checks incoming calls and blocks known spam numbers based on the PhoneBlock database.\n\nPress \"Done\" to go to the main screen.';
 }

@@ -517,6 +517,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bereiche werden ab {count} Meldungen blockiert'**
   String rangesBlockedAfterReports(int count);
+
+  /// Welcome message in setup wizard
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen bei PhoneBlock Mobile!\n\nDiese App hilft Ihnen, Spam-Anrufe automatisch zu blockieren. Dazu benötigen Sie ein kostenloses Konto bei PhoneBlock.net.\n\nVerbinden Sie Ihr PhoneBlock-Konto, um fortzufahren:'**
+  String get welcomeMessage;
+
+  /// Button to connect to PhoneBlock
+  ///
+  /// In de, this message translates to:
+  /// **'Mit PhoneBlock verbinden'**
+  String get connectToPhoneBlock;
+
+  /// Status message when connected
+  ///
+  /// In de, this message translates to:
+  /// **'Mit PhoneBlock verbunden'**
+  String get connectedToPhoneBlock;
+
+  /// Success message for account connection
+  ///
+  /// In de, this message translates to:
+  /// **'✓ Konto erfolgreich verbunden'**
+  String get accountConnectedSuccessfully;
+
+  /// Permissions explanation message
+  ///
+  /// In de, this message translates to:
+  /// **'Um Spam-Anrufe automatisch zu blockieren, benötigt PhoneBlock Mobile die Berechtigung, eingehende Anrufe zu prüfen.\n\nDiese Berechtigung ist erforderlich, damit die App funktioniert:'**
+  String get permissionsMessage;
+
+  /// Status when permission is granted
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung erteilt'**
+  String get permissionGranted;
+
+  /// Success message for permission granted
+  ///
+  /// In de, this message translates to:
+  /// **'✓ Berechtigung erfolgreich erteilt'**
+  String get permissionGrantedSuccessfully;
+
+  /// Setup complete message
+  ///
+  /// In de, this message translates to:
+  /// **'Einrichtung abgeschlossen!\n\nPhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. Die App prüft automatisch eingehende Anrufe und blockiert bekannte Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\nDrücken Sie \"Fertig\", um zur Hauptansicht zu gelangen.'**
+  String get setupCompleteMessage;
 }
 
 class _AppLocalizationsDelegate

@@ -247,4 +247,32 @@ class AppLocalizationsDe extends AppLocalizations {
   String rangesBlockedAfterReports(int count) {
     return 'Bereiche werden ab $count Meldungen blockiert';
   }
+
+  @override
+  String get welcomeMessage =>
+      'Willkommen bei PhoneBlock Mobile!\n\nDiese App hilft Ihnen, Spam-Anrufe automatisch zu blockieren. Dazu benötigen Sie ein kostenloses Konto bei PhoneBlock.net.\n\nVerbinden Sie Ihr PhoneBlock-Konto, um fortzufahren:';
+
+  @override
+  String get connectToPhoneBlock => 'Mit PhoneBlock verbinden';
+
+  @override
+  String get connectedToPhoneBlock => 'Mit PhoneBlock verbunden';
+
+  @override
+  String get accountConnectedSuccessfully => '✓ Konto erfolgreich verbunden';
+
+  @override
+  String get permissionsMessage =>
+      'Um Spam-Anrufe automatisch zu blockieren, benötigt PhoneBlock Mobile die Berechtigung, eingehende Anrufe zu prüfen.\n\nDiese Berechtigung ist erforderlich, damit die App funktioniert:';
+
+  @override
+  String get permissionGranted => 'Berechtigung erteilt';
+
+  @override
+  String get permissionGrantedSuccessfully =>
+      '✓ Berechtigung erfolgreich erteilt';
+
+  @override
+  String get setupCompleteMessage =>
+      'Einrichtung abgeschlossen!\n\nPhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. Die App prüft automatisch eingehende Anrufe und blockiert bekannte Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\nDrücken Sie \"Fertig\", um zur Hauptansicht zu gelangen.';
 }

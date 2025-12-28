@@ -139,5 +139,21 @@
 
   "callsBlockedAfterReports": "Calls will be blocked after {count} reports",
 
-  "rangesBlockedAfterReports": "Ranges will be blocked after {count} reports"
+  "rangesBlockedAfterReports": "Ranges will be blocked after {count} reports",
+
+  "welcomeMessage": "Welcome to PhoneBlock Mobile!\n\nThis app helps you automatically block spam calls. To use it, you need a free account at PhoneBlock.net.\n\nConnect your PhoneBlock account to continue:",
+
+  "connectToPhoneBlock": "Connect to PhoneBlock",
+
+  "connectedToPhoneBlock": "Connected to PhoneBlock",
+
+  "accountConnectedSuccessfully": "✓ Account successfully connected",
+
+  "permissionsMessage": "To automatically block spam calls, PhoneBlock Mobile needs permission to screen incoming calls.\n\nThis permission is required for the app to work:",
+
+  "permissionGranted": "Permission granted",
+
+  "permissionGrantedSuccessfully": "✓ Permission successfully granted",
+
+  "setupCompleteMessage": "Setup complete!\n\nPhoneBlock Mobile is now ready to block spam calls. The app automatically checks incoming calls and blocks known spam numbers based on the PhoneBlock database.\n\nPress \"Done\" to go to the main screen."
 }
