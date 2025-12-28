@@ -646,27 +646,34 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// Shows a bottom sheet with options for a call.
+  /// Shows a context menu with options for a call.
   void _showCallOptions(BuildContext context, ScreenedCall call) {
-    showModalBottomSheet(
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+
+    showMenu(
       context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx + renderBox.size.width,
+        position.dy + renderBox.size.height,
+      ),
+      items: [
+        PopupMenuItem(
+          child: Row(
             children: [
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Löschen'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteCall(call);
-                },
-              ),
+              Icon(Icons.delete, color: Colors.red),
+              SizedBox(width: 12),
+              Text('Löschen'),
             ],
           ),
-        );
-      },
+          onTap: () {
+            // Need to delay deletion slightly to allow menu to close
+            Future.delayed(Duration.zero, () => _deleteCall(call));
+          },
+        ),
+      ],
     );
   }
 
