@@ -2147,7 +2147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 const Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
                     "PhoneBlock ist ein Open-Source Projekt ohne Tracking, "
                     "ohne Werbung und ohne Cookies. Der Dienst wird durch "
@@ -2158,6 +2158,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontStyle: FontStyle.italic,
                     ),
                     textAlign: TextAlign.center,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final url = Uri.parse('https://phoneblock.net/phoneblock/support');
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    icon: const Icon(Icons.favorite),
+                    label: const Text('Spenden'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    ),
                   ),
                 ),
               ],
