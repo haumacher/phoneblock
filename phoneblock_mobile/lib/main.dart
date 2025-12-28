@@ -640,8 +640,33 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
           ),
+          onLongPress: () => _showCallOptions(context, call),
         ),
       ),
+    );
+  }
+
+  /// Shows a bottom sheet with options for a call.
+  void _showCallOptions(BuildContext context, ScreenedCall call) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Löschen'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteCall(call);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
