@@ -299,7 +299,7 @@ class _SetupWizardState extends State<SetupWizard> {
     bool ok = await launchUrl(Uri.parse(pbLoginUrl));
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fehler beim Öffnen von PhoneBlock.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorOpeningPhoneBlock)),
       );
     }
     // Note: _hasAuthToken will be updated when user returns via deep link
@@ -319,7 +319,7 @@ class _SetupWizardState extends State<SetupWizard> {
         });
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berechtigung wurde nicht erteilt.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.permissionNotGranted)),
         );
       }
     } catch (e) {
@@ -339,7 +339,7 @@ class _SetupWizardState extends State<SetupWizard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PhoneBlock Mobile - Einrichtung'),
+        title: Text(AppLocalizations.of(context)!.setupTitle),
       ),
       body: Stepper(
         currentStep: _currentStep.index,
@@ -350,7 +350,7 @@ class _SetupWizardState extends State<SetupWizard> {
               padding: const EdgeInsets.only(top: 16),
               child: ElevatedButton(
                 onPressed: _finishSetup,
-                child: const Text('Fertig'),
+                child: Text(AppLocalizations.of(context)!.done),
               ),
             );
           }
@@ -391,8 +391,8 @@ class _SetupWizardState extends State<SetupWizard> {
         },
         steps: [
           Step(
-            title: const Text('Willkommen'),
-            subtitle: const Text('PhoneBlock-Konto verbinden'),
+            title: Text(AppLocalizations.of(context)!.welcome),
+            subtitle: Text(AppLocalizations.of(context)!.connectPhoneBlockAccount),
             isActive: true, // Welcome step is always available
             state: _hasAuthToken ? StepState.complete : StepState.indexed,
             content: Column(
@@ -428,8 +428,8 @@ class _SetupWizardState extends State<SetupWizard> {
             ),
           ),
           Step(
-            title: const Text('Berechtigungen'),
-            subtitle: const Text('Anrufe filtern erlauben'),
+            title: Text(AppLocalizations.of(context)!.permissions),
+            subtitle: Text(AppLocalizations.of(context)!.allowCallFiltering),
             isActive: _hasAuthToken, // Active when auth is complete (prerequisite met)
             state: _hasPermission ? StepState.complete : StepState.indexed,
             content: Column(
@@ -464,8 +464,8 @@ class _SetupWizardState extends State<SetupWizard> {
             ),
           ),
           Step(
-            title: const Text('Fertig'),
-            subtitle: const Text('Einrichtung abgeschlossen'),
+            title: Text(AppLocalizations.of(context)!.done),
+            subtitle: Text(AppLocalizations.of(context)!.setupComplete),
             isActive: _hasAuthToken && _hasPermission, // Active when both prerequisites met
             state: (_hasAuthToken && _hasPermission) ? StepState.complete : StepState.indexed,
             content: const Column(
@@ -813,7 +813,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 12),
-              Text('Als legitim melden'),
+              Text(AppLocalizations.of(context)!.reportAsLegitimate),
             ],
           ),
           onTap: () {
@@ -829,7 +829,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Icon(Icons.report, color: Colors.orange),
               SizedBox(width: 12),
-              Text('Als SPAM melden'),
+              Text(AppLocalizations.of(context)!.reportAsSpam),
             ],
           ),
           onTap: () {
@@ -846,7 +846,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(Icons.open_in_browser, color: Colors.blue),
             SizedBox(width: 12),
-            Text('Auf PhoneBlock ansehen'),
+            Text(AppLocalizations.of(context)!.viewOnPhoneBlockMenu),
           ],
         ),
         onTap: () {
@@ -862,7 +862,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(Icons.delete, color: Colors.red),
             SizedBox(width: 12),
-            Text('Löschen'),
+            Text(AppLocalizations.of(context)!.deleteCall),
           ],
         ),
         onTap: () {
@@ -889,19 +889,19 @@ class _MainScreenState extends State<MainScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Als legitim melden?'),
+          title: Text(AppLocalizations.of(context)!.confirmReportLegitimate),
           content: Text(
-            'Möchten Sie ${call.phoneNumber} wirklich als legitime Nummer melden?',
+            AppLocalizations.of(context)!.confirmReportLegitimateMessage(call.phoneNumber),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Abbrechen'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: Colors.green),
-              child: const Text('Melden'),
+              child: Text(AppLocalizations.of(context)!.report),
             ),
           ],
         );
@@ -918,8 +918,8 @@ class _MainScreenState extends State<MainScreen> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Nicht angemeldet. Bitte melden Sie sich an.'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.notLoggedIn),
               backgroundColor: Colors.red,
             ),
           );
@@ -964,14 +964,14 @@ class _MainScreenState extends State<MainScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${call.phoneNumber} als legitim gemeldet'),
+              content: Text(AppLocalizations.of(context)!.reportedAsLegitimate(call.phoneNumber)),
               backgroundColor: Colors.green,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Fehler beim Melden: ${response.statusCode}'),
+              content: Text(AppLocalizations.of(context)!.reportError(response.statusCode.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -985,7 +985,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler beim Melden: $e'),
+            content: Text(AppLocalizations.of(context)!.reportError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -1006,8 +1006,8 @@ class _MainScreenState extends State<MainScreen> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Nicht angemeldet. Bitte melden Sie sich an.'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.notLoggedIn),
               backgroundColor: Colors.red,
             ),
           );
@@ -1052,14 +1052,14 @@ class _MainScreenState extends State<MainScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${call.phoneNumber} als SPAM gemeldet'),
+              content: Text(AppLocalizations.of(context)!.reportedAsSpam(call.phoneNumber)),
               backgroundColor: Colors.green,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Fehler beim Melden: ${response.statusCode}'),
+              content: Text(AppLocalizations.of(context)!.reportError(response.statusCode.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -1073,7 +1073,7 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler beim Melden: $e'),
+            content: Text(AppLocalizations.of(context)!.reportError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -1087,7 +1087,7 @@ class _MainScreenState extends State<MainScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('SPAM-Kategorie wählen'),
+          title: Text(AppLocalizations.of(context)!.selectSpamCategory),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1107,7 +1107,7 @@ class _MainScreenState extends State<MainScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Abbrechen'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
           ],
         );
@@ -1149,8 +1149,8 @@ class _MainScreenState extends State<MainScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fehler beim Löschen aller Anrufe'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorDeletingAllCalls),
             backgroundColor: Colors.red,
           ),
         );
@@ -1184,8 +1184,8 @@ class _MainScreenState extends State<MainScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fehler beim Löschen des Anrufs'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorDeletingCall),
             backgroundColor: Colors.red,
           ),
         );
@@ -1199,8 +1199,8 @@ class _MainScreenState extends State<MainScreen> {
     if (token == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Nicht angemeldet'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.notLoggedInShort),
             backgroundColor: Colors.red,
           ),
         );

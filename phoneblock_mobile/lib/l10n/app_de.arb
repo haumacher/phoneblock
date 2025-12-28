@@ -234,5 +234,145 @@
   "loginSuccess": "Anmeldung erfolgreich!",
   "@loginSuccess": {
     "description": "Login success message"
+  },
+
+  "reportAsLegitimate": "Als legitim melden",
+  "@reportAsLegitimate": {
+    "description": "Menu item to report as legitimate"
+  },
+
+  "reportAsSpam": "Als SPAM melden",
+  "@reportAsSpam": {
+    "description": "Menu item to report as spam"
+  },
+
+  "viewOnPhoneBlockMenu": "Auf PhoneBlock ansehen",
+  "@viewOnPhoneBlockMenu": {
+    "description": "Menu item to view on PhoneBlock"
+  },
+
+  "deleteCall": "Löschen",
+  "@deleteCall": {
+    "description": "Menu item to delete call"
+  },
+
+  "confirmReportLegitimate": "Als legitim melden?",
+  "@confirmReportLegitimate": {
+    "description": "Confirm report as legitimate dialog title"
+  },
+
+  "confirmReportLegitimateMessage": "Möchten Sie {phoneNumber} wirklich als legitime Nummer melden?",
+  "@confirmReportLegitimateMessage": {
+    "description": "Confirm report as legitimate message",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "report": "Melden",
+  "@report": {
+    "description": "Report button"
+  },
+
+  "notLoggedIn": "Nicht angemeldet. Bitte melden Sie sich an.",
+  "@notLoggedIn": {
+    "description": "Not logged in error message"
+  },
+
+  "reportedAsLegitimate": "{phoneNumber} als legitim gemeldet",
+  "@reportedAsLegitimate": {
+    "description": "Successfully reported as legitimate",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "reportError": "Fehler beim Melden: {error}",
+  "@reportError": {
+    "description": "Error reporting number",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "reportedAsSpam": "{phoneNumber} als SPAM gemeldet",
+  "@reportedAsSpam": {
+    "description": "Successfully reported as spam",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "selectSpamCategory": "SPAM-Kategorie wählen",
+  "@selectSpamCategory": {
+    "description": "Select spam category dialog title"
+  },
+
+  "errorDeletingAllCalls": "Fehler beim Löschen aller Anrufe",
+  "@errorDeletingAllCalls": {
+    "description": "Error deleting all calls"
+  },
+
+  "errorDeletingCall": "Fehler beim Löschen des Anrufs",
+  "@errorDeletingCall": {
+    "description": "Error deleting single call"
+  },
+
+  "notLoggedInShort": "Nicht angemeldet",
+  "@notLoggedInShort": {
+    "description": "Not logged in - short version"
+  },
+
+  "errorOpeningPhoneBlock": "Fehler beim Öffnen von PhoneBlock.",
+  "@errorOpeningPhoneBlock": {
+    "description": "Error opening PhoneBlock website"
+  },
+
+  "permissionNotGranted": "Berechtigung wurde nicht erteilt.",
+  "@permissionNotGranted": {
+    "description": "Permission not granted message"
+  },
+
+  "setupTitle": "PhoneBlock Mobile - Einrichtung",
+  "@setupTitle": {
+    "description": "Setup wizard title"
+  },
+
+  "welcome": "Willkommen",
+  "@welcome": {
+    "description": "Welcome header"
+  },
+
+  "connectPhoneBlockAccount": "PhoneBlock-Konto verbinden",
+  "@connectPhoneBlockAccount": {
+    "description": "Connect PhoneBlock account subtitle"
+  },
+
+  "permissions": "Berechtigungen",
+  "@permissions": {
+    "description": "Permissions header"
+  },
+
+  "allowCallFiltering": "Anrufe filtern erlauben",
+  "@allowCallFiltering": {
+    "description": "Allow call filtering subtitle"
+  },
+
+  "done": "Fertig",
+  "@done": {
+    "description": "Done header"
+  },
+
+  "setupComplete": "Einrichtung abgeschlossen",
+  "@setupComplete": {
+    "description": "Setup complete subtitle"
   }
 }

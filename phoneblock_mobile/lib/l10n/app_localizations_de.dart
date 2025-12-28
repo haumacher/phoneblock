@@ -154,4 +154,84 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get loginSuccess => 'Anmeldung erfolgreich!';
+
+  @override
+  String get reportAsLegitimate => 'Als legitim melden';
+
+  @override
+  String get reportAsSpam => 'Als SPAM melden';
+
+  @override
+  String get viewOnPhoneBlockMenu => 'Auf PhoneBlock ansehen';
+
+  @override
+  String get deleteCall => 'Löschen';
+
+  @override
+  String get confirmReportLegitimate => 'Als legitim melden?';
+
+  @override
+  String confirmReportLegitimateMessage(String phoneNumber) {
+    return 'Möchten Sie $phoneNumber wirklich als legitime Nummer melden?';
+  }
+
+  @override
+  String get report => 'Melden';
+
+  @override
+  String get notLoggedIn => 'Nicht angemeldet. Bitte melden Sie sich an.';
+
+  @override
+  String reportedAsLegitimate(String phoneNumber) {
+    return '$phoneNumber als legitim gemeldet';
+  }
+
+  @override
+  String reportError(String error) {
+    return 'Fehler beim Melden: $error';
+  }
+
+  @override
+  String reportedAsSpam(String phoneNumber) {
+    return '$phoneNumber als SPAM gemeldet';
+  }
+
+  @override
+  String get selectSpamCategory => 'SPAM-Kategorie wählen';
+
+  @override
+  String get errorDeletingAllCalls => 'Fehler beim Löschen aller Anrufe';
+
+  @override
+  String get errorDeletingCall => 'Fehler beim Löschen des Anrufs';
+
+  @override
+  String get notLoggedInShort => 'Nicht angemeldet';
+
+  @override
+  String get errorOpeningPhoneBlock => 'Fehler beim Öffnen von PhoneBlock.';
+
+  @override
+  String get permissionNotGranted => 'Berechtigung wurde nicht erteilt.';
+
+  @override
+  String get setupTitle => 'PhoneBlock Mobile - Einrichtung';
+
+  @override
+  String get welcome => 'Willkommen';
+
+  @override
+  String get connectPhoneBlockAccount => 'PhoneBlock-Konto verbinden';
+
+  @override
+  String get permissions => 'Berechtigungen';
+
+  @override
+  String get allowCallFiltering => 'Anrufe filtern erlauben';
+
+  @override
+  String get done => 'Fertig';
+
+  @override
+  String get setupComplete => 'Einrichtung abgeschlossen';
 }

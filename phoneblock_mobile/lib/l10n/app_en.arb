@@ -85,5 +85,53 @@
 
   "loginFailed": "Login failed",
 
-  "loginSuccess": "Login successful!"
+  "loginSuccess": "Login successful!",
+
+  "reportAsLegitimate": "Report as legitimate",
+
+  "reportAsSpam": "Report as SPAM",
+
+  "viewOnPhoneBlockMenu": "View on PhoneBlock",
+
+  "deleteCall": "Delete",
+
+  "confirmReportLegitimate": "Report as legitimate?",
+
+  "confirmReportLegitimateMessage": "Do you really want to report {phoneNumber} as a legitimate number?",
+
+  "report": "Report",
+
+  "notLoggedIn": "Not logged in. Please log in.",
+
+  "reportedAsLegitimate": "{phoneNumber} reported as legitimate",
+
+  "reportError": "Error reporting: {error}",
+
+  "reportedAsSpam": "{phoneNumber} reported as SPAM",
+
+  "selectSpamCategory": "Select SPAM category",
+
+  "errorDeletingAllCalls": "Error deleting all calls",
+
+  "errorDeletingCall": "Error deleting call",
+
+  "notLoggedInShort": "Not logged in",
+
+  "errorOpeningPhoneBlock": "Error opening PhoneBlock.",
+
+  "permissionNotGranted": "Permission was not granted.",
+
+  "setupTitle": "PhoneBlock Mobile - Setup",
+
+  "welcome": "Welcome",
+
+  "connectPhoneBlockAccount": "Connect PhoneBlock account",
+
+  "permissions": "Permissions",
+
+  "allowCallFiltering": "Allow call filtering",
+
+  "done": "Done",
+
+  "setupComplete": "Setup complete"
 }

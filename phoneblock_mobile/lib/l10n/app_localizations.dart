@@ -355,6 +355,150 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Anmeldung erfolgreich!'**
   String get loginSuccess;
+
+  /// Menu item to report as legitimate
+  ///
+  /// In de, this message translates to:
+  /// **'Als legitim melden'**
+  String get reportAsLegitimate;
+
+  /// Menu item to report as spam
+  ///
+  /// In de, this message translates to:
+  /// **'Als SPAM melden'**
+  String get reportAsSpam;
+
+  /// Menu item to view on PhoneBlock
+  ///
+  /// In de, this message translates to:
+  /// **'Auf PhoneBlock ansehen'**
+  String get viewOnPhoneBlockMenu;
+
+  /// Menu item to delete call
+  ///
+  /// In de, this message translates to:
+  /// **'Löschen'**
+  String get deleteCall;
+
+  /// Confirm report as legitimate dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Als legitim melden?'**
+  String get confirmReportLegitimate;
+
+  /// Confirm report as legitimate message
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie {phoneNumber} wirklich als legitime Nummer melden?'**
+  String confirmReportLegitimateMessage(String phoneNumber);
+
+  /// Report button
+  ///
+  /// In de, this message translates to:
+  /// **'Melden'**
+  String get report;
+
+  /// Not logged in error message
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht angemeldet. Bitte melden Sie sich an.'**
+  String get notLoggedIn;
+
+  /// Successfully reported as legitimate
+  ///
+  /// In de, this message translates to:
+  /// **'{phoneNumber} als legitim gemeldet'**
+  String reportedAsLegitimate(String phoneNumber);
+
+  /// Error reporting number
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Melden: {error}'**
+  String reportError(String error);
+
+  /// Successfully reported as spam
+  ///
+  /// In de, this message translates to:
+  /// **'{phoneNumber} als SPAM gemeldet'**
+  String reportedAsSpam(String phoneNumber);
+
+  /// Select spam category dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Kategorie wählen'**
+  String get selectSpamCategory;
+
+  /// Error deleting all calls
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen aller Anrufe'**
+  String get errorDeletingAllCalls;
+
+  /// Error deleting single call
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Löschen des Anrufs'**
+  String get errorDeletingCall;
+
+  /// Not logged in - short version
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht angemeldet'**
+  String get notLoggedInShort;
+
+  /// Error opening PhoneBlock website
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Öffnen von PhoneBlock.'**
+  String get errorOpeningPhoneBlock;
+
+  /// Permission not granted message
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung wurde nicht erteilt.'**
+  String get permissionNotGranted;
+
+  /// Setup wizard title
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock Mobile - Einrichtung'**
+  String get setupTitle;
+
+  /// Welcome header
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen'**
+  String get welcome;
+
+  /// Connect PhoneBlock account subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock-Konto verbinden'**
+  String get connectPhoneBlockAccount;
+
+  /// Permissions header
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen'**
+  String get permissions;
+
+  /// Allow call filtering subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufe filtern erlauben'**
+  String get allowCallFiltering;
+
+  /// Done header
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get done;
+
+  /// Setup complete subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'Einrichtung abgeschlossen'**
+  String get setupComplete;
 }
 
 class _AppLocalizationsDelegate

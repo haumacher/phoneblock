@@ -153,4 +153,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginSuccess => 'Login successful!';
+
+  @override
+  String get reportAsLegitimate => 'Report as legitimate';
+
+  @override
+  String get reportAsSpam => 'Report as SPAM';
+
+  @override
+  String get viewOnPhoneBlockMenu => 'View on PhoneBlock';
+
+  @override
+  String get deleteCall => 'Delete';
+
+  @override
+  String get confirmReportLegitimate => 'Report as legitimate?';
+
+  @override
+  String confirmReportLegitimateMessage(String phoneNumber) {
+    return 'Do you really want to report $phoneNumber as a legitimate number?';
+  }
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get notLoggedIn => 'Not logged in. Please log in.';
+
+  @override
+  String reportedAsLegitimate(String phoneNumber) {
+    return '$phoneNumber reported as legitimate';
+  }
+
+  @override
+  String reportError(String error) {
+    return 'Error reporting: $error';
+  }
+
+  @override
+  String reportedAsSpam(String phoneNumber) {
+    return '$phoneNumber reported as SPAM';
+  }
+
+  @override
+  String get selectSpamCategory => 'Select SPAM category';
+
+  @override
+  String get errorDeletingAllCalls => 'Error deleting all calls';
+
+  @override
+  String get errorDeletingCall => 'Error deleting call';
+
+  @override
+  String get notLoggedInShort => 'Not logged in';
+
+  @override
+  String get errorOpeningPhoneBlock => 'Error opening PhoneBlock.';
+
+  @override
+  String get permissionNotGranted => 'Permission was not granted.';
+
+  @override
+  String get setupTitle => 'PhoneBlock Mobile - Setup';
+
+  @override
+  String get welcome => 'Welcome';
+
+  @override
+  String get connectPhoneBlockAccount => 'Connect PhoneBlock account';
+
+  @override
+  String get permissions => 'Permissions';
+
+  @override
+  String get allowCallFiltering => 'Allow call filtering';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get setupComplete => 'Setup complete';
 }
