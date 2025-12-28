@@ -742,6 +742,15 @@ class _MainScreenState extends State<MainScreen> {
 
       if (mounted) {
         if (response.statusCode == 200) {
+          // Update all calls with this phone number to mark as blocked
+          await ScreenedCallsDatabase.instance.updateCallsByPhoneNumber(
+            call.phoneNumber,
+            true, // Mark as blocked/SPAM
+          );
+
+          // Reload the calls list to reflect the change
+          await _loadScreenedCalls();
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${call.phoneNumber} als SPAM gemeldet'),

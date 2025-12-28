@@ -122,6 +122,28 @@ class ScreenedCallsDatabase {
     return result.map((map) => ScreenedCall.fromMap(map)).toList();
   }
 
+  /// Updates a screened call.
+  Future<int> updateScreenedCall(ScreenedCall call) async {
+    final db = await database;
+    return await db.update(
+      'screened_calls',
+      call.toMap(),
+      where: 'id = ?',
+      whereArgs: [call.id],
+    );
+  }
+
+  /// Updates all screened calls with the given phone number to mark as blocked.
+  Future<int> updateCallsByPhoneNumber(String phoneNumber, bool wasBlocked) async {
+    final db = await database;
+    return await db.update(
+      'screened_calls',
+      {'wasBlocked': wasBlocked ? 1 : 0},
+      where: 'phoneNumber = ?',
+      whereArgs: [phoneNumber],
+    );
+  }
+
   /// Deletes a screened call by ID.
   Future<int> deleteScreenedCall(int id) async {
     final db = await database;
