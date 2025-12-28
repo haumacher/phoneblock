@@ -623,8 +623,17 @@ class _MainScreenState extends State<MainScreen> {
 
     return Dismissible(
       key: Key('call_${call.id}'),
-      direction: DismissDirection.endToStart,
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        color: Colors.orange,
+        child: const Icon(
+          Icons.report,
+          color: Colors.white,
+          size: 32,
+        ),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
@@ -634,6 +643,27 @@ class _MainScreenState extends State<MainScreen> {
           size: 32,
         ),
       ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          // Swipe right to report as SPAM
+          if (isSpam) {
+            // Already SPAM, don't allow reporting again
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Diese Nummer ist bereits als SPAM gemeldet'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            return false;
+          }
+          // Show rating dialog and report
+          await _reportAsSpam(context, call);
+          return false; // Don't dismiss, just report
+        } else {
+          // Swipe left to delete
+          return true; // Allow dismissal
+        }
+      },
       onDismissed: (direction) {
         _deleteCall(call);
       },
@@ -703,14 +733,13 @@ class _MainScreenState extends State<MainScreen> {
   /// Shows a context menu with options for a call.
   void _showCallOptions(BuildContext context, ScreenedCall call) {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final isSpam = call.wasBlocked;
 
-    showMenu(
-      context: context,
-      position: RelativeRect.fromRect(
-        _lastTapPosition & const Size(40, 40),
-        Offset.zero & overlay.size,
-      ),
-      items: [
+    final items = <PopupMenuEntry<dynamic>>[];
+
+    // Only show "Report as SPAM" option if not already SPAM
+    if (!isSpam) {
+      items.add(
         PopupMenuItem(
           child: Row(
             children: [
@@ -723,20 +752,33 @@ class _MainScreenState extends State<MainScreen> {
             Future.delayed(Duration.zero, () => _reportAsSpam(context, call));
           },
         ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.delete, color: Colors.red),
-              SizedBox(width: 12),
-              Text('Löschen'),
-            ],
-          ),
-          onTap: () {
-            // Need to delay deletion slightly to allow menu to close
-            Future.delayed(Duration.zero, () => _deleteCall(call));
-          },
+      );
+    }
+
+    // Always show delete option
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.delete, color: Colors.red),
+            SizedBox(width: 12),
+            Text('Löschen'),
+          ],
         ),
-      ],
+        onTap: () {
+          // Need to delay deletion slightly to allow menu to close
+          Future.delayed(Duration.zero, () => _deleteCall(call));
+        },
+      ),
+    );
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        _lastTapPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: items,
     );
   }
 
