@@ -16,6 +16,7 @@ import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import me.leolin.shortcutbadger.ShortcutBadger;
 
 public class MainActivity extends FlutterActivity {
 
@@ -94,7 +95,10 @@ public class MainActivity extends FlutterActivity {
                 // Save back to SharedPreferences
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
-                Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber);
+                // Update app badge to show number of pending calls
+                ShortcutBadger.applyCount(context, callsArray.length());
+
+                Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber + " (badge count: " + callsArray.length() + ")");
             } catch (JSONException e) {
                 Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
             }
@@ -199,6 +203,10 @@ public class MainActivity extends FlutterActivity {
     private void clearStoredScreeningResults() {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().remove("pending_screened_calls").apply();
+
+        // Clear the app badge since all pending calls have been synced
+        ShortcutBadger.removeCount(this);
+        Log.d(MainActivity.class.getName(), "Cleared app badge after syncing pending calls");
     }
 
     private String getAuthToken() {

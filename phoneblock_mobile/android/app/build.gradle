@@ -72,3 +72,7 @@ android {
 flutter {
     source '../..'
 }
+
+dependencies {
+    implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
+}

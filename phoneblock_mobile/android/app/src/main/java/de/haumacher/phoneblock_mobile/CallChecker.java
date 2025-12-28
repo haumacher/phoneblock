@@ -92,8 +92,8 @@ public class CallChecker extends CallScreeningService {
                 String rating = json.optString("rating", null);
 
                 // Check if number should be blocked based on direct votes or range votes
-                boolean shouldBlock = false;
-                String blockReason = "";
+                final boolean shouldBlock;
+                final String blockReason;
 
                 if (votes >= minVotes && !archived) {
                     shouldBlock = true;
@@ -101,6 +101,9 @@ public class CallChecker extends CallScreeningService {
                 } else if (blockRanges && votesWildcard >= minRangeVotes) {
                     shouldBlock = true;
                     blockReason = votesWildcard + " range votes";
+                } else {
+                    shouldBlock = false;
+                    blockReason = "";
                 }
 
                 if (shouldBlock) {
