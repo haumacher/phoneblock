@@ -12,6 +12,7 @@ import 'package:phoneblock_mobile/storage.dart';
 import 'package:phoneblock_mobile/api.dart' as api;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
+import 'package:webview_flutter/webview_flutter.dart';
 
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
 const String pbBaseUrl = 'https://phoneblock.net$contextPath';
@@ -1151,34 +1152,31 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Opens the phone number on PhoneBlock website.
+  /// Opens the phone number on PhoneBlock website in a WebView.
   Future<void> _viewOnPhoneBlock(ScreenedCall call) async {
-    try {
-      final url = Uri.parse('$pbBaseUrl/nums/${call.phoneNumber}');
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Browser konnte nicht geöffnet werden'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error opening PhoneBlock URL: $e');
-      }
+    String? token = await getAuthToken();
+    if (token == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Fehler beim Öffnen des Browsers'),
+            content: Text('Nicht angemeldet'),
             backgroundColor: Colors.red,
           ),
         );
       }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhoneBlockWebView(
+            phoneNumber: call.phoneNumber,
+            authToken: token,
+          ),
+        ),
+      );
     }
   }
 
@@ -1757,4 +1755,70 @@ class RateScreen extends StatelessWidget {
     );
   }
 
+}
+
+/// WebView screen for displaying PhoneBlock phone number details.
+class PhoneBlockWebView extends StatefulWidget {
+  final String phoneNumber;
+  final String authToken;
+
+  const PhoneBlockWebView({
+    super.key,
+    required this.phoneNumber,
+    required this.authToken,
+  });
+
+  @override
+  State<PhoneBlockWebView> createState() => _PhoneBlockWebViewState();
+}
+
+class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            setState(() {
+              _isLoading = true;
+            });
+          },
+          onPageFinished: (String url) {
+            setState(() {
+              _isLoading = false;
+            });
+          },
+        ),
+      )
+      ..loadRequest(
+        Uri.parse('$pbBaseUrl/nums/${widget.phoneNumber}'),
+        headers: {
+          'Authorization': 'Bearer ${widget.authToken}',
+        },
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.phoneNumber),
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
 }
