@@ -128,6 +128,15 @@ public class MainActivity extends FlutterActivity {
                 clearStoredScreeningResults();
                 result.success(null);
                 break;
+
+            case "getMinVotes":
+                result.success(getMinVotes());
+                break;
+
+            case "setMinVotes":
+                setMinVotes((Integer) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -182,6 +191,19 @@ public class MainActivity extends FlutterActivity {
     private void setAuthToken(String authToken) {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("auth_token", authToken).apply();
+    }
+
+    private int getMinVotes() {
+        SharedPreferences prefs = getPreferences(this);
+        int value = prefs.getInt("min_votes", 4);
+        Log.d(MainActivity.class.getName(), "getMinVotes: " + value);
+        return value;
+    }
+
+    private void setMinVotes(int minVotes) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putInt("min_votes", minVotes).apply();
+        Log.d(MainActivity.class.getName(), "setMinVotes: " + minVotes);
     }
 
     public static SharedPreferences getPreferences(Context context) {

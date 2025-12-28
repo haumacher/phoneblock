@@ -548,6 +548,17 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: const Text('PhoneBlock Mobile'),
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -1828,6 +1839,233 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Settings screen for app configuration.
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  int _minVotes = 4;
+  bool _isLoading = true;
+  late TextEditingController _minVotesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _minVotesController = TextEditingController(text: _minVotes.toString());
+    _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _minVotesController.dispose();
+    super.dispose();
+  }
+
+  /// Load settings from SharedPreferences.
+  Future<void> _loadSettings() async {
+    try {
+      final result = await platform.invokeMethod("getMinVotes");
+      if (kDebugMode) {
+        print("Loaded minVotes from SharedPreferences: $result");
+      }
+      setState(() {
+        _minVotes = result ?? 4;
+        _minVotesController.text = _minVotes.toString();
+        _isLoading = false;
+      });
+      if (kDebugMode) {
+        print("Set _minVotes to: $_minVotes, controller text: ${_minVotesController.text}");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error loading settings: $e");
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Save minimum votes setting.
+  Future<void> _saveMinVotes(int value) async {
+    if (kDebugMode) {
+      print("Saving minVotes: $value");
+    }
+    try {
+      await platform.invokeMethod("setMinVotes", value);
+      if (kDebugMode) {
+        print("Successfully saved minVotes to SharedPreferences: $value");
+      }
+      setState(() {
+        _minVotes = value;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Einstellung gespeichert"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving min votes: $e");
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Fehler beim Speichern"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handle logout.
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Abmelden"),
+          content: const Text("Möchten Sie sich wirklich abmelden?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Abbrechen"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text("Abmelden"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await platform.invokeMethod("setAuthToken", null);
+      if (mounted) {
+        context.go("/");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error logging out: $e");
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Fehler beim Abmelden"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Einstellungen"),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Anruffilterung",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  title: const Text("Minimale Anzahl Meldungen"),
+                  subtitle: Text(
+                    "Anrufe werden ab $_minVotes Meldungen blockiert",
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  trailing: SizedBox(
+                    width: 80,
+                    child: TextField(
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                      controller: _minVotesController,
+                      onChanged: (value) {
+                        final newValue = int.tryParse(value);
+                        if (newValue != null && newValue > 0) {
+                          setState(() {
+                            _minVotes = newValue;
+                          });
+                        }
+                      },
+                      onSubmitted: (value) {
+                        final newValue = int.tryParse(value);
+                        if (newValue != null && newValue > 0) {
+                          _saveMinVotes(newValue);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const Divider(),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Über",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  title: const Text("Version"),
+                  subtitle: Text(appVersion),
+                ),
+                const Divider(),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Konto",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    "Abmelden",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: _handleLogout,
+                ),
+              ],
+            ),
     );
   }
 }
