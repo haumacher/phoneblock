@@ -131,7 +131,17 @@ public class ContentFilter extends LoginFilter {
 
 	@Override
 	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
+		String path = request.getServletPath();
+		if (path.startsWith(SearchServlet.NUMS_PREFIX)) {
+			return authorization.isAccessQuery();
+		}
+		
+		switch (path) {
+		case RatingServlet.PATH: 
+			return authorization.isAccessRate();
+		default:
 		return authorization.isAccessLogin();
+		}
 	}
 
 	@Override
