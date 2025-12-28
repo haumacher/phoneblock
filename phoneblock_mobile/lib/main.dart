@@ -609,13 +609,13 @@ class _MainScreenState extends State<MainScreen> {
     IconData iconData;
     String labelText;
 
-    if (call.rating != null && isSpam) {
+    if (call.rating != null && call.rating != Rating.uNKNOWN && isSpam) {
       // Use rating-specific styling
       color = bgColor(call.rating!);
       iconData = icon(call.rating!).icon!;
       labelText = (label(call.rating!) as Text).data!;
     } else {
-      // Default styling
+      // Default styling (also used for Rating.uNKNOWN)
       color = isSpam ? Colors.red : Colors.green;
       iconData = isSpam ? Icons.block : Icons.check_circle;
       labelText = isSpam ? 'SPAM' : 'Legitim';
@@ -1632,7 +1632,7 @@ Widget label(Rating rating) {
   switch (rating) {
     case Rating.aLEGITIMATE: return const Text("Legitim", style: TextStyle(color: Colors.white));
     case Rating.aDVERTISING: return const Text("Werbung", style: TextStyle(color: Color.fromRGBO(0,0,0,.7)));
-    case Rating.uNKNOWN: return const Text("Anderer Grund", style: TextStyle(color: Colors.white));
+    case Rating.uNKNOWN: return const Text("SPAM", style: TextStyle(color: Colors.white));
     case Rating.pING: return const Text("Ping-Anruf", style: TextStyle(color: Colors.white));
     case Rating.gAMBLE: return const Text("Gewinnspiel", style: TextStyle(color: Colors.white));
     case Rating.fRAUD: return const Text("Betrug", style: TextStyle(color: Colors.white));
