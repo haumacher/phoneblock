@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:jsontool/jsontool.dart';
@@ -14,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
 const String pbBaseUrl = 'https://phoneblock.net$contextPath';
@@ -92,6 +94,16 @@ void main() async {
 
   runApp(MaterialApp.router(
       routerConfig: router,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('de'),
+        Locale('en'),
+      ],
       theme: ThemeData(
         appBarTheme: AppBarTheme(
           backgroundColor: const Color.fromARGB(255, 0, 209, 178),
@@ -555,7 +567,7 @@ class _MainScreenState extends State<MainScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('PhoneBlock Mobile'),
+          title: Text(AppLocalizations.of(context)!.appTitle),
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
@@ -577,7 +589,7 @@ class _MainScreenState extends State<MainScreen> {
         floatingActionButton: _screenedCalls.isNotEmpty
             ? FloatingActionButton(
                 onPressed: _deleteAllCalls,
-                tooltip: 'Alle löschen',
+                tooltip: AppLocalizations.of(context)!.deleteAll,
                 child: const Icon(Icons.delete_sweep),
               )
             : null,
@@ -600,7 +612,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Noch keine Anrufe gefiltert',
+              AppLocalizations.of(context)!.noCallsYet,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -608,7 +620,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Eingehende Anrufe werden automatisch auf Spam geprüft und hier angezeigt.',
+              AppLocalizations.of(context)!.noCallsDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),

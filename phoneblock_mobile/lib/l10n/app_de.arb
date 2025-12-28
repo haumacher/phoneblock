@@ -1,0 +1,238 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "PhoneBlock Mobile",
+  "@appTitle": {
+    "description": "Application title"
+  },
+
+  "settings": "Einstellungen",
+  "@settings": {
+    "description": "Settings menu item"
+  },
+
+  "deleteAll": "Alle löschen",
+  "@deleteAll": {
+    "description": "Delete all button tooltip"
+  },
+
+  "noCallsYet": "Noch keine Anrufe gefiltert",
+  "@noCallsYet": {
+    "description": "Empty state title"
+  },
+
+  "noCallsDescription": "PhoneBlock wird eingehende Anrufe automatisch überprüfen und SPAM-Anrufe blockieren.",
+  "@noCallsDescription": {
+    "description": "Empty state description"
+  },
+
+  "blocked": "Blockiert",
+  "@blocked": {
+    "description": "Label for blocked calls"
+  },
+
+  "accepted": "Angenommen",
+  "@accepted": {
+    "description": "Label for accepted calls"
+  },
+
+  "votes": "{count} Stimmen",
+  "@votes": {
+    "description": "Number of votes for a phone number",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "viewOnPhoneBlock": "Auf PhoneBlock anzeigen",
+  "@viewOnPhoneBlock": {
+    "description": "Menu item to view number on PhoneBlock website"
+  },
+
+  "confirmDeleteAll": "Alle gefilterten Anrufe löschen?",
+  "@confirmDeleteAll": {
+    "description": "Confirmation dialog title"
+  },
+
+  "confirmDeleteAllMessage": "Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@confirmDeleteAllMessage": {
+    "description": "Confirmation dialog message"
+  },
+
+  "cancel": "Abbrechen",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+
+  "delete": "Löschen",
+  "@delete": {
+    "description": "Delete button"
+  },
+
+  "settingsTitle": "Einstellungen",
+  "@settingsTitle": {
+    "description": "Settings screen title"
+  },
+
+  "callScreening": "Anruffilterung",
+  "@callScreening": {
+    "description": "Call screening section header"
+  },
+
+  "minSpamReports": "Minimale SPAM-Meldungen",
+  "@minSpamReports": {
+    "description": "Minimum spam reports setting"
+  },
+
+  "minSpamReportsDescription": "Nummern werden ab {count} Meldungen blockiert",
+  "@minSpamReportsDescription": {
+    "description": "Description for minimum spam reports",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "blockNumberRanges": "Nummernbereiche blockieren",
+  "@blockNumberRanges": {
+    "description": "Block number ranges toggle"
+  },
+
+  "blockNumberRangesDescription": "Blockiere Bereiche mit vielen SPAM-Meldungen",
+  "@blockNumberRangesDescription": {
+    "description": "Description for block number ranges"
+  },
+
+  "minSpamReportsInRange": "Minimale SPAM-Meldungen im Bereich",
+  "@minSpamReportsInRange": {
+    "description": "Minimum spam reports in range setting"
+  },
+
+  "minSpamReportsInRangeDescription": "Bereiche werden ab {count} Meldungen blockiert",
+  "@minSpamReportsInRangeDescription": {
+    "description": "Description for minimum spam reports in range",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "about": "Über",
+  "@about": {
+    "description": "About section header"
+  },
+
+  "version": "Version",
+  "@version": {
+    "description": "Version label"
+  },
+
+  "developer": "Entwickler",
+  "@developer": {
+    "description": "Developer label"
+  },
+
+  "developerName": "Bernhard Haumacher",
+  "@developerName": {
+    "description": "Developer name"
+  },
+
+  "website": "Website",
+  "@website": {
+    "description": "Website label"
+  },
+
+  "websiteUrl": "phoneblock.net",
+  "@websiteUrl": {
+    "description": "Website URL"
+  },
+
+  "sourceCode": "Quellcode",
+  "@sourceCode": {
+    "description": "Source code label"
+  },
+
+  "sourceCodeLicense": "Open Source (GPL-3.0)",
+  "@sourceCodeLicense": {
+    "description": "Source code license"
+  },
+
+  "aboutDescription": "PhoneBlock ist ein Open-Source Projekt ohne Tracking und ohne Werbung. Der Dienst wird durch Spenden finanziert.",
+  "@aboutDescription": {
+    "description": "About description text"
+  },
+
+  "donate": "Spenden",
+  "@donate": {
+    "description": "Donate button"
+  },
+
+  "pendingCallsNotification": "{count, plural, =1{1 neuer gefilterter Anruf} other{{count} neue gefilterte Anrufe}}",
+  "@pendingCallsNotification": {
+    "description": "Notification title for pending filtered calls",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "tapToOpen": "Tippen zum Öffnen der App",
+  "@tapToOpen": {
+    "description": "Notification text to tap to open"
+  },
+
+  "setupWelcome": "Willkommen bei PhoneBlock Mobile",
+  "@setupWelcome": {
+    "description": "Setup wizard welcome message"
+  },
+
+  "setupPermissionsRequired": "Erforderliche Berechtigungen",
+  "@setupPermissionsRequired": {
+    "description": "Setup permissions required header"
+  },
+
+  "grantPermission": "Berechtigung erteilen",
+  "@grantPermission": {
+    "description": "Grant permission button"
+  },
+
+  "continue_": "Weiter",
+  "@continue_": {
+    "description": "Continue button"
+  },
+
+  "finish": "Fertig",
+  "@finish": {
+    "description": "Finish button"
+  },
+
+  "loginRequired": "PhoneBlock Anmeldung",
+  "@loginRequired": {
+    "description": "Login required header"
+  },
+
+  "loginToPhoneBlock": "Bei PhoneBlock anmelden",
+  "@loginToPhoneBlock": {
+    "description": "Login button text"
+  },
+
+  "verifyingLogin": "Anmeldung wird überprüft...",
+  "@verifyingLogin": {
+    "description": "Verifying login message"
+  },
+
+  "loginFailed": "Anmeldung fehlgeschlagen",
+  "@loginFailed": {
+    "description": "Login failed message"
+  },
+
+  "loginSuccess": "Anmeldung erfolgreich!",
+  "@loginSuccess": {
+    "description": "Login success message"
+  }
+}

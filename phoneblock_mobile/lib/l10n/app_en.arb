@@ -1,0 +1,89 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "PhoneBlock Mobile",
+
+  "settings": "Settings",
+
+  "deleteAll": "Delete all",
+
+  "noCallsYet": "No calls filtered yet",
+
+  "noCallsDescription": "PhoneBlock will automatically check incoming calls and block SPAM calls.",
+
+  "blocked": "Blocked",
+
+  "accepted": "Accepted",
+
+  "votes": "{count} votes",
+
+  "viewOnPhoneBlock": "View on PhoneBlock",
+
+  "confirmDeleteAll": "Delete all filtered calls?",
+
+  "confirmDeleteAllMessage": "This action cannot be undone.",
+
+  "cancel": "Cancel",
+
+  "delete": "Delete",
+
+  "settingsTitle": "Settings",
+
+  "callScreening": "Call Screening",
+
+  "minSpamReports": "Minimum SPAM reports",
+
+  "minSpamReportsDescription": "Numbers will be blocked after {count} reports",
+
+  "blockNumberRanges": "Block number ranges",
+
+  "blockNumberRangesDescription": "Block ranges with many SPAM reports",
+
+  "minSpamReportsInRange": "Minimum SPAM reports in range",
+
+  "minSpamReportsInRangeDescription": "Ranges will be blocked after {count} reports",
+
+  "about": "About",
+
+  "version": "Version",
+
+  "developer": "Developer",
+
+  "developerName": "Bernhard Haumacher",
+
+  "website": "Website",
+
+  "websiteUrl": "phoneblock.net",
+
+  "sourceCode": "Source Code",
+
+  "sourceCodeLicense": "Open Source (GPL-3.0)",
+
+  "aboutDescription": "PhoneBlock is an open-source project without tracking and without ads. The service is funded by donations.",
+
+  "donate": "Donate",
+
+  "pendingCallsNotification": "{count, plural, =1{1 new filtered call} other{{count} new filtered calls}}",
+
+  "tapToOpen": "Tap to open the app",
+
+  "setupWelcome": "Welcome to PhoneBlock Mobile",
+
+  "setupPermissionsRequired": "Required Permissions",
+
+  "grantPermission": "Grant Permission",
+
+  "continue_": "Continue",
+
+  "finish": "Finish",
+
+  "loginRequired": "PhoneBlock Login",
+
+  "loginToPhoneBlock": "Login to PhoneBlock",
+
+  "verifyingLogin": "Verifying login...",
+
+  "loginFailed": "Login failed",
+
+  "loginSuccess": "Login successful!"
+}
