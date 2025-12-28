@@ -510,6 +510,14 @@ class _MainScreenState extends State<MainScreen> {
           : _screenedCalls.isEmpty
               ? _buildEmptyState()
               : _buildCallsList(),
+      floatingActionButton: _screenedCalls.isNotEmpty
+          ? FloatingActionButton(
+              onPressed: _deleteAllCalls,
+              backgroundColor: Colors.red,
+              tooltip: 'Alle löschen',
+              child: const Icon(Icons.delete_sweep),
+            )
+          : null,
     );
   }
 
@@ -636,6 +644,39 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
     );
+  }
+
+  /// Deletes all calls from the database and updates the UI.
+  Future<void> _deleteAllCalls() async {
+    // Clear UI immediately
+    setState(() {
+      _screenedCalls.clear();
+    });
+
+    try {
+      // Delete all from database
+      await ScreenedCallsDatabase.instance.deleteAllScreenedCalls();
+
+      if (kDebugMode) {
+        print('Deleted all calls');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting all calls: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fehler beim Löschen aller Anrufe'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
+      // Reload calls from database if deletion failed
+      await _loadScreenedCalls();
+    }
   }
 
   /// Deletes a call from the database and updates the UI.
