@@ -627,20 +627,48 @@ class _MainScreenState extends State<MainScreen> {
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
         color: Colors.orange,
-        child: const Icon(
-          Icons.report,
-          color: Colors.white,
-          size: 32,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.report,
+              color: Colors.white,
+              size: 32,
+            ),
+            SizedBox(width: 12),
+            Text(
+              'Als SPAM melden',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-          size: 32,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'Löschen',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(width: 12),
+            Icon(
+              Icons.delete,
+              color: Colors.white,
+              size: 32,
+            ),
+          ],
         ),
       ),
       confirmDismiss: (direction) async {
