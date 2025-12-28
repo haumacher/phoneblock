@@ -2033,17 +2033,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Einstellungen"),
+        title: Text(AppLocalizations.of(context)!.settingsTitle),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    "Anruffilterung",
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.callScreening,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey,
@@ -2051,9 +2051,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 ListTile(
-                  title: const Text("Minimale Anzahl Meldungen"),
+                  title: Text(AppLocalizations.of(context)!.minReportsCount),
                   subtitle: Text(
-                    "Anrufe werden ab $_minVotes Meldungen blockiert",
+                    AppLocalizations.of(context)!.callsBlockedAfterReports(_minVotes),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   trailing: SizedBox(
@@ -2086,8 +2086,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // Range blocking toggle
                 SwitchListTile(
-                  title: const Text("Nummernbereiche blockieren"),
-                  subtitle: const Text("Blockiere Bereiche mit vielen SPAM-Meldungen"),
+                  title: Text(AppLocalizations.of(context)!.blockNumberRanges),
+                  subtitle: Text(AppLocalizations.of(context)!.blockNumberRangesDescription),
                   value: _blockRanges,
                   onChanged: (value) {
                     _saveBlockRanges(value);
@@ -2097,9 +2097,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Range threshold (only shown when toggle is active)
                 if (_blockRanges)
                   ListTile(
-                    title: const Text("Minimale SPAM-Meldungen im Bereich"),
+                    title: Text(AppLocalizations.of(context)!.minSpamReportsInRange),
                     subtitle: Text(
-                      "Bereiche werden ab $_minRangeVotes Meldungen blockiert",
+                      AppLocalizations.of(context)!.rangesBlockedAfterReports(_minRangeVotes),
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     trailing: SizedBox(
@@ -2129,11 +2129,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 const Divider(),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
                   child: Text(
-                    "Über",
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.about,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey,
@@ -2143,20 +2143,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: const Text("Version"),
+                  title: Text(AppLocalizations.of(context)!.version),
                   subtitle: Text(appVersion),
                 ),
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: const Text("Entwickler"),
-                  subtitle: const Text("Bernhard Haumacher"),
+                  title: Text(AppLocalizations.of(context)!.developer),
+                  subtitle: Text(AppLocalizations.of(context)!.developerName),
                 ),
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: const Text("Website"),
-                  subtitle: const Text("phoneblock.net"),
+                  title: Text(AppLocalizations.of(context)!.website),
+                  subtitle: Text(AppLocalizations.of(context)!.websiteUrl),
                   onTap: () async {
                     final url = Uri.parse('https://phoneblock.net');
                     if (await canLaunchUrl(url)) {
@@ -2167,8 +2167,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  title: const Text("Quellcode"),
-                  subtitle: const Text("Open Source (GPL-3.0)"),
+                  title: Text(AppLocalizations.of(context)!.sourceCode),
+                  subtitle: Text(AppLocalizations.of(context)!.sourceCodeLicense),
                   onTap: () async {
                     final url = Uri.parse('https://github.com/haumacher/phoneblock');
                     if (await canLaunchUrl(url)) {
@@ -2176,12 +2176,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
-                    "PhoneBlock ist ein Open-Source Projekt ohne Tracking "
-                    "und ohne Werbung. Der Dienst wird durch Spenden finanziert.",
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.aboutDescription,
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
                       fontStyle: FontStyle.italic,
@@ -2199,7 +2198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                     icon: const Icon(Icons.favorite),
-                    label: const Text('Spenden'),
+                    label: Text(AppLocalizations.of(context)!.donate),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,

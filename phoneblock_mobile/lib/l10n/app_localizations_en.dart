@@ -233,4 +233,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setupComplete => 'Setup complete';
+
+  @override
+  String get minReportsCount => 'Minimum number of reports';
+
+  @override
+  String callsBlockedAfterReports(int count) {
+    return 'Calls will be blocked after $count reports';
+  }
+
+  @override
+  String rangesBlockedAfterReports(int count) {
+    return 'Ranges will be blocked after $count reports';
+  }
 }

@@ -499,6 +499,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einrichtung abgeschlossen'**
   String get setupComplete;
+
+  /// Minimum reports count label
+  ///
+  /// In de, this message translates to:
+  /// **'Minimale Anzahl Meldungen'**
+  String get minReportsCount;
+
+  /// Description for calls blocked after reports
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufe werden ab {count} Meldungen blockiert'**
+  String callsBlockedAfterReports(int count);
+
+  /// Description for ranges blocked after reports
+  ///
+  /// In de, this message translates to:
+  /// **'Bereiche werden ab {count} Meldungen blockiert'**
+  String rangesBlockedAfterReports(int count);
 }
 
 class _AppLocalizationsDelegate

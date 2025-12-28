@@ -133,5 +133,11 @@
 
   "done": "Done",
 
-  "setupComplete": "Setup complete"
+  "setupComplete": "Setup complete",
+
+  "minReportsCount": "Minimum number of reports",
+
+  "callsBlockedAfterReports": "Calls will be blocked after {count} reports",
+
+  "rangesBlockedAfterReports": "Ranges will be blocked after {count} reports"
 }

@@ -374,5 +374,30 @@
   "setupComplete": "Einrichtung abgeschlossen",
   "@setupComplete": {
     "description": "Setup complete subtitle"
+  },
+
+  "minReportsCount": "Minimale Anzahl Meldungen",
+  "@minReportsCount": {
+    "description": "Minimum reports count label"
+  },
+
+  "callsBlockedAfterReports": "Anrufe werden ab {count} Meldungen blockiert",
+  "@callsBlockedAfterReports": {
+    "description": "Description for calls blocked after reports",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rangesBlockedAfterReports": "Bereiche werden ab {count} Meldungen blockiert",
+  "@rangesBlockedAfterReports": {
+    "description": "Description for ranges blocked after reports",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -234,4 +234,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get setupComplete => 'Einrichtung abgeschlossen';
+
+  @override
+  String get minReportsCount => 'Minimale Anzahl Meldungen';
+
+  @override
+  String callsBlockedAfterReports(int count) {
+    return 'Anrufe werden ab $count Meldungen blockiert';
+  }
+
+  @override
+  String rangesBlockedAfterReports(int count) {
+    return 'Bereiche werden ab $count Meldungen blockiert';
+  }
 }
