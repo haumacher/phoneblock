@@ -626,19 +626,19 @@ class _MainScreenState extends State<MainScreen> {
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        color: Colors.orange,
-        child: const Row(
+        color: isSpam ? Colors.green : Colors.orange,
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Icon(
-              Icons.report,
+              isSpam ? Icons.check_circle : Icons.report,
               color: Colors.white,
               size: 32,
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Text(
-              'Als SPAM melden',
-              style: TextStyle(
+              isSpam ? 'Als legitim melden' : 'Als SPAM melden',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -673,19 +673,14 @@ class _MainScreenState extends State<MainScreen> {
       ),
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
-          // Swipe right to report as SPAM
+          // Swipe right
           if (isSpam) {
-            // Already SPAM, don't allow reporting again
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Diese Nummer ist bereits als SPAM gemeldet'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-            return false;
+            // SPAM number - report as legitimate
+            await _reportAsLegitimate(context, call);
+          } else {
+            // Legitimate number - report as SPAM
+            await _reportAsSpam(context, call);
           }
-          // Show rating dialog and report
-          await _reportAsSpam(context, call);
           return false; // Don't dismiss, just report
         } else {
           // Swipe left to delete
@@ -765,8 +760,25 @@ class _MainScreenState extends State<MainScreen> {
 
     final items = <PopupMenuEntry<dynamic>>[];
 
-    // Only show "Report as SPAM" option if not already SPAM
-    if (!isSpam) {
+    // Show appropriate reporting option based on current status
+    if (isSpam) {
+      // SPAM call - offer to mark as legitimate
+      items.add(
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 12),
+              Text('Als legitim melden'),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () => _reportAsLegitimate(context, call));
+          },
+        ),
+      );
+    } else {
+      // Legitimate call - offer to report as SPAM
       items.add(
         PopupMenuItem(
           child: Row(
@@ -808,6 +820,88 @@ class _MainScreenState extends State<MainScreen> {
       ),
       items: items,
     );
+  }
+
+  /// Reports a call as legitimate.
+  Future<void> _reportAsLegitimate(BuildContext context, ScreenedCall call) async {
+    try {
+      String? token = await getAuthToken();
+      if (token == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Nicht angemeldet. Bitte melden Sie sich an.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Create RateRequest with LEGITIMATE rating
+      final rateRequest = api.RateRequest(
+        phone: call.phoneNumber,
+        rating: api.Rating.aLegitimate,
+        comment: '',
+      );
+
+      // Serialize to JSON
+      final buffer = StringBuffer();
+      final jsonWriter = jsonStringWriter(buffer);
+      rateRequest.writeContent(jsonWriter);
+      final jsonBody = buffer.toString();
+
+      // Call the rate API
+      final response = await http.post(
+        Uri.parse('$pbBaseUrl/api/rate'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonBody,
+      );
+
+      if (mounted) {
+        if (response.statusCode == 200) {
+          // Update all calls with this phone number to mark as legitimate
+          await ScreenedCallsDatabase.instance.updateCallsByPhoneNumber(
+            call.phoneNumber,
+            false, // Mark as not blocked/legitimate
+            rating: Rating.aLEGITIMATE,
+          );
+
+          // Reload the calls list to reflect the change
+          await _loadScreenedCalls();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${call.phoneNumber} als legitim gemeldet'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Fehler beim Melden: ${response.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error reporting legitimate: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Melden: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   /// Shows rating selection dialog and reports the call as spam.
