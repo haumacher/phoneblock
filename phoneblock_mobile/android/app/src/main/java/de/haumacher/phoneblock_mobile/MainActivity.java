@@ -47,10 +47,10 @@ public class MainActivity extends FlutterActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
-                "Pending Filtered Calls",
+                getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             );
-            channel.setDescription("Shows number of calls filtered while app was closed");
+            channel.setDescription(getString(R.string.notification_channel_description));
             channel.setShowBadge(true);
 
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -82,9 +82,13 @@ public class MainActivity extends FlutterActivity {
             PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        // Build notification
-        String title = count == 1 ? "1 neuer gefilterter Anruf" : count + " neue gefilterte Anrufe";
-        String text = "Tippen zum Öffnen der App";
+        // Build notification with localized strings
+        String title = context.getResources().getQuantityString(
+            R.plurals.pending_calls_notification_title,
+            count,
+            count
+        );
+        String text = context.getString(R.string.notification_tap_to_open);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_call)
