@@ -66,6 +66,8 @@ public class CallChecker extends CallScreeningService {
         SharedPreferences prefs = MainActivity.getPreferences(this);
         String authToken = prefs.getString("auth_token", null);
         int minVotes = prefs.getInt("min_votes", 4);
+        boolean blockRanges = prefs.getBoolean("block_ranges", false);
+        int minRangeVotes = prefs.getInt("min_range_votes", 10);
 
         if (authToken == null) {
             // Not logged in, no screening possible.
@@ -86,16 +88,29 @@ public class CallChecker extends CallScreeningService {
                 JSONObject json = queryPhoneBlock(number, authToken);
                 boolean archived = json.getBoolean("archived");
                 int votes = json.getInt("votes");
+                int votesWildcard = json.optInt("votesWildcard", 0);
                 String rating = json.optString("rating", null);
 
+                // Check if number should be blocked based on direct votes or range votes
+                boolean shouldBlock = false;
+                String blockReason = "";
+
                 if (votes >= minVotes && !archived) {
+                    shouldBlock = true;
+                    blockReason = votes + " votes";
+                } else if (blockRanges && votesWildcard >= minRangeVotes) {
+                    shouldBlock = true;
+                    blockReason = votesWildcard + " range votes";
+                }
+
+                if (shouldBlock) {
                     if (canceled.compareAndSet(false, true)) {
                         // Cancel timeout since we got a result
                         if (timeoutFuture[0] != null) {
                             timeoutFuture[0].cancel(false);
                         }
                         Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + votes + " votes, rating: " + rating + ")");
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + blockReason + ", rating: " + rating + ")");
                             respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
                             // Report blocked call (persists even when app is not running)
                             MainActivity.reportScreenedCall(CallChecker.this, number, true, votes, rating);
