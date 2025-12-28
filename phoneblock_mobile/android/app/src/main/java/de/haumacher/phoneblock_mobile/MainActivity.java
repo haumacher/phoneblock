@@ -39,8 +39,9 @@ public class MainActivity extends FlutterActivity {
      * Reports a screened call result to Flutter.
      * Called by CallChecker when a call is screened.
      *
-     * This method stores the screening result in SharedPreferences first (so it persists
-     * even when the app is not running), then notifies Flutter if it's active.
+     * If Flutter is active, sends directly via MethodChannel for immediate storage.
+     * If Flutter is NOT active, stores in SharedPreferences for later sync on app launch.
+     * This ensures no screening results are lost regardless of app state.
      *
      * @param context The context (usually the CallChecker service)
      * @param phoneNumber The phone number that was screened
@@ -50,14 +51,9 @@ public class MainActivity extends FlutterActivity {
     public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes) {
         long timestamp = System.currentTimeMillis();
 
-        // Store in SharedPreferences for persistence (works even when app is not running)
-        SharedPreferences prefs = getPreferences(context);
-        String key = "screened_call_" + timestamp;
-        String value = phoneNumber + "|" + wasBlocked + "|" + votes + "|" + timestamp;
-        prefs.edit().putString(key, value).apply();
-
-        // Also notify Flutter if it's active
+        // Check if Flutter is active
         if (_instance != null && _instance._channel != null) {
+            // Flutter is running - send directly via MethodChannel
             java.util.Map<String, Object> data = new java.util.HashMap<>();
             data.put("phoneNumber", phoneNumber);
             data.put("wasBlocked", wasBlocked);
@@ -65,6 +61,14 @@ public class MainActivity extends FlutterActivity {
             data.put("timestamp", timestamp);
 
             _instance._channel.invokeMethod("onCallScreened", data);
+        } else {
+            // Flutter is NOT running - store in SharedPreferences for later sync
+            SharedPreferences prefs = getPreferences(context);
+            String key = "screened_call_" + timestamp;
+            String value = phoneNumber + "|" + wasBlocked + "|" + votes + "|" + timestamp;
+            prefs.edit().putString(key, value).apply();
+
+            Log.d(MainActivity.class.getName(), "Stored screening result for later sync: " + phoneNumber);
         }
     }
 
