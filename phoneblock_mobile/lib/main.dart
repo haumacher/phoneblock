@@ -734,7 +734,7 @@ class _MainScreenState extends State<MainScreen> {
           },
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: color.withOpacity(0.1),
+              backgroundColor: color.withValues(alpha: 0.1),
               child: Icon(iconData, color: color),
             ),
             title: Text(
@@ -768,7 +768,7 @@ class _MainScreenState extends State<MainScreen> {
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: color, width: 1.5),
               ),
@@ -1088,7 +1088,7 @@ class _MainScreenState extends State<MainScreen> {
                   .map((rating) => ListTile(
                         leading: icon(rating),
                         title: label(context, rating),
-                        tileColor: bgColor(rating).withOpacity(0.1),
+                        tileColor: bgColor(rating).withValues(alpha: 0.1),
                         onTap: () {
                           Navigator.of(context).pop(rating);
                         },
