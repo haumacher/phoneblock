@@ -449,6 +449,7 @@ class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
   bool _isLoading = true;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
+  Offset _lastTapPosition = Offset.zero;
 
   @override
   void initState() {
@@ -591,56 +592,62 @@ class _MainScreenState extends State<MainScreen> {
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: color.withOpacity(0.1),
-            child: Icon(icon, color: color),
-          ),
-          title: Text(
-            call.phoneNumber,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+        child: InkWell(
+          onLongPress: () {},
+          onTapDown: (TapDownDetails details) {
+            _lastTapPosition = details.globalPosition;
+          },
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: color.withOpacity(0.1),
+              child: Icon(icon, color: color),
             ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 4),
-              Text(
-                _formatTimestamp(call.timestamp),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${call.votes} ${call.votes == 1 ? "Meldung" : "Meldungen"}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color, width: 1.5),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: color,
+            title: Text(
+              call.phoneNumber,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 16,
               ),
             ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  _formatTimestamp(call.timestamp),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${call.votes} ${call.votes == 1 ? "Meldung" : "Meldungen"}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color, width: 1.5),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            onLongPress: () => _showCallOptions(context, call),
           ),
-          onLongPress: () => _showCallOptions(context, call),
         ),
       ),
     );
@@ -648,16 +655,13 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Shows a context menu with options for a call.
   void _showCallOptions(BuildContext context, ScreenedCall call) {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final position = renderBox.localToGlobal(Offset.zero);
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
 
     showMenu(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx + renderBox.size.width,
-        position.dy + renderBox.size.height,
+      position: RelativeRect.fromRect(
+        _lastTapPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
       ),
       items: [
         PopupMenuItem(
