@@ -566,59 +566,188 @@ class _MainScreenState extends State<MainScreen> {
     final icon = isSpam ? Icons.block : Icons.check_circle;
     final label = isSpam ? 'SPAM' : 'Legitim';
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.1),
-          child: Icon(icon, color: color),
+    return Dismissible(
+      key: Key('call_${call.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        color: Colors.red,
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+          size: 32,
         ),
-        title: Text(
-          call.phoneNumber,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+      ),
+      confirmDismiss: (direction) async {
+        return await _showDeleteConfirmation(context, call);
+      },
+      onDismissed: (direction) {
+        _deleteCall(call);
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: color.withOpacity(0.1),
+            child: Icon(icon, color: color),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              _formatTimestamp(call.timestamp),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${call.votes} ${call.votes == 1 ? "Meldung" : "Meldungen"}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color, width: 1.5),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: color,
+          title: Text(
+            call.phoneNumber,
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 12,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(
+                _formatTimestamp(call.timestamp),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${call.votes} ${call.votes == 1 ? "Meldung" : "Meldungen"}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color, width: 1.5),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Shows a confirmation dialog before deleting a call.
+  Future<bool?> _showDeleteConfirmation(BuildContext context, ScreenedCall call) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Anruf löschen?'),
+          content: Text(
+            'Möchten Sie den Eintrag für ${call.phoneNumber} wirklich löschen?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Löschen'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Deletes a call from the database and updates the UI.
+  Future<void> _deleteCall(ScreenedCall call) async {
+    // Store the deleted call and its index for potential undo
+    final deletedCall = call;
+    final deletedIndex = _screenedCalls.indexOf(call);
+
+    // Remove from UI immediately
+    setState(() {
+      _screenedCalls.remove(call);
+    });
+
+    try {
+      // Delete from database
+      if (call.id != null) {
+        await ScreenedCallsDatabase.instance.deleteScreenedCall(call.id!);
+      }
+
+      // Show undo snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${call.phoneNumber} gelöscht'),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Rückgängig',
+              onPressed: () {
+                _undoDelete(deletedCall, deletedIndex);
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting call: $e');
+      }
+
+      // Re-add the call if deletion failed
+      setState(() {
+        _screenedCalls.insert(deletedIndex, deletedCall);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fehler beim Löschen des Anrufs'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Undoes a call deletion by re-inserting it into the database.
+  Future<void> _undoDelete(ScreenedCall call, int index) async {
+    try {
+      // Re-insert into database
+      final restoredCall = await ScreenedCallsDatabase.instance.insertScreenedCall(call);
+
+      // Re-add to UI at original position
+      setState(() {
+        _screenedCalls.insert(index, restoredCall);
+      });
+
+      if (kDebugMode) {
+        print('Restored call: ${call.phoneNumber}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error restoring call: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fehler beim Wiederherstellen des Anrufs'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   /// Formats the timestamp for display.
