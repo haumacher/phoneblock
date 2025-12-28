@@ -93,6 +93,22 @@ PhoneBlock Mobile is a Flutter-based Android application that integrates with th
 
 ## Development Notes
 
+### Git Commit Messages
+**IMPORTANT**: When creating commits, always include the user's original prompt/request in the commit message. This provides context for the changes and helps track the reasoning behind implementation decisions.
+
+Example format:
+```
+Brief summary of changes
+
+[User's original request/prompt explaining what they asked for]
+
+Details about the implementation approach and any relevant notes.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
 ### Platform Channel Communication
 The app uses Flutter MethodChannel to communicate between Dart and Android native code. The channel name is `de.haumacher.phoneblock_mobile/call_checker` and is defined in both MainActivity.java and main.dart.
 
