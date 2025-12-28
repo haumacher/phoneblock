@@ -41,10 +41,6 @@
                 <data
                     android:scheme="https"
                     android:host="phoneblock.net"
-                    android:path="/pb-test/mobile/response" />
-                <data
-                    android:scheme="https"
-                    android:host="phoneblock.net"
                     android:path="/phoneblock/mobile/response" />
             </intent-filter>
         </activity>
