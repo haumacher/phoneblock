@@ -747,6 +747,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             ),
+            onTap: () => _viewOnPhoneBlock(call),
             onLongPress: () => _showCallOptions(context, call),
           ),
         ),
