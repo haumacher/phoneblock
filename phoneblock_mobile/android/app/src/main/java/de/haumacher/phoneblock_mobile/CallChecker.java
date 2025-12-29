@@ -188,7 +188,7 @@ public class CallChecker extends CallScreeningService {
 
         URL url = new URL(queryUrl.replace("{sha1}", sha1Hash));
         URLConnection connection = url.openConnection();
-        connection.setRequestProperty("Authorization", "Bearer: " + authToken);
+        connection.setRequestProperty("Authorization", "Bearer " + authToken);
         connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
         return new JSONObject(readTextContent(connection));
     }
@@ -206,6 +206,15 @@ public class CallChecker extends CallScreeningService {
                     result.append(buffer, 0, direct);
                 }
             }
+        } catch (IOException e) {
+            // Log HTTP error details if available
+            if (connection instanceof java.net.HttpURLConnection) {
+                java.net.HttpURLConnection httpConn = (java.net.HttpURLConnection) connection;
+                int responseCode = httpConn.getResponseCode();
+                String responseMessage = httpConn.getResponseMessage();
+                Log.e(CallChecker.class.getName(), "HTTP error: " + responseCode + " " + responseMessage + " for URL: " + connection.getURL());
+            }
+            throw e;
         }
         return result.toString();
     }
