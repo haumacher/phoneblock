@@ -721,6 +721,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Unbegrenzt'**
   String get retentionInfiniteOption;
+
+  /// Add comment dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar hinzufügen (Optional)'**
+  String get addComment;
+
+  /// Comment text field hint
+  ///
+  /// In de, this message translates to:
+  /// **'Warum ist das Spam? (optional)'**
+  String get commentHint;
+
+  /// Skip button
+  ///
+  /// In de, this message translates to:
+  /// **'Überspringen'**
+  String get skip;
 }
 
 class _AppLocalizationsDelegate

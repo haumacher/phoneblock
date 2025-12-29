@@ -386,4 +386,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get retentionInfiniteOption => 'Unbegrenzt';
+
+  @override
+  String get addComment => 'Kommentar hinzufügen (Optional)';
+
+  @override
+  String get commentHint => 'Warum ist das Spam? (optional)';
+
+  @override
+  String get skip => 'Überspringen';
 }

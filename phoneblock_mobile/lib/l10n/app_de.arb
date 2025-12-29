@@ -604,5 +604,20 @@
   "retentionInfiniteOption": "Unbegrenzt",
   "@retentionInfiniteOption": {
     "description": "Infinite retention option"
+  },
+
+  "addComment": "Kommentar hinzufügen (Optional)",
+  "@addComment": {
+    "description": "Add comment dialog title"
+  },
+
+  "commentHint": "Warum ist das Spam? (optional)",
+  "@commentHint": {
+    "description": "Comment text field hint"
+  },
+
+  "skip": "Überspringen",
+  "@skip": {
+    "description": "Skip button"
   }
 }

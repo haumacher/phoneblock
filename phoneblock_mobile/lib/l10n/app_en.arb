@@ -207,5 +207,11 @@
 
   "retentionDays": "{days, plural, =1{1 day} other{{days} days}}",
 
-  "retentionInfiniteOption": "Infinite"
+  "retentionInfiniteOption": "Infinite",
+
+  "addComment": "Add Comment (Optional)",
+
+  "commentHint": "Why is this spam? (optional)",
+
+  "skip": "Skip"
 }

@@ -1055,6 +1055,14 @@ class _MainScreenState extends State<MainScreen> {
       return; // User cancelled
     }
 
+    // Show comment dialog after rating is selected
+    if (!context.mounted) return;
+    final comment = await _showCommentDialog(context);
+
+    if (comment == null) {
+      return; // User cancelled
+    }
+
     try {
       String? token = await getAuthToken();
       if (token == null) {
@@ -1073,7 +1081,7 @@ class _MainScreenState extends State<MainScreen> {
       final rateRequest = api.RateRequest(
         phone: call.phoneNumber,
         rating: _convertRating(rating),
-        comment: '', // No comment for now
+        comment: comment,
       );
 
       // Serialize to JSON using writeContent() (not toString() which includes type info)
@@ -1164,6 +1172,44 @@ class _MainScreenState extends State<MainScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(context.l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Shows a dialog to optionally enter a comment/reason for the rating.
+  /// Returns the comment text or null if cancelled. Returns empty string if skipped.
+  Future<String?> _showCommentDialog(BuildContext context) async {
+    final controller = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.addComment),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: context.l10n.commentHint,
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            maxLength: 500,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(''),
+              child: Text(context.l10n.skip),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(context.l10n.report),
             ),
           ],
         );
