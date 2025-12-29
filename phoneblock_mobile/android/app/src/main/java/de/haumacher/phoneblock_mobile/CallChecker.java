@@ -130,7 +130,8 @@ public class CallChecker extends CallScreeningService {
                             Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + blockReason + ", rating: " + rating + ")");
                             respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
                             // Report blocked call (persists even when app is not running)
-                            MainActivity.reportScreenedCall(CallChecker.this, number, true, votes, rating);
+                            // Use rawNumber for display, normalized number is only for API queries
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, rating);
                         });
                     }
                     return;
@@ -144,7 +145,8 @@ public class CallChecker extends CallScreeningService {
                             Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
                             acceptCall(callDetails);
                             // Report accepted call (persists even when app is not running)
-                            MainActivity.reportScreenedCall(CallChecker.this, number, false, votes, rating);
+                            // Use rawNumber for display, normalized number is only for API queries
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, false, votes, rating);
                         });
                     }
                     return;
