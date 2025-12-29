@@ -462,6 +462,11 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			// Update retention period
 			RetentionPeriod period = self.getPeriod();
 			users.updateRetentionPolicy(botId, period);
+			
+			// Immediately apply retention policy.
+			bot.setRetentionPeriod(period);
+			db.removeOutdatedCalls(users, bot);
+			
 			session.commit();
 			
 			LOG.info("Updated retention policy for bot {} (user: {}) to {}.",
