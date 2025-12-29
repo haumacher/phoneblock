@@ -1355,6 +1355,9 @@ class LoginFailed extends StatelessWidget {
 
 void setAuthToken(String token) {
   platform.invokeMethod("setAuthToken", token);
+  // Also set the query URL based on debug mode
+  final queryUrl = '$pbBaseUrl/api/check?sha1={sha1}&format=json';
+  platform.invokeMethod("setQueryUrl", queryUrl);
 }
 
 Future<String?> getAuthToken() async {

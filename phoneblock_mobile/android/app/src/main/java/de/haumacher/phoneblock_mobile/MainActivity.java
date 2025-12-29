@@ -204,6 +204,11 @@ public class MainActivity extends FlutterActivity {
                 result.success(getAuthToken());
                 break;
 
+            case "setQueryUrl":
+                setQueryUrl((String) methodCall.arguments);
+                result.success(null);
+                break;
+
             case "getStoredScreeningResults":
                 result.success(getStoredScreeningResults());
                 break;
@@ -297,6 +302,12 @@ public class MainActivity extends FlutterActivity {
     private void setAuthToken(String authToken) {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("auth_token", authToken).apply();
+    }
+
+    private void setQueryUrl(String queryUrl) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putString("query_url", queryUrl).apply();
+        Log.d(MainActivity.class.getName(), "setQueryUrl: " + queryUrl);
     }
 
     private int getMinVotes() {
