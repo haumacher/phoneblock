@@ -244,6 +244,15 @@ public class MainActivity extends FlutterActivity {
                 setMinRangeVotes((Integer) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "getRetentionDays":
+                result.success(getRetentionDays());
+                break;
+
+            case "setRetentionDays":
+                setRetentionDays((Integer) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -347,6 +356,19 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putInt("min_range_votes", minRangeVotes).apply();
         Log.d(MainActivity.class.getName(), "setMinRangeVotes: " + minRangeVotes);
+    }
+
+    private int getRetentionDays() {
+        SharedPreferences prefs = getPreferences(this);
+        int value = prefs.getInt("retention_days", -1); // -1 means infinite
+        Log.d(MainActivity.class.getName(), "getRetentionDays: " + value);
+        return value;
+    }
+
+    private void setRetentionDays(int retentionDays) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putInt("retention_days", retentionDays).apply();
+        Log.d(MainActivity.class.getName(), "setRetentionDays: " + retentionDays);
     }
 
     public static SharedPreferences getPreferences(Context context) {

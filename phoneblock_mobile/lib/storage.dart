@@ -157,6 +157,31 @@ class ScreenedCallsDatabase {
     return result.map((map) => ScreenedCall.fromMap(map)).toList();
   }
 
+  /// Retrieves screened calls within the retention period.
+  /// retentionDays: Number of days to keep calls. -1 means all calls (infinite).
+  Future<List<ScreenedCall>> getScreenedCallsInRetentionPeriod(int retentionDays) async {
+    final db = await database;
+
+    if (retentionDays == -1) {
+      // Infinite retention, return all calls
+      final result = await db.query(
+        'screened_calls',
+        orderBy: 'timestamp DESC',
+      );
+      return result.map((map) => ScreenedCall.fromMap(map)).toList();
+    }
+
+    final cutoffTime = DateTime.now().subtract(Duration(days: retentionDays)).millisecondsSinceEpoch;
+    final result = await db.query(
+      'screened_calls',
+      where: 'timestamp >= ?',
+      whereArgs: [cutoffTime],
+      orderBy: 'timestamp DESC',
+    );
+
+    return result.map((map) => ScreenedCall.fromMap(map)).toList();
+  }
+
   /// Retrieves screened calls with pagination.
   Future<List<ScreenedCall>> getScreenedCalls({int limit = 50, int offset = 0}) async {
     final db = await database;
@@ -214,6 +239,25 @@ class ScreenedCallsDatabase {
   Future<int> deleteAllScreenedCalls() async {
     final db = await database;
     return await db.delete('screened_calls');
+  }
+
+  /// Deletes screened calls older than the specified retention period.
+  /// retentionDays: Number of days to keep calls. -1 means keep all (infinite).
+  /// Returns the number of deleted rows.
+  Future<int> deleteOldScreenedCalls(int retentionDays) async {
+    if (retentionDays == -1) {
+      // Infinite retention, don't delete anything
+      return 0;
+    }
+
+    final db = await database;
+    final cutoffTime = DateTime.now().subtract(Duration(days: retentionDays)).millisecondsSinceEpoch;
+
+    return await db.delete(
+      'screened_calls',
+      where: 'timestamp < ?',
+      whereArgs: [cutoffTime],
+    );
   }
 
   /// Gets the count of screened calls.

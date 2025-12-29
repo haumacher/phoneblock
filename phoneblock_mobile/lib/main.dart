@@ -79,6 +79,10 @@ void main() async {
 
       await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
+      // Clean up old calls based on retention period when a new call arrives
+      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? -1;
+      await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
+
       // Notify any listeners (e.g., MainScreen) about the new call
       callScreenedStreamController.add(screenedCall);
 
@@ -95,6 +99,10 @@ void main() async {
   // Set the query URL on every startup to ensure it's updated after app updates
   final queryUrl = '$pbBaseUrl/api/check?sha1={sha1}&format=json';
   platform.invokeMethod("setQueryUrl", queryUrl);
+
+  // Clean up old screened calls based on retention period
+  final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? -1;
+  await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
   runApp(MaterialApp.router(
       routerConfig: router,
@@ -532,7 +540,8 @@ class _MainScreenState extends State<MainScreen> {
     });
 
     try {
-      final calls = await ScreenedCallsDatabase.instance.getAllScreenedCalls();
+      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? -1;
+      final calls = await ScreenedCallsDatabase.instance.getScreenedCallsInRetentionPeriod(retentionDays);
       setState(() {
         _screenedCalls = calls;
         _isLoading = false;
@@ -1578,6 +1587,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _minVotes = 4;
   bool _blockRanges = false;
   int _minRangeVotes = 10;
+  int _retentionDays = -1; // -1 means infinite
   bool _isLoading = true;
   late TextEditingController _minVotesController;
   late TextEditingController _minRangeVotesController;
@@ -1603,15 +1613,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final minVotesResult = await platform.invokeMethod("getMinVotes");
       final blockRangesResult = await platform.invokeMethod("getBlockRanges");
       final minRangeVotesResult = await platform.invokeMethod("getMinRangeVotes");
+      final retentionDaysResult = await platform.invokeMethod("getRetentionDays");
 
       if (kDebugMode) {
-        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult");
+        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult");
       }
 
       setState(() {
         _minVotes = minVotesResult ?? 4;
         _blockRanges = blockRangesResult ?? false;
         _minRangeVotes = minRangeVotesResult ?? 10;
+        _retentionDays = retentionDaysResult ?? -1;
         _minVotesController.text = _minVotes.toString();
         _minRangeVotesController.text = _minRangeVotes.toString();
         _isLoading = false;
@@ -1730,6 +1742,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Save retention days setting.
+  Future<void> _saveRetentionDays(int value) async {
+    if (kDebugMode) {
+      print("Saving retentionDays: $value");
+    }
+    try {
+      await platform.invokeMethod("setRetentionDays", value);
+      if (kDebugMode) {
+        print("Successfully saved retentionDays to SharedPreferences: $value");
+      }
+      setState(() {
+        _retentionDays = value;
+      });
+
+      // Clean up old calls immediately when retention period changes
+      await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(value);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.settingSaved),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving retention days: $e");
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorSaving),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1829,6 +1881,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
+                const Divider(),
+                // Retention period setting
+                ListTile(
+                  title: const Text('Call History Retention'),
+                  subtitle: Text(
+                    _retentionDays == -1
+                        ? 'Keep all calls'
+                        : _retentionDays == 1
+                            ? 'Keep calls for 1 day'
+                            : 'Keep calls for $_retentionDays days',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  trailing: DropdownButton<int>(
+                    value: _retentionDays,
+                    items: const [
+                      DropdownMenuItem(value: 1, child: Text('1 day')),
+                      DropdownMenuItem(value: 3, child: Text('3 days')),
+                      DropdownMenuItem(value: 7, child: Text('7 days')),
+                      DropdownMenuItem(value: -1, child: Text('Infinite')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        _saveRetentionDays(value);
+                      }
+                    },
+                  ),
+                ),
                 const Divider(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
