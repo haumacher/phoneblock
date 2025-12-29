@@ -57,6 +57,20 @@ Future<int> getRetentionDays() async {
   return await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
 }
 
+/// Makes an HTTP GET request to the PhoneBlock API with proper User-Agent header.
+/// Includes the Authorization header if a token is provided.
+Future<http.Response> callPhoneBlockApi(String url, {String? authToken}) async {
+  final headers = <String, String>{
+    "User-Agent": "PhoneBlockMobile/$appVersion",
+  };
+
+  if (authToken != null) {
+    headers["Authorization"] = "Bearer $authToken";
+  }
+
+  return await http.get(Uri.parse(url), headers: headers);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -1302,12 +1316,7 @@ class VerifyLoginState extends State<VerifyLogin> {
     var token = widget.token;
     setAuthToken(token);
 
-    checkResult = http.get(Uri.parse(pbApiTest),
-      headers: {
-        "Authorization": "Bearer $token",
-        "User-Agent": "PhoneBlockMobile/$appVersion",
-      }
-    );
+    checkResult = callPhoneBlockApi(pbApiTest, authToken: token);
   }
 
   @override
@@ -1419,14 +1428,7 @@ Future<bool> validateAuthToken() async {
       return false;
     }
 
-    final response = await http.get(
-      Uri.parse(pbApiTest),
-      headers: {
-        "Authorization": "Bearer $token",
-        "User-Agent": "PhoneBlockMobile/$appVersion",
-      },
-    );
-
+    final response = await callPhoneBlockApi(pbApiTest, authToken: token);
     return response.statusCode == 200;
   } catch (e) {
     if (kDebugMode) {
