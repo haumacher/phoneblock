@@ -343,11 +343,20 @@ class _SetupWizardState extends State<SetupWizard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.setupTitle),
-      ),
-      body: Stepper(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) {
+          return;
+        }
+        // Exit app when back button/gesture is used on setup screen
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(context.l10n.setupTitle),
+        ),
+        body: Stepper(
         currentStep: _currentStep.index,
         controlsBuilder: (context, details) {
           // Show "Done" button only on the final step when all prerequisites are met
@@ -482,6 +491,7 @@ class _SetupWizardState extends State<SetupWizard> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
