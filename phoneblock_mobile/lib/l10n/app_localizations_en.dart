@@ -389,5 +389,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addComment => 'Add Comment (Optional)';
 
   @override
-  String get commentHint => 'Why is this spam? (optional)';
+  String get commentHint =>
+      'Why is this spam? What was the call about? Please be respectful.';
 }

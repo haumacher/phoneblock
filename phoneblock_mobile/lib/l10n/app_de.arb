@@ -611,7 +611,7 @@
     "description": "Add comment dialog title"
   },
 
-  "commentHint": "Warum ist das Spam? (optional)",
+  "commentHint": "Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.",
   "@commentHint": {
     "description": "Comment text field hint"
   }

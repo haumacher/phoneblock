@@ -731,7 +731,7 @@ abstract class AppLocalizations {
   /// Comment text field hint
   ///
   /// In de, this message translates to:
-  /// **'Warum ist das Spam? (optional)'**
+  /// **'Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.'**
   String get commentHint;
 }
 

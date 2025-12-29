@@ -391,5 +391,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addComment => 'Kommentar hinzufügen (Optional)';
 
   @override
-  String get commentHint => 'Warum ist das Spam? (optional)';
+  String get commentHint =>
+      'Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.';
 }
