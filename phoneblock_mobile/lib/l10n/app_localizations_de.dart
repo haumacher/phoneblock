@@ -388,9 +388,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get retentionInfiniteOption => 'Unbegrenzt';
 
   @override
-  String get addComment => 'Kommentar hinzufügen (Optional)';
+  String get addCommentSpam => 'Kommentar hinzufügen (Optional)';
 
   @override
-  String get commentHint =>
+  String get commentHintSpam =>
       'Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.';
+
+  @override
+  String get addCommentLegitimate => 'Kommentar hinzufügen (Optional)';
+
+  @override
+  String get commentHintLegitimate =>
+      'Warum ist das legitim? Wer hat Sie angerufen? Bitte höflich bleiben.';
 }

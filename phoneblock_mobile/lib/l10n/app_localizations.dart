@@ -722,17 +722,29 @@ abstract class AppLocalizations {
   /// **'Unbegrenzt'**
   String get retentionInfiniteOption;
 
-  /// Add comment dialog title
+  /// Add comment dialog title for spam
   ///
   /// In de, this message translates to:
   /// **'Kommentar hinzufügen (Optional)'**
-  String get addComment;
+  String get addCommentSpam;
 
-  /// Comment text field hint
+  /// Comment text field hint for spam
   ///
   /// In de, this message translates to:
   /// **'Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.'**
-  String get commentHint;
+  String get commentHintSpam;
+
+  /// Add comment dialog title for legitimate
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar hinzufügen (Optional)'**
+  String get addCommentLegitimate;
+
+  /// Comment text field hint for legitimate
+  ///
+  /// In de, this message translates to:
+  /// **'Warum ist das legitim? Wer hat Sie angerufen? Bitte höflich bleiben.'**
+  String get commentHintLegitimate;
 }
 
 class _AppLocalizationsDelegate

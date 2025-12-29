@@ -209,7 +209,11 @@
 
   "retentionInfiniteOption": "Infinite",
 
-  "addComment": "Add Comment (Optional)",
+  "addCommentSpam": "Add Comment (Optional)",
 
-  "commentHint": "Why is this spam? What was the call about? Please be respectful."
+  "commentHintSpam": "Why is this spam? What was the call about? Please be respectful.",
+
+  "addCommentLegitimate": "Add Comment (Optional)",
+
+  "commentHintLegitimate": "Why is this legitimate? Who called you? Please be respectful."
 }

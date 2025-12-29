@@ -965,6 +965,18 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
 
+    // Show comment dialog after confirmation
+    if (!context.mounted) return;
+    final comment = await _showCommentDialog(
+      context,
+      title: context.l10n.addCommentLegitimate,
+      hint: context.l10n.commentHintLegitimate,
+    );
+
+    if (comment == null) {
+      return; // User cancelled
+    }
+
     try {
       String? token = await getAuthToken();
       if (token == null) {
@@ -983,7 +995,7 @@ class _MainScreenState extends State<MainScreen> {
       final rateRequest = api.RateRequest(
         phone: call.phoneNumber,
         rating: api.Rating.aLegitimate,
-        comment: '',
+        comment: comment,
       );
 
       // Serialize to JSON
@@ -1057,7 +1069,11 @@ class _MainScreenState extends State<MainScreen> {
 
     // Show comment dialog after rating is selected
     if (!context.mounted) return;
-    final comment = await _showCommentDialog(context);
+    final comment = await _showCommentDialog(
+      context,
+      title: context.l10n.addCommentSpam,
+      hint: context.l10n.commentHintSpam,
+    );
 
     if (comment == null) {
       return; // User cancelled
@@ -1181,18 +1197,18 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Shows a dialog to optionally enter a comment/reason for the rating.
   /// Returns the comment text or null if cancelled.
-  Future<String?> _showCommentDialog(BuildContext context) async {
+  Future<String?> _showCommentDialog(BuildContext context, {required String title, required String hint}) async {
     final controller = TextEditingController();
 
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(context.l10n.addComment),
+          title: Text(title),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
-              hintText: context.l10n.commentHint,
+              hintText: hint,
               border: const OutlineInputBorder(),
             ),
             maxLines: 3,

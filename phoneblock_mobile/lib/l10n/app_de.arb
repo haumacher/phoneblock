@@ -606,13 +606,23 @@
     "description": "Infinite retention option"
   },
 
-  "addComment": "Kommentar hinzufügen (Optional)",
-  "@addComment": {
-    "description": "Add comment dialog title"
+  "addCommentSpam": "Kommentar hinzufügen (Optional)",
+  "@addCommentSpam": {
+    "description": "Add comment dialog title for spam"
   },
 
-  "commentHint": "Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.",
-  "@commentHint": {
-    "description": "Comment text field hint"
+  "commentHintSpam": "Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.",
+  "@commentHintSpam": {
+    "description": "Comment text field hint for spam"
+  },
+
+  "addCommentLegitimate": "Kommentar hinzufügen (Optional)",
+  "@addCommentLegitimate": {
+    "description": "Add comment dialog title for legitimate"
+  },
+
+  "commentHintLegitimate": "Warum ist das legitim? Wer hat Sie angerufen? Bitte höflich bleiben.",
+  "@commentHintLegitimate": {
+    "description": "Comment text field hint for legitimate"
   }
 }

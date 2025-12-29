@@ -386,9 +386,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retentionInfiniteOption => 'Infinite';
 
   @override
-  String get addComment => 'Add Comment (Optional)';
+  String get addCommentSpam => 'Add Comment (Optional)';
 
   @override
-  String get commentHint =>
+  String get commentHintSpam =>
       'Why is this spam? What was the call about? Please be respectful.';
+
+  @override
+  String get addCommentLegitimate => 'Add Comment (Optional)';
+
+  @override
+  String get commentHintLegitimate =>
+      'Why is this legitimate? Who called you? Please be respectful.';
 }
