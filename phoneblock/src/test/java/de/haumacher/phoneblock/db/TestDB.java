@@ -590,7 +590,7 @@ public class TestDB {
 			}
 		}
 			
-		_db.createAPIToken("user-2b", 5000, "SpamBlocker");
+		_db.createAPIToken("user-2b", (long) 5000, "SpamBlocker", null);
 
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);

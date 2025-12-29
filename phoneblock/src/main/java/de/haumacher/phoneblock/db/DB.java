@@ -596,12 +596,9 @@ public class DB {
 		return authorization;
 	}
 
-	public AuthToken createAPIToken(String login, long now, String userAgent) {
-		return createAPIToken(login, now, userAgent, null);
-	}
-
 	public AuthToken createAPIToken(String login, long now, String userAgent, String label) {
 		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+				.setAccessLogin(true)
 				.setAccessDownload(true)
 				.setAccessQuery(true)
 				.setAccessRate(true);
