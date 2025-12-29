@@ -51,6 +51,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
+import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
+import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
@@ -1966,6 +1968,35 @@ public class DB {
 		} catch (NoSuchAlgorithmException ex) {
 			throw new RuntimeException("Digest algorithm not supported: " + ex.getMessage(), ex);
 		}
+	}
+
+	/**
+	 * Cleans up old call records for a specific bot.
+	 * 
+	 * @param users The database mapper
+	 * @param bot The bot information including retention settings
+	 * @return Number of records cleaned up
+	 */
+	public int removeOutdatedCalls(Users users, AnswerbotInfo bot) {
+	    RetentionPeriod retentionPeriod = bot.getRetentionPeriod();
+	    if (retentionPeriod == RetentionPeriod.NEVER) {
+	        return 0;
+	    }
+	    
+	    long cutoffTime = System.currentTimeMillis() - 24 * 60 * 60 * 1000 * switch (retentionPeriod) {
+			case MONTH -> 30L;
+			case NEVER -> throw new AssertionError("Unreachable.");
+			case QUARTER -> 90L;
+			case WEEK -> 7L;
+			case YEAR -> 365L;
+	    };
+	    
+	    int deleted = users.deleteCallsOlderThan(bot.getId(), cutoffTime);
+	    
+	    DBService.LOG.debug("Cleaned {} calls older than {} for bot {} (cutoff: {}).", 
+	            deleted, retentionPeriod, bot.getId(), cutoffTime);
+	    
+		return deleted;
 	}
 
 	public static long getLastSearch(Users users) {

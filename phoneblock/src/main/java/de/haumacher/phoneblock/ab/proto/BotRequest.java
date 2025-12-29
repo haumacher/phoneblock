@@ -38,6 +38,9 @@ public abstract class BotRequest extends SetupRequest {
 		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.ClearCallList}.*/
 		R visit(de.haumacher.phoneblock.ab.proto.ClearCallList self, A arg) throws E;
 
+		/** Visit case for {@link de.haumacher.phoneblock.ab.proto.SetRetentionPolicy}.*/
+		R visit(de.haumacher.phoneblock.ab.proto.SetRetentionPolicy self, A arg) throws E;
+
 	}
 
 	/** @see #getId() */
@@ -113,6 +116,7 @@ public abstract class BotRequest extends SetupRequest {
 			case CheckAnswerBot.CHECK_ANSWER_BOT__TYPE: result = de.haumacher.phoneblock.ab.proto.CheckAnswerBot.readCheckAnswerBot(in); break;
 			case ListCalls.LIST_CALLS__TYPE: result = de.haumacher.phoneblock.ab.proto.ListCalls.readListCalls(in); break;
 			case ClearCallList.CLEAR_CALL_LIST__TYPE: result = de.haumacher.phoneblock.ab.proto.ClearCallList.readClearCallList(in); break;
+			case SetRetentionPolicy.SET_RETENTION_POLICY__TYPE: result = de.haumacher.phoneblock.ab.proto.SetRetentionPolicy.readSetRetentionPolicy(in); break;
 			default: in.skipValue(); result = null; break;
 		}
 		in.endArray();

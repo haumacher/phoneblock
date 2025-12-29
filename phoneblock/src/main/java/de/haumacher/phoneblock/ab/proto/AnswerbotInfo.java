@@ -75,6 +75,9 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** @see #getDyndnsPassword() */
 	public static final String DYNDNS_PASSWORD__PROP = "dyndnsPassword";
 
+	/** @see #getRetentionPeriod() */
+	public static final String RETENTION_PERIOD__PROP = "retentionPeriod";
+
 	private long _id = 0L;
 
 	private long _userId = 0L;
@@ -114,6 +117,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	private String _dyndnsUser = null;
 
 	private String _dyndnsPassword = null;
+
+	private de.haumacher.phoneblock.ab.proto.RetentionPeriod _retentionPeriod = de.haumacher.phoneblock.ab.proto.RetentionPeriod.NEVER;
 
 	/**
 	 * Creates a {@link AnswerbotInfo} instance.
@@ -566,6 +571,27 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 			return _dyndnsPassword != null;
 		}
 
+		/**
+		 * The retention period for automatic call cleanup (NEVER, WEEK, MONTH, QUARTER, YEAR).
+		 */
+		public final de.haumacher.phoneblock.ab.proto.RetentionPeriod getRetentionPeriod() {
+			return _retentionPeriod;
+		}
+
+		/**
+		 * @see #getRetentionPeriod()
+		 */
+		public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setRetentionPeriod(de.haumacher.phoneblock.ab.proto.RetentionPeriod value) {
+			internalSetRetentionPeriod(value);
+			return this;
+		}
+
+		/** Internal setter for {@link #getRetentionPeriod()} without chain call utility. */
+		protected final void internalSetRetentionPeriod(de.haumacher.phoneblock.ab.proto.RetentionPeriod value) {
+			if (value == null) throw new IllegalArgumentException("Property 'retentionPeriod' cannot be null.");
+			_retentionPeriod = value;
+		}
+
 		@Override
 		public String jsonType() {
 			return ANSWERBOT_INFO__TYPE;
@@ -592,7 +618,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				IP_4__PROP, 
 				IP_6__PROP, 
 				DYNDNS_USER__PROP, 
-				DYNDNS_PASSWORD__PROP));
+				DYNDNS_PASSWORD__PROP, 
+				RETENTION_PERIOD__PROP));
 
 		@Override
 		public java.util.List<String> properties() {
@@ -622,6 +649,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case IP_6__PROP: return getIp6();
 				case DYNDNS_USER__PROP: return getDyndnsUser();
 				case DYNDNS_PASSWORD__PROP: return getDyndnsPassword();
+				case RETENTION_PERIOD__PROP: return getRetentionPeriod();
 				default: return null;
 			}
 		}
@@ -649,6 +677,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case IP_6__PROP: internalSetIp6((String) value); break;
 				case DYNDNS_USER__PROP: internalSetDyndnsUser((String) value); break;
 				case DYNDNS_PASSWORD__PROP: internalSetDyndnsPassword((String) value); break;
+				case RETENTION_PERIOD__PROP: internalSetRetentionPeriod((de.haumacher.phoneblock.ab.proto.RetentionPeriod) value); break;
 			}
 		}
 
@@ -719,6 +748,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				out.name(DYNDNS_PASSWORD__PROP);
 				out.value(getDyndnsPassword());
 			}
+			out.name(RETENTION_PERIOD__PROP);
+			getRetentionPeriod().writeTo(out);
 		}
 
 		@Override
@@ -744,6 +775,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case IP_6__PROP: setIp6(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 				case DYNDNS_USER__PROP: setDyndnsUser(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 				case DYNDNS_PASSWORD__PROP: setDyndnsPassword(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+				case RETENTION_PERIOD__PROP: setRetentionPeriod(de.haumacher.phoneblock.ab.proto.RetentionPeriod.readRetentionPeriod(in)); break;
 				default: super.readField(in, field);
 			}
 		}
