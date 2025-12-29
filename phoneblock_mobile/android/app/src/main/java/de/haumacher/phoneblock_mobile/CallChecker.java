@@ -13,10 +13,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,8 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -85,8 +79,12 @@ public class CallChecker extends CallScreeningService {
 
         String rawNumber = handle.getSchemeSpecificPart();
 
+        // Get country code for normalization
+        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        String countryIso = tm != null ? tm.getNetworkCountryIso() : null;
+
         // Normalize to international format for consistent hashing
-        String number = normalizeToInternationalFormat(rawNumber);
+        String number = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryIso);
         if (number == null) {
             // Unable to normalize, accept the call
             Log.w(CallChecker.class.getName(), "Unable to normalize number: " + rawNumber);
@@ -186,70 +184,13 @@ public class CallChecker extends CallScreeningService {
         String queryUrl = prefs.getString("query_url", "https://phoneblock.net/phoneblock/api/check?sha1={sha1}&format=json");
 
         // Compute SHA1 hash of the phone number for privacy
-        String sha1Hash = computeSHA1(number);
+        String sha1Hash = PhoneNumberUtils.computeSHA1(number);
 
         URL url = new URL(queryUrl.replace("{sha1}", sha1Hash));
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Authorization", "Bearer: " + authToken);
         connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
         return new JSONObject(readTextContent(connection));
-    }
-
-    /**
-     * Normalizes a phone number to E.164 international format.
-     * This ensures consistent hashing regardless of how the number is formatted.
-     *
-     * @param rawNumber Phone number in any format
-     * @return Phone number in E.164 format (e.g., +4917650642602) or null if parsing fails
-     */
-    private String normalizeToInternationalFormat(String rawNumber) {
-        try {
-            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
-
-            // Get default country code from device
-            TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-            String countryIso = tm != null ? tm.getNetworkCountryIso() : null;
-            if (countryIso == null || countryIso.isEmpty()) {
-                countryIso = "DE"; // Default to Germany if unable to determine
-            }
-
-            // Parse the number
-            Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(rawNumber, countryIso.toUpperCase());
-
-            // Format in E.164 international format (e.g., +4917650642602)
-            return phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
-        } catch (NumberParseException e) {
-            Log.e(CallChecker.class.getName(), "Error parsing phone number: " + rawNumber, e);
-            return null;
-        }
-    }
-
-    /**
-     * Computes the SHA1 hash of a phone number in international format.
-     * This preserves user privacy by not transmitting the actual phone number.
-     *
-     * @param number Phone number in international format (e.g., +4917650642602)
-     * @return 40-character hex-encoded SHA1 hash (uppercase)
-     */
-    private @NonNull String computeSHA1(String number) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            byte[] hash = digest.digest(number.getBytes(StandardCharsets.UTF_8));
-
-            // Convert to uppercase hex string
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString().toUpperCase();
-        } catch (NoSuchAlgorithmException e) {
-            // SHA-1 is always available in Android
-            throw new RuntimeException("SHA-1 algorithm not available", e);
-        }
     }
 
     private static @NonNull String readTextContent(URLConnection connection) throws IOException {

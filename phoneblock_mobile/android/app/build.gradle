@@ -75,4 +75,5 @@ flutter {
 
 dependencies {
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.27'
+    testImplementation 'junit:junit:4.13.2'
 }
