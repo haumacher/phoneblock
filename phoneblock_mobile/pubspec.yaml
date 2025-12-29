@@ -39,8 +39,6 @@ dependencies:
   jsontool: ^2.1.0
   font_awesome_flutter: ^10.2.1
   intl: ^0.20.1
-  flutter_contacts: ^1.1.7+1
-  call_e_log: ^0.0.4
   shared_preferences: ^2.5.3
   go_router: ^17.0.1
   url_launcher: ^6.3.1
