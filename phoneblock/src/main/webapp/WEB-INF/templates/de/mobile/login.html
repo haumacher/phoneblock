@@ -13,12 +13,12 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">
-			Um Deinen PhoneBlock-Account mit Deinem Mobilgerät zu verknüpfen, musst Dich zuerst anmelden 
-			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
+			Um Deinen PhoneBlock-Account mit Deinem Mobilgerät zu verknüpfen, musst Dich zuerst anmelden
+			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank
 			für die Filterung von Anrufen nutzen kann.
 		</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">

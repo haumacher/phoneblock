@@ -13,8 +13,8 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">För att koppla ditt PhoneBlock-konto till din mobila enhet måste du först logga in eller skapa ett konto. Du behöver ett konto för att din mobiltelefon ska kunna använda PhoneBlock-databasen för att filtrera samtal.</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">

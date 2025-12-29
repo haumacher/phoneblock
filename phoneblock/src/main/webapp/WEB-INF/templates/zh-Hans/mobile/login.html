@@ -13,8 +13,8 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">要将您的 PhoneBlock 账户与移动设备连接，您必须先登录或创建一个账户。您需要一个账户，这样您的手机才能使用 PhoneBlock 数据库过滤通话。</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">

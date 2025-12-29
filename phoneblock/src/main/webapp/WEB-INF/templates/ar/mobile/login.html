@@ -13,8 +13,8 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">لربط حساب PhoneBlock بجهازك المحمول، يجب عليك أولاً تسجيل الدخول أو إنشاء حساب. تحتاج إلى حساب حتى يتمكن هاتفك المحمول من استخدام قاعدة بيانات PhoneBlock لتصفية المكالمات.</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">

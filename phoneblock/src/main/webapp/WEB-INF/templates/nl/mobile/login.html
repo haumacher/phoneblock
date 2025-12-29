@@ -13,8 +13,8 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">Om uw PhoneBlock-account aan uw mobiele apparaat te koppelen, moet u eerst inloggen of een account aanmaken. U hebt een account nodig zodat uw mobiele telefoon de PhoneBlock-database kan gebruiken om oproepen te filteren.</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">

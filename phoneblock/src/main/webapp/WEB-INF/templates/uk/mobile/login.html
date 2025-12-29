@@ -13,8 +13,8 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">Щоб прив'язати свій обліковий запис PhoneBlock до мобільного пристрою, ви повинні спочатку увійти в систему або створити обліковий запис. Обліковий запис потрібен для того, щоб ваш мобільний телефон міг використовувати базу даних PhoneBlock для фільтрації дзвінків.</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">

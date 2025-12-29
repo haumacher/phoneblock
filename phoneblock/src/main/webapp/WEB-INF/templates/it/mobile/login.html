@@ -13,8 +13,8 @@
 	
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">Per collegare il vostro account PhoneBlock al vostro dispositivo mobile, dovete prima accedere o creare un account. È necessario un account affinché il telefono cellulare possa utilizzare il database PhoneBlock per filtrare le chiamate.</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
