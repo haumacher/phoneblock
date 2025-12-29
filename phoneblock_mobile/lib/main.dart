@@ -1304,7 +1304,8 @@ class VerifyLoginState extends State<VerifyLogin> {
 
     checkResult = http.get(Uri.parse(pbApiTest),
       headers: {
-        "Authorization": "Bearer $token"
+        "Authorization": "Bearer $token",
+        "User-Agent": "PhoneBlockMobile/$appVersion",
       }
     );
   }
@@ -1420,7 +1421,10 @@ Future<bool> validateAuthToken() async {
 
     final response = await http.get(
       Uri.parse(pbApiTest),
-      headers: {"Authorization": "Bearer $token"},
+      headers: {
+        "Authorization": "Bearer $token",
+        "User-Agent": "PhoneBlockMobile/$appVersion",
+      },
     );
 
     return response.statusCode == 200;
