@@ -16,11 +16,16 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet for requesting a fresh authorization token to use for API access from a mobile application.
- * 
+ *
  * <p>
- * Upon success, control flow is redirected to {@value #MOBILE_RESPONSE} with the token passed as 
- * {@value #TOKEN_PARAM} parameter. This URL should be redirected to the native app running on the 
+ * Upon success, control flow is redirected to {@value #MOBILE_RESPONSE} with the token passed as
+ * {@value #TOKEN_PARAM} parameter. This URL should be redirected to the native app running on the
  * mobile device.
+ * </p>
+ *
+ * <p>
+ * An optional "label" parameter can be provided to give the token a user-visible label that will
+ * be displayed in the settings pages.
  * </p>
  */
 @WebServlet(urlPatterns = CreateAuthTokenServlet.CREATE_TOKEN)
@@ -50,8 +55,9 @@ public class CreateAuthTokenServlet extends HttpServlet {
 
 		long now = System.currentTimeMillis();
 		DB db = DBService.getInstance();
-		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
-		
+		String label = req.getParameter("label");
+		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"), label);
+
 		resp.sendRedirect(req.getContextPath() + MOBILE_RESPONSE + "?" + TOKEN_PARAM + "=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));
 	}
 }

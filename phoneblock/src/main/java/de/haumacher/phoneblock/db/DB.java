@@ -596,10 +596,17 @@ public class DB {
 	}
 
 	public AuthToken createAPIToken(String login, long now, String userAgent) {
+		return createAPIToken(login, now, userAgent, null);
+	}
+
+	public AuthToken createAPIToken(String login, long now, String userAgent, String label) {
 		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
 				.setAccessDownload(true)
 				.setAccessQuery(true)
 				.setAccessRate(true);
+		if (label != null && !label.trim().isEmpty()) {
+			authorization.setLabel(label.trim());
+		}
 		createAuthToken(authorization);
 		return authorization;
 	}
