@@ -1993,7 +1993,7 @@ public class DB {
 	    
 	    int deleted = users.deleteCallsOlderThan(bot.getId(), cutoffTime);
 	    
-	    DBService.LOG.debug("Cleaned {} calls older than {} for bot {} (cutoff: {}).", 
+	    LOG.debug("Cleaned {} calls older than {} for bot {} (cutoff: {}).", 
 	            deleted, retentionPeriod, bot.getId(), cutoffTime);
 	    
 		return deleted;
