@@ -163,6 +163,38 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
               const Padding(
                 padding: EdgeInsets.only(top: groupSpacing),
+                child: Group("Anruf-Aufbewahrung"),
+              ),
+
+              DropdownButtonFormField<RetentionPeriod>(
+                items: const [
+                  DropdownMenuItem(value: RetentionPeriod.never, child: Text("Niemals löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.week, child: Text("Nach 1 Woche löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.month, child: Text("Nach 1 Monat löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.quarter, child: Text("Nach 3 Monaten löschen")),
+                  DropdownMenuItem(value: RetentionPeriod.year, child: Text("Nach 1 Jahr löschen")),
+                ],
+                decoration: const InputDecoration(
+                    labelText: 'Automatische Löschung',
+                    helperText: "Nach welcher Zeit sollen alte Anrufprotokolle automatisch gelöscht werden? 'Niemals löschen' deaktiviert die automatische Löschung."
+                ),
+                value: bot.retentionPeriod,
+                onChanged: (value) {
+                  setState(() {
+                    bot.retentionPeriod = value ?? RetentionPeriod.never;
+                  });
+                },
+              ),
+
+              ElevatedButton(
+                onPressed: () async {
+                  await updateRetentionPolicy(bot);
+                }, 
+                child: const Text("Aufbewahrungseinstellungen speichern"),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.only(top: groupSpacing),
                 child: const Group("DNS Settings"),),
 
               InfoField('DNS-Einstellung', internalDynDns ? "PhoneBlock-DNS" : "Anderer Anbieter oder Domainname",
@@ -306,6 +338,45 @@ class AnswerBotViewState extends State<AnswerBotView> {
           pd.update(value: n, msg: "$errorMessage Versuche erneut...");
         }
       }
+    }
+  }
+
+  Future<void> updateRetentionPolicy(AnswerbotInfo bot) async {
+    ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(max: 1, msg: 'Speichere Aufbewahrungseinstellungen...');
+
+    var response = await sendRequest(
+      SetRetentionPolicy(
+        id: bot.id,
+        period: bot.retentionPeriod,
+      ));
+
+    pd.close();
+
+    if (!context.mounted) return;
+
+    if (response.statusCode != 200) {
+      showErrorDialog(context, response, 'Fehler beim Speichern der Aufbewahrungseinstellungen.',
+        "Speichern fehlgeschlagen: ${response.body}");
+    } else {
+      String message = bot.retentionPeriod == "NEVER" 
+        ? "Automatische Löschung deaktiviert"
+        : "Aufbewahrungseinstellungen gespeichert (${_getRetentionDisplayName(bot.retentionPeriod)})";
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  String _getRetentionDisplayName(RetentionPeriod period) {
+    switch (period) {
+      case RetentionPeriod.week: return "1 Woche";
+      case RetentionPeriod.month: return "1 Monat";
+      case RetentionPeriod.quarter: return "3 Monate";
+      case RetentionPeriod.year: return "1 Jahr";
+      case RetentionPeriod.never: return "Niemals";
+      default: return period.name;
     }
   }
 

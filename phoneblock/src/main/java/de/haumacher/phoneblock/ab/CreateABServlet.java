@@ -32,6 +32,8 @@ import de.haumacher.phoneblock.ab.proto.EnableAnswerBot;
 import de.haumacher.phoneblock.ab.proto.EnterHostName;
 import de.haumacher.phoneblock.ab.proto.ListCalls;
 import de.haumacher.phoneblock.ab.proto.ListCallsResponse;
+import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
+import de.haumacher.phoneblock.ab.proto.SetRetentionPolicy;
 import de.haumacher.phoneblock.ab.proto.SetupDynDns;
 import de.haumacher.phoneblock.ab.proto.SetupDynDnsResponse;
 import de.haumacher.phoneblock.ab.proto.SetupRequest;
@@ -438,6 +440,37 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 			users.clearCallList(botId);
 			users.clearCallCounter(botId);
 			session.commit();
+		}
+		
+		sendOk(resp);
+		return null;
+	}
+
+	@Override
+	public Void visit(SetRetentionPolicy self, RequestContext context) throws IOException {
+		HttpServletResponse resp = context.resp;
+		String login = context.login;
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			long botId = self.getId();
+			DBAnswerbotInfo bot = lookupAnswerBot(users, login, botId);
+			checkBotAccess(users, login, bot);
+			
+			// Update retention period
+			RetentionPeriod period = self.getPeriod();
+			users.updateRetentionPolicy(botId, period);
+			
+			// Immediately apply retention policy.
+			bot.setRetentionPeriod(period);
+			db.removeOutdatedCalls(users, bot);
+			
+			session.commit();
+			
+			LOG.info("Updated retention policy for bot {} (user: {}) to {}.",
+					botId, login, period);
 		}
 		
 		sendOk(resp);
