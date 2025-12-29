@@ -1,6 +1,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -141,9 +143,12 @@ public abstract class LoginFilter implements Filter {
 				if (checkTokenAuthorization(req, authorization)) {
 					LOG.info("Accepted token parameter {}...({}) for user {}.", tokenParam.substring(0, 16), tokenParam, authorization.getId(), userName);
 
-					setUser(req, userName);
+					// Create session to avoid keeping token in URL
+					setSessionUser(req, userName);
 
-					loggedIn(req, resp, userName, chain);
+					// Redirect to same URL without token parameter to remove it from browser history
+					String redirectUrl = buildUrlWithoutTokenParameter(req);
+					resp.sendRedirect(redirectUrl);
 					return;
 				} else {
 					LOG.info("Access to {} with token parameter {}... rejected due to privilege mismatch for user {}.",
@@ -274,11 +279,47 @@ public abstract class LoginFilter implements Filter {
 		}
 	}
 
-	/** 
+	/**
 	 * Adds the given user name to the current request.
 	 */
 	public static void setRequestUser(HttpServletRequest req, String userName) {
 		req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+	}
+
+	/**
+	 * Builds a redirect URL from the request without the token parameter.
+	 * Preserves all other query parameters and the request path.
+	 */
+	private static String buildUrlWithoutTokenParameter(HttpServletRequest req) {
+		StringBuilder url = new StringBuilder();
+		url.append(req.getContextPath());
+		url.append(req.getServletPath());
+
+		if (req.getPathInfo() != null) {
+			url.append(req.getPathInfo());
+		}
+
+		// Iterate through parameters and filter out the token
+		StringBuilder query = new StringBuilder();
+		for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+			String name = entry.getKey();
+			if (!"token".equals(name)) {
+				for (String value : entry.getValue()) {
+					if (query.length() > 0) {
+						query.append("&");
+					}
+					query.append(java.net.URLEncoder.encode(name, StandardCharsets.UTF_8))
+						 .append("=")
+						 .append(java.net.URLEncoder.encode(value, StandardCharsets.UTF_8));
+				}
+			}
+		}
+
+		if (query.length() > 0) {
+			url.append("?").append(query);
+		}
+
+		return url.toString();
 	}
 
 }
