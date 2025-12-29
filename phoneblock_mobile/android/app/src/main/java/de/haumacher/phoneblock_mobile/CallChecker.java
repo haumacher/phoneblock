@@ -184,6 +184,7 @@ public class CallChecker extends CallScreeningService {
     private @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
         SharedPreferences prefs = MainActivity.getPreferences(this);
         String queryUrl = prefs.getString("query_url", "https://phoneblock.net/phoneblock/api/check?sha1={sha1}&format=json");
+        String appVersion = prefs.getString("app_version", "unknown");
 
         // Compute SHA1 hash of the phone number for privacy
         String sha1Hash = PhoneNumberUtils.computeSHA1(number);
@@ -191,7 +192,7 @@ public class CallChecker extends CallScreeningService {
         URL url = new URL(queryUrl.replace("{sha1}", sha1Hash));
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Authorization", "Bearer " + authToken);
-        connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
+        connection.setRequestProperty("User-Agent", "PhoneBlockMobile/" + appVersion);
         return new JSONObject(readTextContent(connection));
     }
 

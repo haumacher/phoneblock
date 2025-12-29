@@ -259,6 +259,11 @@ public class MainActivity extends FlutterActivity {
                 setRetentionDays((Integer) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "setAppVersion":
+                setAppVersion((String) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -375,6 +380,12 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putInt("retention_days", retentionDays).apply();
         Log.d(MainActivity.class.getName(), "setRetentionDays: " + retentionDays);
+    }
+
+    private void setAppVersion(String appVersion) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putString("app_version", appVersion).apply();
+        Log.d(MainActivity.class.getName(), "setAppVersion: " + appVersion);
     }
 
     public static SharedPreferences getPreferences(Context context) {

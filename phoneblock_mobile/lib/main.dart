@@ -64,6 +64,9 @@ void main() async {
   final packageInfo = await PackageInfo.fromPlatform();
   appVersion = packageInfo.version;
 
+  // Store app version in SharedPreferences for native code to use in User-Agent
+  platform.invokeMethod("setAppVersion", appVersion);
+
   // Set up listener for screening results from CallChecker
   platform.setMethodCallHandler((call) async {
     if (call.method == 'onCallScreened') {
