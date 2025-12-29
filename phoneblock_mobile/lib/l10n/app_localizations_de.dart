@@ -355,4 +355,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String yesterdayTime(String time) {
     return 'Gestern, $time';
   }
+
+  @override
+  String get callHistoryRetention => 'Anrufverlauf-Speicherung';
+
+  @override
+  String retentionPeriodDescription(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Anrufe $days Tage behalten',
+      one: 'Anrufe 1 Tag behalten',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get retentionInfinite => 'Alle Anrufe behalten';
+
+  @override
+  String get retentionOneDay => '1 Tag';
+
+  @override
+  String get retentionThreeDays => '3 Tage';
+
+  @override
+  String get retentionSevenDays => '7 Tage';
+
+  @override
+  String get retentionInfiniteOption => 'Unbegrenzt';
 }

@@ -1884,22 +1884,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Divider(),
                 // Retention period setting
                 ListTile(
-                  title: const Text('Call History Retention'),
+                  title: Text(context.l10n.callHistoryRetention),
                   subtitle: Text(
                     _retentionDays == -1
-                        ? 'Keep all calls'
-                        : _retentionDays == 1
-                            ? 'Keep calls for 1 day'
-                            : 'Keep calls for $_retentionDays days',
+                        ? context.l10n.retentionInfinite
+                        : context.l10n.retentionPeriodDescription(_retentionDays),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   trailing: DropdownButton<int>(
                     value: _retentionDays,
-                    items: const [
-                      DropdownMenuItem(value: 1, child: Text('1 day')),
-                      DropdownMenuItem(value: 3, child: Text('3 days')),
-                      DropdownMenuItem(value: 7, child: Text('7 days')),
-                      DropdownMenuItem(value: -1, child: Text('Infinite')),
+                    items: [
+                      DropdownMenuItem(value: 1, child: Text(context.l10n.retentionOneDay)),
+                      DropdownMenuItem(value: 3, child: Text(context.l10n.retentionThreeDays)),
+                      DropdownMenuItem(value: 7, child: Text(context.l10n.retentionSevenDays)),
+                      DropdownMenuItem(value: -1, child: Text(context.l10n.retentionInfiniteOption)),
                     ],
                     onChanged: (value) {
                       if (value != null) {

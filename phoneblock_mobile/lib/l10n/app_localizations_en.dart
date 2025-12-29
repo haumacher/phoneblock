@@ -353,4 +353,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String yesterdayTime(String time) {
     return 'Yesterday, $time';
   }
+
+  @override
+  String get callHistoryRetention => 'Call History Retention';
+
+  @override
+  String retentionPeriodDescription(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Keep calls for $days days',
+      one: 'Keep calls for 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get retentionInfinite => 'Keep all calls';
+
+  @override
+  String get retentionOneDay => '1 day';
+
+  @override
+  String get retentionThreeDays => '3 days';
+
+  @override
+  String get retentionSevenDays => '7 days';
+
+  @override
+  String get retentionInfiniteOption => 'Infinite';
 }

@@ -197,5 +197,19 @@
 
   "todayTime": "Today, {time}",
 
-  "yesterdayTime": "Yesterday, {time}"
+  "yesterdayTime": "Yesterday, {time}",
+
+  "callHistoryRetention": "Call History Retention",
+
+  "retentionPeriodDescription": "{days, plural, =1{Keep calls for 1 day} other{Keep calls for {days} days}}",
+
+  "retentionInfinite": "Keep all calls",
+
+  "retentionOneDay": "1 day",
+
+  "retentionThreeDays": "3 days",
+
+  "retentionSevenDays": "7 days",
+
+  "retentionInfiniteOption": "Infinite"
 }

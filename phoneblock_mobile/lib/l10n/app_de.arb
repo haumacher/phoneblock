@@ -569,5 +569,45 @@
         "type": "String"
       }
     }
+  },
+
+  "callHistoryRetention": "Anrufverlauf-Speicherung",
+  "@callHistoryRetention": {
+    "description": "Call history retention setting title"
+  },
+
+  "retentionPeriodDescription": "{days, plural, =1{Anrufe 1 Tag behalten} other{Anrufe {days} Tage behalten}}",
+  "@retentionPeriodDescription": {
+    "description": "Retention period description with days",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "retentionInfinite": "Alle Anrufe behalten",
+  "@retentionInfinite": {
+    "description": "Keep all calls option"
+  },
+
+  "retentionOneDay": "1 Tag",
+  "@retentionOneDay": {
+    "description": "1 day retention option"
+  },
+
+  "retentionThreeDays": "3 Tage",
+  "@retentionThreeDays": {
+    "description": "3 days retention option"
+  },
+
+  "retentionSevenDays": "7 Tage",
+  "@retentionSevenDays": {
+    "description": "7 days retention option"
+  },
+
+  "retentionInfiniteOption": "Unbegrenzt",
+  "@retentionInfiniteOption": {
+    "description": "Infinite retention option"
   }
 }

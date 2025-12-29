@@ -691,6 +691,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gestern, {time}'**
   String yesterdayTime(String time);
+
+  /// Call history retention setting title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufverlauf-Speicherung'**
+  String get callHistoryRetention;
+
+  /// Retention period description with days
+  ///
+  /// In de, this message translates to:
+  /// **'{days, plural, =1{Anrufe 1 Tag behalten} other{Anrufe {days} Tage behalten}}'**
+  String retentionPeriodDescription(int days);
+
+  /// Keep all calls option
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Anrufe behalten'**
+  String get retentionInfinite;
+
+  /// 1 day retention option
+  ///
+  /// In de, this message translates to:
+  /// **'1 Tag'**
+  String get retentionOneDay;
+
+  /// 3 days retention option
+  ///
+  /// In de, this message translates to:
+  /// **'3 Tage'**
+  String get retentionThreeDays;
+
+  /// 7 days retention option
+  ///
+  /// In de, this message translates to:
+  /// **'7 Tage'**
+  String get retentionSevenDays;
+
+  /// Infinite retention option
+  ///
+  /// In de, this message translates to:
+  /// **'Unbegrenzt'**
+  String get retentionInfiniteOption;
 }
 
 class _AppLocalizationsDelegate
