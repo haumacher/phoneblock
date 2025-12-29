@@ -51,6 +51,12 @@ Rating? _parseRatingFromService(String ratingStr) {
   }
 }
 
+/// Gets the configured retention period in days.
+/// Returns the retention period from SharedPreferences, or the default value if not set.
+Future<int> getRetentionDays() async {
+  return await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -86,7 +92,7 @@ void main() async {
       await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
       // Clean up old calls based on retention period when a new call arrives
-      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
+      final retentionDays = await getRetentionDays();
       await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
       // Notify any listeners (e.g., MainScreen) about the new call
@@ -107,7 +113,7 @@ void main() async {
   platform.invokeMethod("setQueryUrl", queryUrl);
 
   // Clean up old screened calls based on retention period
-  final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
+  final retentionDays = await getRetentionDays();
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
   runApp(MaterialApp.router(
