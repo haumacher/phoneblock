@@ -21,6 +21,7 @@
 		<p data-tx="t0003">Nu kan du ansluta ditt PhoneBlock-konto <code th:text="${userName}"></code> till din mobila enhet:</p>
 	
 		<form method="post" th:action="@{/create-token}">
+			<input name="label" th:if="${param.label != null}" th:value="${param.label[0]}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">
