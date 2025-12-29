@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.code.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001">Επιβεβαίωση διεύθυνσης e-mail</h1>
+	        <p class="subtitle" data-tx="t0002">Εισάγετε τον κωδικό από το e-mail.</p>
+	        <div class="content">
+				<p data-tx="t0003">Ένα email εστάλη στη διεύθυνση <code th:text="${email}"></code>.</p>
+				<p data-tx="t0004">Ελέγξτε το γραμματοκιβώτιό σας, αντιγράψτε τον κωδικό και εισάγετε τον εδώ. Αυτό θα επιβεβαιώσει τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<div class="field">
+						<label class="label" data-tx="t0005">Κωδικός</label>
+						<div class="control has-icons-left has-icons-right">
+							<input data-tx="t0006" name="code" placeholder="Κωδικός επιβεβαίωσης" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<span class="icon is-small is-left">
+							  <i class="fa-solid fa-barcode"></i>
+							</span>
+							<span class="icon is-small is-right" th:if="${message != null}">
+							  <i class="fas fa-exclamation-triangle"></i>
+							</span>
+						</div>
+
+						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">Προσπαθήστε ξανά</a>.</p>
+
+						<p class="help" data-tx="t0008" th:if="${message == null}"><span>Δεν λάβατε email; Ελέγξτε το φάκελο ανεπιθύμητης αλληλογραφίας σας!</span> <a th:href="@{/mobile/login}">Προσπαθήστε ξανά</a>.</p>
+					</div>		
+							
+					<div class="buttons is-right">
+				    	<button class="button is-link" data-tx="t0009" type="submit">Δημιουργία λογαριασμού</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+</body>
+</html>

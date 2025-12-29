@@ -97,44 +97,73 @@ public class SearchServlet extends HttpServlet {
 
 	public static final String NUMS_PREFIX = "/nums";
 	
-	private static final Pattern BOT_PATTERN = Pattern.compile(
+	private static final Pattern GOOD_BOT_PATTERN = Pattern.compile(
+			// Search engines
 			or("Googlebot"
 			, "AdsBot-Google"
-			, "AhrefsBot"
-			, "Amazonbot"
-			, "Applebot"
-			, "archive.org_bot"
-			, "Basilisk"
+			, "Googlebot-Image"
+			, "Google-Read-Aloud"
+
 			, "bingbot"
 			, "BingPreview"
-			, "Bytespider"
-			, "CFNetwork"
-			, "Curl"
-			, "custo"
-			, "DataForSeoBot"
-			, "DotBot"
-			, "DuckDuckGo-Favicons-Bot"
-			, "facebookexternalhit"
-			, "Googlebot-Image"
-			, "ImagesiftBot"
-			, "libwww-perl"
-			, "LinkedInBot"
-			, "meta-externalagent"
-			, "MJ12bot"
-			, "Monit"
-			, "OAI-SearchBot"
-			, "Owler"
-			, "PetalBot"
-			, "python"
-			, "SEOkicks"
-			, "SemrushBot"
-			, "SeznamBot"
-			, "TikTokSpider"
-			, "TelegramBot"
+
 			, "YandexBot"
 			, "YandexImages"
 			, "YandexRenderResourcesBot"
-			));
+			
+			, "Qwantbot" // French search engine.
+			
+			, "Amazonbot"
+			, "Applebot"
+			, "archive.org_bot"
+
+			, "OAI-SearchBot" // OpenAI's web crawler
+			, "ChatGPT-User" // OpenAI's web agent
+			, "Bytespider" // Crawler operated by ByteDance
+			
+			// Social media
+			, "DuckDuckGo-Favicons-Bot"
+			, "facebookexternalhit"
+			, "LinkedInBot"
+			, "meta-externalagent"
+			, "TikTokSpider"
+			, "TelegramBot"
+			, "WhatsApp"
+
+			// Monitoring
+			, "upz-bot"
+			, "statuscake-monitoring"
+			, "Monit"
+
+			// Automated tools
+			, "Basilisk"
+			, "Curl"
+			, "python"
+			, "libwww-perl"));
+
+	private static final Pattern BAD_BOT_PATTERN = Pattern.compile(
+			or("custo"
+			, "Barkrowler"
+			, "CFNetwork"
+			, "Nutch"
+			, "Owler"
+			
+			// Anything that sounds like a bot.
+			, "bot"
+			, "seo"
+			, "spider"
+			, "crawler"
+
+			// , "SEOkicks"
+			// , "AhrefsBot"
+			// , "DataForSeoBot"
+			// , "DotBot"
+			// , "ImagesiftBot"
+			// , "MJ12bot"
+			// , "PetalBot"
+			// , "SemrushBot"
+			// , "SeznamBot"
+			), Pattern.CASE_INSENSITIVE);
 
 	public static final Comparator<? super UserComment> COMMENT_ORDER = new Comparator<>() {
 		@Override
@@ -635,9 +664,17 @@ public class SearchServlet extends HttpServlet {
 	 */
 	public static boolean isBot(HttpServletRequest req) {
 		String userAgent = req.getHeader("User-Agent");
-		return userAgent == null || BOT_PATTERN.matcher(userAgent).find();
+		return userAgent == null || GOOD_BOT_PATTERN.matcher(userAgent).find() || BAD_BOT_PATTERN.matcher(userAgent).find();
 	}
 
+	/** 
+	 * Whether the request is from "good" bot that is allowed to access the contents without proof of work.
+	 */
+	public static boolean isGoodBot(HttpServletRequest req) {
+		String userAgent = req.getHeader("User-Agent");
+		return userAgent != null && GOOD_BOT_PATTERN.matcher(userAgent).find();
+	}
+	
 	private static String or(String... strs) {
 		return Stream.of(strs).map(Pattern::quote).collect(Collectors.joining("|"));
 	}

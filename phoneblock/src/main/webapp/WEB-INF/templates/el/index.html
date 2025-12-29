@@ -15,40 +15,7 @@
 
 		<p data-tx="t0002">Μήπως και ο δικός σας τηλεφωνικός αριθμός έχει πέσει στα χέρια ύποπτων εμπόρων διευθύνσεων και λαμβάνετε συνεχώς ενοχλητικές κλήσεις που θέλουν να "βελτιστοποιήσουν" τον λογαριασμό του ηλεκτρικού σας ρεύματος, να σας δώσουν συμβουλές για ένα ηλιακό σύστημα, να σας ανακοινώσουν άλλο ένα μεγάλο βραβείο ή να σας προσφέρουν άλλα "προνόμια"; Τότε το <b>PhoneBlock</b> είναι ακριβώς αυτό που χρειάζεστε!</p>
 
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-			    </span>
-				<span data-tx="t0003">Τηλεφωνητής</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span data-tx="t0004">Fritz!Box τηλεφωνικός κατάλογος</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span data-tx="t0005">Για Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
-			    </span>
-				<span data-tx="t0006">Για iPhone</span>
-			</a>
-		  </div>
-		</div>
+		<div th:replace="~{fragments/page :: buttons}"></div>
 
 		<h2 data-tx="t0007">Πώς λειτουργεί το PhoneBlock;</h2>
 

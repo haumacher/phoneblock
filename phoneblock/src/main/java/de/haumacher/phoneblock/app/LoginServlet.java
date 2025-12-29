@@ -104,16 +104,16 @@ public class LoginServlet extends HttpServlet {
 		
 		LoginFilter.setSessionUser(req, authenticatedUser);
 		
-		redirectToLocationAfterLogin(req, resp);
+		redirectToLocationAfterLogin(req, resp, SettingsServlet.PATH);
 	}
 
 	/**
 	 * Redirects the current request to its final destination.
 	 */
-	public static void redirectToLocationAfterLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	public static void redirectToLocationAfterLogin(HttpServletRequest req, HttpServletResponse resp, String defaultLocation) throws IOException {
 		String location = location(req);
 		if (location == null) {
-			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
+			resp.sendRedirect(req.getContextPath() + defaultLocation);
 		} else {
 			resp.sendRedirect(req.getContextPath() + location);
 		}
@@ -229,7 +229,6 @@ public class LoginServlet extends HttpServlet {
 	 */
 	public static void requestLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String originalLocation = originalLocation(request);
-		LOG.info("Requesting login for resource: " + originalLocation);
 		
 		// Forward language
 		String langSpec;

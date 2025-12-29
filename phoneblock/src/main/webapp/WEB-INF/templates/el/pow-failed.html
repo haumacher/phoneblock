@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.index.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Διακοπή σύνδεσης</h1>
+
+		<p data-tx="t0002">Το PhoneBlock δεν μπορεί να επαληθεύσει ότι δεν πρόκειται για αυτοματοποιημένο μαζικό αίτημα (το πρόγραμμα περιήγησής σας ενδέχεται να μην αποδέχεται το cookie τεχνικής περιόδου λειτουργίας). Ως εκ τούτου, το περιεχόμενο της σελίδας δεν μπορεί να εμφανιστεί. Εάν δεν είστε ρομπότ, μπορείτε να παρακάμψετε τον έλεγχο κάνοντας <a th:href="@{/login}">σύνδεση στο PhoneBlock</a>. Είναι προτιμότερο να ενεργοποιήσετε την επιλογή "παραμένετε συνδεδεμένοι" κατά την είσοδο, τότε αυτό το πρόβλημα δεν θα εμφανιστεί καν την επόμενη φορά που θα επισκεφθείτε τον ιστότοπο.</p>
+		
+		<p data-tx="t0003">Ζητούμε συγγνώμη για την ταλαιπωρία, αλλά ο ιστότοπος PhoneBlock δέχεται επιθέσεις από έναν απίστευτο αριθμό bots με μαζικά ερωτήματα, τα οποία θα περιόριζαν σημαντικά τη διαθεσιμότητα του ιστότοπου χωρίς αυτόν τον έλεγχο ή θα καθιστούσαν αδύνατη τη λειτουργία του PhoneBlock. Προκειμένου το PhoneBlock να συνεχίσει να προσφέρεται δωρεάν (ή με <a th:href="@{/support}">δωρεά</a>), τα μέτρα αυτά είναι δυστυχώς αναπόφευκτα.</p>
+		
+		<div class="columns">
+		  <div class="column is-one-quarter">
+			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/login(location=${location})}">
+				<span class="icon">
+					<i class="fa-solid fa-right-to-bracket"></i>
+   				</span>
+				<span data-tx="t0004">Συνδεθείτε</span>			
+			</a>
+		  </div>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

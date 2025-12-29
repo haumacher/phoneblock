@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.response.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<h1 data-tx="t0001">您已成功登录</h1>
+
+<p data-tx="t0002">您的授权令牌： <code id="token" th:text="${loginToken}"></code></p>
+
+<p data-tx="t0003">您已成功登录 PhoneBlock。此页面应该会自动关闭，你的移动设备应该会连接到 PhoneBlock。如果没有出现这种情况，则可能是你的移动应用程序出了问题。</p>
+
+</div>
+</section>
+
+<script th:src="@{/assets/js/mobile-response.js}" type="text/javascript"></script>
+
+</body>
+</html>

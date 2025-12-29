@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-iphone.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">التركيب في أنظمة الهاتف</h1>
+		
+		<p data-tx="t0002">يمكن أيضًا دمج PhoneBlock في أنظمة الهاتف. نظرًا لأن نظام الهاتف يُستخدم عادةً لأغراض تجارية، يُرجى ملاحظة <a th:href="@{/usage}">الملاحظات المتعلقة بالاستخدام التجاري  لـ PhoneBlock، ولا سيما إخلاء المسؤولية. البرامج النصية الخاصة بتكامل نظام الهاتف هي مساهمات من مجتمع PhoneBlock. لذلك إذا كان لديك أي أسئلة/مشاكل معهم، يرجى الاتصال بالمطور المعني مباشرةً.</a></p>
+		
+		<h2 data-tx="t0003">3CX</h2>
+		
+		<p data-tx="t0004">لاستخدام PhoneBlock في نظام هاتف <a href="https://www.3cx.com/">3CX</a>، ألقِ نظرة على المشروع <a href="https://github.com/rawbyne/phoneblock-for-3cx/">phoneblock for-3cx</a>.</p>
+		
+		<h2 data-tx="t0005">أخرى</h2>
+		
+		<p data-tx="t0006">هل قمت بكتابة تكامل لنظام هاتف آخر؟ إذن أخبرني بذلك حتى أتمكن من تعيين رابط لمشروعك.</p>
+		
+	</div>	
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

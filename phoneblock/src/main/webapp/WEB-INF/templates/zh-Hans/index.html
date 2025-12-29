@@ -15,40 +15,7 @@
 
 		<p data-tx="t0002">您的电话号码是否也落入了不法地址商的手中，您是否经常接到恼人的电话，希望 "优化 "您的电费账单，给您提供太阳能系统的建议，宣布另一个大奖或提供其他 "福利"？那么<b>PhoneBlock</b>正是您所需要的！</p>
 
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-			    <span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-			    </span>
-				<span data-tx="t0003">答录机</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
-			    <span class="icon">
-					<i class="fa-solid fa-phone"></i>
-			    </span>
-				<span data-tx="t0004">弗里茨！盒子电话簿</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-			    <span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-			    </span>
-				<span data-tx="t0005">适用于安卓系统</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-			    <span class="icon">
-					<i class="fa-brands fa-apple"></i>
-			    </span>
-				<span data-tx="t0006">适用于 iPhone</span>
-			</a>
-		  </div>
-		</div>
+		<div th:replace="~{fragments/page :: buttons}"></div>
 
 		<h2 data-tx="t0007">PhoneBlock 如何工作？</h2>
 

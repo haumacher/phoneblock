@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-iphone.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Installation in Telefonanlagen</h1>
+		
+		<p data-tx="t0002">
+			PhoneBlock lässt sich auch in Telefonanlagen integrieren. Da eine Telefonanlage eher geschäftlich genutzt wird, 
+			beachte bitte die <a th:href="@{/usage}">Hinweise bezüglich der gewerblichen Nutzung</a> von PhoneBlock, 
+			insbesondere den Haftungsausschluss. Die Skripte für die Telefonanlagenintegration sind Beiträge aus der 
+			PhoneBlock-Community. Wenn Du also Fragen/Probleme damit hast, bitte wende Dich direkt an den jeweiligen Entwickler.  
+		</p>
+		
+		<h2 data-tx="t0003">3CX</h2>
+		
+		<p data-tx="t0004">
+			Um PhoneBlock in der Telefonanlage von <a href="https://www.3cx.com/">3CX</a> zu nutzen, schau Dir das 
+			Projekt <a href="https://github.com/rawbyne/phoneblock-for-3cx/">phoneblock-for-3cx</a> an.
+		</p>
+		
+		<h2 data-tx="t0005">Andere</h2>
+		
+		<p data-tx="t0006">
+			Du hast eine Integration für eine andere Telefonanlage geschrieben? Dann sag <a th:href="@{/impressum}">mir</a> 
+			Bescheid, damit ich einen Link zu Deinem Projekt setzen kann.
+		</p>
+		
+	</div>	
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{../fragments/page :: head(title=#{page.mobile.login.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{../fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+	<h1 data-tx="t0001">Połącz konto PhoneBlock</h1>
+	
+	<div th:if="${userName == null}">
+		<p data-tx="t0002">Aby połączyć konto PhoneBlock z urządzeniem mobilnym, należy najpierw zalogować się lub utworzyć konto. Konto jest potrzebne, aby telefon komórkowy mógł korzystać z bazy danych PhoneBlock do filtrowania połączeń.</p>
+	
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+	</div>
+
+	<div th:if="${userName != null}">
+		<p data-tx="t0003">Teraz możesz połączyć swoje konto PhoneBlock <code th:text="${userName}"></code> z urządzeniem mobilnym:</p>
+	
+		<form method="post" th:action="@{/create-token}">
+			<div class="field is-grouped">
+			  <p class="control">
+			    <button class="button is-primary" type="submit">
+		          <span class="icon">
+				      <i class="fa-solid fa-link"></i>
+				  </span>
+			      <span data-tx="t0004">Połącz konto PhoneBlock</span>
+			    </button>
+			  </p>
+			</div>
+		</form>	
+	</div>
+	
+</div>
+</section>
+
+<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+
+</body>
+</html>

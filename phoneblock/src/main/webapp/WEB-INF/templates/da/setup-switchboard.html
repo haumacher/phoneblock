@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.setup-iphone.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Installation i telefonsystemer</h1>
+		
+		<p data-tx="t0002">PhoneBlock kan også integreres i telefonsystemer. Da et telefonsystem ofte bruges til forretningsformål, skal du være opmærksom på <a th:href="@{/usage}">Noter vedrørende kommerciel brug</a> af PhoneBlock, især ansvarsfraskrivelsen. Scriptene til integrationen af telefonsystemet er bidrag fra PhoneBlock-fællesskabet. Så hvis du har spørgsmål/problemer med dem, bedes du kontakte den respektive udvikler direkte.</p>
+		
+		<h2 data-tx="t0003">3CX</h2>
+		
+		<p data-tx="t0004">Hvis du vil bruge PhoneBlock i telefonsystemet <a href="https://www.3cx.com/">3CX</a>, skal du se på projektet <a href="https://github.com/rawbyne/phoneblock-for-3cx/">phoneblock-for-3cx</a>.</p>
+		
+		<h2 data-tx="t0005">Andet</h2>
+		
+		<p data-tx="t0006">Har du skrevet en integration til et andet telefonsystem? Så lad <a th:href="@{/impressum}">mig</a> vide det, så jeg kan oprette et link til dit projekt.</p>
+		
+	</div>	
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

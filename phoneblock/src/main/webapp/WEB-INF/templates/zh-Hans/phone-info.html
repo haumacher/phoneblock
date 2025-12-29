@@ -63,40 +63,7 @@
 
 	<p data-tx="t0015">如果安装了 PhoneBlock，您可以自动阻止不需要的电话<em></em>：</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-				<span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-				</span>
-				<span data-tx="t0016">答录机</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
-				<span class="icon">
-					<i class="fa-solid fa-phone"></i>
-				</span>
-				<span data-tx="t0017">弗里茨！盒子电话簿</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-				</span>
-				<span data-tx="t0018">适用于安卓系统</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-				<span class="icon">
-					<i class="fa-brands fa-apple"></i>
-				</span>
-				<span data-tx="t0019">适用于 iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
 	<p data-tx="t0020">数字 ☎ <th:block th:text="${number.shortcut}"></th:block> 可能与数据库中的下列数字属于同一连接：</p>
@@ -141,7 +108,7 @@
 			<img alt="验证码" data-tx="t0043" th:src="${captchaSrc}"/>
 
 			<div class="control has-icons-left has-icons-right">
-			    <input class="input" data-tx="t0044" name="captcha" placeholder="上图中的文字" type="text"/>
+			    <input autocomplete="off" class="input" data-tx="t0044" name="captcha" placeholder="上图中的文字" type="text"/>
  
 			    <span class="icon is-small is-left">
 			      <i class="fa-solid fa-key"></i>

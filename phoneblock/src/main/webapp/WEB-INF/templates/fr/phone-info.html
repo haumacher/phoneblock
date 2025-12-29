@@ -63,40 +63,7 @@
 
 	<p data-tx="t0015">Tu peux <em>bloquer automatiquement les appels téléphoniques indésirables</em> si tu installes PhoneBlock :</p>
 	
-		<div class="columns">
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox  ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-				<span class="icon">
-					<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-				</span>
-				<span data-tx="t0016">Répondeur téléphonique</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup}">
-				<span class="icon">
-					<i class="fa-solid fa-phone"></i>
-				</span>
-				<span data-tx="t0017">Fritz!Box Annuaire téléphonique</span>			
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fa-solid fa-mobile-screen"></i>
-				</span>
-				<span data-tx="t0018">Pour Android</span>
-			</a>
-		  </div>
-		  <div class="column is-one-quarter">
-			<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
-				<span class="icon">
-					<i class="fa-brands fa-apple"></i>
-				</span>
-				<span data-tx="t0019">Pour iPhone</span>
-			</a>
-		  </div>
-		</div>
+	<div th:replace="~{fragments/page :: buttons}"></div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
 	<p data-tx="t0020">Le numéro ☎ <th:block th:text="${number.shortcut}"></th:block> pourrait appartenir au même raccordement que les numéros suivants dans la base de données :</p>
@@ -141,7 +108,7 @@
 			<img alt="Captcha" data-tx="t0043" th:src="${captchaSrc}"/>
 
 			<div class="control has-icons-left has-icons-right">
-			    <input class="input" data-tx="t0044" name="captcha" placeholder="Texte dans l'image ci-dessus" type="text"/>
+			    <input autocomplete="off" class="input" data-tx="t0044" name="captcha" placeholder="Texte dans l'image ci-dessus" type="text"/>
  
 			    <span class="icon is-small is-left">
 			      <i class="fa-solid fa-key"></i>

@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock</artifactId>
-	<version>1.7.8-SNAPSHOT</version>
+	<version>1.7.16-SNAPSHOT</version>
 	
 	<name>PhoneBlock</name>
 	<description>Ad blocker for your Fritz!Box</description>
@@ -29,7 +29,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-	  <tag>1.6.14</tag>
+	  <tag>1.7.15</tag>
   	</scm>
   	
   	<packaging>war</packaging>
@@ -505,35 +505,41 @@
 			    </execution>
 			  </executions>
 			</plugin>
-            <plugin>
-             <artifactId>maven-antrun-plugin</artifactId>
-             <executions>
-               <execution>
-			     <id>unzip-ip4-database</id>
-			     <phase>process-resources</phase>
-				 <goals>
-				   <goal>run</goal>
-				 </goals>
-				 <configuration>
-				   <tasks>
-				     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
-				   </tasks>
-				 </configuration>
-               </execution>
-               <execution>
-			     <id>unzip-ip6-database</id>
-			     <phase>process-resources</phase>
-                 <configuration>
-                   <tasks>
-                     <unzip src="${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP" dest="${project.build.directory}/IP2LOCATION" />
-                   </tasks>
-                 </configuration>
-                 <goals>
-                   <goal>run</goal>
-                 </goals>
-               </execution>
-             </executions>
-           </plugin>			
+			
+			<plugin>
+			  <groupId>org.codehaus.mojo</groupId>
+			  <artifactId>truezip-maven-plugin</artifactId>
+			  <version>1.2</version>
+			  <executions>
+			    <execution>
+			      <id>unzip-ip4-database</id>
+			      <goals>
+			        <goal>copy</goal>
+			      </goals>
+			      <phase>process-resources</phase>
+			      <configuration>
+			        <fileset>
+			          <directory>${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.BIN.ZIP</directory>
+			          <outputDirectory>${project.build.directory}/IP2LOCATION</outputDirectory>
+			        </fileset>
+			      </configuration>
+			    </execution>
+
+			    <execution>
+			      <id>unzip-ip6-database</id>
+			      <goals>
+			        <goal>copy</goal>
+			      </goals>
+			      <phase>process-resources</phase>
+			      <configuration>
+			        <fileset>
+			          <directory>${project.build.directory}/IP2LOCATION/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP</directory>
+			          <outputDirectory>${project.build.directory}/IP2LOCATION</outputDirectory>
+			        </fileset>
+			      </configuration>
+			    </execution>
+			  </executions>
+			</plugin>
 			
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
