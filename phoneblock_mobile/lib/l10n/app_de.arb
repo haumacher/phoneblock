@@ -614,10 +614,5 @@
   "commentHint": "Warum ist das Spam? (optional)",
   "@commentHint": {
     "description": "Comment text field hint"
-  },
-
-  "skip": "Überspringen",
-  "@skip": {
-    "description": "Skip button"
   }
 }

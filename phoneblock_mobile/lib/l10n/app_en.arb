@@ -211,7 +211,5 @@
 
   "addComment": "Add Comment (Optional)",
 
-  "commentHint": "Why is this spam? (optional)",
-
-  "skip": "Skip"
+  "commentHint": "Why is this spam? (optional)"
 }

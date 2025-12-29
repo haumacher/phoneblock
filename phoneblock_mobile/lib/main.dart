@@ -1180,7 +1180,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Shows a dialog to optionally enter a comment/reason for the rating.
-  /// Returns the comment text or null if cancelled. Returns empty string if skipped.
+  /// Returns the comment text or null if cancelled.
   Future<String?> _showCommentDialog(BuildContext context) async {
     final controller = TextEditingController();
 
@@ -1202,10 +1202,6 @@ class _MainScreenState extends State<MainScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(null),
               child: Text(context.l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(''),
-              child: Text(context.l10n.skip),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(controller.text),

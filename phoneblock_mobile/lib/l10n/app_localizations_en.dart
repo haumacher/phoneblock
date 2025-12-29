@@ -390,7 +390,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commentHint => 'Why is this spam? (optional)';
-
-  @override
-  String get skip => 'Skip';
 }

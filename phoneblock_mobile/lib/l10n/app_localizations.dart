@@ -733,12 +733,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Warum ist das Spam? (optional)'**
   String get commentHint;
-
-  /// Skip button
-  ///
-  /// In de, this message translates to:
-  /// **'Überspringen'**
-  String get skip;
 }
 
 class _AppLocalizationsDelegate
