@@ -134,7 +134,7 @@ public class CallRetentionService implements ServletContextListener {
         
         long cutoffTime = System.currentTimeMillis() - 24 * 60 * 60 * 1000 * switch (retentionPeriod) {
 			case MONTH -> 30L;
-			case NEVER -> Long.MAX_VALUE;
+			case NEVER -> throw new AssertionError("Unreachable.");
 			case QUARTER -> 90L;
 			case WEEK -> 7L;
 			case YEAR -> 365L;
