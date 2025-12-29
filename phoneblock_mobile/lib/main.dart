@@ -55,6 +55,20 @@ Future<String> _getPhoneBlockLoginUrl() async {
   return '$pbBaseUrl/mobile/login?tokenLabel=$tokenLabel';
 }
 
+/// Builds a PhoneBlock URL with authentication token parameter if available.
+/// This allows opening PhoneBlock pages in external browser with automatic login.
+/// If no token is available, returns the plain URL.
+Future<String> buildPhoneBlockUrlWithToken(String path) async {
+  String? authToken = await getAuthToken();
+  if (authToken == null) {
+    return '$pbBaseUrl$path';
+  }
+
+  final encodedToken = Uri.encodeComponent(authToken);
+  final separator = path.contains('?') ? '&' : '?';
+  return '$pbBaseUrl$path${separator}token=$encodedToken';
+}
+
 /// Retention period constant for infinite retention (keep all calls)
 const int retentionInfinite = -1;
 
@@ -1339,6 +1353,25 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  /// Opens a PhoneBlock URL in the external browser with authentication.
+  /// If a token is available, the URL is augmented with a token parameter for automatic login.
+  /// If no token is available, opens the URL anyway (user will see login page).
+  Future<void> _openPhoneBlockInBrowser(String path) async {
+    final url = await buildPhoneBlockUrlWithToken(path);
+    final uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.errorOpeningPhoneBlock),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// Formats the timestamp for display.
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
@@ -1992,9 +2025,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: Text(context.l10n.website),
                   subtitle: Text(context.l10n.websiteUrl),
                   onTap: () async {
-                    final url = Uri.parse('https://phoneblock.net');
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    final url = await buildPhoneBlockUrlWithToken('/');
+                    final uri = Uri.parse(url);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
                     }
                   },
                 ),
@@ -2026,9 +2060,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      final url = Uri.parse('https://phoneblock.net/phoneblock/support');
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      final url = await buildPhoneBlockUrlWithToken('/support');
+                      final uri = Uri.parse(url);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
                       }
                     },
                     icon: const Icon(Icons.favorite),

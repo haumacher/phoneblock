@@ -104,20 +104,20 @@ public abstract class LoginFilter implements Filter {
 		if (authHeader != null) {
 			if (authHeader.startsWith(BEARER_AUTH)) {
 				String token = authHeader.substring(BEARER_AUTH.length());
-				
+
 				AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), false);
 				if (authorization != null) {
 					String userName = authorization.getUserName();
-					
+
 					if (checkTokenAuthorization(req, authorization)) {
 						LOG.info("Accepted bearer token {}...({}) for user {}.", token.substring(0, 16), token, authorization.getId(), userName);
-						
+
 						setUser(req, userName);
-						
+
 						loggedIn(req, resp, userName, chain);
 						return;
 					} else {
-						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.", 
+						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.",
 								req.getServletPath(), token.substring(0, 16), userName);
 					}
 				}
@@ -130,7 +130,28 @@ public abstract class LoginFilter implements Filter {
 				}
 			}
 		}
-		
+
+		// Check for token in URL parameter (for browser links from mobile app)
+		String tokenParam = req.getParameter("token");
+		if (tokenParam != null && !tokenParam.trim().isEmpty()) {
+			AuthToken authorization = db.checkAuthToken(tokenParam, System.currentTimeMillis(), req.getHeader("User-Agent"), false);
+			if (authorization != null) {
+				String userName = authorization.getUserName();
+
+				if (checkTokenAuthorization(req, authorization)) {
+					LOG.info("Accepted token parameter {}...({}) for user {}.", tokenParam.substring(0, 16), tokenParam, authorization.getId(), userName);
+
+					setUser(req, userName);
+
+					loggedIn(req, resp, userName, chain);
+					return;
+				} else {
+					LOG.info("Access to {} with token parameter {}... rejected due to privilege mismatch for user {}.",
+							req.getServletPath(), tokenParam.substring(0, 16), userName);
+				}
+			}
+		}
+
 		requestLogin(req, resp, chain);
 	}
 
