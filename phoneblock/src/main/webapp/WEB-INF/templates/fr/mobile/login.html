@@ -12,13 +12,15 @@
 	<h1 data-tx="t0001">Associer un compte PhoneBlock</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0002">Pour associer ton compte PhoneBlock à ton appareil mobile, tu dois d'abord t'inscrire ou créer un compte. Tu as besoin d'un compte pour que ton téléphone mobile puisse utiliser la base de données PhoneBlock pour filtrer les appels.</p>
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">Pour associer ton compte PhoneBlock à <strong th:text="${label}">ton appareil mobile</strong>, tu dois d'abord t'inscrire ou créer un compte. Tu as besoin d'un compte pour que ton appareil mobile puisse utiliser la base de données PhoneBlock pour filtrer les appels.</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">Pour associer ton compte PhoneBlock à ton appareil mobile, tu dois d'abord t'inscrire ou créer un compte. Tu as besoin d'un compte pour que ton téléphone mobile puisse utiliser la base de données PhoneBlock pour filtrer les appels.</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0003">Tu peux maintenant connecter ton compte PhoneBlock <code th:text="${userName}"></code> à ton appareil mobile :</p>
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">Tu peux maintenant connecter ton compte PhoneBlock <code th:text="${userName}"></code> à <strong th:text="${label}">ton appareil mobile</strong> :</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">Tu peux maintenant connecter ton compte PhoneBlock <code th:text="${userName}"></code> à ton appareil mobile :</p>
 
 		<form method="post" th:action="@{/create-token}">
 			<input name="label" th:value="${label}" type="hidden"/>

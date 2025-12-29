@@ -12,7 +12,12 @@
 	<h1 data-tx="t0001">PhoneBlock-Account verknüpfen</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0002">
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">
+			Um Deinen PhoneBlock-Account mit <strong th:text="${label}">Deinem Mobilgerät</strong> zu verknüpfen, musst Dich zuerst anmelden
+			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank
+			für die Filterung von Anrufen nutzen kann.
+		</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">
 			Um Deinen PhoneBlock-Account mit Deinem Mobilgerät zu verknüpfen, musst Dich zuerst anmelden
 			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank
 			für die Filterung von Anrufen nutzen kann.
@@ -22,7 +27,10 @@
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0003">
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">
+			Jetzt kannst Du Deinen PhoneBlock-Account <code th:text="${userName}"></code> mit <strong th:text="${label}">Deinem Mobilgerät</strong> verbinden:
+		</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">
 			Jetzt kannst Du Deinen PhoneBlock-Account <code th:text="${userName}"></code> mit Deinem Mobilgerät verbinden:
 		</p>
 

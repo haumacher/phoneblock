@@ -12,13 +12,15 @@
 	<h1 data-tx="t0001">Link til PhoneBlock-konto</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0002">For at knytte din PhoneBlock-konto til din mobile enhed skal du først logge ind eller oprette en konto. Du skal bruge en konto, så din mobiltelefon kan bruge PhoneBlock-databasen til at filtrere opkald.</p>
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">For at forbinde din PhoneBlock-konto med <strong th:text="${label}">din mobile enhed</strong> skal du først logge ind eller oprette en konto. Du skal bruge en konto, så din mobiltelefon kan bruge PhoneBlock-databasen til at filtrere opkald.</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">For at knytte din PhoneBlock-konto til din mobile enhed skal du først logge ind eller oprette en konto. Du skal bruge en konto, så din mobiltelefon kan bruge PhoneBlock-databasen til at filtrere opkald.</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0003">Nu kan du forbinde din PhoneBlock-konto <code th:text="${userName}"></code> med din mobile enhed:</p>
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">Nu kan du forbinde din PhoneBlock-konto <code th:text="${userName}"></code> med <strong th:text="${label}">din mobile enhed</strong>:</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">Nu kan du forbinde din PhoneBlock-konto <code th:text="${userName}"></code> med din mobile enhed:</p>
 
 		<form method="post" th:action="@{/create-token}">
 			<input name="label" th:value="${label}" type="hidden"/>

@@ -12,13 +12,15 @@
 	<h1 data-tx="t0001">链接 PhoneBlock 账户</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0002">要将您的 PhoneBlock 账户与移动设备连接，您必须先登录或创建一个账户。您需要一个账户，这样您的手机才能使用 PhoneBlock 数据库过滤通话。</p>
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">要将您的 PhoneBlock 帐户与<strong th:text="${label}">您的移动设备</strong>连接起来，您必须先登录或创建一个帐户。您需要一个账户，以便您的手机可以使用 PhoneBlock 数据库过滤通话。</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">要将您的 PhoneBlock 账户与移动设备连接，您必须先登录或创建一个账户。您需要一个账户，这样您的手机才能使用 PhoneBlock 数据库过滤通话。</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0003">现在您可以将 PhoneBlock 账户 <code th:text="${userName}"></code> 连接到移动设备：</p>
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">现在你可以将你的 PhoneBlock 账户<code th:text="${userName}"></code>与你的移动设备<strong th:text="${label}"></strong>连接起来：</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">现在您可以将 PhoneBlock 账户 <code th:text="${userName}"></code> 连接到移动设备：</p>
 
 		<form method="post" th:action="@{/create-token}">
 			<input name="label" th:value="${label}" type="hidden"/>

@@ -254,6 +254,35 @@ When modifying `phoneblock-shared/`:
 3. Run `bin/convert-audio.sh` to generate PCMA/PCMA-WB versions
 4. Test with answer bot using test-prefix configuration
 
+### Internationalization (I18N)
+
+**IMPORTANT**: The `data-tx` attributes in HTML templates are auto-generated magic attributes that link translations across multiple language files.
+
+Rules when modifying templates:
+- **Never duplicate `data-tx` attributes** - Each unique text should have only one `data-tx` reference
+- **Remove `data-tx` when changing text content** - Modified text breaks the I18N linkage
+- **Keep `data-tx` on unmodified fallback text** - Original translations remain linked
+- I18N generation tool automatically assigns `data-tx` values during build
+
+Example - Adding conditional device name display:
+```html
+<!-- WRONG: Duplicated data-tx -->
+<p th:if="${!#strings.isEmpty(label)}" data-tx="t0002">
+    Link to <strong th:text="${label}">device</strong>
+</p>
+<p th:if="${#strings.isEmpty(label)}" data-tx="t0002">
+    Link to your device
+</p>
+
+<!-- CORRECT: Remove data-tx from modified version -->
+<p th:if="${!#strings.isEmpty(label)}">
+    Link to <strong th:text="${label}">device</strong>
+</p>
+<p th:if="${#strings.isEmpty(label)}" data-tx="t0002">
+    Link to your device
+</p>
+```
+
 ## Configuration Files
 
 **Required for local development:**
