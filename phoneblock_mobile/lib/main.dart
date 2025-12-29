@@ -1596,7 +1596,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   int _minVotes = 4;
-  bool _blockRanges = false;
+  bool _blockRanges = true;
   int _minRangeVotes = 10;
   int _retentionDays = retentionDefault;
   bool _isLoading = true;
@@ -1632,7 +1632,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       setState(() {
         _minVotes = minVotesResult ?? 4;
-        _blockRanges = blockRangesResult ?? false;
+        _blockRanges = blockRangesResult ?? true;
         _minRangeVotes = minRangeVotesResult ?? 10;
         _retentionDays = retentionDaysResult ?? retentionDefault;
         _minVotesController.text = _minVotes.toString();

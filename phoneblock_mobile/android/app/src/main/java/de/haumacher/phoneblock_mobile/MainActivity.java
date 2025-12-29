@@ -340,7 +340,7 @@ public class MainActivity extends FlutterActivity {
 
     private boolean getBlockRanges() {
         SharedPreferences prefs = getPreferences(this);
-        boolean value = prefs.getBoolean("block_ranges", false);
+        boolean value = prefs.getBoolean("block_ranges", true);
         Log.d(MainActivity.class.getName(), "getBlockRanges: " + value);
         return value;
     }
