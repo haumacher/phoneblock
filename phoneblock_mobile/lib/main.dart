@@ -1600,18 +1600,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _minRangeVotes = 10;
   int _retentionDays = retentionDefault;
   bool _isLoading = true;
-  late TextEditingController _minRangeVotesController;
 
   @override
   void initState() {
     super.initState();
-    _minRangeVotesController = TextEditingController(text: _minRangeVotes.toString());
     _loadSettings();
   }
 
   @override
   void dispose() {
-    _minRangeVotesController.dispose();
     super.dispose();
   }
 
@@ -1632,7 +1629,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _blockRanges = blockRangesResult ?? true;
         _minRangeVotes = minRangeVotesResult ?? 10;
         _retentionDays = retentionDaysResult ?? retentionDefault;
-        _minRangeVotesController.text = _minRangeVotes.toString();
         _isLoading = false;
       });
 
@@ -1853,30 +1849,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context.l10n.rangesBlockedAfterReports(_minRangeVotes),
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
-                    trailing: SizedBox(
-                      width: 80,
-                      child: TextField(
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                        controller: _minRangeVotesController,
-                        onChanged: (value) {
-                          final newValue = int.tryParse(value);
-                          if (newValue != null && newValue > 0) {
-                            setState(() {
-                              _minRangeVotes = newValue;
-                            });
-                          }
-                        },
-                        onSubmitted: (value) {
-                          final newValue = int.tryParse(value);
-                          if (newValue != null && newValue > 0) {
-                            _saveMinRangeVotes(newValue);
-                          }
-                        },
-                      ),
+                    trailing: DropdownButton<int>(
+                      value: _minRangeVotes,
+                      items: const [
+                        DropdownMenuItem(value: 10, child: Text('10')),
+                        DropdownMenuItem(value: 20, child: Text('20')),
+                        DropdownMenuItem(value: 50, child: Text('50')),
+                        DropdownMenuItem(value: 100, child: Text('100')),
+                        DropdownMenuItem(value: 500, child: Text('500')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          _saveMinRangeVotes(value);
+                        }
+                      },
                     ),
                   ),
                 const Divider(),
