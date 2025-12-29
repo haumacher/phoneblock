@@ -157,32 +157,6 @@ class ScreenedCallsDatabase {
     return result.map((map) => ScreenedCall.fromMap(map)).toList();
   }
 
-  /// Retrieves screened calls within the retention period.
-  /// retentionDays: Number of days to keep calls. Use retentionInfinite constant for all calls.
-  Future<List<ScreenedCall>> getScreenedCallsInRetentionPeriod(int retentionDays) async {
-    const retentionInfinite = -1; // Infinite retention constant
-    final db = await database;
-
-    if (retentionDays == retentionInfinite) {
-      // Infinite retention, return all calls
-      final result = await db.query(
-        'screened_calls',
-        orderBy: 'timestamp DESC',
-      );
-      return result.map((map) => ScreenedCall.fromMap(map)).toList();
-    }
-
-    final cutoffTime = DateTime.now().subtract(Duration(days: retentionDays)).millisecondsSinceEpoch;
-    final result = await db.query(
-      'screened_calls',
-      where: 'timestamp >= ?',
-      whereArgs: [cutoffTime],
-      orderBy: 'timestamp DESC',
-    );
-
-    return result.map((map) => ScreenedCall.fromMap(map)).toList();
-  }
-
   /// Retrieves screened calls with pagination.
   Future<List<ScreenedCall>> getScreenedCalls({int limit = 50, int offset = 0}) async {
     final db = await database;

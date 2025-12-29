@@ -546,8 +546,7 @@ class _MainScreenState extends State<MainScreen> {
     });
 
     try {
-      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
-      final calls = await ScreenedCallsDatabase.instance.getScreenedCallsInRetentionPeriod(retentionDays);
+      final calls = await ScreenedCallsDatabase.instance.getAllScreenedCalls();
       setState(() {
         _screenedCalls = calls;
         _isLoading = false;
