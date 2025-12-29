@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -649,23 +650,25 @@ public class DB {
 				}
 				
 				result.setUserName(users.getUserName(result.getUserId()));
-				
+
 				// Remember token, since an update is sent to the client.
 				result.setToken(token);
-				
-				// Rate limit DB modification.
-				if (now - result.getLastAccess() > RATE_LIMIT_MS) {
+
+				// Update DB if rate limit exceeded or user agent changed.
+				boolean userAgentChanged = !Objects.equals(result.getUserAgent(), userAgent);
+				if (now - result.getLastAccess() > RATE_LIMIT_MS || userAgentChanged) {
 					users.updateAuthToken(result.getId(), now, userAgent);
 					result.setLastAccess(now);
-			
+					result.setUserAgent(userAgent);
+
 					if (renew) {
 						LOG.info("Renewing autorization token for user {}.", result.getUserName());
 						renewToken(users, result);
 					}
-					
+
 					session.commit();
 				}
-				
+
 				return result;
 			}
 		} catch (IOException e) {
