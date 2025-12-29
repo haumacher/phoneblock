@@ -7,10 +7,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.telecom.Call;
 import android.telecom.CallScreeningService;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -78,7 +83,16 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
-        String number = handle.getSchemeSpecificPart();
+        String rawNumber = handle.getSchemeSpecificPart();
+
+        // Normalize to international format for consistent hashing
+        String number = normalizeToInternationalFormat(rawNumber);
+        if (number == null) {
+            // Unable to normalize, accept the call
+            Log.w(CallChecker.class.getName(), "Unable to normalize number: " + rawNumber);
+            acceptCall(callDetails);
+            return;
+        }
 
         AtomicBoolean canceled = new AtomicBoolean();
 
@@ -179,6 +193,35 @@ public class CallChecker extends CallScreeningService {
         connection.setRequestProperty("Authorization", "Bearer: " + authToken);
         connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
         return new JSONObject(readTextContent(connection));
+    }
+
+    /**
+     * Normalizes a phone number to E.164 international format.
+     * This ensures consistent hashing regardless of how the number is formatted.
+     *
+     * @param rawNumber Phone number in any format
+     * @return Phone number in E.164 format (e.g., +4917650642602) or null if parsing fails
+     */
+    private String normalizeToInternationalFormat(String rawNumber) {
+        try {
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+
+            // Get default country code from device
+            TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+            String countryIso = tm != null ? tm.getNetworkCountryIso() : null;
+            if (countryIso == null || countryIso.isEmpty()) {
+                countryIso = "DE"; // Default to Germany if unable to determine
+            }
+
+            // Parse the number
+            Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(rawNumber, countryIso.toUpperCase());
+
+            // Format in E.164 international format (e.g., +4917650642602)
+            return phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
+        } catch (NumberParseException e) {
+            Log.e(CallChecker.class.getName(), "Error parsing phone number: " + rawNumber, e);
+            return null;
+        }
     }
 
     /**
