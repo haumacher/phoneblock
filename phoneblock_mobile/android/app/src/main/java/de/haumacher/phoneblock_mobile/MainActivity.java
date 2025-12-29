@@ -31,6 +31,9 @@ public class MainActivity extends FlutterActivity {
     /** Constant for infinite retention period (keep all calls) */
     public static final int RETENTION_INFINITE = -1;
 
+    /** Default retention period in days (3 days for privacy) */
+    public static final int RETENTION_DEFAULT = 3;
+
     private MethodChannel _channel;
     private static MainActivity _instance;
 
@@ -363,7 +366,7 @@ public class MainActivity extends FlutterActivity {
 
     private int getRetentionDays() {
         SharedPreferences prefs = getPreferences(this);
-        int value = prefs.getInt("retention_days", RETENTION_INFINITE);
+        int value = prefs.getInt("retention_days", RETENTION_DEFAULT);
         Log.d(MainActivity.class.getName(), "getRetentionDays: " + value);
         return value;
     }

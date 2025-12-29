@@ -25,6 +25,9 @@ const String pbApiTest = '$pbBaseUrl/api/test';
 /// Retention period constant for infinite retention (keep all calls)
 const int retentionInfinite = -1;
 
+/// Default retention period in days (3 days for privacy)
+const int retentionDefault = 3;
+
 const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 
 /// Global stream controller to broadcast when new calls are screened.
@@ -83,7 +86,7 @@ void main() async {
       await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
       // Clean up old calls based on retention period when a new call arrives
-      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionInfinite;
+      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
       await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
       // Notify any listeners (e.g., MainScreen) about the new call
@@ -104,7 +107,7 @@ void main() async {
   platform.invokeMethod("setQueryUrl", queryUrl);
 
   // Clean up old screened calls based on retention period
-  final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionInfinite;
+  final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
   runApp(MaterialApp.router(
@@ -543,7 +546,7 @@ class _MainScreenState extends State<MainScreen> {
     });
 
     try {
-      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionInfinite;
+      final retentionDays = await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
       final calls = await ScreenedCallsDatabase.instance.getScreenedCallsInRetentionPeriod(retentionDays);
       setState(() {
         _screenedCalls = calls;
@@ -1590,7 +1593,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _minVotes = 4;
   bool _blockRanges = false;
   int _minRangeVotes = 10;
-  int _retentionDays = retentionInfinite;
+  int _retentionDays = retentionDefault;
   bool _isLoading = true;
   late TextEditingController _minVotesController;
   late TextEditingController _minRangeVotesController;
@@ -1626,7 +1629,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _minVotes = minVotesResult ?? 4;
         _blockRanges = blockRangesResult ?? false;
         _minRangeVotes = minRangeVotesResult ?? 10;
-        _retentionDays = retentionDaysResult ?? retentionInfinite;
+        _retentionDays = retentionDaysResult ?? retentionDefault;
         _minVotesController.text = _minVotes.toString();
         _minRangeVotesController.text = _minRangeVotes.toString();
         _isLoading = false;
