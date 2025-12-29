@@ -14,13 +14,46 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
 const String contextPath = kDebugMode ? "/pb-test" : "/phoneblock";
 const String pbBaseUrl = 'https://phoneblock.net$contextPath';
-const String pbLoginUrl = '$pbBaseUrl/mobile/login';
 const String pbApiTest = '$pbBaseUrl/api/test';
+
+/// Gets the device name for use in the token label.
+/// Returns a formatted string like "Samsung Galaxy S21" or "Google Pixel 6".
+Future<String> _getDeviceName() async {
+  final deviceInfo = DeviceInfoPlugin();
+  try {
+    final androidInfo = await deviceInfo.androidInfo;
+    // Try to build a user-friendly device name
+    final manufacturer = androidInfo.manufacturer;
+    final model = androidInfo.model;
+
+    // Capitalize manufacturer name
+    final capitalizedManufacturer = manufacturer.isNotEmpty
+        ? manufacturer[0].toUpperCase() + manufacturer.substring(1)
+        : manufacturer;
+
+    // If model already contains manufacturer, don't duplicate
+    if (model.toLowerCase().startsWith(manufacturer.toLowerCase())) {
+      return model;
+    }
+
+    return '$capitalizedManufacturer $model';
+  } catch (e) {
+    return 'Android Device';
+  }
+}
+
+/// Builds the PhoneBlock login URL with device-specific label parameter.
+Future<String> _getPhoneBlockLoginUrl() async {
+  final deviceName = await _getDeviceName();
+  final label = Uri.encodeComponent('PhoneBlock Mobile on $deviceName');
+  return '$pbBaseUrl/mobile/login?label=$label';
+}
 
 /// Retention period constant for infinite retention (keep all calls)
 const int retentionInfinite = -1;
@@ -339,7 +372,8 @@ class _SetupWizardState extends State<SetupWizard> {
   }
 
   Future<void> _connectToPhoneBlock() async {
-    bool ok = await launchUrl(Uri.parse(pbLoginUrl));
+    final loginUrl = await _getPhoneBlockLoginUrl();
+    bool ok = await launchUrl(Uri.parse(loginUrl));
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.errorOpeningPhoneBlock)),
@@ -1467,7 +1501,8 @@ Future<bool> validateAuthToken() async {
 }
 
 void registerPhoneBlock(BuildContext context) async {
-  bool ok = await launchUrl(Uri.parse(pbLoginUrl));
+  final loginUrl = await _getPhoneBlockLoginUrl();
+  bool ok = await launchUrl(Uri.parse(loginUrl));
   if (!ok && context.mounted) {
     final snackBar = SnackBar(content: Text(context.l10n.failedToOpenPhoneBlock));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);

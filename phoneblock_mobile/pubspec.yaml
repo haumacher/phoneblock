@@ -47,6 +47,7 @@ dependencies:
   path: ^1.9.0
   webview_flutter: ^4.10.0
   package_info_plus: ^8.1.2
+  device_info_plus: ^11.2.0
 
 dev_dependencies:
   flutter_test:
