@@ -84,29 +84,35 @@ public class PhoneNumberUtilsTest {
         assertEquals("+4917650642602", result);
     }
 
-    // Test invalid numbers return null
+    // Test various edge case numbers
     @Test
-    public void testNormalizeInvalidNumber_TooShort() {
-        // Note: libphonenumber's isPossibleNumber is lenient and may accept very short numbers
-        // This test documents actual behavior - "123" gets formatted as "+49123"
+    public void testNormalizeShortNumber() {
+        // libphonenumber accepts short numbers if they parse successfully
         String result = PhoneNumberUtils.normalizeToInternationalFormat("123", "DE");
-        // libphonenumber considers this "possible" even though it's not valid
+        // Short numbers that parse successfully get formatted
         assertNotNull(result);
     }
 
     @Test
     public void testNormalizeInvalidNumber_TooLong() {
         String result = PhoneNumberUtils.normalizeToInternationalFormat("01765064260201234567890", "DE");
+        // Extremely long numbers fail to parse
         assertNull(result);
     }
 
     @Test
-    public void testNormalizeInvalidNumber_Letters() {
-        // Note: libphonenumber interprets letters as phone keypad numbers (A=2, B=2, C=2)
-        // This test documents actual behavior - "0176ABC" gets converted to "0176222"
+    public void testNormalizeNumberWithLetters() {
+        // libphonenumber interprets letters as phone keypad numbers (A=2, B=2, C=2)
         String result = PhoneNumberUtils.normalizeToInternationalFormat("0176ABC", "DE");
-        // libphonenumber converts letters to their numeric keypad equivalents
+        // Letters are converted to their numeric keypad equivalents
         assertEquals("+49176222", result);
+    }
+
+    @Test
+    public void testNormalizeGermanLandline_WithLeadingZero() {
+        // Test the specific number from the logs: 022376922894
+        String result = PhoneNumberUtils.normalizeToInternationalFormat("022376922894", "DE");
+        assertEquals("+4922376922894", result);
     }
 
     @Test

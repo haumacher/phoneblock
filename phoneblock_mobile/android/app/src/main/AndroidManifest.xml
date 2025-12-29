@@ -41,6 +41,16 @@
                     android:host="phoneblock.net"
                     android:path="/phoneblock/mobile/response" />
             </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="phoneblock.net"
+                    android:path="/pb-test/mobile/response" />
+            </intent-filter>
         </activity>
 
         <service android:name="de.haumacher.phoneblock_mobile.CallChecker"

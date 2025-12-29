@@ -34,12 +34,8 @@ public class PhoneNumberUtils {
             // Parse the number
             Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(rawNumber, region.toUpperCase());
 
-            // Validate that it's a possible number
-            if (!phoneUtil.isPossibleNumber(phoneNumber)) {
-                return null;
-            }
-
             // Format in E.164 international format (e.g., +4917650642602)
+            // Note: We rely on parse() to validate - if it parses successfully, we use it
             return phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
         } catch (NumberParseException e) {
             return null;
