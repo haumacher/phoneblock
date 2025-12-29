@@ -11,7 +11,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
@@ -101,7 +100,7 @@ public class CallRetentionService implements ServletContextListener {
             // Get all answerbots with retention enabled (period != NEVER)
             for (DBAnswerbotInfo bot : users.getAnswerbotsWithRetention()) {
                 try {
-                    int cleaned = cleanupBot(users, bot);
+                    int cleaned = db.removeOutdatedCalls(users, bot);
                     totalCleaned += cleaned;
                 } catch (Exception ex) {
                     LOG.error("Failed to cleanup calls for bot " + bot.getId(), ex);
@@ -117,35 +116,6 @@ public class CallRetentionService implements ServletContextListener {
         } catch (Exception ex) {
             LOG.error("Call retention cleanup failed", ex);
         }
-    }
-    
-    /**
-     * Cleans up old call records for a specific bot.
-     * 
-     * @param users The database mapper
-     * @param bot The bot information including retention settings
-     * @return Number of records cleaned up
-     */
-    private int cleanupBot(Users users, DBAnswerbotInfo bot) {
-        RetentionPeriod retentionPeriod = bot.getRetentionPeriod();
-        if (retentionPeriod == RetentionPeriod.NEVER) {
-            return 0;
-        }
-        
-        long cutoffTime = System.currentTimeMillis() - 24 * 60 * 60 * 1000 * switch (retentionPeriod) {
-			case MONTH -> 30L;
-			case NEVER -> throw new AssertionError("Unreachable.");
-			case QUARTER -> 90L;
-			case WEEK -> 7L;
-			case YEAR -> 365L;
-        };
-        
-        int deleted = users.deleteCallsOlderThan(bot.getId(), cutoffTime);
-        
-        LOG.debug("Cleaned {} calls older than {} for bot {} (cutoff: {}).", 
-                deleted, retentionPeriod, bot.getId(), cutoffTime);
-        
-		return deleted;
     }
     
 }
