@@ -92,6 +92,10 @@ void main() async {
   // This handles calls that were screened while the app was not running
   await syncStoredScreeningResults();
 
+  // Set the query URL on every startup to ensure it's updated after app updates
+  final queryUrl = '$pbBaseUrl/api/check?sha1={sha1}&format=json';
+  platform.invokeMethod("setQueryUrl", queryUrl);
+
   runApp(MaterialApp.router(
       routerConfig: router,
       localizationsDelegates: const [
@@ -1355,9 +1359,6 @@ class LoginFailed extends StatelessWidget {
 
 void setAuthToken(String token) {
   platform.invokeMethod("setAuthToken", token);
-  // Also set the query URL based on debug mode
-  final queryUrl = '$pbBaseUrl/api/check?sha1={sha1}&format=json';
-  platform.invokeMethod("setQueryUrl", queryUrl);
 }
 
 Future<String?> getAuthToken() async {
