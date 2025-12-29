@@ -167,14 +167,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteCall => 'Delete';
 
   @override
-  String get confirmReportLegitimate => 'Report as legitimate?';
-
-  @override
-  String confirmReportLegitimateMessage(String phoneNumber) {
-    return 'Do you really want to report $phoneNumber as a legitimate number?';
-  }
-
-  @override
   String get report => 'Report';
 
   @override

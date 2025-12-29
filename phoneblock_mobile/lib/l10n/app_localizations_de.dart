@@ -168,14 +168,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deleteCall => 'Löschen';
 
   @override
-  String get confirmReportLegitimate => 'Als legitim melden?';
-
-  @override
-  String confirmReportLegitimateMessage(String phoneNumber) {
-    return 'Möchten Sie $phoneNumber wirklich als legitime Nummer melden?';
-  }
-
-  @override
   String get report => 'Melden';
 
   @override

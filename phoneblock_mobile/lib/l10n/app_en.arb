@@ -95,10 +95,6 @@
 
   "deleteCall": "Delete",
 
-  "confirmReportLegitimate": "Report as legitimate?",
-
-  "confirmReportLegitimateMessage": "Do you really want to report {phoneNumber} as a legitimate number?",
-
   "report": "Report",
 
   "notLoggedIn": "Not logged in. Please log in.",

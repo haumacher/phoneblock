@@ -936,37 +936,7 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Reports a call as legitimate.
   Future<void> _reportAsLegitimate(BuildContext context, ScreenedCall call) async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(context.l10n.confirmReportLegitimate),
-          content: Text(
-            context.l10n.confirmReportLegitimateMessage(call.phoneNumber),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(context.l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(foregroundColor: Colors.green),
-              child: Text(context.l10n.report),
-            ),
-          ],
-        );
-      },
-    );
-
-    // User cancelled
-    if (confirmed != true) {
-      return;
-    }
-
-    // Show comment dialog after confirmation
-    if (!context.mounted) return;
+    // Show comment dialog
     final comment = await _showCommentDialog(
       context,
       title: context.l10n.addCommentLegitimate,

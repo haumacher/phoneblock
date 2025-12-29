@@ -256,21 +256,6 @@
     "description": "Menu item to delete call"
   },
 
-  "confirmReportLegitimate": "Als legitim melden?",
-  "@confirmReportLegitimate": {
-    "description": "Confirm report as legitimate dialog title"
-  },
-
-  "confirmReportLegitimateMessage": "Möchten Sie {phoneNumber} wirklich als legitime Nummer melden?",
-  "@confirmReportLegitimateMessage": {
-    "description": "Confirm report as legitimate message",
-    "placeholders": {
-      "phoneNumber": {
-        "type": "String"
-      }
-    }
-  },
-
   "report": "Melden",
   "@report": {
     "description": "Report button"

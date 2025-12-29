@@ -380,18 +380,6 @@ abstract class AppLocalizations {
   /// **'Löschen'**
   String get deleteCall;
 
-  /// Confirm report as legitimate dialog title
-  ///
-  /// In de, this message translates to:
-  /// **'Als legitim melden?'**
-  String get confirmReportLegitimate;
-
-  /// Confirm report as legitimate message
-  ///
-  /// In de, this message translates to:
-  /// **'Möchten Sie {phoneNumber} wirklich als legitime Nummer melden?'**
-  String confirmReportLegitimateMessage(String phoneNumber);
-
   /// Report button
   ///
   /// In de, this message translates to:
