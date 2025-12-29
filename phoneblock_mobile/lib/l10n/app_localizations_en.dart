@@ -372,13 +372,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retentionInfinite => 'Keep all calls';
 
   @override
-  String get retentionOneDay => '1 day';
-
-  @override
-  String get retentionThreeDays => '3 days';
-
-  @override
-  String get retentionSevenDays => '7 days';
+  String retentionDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get retentionInfiniteOption => 'Infinite';

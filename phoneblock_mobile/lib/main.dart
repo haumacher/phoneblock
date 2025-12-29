@@ -1894,9 +1894,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: DropdownButton<int>(
                     value: _retentionDays,
                     items: [
-                      DropdownMenuItem(value: 1, child: Text(context.l10n.retentionOneDay)),
-                      DropdownMenuItem(value: 3, child: Text(context.l10n.retentionThreeDays)),
-                      DropdownMenuItem(value: 7, child: Text(context.l10n.retentionSevenDays)),
+                      DropdownMenuItem(value: 1, child: Text(context.l10n.retentionDays(1))),
+                      DropdownMenuItem(value: 3, child: Text(context.l10n.retentionDays(3))),
+                      DropdownMenuItem(value: 7, child: Text(context.l10n.retentionDays(7))),
                       DropdownMenuItem(value: -1, child: Text(context.l10n.retentionInfiniteOption)),
                     ],
                     onChanged: (value) {

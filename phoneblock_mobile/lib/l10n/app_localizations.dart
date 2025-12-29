@@ -710,23 +710,11 @@ abstract class AppLocalizations {
   /// **'Alle Anrufe behalten'**
   String get retentionInfinite;
 
-  /// 1 day retention option
+  /// Number of days for retention period
   ///
   /// In de, this message translates to:
-  /// **'1 Tag'**
-  String get retentionOneDay;
-
-  /// 3 days retention option
-  ///
-  /// In de, this message translates to:
-  /// **'3 Tage'**
-  String get retentionThreeDays;
-
-  /// 7 days retention option
-  ///
-  /// In de, this message translates to:
-  /// **'7 Tage'**
-  String get retentionSevenDays;
+  /// **'{days, plural, =1{1 Tag} other{{days} Tage}}'**
+  String retentionDays(int days);
 
   /// Infinite retention option
   ///

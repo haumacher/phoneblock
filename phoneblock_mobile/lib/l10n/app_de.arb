@@ -591,19 +591,14 @@
     "description": "Keep all calls option"
   },
 
-  "retentionOneDay": "1 Tag",
-  "@retentionOneDay": {
-    "description": "1 day retention option"
-  },
-
-  "retentionThreeDays": "3 Tage",
-  "@retentionThreeDays": {
-    "description": "3 days retention option"
-  },
-
-  "retentionSevenDays": "7 Tage",
-  "@retentionSevenDays": {
-    "description": "7 days retention option"
+  "retentionDays": "{days, plural, =1{1 Tag} other{{days} Tage}}",
+  "@retentionDays": {
+    "description": "Number of days for retention period",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
 
   "retentionInfiniteOption": "Unbegrenzt",

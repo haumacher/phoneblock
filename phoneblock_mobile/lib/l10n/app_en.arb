@@ -205,11 +205,7 @@
 
   "retentionInfinite": "Keep all calls",
 
-  "retentionOneDay": "1 day",
-
-  "retentionThreeDays": "3 days",
-
-  "retentionSevenDays": "7 days",
+  "retentionDays": "{days, plural, =1{1 day} other{{days} days}}",
 
   "retentionInfiniteOption": "Infinite"
 }
