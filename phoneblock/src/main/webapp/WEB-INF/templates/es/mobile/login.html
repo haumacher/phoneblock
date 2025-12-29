@@ -14,14 +14,14 @@
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">Para vincular su cuenta PhoneBlock a su dispositivo móvil, primero debe iniciar sesión o crear una cuenta. Necesita una cuenta para que su teléfono móvil pueda utilizar la base de datos de PhoneBlock para filtrar las llamadas.</p>
 
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
 		<p data-tx="t0003">Ahora puedes conectar tu cuenta PhoneBlock <code th:text="${userName}"></code> a tu dispositivo móvil:</p>
-	
+
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:if="${param.label != null}" th:value="${param.label[0]}" type="hidden"/>
+			<input name="label" th:value="${label}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

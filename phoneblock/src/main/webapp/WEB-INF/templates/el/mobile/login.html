@@ -14,14 +14,14 @@
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">Για να συνδέσετε το λογαριασμό σας PhoneBlock με την κινητή συσκευή σας, πρέπει πρώτα να συνδεθείτε ή να δημιουργήσετε ένα λογαριασμό. Χρειάζεστε έναν λογαριασμό για να μπορεί το κινητό σας τηλέφωνο να χρησιμοποιεί τη βάση δεδομένων του PhoneBlock για να φιλτράρει τις κλήσεις.</p>
 
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
 		<p data-tx="t0003">Τώρα μπορείτε να συνδέσετε το λογαριασμό σας PhoneBlock <code th:text="${userName}"></code> στην κινητή συσκευή σας:</p>
-	
+
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:if="${param.label != null}" th:value="${param.label[0]}" type="hidden"/>
+			<input name="label" th:value="${label}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

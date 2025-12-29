@@ -18,16 +18,16 @@
 			für die Filterung von Anrufen nutzen kann.
 		</p>
 
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
 		<p data-tx="t0003">
 			Jetzt kannst Du Deinen PhoneBlock-Account <code th:text="${userName}"></code> mit Deinem Mobilgerät verbinden:
 		</p>
-	
+
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:if="${param.label != null}" th:value="${param.label[0]}" type="hidden"/>
+			<input name="label" th:value="${label}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

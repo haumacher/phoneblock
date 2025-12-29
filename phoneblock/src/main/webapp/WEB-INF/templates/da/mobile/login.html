@@ -14,14 +14,14 @@
 	<div th:if="${userName == null}">
 		<p data-tx="t0002">For at knytte din PhoneBlock-konto til din mobile enhed skal du først logge ind eller oprette en konto. Du skal bruge en konto, så din mobiltelefon kan bruge PhoneBlock-databasen til at filtrere opkald.</p>
 
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${param.label != null ? '/mobile/login?label=' + param.label[0] : '/mobile/login'})}"></div>
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
 		<p data-tx="t0003">Nu kan du forbinde din PhoneBlock-konto <code th:text="${userName}"></code> med din mobile enhed:</p>
-	
+
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:if="${param.label != null}" th:value="${param.label[0]}" type="hidden"/>
+			<input name="label" th:value="${label}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">
