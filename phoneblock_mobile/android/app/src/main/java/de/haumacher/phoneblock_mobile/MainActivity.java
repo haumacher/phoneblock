@@ -28,6 +28,9 @@ public class MainActivity extends FlutterActivity {
     private static final String NOTIFICATION_CHANNEL_ID = "pending_calls";
     private static final int NOTIFICATION_ID = 1;
 
+    /** Constant for infinite retention period (keep all calls) */
+    public static final int RETENTION_INFINITE = -1;
+
     private MethodChannel _channel;
     private static MainActivity _instance;
 
@@ -360,7 +363,7 @@ public class MainActivity extends FlutterActivity {
 
     private int getRetentionDays() {
         SharedPreferences prefs = getPreferences(this);
-        int value = prefs.getInt("retention_days", -1); // -1 means infinite
+        int value = prefs.getInt("retention_days", RETENTION_INFINITE);
         Log.d(MainActivity.class.getName(), "getRetentionDays: " + value);
         return value;
     }

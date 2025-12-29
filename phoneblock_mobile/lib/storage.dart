@@ -158,11 +158,12 @@ class ScreenedCallsDatabase {
   }
 
   /// Retrieves screened calls within the retention period.
-  /// retentionDays: Number of days to keep calls. -1 means all calls (infinite).
+  /// retentionDays: Number of days to keep calls. Use retentionInfinite constant for all calls.
   Future<List<ScreenedCall>> getScreenedCallsInRetentionPeriod(int retentionDays) async {
+    const retentionInfinite = -1; // Infinite retention constant
     final db = await database;
 
-    if (retentionDays == -1) {
+    if (retentionDays == retentionInfinite) {
       // Infinite retention, return all calls
       final result = await db.query(
         'screened_calls',
@@ -242,10 +243,11 @@ class ScreenedCallsDatabase {
   }
 
   /// Deletes screened calls older than the specified retention period.
-  /// retentionDays: Number of days to keep calls. -1 means keep all (infinite).
+  /// retentionDays: Number of days to keep calls. Use retentionInfinite constant to keep all.
   /// Returns the number of deleted rows.
   Future<int> deleteOldScreenedCalls(int retentionDays) async {
-    if (retentionDays == -1) {
+    const retentionInfinite = -1; // Infinite retention constant
+    if (retentionDays == retentionInfinite) {
       // Infinite retention, don't delete anything
       return 0;
     }
