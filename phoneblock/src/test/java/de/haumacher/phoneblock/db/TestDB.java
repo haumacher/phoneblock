@@ -95,7 +95,8 @@ public class TestDB {
 		assertEquals(token1.getUserName(), "user1");
 		assertEquals(createTime, token1.getCreated());
 		assertEquals(checkTime, token1.getLastAccess());
-		assertEquals("creating-browser", token1.getUserAgent());
+		// User agent is updated when it changes (even within rate limit)
+		assertEquals("other-browser", token1.getUserAgent());
 		assertTrue(token1.isImplicit());
 		assertTrue(token1.isAccessLogin());
 		
