@@ -12,18 +12,18 @@
 	<h1 data-tx="t0001">PhoneBlock-account koppelen</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">Om uw PhoneBlock account te koppelen met <strong th:text="${label}">uw mobiele apparaat</strong>, moet u eerst inloggen of een account aanmaken. U hebt een account nodig zodat uw mobiele telefoon de PhoneBlock-database kan gebruiken om oproepen te filteren.</p>
-		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">Om uw PhoneBlock-account aan uw mobiele apparaat te koppelen, moet u eerst inloggen of een account aanmaken. U hebt een account nodig zodat uw mobiele telefoon de PhoneBlock-database kan gebruiken om oproepen te filteren.</p>
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(tokenLabel)}">Om uw PhoneBlock account te koppelen met <strong th:text="${tokenLabel}">uw mobiele apparaat</strong>, moet u eerst inloggen of een account aanmaken. U hebt een account nodig zodat uw mobiele telefoon de PhoneBlock-database kan gebruiken om oproepen te filteren.</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(tokenLabel)}">Om uw PhoneBlock-account aan uw mobiele apparaat te koppelen, moet u eerst inloggen of een account aanmaken. U hebt een account nodig zodat uw mobiele telefoon de PhoneBlock-database kan gebruiken om oproepen te filteren.</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">Nu kunt u uw PhoneBlock-account <code th:text="${userName}"></code> verbinden met <strong th:text="${label}">uw mobiele apparaat</strong>:</p>
-		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">Nu kunt u uw PhoneBlock-account <code th:text="${userName}"></code> verbinden met uw mobiele apparaat:</p>
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(tokenLabel)}">Nu kunt u uw PhoneBlock-account <code th:text="${userName}"></code> verbinden met <strong th:text="${tokenLabel}">uw mobiele apparaat</strong>:</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(tokenLabel)}">Nu kunt u uw PhoneBlock-account <code th:text="${userName}"></code> verbinden met uw mobiele apparaat:</p>
 
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:value="${label}" type="hidden"/>
+			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

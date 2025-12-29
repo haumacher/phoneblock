@@ -20,6 +20,7 @@
 				<p data-tx="t0003">已向 <code th:text="${email}"></code> 发送电子邮件。</p>
 				<p data-tx="t0004">请检查您的邮箱，复制代码并在此处输入。这将确认您的电子邮件地址。</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 					<div class="field">
 						<label class="label" data-tx="t0005">代码</label>
 						<div class="control has-icons-left has-icons-right">

@@ -4,6 +4,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -20,6 +22,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.TOKEN_LABEL;
 
 /**
  * {@link HttpServlet} invoked from the e-mail verification page <code>/code</code> when the e-mail verification code is entered.
@@ -52,19 +56,19 @@ public class RegistrationServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		LoginServlet.forwardLocation(req);
-		
+
 		Object expectedCode = req.getSession().getAttribute("code");
 		if (expectedCode == null) {
 			sendError(req, resp, "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
 			return;
 		}
-		
+
 		String code = req.getParameter("code");
 		if (code == null || code.trim().isEmpty() || !code.equals(expectedCode)) {
 			sendError(req, resp, "Der Bestätigungscode stimmt nicht überein.");
 			return;
 		}
-		
+
 		String email = (String) req.getSession().getAttribute("email");
 		
 		String login;
@@ -100,7 +104,7 @@ public class RegistrationServlet extends HttpServlet {
 		}
 	}
 
-	/** 
+	/**
 	 * Displays the setup page.
 	 */
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
@@ -109,7 +113,13 @@ public class RegistrationServlet extends HttpServlet {
 
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:
-			resp.sendRedirect(req.getContextPath() + "/mobile/login");
+			// Preserve token label parameter for mobile token creation
+			String tokenLabel = req.getParameter(TOKEN_LABEL);
+			String redirectUrl = req.getContextPath() + "/mobile/login";
+			if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
+				redirectUrl += "?" + TOKEN_LABEL + "=" + URLEncoder.encode(tokenLabel, StandardCharsets.UTF_8);
+			}
+			resp.sendRedirect(redirectUrl);
 			break;
 		case REGISTER_WEB:
 		default:

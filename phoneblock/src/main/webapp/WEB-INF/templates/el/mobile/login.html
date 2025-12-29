@@ -12,18 +12,18 @@
 	<h1 data-tx="t0001">Σύνδεση λογαριασμού PhoneBlock</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">Για να συνδέσετε τον λογαριασμό σας PhoneBlock με την <strong th:text="${label}">κινητή συσκευή σας</strong>, πρέπει πρώτα να συνδεθείτε ή να δημιουργήσετε έναν λογαριασμό. Χρειάζεστε έναν λογαριασμό για να μπορεί το κινητό σας τηλέφωνο να χρησιμοποιεί τη βάση δεδομένων του PhoneBlock για να φιλτράρει τις κλήσεις.</p>
-		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">Για να συνδέσετε το λογαριασμό σας PhoneBlock με την κινητή συσκευή σας, πρέπει πρώτα να συνδεθείτε ή να δημιουργήσετε ένα λογαριασμό. Χρειάζεστε έναν λογαριασμό για να μπορεί το κινητό σας τηλέφωνο να χρησιμοποιεί τη βάση δεδομένων του PhoneBlock για να φιλτράρει τις κλήσεις.</p>
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(tokenLabel)}">Για να συνδέσετε τον λογαριασμό σας PhoneBlock με την <strong th:text="${tokenLabel}">κινητή συσκευή σας</strong>, πρέπει πρώτα να συνδεθείτε ή να δημιουργήσετε έναν λογαριασμό. Χρειάζεστε έναν λογαριασμό για να μπορεί το κινητό σας τηλέφωνο να χρησιμοποιεί τη βάση δεδομένων του PhoneBlock για να φιλτράρει τις κλήσεις.</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(tokenLabel)}">Για να συνδέσετε το λογαριασμό σας PhoneBlock με την κινητή συσκευή σας, πρέπει πρώτα να συνδεθείτε ή να δημιουργήσετε ένα λογαριασμό. Χρειάζεστε έναν λογαριασμό για να μπορεί το κινητό σας τηλέφωνο να χρησιμοποιεί τη βάση δεδομένων του PhoneBlock για να φιλτράρει τις κλήσεις.</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">Τώρα μπορείτε να συνδέσετε το λογαριασμό σας PhoneBlock <code th:text="${userName}"></code> με <strong th:text="${label}">την κινητή συσκευή σας</strong>:</p>
-		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">Τώρα μπορείτε να συνδέσετε το λογαριασμό σας PhoneBlock <code th:text="${userName}"></code> στην κινητή συσκευή σας:</p>
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(tokenLabel)}">Τώρα μπορείτε να συνδέσετε το λογαριασμό σας PhoneBlock <code th:text="${userName}"></code> με <strong th:text="${tokenLabel}">την κινητή συσκευή σας</strong>:</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(tokenLabel)}">Τώρα μπορείτε να συνδέσετε το λογαριασμό σας PhoneBlock <code th:text="${userName}"></code> στην κινητή συσκευή σας:</p>
 
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:value="${label}" type="hidden"/>
+			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

@@ -7,6 +7,7 @@ import java.util.Base64;
 
 import org.thymeleaf.context.WebContext;
 
+import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.EMailVerificationServlet;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.oauth.PhoneBlockConfigFactory;
@@ -29,13 +30,13 @@ public class MobileLoginController extends DefaultController {
 		ctx.setVariable("userNameParam", LoginServlet.USER_NAME_PARAM);
 		ctx.setVariable("passwordParam", LoginServlet.PASSWORD_PARAM);
 
-		// Preserve label parameter for mobile token creation
-		String label = request.getParameter("label");
-		if (label != null && !label.trim().isEmpty()) {
-			ctx.setVariable("label", label);
-			ctx.setVariable("location", "/mobile/login?label=" + URLEncoder.encode(label, StandardCharsets.UTF_8));
+		// Preserve token label for mobile token creation
+		String tokenLabel = request.getParameter(CreateAuthTokenServlet.TOKEN_LABEL);
+		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
+			ctx.setVariable(CreateAuthTokenServlet.TOKEN_LABEL, tokenLabel);
+			ctx.setVariable("location", "/mobile/login?" + CreateAuthTokenServlet.TOKEN_LABEL + "=" + URLEncoder.encode(tokenLabel, StandardCharsets.UTF_8));
 		} else {
-			ctx.setVariable("label", "");
+			ctx.setVariable(CreateAuthTokenServlet.TOKEN_LABEL, "");
 			ctx.setVariable("location", "/mobile/login");
 		}
 

@@ -12,18 +12,18 @@
 	<h1 data-tx="t0001">Прив'язати обліковий запис PhoneBlock</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0005" th:if="${!#strings.isEmpty(label)}">Щоб зв'язати свій обліковий запис PhoneBlock з <strong th:text="${label}">вашим мобільним пристроєм</strong>, ви повинні спочатку увійти в систему або створити обліковий запис. Обліковий запис потрібен для того, щоб ваш мобільний телефон міг використовувати базу даних PhoneBlock для фільтрації дзвінків.</p>
-		<p data-tx="t0002" th:if="${#strings.isEmpty(label)}">Щоб прив'язати свій обліковий запис PhoneBlock до мобільного пристрою, ви повинні спочатку увійти в систему або створити обліковий запис. Обліковий запис потрібен для того, щоб ваш мобільний телефон міг використовувати базу даних PhoneBlock для фільтрації дзвінків.</p>
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(tokenLabel)}">Щоб зв'язати свій обліковий запис PhoneBlock з <strong th:text="${tokenLabel}">вашим мобільним пристроєм</strong>, ви повинні спочатку увійти в систему або створити обліковий запис. Обліковий запис потрібен для того, щоб ваш мобільний телефон міг використовувати базу даних PhoneBlock для фільтрації дзвінків.</p>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(tokenLabel)}">Щоб прив'язати свій обліковий запис PhoneBlock до мобільного пристрою, ви повинні спочатку увійти в систему або створити обліковий запис. Обліковий запис потрібен для того, щоб ваш мобільний телефон міг використовувати базу даних PhoneBlock для фільтрації дзвінків.</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0006" th:if="${!#strings.isEmpty(label)}">Тепер ви можете зв'язати свій обліковий запис PhoneBlock <code th:text="${userName}"></code> з <strong th:text="${label}">вашим мобільним пристроєм</strong>:</p>
-		<p data-tx="t0003" th:if="${#strings.isEmpty(label)}">Тепер ви можете підключити свій обліковий запис PhoneBlock <code th:text="${userName}"></code> до свого мобільного пристрою:</p>
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(tokenLabel)}">Тепер ви можете зв'язати свій обліковий запис PhoneBlock <code th:text="${userName}"></code> з <strong th:text="${tokenLabel}">вашим мобільним пристроєм</strong>:</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(tokenLabel)}">Тепер ви можете підключити свій обліковий запис PhoneBlock <code th:text="${userName}"></code> до свого мобільного пристрою:</p>
 
 		<form method="post" th:action="@{/create-token}">
-			<input name="label" th:value="${label}" type="hidden"/>
+			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">

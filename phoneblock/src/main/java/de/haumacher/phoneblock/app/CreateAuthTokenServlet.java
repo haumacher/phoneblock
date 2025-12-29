@@ -24,7 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * </p>
  *
  * <p>
- * An optional "label" parameter can be provided to give the token a user-visible label that will
+ * An optional {@value #TOKEN_LABEL} parameter can be provided to give the token a user-visible label that will
  * be displayed in the settings pages.
  * </p>
  */
@@ -32,12 +32,17 @@ import jakarta.servlet.http.HttpServletResponse;
 public class CreateAuthTokenServlet extends HttpServlet {
 
 	public static final String CREATE_TOKEN = "/create-token";
-	
+
 	public static final String MOBILE_LOGIN = "/mobile/login";
 
 	private static final String MOBILE_RESPONSE = "/mobile/response";
-	
+
 	private static final String TOKEN_PARAM = "loginToken";
+
+	/**
+	 * Request/session parameter for device label in mobile token creation flow.
+	 */
+	public static final String TOKEN_LABEL = "tokenLabel";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,7 +60,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 
 		long now = System.currentTimeMillis();
 		DB db = DBService.getInstance();
-		String label = req.getParameter("label");
+		String label = req.getParameter(TOKEN_LABEL);
 		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"), label);
 
 		resp.sendRedirect(req.getContextPath() + MOBILE_RESPONSE + "?" + TOKEN_PARAM + "=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));

@@ -48,11 +48,11 @@ Future<String> _getDeviceName() async {
   }
 }
 
-/// Builds the PhoneBlock login URL with device-specific label parameter.
+/// Builds the PhoneBlock login URL with device-specific token label parameter.
 Future<String> _getPhoneBlockLoginUrl() async {
   final deviceName = await _getDeviceName();
-  final label = Uri.encodeComponent('PhoneBlock Mobile on $deviceName');
-  return '$pbBaseUrl/mobile/login?label=$label';
+  final tokenLabel = Uri.encodeComponent('PhoneBlock Mobile on $deviceName');
+  return '$pbBaseUrl/mobile/login?tokenLabel=$tokenLabel';
 }
 
 /// Retention period constant for infinite retention (keep all calls)
