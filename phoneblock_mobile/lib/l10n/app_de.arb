@@ -649,5 +649,75 @@
   "invalidPhoneNumber": "Bitte geben Sie eine gültige Telefonnummer ein",
   "@invalidPhoneNumber": {
     "description": "Error message for invalid phone number"
+  },
+
+  "blacklistTitle": "Blacklist",
+  "@blacklistTitle": {
+    "description": "Blacklist screen title"
+  },
+
+  "blacklistDescription": "Von Ihnen blockierte Nummern",
+  "@blacklistDescription": {
+    "description": "Blacklist description in settings"
+  },
+
+  "whitelistTitle": "Whitelist",
+  "@whitelistTitle": {
+    "description": "Whitelist screen title"
+  },
+
+  "whitelistDescription": "Von Ihnen als legitim markierte Nummern",
+  "@whitelistDescription": {
+    "description": "Whitelist description in settings"
+  },
+
+  "blacklistEmpty": "Ihre Blacklist ist leer",
+  "@blacklistEmpty": {
+    "description": "Empty blacklist message"
+  },
+
+  "whitelistEmpty": "Ihre Whitelist ist leer",
+  "@whitelistEmpty": {
+    "description": "Empty whitelist message"
+  },
+
+  "errorLoadingList": "Fehler beim Laden der Liste",
+  "@errorLoadingList": {
+    "description": "Error loading list message"
+  },
+
+  "numberRemovedFromList": "Nummer entfernt",
+  "@numberRemovedFromList": {
+    "description": "Success message when number is removed"
+  },
+
+  "errorRemovingNumber": "Fehler beim Entfernen der Nummer",
+  "@errorRemovingNumber": {
+    "description": "Error removing number message"
+  },
+
+  "confirmRemoval": "Entfernen bestätigen",
+  "@confirmRemoval": {
+    "description": "Confirm removal dialog title"
+  },
+
+  "confirmRemoveFromBlacklist": "{phone} von der Blacklist entfernen?",
+  "@confirmRemoveFromBlacklist": {
+    "description": "Confirm remove from blacklist message"
+  },
+
+  "confirmRemoveFromWhitelist": "{phone} von der Whitelist entfernen?",
+  "@confirmRemoveFromWhitelist": {
+    "description": "Confirm remove from whitelist message"
+  },
+
+  "remove": "Entfernen",
+  "@remove": {
+    "description": "Remove button text"
+  },
+
+  "retry": "Erneut versuchen",
+  "@retry": {
+    "description": "Retry button text"
   }
 }

@@ -227,5 +227,33 @@
 
   "search": "Search",
 
-  "invalidPhoneNumber": "Please enter a valid phone number"
+  "invalidPhoneNumber": "Please enter a valid phone number",
+
+  "blacklistTitle": "Blacklist",
+
+  "blacklistDescription": "Numbers you have blocked",
+
+  "whitelistTitle": "Whitelist",
+
+  "whitelistDescription": "Numbers you have marked as legitimate",
+
+  "blacklistEmpty": "Your blacklist is empty",
+
+  "whitelistEmpty": "Your whitelist is empty",
+
+  "errorLoadingList": "Error loading list",
+
+  "numberRemovedFromList": "Number removed",
+
+  "errorRemovingNumber": "Error removing number",
+
+  "confirmRemoval": "Confirm Removal",
+
+  "confirmRemoveFromBlacklist": "Remove {phone} from blacklist?",
+
+  "confirmRemoveFromWhitelist": "Remove {phone} from whitelist?",
+
+  "remove": "Remove",
+
+  "retry": "Retry"
 }

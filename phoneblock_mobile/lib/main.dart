@@ -2342,6 +2342,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 const Divider(),
+                ListTile(
+                  title: Text(context.l10n.blacklistTitle),
+                  subtitle: Text(context.l10n.blacklistDescription),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    final navigator = Navigator.of(context);
+                    final scaffold = ScaffoldMessenger.of(context);
+                    final localizations = context.l10n;
+
+                    String? token = await getAuthToken();
+                    if (token == null) {
+                      scaffold.showSnackBar(
+                        SnackBar(
+                          content: Text(localizations.notLoggedInShort),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (context) => BlacklistScreen(authToken: token),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  title: Text(context.l10n.whitelistTitle),
+                  subtitle: Text(context.l10n.whitelistDescription),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    final navigator = Navigator.of(context);
+                    final scaffold = ScaffoldMessenger.of(context);
+                    final localizations = context.l10n;
+
+                    String? token = await getAuthToken();
+                    if (token == null) {
+                      scaffold.showSnackBar(
+                        SnackBar(
+                          content: Text(localizations.notLoggedInShort),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (context) => WhitelistScreen(authToken: token),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
                   child: Text(
@@ -2423,6 +2479,254 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Type of personalized number list.
+enum PersonalizedListType {
+  blacklist,
+  whitelist,
+}
+
+/// Screen displaying the user's personalized number lists (blacklist or whitelist).
+class PersonalizedNumberListScreen extends StatefulWidget {
+  final String authToken;
+  final PersonalizedListType listType;
+
+  const PersonalizedNumberListScreen({
+    super.key,
+    required this.authToken,
+    required this.listType,
+  });
+
+  @override
+  State<PersonalizedNumberListScreen> createState() => _PersonalizedNumberListScreenState();
+}
+
+class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScreen> {
+  List<String> _numbers = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  bool get _isBlacklist => widget.listType == PersonalizedListType.blacklist;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNumbers();
+  }
+
+  /// Load the number list from the API.
+  Future<void> _loadNumbers() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final numberList = _isBlacklist
+          ? await fetchBlacklist(widget.authToken)
+          : await fetchWhitelist(widget.authToken);
+
+      if (numberList != null) {
+        setState(() {
+          _numbers = numberList.numbers;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = context.l10n.errorLoadingList;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading ${_isBlacklist ? 'blacklist' : 'whitelist'}: $e');
+      }
+      setState(() {
+        _errorMessage = context.l10n.errorLoadingList;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Remove a number from the list.
+  Future<void> _removeNumber(String phone) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    final localizations = context.l10n;
+
+    final success = _isBlacklist
+        ? await removeFromBlacklist(phone, widget.authToken)
+        : await removeFromWhitelist(phone, widget.authToken);
+
+    if (success) {
+      setState(() {
+        _numbers.remove(phone);
+      });
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(localizations.numberRemovedFromList),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(localizations.errorRemovingNumber),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = _isBlacklist ? context.l10n.blacklistTitle : context.l10n.whitelistTitle;
+    final emptyMessage = _isBlacklist ? context.l10n.blacklistEmpty : context.l10n.whitelistEmpty;
+    final confirmRemoveMessage = _isBlacklist
+        ? (String phone) => context.l10n.confirmRemoveFromBlacklist(phone)
+        : (String phone) => context.l10n.confirmRemoveFromWhitelist(phone);
+    final icon = _isBlacklist
+        ? const Icon(Icons.block, color: Colors.red)
+        : const Icon(Icons.check_circle, color: Colors.green);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage!),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadNumbers,
+                        child: Text(context.l10n.retry),
+                      ),
+                    ],
+                  ),
+                )
+              : _numbers.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_circle_outline, size: 48, color: Colors.green),
+                          const SizedBox(height: 16),
+                          Text(
+                            emptyMessage,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadNumbers,
+                      child: ListView.builder(
+                        itemCount: _numbers.length,
+                        itemBuilder: (context, index) {
+                          final phone = _numbers[index];
+                          return Dismissible(
+                            key: Key(phone),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              color: Colors.red,
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              child: const Icon(Icons.delete, color: Colors.white),
+                            ),
+                            confirmDismiss: (direction) async {
+                              return await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text(context.l10n.confirmRemoval),
+                                  content: Text(confirmRemoveMessage(phone)),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(false),
+                                      child: Text(context.l10n.cancel),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(true),
+                                      child: Text(context.l10n.remove),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            onDismissed: (direction) {
+                              _removeNumber(phone);
+                            },
+                            child: ListTile(
+                              leading: icon,
+                              title: Text(phone),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text(context.l10n.confirmRemoval),
+                                      content: Text(confirmRemoveMessage(phone)),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(false),
+                                          child: Text(context.l10n.cancel),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(true),
+                                          child: Text(context.l10n.remove),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true) {
+                                    _removeNumber(phone);
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+    );
+  }
+}
+
+/// Convenience widget for blacklist screen.
+class BlacklistScreen extends StatelessWidget {
+  final String authToken;
+
+  const BlacklistScreen({super.key, required this.authToken});
+
+  @override
+  Widget build(BuildContext context) {
+    return PersonalizedNumberListScreen(
+      authToken: authToken,
+      listType: PersonalizedListType.blacklist,
+    );
+  }
+}
+
+/// Convenience widget for whitelist screen.
+class WhitelistScreen extends StatelessWidget {
+  final String authToken;
+
+  const WhitelistScreen({super.key, required this.authToken});
+
+  @override
+  Widget build(BuildContext context) {
+    return PersonalizedNumberListScreen(
+      authToken: authToken,
+      listType: PersonalizedListType.whitelist,
     );
   }
 }

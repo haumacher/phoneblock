@@ -415,4 +415,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidPhoneNumber => 'Please enter a valid phone number';
+
+  @override
+  String get blacklistTitle => 'Blacklist';
+
+  @override
+  String get blacklistDescription => 'Numbers you have blocked';
+
+  @override
+  String get whitelistTitle => 'Whitelist';
+
+  @override
+  String get whitelistDescription => 'Numbers you have marked as legitimate';
+
+  @override
+  String get blacklistEmpty => 'Your blacklist is empty';
+
+  @override
+  String get whitelistEmpty => 'Your whitelist is empty';
+
+  @override
+  String get errorLoadingList => 'Error loading list';
+
+  @override
+  String get numberRemovedFromList => 'Number removed';
+
+  @override
+  String get errorRemovingNumber => 'Error removing number';
+
+  @override
+  String get confirmRemoval => 'Confirm Removal';
+
+  @override
+  String confirmRemoveFromBlacklist(Object phone) {
+    return 'Remove $phone from blacklist?';
+  }
+
+  @override
+  String confirmRemoveFromWhitelist(Object phone) {
+    return 'Remove $phone from whitelist?';
+  }
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get retry => 'Retry';
 }

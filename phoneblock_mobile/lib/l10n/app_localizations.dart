@@ -781,6 +781,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bitte geben Sie eine gültige Telefonnummer ein'**
   String get invalidPhoneNumber;
+
+  /// Blacklist screen title
+  ///
+  /// In de, this message translates to:
+  /// **'Blacklist'**
+  String get blacklistTitle;
+
+  /// Blacklist description in settings
+  ///
+  /// In de, this message translates to:
+  /// **'Von Ihnen blockierte Nummern'**
+  String get blacklistDescription;
+
+  /// Whitelist screen title
+  ///
+  /// In de, this message translates to:
+  /// **'Whitelist'**
+  String get whitelistTitle;
+
+  /// Whitelist description in settings
+  ///
+  /// In de, this message translates to:
+  /// **'Von Ihnen als legitim markierte Nummern'**
+  String get whitelistDescription;
+
+  /// Empty blacklist message
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Blacklist ist leer'**
+  String get blacklistEmpty;
+
+  /// Empty whitelist message
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Whitelist ist leer'**
+  String get whitelistEmpty;
+
+  /// Error loading list message
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden der Liste'**
+  String get errorLoadingList;
+
+  /// Success message when number is removed
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer entfernt'**
+  String get numberRemovedFromList;
+
+  /// Error removing number message
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Entfernen der Nummer'**
+  String get errorRemovingNumber;
+
+  /// Confirm removal dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen bestätigen'**
+  String get confirmRemoval;
+
+  /// Confirm remove from blacklist message
+  ///
+  /// In de, this message translates to:
+  /// **'{phone} von der Blacklist entfernen?'**
+  String confirmRemoveFromBlacklist(Object phone);
+
+  /// Confirm remove from whitelist message
+  ///
+  /// In de, this message translates to:
+  /// **'{phone} von der Whitelist entfernen?'**
+  String confirmRemoveFromWhitelist(Object phone);
+
+  /// Remove button text
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get remove;
+
+  /// Retry button text
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut versuchen'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate
