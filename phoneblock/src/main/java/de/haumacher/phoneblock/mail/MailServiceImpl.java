@@ -91,7 +91,7 @@ public class MailServiceImpl implements MailService {
 		_appLogoSvg = baseUrl + "/assets/img/app-logo.svg";
 		_settings = baseUrl + SettingsServlet.PATH;
 		_app = baseUrl + "/ab/";
-		_support = baseUrl + "/support.jsp";
+		_support = baseUrl + "/support";
 	}
 
 	/**
