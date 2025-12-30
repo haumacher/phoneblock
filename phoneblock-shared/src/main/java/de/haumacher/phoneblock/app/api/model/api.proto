@@ -395,6 +395,10 @@ abstract message AccountData {
 /** Request to update user account settings. */
 message UpdateAccountRequest extends AccountData {
 	// Inherits lang, dialPrefix, displayName from AccountData
+
+	/** ISO 3166-1 alpha-2 country code (e.g., "DE", "US", "BR"). If provided, the server will convert it to the corresponding dial prefix. */
+	@Nullable
+	string countryCode;
 }
 
 /** Response from account settings operations. */

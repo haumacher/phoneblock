@@ -51,70 +51,13 @@ Future<String> _getDeviceName() async {
   }
 }
 
-/// Maps ISO 3166-1 alpha-2 country codes to international dial prefixes.
-/// Returns null if the country code is not recognized.
-String? _countryCodeToDialPrefix(String? countryCode) {
-  if (countryCode == null || countryCode.isEmpty) {
-    return null;
-  }
-
-  // Map of common country codes to dial prefixes
-  const countryDialPrefixes = {
-    // Europe
-    'DE': '+49',   // Germany
-    'AT': '+43',   // Austria
-    'CH': '+41',   // Switzerland
-    'FR': '+33',   // France
-    'IT': '+39',   // Italy
-    'ES': '+34',   // Spain
-    'PT': '+351',  // Portugal
-    'NL': '+31',   // Netherlands
-    'BE': '+32',   // Belgium
-    'PL': '+48',   // Poland
-    'CZ': '+420',  // Czech Republic
-    'GB': '+44',   // United Kingdom
-    'IE': '+353',  // Ireland
-    'SE': '+46',   // Sweden
-    'NO': '+47',   // Norway
-    'DK': '+45',   // Denmark
-    'FI': '+358',  // Finland
-
-    // Americas
-    'US': '+1',    // United States
-    'CA': '+1',    // Canada
-    'BR': '+55',   // Brazil
-    'MX': '+52',   // Mexico
-    'AR': '+54',   // Argentina
-
-    // Asia/Pacific
-    'CN': '+86',   // China
-    'JP': '+81',   // Japan
-    'IN': '+91',   // India
-    'AU': '+61',   // Australia
-    'NZ': '+64',   // New Zealand
-    'SG': '+65',   // Singapore
-    'HK': '+852',  // Hong Kong
-    'TW': '+886',  // Taiwan
-    'KR': '+82',   // South Korea
-    'TH': '+66',   // Thailand
-
-    // Middle East/Africa
-    'ZA': '+27',   // South Africa
-    'IL': '+972',  // Israel
-    'AE': '+971',  // United Arab Emirates
-    'SA': '+966',  // Saudi Arabia
-    'TR': '+90',   // Turkey
-  };
-
-  return countryDialPrefixes[countryCode.toUpperCase()];
-}
-
-/// Gets the device's locale information including language tag and dial prefix.
-/// Returns a map with 'lang' (e.g., "de-DE", "en-US") and 'dialPrefix' (e.g., "+49").
+/// Gets the device's locale information including language tag and country code.
+/// Returns a map with 'lang' (e.g., "de-DE", "en-US") and 'countryCode' (e.g., "DE", "US").
 ///
-/// Uses the device's SIM country code (from TelephonyManager) to determine the dial prefix,
-/// which is more accurate than the locale country code since it reflects the actual network operator.
-/// If dial prefix cannot be determined, it is omitted from the result.
+/// Uses the device's SIM country code (from TelephonyManager), which is more accurate
+/// than the locale country code since it reflects the actual network operator.
+/// The server will convert the country code to the appropriate dial prefix.
+/// If country code cannot be determined, it is omitted from the result.
 Future<Map<String, String>> getDeviceLocale() async {
   try {
     final locale = PlatformDispatcher.instance.locale;
@@ -128,12 +71,10 @@ Future<Map<String, String>> getDeviceLocale() async {
     try {
       final simCountryCode = await DeviceRegion.getSIMCountryCode();
       if (simCountryCode != null && simCountryCode.isNotEmpty) {
-        final dialPrefix = _countryCodeToDialPrefix(simCountryCode);
-        if (dialPrefix != null) {
-          result['dialPrefix'] = dialPrefix;
-        }
+        // Send country code to server, which will convert to dial prefix
+        result['countryCode'] = simCountryCode.toUpperCase();
         if (kDebugMode) {
-          print('SIM country code: $simCountryCode, dial prefix: $dialPrefix');
+          print('SIM country code: $simCountryCode');
         }
       } else {
         if (kDebugMode) {

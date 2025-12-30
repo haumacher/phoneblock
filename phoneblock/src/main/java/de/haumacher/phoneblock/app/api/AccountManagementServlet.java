@@ -21,6 +21,8 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.location.Countries;
+import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -104,6 +106,7 @@ public class AccountManagementServlet extends HttpServlet {
 		String lang = updateRequest.getLang();
 		String dialPrefix = updateRequest.getDialPrefix();
 		String displayName = updateRequest.getDisplayName();
+		String countryCode = updateRequest.getCountryCode();
 
 		// Validate language tag format
 		if (lang != null && !lang.isEmpty() && !LANG_TAG_PATTERN.matcher(lang).matches()) {
@@ -111,7 +114,21 @@ public class AccountManagementServlet extends HttpServlet {
 			return;
 		}
 
-		// Validate dial prefix format
+		// Convert country code to dial prefix if provided
+		if (countryCode != null && !countryCode.isEmpty()) {
+			Country country = Countries.BY_ISO_31661_ALPHA_2.get(countryCode.toUpperCase());
+			if (country == null) {
+				ServletUtil.sendError(resp, "Invalid country code. Expected ISO 3166-1 alpha-2 format (e.g., 'DE', 'US', 'BR')");
+				return;
+			}
+			// Use the first dial prefix for the country
+			if (!country.getDialPrefixes().isEmpty()) {
+				dialPrefix = country.getDialPrefixes().get(0);
+				LOG.info("Converted country code '{}' to dial prefix '{}'", countryCode, dialPrefix);
+			}
+		}
+
+		// Validate dial prefix format (if provided directly, not from country code)
 		if (dialPrefix != null && !dialPrefix.isEmpty() && !DIAL_PREFIX_PATTERN.matcher(dialPrefix).matches()) {
 			ServletUtil.sendError(resp, "Invalid dial prefix format. Expected format: '+XX' (e.g., '+49', '+1', '+351')");
 			return;
