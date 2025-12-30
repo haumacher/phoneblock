@@ -44,7 +44,7 @@
 </head>
 
 <body th:dir="${currentLang.direction}">
-<section class="hero is-small is-primary" th:fragment="header">
+<section class="hero is-small is-primary" th:fragment="header" th:unless="${inMobileApp}">
 	<div class="hero-body">
 		<div class="title">
 			<img alt="Logo PhoneBlock" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"/>
@@ -276,7 +276,7 @@
 </section>
 
 
-<th:block th:fragment="footer">
+<th:block th:fragment="footer" th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
 		<h2 data-tx="t0019">Partecipa!</h2>

@@ -295,11 +295,13 @@ public class DefaultController implements WebController {
     	String userAgent = request.getHeader("User-Agent");
     	userAgent = userAgent == null ? "" : userAgent.toLowerCase();
     	boolean android = userAgent.contains("android");
-    	boolean iphone = userAgent.contains("iPhone");
-    	
+    	boolean iphone = userAgent.contains("iphone");
+    	boolean inMobileApp = userAgent.startsWith("phoneblockmobile/");
+
     	ctx.setVariable("android", Boolean.valueOf(android));
 		ctx.setVariable("iphone", Boolean.valueOf(iphone));
 		ctx.setVariable("fritzbox", Boolean.valueOf(!android && !iphone));
+		ctx.setVariable("inMobileApp", Boolean.valueOf(inMobileApp));
 		
 		ctx.setVariable("ratings", RATINGS);
 		ctx.setVariable("languages", Language.all());
