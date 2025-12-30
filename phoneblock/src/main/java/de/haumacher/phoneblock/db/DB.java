@@ -1025,14 +1025,14 @@ public class DB {
 			updateRequired |= processVotes(reports, number, dialPrefix, Ratings.getVotes(rating), created);
 			if (rating != Rating.B_MISSED) {
 				Rating oldRating = rating(reports, phone);
-				
+
 				// Record rating.
-				reports.incRating(phone, rating, created);
-				
+				reports.updateRating(phone, rating, 1, created);
+
 				Rating newRating = rating(reports, phone);
 				updateRequired |= oldRating != newRating;
 			}
-			
+
 			pingRelatedNumbers(reports, phone, created);
 		}
 		

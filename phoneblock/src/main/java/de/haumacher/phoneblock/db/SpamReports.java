@@ -328,31 +328,17 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS s
 			set
-				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', 1, 0),
-				s.PING = s.PING + casewhen(#{rating}='C_PING', 1, 0),
-				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', 1, 0),
-				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', 1, 0),
-				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', 1, 0),
-				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', 1, 0),
+				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', #{delta}, 0),
+				s.PING = s.PING + casewhen(#{rating}='C_PING', #{delta}, 0),
+				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', #{delta}, 0),
+				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', #{delta}, 0),
+				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', #{delta}, 0),
+				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', #{delta}, 0),
 				s.UPDATED = greatest(s.UPDATED, #{now}),
-				s.LASTPING = greatest(s.LASTPING, #{now})
+				s.LASTPING = casewhen(#{delta} > 0, greatest(s.LASTPING, #{now}), s.LASTPING)
 			where s.PHONE = #{phone}
 			""")
-	int incRating(String phone, Rating rating, long now);
-
-	@Update("""
-			update NUMBERS s
-			set
-				s.LEGITIMATE = s.LEGITIMATE - casewhen(#{rating}='A_LEGITIMATE', 1, 0),
-				s.PING = s.PING - casewhen(#{rating}='C_PING', 1, 0),
-				s.POLL = s.POLL - casewhen(#{rating}='D_POLL', 1, 0),
-				s.ADVERTISING = s.ADVERTISING - casewhen(#{rating}='E_ADVERTISING', 1, 0),
-				s.GAMBLE = s.GAMBLE - casewhen(#{rating}='F_GAMBLE', 1, 0),
-				s.FRAUD = s.FRAUD - casewhen(#{rating}='G_FRAUD', 1, 0),
-				s.UPDATED = greatest(s.UPDATED, #{now})
-			where s.PHONE = #{phone}
-			""")
-	int decRating(String phone, Rating rating, long now);
+	int updateRating(String phone, Rating rating, int delta, long now);
 
 	@Update("""
 			update NUMBERS s

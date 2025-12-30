@@ -464,4 +464,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get retry => 'Erneut versuchen';
+
+  @override
+  String get editComment => 'Kommentar bearbeiten';
+
+  @override
+  String get commentLabel => 'Kommentar';
+
+  @override
+  String get commentHint => 'Notiz zu dieser Nummer hinzufügen';
+
+  @override
+  String get save => 'Speichern';
+
+  @override
+  String get commentUpdated => 'Kommentar aktualisiert';
+
+  @override
+  String get errorUpdatingComment => 'Fehler beim Aktualisieren des Kommentars';
 }

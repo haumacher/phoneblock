@@ -311,11 +311,13 @@ Future<bool> removeFromWhitelist(String phone, String authToken) async {
   }
 }
 
-/// Updates the comment for a phone number in the user's blacklist.
+/// Updates the comment for a phone number in the user's personalized list.
 /// Returns true if the update was successful, false otherwise.
 /// Requires authentication via [authToken].
-Future<bool> updateBlacklistComment(String phone, String comment, String authToken) async {
+Future<bool> _updatePersonalizedComment(PersonalizedListType listType, String phone, String comment, String authToken) async {
   try {
+    final listName = listType.name; // 'blacklist' or 'whitelist'
+
     final headers = <String, String>{
       "User-Agent": "PhoneBlockMobile/$appVersion",
       "Authorization": "Bearer $authToken",
@@ -328,7 +330,7 @@ Future<bool> updateBlacklistComment(String phone, String comment, String authTok
     });
 
     final response = await http.put(
-      Uri.parse('$pbBaseUrl/api/blacklist/$phone'),
+      Uri.parse('$pbBaseUrl/api/$listName/$phone'),
       headers: headers,
       body: body,
     );
@@ -337,54 +339,30 @@ Future<bool> updateBlacklistComment(String phone, String comment, String authTok
       return true;
     } else {
       if (kDebugMode) {
-        print('Failed to update blacklist comment: ${response.statusCode} - ${response.body}');
+        print('Failed to update $listName comment: ${response.statusCode} - ${response.body}');
       }
       return false;
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Error updating blacklist comment: $e');
+      print('Error updating ${listType.name} comment: $e');
     }
     return false;
   }
+}
+
+/// Updates the comment for a phone number in the user's blacklist.
+/// Returns true if the update was successful, false otherwise.
+/// Requires authentication via [authToken].
+Future<bool> updateBlacklistComment(String phone, String comment, String authToken) async {
+  return _updatePersonalizedComment(PersonalizedListType.blacklist, phone, comment, authToken);
 }
 
 /// Updates the comment for a phone number in the user's whitelist.
 /// Returns true if the update was successful, false otherwise.
 /// Requires authentication via [authToken].
 Future<bool> updateWhitelistComment(String phone, String comment, String authToken) async {
-  try {
-    final headers = <String, String>{
-      "User-Agent": "PhoneBlockMobile/$appVersion",
-      "Authorization": "Bearer $authToken",
-      "Content-Type": "application/json",
-    };
-
-    final body = json.encode({
-      "phone": phone,
-      "comment": comment,
-    });
-
-    final response = await http.put(
-      Uri.parse('$pbBaseUrl/api/whitelist/$phone'),
-      headers: headers,
-      body: body,
-    );
-
-    if (response.statusCode == 204) {
-      return true;
-    } else {
-      if (kDebugMode) {
-        print('Failed to update whitelist comment: ${response.statusCode} - ${response.body}');
-      }
-      return false;
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error updating whitelist comment: $e');
-    }
-    return false;
-  }
+  return _updatePersonalizedComment(PersonalizedListType.whitelist, phone, comment, authToken);
 }
 
 void main() async {

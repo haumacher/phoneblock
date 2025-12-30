@@ -243,8 +243,8 @@ public class PersonalizationServlet extends HttpServlet {
 					// Update vote counts in NUMBERS table
 					spamReports.addVote(phone, voteDelta, now);
 
-					// Decrement the specific rating counter (LEGITIMATE, PING, etc.)
-					spamReports.decRating(phone, rating, now);
+					// Decrement the specific rating counter (LEGITIMATE, PING, etc.) by -1
+					spamReports.updateRating(phone, rating, -1, now);
 
 					LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phone, voteDelta);
 				}

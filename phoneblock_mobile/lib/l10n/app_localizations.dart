@@ -865,6 +865,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Erneut versuchen'**
   String get retry;
+
+  /// No description provided for @editComment.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar bearbeiten'**
+  String get editComment;
+
+  /// No description provided for @commentLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar'**
+  String get commentLabel;
+
+  /// No description provided for @commentHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Notiz zu dieser Nummer hinzufügen'**
+  String get commentHint;
+
+  /// No description provided for @save.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get save;
+
+  /// No description provided for @commentUpdated.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar aktualisiert'**
+  String get commentUpdated;
+
+  /// No description provided for @errorUpdatingComment.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Aktualisieren des Kommentars'**
+  String get errorUpdatingComment;
 }
 
 class _AppLocalizationsDelegate

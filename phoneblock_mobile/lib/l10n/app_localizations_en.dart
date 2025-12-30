@@ -461,4 +461,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get editComment => 'Edit Comment';
+
+  @override
+  String get commentLabel => 'Comment';
+
+  @override
+  String get commentHint => 'Add a note about this number';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get commentUpdated => 'Comment updated';
+
+  @override
+  String get errorUpdatingComment => 'Error updating comment';
 }
