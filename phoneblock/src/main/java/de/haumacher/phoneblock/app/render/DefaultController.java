@@ -187,7 +187,7 @@ public class DefaultController implements WebController {
         		DB db = DBService.getInstance();
         		try (SqlSession tx = db.openSession()) {
         			Users users = tx.getMapper(Users.class);
-        			users.setLocale(login, lang.tag);
+        			users.setLang(login, lang.tag);
         			tx.commit();
         		}
         	}

@@ -355,25 +355,52 @@ message PhoneNumer {
 
 message SearchResult {
 	string phoneId;
-	
+
 	PhoneNumer number;
-	
+
 	repeated UserComment comments;
-	
+
 	PhoneInfo info;
-	
+
 	repeated int searches;
-	
+
 	string aiSummary;
-	
+
 	repeated string relatedNumbers;
-	
+
 	string prev;
-	
+
 	string next;
-	
+
 	Rating topRating;
-	
+
 	map<Rating,int> ratings;
+}
+
+/** Base message with common account settings fields. */
+abstract message AccountData {
+	/** The preferred language tag (e.g., "de", "en-US", "pt-BR"). */
+	@Nullable
+	string lang;
+
+	/** The user's country dial prefix (e.g., "+49", "+1", "+351"). */
+	@Nullable
+	string dialPrefix;
+
+	/** The user's display name. */
+	@Nullable
+	string displayName;
+}
+
+/** Request to update user account settings. */
+message UpdateAccountRequest extends AccountData {
+	// Inherits lang, dialPrefix, displayName from AccountData
+}
+
+/** Response from account settings operations. */
+message AccountSettings extends AccountData {
+	/** The user's email address. */
+	@Nullable
+	string email;
 }
 

@@ -270,11 +270,11 @@ public abstract class LoginFilter implements Filter {
 
 	private static void setSessionUser(HttpSession session, String userName) {
 		session.setAttribute(AUTHENTICATED_USER_ATTR, userName);
-		
+
 		DB db = DBService.getInstance();
 		try (SqlSession tx = db.openSession()) {
 			Users users = tx.getMapper(Users.class);
-			String lang = users.getLocale(userName);
+			String lang = users.getLang(userName);
 			session.setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
 		}
 	}

@@ -318,7 +318,7 @@ public class SearchServlet extends HttpServlet {
 				langs = Collections.singleton(Language.getDefault().tag);
 			} else {
 				Users users = session.getMapper(Users.class);
-				String lang = users.getLocale(userName);
+				String lang = users.getLang(userName);
 				dialPrefix = users.getDialPrefix(userName);
 				langs = Collections.singleton(lang);
 			}

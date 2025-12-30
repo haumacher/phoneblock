@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +47,130 @@ Future<String> _getDeviceName() async {
     return '$capitalizedManufacturer $model';
   } catch (e) {
     return 'Android Device';
+  }
+}
+
+/// Maps ISO 3166-1 alpha-2 country codes to international dial prefixes.
+/// Returns null if the country code is not recognized.
+String? _countryCodeToDialPrefix(String? countryCode) {
+  if (countryCode == null || countryCode.isEmpty) {
+    return null;
+  }
+
+  // Map of common country codes to dial prefixes
+  const countryDialPrefixes = {
+    // Europe
+    'DE': '+49',   // Germany
+    'AT': '+43',   // Austria
+    'CH': '+41',   // Switzerland
+    'FR': '+33',   // France
+    'IT': '+39',   // Italy
+    'ES': '+34',   // Spain
+    'PT': '+351',  // Portugal
+    'NL': '+31',   // Netherlands
+    'BE': '+32',   // Belgium
+    'PL': '+48',   // Poland
+    'CZ': '+420',  // Czech Republic
+    'GB': '+44',   // United Kingdom
+    'IE': '+353',  // Ireland
+    'SE': '+46',   // Sweden
+    'NO': '+47',   // Norway
+    'DK': '+45',   // Denmark
+    'FI': '+358',  // Finland
+
+    // Americas
+    'US': '+1',    // United States
+    'CA': '+1',    // Canada
+    'BR': '+55',   // Brazil
+    'MX': '+52',   // Mexico
+    'AR': '+54',   // Argentina
+
+    // Asia/Pacific
+    'CN': '+86',   // China
+    'JP': '+81',   // Japan
+    'IN': '+91',   // India
+    'AU': '+61',   // Australia
+    'NZ': '+64',   // New Zealand
+    'SG': '+65',   // Singapore
+    'HK': '+852',  // Hong Kong
+    'TW': '+886',  // Taiwan
+    'KR': '+82',   // South Korea
+    'TH': '+66',   // Thailand
+
+    // Middle East/Africa
+    'ZA': '+27',   // South Africa
+    'IL': '+972',  // Israel
+    'AE': '+971',  // United Arab Emirates
+    'SA': '+966',  // Saudi Arabia
+    'TR': '+90',   // Turkey
+  };
+
+  return countryDialPrefixes[countryCode.toUpperCase()];
+}
+
+/// Gets the device's locale information including language tag and dial prefix.
+/// Returns a map with 'lang' (e.g., "de-DE", "en-US") and 'dialPrefix' (e.g., "+49").
+/// If dial prefix cannot be determined, it is omitted from the result.
+Future<Map<String, String>> getDeviceLocale() async {
+  try {
+    final locale = PlatformDispatcher.instance.locale;
+    final languageTag = locale.toLanguageTag(); // e.g., "de-DE", "en-US"
+
+    final result = <String, String>{
+      'lang': languageTag,
+    };
+
+    // Try to determine dial prefix from country code
+    final countryCode = locale.countryCode;
+    final dialPrefix = _countryCodeToDialPrefix(countryCode);
+
+    if (dialPrefix != null) {
+      result['dialPrefix'] = dialPrefix;
+    }
+
+    if (kDebugMode) {
+      print('Device locale: $languageTag, dial prefix: $dialPrefix');
+    }
+
+    return result;
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error getting device locale: $e');
+    }
+    // Return default values on error
+    return {'lang': 'en'};
+  }
+}
+
+/// Updates user account settings on the server with device locale information.
+/// This is called during initial setup to configure the user's language and country preferences.
+/// Errors are logged but do not block the setup flow.
+Future<void> updateAccountSettings(String authToken, Map<String, String> settings) async {
+  try {
+    final url = '$pbBaseUrl/api/account';
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $authToken',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(settings),
+    );
+
+    if (response.statusCode == 200) {
+      if (kDebugMode) {
+        print('Account settings updated successfully: $settings');
+      }
+    } else {
+      if (kDebugMode) {
+        print('Failed to update account settings: ${response.statusCode} - ${response.body}');
+      }
+    }
+  } catch (e) {
+    // Log error but don't block setup flow
+    if (kDebugMode) {
+      print('Error updating account settings: $e');
+    }
   }
 }
 
@@ -1510,7 +1636,15 @@ class VerifyLoginState extends State<VerifyLogin> {
     var token = widget.token;
     setAuthToken(token);
 
-    checkResult = callPhoneBlockApi(pbApiTest, authToken: token);
+    // Verify token and update account settings with device locale
+    checkResult = callPhoneBlockApi(pbApiTest, authToken: token).then((response) async {
+      if (response.statusCode == 200) {
+        // Token is valid, update account settings with device locale
+        final localeSettings = await getDeviceLocale();
+        await updateAccountSettings(token, localeSettings);
+      }
+      return response;
+    });
   }
 
   @override

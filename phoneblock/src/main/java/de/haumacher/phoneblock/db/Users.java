@@ -41,11 +41,11 @@ public interface Users {
 	void setEmail(String login, String email);
 	
 	@Update("update USERS set LOCALE=#{lang} where LOGIN=#{login}")
-	void setLocale(String login, String lang);
-	
+	void setLang(String login, String lang);
+
 	@Select("select LOCALE from USERS where LOGIN=#{login}")
-	String getLocale(String login);
-	
+	String getLang(String login);
+
 	@Update("update USERS set DIAL=#{dial} where LOGIN=#{login}")
 	void setDialPrefix(String login, String dial);
 	
