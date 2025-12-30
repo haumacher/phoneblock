@@ -758,6 +758,202 @@
 				]
 			},
 			"parameters": []
+		},
+		"/blocklist": {
+			"get": {
+				"summary": "Retrieves the current user's personalized blocklist.",
+				"description": "Returns a list of phone numbers that the user has explicitly marked as blocked (blacklist).",
+				"responses": {
+					"200": {
+						"description": "Blocklist retrieved successfully.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NumberList"
+								},
+								"example": {
+									"numbers": ["+491234567890", "+491234567891", "+491234567892"]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "User not found.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "User not found"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
+		},
+		"/blocklist/{phone}": {
+			"delete": {
+				"summary": "Removes a phone number from the user's blocklist.",
+				"description": "Deletes the specified phone number from the user's personalized blocklist.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to remove from the blocklist (e.g., +491234567890)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567890"
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Phone number removed from blocklist successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
+		},
+		"/whitelist": {
+			"get": {
+				"summary": "Retrieves the current user's personalized whitelist.",
+				"description": "Returns a list of phone numbers that the user has explicitly marked as legitimate (whitelist).",
+				"responses": {
+					"200": {
+						"description": "Whitelist retrieved successfully.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NumberList"
+								},
+								"example": {
+									"numbers": ["+491234567893", "+491234567894"]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "User not found.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "User not found"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
+		},
+		"/whitelist/{phone}": {
+			"delete": {
+				"summary": "Removes a phone number from the user's whitelist.",
+				"description": "Deletes the specified phone number from the user's personalized whitelist.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to remove from the whitelist (e.g., +491234567893)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567893"
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Phone number removed from whitelist successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
 		}
 	},
 	"components": {
@@ -819,6 +1015,20 @@
 						"description": "User's email address",
 						"example": "john.doe@example.com",
 						"nullable": true
+					}
+				}
+			},
+			"NumberList": {
+				"type": "object",
+				"description": "A list of phone numbers (used for blacklist/whitelist responses)",
+				"properties": {
+					"numbers": {
+						"type": "array",
+						"description": "List of phone numbers",
+						"items": {
+							"type": "string"
+						},
+						"example": ["+491234567890", "+491234567891", "+491234567892"]
 					}
 				}
 			}

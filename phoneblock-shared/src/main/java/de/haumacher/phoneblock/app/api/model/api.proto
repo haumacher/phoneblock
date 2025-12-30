@@ -408,3 +408,9 @@ message AccountSettings extends AccountData {
 	string email;
 }
 
+/** A list of phone numbers (used for blacklist/whitelist responses). */
+message NumberList {
+	/** Phone numbers in the list. */
+	repeated string numbers;
+}
+
