@@ -1345,7 +1345,8 @@ class _MainScreenState extends State<MainScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => PhoneBlockWebView(
-            phoneNumber: call.phoneNumber,
+            title: call.phoneNumber,
+            path: '/nums/${call.phoneNumber}',
             authToken: token,
           ),
         ),
@@ -1624,14 +1625,28 @@ class RateScreen extends StatelessWidget {
 
 }
 
-/// WebView screen for displaying PhoneBlock phone number details.
+/// Common WebView screen for displaying PhoneBlock web pages.
+///
+/// This widget provides a standardized WebView implementation for displaying
+/// PhoneBlock service pages within the mobile app. It handles:
+/// - Authentication via Bearer token
+/// - Loading indicators
+/// - Proper User-Agent headers
+/// - JavaScript support
 class PhoneBlockWebView extends StatefulWidget {
-  final String phoneNumber;
+  /// The title to display in the app bar.
+  final String title;
+
+  /// The path to load (relative to pbBaseUrl), e.g., '/settings' or '/nums/+1234567890'.
+  final String path;
+
+  /// The authentication token for API access.
   final String authToken;
 
   const PhoneBlockWebView({
     super.key,
-    required this.phoneNumber,
+    required this.title,
+    required this.path,
     required this.authToken,
   });
 
@@ -1665,7 +1680,7 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
         ),
       )
       ..loadRequest(
-        Uri.parse('$pbBaseUrl/nums/${widget.phoneNumber}'),
+        Uri.parse('$pbBaseUrl${widget.path}'),
         headers: {
           'Authorization': 'Bearer ${widget.authToken}',
         },
@@ -1676,72 +1691,7 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.phoneNumber),
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// WebView screen for displaying PhoneBlock server settings.
-class PhoneBlockSettingsWebView extends StatefulWidget {
-  final String authToken;
-
-  const PhoneBlockSettingsWebView({
-    super.key,
-    required this.authToken,
-  });
-
-  @override
-  State<PhoneBlockSettingsWebView> createState() => _PhoneBlockSettingsWebViewState();
-}
-
-class _PhoneBlockSettingsWebViewState extends State<PhoneBlockSettingsWebView> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent('PhoneBlockMobile/$appVersion')
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
-        ),
-      )
-      ..loadRequest(
-        Uri.parse('$pbBaseUrl/settings'),
-        headers: {
-          'Authorization': 'Bearer ${widget.authToken}',
-        },
-      );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.serverSettings),
+        title: Text(widget.title),
       ),
       body: Stack(
         children: [
@@ -2083,7 +2033,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PhoneBlockSettingsWebView(
+                          builder: (context) => PhoneBlockWebView(
+                            title: context.l10n.serverSettings,
+                            path: '/settings',
                             authToken: token,
                           ),
                         ),
