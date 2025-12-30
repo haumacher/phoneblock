@@ -17,6 +17,7 @@ import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.NumberList;
 import de.haumacher.phoneblock.app.api.model.PersonalizedNumber;
@@ -143,7 +144,7 @@ public class PersonalizationServlet extends HttpServlet {
 			return;
 		}
 
-		String phone = pathInfo.substring(1); // Remove leading '/'
+		String phoneText = pathInfo.substring(1); // Remove leading '/'
 
 		// Read comment from request body
 		PersonalizedNumber update = PersonalizedNumber.readPersonalizedNumber(new JsonReader(new ReaderAdapter(req.getReader())));
@@ -156,6 +157,15 @@ public class PersonalizationServlet extends HttpServlet {
 
 			if (userId == null) {
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+				return;
+			}
+
+			// Get user's dial prefix and normalize phone number
+			String dialPrefix = users.getDialPrefix(userName);
+			String phone = NumberAnalyzer.toId(phoneText, dialPrefix);
+
+			if (phone == null) {
+				ServletUtil.sendError(resp, "Invalid phone number format");
 				return;
 			}
 
@@ -189,7 +199,7 @@ public class PersonalizationServlet extends HttpServlet {
 			return;
 		}
 
-		String phone = pathInfo.substring(1); // Remove leading '/'
+		String phoneText = pathInfo.substring(1); // Remove leading '/'
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
@@ -198,6 +208,15 @@ public class PersonalizationServlet extends HttpServlet {
 
 			if (userId == null) {
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+				return;
+			}
+
+			// Get user's dial prefix and normalize phone number
+			String dialPrefix = users.getDialPrefix(userName);
+			String phone = NumberAnalyzer.toId(phoneText, dialPrefix);
+
+			if (phone == null) {
+				ServletUtil.sendError(resp, "Invalid phone number format");
 				return;
 			}
 
