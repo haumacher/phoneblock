@@ -605,9 +605,224 @@
 				]
 			},
 			"parameters": []
+		},
+		"/account": {
+			"get": {
+				"summary": "Retrieves the current user's account settings.",
+				"description": "Returns language preference, country dial prefix, display name, and email address for the authenticated user.",
+				"responses": {
+					"200": {
+						"description": "Account settings retrieved successfully.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountSettings"
+								},
+								"example": {
+									"lang": "de-DE",
+									"dialPrefix": "+49",
+									"displayName": "John Doe",
+									"email": "john.doe@example.com"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "User settings not found.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "User settings not found"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"put": {
+				"summary": "Updates the current user's account settings.",
+				"description": "Updates language preference, country dial prefix, or display name. All fields are optional. If countryCode is provided, the server converts it to the corresponding dial prefix.",
+				"requestBody": {
+					"description": "Account settings to update. All fields are optional.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateAccountRequest"
+							},
+							"examples": {
+								"updateLanguage": {
+									"summary": "Update language preference",
+									"value": {
+										"lang": "en-US"
+									}
+								},
+								"updateCountryCode": {
+									"summary": "Update country via country code",
+									"value": {
+										"countryCode": "DE"
+									}
+								},
+								"updateDialPrefix": {
+									"summary": "Update dial prefix directly",
+									"value": {
+										"dialPrefix": "+49"
+									}
+								},
+								"updateAll": {
+									"summary": "Update all fields",
+									"value": {
+										"lang": "de-DE",
+										"countryCode": "DE",
+										"displayName": "John Doe"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Account settings updated successfully. Returns the updated settings.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountSettings"
+								},
+								"example": {
+									"lang": "de-DE",
+									"dialPrefix": "+49",
+									"displayName": "John Doe",
+									"email": "john.doe@example.com"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request. Returns error message describing the validation failure.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"examples": {
+									"invalidLang": {
+										"value": "Invalid language tag format. Expected format: 'de' or 'en-US'"
+									},
+									"invalidCountryCode": {
+										"value": "Invalid country code. Expected ISO 3166-1 alpha-2 format (e.g., 'DE', 'US', 'BR')"
+									},
+									"invalidDialPrefix": {
+										"value": "Invalid dial prefix format. Expected format: '+XX' (e.g., '+49', '+1', '+351')"
+									},
+									"emptyDisplayName": {
+										"value": "Display name must not be empty"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": []
 		}
 	},
 	"components": {
+		"schemas": {
+			"UpdateAccountRequest": {
+				"type": "object",
+				"description": "Request to update user account settings. All fields are optional.",
+				"properties": {
+					"lang": {
+						"type": "string",
+						"description": "Preferred language tag (e.g., 'de', 'en-US', 'pt-BR')",
+						"example": "de-DE",
+						"nullable": true
+					},
+					"dialPrefix": {
+						"type": "string",
+						"description": "User's country dial prefix (e.g., '+49', '+1', '+351')",
+						"example": "+49",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string",
+						"description": "User's display name",
+						"example": "John Doe",
+						"nullable": true
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "ISO 3166-1 alpha-2 country code (e.g., 'DE', 'US', 'BR'). If provided, the server will convert it to the corresponding dial prefix.",
+						"example": "DE",
+						"nullable": true
+					}
+				}
+			},
+			"AccountSettings": {
+				"type": "object",
+				"description": "User account settings",
+				"properties": {
+					"lang": {
+						"type": "string",
+						"description": "Preferred language tag",
+						"example": "de-DE",
+						"nullable": true
+					},
+					"dialPrefix": {
+						"type": "string",
+						"description": "User's country dial prefix",
+						"example": "+49",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string",
+						"description": "User's display name",
+						"example": "John Doe",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"description": "User's email address",
+						"example": "john.doe@example.com",
+						"nullable": true
+					}
+				}
+			}
+		},
 		"securitySchemes": {
 			"PhoneBlockUser": {
 				"description": "A PhoneBlock user name and its password. The method of authorization is deprecated. Better use an API key.",
