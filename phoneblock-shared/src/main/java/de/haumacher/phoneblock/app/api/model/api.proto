@@ -408,9 +408,19 @@ message AccountSettings extends AccountData {
 	string email;
 }
 
+/** Entry in a personalized number list with optional comment. */
+message PersonalizedNumber {
+	/** The phone number. */
+	string phone;
+
+	/** User's comment for this number (may be null). */
+	@Nullable
+	string comment;
+}
+
 /** A list of phone numbers (used for blacklist/whitelist responses). */
 message NumberList {
-	/** Phone numbers in the list. */
-	repeated string numbers;
+	/** Phone numbers with optional comments. */
+	repeated PersonalizedNumber numbers;
 }
 

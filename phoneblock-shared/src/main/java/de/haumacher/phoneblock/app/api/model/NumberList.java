@@ -18,14 +18,14 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getNumbers() */
 	public static final String NUMBERS__PROP = "numbers";
 
-	private final java.util.List<String> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
 		@Override
-		protected void beforeAdd(int index, String element) {
+		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.PersonalizedNumber element) {
 			_listener.beforeAdd(NumberList.this, NUMBERS__PROP, index, element);
 		}
 
 		@Override
-		protected void afterRemove(int index, String element) {
+		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.PersonalizedNumber element) {
 			_listener.afterRemove(NumberList.this, NUMBERS__PROP, index, element);
 		}
 	};
@@ -40,22 +40,23 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	}
 
 	/**
-	 * Phone numbers in the list.
+	 * Phone numbers with optional comments.
 	 */
-	public final java.util.List<String> getNumbers() {
+	public final java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> getNumbers() {
 		return _numbers;
 	}
 
 	/**
 	 * @see #getNumbers()
 	 */
-	public de.haumacher.phoneblock.app.api.model.NumberList setNumbers(java.util.List<? extends String> value) {
+	public de.haumacher.phoneblock.app.api.model.NumberList setNumbers(java.util.List<? extends de.haumacher.phoneblock.app.api.model.PersonalizedNumber> value) {
 		internalSetNumbers(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getNumbers()} without chain call utility. */
-	protected final void internalSetNumbers(java.util.List<? extends String> value) {
+	protected final void internalSetNumbers(java.util.List<? extends de.haumacher.phoneblock.app.api.model.PersonalizedNumber> value) {
+		if (value == null) throw new IllegalArgumentException("Property 'numbers' cannot be null.");
 		_numbers.clear();
 		_numbers.addAll(value);
 	}
@@ -63,20 +64,20 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/**
 	 * Adds a value to the {@link #getNumbers()} list.
 	 */
-	public de.haumacher.phoneblock.app.api.model.NumberList addNumber(String value) {
+	public de.haumacher.phoneblock.app.api.model.NumberList addNumber(de.haumacher.phoneblock.app.api.model.PersonalizedNumber value) {
 		internalAddNumber(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addNumber(String)} without chain call utility. */
-	protected final void internalAddNumber(String value) {
+	/** Implementation of {@link #addNumber(de.haumacher.phoneblock.app.api.model.PersonalizedNumber)} without chain call utility. */
+	protected final void internalAddNumber(de.haumacher.phoneblock.app.api.model.PersonalizedNumber value) {
 		_numbers.add(value);
 	}
 
 	/**
 	 * Removes a value from the {@link #getNumbers()} list.
 	 */
-	public final void removeNumber(String value) {
+	public final void removeNumber(de.haumacher.phoneblock.app.api.model.PersonalizedNumber value) {
 		_numbers.remove(value);
 	}
 
@@ -127,7 +128,7 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
-			case NUMBERS__PROP: internalSetNumbers(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
+			case NUMBERS__PROP: internalSetNumbers(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.app.api.model.PersonalizedNumber.class, value)); break;
 		}
 	}
 
@@ -148,8 +149,8 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		super.writeFields(out);
 		out.name(NUMBERS__PROP);
 		out.beginArray();
-		for (String x : getNumbers()) {
-			out.value(x);
+		for (de.haumacher.phoneblock.app.api.model.PersonalizedNumber x : getNumbers()) {
+			x.writeTo(out);
 		}
 		out.endArray();
 	}
@@ -158,10 +159,10 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case NUMBERS__PROP: {
-				java.util.List<String> newValue = new java.util.ArrayList<>();
+				java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.phoneblock.app.api.model.PersonalizedNumber.readPersonalizedNumber(in));
 				}
 				in.endArray();
 				setNumbers(newValue);
@@ -190,12 +191,15 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
-		out.writeAttribute(NUMBERS__XML_ATTR, getNumbers().stream().map(x -> x).collect(java.util.stream.Collectors.joining(", ")));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
 	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
-		// No element fields.
+		out.writeStartElement(NUMBERS__XML_ATTR);
+		for (de.haumacher.phoneblock.app.api.model.PersonalizedNumber element : getNumbers()) {
+			element.writeTo(out);
+		}
+		out.writeEndElement();
 	}
 
 	/** Creates a new {@link de.haumacher.phoneblock.app.api.model.NumberList} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
@@ -228,10 +232,6 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Parses the given attribute value and assigns it to the field with the given name. */
 	protected void readFieldXmlAttribute(String name, String value) {
 		switch (name) {
-			case NUMBERS__XML_ATTR: {
-				setNumbers(java.util.Arrays.stream(value.split("\\s*,\\s*")).map(x -> x).collect(java.util.stream.Collectors.toList()));
-				break;
-			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -242,7 +242,7 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
 		switch (localName) {
 			case NUMBERS__XML_ATTR: {
-				setNumbers(java.util.Arrays.stream(in.getElementText().split("\\s*,\\s*")).map(x -> x).collect(java.util.stream.Collectors.toList()));
+				internalReadNumbersListXml(in);
 				break;
 			}
 			default: {
@@ -258,6 +258,17 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
 				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
 			}
+		}
+	}
+
+	private void internalReadNumbersListXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+
+			addNumber(de.haumacher.phoneblock.app.api.model.PersonalizedNumber.readPersonalizedNumber_XmlContent(in));
 		}
 	}
 

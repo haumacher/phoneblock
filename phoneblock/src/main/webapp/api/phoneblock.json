@@ -772,7 +772,16 @@
 									"$ref": "#/components/schemas/NumberList"
 								},
 								"example": {
-									"numbers": ["+491234567890", "+491234567891", "+491234567892"]
+									"numbers": [
+										{
+											"phone": "+491234567890",
+											"comment": "Spam caller"
+										},
+										{
+											"phone": "+491234567891",
+											"comment": null
+										}
+									]
 								}
 							}
 						}
@@ -870,7 +879,16 @@
 									"$ref": "#/components/schemas/NumberList"
 								},
 								"example": {
-									"numbers": ["+491234567893", "+491234567894"]
+									"numbers": [
+										{
+											"phone": "+491234567893",
+											"comment": "My doctor"
+										},
+										{
+											"phone": "+491234567894",
+											"comment": null
+										}
+									]
 								}
 							}
 						}
@@ -1020,17 +1038,34 @@
 			},
 			"NumberList": {
 				"type": "object",
-				"description": "A list of phone numbers (used for blacklist/whitelist responses)",
+				"description": "A list of phone numbers with optional comments (used for blacklist/whitelist responses)",
 				"properties": {
 					"numbers": {
 						"type": "array",
-						"description": "List of phone numbers",
+						"description": "List of phone numbers with optional comments",
 						"items": {
-							"type": "string"
-						},
-						"example": ["+491234567890", "+491234567891", "+491234567892"]
+							"$ref": "#/components/schemas/PersonalizedNumber"
+						}
 					}
 				}
+			},
+			"PersonalizedNumber": {
+				"type": "object",
+				"description": "A phone number with an optional user comment",
+				"properties": {
+					"phone": {
+						"type": "string",
+						"description": "The phone number",
+						"example": "+491234567890"
+					},
+					"comment": {
+						"type": "string",
+						"description": "User's comment for this number (may be null)",
+						"example": "Spam caller",
+						"nullable": true
+					}
+				},
+				"required": ["phone"]
 			}
 		},
 		"securitySchemes": {

@@ -4,7 +4,10 @@
 package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -14,9 +17,11 @@ import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.NumberList;
+import de.haumacher.phoneblock.app.api.model.PersonalizedNumber;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
@@ -79,18 +84,37 @@ public class PersonalizationServlet extends HttpServlet {
 			}
 
 			BlockList blockList = session.getMapper(BlockList.class);
-			List<String> numbers;
+			List<String> phoneNumbers;
 
 			String servletPath = req.getServletPath();
 			if (BLACKLIST_PATH.equals(servletPath)) {
-				numbers = blockList.getPersonalizations(userId);
-				LOG.debug("Retrieved {} blocked numbers for user '{}'", numbers.size(), userName);
+				phoneNumbers = blockList.getPersonalizations(userId);
+				LOG.debug("Retrieved {} blocked numbers for user '{}'", phoneNumbers.size(), userName);
 			} else if (WHITELIST_PATH.equals(servletPath)) {
-				numbers = blockList.getWhiteList(userId);
-				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", numbers.size(), userName);
+				phoneNumbers = blockList.getWhiteList(userId);
+				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", phoneNumbers.size(), userName);
 			} else {
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown endpoint");
 				return;
+			}
+
+			// Fetch comments for the numbers
+			SpamReports spamReports = session.getMapper(SpamReports.class);
+			Map<String, String> commentsMap = new HashMap<>();
+			if (!phoneNumbers.isEmpty()) {
+				List<Map<String, String>> userComments = spamReports.getUserComments(userId, phoneNumbers);
+				for (Map<String, String> entry : userComments) {
+					commentsMap.put(entry.get("phone"), entry.get("comment"));
+				}
+			}
+
+			// Build PersonalizedNumber list with comments
+			List<PersonalizedNumber> numbers = new ArrayList<>();
+			for (String phone : phoneNumbers) {
+				PersonalizedNumber pn = PersonalizedNumber.create()
+					.setPhone(phone)
+					.setComment(commentsMap.get(phone));
+				numbers.add(pn);
 			}
 
 			sendNumberList(resp, numbers);
@@ -142,7 +166,7 @@ public class PersonalizationServlet extends HttpServlet {
 	/**
 	 * Sends number list as JSON response.
 	 */
-	private void sendNumberList(HttpServletResponse resp, List<String> numbers) throws IOException {
+	private void sendNumberList(HttpServletResponse resp, List<PersonalizedNumber> numbers) throws IOException {
 		NumberList response = NumberList.create()
 				.setNumbers(numbers);
 

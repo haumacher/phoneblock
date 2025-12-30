@@ -2505,7 +2505,7 @@ class PersonalizedNumberListScreen extends StatefulWidget {
 }
 
 class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScreen> {
-  List<String> _numbers = [];
+  List<api.PersonalizedNumber> _numbers = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -2552,17 +2552,17 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
   }
 
   /// Remove a number from the list.
-  Future<void> _removeNumber(String phone) async {
+  Future<void> _removeNumber(api.PersonalizedNumber personalizedNumber) async {
     final scaffold = ScaffoldMessenger.of(context);
     final localizations = context.l10n;
 
     final success = _isBlacklist
-        ? await removeFromBlacklist(phone, widget.authToken)
-        : await removeFromWhitelist(phone, widget.authToken);
+        ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
+        : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
 
     if (success) {
       setState(() {
-        _numbers.remove(phone);
+        _numbers.remove(personalizedNumber);
       });
       scaffold.showSnackBar(
         SnackBar(
@@ -2632,7 +2632,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                       child: ListView.builder(
                         itemCount: _numbers.length,
                         itemBuilder: (context, index) {
-                          final phone = _numbers[index];
+                          final personalizedNumber = _numbers[index];
+                          final phone = personalizedNumber.phone;
                           return Dismissible(
                             key: Key(phone),
                             direction: DismissDirection.endToStart,
@@ -2662,11 +2663,20 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                               );
                             },
                             onDismissed: (direction) {
-                              _removeNumber(phone);
+                              _removeNumber(personalizedNumber);
                             },
                             child: ListTile(
                               leading: icon,
                               title: Text(phone),
+                              subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
+                                  ? Text(
+                                      personalizedNumber.comment!,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    )
+                                  : null,
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete_outline),
                                 onPressed: () async {
@@ -2688,7 +2698,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                                     ),
                                   );
                                   if (confirmed == true) {
-                                    _removeNumber(phone);
+                                    _removeNumber(personalizedNumber);
                                   }
                                 },
                               ),

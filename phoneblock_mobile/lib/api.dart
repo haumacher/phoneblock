@@ -1717,14 +1717,288 @@ class PhoneNumer extends _JsonObject {
 
 }
 
-/// A list of phone numbers (used for blacklist/whitelist responses).
+/// Visitor interface for AccountData.
+abstract class AccountDataVisitor<R, A> {
+	R visitUpdateAccountRequest(UpdateAccountRequest self, A arg);
+	R visitAccountSettings(AccountSettings self, A arg);
+}
+
+///  Base message with common account settings fields.
+abstract class AccountData extends _JsonObject {
+	///  The preferred language tag (e.g., "de", "en-US", "pt-BR").
+	String? lang;
+
+	///  The user's country dial prefix (e.g., "+49", "+1", "+351").
+	String? dialPrefix;
+
+	///  The user's display name.
+	String? displayName;
+
+	/// Creates a AccountData.
+	AccountData({
+			this.lang, 
+			this.dialPrefix, 
+			this.displayName, 
+	});
+
+	/// Parses a AccountData from a string source.
+	static AccountData? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a AccountData instance from the given reader.
+	static AccountData? read(JsonReader json) {
+		AccountData? result;
+
+		json.expectArray();
+		if (!json.hasNext()) {
+			return null;
+		}
+
+		switch (json.expectString()) {
+			case "UpdateAccountRequest": result = UpdateAccountRequest(); break;
+			case "AccountSettings": result = AccountSettings(); break;
+			default: result = null;
+		}
+
+		if (!json.hasNext() || json.tryNull()) {
+			return null;
+		}
+
+		if (result == null) {
+			json.skipAnyValue();
+		} else {
+			result._readContent(json);
+		}
+		json.endArray();
+
+		return result;
+	}
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "lang": {
+				lang = json.expectString();
+				break;
+			}
+			case "dialPrefix": {
+				dialPrefix = json.expectString();
+				break;
+			}
+			case "displayName": {
+				displayName = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		var _lang = lang;
+		if (_lang != null) {
+			json.addKey("lang");
+			json.addString(_lang);
+		}
+
+		var _dialPrefix = dialPrefix;
+		if (_dialPrefix != null) {
+			json.addKey("dialPrefix");
+			json.addString(_dialPrefix);
+		}
+
+		var _displayName = displayName;
+		if (_displayName != null) {
+			json.addKey("displayName");
+			json.addString(_displayName);
+		}
+	}
+
+	R visitAccountData<R, A>(AccountDataVisitor<R, A> v, A arg);
+
+}
+
+///  Request to update user account settings.
+class UpdateAccountRequest extends AccountData {
+	///  ISO 3166-1 alpha-2 country code (e.g., "DE", "US", "BR"). If provided, the server will convert it to the corresponding dial prefix.
+	String? countryCode;
+
+	/// Creates a UpdateAccountRequest.
+	UpdateAccountRequest({
+			super.lang, 
+			super.dialPrefix, 
+			super.displayName, 
+			this.countryCode, 
+	});
+
+	/// Parses a UpdateAccountRequest from a string source.
+	static UpdateAccountRequest? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a UpdateAccountRequest instance from the given reader.
+	static UpdateAccountRequest read(JsonReader json) {
+		UpdateAccountRequest result = UpdateAccountRequest();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "UpdateAccountRequest";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "countryCode": {
+				countryCode = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		var _countryCode = countryCode;
+		if (_countryCode != null) {
+			json.addKey("countryCode");
+			json.addString(_countryCode);
+		}
+	}
+
+	@override
+	R visitAccountData<R, A>(AccountDataVisitor<R, A> v, A arg) => v.visitUpdateAccountRequest(this, arg);
+
+}
+
+///  Response from account settings operations.
+class AccountSettings extends AccountData {
+	///  The user's email address.
+	String? email;
+
+	/// Creates a AccountSettings.
+	AccountSettings({
+			super.lang, 
+			super.dialPrefix, 
+			super.displayName, 
+			this.email, 
+	});
+
+	/// Parses a AccountSettings from a string source.
+	static AccountSettings? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a AccountSettings instance from the given reader.
+	static AccountSettings read(JsonReader json) {
+		AccountSettings result = AccountSettings();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "AccountSettings";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "email": {
+				email = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		var _email = email;
+		if (_email != null) {
+			json.addKey("email");
+			json.addString(_email);
+		}
+	}
+
+	@override
+	R visitAccountData<R, A>(AccountDataVisitor<R, A> v, A arg) => v.visitAccountSettings(this, arg);
+
+}
+
+///  Entry in a personalized number list with optional comment.
+class PersonalizedNumber extends _JsonObject {
+	///  The phone number.
+	String phone;
+
+	///  User's comment for this number (may be null).
+	String? comment;
+
+	/// Creates a PersonalizedNumber.
+	PersonalizedNumber({
+			this.phone = "", 
+			this.comment, 
+	});
+
+	/// Parses a PersonalizedNumber from a string source.
+	static PersonalizedNumber? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a PersonalizedNumber instance from the given reader.
+	static PersonalizedNumber read(JsonReader json) {
+		PersonalizedNumber result = PersonalizedNumber();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "PersonalizedNumber";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "phone": {
+				phone = json.expectString();
+				break;
+			}
+			case "comment": {
+				comment = json.expectString();
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("phone");
+		json.addString(phone);
+
+		var _comment = comment;
+		if (_comment != null) {
+			json.addKey("comment");
+			json.addString(_comment);
+		}
+	}
+
+}
+
+///  A list of phone numbers (used for blacklist/whitelist responses).
 class NumberList extends _JsonObject {
-	/// Phone numbers in the list.
-	List<String> numbers;
+	///  Phone numbers with optional comments.
+	List<PersonalizedNumber> numbers;
 
 	/// Creates a NumberList.
 	NumberList({
-		this.numbers = const [],
+			this.numbers = const [], 
 	});
 
 	/// Parses a NumberList from a string source.
@@ -1750,7 +2024,10 @@ class NumberList extends _JsonObject {
 				numbers = [];
 				while (json.hasNext()) {
 					if (!json.tryNull()) {
-						numbers.add(json.expectString());
+						var value = PersonalizedNumber.read(json);
+						if (value != null) {
+							numbers.add(value);
+						}
 					}
 				}
 				break;
@@ -1766,9 +2043,10 @@ class NumberList extends _JsonObject {
 		json.addKey("numbers");
 		json.startArray();
 		for (var _element in numbers) {
-			json.addString(_element);
+			_element.writeContent(json);
 		}
 		json.endArray();
 	}
 
 }
+

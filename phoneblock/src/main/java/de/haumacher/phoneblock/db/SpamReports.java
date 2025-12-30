@@ -5,11 +5,14 @@ package de.haumacher.phoneblock.db;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -391,6 +394,23 @@ public interface SpamReports {
 
 	@Delete("delete from COMMENTS where USERID = #{userId} and PHONE = #{phone}")
 	int deleteUserComment(long userId, String phone);
+
+	@Select("""
+			<script>
+			select s.PHONE, s.COMMENT
+			from COMMENTS s
+			where s.USERID = #{userId}
+			and s.PHONE in
+			<foreach item="item" index="index" collection="phones" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			</script>
+			""")
+	@Results({
+		@Result(property = "phone", column = "PHONE"),
+		@Result(property = "comment", column = "COMMENT")
+	})
+	List<Map<String, String>> getUserComments(long userId, Collection<String> phones);
 
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);
