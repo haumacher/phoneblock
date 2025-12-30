@@ -56,7 +56,12 @@ import jakarta.servlet.http.HttpServletResponse;
  * <b>DELETE /api/whitelist/{phone}</b> - Remove phone number from whitelist
  * </p>
  */
-@WebServlet(urlPatterns = {PersonalizationServlet.BLACKLIST_PATH, PersonalizationServlet.WHITELIST_PATH})
+@WebServlet(urlPatterns = {
+	PersonalizationServlet.BLACKLIST_PATH,
+	PersonalizationServlet.WHITELIST_PATH,
+	PersonalizationServlet.BLACKLIST_PATH + "/*",
+	PersonalizationServlet.WHITELIST_PATH + "/*"
+})
 public class PersonalizationServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PersonalizationServlet.class);
