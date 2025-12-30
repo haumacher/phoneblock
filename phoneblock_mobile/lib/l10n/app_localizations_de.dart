@@ -392,4 +392,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get commentHintLegitimate =>
       'Warum ist das legitim? Wer hat Sie angerufen? Bitte höflich bleiben.';
+
+  @override
+  String get serverSettings => 'Server-Einstellungen';
+
+  @override
+  String get serverSettingsDescription =>
+      'Verwalten Sie Ihre PhoneBlock-Kontoeinstellungen';
 }

@@ -1691,6 +1691,71 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
   }
 }
 
+/// WebView screen for displaying PhoneBlock server settings.
+class PhoneBlockSettingsWebView extends StatefulWidget {
+  final String authToken;
+
+  const PhoneBlockSettingsWebView({
+    super.key,
+    required this.authToken,
+  });
+
+  @override
+  State<PhoneBlockSettingsWebView> createState() => _PhoneBlockSettingsWebViewState();
+}
+
+class _PhoneBlockSettingsWebViewState extends State<PhoneBlockSettingsWebView> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent('PhoneBlockMobile/$appVersion')
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            setState(() {
+              _isLoading = true;
+            });
+          },
+          onPageFinished: (String url) {
+            setState(() {
+              _isLoading = false;
+            });
+          },
+        ),
+      )
+      ..loadRequest(
+        Uri.parse('$pbBaseUrl/settings'),
+        headers: {
+          'Authorization': 'Bearer ${widget.authToken}',
+        },
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.l10n.serverSettings),
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Settings screen for app configuration.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -1994,6 +2059,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                   ),
+                ),
+                const Divider(),
+                ListTile(
+                  title: Text(context.l10n.serverSettings),
+                  subtitle: Text(context.l10n.serverSettingsDescription),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    String? token = await getAuthToken();
+                    if (token == null) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(context.l10n.notLoggedInShort),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
+                    if (mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PhoneBlockSettingsWebView(
+                            authToken: token,
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 ),
                 const Divider(),
                 Padding(

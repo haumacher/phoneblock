@@ -390,4 +390,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get commentHintLegitimate =>
       'Why is this legitimate? Who called you? Please be respectful.';
+
+  @override
+  String get serverSettings => 'Server Settings';
+
+  @override
+  String get serverSettingsDescription =>
+      'Manage your PhoneBlock account settings';
 }

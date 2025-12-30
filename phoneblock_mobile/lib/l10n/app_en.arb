@@ -211,5 +211,9 @@
 
   "addCommentLegitimate": "Add Comment (Optional)",
 
-  "commentHintLegitimate": "Why is this legitimate? Who called you? Please be respectful."
+  "commentHintLegitimate": "Why is this legitimate? Who called you? Please be respectful.",
+
+  "serverSettings": "Server Settings",
+
+  "serverSettingsDescription": "Manage your PhoneBlock account settings"
 }

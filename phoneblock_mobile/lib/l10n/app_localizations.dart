@@ -733,6 +733,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Warum ist das legitim? Wer hat Sie angerufen? Bitte höflich bleiben.'**
   String get commentHintLegitimate;
+
+  /// Server settings menu item
+  ///
+  /// In de, this message translates to:
+  /// **'Server-Einstellungen'**
+  String get serverSettings;
+
+  /// Description for server settings
+  ///
+  /// In de, this message translates to:
+  /// **'Verwalten Sie Ihre PhoneBlock-Kontoeinstellungen'**
+  String get serverSettingsDescription;
 }
 
 class _AppLocalizationsDelegate
