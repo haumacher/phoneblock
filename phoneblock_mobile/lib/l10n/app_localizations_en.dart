@@ -397,4 +397,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get serverSettingsDescription =>
       'Manage your PhoneBlock account settings';
+
+  @override
+  String get searchNumber => 'Search Number';
+
+  @override
+  String get searchPhoneNumber => 'Search Phone Number';
+
+  @override
+  String get enterPhoneNumber => 'Enter phone number';
+
+  @override
+  String get phoneNumberHint => 'e.g. +49 123 456789';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get invalidPhoneNumber => 'Please enter a valid phone number';
 }

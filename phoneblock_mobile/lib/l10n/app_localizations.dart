@@ -745,6 +745,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verwalten Sie Ihre PhoneBlock-Kontoeinstellungen'**
   String get serverSettingsDescription;
+
+  /// Search number button tooltip
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer suchen'**
+  String get searchNumber;
+
+  /// Search phone number dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Telefonnummer suchen'**
+  String get searchPhoneNumber;
+
+  /// Enter phone number label
+  ///
+  /// In de, this message translates to:
+  /// **'Telefonnummer eingeben'**
+  String get enterPhoneNumber;
+
+  /// Phone number hint text
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. +49 123 456789'**
+  String get phoneNumberHint;
+
+  /// Search button
+  ///
+  /// In de, this message translates to:
+  /// **'Suchen'**
+  String get search;
+
+  /// Error message for invalid phone number
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte geben Sie eine gültige Telefonnummer ein'**
+  String get invalidPhoneNumber;
 }
 
 class _AppLocalizationsDelegate

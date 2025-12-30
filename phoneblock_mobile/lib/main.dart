@@ -663,6 +663,13 @@ class _MainScreenState extends State<MainScreen> {
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: context.l10n.searchNumber,
+              onPressed: () {
+                _showSearchDialog(context);
+              },
+            ),
+            IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
                 Navigator.push(
@@ -1322,6 +1329,97 @@ class _MainScreenState extends State<MainScreen> {
           ),
         );
       }
+    }
+  }
+
+  /// Shows a dialog to search for a phone number.
+  void _showSearchDialog(BuildContext context) {
+    final TextEditingController controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(context.l10n.searchPhoneNumber),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              labelText: context.l10n.enterPhoneNumber,
+              hintText: context.l10n.phoneNumberHint,
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+            onSubmitted: (value) {
+              Navigator.of(dialogContext).pop();
+              _searchPhoneNumber(value.trim());
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _searchPhoneNumber(controller.text.trim());
+              },
+              child: Text(context.l10n.search),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Searches for a phone number and opens it in the PhoneBlock WebView.
+  Future<void> _searchPhoneNumber(String phoneNumber) async {
+    if (phoneNumber.isEmpty) {
+      return;
+    }
+
+    // Remove spaces and special characters, keep only digits and +
+    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+
+    if (cleanedNumber.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.invalidPhoneNumber),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    String? token = await getAuthToken();
+    if (token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.notLoggedInShort),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhoneBlockWebView(
+            title: cleanedNumber,
+            path: '/nums/$cleanedNumber',
+            authToken: token,
+          ),
+        ),
+      );
     }
   }
 

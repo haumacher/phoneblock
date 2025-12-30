@@ -619,5 +619,35 @@
   "serverSettingsDescription": "Verwalten Sie Ihre PhoneBlock-Kontoeinstellungen",
   "@serverSettingsDescription": {
     "description": "Description for server settings"
+  },
+
+  "searchNumber": "Nummer suchen",
+  "@searchNumber": {
+    "description": "Search number button tooltip"
+  },
+
+  "searchPhoneNumber": "Telefonnummer suchen",
+  "@searchPhoneNumber": {
+    "description": "Search phone number dialog title"
+  },
+
+  "enterPhoneNumber": "Telefonnummer eingeben",
+  "@enterPhoneNumber": {
+    "description": "Enter phone number label"
+  },
+
+  "phoneNumberHint": "z.B. +49 123 456789",
+  "@phoneNumberHint": {
+    "description": "Phone number hint text"
+  },
+
+  "search": "Suchen",
+  "@search": {
+    "description": "Search button"
+  },
+
+  "invalidPhoneNumber": "Bitte geben Sie eine gültige Telefonnummer ein",
+  "@invalidPhoneNumber": {
+    "description": "Error message for invalid phone number"
   }
 }

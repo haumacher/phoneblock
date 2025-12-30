@@ -215,5 +215,17 @@
 
   "serverSettings": "Server Settings",
 
-  "serverSettingsDescription": "Manage your PhoneBlock account settings"
+  "serverSettingsDescription": "Manage your PhoneBlock account settings",
+
+  "searchNumber": "Search Number",
+
+  "searchPhoneNumber": "Search Phone Number",
+
+  "enterPhoneNumber": "Enter phone number",
+
+  "phoneNumberHint": "e.g. +49 123 456789",
+
+  "search": "Search",
+
+  "invalidPhoneNumber": "Please enter a valid phone number"
 }

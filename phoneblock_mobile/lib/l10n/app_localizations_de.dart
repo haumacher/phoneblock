@@ -399,4 +399,23 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get serverSettingsDescription =>
       'Verwalten Sie Ihre PhoneBlock-Kontoeinstellungen';
+
+  @override
+  String get searchNumber => 'Nummer suchen';
+
+  @override
+  String get searchPhoneNumber => 'Telefonnummer suchen';
+
+  @override
+  String get enterPhoneNumber => 'Telefonnummer eingeben';
+
+  @override
+  String get phoneNumberHint => 'z.B. +49 123 456789';
+
+  @override
+  String get search => 'Suchen';
+
+  @override
+  String get invalidPhoneNumber =>
+      'Bitte geben Sie eine gültige Telefonnummer ein';
 }
