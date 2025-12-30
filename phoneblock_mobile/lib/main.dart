@@ -203,6 +203,114 @@ Future<http.Response> callPhoneBlockApi(String url, {String? authToken}) async {
   return await http.get(Uri.parse(url), headers: headers);
 }
 
+/// Fetches the user's blocklist (blacklist) from the PhoneBlock API.
+/// Returns a NumberList containing all phone numbers the user has explicitly blocked.
+/// Requires authentication via [authToken].
+Future<api.NumberList?> fetchBlocklist(String authToken) async {
+  try {
+    final response = await callPhoneBlockApi('$pbBaseUrl/api/blocklist', authToken: authToken);
+
+    if (response.statusCode == 200) {
+      return api.NumberList.fromString(response.body);
+    } else {
+      if (kDebugMode) {
+        print('Failed to fetch blocklist: ${response.statusCode} - ${response.body}');
+      }
+      return null;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error fetching blocklist: $e');
+    }
+    return null;
+  }
+}
+
+/// Fetches the user's whitelist (legitimate numbers) from the PhoneBlock API.
+/// Returns a NumberList containing all phone numbers the user has explicitly marked as legitimate.
+/// Requires authentication via [authToken].
+Future<api.NumberList?> fetchWhitelist(String authToken) async {
+  try {
+    final response = await callPhoneBlockApi('$pbBaseUrl/api/whitelist', authToken: authToken);
+
+    if (response.statusCode == 200) {
+      return api.NumberList.fromString(response.body);
+    } else {
+      if (kDebugMode) {
+        print('Failed to fetch whitelist: ${response.statusCode} - ${response.body}');
+      }
+      return null;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error fetching whitelist: $e');
+    }
+    return null;
+  }
+}
+
+/// Removes a phone number from the user's blocklist.
+/// Returns true if the removal was successful, false otherwise.
+/// Requires authentication via [authToken].
+Future<bool> removeFromBlocklist(String phone, String authToken) async {
+  try {
+    final headers = <String, String>{
+      "User-Agent": "PhoneBlockMobile/$appVersion",
+      "Authorization": "Bearer $authToken",
+    };
+
+    final response = await http.delete(
+      Uri.parse('$pbBaseUrl/api/blocklist/$phone'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 204) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        print('Failed to remove from blocklist: ${response.statusCode} - ${response.body}');
+      }
+      return false;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error removing from blocklist: $e');
+    }
+    return false;
+  }
+}
+
+/// Removes a phone number from the user's whitelist.
+/// Returns true if the removal was successful, false otherwise.
+/// Requires authentication via [authToken].
+Future<bool> removeFromWhitelist(String phone, String authToken) async {
+  try {
+    final headers = <String, String>{
+      "User-Agent": "PhoneBlockMobile/$appVersion",
+      "Authorization": "Bearer $authToken",
+    };
+
+    final response = await http.delete(
+      Uri.parse('$pbBaseUrl/api/whitelist/$phone'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 204) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        print('Failed to remove from whitelist: ${response.statusCode} - ${response.body}');
+      }
+      return false;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error removing from whitelist: $e');
+    }
+    return false;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

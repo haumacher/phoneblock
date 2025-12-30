@@ -1716,3 +1716,59 @@ class PhoneNumer extends _JsonObject {
 	}
 
 }
+
+/// A list of phone numbers (used for blacklist/whitelist responses).
+class NumberList extends _JsonObject {
+	/// Phone numbers in the list.
+	List<String> numbers;
+
+	/// Creates a NumberList.
+	NumberList({
+		this.numbers = const [],
+	});
+
+	/// Parses a NumberList from a string source.
+	static NumberList? fromString(String source) {
+		return read(JsonReader.fromString(source));
+	}
+
+	/// Reads a NumberList instance from the given reader.
+	static NumberList read(JsonReader json) {
+		NumberList result = NumberList();
+		result._readContent(json);
+		return result;
+	}
+
+	@override
+	String _jsonType() => "NumberList";
+
+	@override
+	void _readProperty(String key, JsonReader json) {
+		switch (key) {
+			case "numbers": {
+				json.expectArray();
+				numbers = [];
+				while (json.hasNext()) {
+					if (!json.tryNull()) {
+						numbers.add(json.expectString());
+					}
+				}
+				break;
+			}
+			default: super._readProperty(key, json);
+		}
+	}
+
+	@override
+	void _writeProperties(JsonSink json) {
+		super._writeProperties(json);
+
+		json.addKey("numbers");
+		json.startArray();
+		for (var _element in numbers) {
+			json.addString(_element);
+		}
+		json.endArray();
+	}
+
+}
