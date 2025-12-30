@@ -327,22 +327,36 @@ public interface SpamReports {
 	
 	@Update("""
 			update NUMBERS s
-			set 
-				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', 1, 0), 
-				s.PING = s.PING + casewhen(#{rating}='C_PING', 1, 0), 
-				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', 1, 0), 
-				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', 1, 0), 
-				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', 1, 0), 
-				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', 1, 0), 
-				s.UPDATED = greatest(s.UPDATED, #{now}), 
-				s.LASTPING = greatest(s.LASTPING, #{now}) 
+			set
+				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', 1, 0),
+				s.PING = s.PING + casewhen(#{rating}='C_PING', 1, 0),
+				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', 1, 0),
+				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', 1, 0),
+				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', 1, 0),
+				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', 1, 0),
+				s.UPDATED = greatest(s.UPDATED, #{now}),
+				s.LASTPING = greatest(s.LASTPING, #{now})
 			where s.PHONE = #{phone}
 			""")
 	int incRating(String phone, Rating rating, long now);
-	
+
 	@Update("""
 			update NUMBERS s
-			set 
+			set
+				s.LEGITIMATE = s.LEGITIMATE - casewhen(#{rating}='A_LEGITIMATE', 1, 0),
+				s.PING = s.PING - casewhen(#{rating}='C_PING', 1, 0),
+				s.POLL = s.POLL - casewhen(#{rating}='D_POLL', 1, 0),
+				s.ADVERTISING = s.ADVERTISING - casewhen(#{rating}='E_ADVERTISING', 1, 0),
+				s.GAMBLE = s.GAMBLE - casewhen(#{rating}='F_GAMBLE', 1, 0),
+				s.FRAUD = s.FRAUD - casewhen(#{rating}='G_FRAUD', 1, 0),
+				s.UPDATED = greatest(s.UPDATED, #{now})
+			where s.PHONE = #{phone}
+			""")
+	int decRating(String phone, Rating rating, long now);
+
+	@Update("""
+			update NUMBERS s
+			set
 				s.SEARCHES = s.SEARCHES + 1, 
 				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1, 
 				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}), 
@@ -391,6 +405,9 @@ public interface SpamReports {
 			values (#{id}, #{phone}, #{rating}, #{comment}, #{lang}, #{service}, #{created}, #{userId})
 			""")
 	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
+
+	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID from COMMENTS s where USERID = #{userId} and PHONE = #{phone}")
+	DBUserComment getUserComment(long userId, String phone);
 
 	@Delete("delete from COMMENTS where USERID = #{userId} and PHONE = #{phone}")
 	int deleteUserComment(long userId, String phone);

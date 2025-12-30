@@ -21,9 +21,12 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.NumberList;
 import de.haumacher.phoneblock.app.api.model.PersonalizedNumber;
+import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserComment;
+import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -224,6 +227,28 @@ public class PersonalizationServlet extends HttpServlet {
 			boolean deleted = blockList.removePersonalization(userId, phone);
 
 			if (deleted) {
+				// Also delete the user's comment and decrement vote counts
+				SpamReports spamReports = session.getMapper(SpamReports.class);
+				DBUserComment userComment = spamReports.getUserComment(userId, phone);
+
+				if (userComment != null) {
+					// Delete the comment
+					spamReports.deleteUserComment(userId, phone);
+
+					// Decrement the vote counts and rating counters based on the rating
+					Rating rating = userComment.getRating();
+					int voteDelta = -Ratings.getVotes(rating);
+					long now = System.currentTimeMillis();
+
+					// Update vote counts in NUMBERS table
+					spamReports.addVote(phone, voteDelta, now);
+
+					// Decrement the specific rating counter (LEGITIMATE, PING, etc.)
+					spamReports.decRating(phone, rating, now);
+
+					LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phone, voteDelta);
+				}
+
 				session.commit();
 				String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
 				LOG.info("Removed {} from {} for user '{}'", phone, listType, userName);
