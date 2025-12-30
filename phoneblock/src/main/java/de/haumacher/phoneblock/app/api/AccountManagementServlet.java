@@ -63,7 +63,7 @@ public class AccountManagementServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
 			ServletUtil.sendAuthenticationRequest(resp);
 			return;
@@ -85,7 +85,7 @@ public class AccountManagementServlet extends HttpServlet {
 
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
 			ServletUtil.sendAuthenticationRequest(resp);
 			return;
