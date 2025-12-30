@@ -762,7 +762,7 @@
 		"/blacklist": {
 			"get": {
 				"summary": "Retrieves the current user's personalized blacklist.",
-				"description": "Returns a list of phone numbers that the user has explicitly marked as blocked (blacklist).",
+				"description": "Returns a list of phone numbers that the user has explicitly marked as blocked (blacklist). Numbers are added to the blacklist by rating them via the POST /api/rate endpoint with spam ratings such as E_ADVERTISING, F_GAMBLE, or G_FRAUD. This endpoint only retrieves the list; use the rating API to add numbers.",
 				"responses": {
 					"200": {
 						"description": "Blocklist retrieved successfully.",
@@ -819,7 +819,7 @@
 		"/blacklist/{phone}": {
 			"delete": {
 				"summary": "Removes a phone number from the user's blacklist.",
-				"description": "Deletes the specified phone number from the user's personalized blacklist.",
+				"description": "Deletes the specified phone number from the user's personalized blacklist. To add numbers to the blacklist, use POST /api/rate.",
 				"parameters": [
 					{
 						"name": "phone",
@@ -932,7 +932,7 @@
 		"/whitelist": {
 			"get": {
 				"summary": "Retrieves the current user's personalized whitelist.",
-				"description": "Returns a list of phone numbers that the user has explicitly marked as legitimate (whitelist).",
+				"description": "Returns a list of phone numbers that the user has explicitly marked as legitimate (whitelist). Numbers are added to the whitelist by rating them via the POST /api/rate endpoint with the A_LEGITIMATE rating. This endpoint only retrieves the list; use the rating API to add numbers.",
 				"responses": {
 					"200": {
 						"description": "Whitelist retrieved successfully.",
@@ -989,7 +989,7 @@
 		"/whitelist/{phone}": {
 			"delete": {
 				"summary": "Removes a phone number from the user's whitelist.",
-				"description": "Deletes the specified phone number from the user's personalized whitelist.",
+				"description": "Deletes the specified phone number from the user's personalized whitelist. To add numbers to the whitelist, use POST /api/rate.",
 				"parameters": [
 					{
 						"name": "phone",
