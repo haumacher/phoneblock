@@ -189,6 +189,6 @@ public class AccountManagementServlet extends HttpServlet {
 
 		resp.setContentType("application/json");
 		resp.setCharacterEncoding("UTF-8");
-		response.writeTo(new JsonWriter(new WriterAdapter(resp.getWriter())));
+		response.writeContent(new JsonWriter(new WriterAdapter(resp.getWriter())));
 	}
 }
