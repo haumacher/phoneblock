@@ -384,11 +384,14 @@ public interface SpamReports {
 	List<DBUserComment> getAllComments(String prefix, int expectedLength, Collection<String> langs);
 	
 	@Insert("""
-			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID) 
+			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID)
 			values (#{id}, #{phone}, #{rating}, #{comment}, #{lang}, #{service}, #{created}, #{userId})
 			""")
 	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
-	
+
+	@Delete("delete from COMMENTS where USERID = #{userId} and PHONE = #{phone}")
+	int deleteUserComment(long userId, String phone);
+
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);
 	

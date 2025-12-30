@@ -1006,7 +1006,18 @@ public class DB {
 				// Limit to DB constraint.
 				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
 			}
-			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, comment.getUserId());
+
+			// Delete existing comment by this user for this phone number (ensure only one comment per user per number)
+			Long userId = comment.getUserId();
+			if (userId != null) {
+				int deleted = reports.deleteUserComment(userId, phone);
+				if (deleted > 0) {
+					LOG.info("Replaced existing comment for phone {} by user ID {}.", phone, userId);
+					updateRequired = true;
+				}
+			}
+
+			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, userId);
 			updateRequired = true;
 		}
 
