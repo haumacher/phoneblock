@@ -14,9 +14,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 import org.simplejavamail.utils.mail.dkim.Canonicalization;
 import org.simplejavamail.utils.mail.dkim.DkimMessage;
@@ -31,6 +29,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
+import de.haumacher.phoneblock.util.I18N;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
 import jakarta.mail.MessagingException;
@@ -109,32 +108,6 @@ public class MailServiceImpl implements MailService {
 		return locale;
 	}
 
-	/**
-	 * Get localized message from properties file.
-	 *
-	 * @param locale The locale (e.g., "de", "en-US")
-	 * @param key The property key
-	 * @return The localized message
-	 */
-	private String getMessage(String locale, String key) {
-		try {
-			ResourceBundle bundle = ResourceBundle.getBundle("Messages",
-				Locale.forLanguageTag(locale));
-			return bundle.getString(key);
-		} catch (MissingResourceException ex) {
-			// Fallback to German
-			LOG.warn("Message key '{}' not found for locale '{}', falling back to German",
-			         key, locale);
-			try {
-				ResourceBundle germanBundle = ResourceBundle.getBundle("Messages",
-					Locale.GERMAN);
-				return germanBundle.getString(key);
-			} catch (MissingResourceException ex2) {
-				LOG.error("Message key '{}' not found even in German", key);
-				return key; // Return key itself as last resort
-			}
-		}
-	}
 
 	@Override
 	public void sendActivationMail(String receiver, String code)
@@ -276,7 +249,7 @@ public class MailServiceImpl implements MailService {
 
 		// Use localized fallback if no device label provided
 		if (deviceLabel == null || deviceLabel.isEmpty()) {
-			deviceLabel = getMessage(locale, "mail.defaultDeviceLabel");
+			deviceLabel = I18N.getMessage(locale, "mail.defaultDeviceLabel");
 		}
 
 		LOG.info("Sending mobile welcome mail to '{}' for device '{}' in locale '{}'.",
@@ -349,7 +322,7 @@ public class MailServiceImpl implements MailService {
 		MimeMessage msg = createMessage();
 
 		// Load localized subject from properties
-		String subject = getMessage(locale, subjectKey);
+		String subject = I18N.getMessage(locale, subjectKey);
 		msg.setSubject(subject);
 
 		// Read HTML template

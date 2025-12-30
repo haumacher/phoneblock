@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,6 +43,7 @@ import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.I18N;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -525,8 +525,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
 		
         Language lang = DefaultController.selectLanguage(req);
-		ResourceBundle bundle = ResourceBundle.getBundle("Messages", lang.locale);
-		
+
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
 		if (searchResult.getNumber().getShortcut() != null) {
@@ -541,7 +540,7 @@ public class SearchServlet extends HttpServlet {
 		
 		if (searchResult.getTopRating() != Rating.B_MISSED) {
 			keywords.append(", ");
-			keywords.append(bundle.getString(Ratings.getLabelKey(searchResult.getTopRating())));
+			keywords.append(I18N.getMessage(lang.locale, Ratings.getLabelKey(searchResult.getTopRating())));
 		}
 		
 		keywords.append(", ");
@@ -601,7 +600,7 @@ public class SearchServlet extends HttpServlet {
 				ratingBackground.append(',');
 				ratingBorder.append(',');
 			}
-			jsString(ratingLabels, bundle.getString(Ratings.getLabelKey(r)));
+			jsString(ratingLabels, I18N.getMessage(lang.locale, Ratings.getLabelKey(r)));
 
 			ratingData.append(ratings.getOrDefault(r, 0));
 

@@ -14,7 +14,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,6 +34,7 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.AssignContributionServlet;
 import de.haumacher.phoneblock.app.BasicLoginFilter;
+import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.DeleteAccountServlet;
 import de.haumacher.phoneblock.app.EMailVerificationServlet;
@@ -461,15 +461,7 @@ public class ContentFilter extends LoginFilter {
 			@Override
 			public String resolveMessage(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
 				Locale locale = context.getLocale();
-
-				ResourceBundle bundle = ResourceBundle.getBundle("Messages", locale);
-				String message = bundle.getString(key);
-				
-				if (messageParameters != null && messageParameters.length > 0) {
-					return new MessageFormat(message).format(messageParameters);
-				} else {
-					return message;
-				}
+				return I18N.getMessage(locale, key, messageParameters);
 			}
 			
 			@Override
