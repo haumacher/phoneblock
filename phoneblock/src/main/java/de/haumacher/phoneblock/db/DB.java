@@ -677,9 +677,6 @@ public class DB {
 
 					DBUserSettings userSettings = getUserSettings(users, result.getUserName());
 					String deviceLabel = result.getLabel();
-					if (deviceLabel == null || deviceLabel.isEmpty()) {
-						deviceLabel = "Dein Gerät";
-					}
 
 					final String finalDeviceLabel = deviceLabel;
 					_scheduler.executor().submit(() ->

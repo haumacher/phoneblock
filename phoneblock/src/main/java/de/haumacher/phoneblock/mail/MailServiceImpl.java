@@ -273,6 +273,12 @@ public class MailServiceImpl implements MailService {
 		}
 
 		String locale = getUserLocale(userSettings);
+
+		// Use localized fallback if no device label provided
+		if (deviceLabel == null || deviceLabel.isEmpty()) {
+			deviceLabel = getMessage(locale, "mail.defaultDeviceLabel");
+		}
+
 		LOG.info("Sending mobile welcome mail to '{}' for device '{}' in locale '{}'.",
 		         receiver, deviceLabel, locale);
 
