@@ -17,6 +17,7 @@ import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:device_region/device_region.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
@@ -110,6 +111,9 @@ String? _countryCodeToDialPrefix(String? countryCode) {
 
 /// Gets the device's locale information including language tag and dial prefix.
 /// Returns a map with 'lang' (e.g., "de-DE", "en-US") and 'dialPrefix' (e.g., "+49").
+///
+/// Uses the device's SIM country code (from TelephonyManager) to determine the dial prefix,
+/// which is more accurate than the locale country code since it reflects the actual network operator.
 /// If dial prefix cannot be determined, it is omitted from the result.
 Future<Map<String, String>> getDeviceLocale() async {
   try {
@@ -120,16 +124,30 @@ Future<Map<String, String>> getDeviceLocale() async {
       'lang': languageTag,
     };
 
-    // Try to determine dial prefix from country code
-    final countryCode = locale.countryCode;
-    final dialPrefix = _countryCodeToDialPrefix(countryCode);
-
-    if (dialPrefix != null) {
-      result['dialPrefix'] = dialPrefix;
+    // Get SIM country code from the telephony manager (more accurate than locale)
+    try {
+      final simCountryCode = await DeviceRegion.getSIMCountryCode();
+      if (simCountryCode != null && simCountryCode.isNotEmpty) {
+        final dialPrefix = _countryCodeToDialPrefix(simCountryCode);
+        if (dialPrefix != null) {
+          result['dialPrefix'] = dialPrefix;
+        }
+        if (kDebugMode) {
+          print('SIM country code: $simCountryCode, dial prefix: $dialPrefix');
+        }
+      } else {
+        if (kDebugMode) {
+          print('SIM country code not available (possibly simulator or no SIM)');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Could not get SIM country code: $e');
+      }
     }
 
     if (kDebugMode) {
-      print('Device locale: $languageTag, dial prefix: $dialPrefix');
+      print('Device locale: $languageTag');
     }
 
     return result;
