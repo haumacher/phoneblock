@@ -13,6 +13,15 @@ public interface MailService {
 
 	void sendActivationMail(String receiver, String code) throws MessagingException, IOException, AddressException;
 	void sendWelcomeMail(UserSettings userSettings);
+
+	/**
+	 * Sends a welcome mail for successful mobile app installation.
+	 *
+	 * @param userSettings The user settings
+	 * @param deviceLabel The label of the device (e.g., "PhoneBlock Mobile on Pixel 6")
+	 */
+	void sendMobileWelcomeMail(UserSettings userSettings, String deviceLabel);
+
 	boolean sendHelpMail(UserSettings userSettings);
 	boolean sendDiableMail(UserSettings userSettings, AnswerBotSip answerbot);
 	boolean sendThanksMail(String donator, UserSettings userSettings, int amount);

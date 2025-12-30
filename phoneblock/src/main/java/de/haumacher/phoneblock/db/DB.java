@@ -613,7 +613,7 @@ public class DB {
 		return AuthToken.create()
 			.setUserName(login)
 			.setCreated(now)
-			.setLastAccess(now)
+			.setLastAccess(0)
 			.setUserAgent(nonNullUA(userAgent));
 	}
 	
@@ -653,6 +653,10 @@ public class DB {
 
 				// Update DB if rate limit exceeded or user agent changed.
 				boolean userAgentChanged = !Objects.equals(result.getUserAgent(), userAgent);
+
+				// Detect first token usage
+				boolean isFirstAccess = result.getLastAccess() == 0;
+
 				if (now - result.getLastAccess() > RATE_LIMIT_MS || userAgentChanged) {
 					users.updateAuthToken(result.getId(), now, userAgent);
 					result.setLastAccess(now);
@@ -664,6 +668,22 @@ public class DB {
 					}
 
 					session.commit();
+
+					// Send welcome mail on first token usage
+					if (isFirstAccess && _config.isSendWelcomeMails() && _mailService != null) {
+						LOG.info("First token usage detected for token {}, sending welcome mail.",
+						         result.getId());
+
+						DBUserSettings userSettings = getUserSettings(users, result.getUserName());
+						String deviceLabel = result.getLabel();
+						if (deviceLabel == null || deviceLabel.isEmpty()) {
+							deviceLabel = "Dein Gerät";
+						}
+
+						final String finalDeviceLabel = deviceLabel;
+						_scheduler.executor().submit(() ->
+						    _mailService.sendMobileWelcomeMail(userSettings, finalDeviceLabel));
+					}
 				}
 
 				return result;

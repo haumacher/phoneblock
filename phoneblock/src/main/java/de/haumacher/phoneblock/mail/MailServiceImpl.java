@@ -195,7 +195,7 @@ public class MailServiceImpl implements MailService {
 		return variables;
 	}
 	
-	/** 
+	/**
 	 * Sends a welcome mail to the given user.
 	 */
 	public void sendWelcomeMail(UserSettings userSettings) {
@@ -204,13 +204,38 @@ public class MailServiceImpl implements MailService {
 			LOG.warn("Cannot send welcome mail to '" + userSettings.getId() + "', no e-mail provided.");
 			return;
 		}
-		
+
 		LOG.info("Sending welcome mail to '" + receiver + "'.");
-		
+
 		try {
 			sendMail("Willkommen bei PhoneBlock", new InternetAddress(receiver), "welcome-mail", buildVariables(userSettings));
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send welcome mail to: " + receiver, ex);
+		}
+	}
+
+	@Override
+	public void sendMobileWelcomeMail(UserSettings userSettings, String deviceLabel) {
+		String receiver = userSettings.getEmail();
+		if (receiver == null || receiver.isBlank()) {
+			LOG.warn("Cannot send mobile welcome mail to '{}', no e-mail provided.",
+			         userSettings.getId());
+			return;
+		}
+
+		LOG.info("Sending mobile welcome mail to '{}' for device '{}'.",
+		         receiver, deviceLabel);
+
+		try {
+			Map<String, String> variables = buildVariables(userSettings);
+			variables.put("{deviceLabel}", deviceLabel);
+
+			sendMail("Willkommen bei PhoneBlock Mobile",
+			         new InternetAddress(receiver),
+			         "mobile-welcome-mail",
+			         variables);
+		} catch (MessagingException | IOException ex) {
+			LOG.error("Failed to send mobile welcome mail to: " + receiver, ex);
 		}
 	}
 
