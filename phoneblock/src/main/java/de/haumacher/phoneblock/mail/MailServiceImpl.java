@@ -311,7 +311,33 @@ public class MailServiceImpl implements MailService {
 		String result = time == 0 ? "Noch nie." : dateFormat.format(new Date(time));
 		return result;
 	}
-	
+
+	/**
+	 * Convert HTML to plain text by removing all HTML tags and collapsing multiple empty lines.
+	 *
+	 * @param html The HTML content
+	 * @return Plain text version
+	 */
+	private String htmlToPlainText(String html) {
+		// Remove all HTML tags (opening and closing)
+		String text = html.replaceAll("<[^>]+>", "");
+
+		// Decode common HTML entities (decode &amp; last to avoid creating new entities)
+		text = text.replace("&nbsp;", " ");
+		text = text.replace("&lt;", "<");
+		text = text.replace("&gt;", ">");
+		text = text.replace("&quot;", "\"");
+		text = text.replace("&amp;", "&");  // Must be last!
+
+		// Remove duplicate empty lines (replace multiple consecutive newlines with max 2)
+		text = text.replaceAll("(\r?\n){3,}", "\n\n");
+
+		// Trim leading/trailing whitespace
+		text = text.trim();
+
+		return text;
+	}
+
 	private void sendMail(String subjectKey, InternetAddress receiver, String locale, String template, Map<String, String> variables)
 			throws MessagingException, IOException {
 		MimeMessage msg = createMessage();
@@ -320,17 +346,23 @@ public class MailServiceImpl implements MailService {
 		String subject = getMessage(locale, subjectKey);
 		msg.setSubject(subject);
 
+		// Read HTML template
+		String htmlContent = read(locale, template + ".html", variables);
+
+		// Generate plain text version from HTML
+		String plainTextContent = htmlToPlainText(htmlContent);
+
 	    MimeMultipart alternativePart = new MimeMultipart("alternative");
 	    {
 			{
     			MimeBodyPart sourcePart = new MimeBodyPart();
-    			sourcePart.setText(read(locale, template + ".html", variables), "utf-8", "html");
+    			sourcePart.setText(htmlContent, "utf-8", "html");
 	    		alternativePart.addBodyPart(sourcePart);
 	    	}
 
 	    	{
 	    		MimeBodyPart text = new MimeBodyPart();
-	    		text.setText(read(locale, template + ".txt", variables), "utf-8");
+	    		text.setText(plainTextContent, "utf-8");
 	    		alternativePart.addBodyPart(text);
 	    	}
 	    }
