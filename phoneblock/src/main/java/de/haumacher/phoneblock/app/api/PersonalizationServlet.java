@@ -24,6 +24,7 @@ import de.haumacher.phoneblock.app.api.model.PersonalizedNumber;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBPhoneComment;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserComment;
 import de.haumacher.phoneblock.db.Ratings;
@@ -113,9 +114,9 @@ public class PersonalizationServlet extends HttpServlet {
 			SpamReports spamReports = session.getMapper(SpamReports.class);
 			Map<String, String> commentsMap = new HashMap<>();
 			if (!phoneNumbers.isEmpty()) {
-				List<Map<String, String>> userComments = spamReports.getUserComments(userId, phoneNumbers);
-				for (Map<String, String> entry : userComments) {
-					commentsMap.put(entry.get("phone"), entry.get("comment"));
+				List<DBPhoneComment> userComments = spamReports.getUserComments(userId, phoneNumbers);
+				for (DBPhoneComment entry : userComments) {
+					commentsMap.put(entry.getPhone(), entry.getComment());
 				}
 			}
 

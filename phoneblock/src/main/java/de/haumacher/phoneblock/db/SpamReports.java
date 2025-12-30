@@ -412,11 +412,7 @@ public interface SpamReports {
 			</foreach>
 			</script>
 			""")
-	@Results({
-		@Result(property = "phone", column = "PHONE"),
-		@Result(property = "comment", column = "COMMENT")
-	})
-	List<Map<String, String>> getUserComments(long userId, Collection<String> phones);
+	List<DBPhoneComment> getUserComments(long userId, Collection<String> phones);
 
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);
