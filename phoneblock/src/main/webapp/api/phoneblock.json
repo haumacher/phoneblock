@@ -759,9 +759,9 @@
 			},
 			"parameters": []
 		},
-		"/blocklist": {
+		"/blacklist": {
 			"get": {
-				"summary": "Retrieves the current user's personalized blocklist.",
+				"summary": "Retrieves the current user's personalized blacklist.",
 				"description": "Returns a list of phone numbers that the user has explicitly marked as blocked (blacklist).",
 				"responses": {
 					"200": {
@@ -807,16 +807,16 @@
 				]
 			}
 		},
-		"/blocklist/{phone}": {
+		"/blacklist/{phone}": {
 			"delete": {
-				"summary": "Removes a phone number from the user's blocklist.",
-				"description": "Deletes the specified phone number from the user's personalized blocklist.",
+				"summary": "Removes a phone number from the user's blacklist.",
+				"description": "Deletes the specified phone number from the user's personalized blacklist.",
 				"parameters": [
 					{
 						"name": "phone",
 						"in": "path",
 						"required": true,
-						"description": "The phone number to remove from the blocklist (e.g., +491234567890)",
+						"description": "The phone number to remove from the blacklist (e.g., +491234567890)",
 						"schema": {
 							"type": "string"
 						},
@@ -825,7 +825,7 @@
 				],
 				"responses": {
 					"204": {
-						"description": "Phone number removed from blocklist successfully."
+						"description": "Phone number removed from blacklist successfully."
 					},
 					"401": {
 						"description": "If no or invalid credentials have been provided.",

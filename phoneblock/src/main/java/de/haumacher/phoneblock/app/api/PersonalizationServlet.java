@@ -34,11 +34,11 @@ import jakarta.servlet.http.HttpServletResponse;
  * </p>
  *
  * <p>
- * <b>GET /api/blocklist</b> - Retrieve user's blocked phone numbers
+ * <b>GET /api/blacklist</b> - Retrieve user's blocked phone numbers
  * </p>
  *
  * <p>
- * <b>DELETE /api/blocklist/{phone}</b> - Remove phone number from blocklist
+ * <b>DELETE /api/blacklist/{phone}</b> - Remove phone number from blacklist
  * </p>
  *
  * <p>
@@ -49,13 +49,13 @@ import jakarta.servlet.http.HttpServletResponse;
  * <b>DELETE /api/whitelist/{phone}</b> - Remove phone number from whitelist
  * </p>
  */
-@WebServlet(urlPatterns = {PersonalizationServlet.BLOCKLIST_PATH, PersonalizationServlet.WHITELIST_PATH})
+@WebServlet(urlPatterns = {PersonalizationServlet.BLACKLIST_PATH, PersonalizationServlet.WHITELIST_PATH})
 public class PersonalizationServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PersonalizationServlet.class);
 
-	/** Servlet path for blocklist API. */
-	public static final String BLOCKLIST_PATH = "/api/blocklist";
+	/** Servlet path for blacklist API. */
+	public static final String BLACKLIST_PATH = "/api/blacklist";
 
 	/** Servlet path for whitelist API. */
 	public static final String WHITELIST_PATH = "/api/whitelist";
@@ -82,7 +82,7 @@ public class PersonalizationServlet extends HttpServlet {
 			List<String> numbers;
 
 			String servletPath = req.getServletPath();
-			if (BLOCKLIST_PATH.equals(servletPath)) {
+			if (BLACKLIST_PATH.equals(servletPath)) {
 				numbers = blockList.getPersonalizations(userId);
 				LOG.debug("Retrieved {} blocked numbers for user '{}'", numbers.size(), userName);
 			} else if (WHITELIST_PATH.equals(servletPath)) {
@@ -105,10 +105,10 @@ public class PersonalizationServlet extends HttpServlet {
 			return;
 		}
 
-		// Extract phone number from path: /api/blocklist/{phone} or /api/whitelist/{phone}
+		// Extract phone number from path: /api/blacklist/{phone} or /api/whitelist/{phone}
 		String pathInfo = req.getPathInfo();
 		if (pathInfo == null || pathInfo.length() <= 1) {
-			ServletUtil.sendError(resp, "Phone number required in path (e.g., /api/blocklist/+491234567890)");
+			ServletUtil.sendError(resp, "Phone number required in path (e.g., /api/blacklist/+491234567890)");
 			return;
 		}
 
@@ -129,7 +129,7 @@ public class PersonalizationServlet extends HttpServlet {
 
 			if (deleted) {
 				session.commit();
-				String listType = req.getServletPath().equals(BLOCKLIST_PATH) ? "blocklist" : "whitelist";
+				String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
 				LOG.info("Removed {} from {} for user '{}'", phone, listType, userName);
 
 				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
