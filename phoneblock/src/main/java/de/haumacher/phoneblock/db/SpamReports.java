@@ -395,6 +395,9 @@ public interface SpamReports {
 	@Delete("delete from COMMENTS where USERID = #{userId} and PHONE = #{phone}")
 	int deleteUserComment(long userId, String phone);
 
+	@Update("update COMMENTS set COMMENT = #{comment} where USERID = #{userId} and PHONE = #{phone}")
+	int updateUserComment(long userId, String phone, String comment);
+
 	@Select("""
 			<script>
 			select s.PHONE, s.COMMENT

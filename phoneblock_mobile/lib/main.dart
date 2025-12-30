@@ -311,6 +311,82 @@ Future<bool> removeFromWhitelist(String phone, String authToken) async {
   }
 }
 
+/// Updates the comment for a phone number in the user's blacklist.
+/// Returns true if the update was successful, false otherwise.
+/// Requires authentication via [authToken].
+Future<bool> updateBlacklistComment(String phone, String comment, String authToken) async {
+  try {
+    final headers = <String, String>{
+      "User-Agent": "PhoneBlockMobile/$appVersion",
+      "Authorization": "Bearer $authToken",
+      "Content-Type": "application/json",
+    };
+
+    final body = json.encode({
+      "phone": phone,
+      "comment": comment,
+    });
+
+    final response = await http.put(
+      Uri.parse('$pbBaseUrl/api/blacklist/$phone'),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 204) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        print('Failed to update blacklist comment: ${response.statusCode} - ${response.body}');
+      }
+      return false;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error updating blacklist comment: $e');
+    }
+    return false;
+  }
+}
+
+/// Updates the comment for a phone number in the user's whitelist.
+/// Returns true if the update was successful, false otherwise.
+/// Requires authentication via [authToken].
+Future<bool> updateWhitelistComment(String phone, String comment, String authToken) async {
+  try {
+    final headers = <String, String>{
+      "User-Agent": "PhoneBlockMobile/$appVersion",
+      "Authorization": "Bearer $authToken",
+      "Content-Type": "application/json",
+    };
+
+    final body = json.encode({
+      "phone": phone,
+      "comment": comment,
+    });
+
+    final response = await http.put(
+      Uri.parse('$pbBaseUrl/api/whitelist/$phone'),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 204) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        print('Failed to update whitelist comment: ${response.statusCode} - ${response.body}');
+      }
+      return false;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error updating whitelist comment: $e');
+    }
+    return false;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -2580,6 +2656,65 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     }
   }
 
+  /// Edit the comment for a number in the list.
+  Future<void> _editComment(api.PersonalizedNumber personalizedNumber) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    final localizations = context.l10n;
+    final textController = TextEditingController(text: personalizedNumber.comment ?? '');
+
+    final newComment = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localizations.editComment),
+        content: TextField(
+          controller: textController,
+          decoration: InputDecoration(
+            labelText: localizations.commentLabel,
+            hintText: localizations.commentHint,
+          ),
+          maxLines: 3,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(localizations.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(textController.text),
+            child: Text(localizations.save),
+          ),
+        ],
+      ),
+    );
+
+    if (newComment != null) {
+      final success = _isBlacklist
+          ? await updateBlacklistComment(personalizedNumber.phone, newComment, widget.authToken)
+          : await updateWhitelistComment(personalizedNumber.phone, newComment, widget.authToken);
+
+      if (success) {
+        setState(() {
+          // Update the comment in the local list
+          personalizedNumber.comment = newComment;
+        });
+        scaffold.showSnackBar(
+          SnackBar(
+            content: Text(localizations.commentUpdated),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        scaffold.showSnackBar(
+          SnackBar(
+            content: Text(localizations.errorUpdatingComment),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = _isBlacklist ? context.l10n.blacklistTitle : context.l10n.whitelistTitle;
@@ -2678,29 +2813,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                                     )
                                   : null,
                               trailing: IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () async {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text(context.l10n.confirmRemoval),
-                                      content: Text(confirmRemoveMessage(phone)),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(context).pop(false),
-                                          child: Text(context.l10n.cancel),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.of(context).pop(true),
-                                          child: Text(context.l10n.remove),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirmed == true) {
-                                    _removeNumber(personalizedNumber);
-                                  }
-                                },
+                                icon: const Icon(Icons.edit_outlined),
+                                onPressed: () => _editComment(personalizedNumber),
                               ),
                             ),
                           );

@@ -13,7 +13,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.json.JsonWriter;
+import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.NumberList;
@@ -118,6 +120,52 @@ public class PersonalizationServlet extends HttpServlet {
 			}
 
 			sendNumberList(resp, numbers);
+		}
+	}
+
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			ServletUtil.sendAuthenticationRequest(resp);
+			return;
+		}
+
+		// Extract phone number from path: /api/blacklist/{phone} or /api/whitelist/{phone}
+		String pathInfo = req.getPathInfo();
+		if (pathInfo == null || pathInfo.length() <= 1) {
+			ServletUtil.sendError(resp, "Phone number required in path (e.g., /api/blacklist/+491234567890)");
+			return;
+		}
+
+		String phone = pathInfo.substring(1); // Remove leading '/'
+
+		// Read comment from request body
+		PersonalizedNumber update = PersonalizedNumber.readPersonalizedNumber(new JsonReader(new ReaderAdapter(req.getReader())));
+		String comment = update.getComment();
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(userName);
+
+			if (userId == null) {
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+				return;
+			}
+
+			SpamReports spamReports = session.getMapper(SpamReports.class);
+			int updated = spamReports.updateUserComment(userId, phone, comment);
+
+			if (updated > 0) {
+				session.commit();
+				String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
+				LOG.info("Updated comment for {} in {} for user '{}'", phone, listType, userName);
+
+				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+			} else {
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
+			}
 		}
 	}
 

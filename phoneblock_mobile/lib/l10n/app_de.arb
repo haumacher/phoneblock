@@ -719,5 +719,17 @@
   "retry": "Erneut versuchen",
   "@retry": {
     "description": "Retry button text"
-  }
+  },
+
+  "editComment": "Kommentar bearbeiten",
+
+  "commentLabel": "Kommentar",
+
+  "commentHint": "Notiz zu dieser Nummer hinzufügen",
+
+  "save": "Speichern",
+
+  "commentUpdated": "Kommentar aktualisiert",
+
+  "errorUpdatingComment": "Fehler beim Aktualisieren des Kommentars"
 }

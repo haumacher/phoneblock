@@ -864,6 +864,69 @@
 						"APIKey": []
 					}
 				]
+			},
+			"put": {
+				"summary": "Updates the comment for a phone number in the user's blacklist.",
+				"description": "Updates the user's comment for the specified phone number in their personalized blacklist.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to update the comment for (e.g., +491234567890)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567890"
+					}
+				],
+				"requestBody": {
+					"description": "Updated comment for the phone number",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PersonalizedNumber"
+							},
+							"example": {
+								"phone": "+491234567890",
+								"comment": "Updated spam caller description"
+							}
+						}
+					}
+				},
+				"responses": {
+					"204": {
+						"description": "Comment updated successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
 			}
 		},
 		"/whitelist": {
@@ -942,6 +1005,69 @@
 				"responses": {
 					"204": {
 						"description": "Phone number removed from whitelist successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"put": {
+				"summary": "Updates the comment for a phone number in the user's whitelist.",
+				"description": "Updates the user's comment for the specified phone number in their personalized whitelist.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to update the comment for (e.g., +491234567893)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567893"
+					}
+				],
+				"requestBody": {
+					"description": "Updated comment for the phone number",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PersonalizedNumber"
+							},
+							"example": {
+								"phone": "+491234567893",
+								"comment": "Updated doctor's office description"
+							}
+						}
+					}
+				},
+				"responses": {
+					"204": {
+						"description": "Comment updated successfully."
 					},
 					"401": {
 						"description": "If no or invalid credentials have been provided.",

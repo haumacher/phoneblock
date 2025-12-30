@@ -255,5 +255,17 @@
 
   "remove": "Remove",
 
-  "retry": "Retry"
+  "retry": "Retry",
+
+  "editComment": "Edit Comment",
+
+  "commentLabel": "Comment",
+
+  "commentHint": "Add a note about this number",
+
+  "save": "Save",
+
+  "commentUpdated": "Comment updated",
+
+  "errorUpdatingComment": "Error updating comment"
 }
