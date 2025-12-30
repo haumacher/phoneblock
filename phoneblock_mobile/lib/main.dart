@@ -2016,31 +2016,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(context.l10n.serverSettingsDescription),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
+                    final navigator = Navigator.of(context);
+                    final scaffold = ScaffoldMessenger.of(context);
+                    final localizations = context.l10n;
+
                     String? token = await getAuthToken();
                     if (token == null) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(context.l10n.notLoggedInShort),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
+                      scaffold.showSnackBar(
+                        SnackBar(
+                          content: Text(localizations.notLoggedInShort),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
                       return;
                     }
 
-                    if (mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PhoneBlockWebView(
-                            title: context.l10n.serverSettings,
-                            path: '/settings',
-                            authToken: token,
-                          ),
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (context) => PhoneBlockWebView(
+                          title: localizations.serverSettings,
+                          path: '/settings',
+                          authToken: token,
                         ),
-                      );
-                    }
+                      ),
+                    );
                   },
                 ),
                 const Divider(),
