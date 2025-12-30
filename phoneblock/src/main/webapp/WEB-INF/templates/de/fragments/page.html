@@ -276,29 +276,31 @@
 </section>
 
 
-<th:block th:fragment="footer" th:unless="${inMobileApp}">
+<th:block th:fragment="footer">
+
+<th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
 		<h2 data-tx="t0019">Beteilige Dich!</h2>
-		
+
 		<p data-tx="t0020">
-		Wenn Dir PhoneBlock gefällt, bitte hilf mit, es bekannt zu machen, und teile es mit Deinen Freunden. Je mehr 
+		Wenn Dir PhoneBlock gefällt, bitte hilf mit, es bekannt zu machen, und teile es mit Deinen Freunden. Je mehr
 		Leute mitmachen, desto geringer die Chance, dass Dich trotzdem noch ein Werbeanruf trifft!
 		</p>
 	</div>
 </section>
-  
+
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p data-tx="t0021">
-			<strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. 
+			<strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>.
 			The source code is licensed under <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. The
 			website content is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY
 			NC SA 4.0</a>.
 		</p>
-		
+
 		<p data-tx="t0022">
-			<strong>FRITZ!Box</strong> und <strong>FRITZ!OS</strong> sind eingetragene Warenzeichen von 
+			<strong>FRITZ!Box</strong> und <strong>FRITZ!OS</strong> sind eingetragene Warenzeichen von
 			<a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> steht hierzu in keiner Beziehung.
 		</p>
 
@@ -313,6 +315,8 @@
 		</p>
 	</div>
 </footer>
+</th:block>
+
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>

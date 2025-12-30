@@ -276,19 +276,21 @@
 </section>
 
 
-<th:block th:fragment="footer" th:unless="${inMobileApp}">
+<th:block th:fragment="footer">
+
+<th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
 		<h2 data-tx="t0019">Engagera dig!</h2>
-		
+
 		<p data-tx="t0020">Om du gillar PhoneBlock kan du hjälpa till att sprida ordet och dela det med dina vänner. Ju fler som deltar, desto mindre är risken att du fortfarande får ett reklamsamtal!</p>
 	</div>
 </section>
-  
+
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 av <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. Källkoden är licensierad under <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. Webbplatsens innehåll är licensierat under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
-		
+
 		<p data-tx="t0022"><strong>FRITZ!Box</strong> och <strong>FRITZ!OS</strong> är registrerade varumärken som tillhör <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> har ingen relation till detta.</p>
 
 		<p>
@@ -302,6 +304,8 @@
 		</p>
 	</div>
 </footer>
+</th:block>
+
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>

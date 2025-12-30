@@ -276,19 +276,21 @@
 </section>
 
 
-<th:block th:fragment="footer" th:unless="${inMobileApp}">
+<th:block th:fragment="footer">
+
+<th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
 		<h2 data-tx="t0019">参与其中</h2>
-		
+
 		<p data-tx="t0020">如果您喜欢 PhoneBlock，请帮助传播并与您的朋友分享。参与的人越多，您收到广告电话的几率就越小！</p>
 	</div>
 </section>
-  
+
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 年，作者：<a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>。源代码采用 <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a> 许可。网站内容采用 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a> 进行许可。</p>
-		
+
 		<p data-tx="t0022"><strong>FRITZ！Box</strong>和<strong>FRITZ！OS</strong>是<a target="_blank" th:href="@{/link/avm}">AVM</a>的注册商标。<strong>PhoneBlock</strong>与此无关。</p>
 
 		<p>
@@ -302,6 +304,8 @@
 		</p>
 	</div>
 </footer>
+</th:block>
+
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>

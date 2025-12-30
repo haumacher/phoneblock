@@ -276,19 +276,21 @@
 </section>
 
 
-<th:block th:fragment="footer" th:unless="${inMobileApp}">
+<th:block th:fragment="footer">
+
+<th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
 		<h2 data-tx="t0019">Συμμετέχετε!</h2>
-		
+
 		<p data-tx="t0020">Αν σας αρέσει το PhoneBlock, βοηθήστε να διαδοθεί η λέξη και μοιραστείτε το με τους φίλους σας. Όσο περισσότεροι άνθρωποι συμμετέχουν, τόσο μικρότερη είναι η πιθανότητα να λάβετε ακόμα ένα διαφημιστικό τηλεφώνημα!</p>
 	</div>
 </section>
-  
+
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. Ο πηγαίος κώδικας διατίθεται υπό την <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. Το περιεχόμενο του ιστότοπου διατίθεται με άδεια χρήσης <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
-		
+
 		<p data-tx="t0022"><strong>FRITZ!Box</strong> και <strong>FRITZ!OS</strong> είναι σήματα κατατεθέντα της <a target="_blank" th:href="@{/link/avm}">AVM</a>. Το <strong>PhoneBlock</strong> δεν έχει καμία σχέση με αυτό.</p>
 
 		<p>
@@ -302,6 +304,8 @@
 		</p>
 	</div>
 </footer>
+</th:block>
+
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>
