@@ -14,7 +14,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.MissingResourceException;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 import org.simplejavamail.utils.mail.dkim.Canonicalization;
 import org.simplejavamail.utils.mail.dkim.DkimMessage;
@@ -93,6 +95,47 @@ public class MailServiceImpl implements MailService {
 		_support = baseUrl + "/support.jsp";
 	}
 
+	/**
+	 * Get the user's locale preference.
+	 *
+	 * @param userSettings The user settings
+	 * @return The locale string (e.g., "de", "en-US"), defaults to "de" if not set
+	 */
+	private String getUserLocale(UserSettings userSettings) {
+		String locale = userSettings.getLang();
+		if (locale == null || locale.isEmpty()) {
+			return "de"; // Default to German
+		}
+		return locale;
+	}
+
+	/**
+	 * Get localized message from properties file.
+	 *
+	 * @param locale The locale (e.g., "de", "en-US")
+	 * @param key The property key
+	 * @return The localized message
+	 */
+	private String getMessage(String locale, String key) {
+		try {
+			ResourceBundle bundle = ResourceBundle.getBundle("Messages",
+				Locale.forLanguageTag(locale));
+			return bundle.getString(key);
+		} catch (MissingResourceException ex) {
+			// Fallback to German
+			LOG.warn("Message key '{}' not found for locale '{}', falling back to German",
+			         key, locale);
+			try {
+				ResourceBundle germanBundle = ResourceBundle.getBundle("Messages",
+					Locale.GERMAN);
+				return germanBundle.getString(key);
+			} catch (MissingResourceException ex2) {
+				LOG.error("Message key '{}' not found even in German", key);
+				return key; // Return key itself as last resort
+			}
+		}
+	}
+
 	@Override
 	public void sendActivationMail(String receiver, String code)
 			throws MessagingException, IOException, AddressException {
@@ -109,27 +152,30 @@ public class MailServiceImpl implements MailService {
     		throw new AddressException("Please do not use disposable e-mail addresses.");
     	}
     	
-		LOG.info("Sending activation mail to '" + receiver + "'.");
+		// For activation mails, we don't have user settings yet, so default to German
+		String locale = "de";
+		LOG.info("Sending activation mail to '{}' in locale '{}'.", receiver, locale);
 
 		Map<String, String> variables = new HashMap<>();
 		variables.put("{name}", DB.toDisplayName(address.getAddress()));
     	variables.put("{code}", code);
     	variables.put("{image}", _appLogoSvg);
-    	
-		sendMail("PhoneBlock Anmelde-Code", address, "mail-template", variables);
+
+		sendMail("mail.subject.activation", address, locale, "mail-template", variables);
 	}
 
 	public boolean sendHelpMail(UserSettings userSettings) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
-			LOG.warn("Cannot send help mail to '" + userSettings.getId() + "', no e-mail provided.");
+			LOG.warn("Cannot send help mail to '{}', no e-mail provided.", userSettings.getId());
 			return true;
 		}
-		
-		LOG.info("Sending help mail to '" + receiver + "'.");
-		
+
+		String locale = getUserLocale(userSettings);
+		LOG.info("Sending help mail to '{}' in locale '{}'.", receiver, locale);
+
 		try {
-			sendMail("PhoneBlock: Deine Installation", new InternetAddress(receiver), "help-mail", buildVariables(userSettings));
+			sendMail("mail.subject.help", new InternetAddress(receiver), locale, "help-mail", buildVariables(userSettings));
 			return true;
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send help mail to: " + receiver, ex);
@@ -141,12 +187,13 @@ public class MailServiceImpl implements MailService {
 	public boolean sendThanksMail(String donator, UserSettings userSettings, int amount) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
-			LOG.warn("Cannot send thanks mail to '" + userSettings.getId() + "', no e-mail provided.");
+			LOG.warn("Cannot send thanks mail to '{}', no e-mail provided.", userSettings.getId());
 			return true;
 		}
-		
-		LOG.info("Sending thanks mail to '" + receiver + "'.");
-		
+
+		String locale = getUserLocale(userSettings);
+		LOG.info("Sending thanks mail to '{}' in locale '{}'.", receiver, locale);
+
 		try {
 			Map<String, String> variables = buildVariables(userSettings);
 			String attribute = "";
@@ -158,11 +205,11 @@ public class MailServiceImpl implements MailService {
 			}
 			variables.put("{attribute}", attribute);
 			variables.put("{name}", donator);
-			
-			sendMail("PhoneBlock: Deine Spende", new InternetAddress(receiver), "thanks-mail", variables);
+
+			sendMail("mail.subject.thanks", new InternetAddress(receiver), locale, "thanks-mail", variables);
 			return true;
 		} catch (Exception ex) {
-			LOG.error("Failed to send help mail to: " + receiver, ex);
+			LOG.error("Failed to send thanks mail to: " + receiver, ex);
 			return false;
 		}
 	}
@@ -170,17 +217,18 @@ public class MailServiceImpl implements MailService {
 	public boolean sendDiableMail(UserSettings userSettings, AnswerBotSip answerbot) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
-			LOG.warn("Cannot send answerbot disable mail to '" + userSettings.getId() + "', no e-mail provided.");
+			LOG.warn("Cannot send answerbot disable mail to '{}', no e-mail provided.", userSettings.getId());
 			return true;
 		}
-		
-		LOG.info("Sending answerbot disable mail to '" + receiver + "'.");
-		
+
+		String locale = getUserLocale(userSettings);
+		LOG.info("Sending answerbot disable mail to '{}' in locale '{}'.", receiver, locale);
+
 		try {
-			sendMail("PhoneBlock: Dein Anrufbeantworter", new InternetAddress(receiver), "ab-disable-mail", buildVariables(userSettings, answerbot));
+			sendMail("mail.subject.ab-disable", new InternetAddress(receiver), locale, "ab-disable-mail", buildVariables(userSettings, answerbot));
 			return true;
 		} catch (MessagingException | IOException ex) {
-			LOG.error("Failed to send help mail to: " + receiver, ex);
+			LOG.error("Failed to send answerbot disable mail to: " + receiver, ex);
 			return false;
 		}
 	}
@@ -201,14 +249,15 @@ public class MailServiceImpl implements MailService {
 	public void sendWelcomeMail(UserSettings userSettings) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {
-			LOG.warn("Cannot send welcome mail to '" + userSettings.getId() + "', no e-mail provided.");
+			LOG.warn("Cannot send welcome mail to '{}', no e-mail provided.", userSettings.getId());
 			return;
 		}
 
-		LOG.info("Sending welcome mail to '" + receiver + "'.");
+		String locale = getUserLocale(userSettings);
+		LOG.info("Sending welcome mail to '{}' in locale '{}'.", receiver, locale);
 
 		try {
-			sendMail("Willkommen bei PhoneBlock", new InternetAddress(receiver), "welcome-mail", buildVariables(userSettings));
+			sendMail("mail.subject.welcome", new InternetAddress(receiver), locale, "welcome-mail", buildVariables(userSettings));
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send welcome mail to: " + receiver, ex);
 		}
@@ -223,15 +272,17 @@ public class MailServiceImpl implements MailService {
 			return;
 		}
 
-		LOG.info("Sending mobile welcome mail to '{}' for device '{}'.",
-		         receiver, deviceLabel);
+		String locale = getUserLocale(userSettings);
+		LOG.info("Sending mobile welcome mail to '{}' for device '{}' in locale '{}'.",
+		         receiver, deviceLabel, locale);
 
 		try {
 			Map<String, String> variables = buildVariables(userSettings);
 			variables.put("{deviceLabel}", deviceLabel);
 
-			sendMail("Willkommen bei PhoneBlock Mobile",
+			sendMail("mail.subject.mobile-welcome",
 			         new InternetAddress(receiver),
+			         locale,
 			         "mobile-welcome-mail",
 			         variables);
 		} catch (MessagingException | IOException ex) {
@@ -261,31 +312,34 @@ public class MailServiceImpl implements MailService {
 		return result;
 	}
 	
-	private void sendMail(String subject, InternetAddress receiver, String template, Map<String, String> variables)
+	private void sendMail(String subjectKey, InternetAddress receiver, String locale, String template, Map<String, String> variables)
 			throws MessagingException, IOException {
 		MimeMessage msg = createMessage();
+
+		// Load localized subject from properties
+		String subject = getMessage(locale, subjectKey);
 		msg.setSubject(subject);
-		
+
 	    MimeMultipart alternativePart = new MimeMultipart("alternative");
 	    {
 			{
     			MimeBodyPart sourcePart = new MimeBodyPart();
-    			sourcePart.setText(read(template + ".html", variables), "utf-8", "html");
+    			sourcePart.setText(read(locale, template + ".html", variables), "utf-8", "html");
 	    		alternativePart.addBodyPart(sourcePart);
 	    	}
 
 	    	{
 	    		MimeBodyPart text = new MimeBodyPart();
-	    		text.setText(read(template + ".txt", variables), "utf-8");
+	    		text.setText(read(locale, template + ".txt", variables), "utf-8");
 	    		alternativePart.addBodyPart(text);
 	    	}
 	    }
-		
+
 		msg.setContent(alternativePart);
 		try {
 			sendMail(receiver, msg);
 		} catch (MessagingException ex) {
-			LOG.error("Sending activation mail to '" + receiver + "' failed.");
+			LOG.error("Sending mail to '{}' failed.", receiver);
 			throw ex;
 		}
 	}
@@ -379,11 +433,27 @@ public class MailServiceImpl implements MailService {
 		_transport = null;
 	}
 
-	private String read(String resource, Map<String, String> variables) throws IOException {
+	private String read(String locale, String template, Map<String, String> variables) throws IOException {
+		String resourcePath = "templates/" + locale + "/" + template;
+
+		// Try localized template first
+		InputStream in = getClass().getResourceAsStream(resourcePath);
+
+		// Fallback to German if localized template not found
+		if (in == null) {
+			LOG.warn("Mail template not found: {}, falling back to German", resourcePath);
+			resourcePath = "templates/de/" + template;
+			in = getClass().getResourceAsStream(resourcePath);
+		}
+
+		if (in == null) {
+			throw new IOException("Mail template not found: " + template);
+		}
+
 		StringBuilder result = new StringBuilder();
 		char[] buffer = new char[4096];
-		try (InputStream in = getClass().getResourceAsStream(resource)) {
-			try (Reader r = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+		try (InputStream stream = in) {
+			try (Reader r = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
 				while (true) {
 					int direct = r.read(buffer);
 					if (direct < 0) {
