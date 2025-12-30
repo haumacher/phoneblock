@@ -671,7 +671,7 @@ public class DB {
 				}
 
 				// Send welcome mail on first token usage (independent of rate limit)
-				if (isFirstAccess && _config.isSendWelcomeMails() && _mailService != null) {
+				if (isFirstAccess && !result.isImplicit() && _config.isSendWelcomeMails() && _mailService != null) {
 					LOG.info("First token usage detected for token {}, sending welcome mail.",
 					         result.getId());
 
