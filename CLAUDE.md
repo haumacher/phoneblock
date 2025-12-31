@@ -240,6 +240,11 @@ When adding schema changes:
 3. Use `DBService.getInstance()` for database access
 4. Follow existing patterns for session management and authentication
 
+**Error Reporting:**
+- **Never use `resp.sendError()` for non-GET requests** - The error response triggers the default error servlet which only accepts GET, causing HTTP 405 errors
+- **Use `ServletUtil.sendMessage(resp, statusCode, message)` instead** - Sets status code and writes error message directly to response body
+- Example: Replace `resp.sendError(SC_NOT_FOUND, "User not found")` with `ServletUtil.sendMessage(resp, SC_NOT_FOUND, "User not found")`
+
 ### Message Protocol Changes
 
 When modifying `phoneblock-shared/`:
