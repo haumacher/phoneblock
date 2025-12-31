@@ -104,6 +104,9 @@ public class BasicLoginFilter extends LoginFilter {
 		case CallReportServlet.URL_PATTERN:
 			return authorization.isAccessRate();
 		case AccountManagementServlet.PATH:
+		case PersonalizationServlet.BLACKLIST_PATH:
+		case PersonalizationServlet.WHITELIST_PATH:
+			return authorization.isAccessLogin();
 		case CreateABServlet.PATH:
 		case ListABServlet.PATH:
 		case SearchApiServlet.PREFIX:
