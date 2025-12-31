@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.ab.CreateABServlet;
 import de.haumacher.phoneblock.ab.ListABServlet;
 import de.haumacher.phoneblock.app.api.AccountManagementServlet;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
+import de.haumacher.phoneblock.app.api.PersonalizationServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
 import de.haumacher.phoneblock.app.api.SpamCheckServlet;
@@ -37,6 +38,8 @@ import jakarta.servlet.http.HttpServletResponse;
 	CreateABServlet.PATH,
 	ListABServlet.PATH,
 	AccountManagementServlet.PATH,
+	PersonalizationServlet.BLACKLIST_PATTERN,
+	PersonalizationServlet.WHITELIST_PATTERN,
 	BlocklistServlet.PATH,
 	SpamCheckServlet.PATH,
 	TestConnectServlet.PATH,

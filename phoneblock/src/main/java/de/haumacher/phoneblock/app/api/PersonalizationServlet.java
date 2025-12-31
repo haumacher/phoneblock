@@ -62,10 +62,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * </p>
  */
 @WebServlet(urlPatterns = {
-	PersonalizationServlet.BLACKLIST_PATH,
-	PersonalizationServlet.WHITELIST_PATH,
-	PersonalizationServlet.BLACKLIST_PATH + "/*",
-	PersonalizationServlet.WHITELIST_PATH + "/*"
+	PersonalizationServlet.BLACKLIST_PATTERN,
+	PersonalizationServlet.WHITELIST_PATTERN
 })
 public class PersonalizationServlet extends HttpServlet {
 
@@ -74,8 +72,12 @@ public class PersonalizationServlet extends HttpServlet {
 	/** Servlet path for blacklist API. */
 	public static final String BLACKLIST_PATH = "/api/blacklist";
 
+	public static final String BLACKLIST_PATTERN = PersonalizationServlet.BLACKLIST_PATH + "/*";
+
 	/** Servlet path for whitelist API. */
 	public static final String WHITELIST_PATH = "/api/whitelist";
+
+	public static final String WHITELIST_PATTERN = PersonalizationServlet.WHITELIST_PATH + "/*";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
