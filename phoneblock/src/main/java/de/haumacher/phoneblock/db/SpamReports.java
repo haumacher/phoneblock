@@ -392,11 +392,11 @@ public interface SpamReports {
 			""")
 	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
 
-	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID from COMMENTS s where USERID = #{userId} and PHONE = #{phone}")
+	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID from COMMENTS s where USERID = #{userId} and PHONE = #{phone} limit 1")
 	DBUserComment getUserComment(long userId, String phone);
 
 	@Delete("delete from COMMENTS where USERID = #{userId} and PHONE = #{phone}")
-	int deleteUserComment(long userId, String phone);
+	int deleteUserComments(long userId, String phone);
 
 	@Update("update COMMENTS set COMMENT = #{comment} where USERID = #{userId} and PHONE = #{phone}")
 	int updateUserComment(long userId, String phone, String comment);

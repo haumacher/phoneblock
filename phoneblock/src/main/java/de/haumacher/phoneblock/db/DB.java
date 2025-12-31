@@ -1010,7 +1010,7 @@ public class DB {
 			// Delete existing comment by this user for this phone number (ensure only one comment per user per number)
 			Long userId = comment.getUserId();
 			if (userId != null) {
-				int deleted = reports.deleteUserComment(userId, phone);
+				int deleted = reports.deleteUserComments(userId, phone);
 				if (deleted > 0) {
 					LOG.info("Replaced existing comment for phone {} by user ID {}.", phone, userId);
 					updateRequired = true;

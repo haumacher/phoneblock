@@ -84,8 +84,12 @@ public class PersonalizationServlet extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
 			super.service(req, resp);
-		} catch (Exception e) {
-			ServletUtil.sendMessage(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getClass().getName() + ": " + e.getMessage());
+		} catch (Exception ex) {
+			LOG.error("Request failed.", ex);
+			
+			String message = ex.getMessage();
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+				ex.getClass().getName() + (message == null ? "" : ": " + message));
 		}
 	}
 	
@@ -106,9 +110,6 @@ public class PersonalizationServlet extends HttpServlet {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User not found");
 				return;
 			}
-
-			// Get user's dial prefix for formatting
-			String dialPrefix = users.getDialPrefix(userName);
 
 			BlockList blockList = session.getMapper(BlockList.class);
 			List<String> phoneNumbers;
@@ -137,15 +138,19 @@ public class PersonalizationServlet extends HttpServlet {
 
 			// Build PersonalizedNumber list with comments and locale-formatted labels
 			List<PersonalizedNumber> numbers = new ArrayList<>();
-			for (String phone : phoneNumbers) {
-				// Parse and format the phone number according to user's locale
-				de.haumacher.phoneblock.app.api.model.PhoneNumer phoneInfo = NumberAnalyzer.parsePhoneNumber(phone, dialPrefix);
-				String label = phoneInfo != null && phoneInfo.getShortcut() != null ? phoneInfo.getShortcut() : phone;
+			for (String rawPhone : phoneNumbers) {
+				// Parse and format the phone number according to the locale they are stored in the DB.
+				de.haumacher.phoneblock.app.api.model.PhoneNumer phoneInfo = NumberAnalyzer.parsePhoneNumber(rawPhone);
+				if (phoneInfo == null) {
+					continue;
+				}
+				String phoneInternational = phoneInfo.getPlus();
+				String label = phoneInfo.getShortcut();
 
 				PersonalizedNumber pn = PersonalizedNumber.create()
-					.setPhone(phone)
+					.setPhone(phoneInternational)
 					.setLabel(label)
-					.setComment(commentsMap.get(phone));
+					.setComment(commentsMap.get(rawPhone));
 				numbers.add(pn);
 			}
 
@@ -280,7 +285,7 @@ public class PersonalizationServlet extends HttpServlet {
 
 				if (userComment != null) {
 					// Delete the comment
-					spamReports.deleteUserComment(userId, phone);
+					spamReports.deleteUserComments(userId, phone);
 
 					// Decrement the vote counts and rating counters based on the rating
 					Rating rating = userComment.getRating();
