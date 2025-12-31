@@ -75,7 +75,7 @@ public class AccountManagementServlet extends HttpServlet {
 			DBUserSettings settings = users.getSettingsRaw(userName);
 
 			if (settings == null) {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User settings not found");
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User settings not found");
 				return;
 			}
 

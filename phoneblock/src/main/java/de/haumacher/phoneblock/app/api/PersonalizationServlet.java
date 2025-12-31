@@ -81,6 +81,15 @@ public class PersonalizationServlet extends HttpServlet {
 	public static final String WHITELIST_PATTERN = PersonalizationServlet.WHITELIST_PATH + "/*";
 
 	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		try {
+			super.service(req, resp);
+		} catch (Exception e) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getClass().getName() + ": " + e.getMessage());
+		}
+	}
+	
+	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
@@ -94,7 +103,7 @@ public class PersonalizationServlet extends HttpServlet {
 			Long userId = users.getUserId(userName);
 
 			if (userId == null) {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User not found");
 				return;
 			}
 
@@ -109,7 +118,7 @@ public class PersonalizationServlet extends HttpServlet {
 				phoneNumbers = blockList.getWhiteList(userId);
 				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", phoneNumbers.size(), userName);
 			} else {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown endpoint");
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown endpoint");
 				return;
 			}
 
@@ -163,7 +172,7 @@ public class PersonalizationServlet extends HttpServlet {
 			Long userId = users.getUserId(userName);
 
 			if (userId == null) {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User not found");
 				return;
 			}
 
@@ -181,7 +190,7 @@ public class PersonalizationServlet extends HttpServlet {
 			Boolean personalizationState = blockList.getPersonalizationState(userId, phone);
 
 			if (personalizationState == null) {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
 				return;
 			}
 
@@ -217,6 +226,8 @@ public class PersonalizationServlet extends HttpServlet {
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
+			LOG.debug("Unauthenticated delete request: {}", req.getRequestURI());
+
 			ServletUtil.sendAuthenticationRequest(resp);
 			return;
 		}
@@ -229,6 +240,7 @@ public class PersonalizationServlet extends HttpServlet {
 		}
 
 		String phoneText = pathInfo.substring(1); // Remove leading '/'
+		LOG.debug("Received delete request from user {} for {}.", userName, phoneText);
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
@@ -236,7 +248,7 @@ public class PersonalizationServlet extends HttpServlet {
 			Long userId = users.getUserId(userName);
 
 			if (userId == null) {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User not found");
 				return;
 			}
 
@@ -251,6 +263,7 @@ public class PersonalizationServlet extends HttpServlet {
 
 			BlockList blockList = session.getMapper(BlockList.class);
 			boolean deleted = blockList.removePersonalization(userId, phone);
+			String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
 
 			if (deleted) {
 				// Also delete the user's comment and decrement vote counts
@@ -276,12 +289,13 @@ public class PersonalizationServlet extends HttpServlet {
 				}
 
 				session.commit();
-				String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
 				LOG.info("Removed {} from {} for user '{}'", phone, listType, userName);
 
 				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 			} else {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
+				LOG.info("Invalid delete request for {} for user '{}': {}", listType, userName, phone);
+
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
 			}
 		}
 	}
