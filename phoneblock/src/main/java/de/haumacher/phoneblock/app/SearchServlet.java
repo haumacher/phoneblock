@@ -214,8 +214,6 @@ public class SearchServlet extends HttpServlet {
 	 */
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req);
-
 		String query = req.getParameter("num");
 		if (query == null || query.isBlank()) {
 			req.setAttribute(NUMBER_ATTR, query);
@@ -223,17 +221,7 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		
-		String dialPrefix;
-		if (userName == null) {
-			dialPrefix = LocationService.getInstance().getDialPrefix(req);
-		} else {
-			DB db = DBService.getInstance();
-			try (SqlSession session = db.openSession()) {
-				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
-				dialPrefix = settings.getDialPrefix();
-			}
-		}
-		
+		String dialPrefix = lookupDialPrefix(req);
 		PhoneNumer number = extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
@@ -244,6 +232,21 @@ public class SearchServlet extends HttpServlet {
 		// Send to display page.
 		String phone = NumberAnalyzer.getPhoneId(number);
 		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+	}
+
+	private String lookupDialPrefix(HttpServletRequest req) {
+		String dialPrefix;
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			dialPrefix = LocationService.getInstance().getDialPrefix(req);
+		} else {
+			DB db = DBService.getInstance();
+			try (SqlSession session = db.openSession()) {
+				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
+				dialPrefix = settings.getDialPrefix();
+			}
+		}
+		return dialPrefix;
 	}
 	
 	@Override
@@ -260,7 +263,8 @@ public class SearchServlet extends HttpServlet {
 		boolean bot = isBot(req);
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
 
-		PhoneNumer number = extractNumber(query);
+		String dialPrefix = lookupDialPrefix(req);
+		PhoneNumer number = extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
@@ -282,14 +286,11 @@ public class SearchServlet extends HttpServlet {
 		try (SqlSession session = db.openSession()) {
 			String userName = LoginFilter.getAuthenticatedUser(req);
 			
-			String dialPrefix;
 			if (userName == null) {
 				minVotes = DB.MIN_VOTES;
-				dialPrefix = LocationService.getInstance().getDialPrefix(req);
 			} else {
 				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
 				minVotes = settings.getMinVotes();
-				dialPrefix = settings.getDialPrefix();
 			}
 			
 			Set<String> langs = new HashSet<>();
