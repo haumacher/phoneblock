@@ -153,6 +153,34 @@ public boolean checkPermission() {
 
 Documentation comments allow IDEs to show inline help and enable dartdoc/javadoc to generate API documentation.
 
+### Async Context Usage in Flutter
+**IMPORTANT**: When using `BuildContext` after async operations (await), always check `context.mounted` before using the context:
+
+```dart
+// WRONG - checks widget state, not context state
+Future<void> _doSomething() async {
+  await someAsyncOperation();
+  if (mounted) {  // ❌ Checks widget.mounted, not context
+    ScaffoldMessenger.of(context).showSnackBar(...);
+  }
+}
+
+// CORRECT - checks context state
+Future<void> _doSomething() async {
+  await someAsyncOperation();
+  if (context.mounted) {  // ✅ Checks context.mounted
+    ScaffoldMessenger.of(context).showSnackBar(...);
+  }
+}
+```
+
+**Why this matters:**
+- `mounted` checks if the State object is still in the widget tree
+- `context.mounted` checks if the BuildContext is still valid
+- After async gaps, the context may be invalid even if the widget is still mounted
+- Using unmounted contexts can cause crashes or unexpected behavior
+- This is the proper Flutter pattern since Flutter 3.7+
+
 ### Platform Channel Communication
 The app uses Flutter MethodChannel to communicate between Dart and Android native code. The channel name is `de.haumacher.phoneblock_mobile/call_checker` and is defined in both MainActivity.java and main.dart.
 
