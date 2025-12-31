@@ -27,6 +27,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBPhoneComment;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserComment;
+import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -175,18 +176,40 @@ public class PersonalizationServlet extends HttpServlet {
 				return;
 			}
 
+			// Check if personalization exists for this phone number
+			BlockList blockList = session.getMapper(BlockList.class);
+			Boolean personalizationState = blockList.getPersonalizationState(userId, phone);
+
+			if (personalizationState == null) {
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
+				return;
+			}
+
 			SpamReports spamReports = session.getMapper(SpamReports.class);
 			int updated = spamReports.updateUserComment(userId, phone, comment);
 
-			if (updated > 0) {
-				session.commit();
-				String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
-				LOG.info("Updated comment for {} in {} for user '{}'", phone, listType, userName);
+			// If no existing comment was updated, create a new one
+			if (updated == 0) {
+				// Determine rating based on whether it's blacklist or whitelist
+				boolean isBlacklist = req.getServletPath().equals(BLACKLIST_PATH);
+				Rating rating = isBlacklist ? Rating.B_MISSED : Rating.A_LEGITIMATE;
 
-				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+				// Get user's language setting
+				DBUserSettings settings = users.getSettingsById(userId);
+				String lang = settings.getLang();
+
+				// Create new comment
+				String commentId = java.util.UUID.randomUUID().toString();
+				long now = System.currentTimeMillis();
+				spamReports.addComment(commentId, phone, rating, comment, lang, null, now, userId);
+
+				LOG.info("Created comment for {} in {} for user '{}'", phone, isBlacklist ? "blacklist" : "whitelist", userName);
 			} else {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
+				LOG.info("Updated comment for {} in {} for user '{}'", phone, req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist", userName);
 			}
+
+			session.commit();
+			resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 		}
 	}
 
