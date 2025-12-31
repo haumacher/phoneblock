@@ -2605,35 +2605,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     }
   }
 
-  /// Remove a number from the list.
-  Future<void> _removeNumber(api.PersonalizedNumber personalizedNumber) async {
-    final scaffold = ScaffoldMessenger.of(context);
-    final localizations = context.l10n;
-
-    final success = _isBlacklist
-        ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
-        : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
-
-    if (success) {
-      setState(() {
-        _numbers.remove(personalizedNumber);
-      });
-      scaffold.showSnackBar(
-        SnackBar(
-          content: Text(localizations.numberRemovedFromList),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    } else {
-      scaffold.showSnackBar(
-        SnackBar(
-          content: Text(localizations.errorRemovingNumber),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   /// Edit the comment for a number in the list.
   Future<void> _editComment(api.PersonalizedNumber personalizedNumber) async {
     final scaffold = ScaffoldMessenger.of(context);
@@ -2759,7 +2730,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                               child: const Icon(Icons.delete, color: Colors.white),
                             ),
                             confirmDismiss: (direction) async {
-                              return await showDialog<bool>(
+                              // Show confirmation dialog
+                              final confirmed = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
                                   title: Text(context.l10n.confirmRemoval),
@@ -2776,9 +2748,40 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                                   ],
                                 ),
                               );
+
+                              // If user cancelled, don't dismiss
+                              if (confirmed != true) {
+                                return false;
+                              }
+
+                              // User confirmed - attempt API call
+                              final success = _isBlacklist
+                                  ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
+                                  : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
+
+                              // Show appropriate feedback
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      success
+                                          ? context.l10n.numberRemovedFromList
+                                          : context.l10n.errorRemovingNumber,
+                                    ),
+                                    backgroundColor: success ? null : Colors.red,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+
+                              // Only dismiss if API call succeeded
+                              return success;
                             },
                             onDismissed: (direction) {
-                              _removeNumber(personalizedNumber);
+                              // Update local state after successful dismissal
+                              setState(() {
+                                _numbers.remove(personalizedNumber);
+                              });
                             },
                             child: ListTile(
                               leading: icon,
