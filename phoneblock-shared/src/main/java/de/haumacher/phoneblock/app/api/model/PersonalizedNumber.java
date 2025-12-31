@@ -18,10 +18,15 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** @see #getPhone() */
 	public static final String PHONE__PROP = "phone";
 
+	/** @see #getLabel() */
+	public static final String LABEL__PROP = "label";
+
 	/** @see #getComment() */
 	public static final String COMMENT__PROP = "comment";
 
 	private String _phone = "";
+
+	private String _label = null;
 
 	private String _comment = null;
 
@@ -35,7 +40,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	}
 
 	/**
-	 * The phone number.
+	 * The phone number in international format (for API communication).
 	 */
 	public final String getPhone() {
 		return _phone;
@@ -53,6 +58,34 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+	}
+
+	/**
+	 * The phone number formatted according to user's locale/country (for display).
+	 */
+	public final String getLabel() {
+		return _label;
+	}
+
+	/**
+	 * @see #getLabel()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PersonalizedNumber setLabel(String value) {
+		internalSetLabel(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLabel()} without chain call utility. */
+	protected final void internalSetLabel(String value) {
+		_listener.beforeSet(this, LABEL__PROP, value);
+		_label = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getLabel()} has a value.
+	 */
+	public final boolean hasLabel() {
+		return _label != null;
 	}
 
 	/**
@@ -113,6 +146,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
 			PHONE__PROP, 
+			LABEL__PROP, 
 			COMMENT__PROP));
 
 	@Override
@@ -124,6 +158,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	public Object get(String field) {
 		switch (field) {
 			case PHONE__PROP: return getPhone();
+			case LABEL__PROP: return getLabel();
 			case COMMENT__PROP: return getComment();
 			default: return null;
 		}
@@ -133,6 +168,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	public void set(String field, Object value) {
 		switch (field) {
 			case PHONE__PROP: internalSetPhone((String) value); break;
+			case LABEL__PROP: internalSetLabel((String) value); break;
 			case COMMENT__PROP: internalSetComment((String) value); break;
 		}
 	}
@@ -154,6 +190,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		super.writeFields(out);
 		out.name(PHONE__PROP);
 		out.value(getPhone());
+		if (hasLabel()) {
+			out.name(LABEL__PROP);
+			out.value(getLabel());
+		}
 		if (hasComment()) {
 			out.name(COMMENT__PROP);
 			out.value(getComment());
@@ -164,6 +204,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
@@ -174,6 +215,9 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";
+
+	/** XML attribute or element name of a {@link #getLabel} property. */
+	private static final String LABEL__XML_ATTR = "label";
 
 	/** XML attribute or element name of a {@link #getComment} property. */
 	private static final String COMMENT__XML_ATTR = "comment";
@@ -192,6 +236,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
+		out.writeAttribute(LABEL__XML_ATTR, getLabel());
 		out.writeAttribute(COMMENT__XML_ATTR, getComment());
 	}
 
@@ -234,6 +279,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 				setPhone(value);
 				break;
 			}
+			case LABEL__XML_ATTR: {
+				setLabel(value);
+				break;
+			}
 			case COMMENT__XML_ATTR: {
 				setComment(value);
 				break;
@@ -249,6 +298,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		switch (localName) {
 			case PHONE__XML_ATTR: {
 				setPhone(in.getElementText());
+				break;
+			}
+			case LABEL__XML_ATTR: {
+				setLabel(in.getElementText());
 				break;
 			}
 			case COMMENT__XML_ATTR: {

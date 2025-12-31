@@ -2747,6 +2747,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                         itemBuilder: (context, index) {
                           final personalizedNumber = _numbers[index];
                           final phone = personalizedNumber.phone;
+                          // Use localized label for display, fallback to international format
+                          final displayPhone = personalizedNumber.label ?? phone;
                           return Dismissible(
                             key: Key(phone),
                             direction: DismissDirection.endToStart,
@@ -2761,7 +2763,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                                 context: context,
                                 builder: (context) => AlertDialog(
                                   title: Text(context.l10n.confirmRemoval),
-                                  content: Text(confirmRemoveMessage(phone)),
+                                  content: Text(confirmRemoveMessage(displayPhone)),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.of(context).pop(false),
@@ -2780,7 +2782,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                             },
                             child: ListTile(
                               leading: icon,
-                              title: Text(phone),
+                              title: Text(displayPhone),
                               subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
                                   ? Text(
                                       personalizedNumber.comment!,

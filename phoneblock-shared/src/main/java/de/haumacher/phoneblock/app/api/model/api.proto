@@ -410,8 +410,12 @@ message AccountSettings extends AccountData {
 
 /** Entry in a personalized number list with optional comment. */
 message PersonalizedNumber {
-	/** The phone number. */
+	/** The phone number in international format (for API communication). */
 	string phone;
+
+	/** The phone number formatted according to user's locale/country (for display). */
+	@Nullable
+	string label;
 
 	/** User's comment for this number (may be null). */
 	@Nullable

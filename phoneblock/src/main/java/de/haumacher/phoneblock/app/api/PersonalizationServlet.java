@@ -107,6 +107,9 @@ public class PersonalizationServlet extends HttpServlet {
 				return;
 			}
 
+			// Get user's dial prefix for formatting
+			String dialPrefix = users.getDialPrefix(userName);
+
 			BlockList blockList = session.getMapper(BlockList.class);
 			List<String> phoneNumbers;
 
@@ -132,11 +135,16 @@ public class PersonalizationServlet extends HttpServlet {
 				}
 			}
 
-			// Build PersonalizedNumber list with comments
+			// Build PersonalizedNumber list with comments and locale-formatted labels
 			List<PersonalizedNumber> numbers = new ArrayList<>();
 			for (String phone : phoneNumbers) {
+				// Parse and format the phone number according to user's locale
+				de.haumacher.phoneblock.app.api.model.PhoneNumer phoneInfo = NumberAnalyzer.parsePhoneNumber(phone, dialPrefix);
+				String label = phoneInfo != null && phoneInfo.getShortcut() != null ? phoneInfo.getShortcut() : phone;
+
 				PersonalizedNumber pn = PersonalizedNumber.create()
 					.setPhone(phone)
+					.setLabel(label)
 					.setComment(commentsMap.get(phone));
 				numbers.add(pn);
 			}

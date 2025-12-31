@@ -1933,16 +1933,20 @@ class AccountSettings extends AccountData {
 
 ///  Entry in a personalized number list with optional comment.
 class PersonalizedNumber extends _JsonObject {
-	///  The phone number.
+	/// The phone number in international format (for API communication).
 	String phone;
 
-	///  User's comment for this number (may be null).
+	/// The phone number formatted according to user's locale/country (for display).
+	String? label;
+
+	/// User's comment for this number (may be null).
 	String? comment;
 
 	/// Creates a PersonalizedNumber.
 	PersonalizedNumber({
-			this.phone = "", 
-			this.comment, 
+			this.phone = "",
+			this.label,
+			this.comment,
 	});
 
 	/// Parses a PersonalizedNumber from a string source.
@@ -1967,6 +1971,10 @@ class PersonalizedNumber extends _JsonObject {
 				phone = json.expectString();
 				break;
 			}
+			case "label": {
+				label = json.expectString();
+				break;
+			}
 			case "comment": {
 				comment = json.expectString();
 				break;
@@ -1981,6 +1989,12 @@ class PersonalizedNumber extends _JsonObject {
 
 		json.addKey("phone");
 		json.addString(phone);
+
+		var _label = label;
+		if (_label != null) {
+			json.addKey("label");
+			json.addString(_label);
+		}
 
 		var _comment = comment;
 		if (_comment != null) {
