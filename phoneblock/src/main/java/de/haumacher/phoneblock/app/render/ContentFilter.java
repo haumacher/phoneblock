@@ -147,27 +147,28 @@ public class ContentFilter extends LoginFilter {
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		String uri = request.getRequestURI().substring(request.getContextPath().length());
+		if (NO_POW.contains(uri) 
+				|| !request.getMethod().equals("GET")
+				|| uri.startsWith(CardDavServlet.DIR_NAME)
+				|| uri.startsWith("/assets") 
+				|| uri.startsWith("/webjars")
+				|| uri.startsWith("/oauth")
+				|| uri.startsWith("/api")
+				|| uri.startsWith("/mobile") 
+				|| uri.startsWith("/ab") // Many resources being requested from the web UI. 
+				|| uri.startsWith("/resource-not-found") 
+				|| uri.endsWith(".png") 
+				|| uri.endsWith(".svg") 
+				|| uri.endsWith(".css") 
+				|| uri.endsWith(".js") 
+				) {
+			// Resources for which prove of work is not possible/required.
+			render(request, response, chain);
+			return;
+		};
+
 		if (!SearchServlet.isGoodBot(request)) {
-			String uri = request.getRequestURI().substring(request.getContextPath().length());
-			if (NO_POW.contains(uri) 
-					|| !request.getMethod().equals("GET")
-					|| uri.startsWith(CardDavServlet.DIR_NAME)
-					|| uri.startsWith("/assets") 
-					|| uri.startsWith("/webjars")
-					|| uri.startsWith("/oauth")
-					|| uri.startsWith("/api")
-					|| uri.startsWith("/mobile") 
-					|| uri.startsWith("/ab") // Many resources being requested from the web UI. 
-					|| uri.startsWith("/resource-not-found") 
-					|| uri.endsWith(".png") 
-					|| uri.endsWith(".svg") 
-					|| uri.endsWith(".css") 
-					|| uri.endsWith(".js") 
-			) {
-				render(request, response, chain);
-				return;
-			};
-			
 			// Not a well-known bot and no authenticated user. This might be a problematic bulk query, request a proof of work.
 			HttpSession session = request.getSession();
 			Integer counter = (Integer) session.getAttribute(POW_COUNTER_ATTR);
