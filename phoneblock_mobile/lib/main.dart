@@ -2760,7 +2760,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                                   : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
 
                               // Show appropriate feedback
-                              if (mounted) {
+                              if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
