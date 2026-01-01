@@ -271,11 +271,10 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		
-		String phone = NumberAnalyzer.getPhoneId(number);
-		
-		if (!phone.equals(query)) {
+		String canonicalPhone = number.getZeroZero();
+		if (!canonicalPhone.equals(query)) {
 			// Normalize the URL in the browser.
-			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + canonicalPhone);
 			return;
 		}
 
