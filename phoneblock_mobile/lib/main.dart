@@ -1138,66 +1138,43 @@ class _MainScreenState extends State<MainScreen> {
 
     final items = <PopupMenuEntry<dynamic>>[];
 
-    // Show appropriate reporting option based on current status
-    if (isSpam) {
-      // SPAM call - offer both to add another SPAM report and to mark as legitimate
-      items.add(
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.report, color: Colors.orange),
-              SizedBox(width: 12),
-              Text(context.l10n.reportAsSpam),
-            ],
-          ),
-          onTap: () {
-            Future.delayed(Duration.zero, () {
-              if (context.mounted) {
-                _reportAsSpam(context, call);
-              }
-            });
-          },
+    // Always show both reporting options for all calls
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.report, color: Colors.orange),
+            SizedBox(width: 12),
+            Text(context.l10n.reportAsSpam),
+          ],
         ),
-      );
-      items.add(
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green),
-              SizedBox(width: 12),
-              Text(context.l10n.reportAsLegitimate),
-            ],
-          ),
-          onTap: () {
-            Future.delayed(Duration.zero, () {
-              if (context.mounted) {
-                _reportAsLegitimate(context, call);
-              }
-            });
-          },
+        onTap: () {
+          Future.delayed(Duration.zero, () {
+            if (context.mounted) {
+              _reportAsSpam(context, call);
+            }
+          });
+        },
+      ),
+    );
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 12),
+            Text(context.l10n.reportAsLegitimate),
+          ],
         ),
-      );
-    } else {
-      // Legitimate call - offer to report as SPAM
-      items.add(
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.report, color: Colors.orange),
-              SizedBox(width: 12),
-              Text(context.l10n.reportAsSpam),
-            ],
-          ),
-          onTap: () {
-            Future.delayed(Duration.zero, () {
-              if (context.mounted) {
-                _reportAsSpam(context, call);
-              }
-            });
-          },
-        ),
-      );
-    }
+        onTap: () {
+          Future.delayed(Duration.zero, () {
+            if (context.mounted) {
+              _reportAsLegitimate(context, call);
+            }
+          });
+        },
+      ),
+    );
 
     // View on PhoneBlock option
     items.add(
