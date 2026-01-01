@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Report numbers as SPAM or legitimate</h1>
+
+		<p class="subtitle" data-tx="t0002">Your messages help the entire PhoneBlock community to protect themselves from SPAM calls.</p>
+
+		<h2 data-tx="t0003">Report SPAM number</h2>
+
+		<p data-tx="t0004">If you receive a SPAM call, you can report the number directly in the app. The more details you provide, the more helpful your report will be for other users.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005">Step 1: Report SPAM</h3>
+				<figure class="image">
+					<img alt="Report SPAM" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Tap on the "Report SPAM" button for the corresponding call in the history</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008">Step 2: Select category</h3>
+				<figure class="image">
+					<img alt="Select SPAM category" class="appscreen" data-tx="t0009" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010">Select the appropriate category from the list</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Step 3: Comment (optional)</h3>
+				<figure class="image">
+					<img alt="Add description" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Optionally add a comment to help other users</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014">Available SPAM categories</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015"><strong>Advertising:</strong> Unsolicited advertising calls</li>
+					<li data-tx="t0016"><strong>Competition:</strong> Incorrect prize notifications</li>
+					<li data-tx="t0017"><strong>Cost trap:</strong> Expensive premium rate numbers</li>
+					<li data-tx="t0018"><strong>Fraud:</strong> Fraudulent calls (e.g. grandchild trick)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019"><strong>Ping call:</strong> Short ring to provoke a callback</li>
+					<li data-tx="t0020"><strong>Survey:</strong> Unsolicited surveys</li>
+					<li data-tx="t0021"><strong>Other:</strong> Other types of SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022">Mark number as legitimate</h2>
+
+		<p data-tx="t0023">If a number has been incorrectly marked as SPAM, you can rate it as legitimate. This helps to correct incorrect messages and improve the quality of the database.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024">Mark as legitimate</h3>
+				<figure class="image">
+					<img alt="Mark as legitimate" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Tap on "Mark as legitimate" to give a positive rating. Optionally, you can also add a comment here.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027">When should I do this?</h3>
+				<p class="mt-5" data-tx="t0028">Mark a number as legitimate if:</p>
+				<ul>
+					<li data-tx="t0029">It is a serious call</li>
+					<li data-tx="t0030">The number comes from a real company</li>
+					<li data-tx="t0031">You know the number and it was reported incorrectly</li>
+					<li data-tx="t0032">The call was requested (e.g. doctor's surgery, tradesman, parcel service)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033"><strong>Note:</strong> Legitimate ratings help to remove the number from the SPAM database or lower the SPAM score.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034">Thank you for your help!</strong></p>
+			<p class="mt-2" data-tx="t0035">Every report helps to keep the PhoneBlock database up-to-date and reliable. The community benefits from your experience.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0036">Further functions</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0037">View call history</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0038">Manage blacklist/whitelist</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0039">Search by number</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0040">Back to the installation</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

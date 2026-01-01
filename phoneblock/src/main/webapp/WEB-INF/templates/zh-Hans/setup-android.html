@@ -92,10 +92,10 @@
 		<h4 data-tx="t0101">你现在能做什么？</h4>
 		<p data-tx="t0102">该应用程序现已激活，可自动拦截垃圾邮件电话。在该应用程序中，您可以</p>
 		<ul>
-			<li data-tx="t0103">查看已拦截和未接来电</li>
-			<li data-tx="t0104">将号码报告为垃圾邮件或合法号码</li>
-			<li data-tx="t0105">管理个人黑名单和白名单</li>
-			<li data-tx="t0106">搜索数字</li>
+			<li><a data-tx="t0103" th:href="@{/usage-view-calls}">查看已拦截和未接来电</a></li>
+			<li><a data-tx="t0104" th:href="@{/usage-report-spam}">将号码报告为垃圾邮件或合法号码</a></li>
+			<li><a data-tx="t0105" th:href="@{/usage-manage-lists}">管理个人黑名单和白名单</a></li>
+			<li><a data-tx="t0106" th:href="@{/usage-search}">搜索数字</a></li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

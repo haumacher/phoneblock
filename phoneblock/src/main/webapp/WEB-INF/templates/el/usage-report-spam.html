@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Αναφέρετε αριθμούς ως SPAM ή νόμιμους</h1>
+
+		<p class="subtitle" data-tx="t0002">Τα μηνύματά σας βοηθούν ολόκληρη την κοινότητα του PhoneBlock να προστατευτεί από τις κλήσεις SPAM.</p>
+
+		<h2 data-tx="t0003">Αναφορά αριθμού SPAM</h2>
+
+		<p data-tx="t0004">Εάν λάβετε μια κλήση SPAM, μπορείτε να αναφέρετε τον αριθμό απευθείας στην εφαρμογή. Όσο περισσότερες λεπτομέρειες παρέχετε, τόσο πιο χρήσιμη θα είναι η αναφορά σας για άλλους χρήστες.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005">Βήμα 1: Αναφορά SPAM</h3>
+				<figure class="image">
+					<img alt="Αναφορά SPAM" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Πατήστε το κουμπί "Report SPAM" για την αντίστοιχη κλήση στο ιστορικό.</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008">Βήμα 2: Επιλέξτε κατηγορία</h3>
+				<figure class="image">
+					<img alt="Επιλέξτε την κατηγορία SPAM" class="appscreen" data-tx="t0009" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010">Επιλέξτε την κατάλληλη κατηγορία από τη λίστα</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Βήμα 3: Σχόλιο (προαιρετικό)</h3>
+				<figure class="image">
+					<img alt="Προσθήκη περιγραφής" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Προαιρετικά προσθέστε ένα σχόλιο για να βοηθήσετε άλλους χρήστες</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014">Διαθέσιμες κατηγορίες SPAM</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015"><strong>Διαφήμιση:</strong> Ανεπιθύμητες διαφημιστικές κλήσεις</li>
+					<li data-tx="t0016"><strong>Διαγωνισμός:</strong> Λανθασμένες κοινοποιήσεις βραβείων</li>
+					<li data-tx="t0017"><strong>Παγίδα κόστους:</strong> Ακριβοί αριθμοί υψηλής χρέωσης</li>
+					<li data-tx="t0018"><strong>Απάτες:</strong> Απατηλές κλήσεις (π.χ. απάτες με εγγόνια)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019"><strong>Κλήση Ping:</strong> Σύντομο κουδούνισμα για την πρόκληση επανάκλησης</li>
+					<li data-tx="t0020"><strong>Έρευνα:</strong> Ανεπιθύμητες έρευνες</li>
+					<li data-tx="t0021"><strong>Άλλο:</strong> Άλλοι τύποι SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022">Χαρακτηρίστε τον αριθμό ως νόμιμο</h2>
+
+		<p data-tx="t0023">Εάν ένας αριθμός έχει επισημανθεί εσφαλμένα ως SPAM, μπορείτε να τον αξιολογήσετε ως νόμιμο. Αυτό βοηθά στη διόρθωση λανθασμένων μηνυμάτων και στη βελτίωση της ποιότητας της βάσης δεδομένων.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024">Χαρακτηρίστε ως νόμιμο</h3>
+				<figure class="image">
+					<img alt="Χαρακτηρίστε ως νόμιμο" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Πατήστε το "Mark as legitimate" για να δώσετε θετική αξιολόγηση. Προαιρετικά, μπορείτε επίσης να προσθέσετε ένα σχόλιο εδώ.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027">Πότε πρέπει να το κάνω αυτό;</h3>
+				<p class="mt-5" data-tx="t0028">Χαρακτηρίστε έναν αριθμό ως νόμιμο εάν:</p>
+				<ul>
+					<li data-tx="t0029">Πρόκειται για ένα σοβαρό κάλεσμα</li>
+					<li data-tx="t0030">Ο αριθμός προέρχεται από μια πραγματική εταιρεία</li>
+					<li data-tx="t0031">Γνωρίζετε τον αριθμό και αναφέρθηκε λανθασμένα</li>
+					<li data-tx="t0032">Η κλήση ζητήθηκε (π.χ. ιατρείο γιατρού, έμπορος, υπηρεσία δεμάτων)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033"><strong>Σημείωση:</strong> Οι νόμιμες αξιολογήσεις βοηθούν στην αφαίρεση του αριθμού από τη βάση δεδομένων SPAM ή στη μείωση της βαθμολογίας SPAM.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034">Σας ευχαριστώ για τη βοήθειά σας!</strong></p>
+			<p class="mt-2" data-tx="t0035">Κάθε αναφορά συμβάλλει στη διατήρηση της βάσης δεδομένων του PhoneBlock ενημερωμένης και αξιόπιστης. Η κοινότητα επωφελείται από την εμπειρία σας.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0036">Περαιτέρω λειτουργίες</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0037">Προβολή ιστορικού κλήσεων</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0038">Διαχείριση μαύρης/λευκής λίστας</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0039">Αναζήτηση με αριθμό</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0040">Επιστροφή στην εγκατάσταση</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

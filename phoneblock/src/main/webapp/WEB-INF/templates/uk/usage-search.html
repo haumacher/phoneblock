@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Пошук номерів</h1>
+
+		<p class="subtitle" data-tx="t0002">Ви можете знайти будь-який номер телефону в базі даних PhoneBlock, навіть якщо дзвінок не відбувся.</p>
+
+		<h2 data-tx="t0003">Як шукати номер</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Крок 1: Відкрийте пошук</h3>
+				<figure class="image">
+					<img alt="Відкрити пошук" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Натисніть на піктограму лупи вгорі праворуч, щоб відкрити функцію пошуку</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Крок 2: Введіть номер</h3>
+				<figure class="image">
+					<img alt="Введіть номер" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Введіть номер телефону та натисніть "Пошук"</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Що показує пошук</h2>
+
+		<p data-tx="t0011">Після пошуку ви побачите наступну інформацію про номер:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Якщо число відоме:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>Рейтинг спаму:</strong> Кількість негативних оцінок</li>
+					<li data-tx="t0014"><strong>Категорії:</strong> Тип спаму (реклама, шахрайство тощо)</li>
+					<li data-tx="t0015"><strong>Коментарі:</strong> Відгуки інших користувачів</li>
+					<li data-tx="t0016"><strong>Огляди:</strong> Позитивні та негативні відгуки</li>
+				</ul>
+				<p class="mt-3" data-tx="t0017">Ви можете оцінити номер безпосередньо як спам або легальний, або додати його до свого чорного/білого списку.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Якщо номер невідомий:</h3>
+				<ul>
+					<li data-tx="t0019">Додаток показує, що інформація відсутня</li>
+					<li data-tx="t0020">Ви можете першими оцінити номер</li>
+					<li data-tx="t0021">За бажанням додати до чорного або білого списку</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Порада:</strong> Якщо ви отримали підозрілий дзвінок з невідомого номера, ви можете переглянути його тут і повідомити про нього як про СПАМ.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Поради щодо пошуку</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Формат телефонного номера</h3>
+			<p class="mt-2" data-tx="t0025">Для найкращих результатів пошуку введіть номер з кодом країни:</p>
+			<ul class="mt-2">
+				<li data-tx="t0026"><strong>Німеччина:</strong> +49 або 0049 перед номером (наприклад, +49 30 12345678)</li>
+				<li data-tx="t0027"><strong>Швейцарія:</strong> +41 або 0041 перед номером</li>
+				<li data-tx="t0028"><strong>Австрія:</strong> +43 або 0043 перед номером</li>
+			</ul>
+			<p class="mt-3" data-tx="t0029">Пошук також працює без коду країни, але тоді результати будуть менш надійними.</p>
+		</div>
+
+		<div class="notification is-success mt-4">
+			<h3 data-tx="t0030">Захист даних під час обшуку</h3>
+			<p class="mt-2" data-tx="t0031">Під час пошуку номер передається на сервер PhoneBlock у вигляді SHA-1 хешу. Сервер не може перерахувати з нього оригінальний номер.</p>
+			<p class="mt-2" data-tx="t0032"><strong>Це означає:</strong> PhoneBlock дізнається, який номер ви шукаєте, тільки якщо він вже існує в базі даних спаму. Для всіх інших номерів ваш пошук залишається приватним.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">Коли пошук корисний?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Часті випадки використання:</h3>
+				<ul>
+					<li data-tx="t0035">Перед тим, як відповісти на дзвінок, перевірте невідомий номер на дисплеї</li>
+					<li data-tx="t0036">Перегляд пропущених дзвінків</li>
+					<li data-tx="t0037">Перевірка номерів з SMS або електронної пошти</li>
+					<li data-tx="t0038">Перш ніж передзвонити, перевірте, чи номер легальний</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0039">Що ви можете зробити після обшуку:</h3>
+				<ul>
+					<li data-tx="t0040">Оцініть номер як спам або легальний</li>
+					<li data-tx="t0041">Додати до чорного списку (завжди блокувати)</li>
+					<li data-tx="t0042">Додати до білого списку (ніколи не блокувати)</li>
+					<li data-tx="t0043">Прочитайте коментарі інших користувачів</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0044">Інші функції</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0045">Перегляд журналу дзвінків</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0046">Повідомляти про номери спаму</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0047">Керування чорним/білим списком</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0048">Повертаємось до інсталяції</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

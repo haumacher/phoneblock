@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Повідомляти про номери як про спам або легальні</h1>
+
+		<p class="subtitle" data-tx="t0002">Ваші повідомлення допомагають усій спільноті PhoneBlock захиститися від спам-дзвінків.</p>
+
+		<h2 data-tx="t0003">Повідомити про номер спаму</h2>
+
+		<p data-tx="t0004">Якщо ви отримали СПАМ-дзвінок, ви можете повідомити про нього безпосередньо в додатку. Чим більше деталей ви надасте, тим кориснішим буде ваше повідомлення для інших користувачів.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005">Крок 1: Повідомте про спам</h3>
+				<figure class="image">
+					<img alt="Повідомити про спам" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Натисніть кнопку "Повідомити про спам" для відповідного дзвінка в історії</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008">Крок 2: Виберіть категорію</h3>
+				<figure class="image">
+					<img alt="Виберіть категорію СПАМу" class="appscreen" data-tx="t0009" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010">Виберіть відповідну категорію зі списку</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Крок 3: Коментар (необов'язково)</h3>
+				<figure class="image">
+					<img alt="Додати опис" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">За бажанням додайте коментар, щоб допомогти іншим користувачам</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014">Доступні категорії спаму</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015"><strong>Реклама:</strong> Небажані рекламні дзвінки</li>
+					<li data-tx="t0016"><strong>Змагання:</strong> Неправильні повідомлення про призи</li>
+					<li data-tx="t0017"><strong>Витратна пастка:</strong> Дорогі номери преміум-тарифів</li>
+					<li data-tx="t0018"><strong>Шахрайство:</strong> Шахрайські дзвінки (наприклад, шахрайство з онуками)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019"><strong>Ping call:</strong> Короткий дзвінок, щоб спровокувати зворотний дзвінок</li>
+					<li data-tx="t0020"><strong>Опитування:</strong> Небажані опитування</li>
+					<li data-tx="t0021"><strong>Інше:</strong> Інші типи спаму</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022">Позначте номер як легітимний</h2>
+
+		<p data-tx="t0023">Якщо номер було помилково позначено як спам, ви можете оцінити його як легальний. Це допоможе виправити помилкові повідомлення та покращити якість бази даних.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024">Позначити як легітимний</h3>
+				<figure class="image">
+					<img alt="Позначити як легітимний" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Натисніть на "Позначити як законний", щоб поставити позитивну оцінку. За бажанням, ви також можете додати коментар.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027">Коли я повинен це зробити?</h3>
+				<p class="mt-5" data-tx="t0028">Позначте число як легітимне, якщо:</p>
+				<ul>
+					<li data-tx="t0029">Це серйозний виклик</li>
+					<li data-tx="t0030">Номер від реальної компанії</li>
+					<li data-tx="t0031">Ви знаєте номер, але він був повідомлений неправильно</li>
+					<li data-tx="t0032">Дзвінок за запитом (наприклад, до лікаря, продавця, посилкової служби)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033"><strong>Примітка:</strong> Легітимні рейтинги допомагають видалити номер з бази даних СПАМу або знизити оцінку СПАМу.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034">Дякуємо за вашу допомогу!</strong></p>
+			<p class="mt-2" data-tx="t0035">Кожен звіт допомагає підтримувати базу даних PhoneBlock актуальною та надійною. Спільнота отримує користь від вашого досвіду.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0036">Інші функції</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0037">Перегляд журналу дзвінків</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0038">Керування чорним/білим списком</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0039">Пошук номерів</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0040">Повертаємось до інсталяції</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

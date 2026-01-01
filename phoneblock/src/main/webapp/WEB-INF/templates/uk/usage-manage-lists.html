@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Керуйте особистим чорним та білим списком</h1>
+
+		<p class="subtitle" data-tx="t0002">На додаток до бази даних спільнот, ви можете вести власні списки, щоб налаштувати фільтрацію викликів.</p>
+
+		<h2 data-tx="t0003">Що таке чорний і білий список?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">Чорний список</h3>
+					<p class="has-text-white" data-tx="t0005">Номери з вашого чорного списку <strong>завжди заблоковані</strong>, незалежно від того, чи позначені вони як СПАМ у базі даних PhoneBlock чи ні.</p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>Використання:</strong> Для набридливих абонентів, яких ви хочете заблокувати особисто.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">Білий список</h3>
+					<p class="has-text-white" data-tx="t0008">Номери з вашого білого списку <strong>ніколи не будуть заблоковані</strong>, навіть якщо в базі даних PhoneBlock вони будуть позначені як спам.</p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>Використання:</strong> Для важливих номерів, які можуть бути заблоковані помилково.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Керування списками</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Крок 1: Відкрийте налаштування</h3>
+				<figure class="image">
+					<img alt="Відкрити налаштування" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Натисніть на іконку меню (☰) у верхньому лівому куті та виберіть "Налаштування"</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">Крок 2: Виберіть список</h3>
+				<figure class="image">
+					<img alt="Відкрити чорний список" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">Виберіть "Чорний список" або "Білий список" у налаштуваннях</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">Крок 3: Відображення списку</h3>
+				<figure class="image">
+					<img alt="Показати чорний список" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">Відображаються ваші персональні номери</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">Додати номер</h3>
+		<p data-tx="t0021">Щоб додати новий номер до чорного або білого списку, натисніть на символ <strong>плюс (+)</strong> у верхньому правому куті відповідного списку. Потім введіть номер телефону (з кодом країни для найкращих результатів).</p>
+
+		<h3 class="mt-5" data-tx="t0022">Видалити номер зі списку</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Видалити зі списку" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">Проведіть вліво над номером і торкніться піктограми смітника, щоб видалити його</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">Синхронізація:</strong></p>
+					<p class="mt-2" data-tx="t0026">Ваші особисті списки синхронізуються з вашим обліковим записом PhoneBlock і автоматично доступні на всіх ваших пристроях, на яких ви ввійшли під тим самим обліковим записом.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Поради щодо використання</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">Чорний список</h3>
+				<ul>
+					<li data-tx="t0029">Додайте цифри, які турбують вас особисто</li>
+					<li data-tx="t0030">Навіть якщо їх ще немає в базі даних PhoneBlock</li>
+					<li data-tx="t0031">Номер блокується негайно</li>
+					<li data-tx="t0032">Ідеально підходить для наполегливих абонентів</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">Білий список</h3>
+				<ul>
+					<li data-tx="t0034">Додайте важливі номери (лікар, школа, робота)</li>
+					<li data-tx="t0035">Запобігає випадковому блокуванню</li>
+					<li data-tx="t0036">Має пріоритет над базою даних спільнот</li>
+					<li data-tx="t0037">Особливо важливо для критичних викликів</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>Примітка:</strong> Ваші особисті списки завжди мають пріоритет над базою даних спільноти PhoneBlock. Номер з вашого білого списку ніколи не буде заблокований, навіть якщо тисячі інших користувачів повідомили про нього як про спам.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">Інші функції</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">Перегляд журналу дзвінків</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">Повідомляти про номери спаму</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">Пошук номерів</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">Повертаємось до інсталяції</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Signaler les numéros comme SPAM ou légitimes</h1>
+
+		<p class="subtitle" data-tx="t0002">Tes messages aident l'ensemble de la communauté PhoneBlock à se protéger des appels SPAM.</p>
+
+		<h2 data-tx="t0003">Signaler un numéro SPAM</h2>
+
+		<p data-tx="t0004">Si tu reçois un appel SPAM, tu peux signaler le numéro directement dans l'application. Plus tu donneras de détails, plus ton signalement sera utile aux autres utilisateurs.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005">Étape 1 : Signaler un SPAM</h3>
+				<figure class="image">
+					<img alt="Signaler un SPAM" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Appuie sur le bouton "Signaler un SPAM" lors de l'appel correspondant dans l'historique.</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008">Étape 2 : Choisir la catégorie</h3>
+				<figure class="image">
+					<img alt="Choisir la catégorie de SPAM" class="appscreen" data-tx="t0009" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010">Choisis la catégorie appropriée dans la liste</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Étape 3 : Commentaire (facultatif)</h3>
+				<figure class="image">
+					<img alt="Ajouter une description" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Ajoute un commentaire facultatif pour aider les autres utilisateurs</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014">Catégories de SPAM disponibles</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015"><strong>Publicité:</strong> Appels publicitaires non sollicités</li>
+					<li data-tx="t0016"><strong>Jeu-concours:</strong> Fausses notifications de gain</li>
+					<li data-tx="t0017"><strong>Piège des coûts:</strong> Numéros surtaxés coûteux</li>
+					<li data-tx="t0018"><strong>Arnaques:</strong> Appels téléphoniques frauduleux (par ex. astuce du petit-fils)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019"><strong>Appel Ping:</strong> Sonnerie courte pour provoquer un rappel</li>
+					<li data-tx="t0020"><strong>Sondage:</strong> Sondages indésirables</li>
+					<li data-tx="t0021"><strong>Autres:</strong> Autres types de SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022">Marquer le numéro comme légitime</h2>
+
+		<p data-tx="t0023">Si un numéro a été marqué par erreur comme SPAM, tu peux l'évaluer comme légitime. Cela permet de corriger les messages erronés et d'améliorer la qualité de la base de données.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024">Marquer comme légitime</h3>
+				<figure class="image">
+					<img alt="Marquer comme légitime" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Appuie sur "Marquer comme légitime" pour donner une évaluation positive. En option, tu peux aussi ajouter un commentaire ici.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027">Quand dois-je le faire ?</h3>
+				<p class="mt-5" data-tx="t0028">Marque un numéro comme légitime si :</p>
+				<ul>
+					<li data-tx="t0029">il s'agit d'un appel sérieux</li>
+					<li data-tx="t0030">Le numéro provient d'une entreprise réelle</li>
+					<li data-tx="t0031">tu connais le numéro et qu'il a été communiqué par erreur</li>
+					<li data-tx="t0032">l'appel était souhaité (p. ex. cabinet médical, artisan, service de livraison de colis)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033"><strong>Remarque:</strong> Les évaluations légitimes permettent de supprimer le numéro de la base de données SPAM ou de réduire le score SPAM.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034">Merci de ton aide !</strong></p>
+			<p class="mt-2" data-tx="t0035">Chaque rapport contribue à maintenir la base de données PhoneBlock à jour et fiable. La communauté bénéficie de ton expérience.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0036">Autres fonctions</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0037">Consulter l'historique des appels</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0038">Gérer la liste noire/liste blanche</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0039">Rechercher des numéros</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0040">Retour à l'installation</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

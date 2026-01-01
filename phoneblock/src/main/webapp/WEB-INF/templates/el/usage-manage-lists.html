@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Διαχείριση προσωπικής μαύρης και λευκής λίστας</h1>
+
+		<p class="subtitle" data-tx="t0002">Εκτός από τη βάση δεδομένων της κοινότητας, μπορείτε να διατηρήσετε τους δικούς σας καταλόγους για να προσαρμόσετε το φιλτράρισμα των κλήσεων.</p>
+
+		<h2 data-tx="t0003">Τι είναι η μαύρη και η λευκή λίστα;</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">Μαύρη λίστα</h3>
+					<p class="has-text-white" data-tx="t0005">Οι αριθμοί στη μαύρη λίστα σας είναι <strong>πάντα αποκλεισμένοι</strong>, ανεξάρτητα από το αν είναι γνωστοί ως SPAM στη βάση δεδομένων του PhoneBlock ή όχι.</p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>Χρήση:</strong> Για ενοχλητικούς καλούντες που θέλετε να μπλοκάρετε προσωπικά.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">Λευκή λίστα</h3>
+					<p class="has-text-white" data-tx="t0008">Οι αριθμοί στη λευκή σας λίστα δεν θα μπλοκαριστούν ποτέ, ακόμη και αν αναφερθούν ως SPAM στη βάση δεδομένων του PhoneBlock.</p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>Χρήση:</strong> Για σημαντικούς αριθμούς που θα μπορούσαν να μπλοκαριστούν κατά λάθος.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Διαχείριση λιστών</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Βήμα 1: Ανοίξτε τις ρυθμίσεις</h3>
+				<figure class="image">
+					<img alt="Άνοιγμα ρυθμίσεων" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Πατήστε το εικονίδιο μενού (☰) στην επάνω αριστερή γωνία και επιλέξτε "Ρυθμίσεις".</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">Βήμα 2: Επιλογή λίστας</h3>
+				<figure class="image">
+					<img alt="Άνοιγμα μαύρης λίστας" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">Επιλέξτε "Μαύρη λίστα" ή "Λευκή λίστα" από τις ρυθμίσεις</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">Βήμα 3: Εμφάνιση λίστας</h3>
+				<figure class="image">
+					<img alt="Εμφάνιση μαύρης λίστας" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">Εμφανίζονται οι προσωπικοί σας αριθμοί</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">Προσθέστε αριθμό</h3>
+		<p data-tx="t0021">Για να προσθέσετε έναν νέο αριθμό στη μαύρη ή τη λευκή λίστα, πατήστε το σύμβολο <strong>plus (+)</strong> στην επάνω δεξιά γωνία της αντίστοιχης λίστας. Στη συνέχεια, εισαγάγετε τον αριθμό τηλεφώνου (με τον κωδικό χώρας για καλύτερα αποτελέσματα).</p>
+
+		<h3 class="mt-5" data-tx="t0022">Αφαίρεση αριθμού από τη λίστα</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Διαγραφή από τη λίστα" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">Σύρετε το δάχτυλό σας προς τα αριστερά πάνω από τον αριθμό και πατήστε το εικονίδιο του κάδου απορριμμάτων για να τον αφαιρέσετε.</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">Συγχρονισμός:</strong></p>
+					<p class="mt-2" data-tx="t0026">Οι προσωπικές σας λίστες συγχρονίζονται με το λογαριασμό σας PhoneBlock και είναι αυτόματα διαθέσιμες σε όλες τις συσκευές σας στις οποίες έχετε συνδεθεί με τον ίδιο λογαριασμό.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Συμβουλές χρήσης</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">Μαύρη λίστα</h3>
+				<ul>
+					<li data-tx="t0029">Προσθέστε αριθμούς που σας ενοχλούν προσωπικά</li>
+					<li data-tx="t0030">Ακόμη και αν δεν είναι ακόμη στη βάση δεδομένων του PhoneBlock</li>
+					<li data-tx="t0031">Ο αριθμός μπλοκάρεται αμέσως</li>
+					<li data-tx="t0032">Ιδανικό για επίμονους καλούντες</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">Λευκή λίστα</h3>
+				<ul>
+					<li data-tx="t0034">Προσθέστε σημαντικούς αριθμούς (γιατρός, σχολείο, εργασία)</li>
+					<li data-tx="t0035">Αποτρέπει το τυχαίο μπλοκάρισμα</li>
+					<li data-tx="t0036">Έχει προτεραιότητα έναντι της κοινοτικής βάσης δεδομένων</li>
+					<li data-tx="t0037">Ιδιαίτερα σημαντικό για κρίσιμες κλήσεις</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>Σημείωση:</strong> Οι προσωπικές σας λίστες έχουν πάντα προτεραιότητα έναντι της βάσης δεδομένων της κοινότητας PhoneBlock. Ένας αριθμός στη δική σας λευκή λίστα δεν θα μπλοκαριστεί ποτέ, ακόμη και αν έχει αναφερθεί ως SPAM από χιλιάδες άλλους χρήστες.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">Περαιτέρω λειτουργίες</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">Προβολή ιστορικού κλήσεων</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">Αναφορά αριθμών SPAM</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">Αναζήτηση για αριθμούς</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">Επιστροφή στην εγκατάσταση</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

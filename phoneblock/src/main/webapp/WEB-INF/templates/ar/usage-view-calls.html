@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">عرض المكالمات المحظورة والفائتة</h1>
+
+		<p class="subtitle" data-tx="t0002">يُظهر لك PhoneBlock Mobile جميع المكالمات المحظورة والمكالمات الفائتة من أرقام غير معروفة.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0003"><strong> حماية البيانات:</strong> لا يتم تسجيل المكالمات من الأرقام الموجودة في قائمة جهات الاتصال الخاصة بك. يعالج التطبيق الأرقام غير المعروفة فقط.</p>
+		</div>
+
+		<h2 data-tx="t0004">كيف تعمل</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0005">الحجب التلقائي</h3>
+				<figure class="image">
+					<img alt="تم حظر مكالمة سبام" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">يتم عرض مكالمات الرسائل الاقتحامية المحظورة تلقائيًا في التطبيق. ستتلقى إشعارًا بالرقم ودرجة الرسائل الاقتحامية.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0008">تفاصيل المكالمة</h3>
+				<p class="mt-5" data-tx="t0009">اضغط على إدخال في سجل المكالمات للاطلاع على التفاصيل:</p>
+				<ul>
+					<li data-tx="t0010"><strong> درجة الرسائل غير المرغوب فيها: </strong> عدد التقييمات السلبية من المجتمع</li>
+					<li data-tx="t0011"><strong>الوقت:</strong> عند إجراء المكالمة</li>
+					<li data-tx="t0012"><strong>الفئات:</strong>نوع الرسائل الاقتحامية (مثل الإعلانات والاحتيال والمنافسة)</li>
+					<li data-tx="t0013"><strong>التعليقات:</strong> تقارير وتجارب مستخدمي PhoneBlock الآخرين</li>
+				</ul>
+				<p class="mt-4" data-tx="t0014">من هنا يمكنك أيضًا تقييم الرقم بنفسك أو إضافته إلى قائمتك الشخصية السوداء/القائمة البيضاء.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015">كيف يعمل الحجب؟</strong></p>
+			<p class="mt-2" data-tx="t0016">يستخدم PhoneBlock Mobile خدمة CallScreeningService في نظام Android لفحص المكالمات الواردة قبل أن ترن. إذا كان الرقم موجوداً في قاعدة بيانات الرسائل الاقتحامية (SPAM) وتم تجاوز الحد الذي حددته، يتم حظر المكالمة تلقائياً.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0017">الخطوات التالية</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0018">الإبلاغ عن أرقام الرسائل الاقتحامية</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0019">إدارة القائمة السوداء/القائمة البيضاء</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0020">العودة إلى التثبيت</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

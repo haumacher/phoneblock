@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">البحث عن الأرقام</h1>
+
+		<p class="subtitle" data-tx="t0002">يمكنك البحث عن أي رقم هاتف في قاعدة بيانات PhoneBlock، حتى بدون إجراء مكالمة.</p>
+
+		<h2 data-tx="t0003">كيفية البحث عن رقم</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">الخطوة 1: فتح البحث</h3>
+				<figure class="image">
+					<img alt="بحث مفتوح" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">اضغط على أيقونة العدسة المكبرة في أعلى اليمين لفتح وظيفة البحث</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">الخطوة 2: أدخل الرقم</h3>
+				<figure class="image">
+					<img alt="أدخل الرقم" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">أدخل رقم الهاتف واضغط على "بحث"</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">ما يظهره البحث</h2>
+
+		<p data-tx="t0011">بعد البحث سترى المعلومات التالية حول الرقم:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">إذا كان الرقم معروفاً</h3>
+				<ul>
+					<li data-tx="t0013"><strong> درجة التقييمات السلبية: </strong> عدد التقييمات السلبية</li>
+					<li data-tx="t0014"><strong>الفئات:</strong> نوع الرسائل الاقتحامية (إعلان، احتيال، إلخ)</li>
+					<li data-tx="t0015"><strong>التعليقات:</strong> شهادات من مستخدمين آخرين</li>
+					<li data-tx="t0016"><strong>المراجعات:</strong>التقارير الإيجابية والسلبية</li>
+				</ul>
+				<p class="mt-3" data-tx="t0017">يمكنك تقييم الرقم مباشرةً كرقم مزعج أو شرعي أو إضافته إلى قائمتك السوداء/القائمة البيضاء.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">إذا كان الرقم غير معروف:</h3>
+				<ul>
+					<li data-tx="t0019">يشير التطبيق إلى عدم توفر معلومات</li>
+					<li data-tx="t0020">يمكنك أن تكون أول من يقيّم الرقم</li>
+					<li data-tx="t0021">الإضافة اختياريًا إلى القائمة السوداء أو القائمة البيضاء</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong> نصيحة:</strong> إذا تلقيت مكالمة مشبوهة من رقم غير معروف، يمكنك البحث عنها هنا والإبلاغ عنها كرسالة غير مرغوب فيها.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">نصائح البحث</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">تنسيق رقم الهاتف</h3>
+			<p class="mt-2" data-tx="t0025">للحصول على أفضل نتائج بحث، أدخل الرقم مع رمز البلد:</p>
+			<ul class="mt-2">
+				<li data-tx="t0026"><strong>ألمانيا:</strong> +49 أو 0049 قبل الرقم (على سبيل المثال +49 30 12345678)</li>
+				<li data-tx="t0027"><strong>سويسرا:</strong> +41 أو 0041 قبل الرقم</li>
+				<li data-tx="t0028"><strong>النمسا:</strong> +43 أو 0043 قبل الرقم</li>
+			</ul>
+			<p class="mt-3" data-tx="t0029">يعمل البحث أيضاً بدون رمز البلد، ولكن النتائج حينئذٍ تكون أقل موثوقية.</p>
+		</div>
+
+		<div class="notification is-success mt-4">
+			<h3 data-tx="t0030">حماية البيانات أثناء البحث</h3>
+			<p class="mt-2" data-tx="t0031">أثناء البحث، يتم إرسال الرقم إلى خادم PhoneBlock على شكل تجزئة SHA-1. لا يمكن للخادم إعادة حساب الرقم الأصلي من هذا.</p>
+			<p class="mt-2" data-tx="t0032"><strong>هذا يعني:</strong> لا يعرف PhoneBlock الرقم الذي تبحث عنه إلا إذا كان موجودًا بالفعل في قاعدة بيانات الرسائل الاقتحامية. بالنسبة لجميع الأرقام الأخرى، يظل بحثك خاصاً.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">متى يكون البحث مفيداً؟</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">حالات الاستخدام المتكرر:</h3>
+				<ul>
+					<li data-tx="t0035">تحقق من الرقم المجهول على الشاشة قبل أن ترد على الهاتف</li>
+					<li data-tx="t0036">البحث عن المكالمات الفائتة</li>
+					<li data-tx="t0037">التحقق من الأرقام من الرسائل النصية القصيرة أو رسائل البريد الإلكتروني</li>
+					<li data-tx="t0038">تحقق مما إذا كان الرقم مشروعاً أم لا قبل معاودة الاتصال</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0039">ما يمكنك فعله بعد البحث</h3>
+				<ul>
+					<li data-tx="t0040">تقييم الرقم كرسالة غير مرغوب فيها أو شرعية</li>
+					<li data-tx="t0041">إضافة إلى القائمة السوداء (حظر دائمًا)</li>
+					<li data-tx="t0042">إضافة إلى القائمة البيضاء (لا تحظر أبدًا)</li>
+					<li data-tx="t0043">قراءة تعليقات المستخدمين الآخرين</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0044">وظائف أخرى</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0045">عرض سجل المكالمات</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0046">الإبلاغ عن أرقام الرسائل الاقتحامية</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0047">إدارة القائمة السوداء/القائمة البيضاء</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0048">العودة إلى التثبيت</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

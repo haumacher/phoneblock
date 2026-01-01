@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Manage personal blacklist and whitelist</h1>
+
+		<p class="subtitle" data-tx="t0002">In addition to the community database, you can keep your own lists to customize call filtering.</p>
+
+		<h2 data-tx="t0003">What are blacklist and whitelist?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">Blacklist</h3>
+					<p class="has-text-white" data-tx="t0005">Numbers on your blacklist are <strong>always blocked</strong>, regardless of whether they are known as SPAM in the PhoneBlock database or not.</p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>Use:</strong> For annoying callers that you want to block personally.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">Whitelist</h3>
+					<p class="has-text-white" data-tx="t0008">Numbers on your whitelist will <strong>never be blocked</strong>, even if they are reported as SPAM in the PhoneBlock database.</p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>Use:</strong> For important numbers that could be blocked by mistake.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Manage lists</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Step 1: Open settings</h3>
+				<figure class="image">
+					<img alt="Open settings" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Tap on the menu icon (☰) at the top left and select "Settings"</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">Step 2: Select list</h3>
+				<figure class="image">
+					<img alt="Open blacklist" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">Select "Blacklist" or "Whitelist" from the settings</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">Step 3: Display list</h3>
+				<figure class="image">
+					<img alt="Show blacklist" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">Your personal numbers are displayed</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">Add number</h3>
+		<p data-tx="t0021">To add a new number to your blacklist or whitelist, tap on the <strong>plus symbol (+)</strong> at the top right of the respective list. Then enter the phone number (with country code for best results).</p>
+
+		<h3 class="mt-5" data-tx="t0022">Remove number from list</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Delete from list" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">Swipe left over the number and tap the trash can icon to remove it</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">Synchronization:</strong></p>
+					<p class="mt-2" data-tx="t0026">Your personal lists are synchronized with your PhoneBlock account and are automatically available on all your devices on which you are logged in with the same account.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Tips for use</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">Blacklist</h3>
+				<ul>
+					<li data-tx="t0029">Add numbers that bother you personally</li>
+					<li data-tx="t0030">Even if they are not yet in the PhoneBlock database</li>
+					<li data-tx="t0031">The number is blocked immediately</li>
+					<li data-tx="t0032">Ideal for persistent callers</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">Whitelist</h3>
+				<ul>
+					<li data-tx="t0034">Add important numbers (doctor, school, work)</li>
+					<li data-tx="t0035">Prevents accidental blocking</li>
+					<li data-tx="t0036">Has priority over the community database</li>
+					<li data-tx="t0037">Particularly important for critical calls</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>Note:</strong> Your personal lists always take precedence over the PhoneBlock community database. A number on your whitelist will never be blocked, even if it has been reported as SPAM by thousands of other users.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">Further functions</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">View call history</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">Report SPAM numbers</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">Search by number</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">Back to the installation</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

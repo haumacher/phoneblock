@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">查看已拦截和未接来电</h1>
+
+		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile 可显示所有已拦截的垃圾邮件电话和来自未知号码的未接来电。</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0003"><strong>数据保护：</strong>不会记录来自联系人列表中号码的通话。应用程序只处理未知号码。</p>
+		</div>
+
+		<h2 data-tx="t0004">工作原理</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0005">自动屏蔽</h3>
+				<figure class="image">
+					<img alt="拦截垃圾邮件电话" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">被拦截的垃圾电话会自动显示在应用程序中。您将收到包含号码和 SPAM 分数的通知。</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0008">电话详情</h3>
+				<p class="mt-5" data-tx="t0009">点击通话记录中的条目查看详情：</p>
+				<ul>
+					<li data-tx="t0010"><strong>垃圾邮件得分：</strong>社区负面评价的数量</li>
+					<li data-tx="t0011"><strong>时间：</strong>通话时间</li>
+					<li data-tx="t0012"><strong>类别：</strong>垃圾邮件类型（如广告、欺诈、竞争等）</li>
+					<li data-tx="t0013"><strong>评论：</strong>其他 PhoneBlock 用户的报告和经验</li>
+				</ul>
+				<p class="mt-4" data-tx="t0014">在这里，您还可以对号码进行评分，或将其添加到您的个人黑名单/白名单中。</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015">拦截是如何进行的？</strong></p>
+			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile 使用 Android 的 CallScreeningService 在来电铃声响起之前对来电进行筛选。如果号码在垃圾邮件数据库中，并且超过了您设置的阈值，则会自动阻止来电。</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0017">下一步工作</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0018">报告垃圾邮件号码</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0019">管理黑名单/白名单</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0020">回到安装</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

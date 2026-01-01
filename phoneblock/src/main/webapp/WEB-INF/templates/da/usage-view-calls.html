@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Se blokerede og ubesvarede opkald</h1>
+
+		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile viser dig alle blokerede SPAM-opkald og ubesvarede opkald fra ukendte numre.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0003"><strong>Databeskyttelse:</strong> Opkald fra numre på din kontaktliste optages ikke. Appen behandler kun ukendte numre.</p>
+		</div>
+
+		<h2 data-tx="t0004">Sådan fungerer det</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0005">Automatisk blokering</h3>
+				<figure class="image">
+					<img alt="SPAM-opkald blokeret" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Blokerede SPAM-opkald vises automatisk i appen. Du vil modtage en meddelelse med nummeret og SPAM-scoren.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0008">Ring til detaljer</h3>
+				<p class="mt-5" data-tx="t0009">Tryk på en post i opkaldshistorikken for at se detaljer:</p>
+				<ul>
+					<li data-tx="t0010"><strong>SPAM-score:</strong> Antal negative vurderinger fra fællesskabet</li>
+					<li data-tx="t0011"><strong>Tidspunkt:</strong> Da opkaldet blev foretaget</li>
+					<li data-tx="t0012"><strong>Kategorier:</strong> Type SPAM (f.eks. reklame, svindel, konkurrence)</li>
+					<li data-tx="t0013"><strong>Kommentarer:</strong> Rapporter og erfaringer fra andre PhoneBlock-brugere</li>
+				</ul>
+				<p class="mt-4" data-tx="t0014">Herfra kan du også selv bedømme nummeret eller tilføje det til din personlige sortliste/hvidliste.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015">Hvordan fungerer blokeringen?</strong></p>
+			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile bruger Androids CallScreeningService til at screene indgående opkald, før de ringer. Hvis nummeret er i SPAM-databasen, og din indstillede tærskel er overskredet, blokeres opkaldet automatisk.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0017">Næste skridt</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0018">Rapporter SPAM-numre</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0019">Administrer sortliste/hvidliste</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0020">Tilbage til installationen</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">将号码报告为垃圾邮件或合法号码</h1>
+
+		<p class="subtitle" data-tx="t0002">您的信息有助于整个 PhoneBlock 社区保护自己免受垃圾邮件电话的侵害。</p>
+
+		<h2 data-tx="t0003">报告垃圾邮件号码</h2>
+
+		<p data-tx="t0004">如果您接到垃圾邮件电话，可以直接在应用程序中报告该号码。您提供的细节越多，您的报告对其他用户的帮助就越大。</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005">步骤 1：报告垃圾邮件</h3>
+				<figure class="image">
+					<img alt="举报垃圾邮件" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">点击历史记录中相应通话的 "报告垃圾邮件 "按钮</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008">步骤 2：选择类别</h3>
+				<figure class="image">
+					<img alt="选择垃圾邮件类别" class="appscreen" data-tx="t0009" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010">从列表中选择相应类别</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">步骤 3：评论（可选）</h3>
+				<figure class="image">
+					<img alt="添加说明" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">可选择添加评论以帮助其他用户</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014">可用的垃圾邮件类别</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015"><strong>广告：</strong>未经请求的广告电话</li>
+					<li data-tx="t0016"><strong>比赛：</strong>错误的奖品通知</li>
+					<li data-tx="t0017"><strong>成本陷阱：</strong>昂贵的付费电话号码</li>
+					<li data-tx="t0018"><strong>诈骗：</strong>诈骗电话（如子孙诈骗）</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019"><strong>Ping call：</strong> 短促铃声以触发回拨</li>
+					<li data-tx="t0020"><strong>调查：</strong>不需要的调查</li>
+					<li data-tx="t0021"><strong>其他：</strong>其他类型的垃圾邮件</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022">将号码标记为合法</h2>
+
+		<p data-tx="t0023">如果一个号码被错误地标记为垃圾邮件，您可以将其评为合法号码。这有助于纠正错误信息，提高数据库质量。</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024">标记为合法</h3>
+				<figure class="image">
+					<img alt="标记为合法" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">点击 "标记为合法"，给予好评。您还可以选择在此处添加评论。</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027">我应该什么时候做？</h3>
+				<p class="mt-5" data-tx="t0028">如果出现以下情况，请将号码标记为合法号码：</p>
+				<ul>
+					<li data-tx="t0029">这是一个严肃的呼吁</li>
+					<li data-tx="t0030">该号码来自一家真实的公司</li>
+					<li data-tx="t0031">你知道这个数字，但它被错误地报告了</li>
+					<li data-tx="t0032">要求拨打的电话（如医生诊所、商人、包裹服务等）</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033"><strong>注意：</strong>合法评级有助于将号码从垃圾邮件数据库中删除或降低垃圾邮件得分。</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034">感谢您的帮助！</strong></p>
+			<p class="mt-2" data-tx="t0035">每一份报告都有助于使 PhoneBlock 数据库保持最新和可靠。社区将从您的经验中受益。</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0036">其他功能</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0037">查看通话记录</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0038">管理黑名单/白名单</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0039">搜索数字</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0040">回到安装</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

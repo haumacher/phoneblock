@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Administrer personlig svarteliste og hviteliste</h1>
+
+		<p class="subtitle" data-tx="t0002">I tillegg til fellesdatabasen kan du vedlikeholde dine egne lister for å tilpasse anropsfiltreringen.</p>
+
+		<h2 data-tx="t0003">Hva er svarteliste og hviteliste?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">Svarteliste</h3>
+					<p class="has-text-white" data-tx="t0005">Numre på svartelisten din er <strong>alltid blokkert</strong>, uavhengig av om de er kjent som SPAM i PhoneBlock-databasen eller ikke.</p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>Bruk:</strong> For irriterende innringere som du ønsker å blokkere personlig.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">Hviteliste</h3>
+					<p class="has-text-white" data-tx="t0008">Numre på hvitelisten din vil <strong>aldri bli blokkert</strong>, selv om de er rapportert som SPAM i PhoneBlock-databasen.</p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>Bruk:</strong> For viktige numre som kan bli blokkert ved en feiltakelse.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Administrer lister</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Trinn 1: Åpne innstillinger</h3>
+				<figure class="image">
+					<img alt="Åpne innstillinger" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Trykk på menyikonet (☰) øverst til venstre, og velg "Innstillinger"</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">Trinn 2: Velg liste</h3>
+				<figure class="image">
+					<img alt="Åpne svarteliste" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">Velg "Svarteliste" eller "Hviteliste" fra innstillingene</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">Trinn 3: Vis liste</h3>
+				<figure class="image">
+					<img alt="Vis svarteliste" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">Dine personlige tall vises</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">Legg til nummer</h3>
+		<p data-tx="t0021">Hvis du vil legge til et nytt nummer på svartelisten eller hvitelisten, trykker du på <strong>plussymbolet (+)</strong> øverst til høyre i den respektive listen. Skriv deretter inn telefonnummeret (med landskode for best resultat).</p>
+
+		<h3 class="mt-5" data-tx="t0022">Fjern nummer fra listen</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Slett fra listen" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">Sveip til venstre over nummeret og trykk på søppelbøtteikonet for å fjerne det</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">Synkronisering:</strong></p>
+					<p class="mt-2" data-tx="t0026">De personlige listene dine synkroniseres med PhoneBlock-kontoen din og er automatisk tilgjengelige på alle enheter der du er logget inn med samme konto.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Tips for bruk</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">Svarteliste</h3>
+				<ul>
+					<li data-tx="t0029">Legg til tall som plager deg personlig</li>
+					<li data-tx="t0030">Selv om de ennå ikke finnes i PhoneBlock-databasen</li>
+					<li data-tx="t0031">Nummeret blir blokkert umiddelbart</li>
+					<li data-tx="t0032">Ideell for utholdende innringere</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">Hviteliste</h3>
+				<ul>
+					<li data-tx="t0034">Legg til viktige numre (lege, skole, jobb)</li>
+					<li data-tx="t0035">Forhindrer utilsiktet blokkering</li>
+					<li data-tx="t0036">Har prioritet over fellesskapsdatabasen</li>
+					<li data-tx="t0037">Spesielt viktig for kritiske samtaler</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>Note:</strong> Dine personlige lister har alltid forrang over PhoneBlocks fellesskapsdatabase. Et nummer på din hviteliste vil aldri bli blokkert, selv om det har blitt rapportert som SPAM av tusenvis av andre brukere.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">Flere funksjoner</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">Se anropshistorikk</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">Rapporter SPAM-nummer</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">Søk etter tall</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">Tilbake til installasjonen</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

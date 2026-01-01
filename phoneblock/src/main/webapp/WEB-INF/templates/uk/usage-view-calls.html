@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Перегляд заблокованих та пропущених дзвінків</h1>
+
+		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile показує всі заблоковані СПАМ-дзвінки та пропущені дзвінки з невідомих номерів.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0003"><strong>Захист даних:</strong> Дзвінки з номерів зі списку контактів не записуються. Додаток обробляє лише невідомі номери.</p>
+		</div>
+
+		<h2 data-tx="t0004">Як це працює</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0005">Автоматичне блокування</h3>
+				<figure class="image">
+					<img alt="Спам-дзвінок заблоковано" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Заблоковані СПАМ-дзвінки автоматично відображаються в додатку. Ви отримаєте сповіщення з номером та оцінкою спаму.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0008">Деталі дзвінка</h3>
+				<p class="mt-5" data-tx="t0009">Натисніть на запис у журналі викликів, щоб переглянути деталі:</p>
+				<ul>
+					<li data-tx="t0010"><strong>Оцінка спаму:</strong> Кількість негативних оцінок від спільноти</li>
+					<li data-tx="t0011"><strong>Час:</strong> Коли було здійснено дзвінок</li>
+					<li data-tx="t0012"><strong>Категорії:</strong> Тип спаму (наприклад, реклама, шахрайство, конкуренція)</li>
+					<li data-tx="t0013"><strong>Коментарі:</strong> Звіти та досвід інших користувачів PhoneBlock</li>
+				</ul>
+				<p class="mt-4" data-tx="t0014">Тут ви також можете оцінити номер самостійно або додати його до особистого чорного/білого списку.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015">Як працює блокування?</strong></p>
+			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile використовує службу CallScreeningService в Android для перевірки вхідних дзвінків до того, як вони надійдуть. Якщо номер знаходиться в базі даних спаму і перевищує встановлений вами поріг, дзвінок автоматично блокується.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0017">Наступні кроки</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0018">Повідомляти про номери спаму</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0019">Керування чорним/білим списком</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0020">Повертаємось до інсталяції</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

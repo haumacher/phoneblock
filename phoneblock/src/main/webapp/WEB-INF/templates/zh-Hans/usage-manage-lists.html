@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">管理个人黑名单和白名单</h1>
+
+		<p class="subtitle" data-tx="t0002">除社区数据库外，您还可以维护自己的列表，自定义呼叫过滤。</p>
+
+		<h2 data-tx="t0003">什么是黑名单和白名单？</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">黑名单</h3>
+					<p class="has-text-white" data-tx="t0005">黑名单上的号码<strong>始终会被阻止</strong>，无论它们在 PhoneBlock 数据库中是否被称为垃圾邮件。</p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>用途：</strong> 用于您要亲自阻止的烦人来电。</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">白名单</h3>
+					<p class="has-text-white" data-tx="t0008">白名单上的号码即使在 PhoneBlock 数据库中被报告为垃圾邮件，也不会被阻止<strong></strong>。</p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>用途：</strong> 用于可能被错误屏蔽的重要号码。</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">管理列表</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">步骤 1：打开设置</h3>
+				<figure class="image">
+					<img alt="打开设置" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">点击左上角的菜单图标（☰），选择 "设置</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">步骤 2：选择列表</h3>
+				<figure class="image">
+					<img alt="打开黑名单" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">从设置中选择 "黑名单 "或 "白名单</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">步骤 3：显示列表</h3>
+				<figure class="image">
+					<img alt="显示黑名单" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">显示您的个人号码</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">添加编号</h3>
+		<p data-tx="t0021">要在黑名单或白名单中添加新号码，请点击相应列表右上方的<strong>加号 (+)</strong>。然后输入电话号码（为达到最佳效果，请输入国家代码）。</p>
+
+		<h3 class="mt-5" data-tx="t0022">从列表中删除号码</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="从列表中删除" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">向左轻扫号码，然后轻点垃圾桶图标将其删除</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">同步：</strong></p>
+					<p class="mt-2" data-tx="t0026">您的个人列表会与您的 PhoneBlock 账户同步，并在您使用同一账户登录的所有设备上自动提供。</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">使用提示</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">黑名单</h3>
+				<ul>
+					<li data-tx="t0029">添加困扰您个人的数字</li>
+					<li data-tx="t0030">即使它们尚未进入 PhoneBlock 数据库</li>
+					<li data-tx="t0031">号码立即被阻止</li>
+					<li data-tx="t0032">适合持续呼叫者</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">白名单</h3>
+				<ul>
+					<li data-tx="t0034">添加重要号码（医生、学校、工作单位）</li>
+					<li data-tx="t0035">防止意外阻塞</li>
+					<li data-tx="t0036">优先于社区数据库</li>
+					<li data-tx="t0037">对重要呼叫尤为重要</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>注意：</strong>您的个人列表始终优先于 PhoneBlock 社区数据库。您的白名单上的号码永远不会被阻止，即使它已被成千上万的其他用户报告为垃圾邮件。</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">其他功能</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">查看通话记录</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">报告垃圾邮件号码</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">搜索数字</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">回到安装</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

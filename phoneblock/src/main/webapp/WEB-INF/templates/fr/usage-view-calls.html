@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Consulter les appels bloqués et manqués</h1>
+
+		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile t'indique tous les appels SPAM bloqués et les appels manqués provenant de numéros inconnus.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0003"><strong>Protection des données:</strong> Les appels provenant de numéros figurant dans ta liste de contacts ne sont pas enregistrés. L'application ne traite que les numéros inconnus.</p>
+		</div>
+
+		<h2 data-tx="t0004">Comment ça marche</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0005">Blocage automatique</h3>
+				<figure class="image">
+					<img alt="Appel SPAM bloqué" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Les appels SPAM bloqués sont automatiquement affichés dans l'application. Tu reçois une notification avec le numéro et le score SPAM.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0008">Détails de l'appel</h3>
+				<p class="mt-5" data-tx="t0009">Appuie sur une entrée de l'historique des appels pour en voir les détails :</p>
+				<ul>
+					<li data-tx="t0010"><strong>SPAM-Score:</strong> Nombre d'évaluations négatives de la communauté</li>
+					<li data-tx="t0011"><strong>Temps:</strong> Quand l'appel a eu lieu</li>
+					<li data-tx="t0012"><strong>Catégories:</strong> Type de SPAM (par ex. publicité, fraude, jeu-concours)</li>
+					<li data-tx="t0013"><strong>Commentaires:</strong> Témoignages et expériences d'autres utilisateurs de PhoneBlock</li>
+				</ul>
+				<p class="mt-4" data-tx="t0014">De là, tu peux aussi évaluer toi-même le numéro ou l'ajouter à ta liste noire/liste blanche personnelle.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015">Comment fonctionne le blocage ?</strong></p>
+			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile utilise le CallScreeningService d'Android pour vérifier les appels entrants avant même qu'ils ne sonnent. Si le numéro se trouve dans la base de données SPAM et que la valeur seuil que tu as définie est dépassée, l'appel est automatiquement bloqué.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0017">Prochaines étapes</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0018">Signaler les numéros de SPAM</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0019">Gérer la liste noire/liste blanche</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0020">Retour à l'installation</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Αναζήτηση για αριθμούς</h1>
+
+		<p class="subtitle" data-tx="t0002">Μπορείτε να αναζητήσετε οποιονδήποτε τηλεφωνικό αριθμό στη βάση δεδομένων του PhoneBlock, ακόμη και χωρίς να έχει πραγματοποιηθεί κλήση.</p>
+
+		<h2 data-tx="t0003">Πώς να αναζητήσετε έναν αριθμό</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Βήμα 1: Ανοίξτε την αναζήτηση</h3>
+				<figure class="image">
+					<img alt="Ανοικτή αναζήτηση" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Πατήστε το εικονίδιο του μεγεθυντικού φακού στην επάνω δεξιά γωνία για να ανοίξετε τη λειτουργία αναζήτησης.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Βήμα 2: Πληκτρολογήστε τον αριθμό</h3>
+				<figure class="image">
+					<img alt="Πληκτρολογήστε τον αριθμό" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Εισάγετε τον αριθμό τηλεφώνου και πατήστε "Αναζήτηση".</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Τι δείχνει η αναζήτηση</h2>
+
+		<p data-tx="t0011">Μετά την αναζήτηση θα δείτε τις ακόλουθες πληροφορίες σχετικά με τον αριθμό:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Εάν ο αριθμός είναι γνωστός:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>Βαθμολογία SPAM:</strong> Αριθμός αρνητικών αξιολογήσεων</li>
+					<li data-tx="t0014"><strong>Κατηγορίες:</strong> Τύπος SPAM (διαφήμιση, απάτη κ.λπ.)</li>
+					<li data-tx="t0015"><strong>Σχόλια:</strong> Μαρτυρίες άλλων χρηστών</li>
+					<li data-tx="t0016"><strong>Κριτικές:</strong> Θετικές και αρνητικές αναφορές</li>
+				</ul>
+				<p class="mt-3" data-tx="t0017">Μπορείτε να αξιολογήσετε τον αριθμό απευθείας ως SPAM ή νόμιμο ή να τον προσθέσετε στη μαύρη/λευκή σας λίστα.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Εάν ο αριθμός είναι άγνωστος:</h3>
+				<ul>
+					<li data-tx="t0019">Η εφαρμογή υποδεικνύει ότι δεν υπάρχουν διαθέσιμες πληροφορίες</li>
+					<li data-tx="t0020">Μπορείτε να είστε ο πρώτος που θα αξιολογήσει τον αριθμό</li>
+					<li data-tx="t0021">Προαιρετικά προσθέστε στη μαύρη ή τη λευκή λίστα</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Σύμβουλος:</strong> Εάν έχετε λάβει μια ύποπτη κλήση από έναν άγνωστο αριθμό, μπορείτε να την αναζητήσετε εδώ και να την αναφέρετε ως SPAM.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Συμβουλές αναζήτησης</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Μορφή του τηλεφωνικού αριθμού</h3>
+			<p class="mt-2" data-tx="t0025">Για καλύτερα αποτελέσματα αναζήτησης πληκτρολογήστε τον αριθμό με τον κωδικό χώρας:</p>
+			<ul class="mt-2">
+				<li data-tx="t0026"><strong>Γερμανία:</strong> +49 ή 0049 πριν από τον αριθμό (π.χ. +49 30 12345678)</li>
+				<li data-tx="t0027"><strong>Ελβετία:</strong> +41 ή 0041 πριν από τον αριθμό</li>
+				<li data-tx="t0028"><strong>Αυστρία:</strong> +43 ή 0043 πριν από τον αριθμό</li>
+			</ul>
+			<p class="mt-3" data-tx="t0029">Η αναζήτηση λειτουργεί και χωρίς κωδικό χώρας, αλλά τα αποτελέσματα είναι τότε λιγότερο αξιόπιστα.</p>
+		</div>
+
+		<div class="notification is-success mt-4">
+			<h3 data-tx="t0030">Προστασία δεδομένων κατά την αναζήτηση</h3>
+			<p class="mt-2" data-tx="t0031">Κατά τη διάρκεια της αναζήτησης, ο αριθμός μεταδίδεται στον διακομιστή PhoneBlock ως κατακερματισμός SHA-1. Ο διακομιστής δεν μπορεί να υπολογίσει εκ νέου τον αρχικό αριθμό από αυτό.</p>
+			<p class="mt-2" data-tx="t0032"><strong>Αυτό σημαίνει:</strong> Το PhoneBlock μαθαίνει ποιον αριθμό αναζητάτε μόνο αν υπάρχει ήδη στη βάση δεδομένων SPAM. Για όλους τους άλλους αριθμούς, η αναζήτησή σας παραμένει ιδιωτική.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">Πότε είναι χρήσιμη η αναζήτηση;</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Συχνές περιπτώσεις χρήσης:</h3>
+				<ul>
+					<li data-tx="t0035">Ελέγξτε τον άγνωστο αριθμό στην οθόνη πριν απαντήσετε στο τηλέφωνο.</li>
+					<li data-tx="t0036">Αναζήτηση αναπάντητων κλήσεων</li>
+					<li data-tx="t0037">Ελέγξτε αριθμούς από SMS ή e-mail</li>
+					<li data-tx="t0038">Ελέγξτε αν ο αριθμός είναι νόμιμος πριν καλέσετε ξανά</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0039">Τι μπορείτε να κάνετε μετά την αναζήτηση:</h3>
+				<ul>
+					<li data-tx="t0040">Βαθμολογήστε τον αριθμό ως SPAM ή νόμιμο</li>
+					<li data-tx="t0041">Προσθήκη στη μαύρη λίστα (πάντα αποκλεισμός)</li>
+					<li data-tx="t0042">Προσθήκη στη λευκή λίστα (ποτέ αποκλεισμός)</li>
+					<li data-tx="t0043">Διαβάστε σχόλια από άλλους χρήστες</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0044">Περαιτέρω λειτουργίες</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0045">Προβολή ιστορικού κλήσεων</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0046">Αναφορά αριθμών SPAM</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0047">Διαχείριση μαύρης/λευκής λίστας</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0048">Επιστροφή στην εγκατάσταση</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

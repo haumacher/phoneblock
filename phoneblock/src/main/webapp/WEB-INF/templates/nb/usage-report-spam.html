@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Rapporter numre som SPAM eller legitime</h1>
+
+		<p class="subtitle" data-tx="t0002">Meldingene dine hjelper hele PhoneBlock-fellesskapet med å beskytte seg mot SPAM-anrop.</p>
+
+		<h2 data-tx="t0003">Rapporter SPAM-nummer</h2>
+
+		<p data-tx="t0004">Hvis du mottar et SPAM-anrop, kan du rapportere nummeret direkte i appen. Jo flere detaljer du oppgir, desto mer nyttig vil rapporten din være for andre brukere.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005">Trinn 1: Rapporter SPAM</h3>
+				<figure class="image">
+					<img alt="Rapporter SPAM" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Trykk på "Rapporter SPAM"-knappen for den aktuelle samtalen i historikken</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008">Trinn 2: Velg kategori</h3>
+				<figure class="image">
+					<img alt="Velg SPAM-kategori" class="appscreen" data-tx="t0009" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010">Velg riktig kategori fra listen</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Trinn 3: Kommentar (valgfritt)</h3>
+				<figure class="image">
+					<img alt="Legg til beskrivelse" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Legg eventuelt til en kommentar for å hjelpe andre brukere</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014">Tilgjengelige SPAM-kategorier</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015"><strong>Reklame:</strong> Uønskede reklameanrop</li>
+					<li data-tx="t0016"><strong>Konkurranse:</strong> Feilaktige premievarsler</li>
+					<li data-tx="t0017"><strong>Kostnadsfelle:</strong> Dyre overtakserte nummer</li>
+					<li data-tx="t0018"><strong>Svindel:</strong> Bedrageriske samtaler (f.eks. svindel med barnebarn)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019"><strong>Ping call:</strong> Kort ringing for å fremprovosere en tilbakeringing</li>
+					<li data-tx="t0020"><strong>Undersøkelse:</strong> Uønskede undersøkelser</li>
+					<li data-tx="t0021"><strong>Andre:</strong> Andre typer SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022">Merk nummeret som legitimt</h2>
+
+		<p data-tx="t0023">Hvis et nummer feilaktig har blitt merket som SPAM, kan du vurdere det som legitimt. Dette bidrar til å korrigere feilaktige meldinger og forbedre kvaliteten på databasen.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024">Merk som legitim</h3>
+				<figure class="image">
+					<img alt="Merk som legitim" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Trykk på "Merk som legitim" for å gi en positiv vurdering. Du kan også legge til en kommentar her.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027">Når bør jeg gjøre dette?</h3>
+				<p class="mt-5" data-tx="t0028">Merk et nummer som legitimt hvis:</p>
+				<ul>
+					<li data-tx="t0029">Det er en alvorlig oppfordring</li>
+					<li data-tx="t0030">Tallet kommer fra et ekte selskap</li>
+					<li data-tx="t0031">Du kjenner tallet, og det ble rapportert feil</li>
+					<li data-tx="t0032">Samtalen ble bestilt (f.eks. legekontor, håndverker, pakkeservice)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033"><strong>Note:</strong> Legitime vurderinger bidrar til å fjerne nummeret fra SPAM-databasen eller senke SPAM-poengsummen.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034">Takk for hjelpen!</strong></p>
+			<p class="mt-2" data-tx="t0035">Hver rapport bidrar til å holde PhoneBlock-databasen oppdatert og pålitelig. Fellesskapet drar nytte av din erfaring.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0036">Flere funksjoner</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0037">Se anropshistorikk</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0038">Administrer svarteliste/hviteliste</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0039">Søk etter tall</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0040">Tilbake til installasjonen</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

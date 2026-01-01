@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Nach Nummern suchen</h1>
+
+		<p class="subtitle" data-tx="t0002">
+			Du kannst beliebige Telefonnummern in der PhoneBlock-Datenbank nachschlagen,
+			auch ohne dass ein Anruf stattgefunden hat.
+		</p>
+
+		<h2 data-tx="t0003">So suchst du nach einer Nummer</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Schritt 1: Suche öffnen</h3>
+				<figure class="image">
+					<img alt="Suche öffnen" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">
+					Tippe auf das Lupen-Symbol oben rechts, um die Suchfunktion zu öffnen
+				</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Schritt 2: Nummer eingeben</h3>
+				<figure class="image">
+					<img alt="Nummer eingeben" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">
+					Gib die Telefonnummer ein und tippe auf "Suchen"
+				</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Was die Suche zeigt</h2>
+
+		<p data-tx="t0011">Nach der Suche siehst du folgende Informationen zur Nummer:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Falls die Nummer bekannt ist:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>SPAM-Score:</strong> Anzahl der negativen Bewertungen</li>
+					<li data-tx="t0014"><strong>Kategorien:</strong> Art des SPAMs (Werbung, Betrug, etc.)</li>
+					<li data-tx="t0015"><strong>Kommentare:</strong> Erfahrungsberichte anderer Nutzer</li>
+					<li data-tx="t0016"><strong>Bewertungen:</strong> Positive und negative Meldungen</li>
+				</ul>
+				<p class="mt-3" data-tx="t0017">
+					Du kannst die Nummer direkt als SPAM oder legitim bewerten oder zu deiner
+					Blacklist/Whitelist hinzufügen.
+				</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Falls die Nummer unbekannt ist:</h3>
+				<ul>
+					<li data-tx="t0019">Die App zeigt an, dass keine Informationen vorliegen</li>
+					<li data-tx="t0020">Du kannst die Nummer als erste/r bewerten</li>
+					<li data-tx="t0021">Optional zur Blacklist oder Whitelist hinzufügen</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022">
+					<strong>Tipp:</strong> Wenn du einen verdächtigen Anruf von einer unbekannten Nummer
+					erhalten hast, kannst du sie hier nachschlagen und als SPAM melden.
+				</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Tipps zur Suche</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Format der Telefonnummer</h3>
+			<p class="mt-2" data-tx="t0025">
+				Für beste Suchergebnisse gib die Nummer mit Ländervorwahl ein:
+			</p>
+			<ul class="mt-2">
+				<li data-tx="t0026"><strong>Deutschland:</strong> +49 oder 0049 vor der Nummer (z.B. +49 30 12345678)</li>
+				<li data-tx="t0027"><strong>Schweiz:</strong> +41 oder 0041 vor der Nummer</li>
+				<li data-tx="t0028"><strong>Österreich:</strong> +43 oder 0043 vor der Nummer</li>
+			</ul>
+			<p class="mt-3" data-tx="t0029">
+				Die Suche funktioniert auch ohne Ländervorwahl, aber die Ergebnisse sind dann weniger zuverlässig.
+			</p>
+		</div>
+
+		<div class="notification is-success mt-4">
+			<h3 data-tx="t0030">Datenschutz bei der Suche</h3>
+			<p class="mt-2" data-tx="t0031">
+				Bei der Suche wird die Nummer als SHA-1 Hash an den PhoneBlock-Server übermittelt.
+				Der Server kann daraus die ursprüngliche Nummer nicht zurückrechnen.
+			</p>
+			<p class="mt-2" data-tx="t0032">
+				<strong>Das bedeutet:</strong> PhoneBlock erfährt nur, nach welcher Nummer du suchst, wenn
+				diese bereits in der SPAM-Datenbank vorhanden ist. Bei allen anderen Nummern bleibt deine
+				Suche privat.
+			</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">Wann ist die Suche nützlich?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Häufige Anwendungsfälle:</h3>
+				<ul>
+					<li data-tx="t0035">Unbekannte Nummer auf dem Display prüfen, bevor du abnimmst</li>
+					<li data-tx="t0036">Verpasste Anrufe nachschlagen</li>
+					<li data-tx="t0037">Nummern aus SMS oder E-Mails überprüfen</li>
+					<li data-tx="t0038">Vor Rückruf prüfen, ob Nummer seriös ist</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0039">Was du nach der Suche tun kannst:</h3>
+				<ul>
+					<li data-tx="t0040">Nummer als SPAM oder legitim bewerten</li>
+					<li data-tx="t0041">Zur Blacklist hinzufügen (immer blockieren)</li>
+					<li data-tx="t0042">Zur Whitelist hinzufügen (nie blockieren)</li>
+					<li data-tx="t0043">Kommentare anderer Nutzer lesen</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0044">Weitere Funktionen</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0045">Anrufverlauf ansehen</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0046">SPAM-Nummern melden</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0047">Blacklist/Whitelist verwalten</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0048">Zurück zur Installation</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

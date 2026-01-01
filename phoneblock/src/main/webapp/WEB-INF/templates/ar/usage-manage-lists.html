@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">إدارة القائمة السوداء والقائمة البيضاء الشخصية</h1>
+
+		<p class="subtitle" data-tx="t0002">بالإضافة إلى قاعدة بيانات المجتمع، يمكنك الاحتفاظ بقوائمك الخاصة لتخصيص تصفية المكالمات.</p>
+
+		<h2 data-tx="t0003">ما هي القائمة السوداء والقائمة البيضاء؟</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">القائمة السوداء</h3>
+					<p class="has-text-white" data-tx="t0005">يتم حظر الأرقام الموجودة في قائمتك السوداء <strong> دائمًا ، بغض النظر عما إذا كانت معروفة كرسائل اقتحامية في قاعدة بيانات PhoneBlock أم لا.</strong></p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>استخدام:</strong> للمتصلين المزعجين الذين تريد حظرهم شخصيًا.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">القائمة البيضاء</h3>
+					<p class="has-text-white" data-tx="t0008">لن يتم حظر الأرقام الموجودة في قائمتك البيضاء <strong> أبدًا ، حتى لو تم الإبلاغ عنها كرسائل اقتحامية في قاعدة بيانات PhoneBlock.</strong></p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>استخدام:</strong> للأرقام المهمة التي يمكن حظرها عن طريق الخطأ.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">إدارة القوائم</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">الخطوة 1: افتح الإعدادات</h3>
+				<figure class="image">
+					<img alt="فتح الإعدادات" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">اضغط على أيقونة القائمة (☰) في أعلى اليسار واختر "الإعدادات"</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">الخطوة 2: اختر القائمة</h3>
+				<figure class="image">
+					<img alt="فتح القائمة السوداء" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">حدد "القائمة السوداء" أو "القائمة البيضاء" من الإعدادات</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">الخطوة 3: عرض القائمة</h3>
+				<figure class="image">
+					<img alt="إظهار القائمة السوداء" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">يتم عرض أرقامك الشخصية</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">إضافة رقم</h3>
+		<p data-tx="t0021">لإضافة رقم جديد إلى قائمتك السوداء أو القائمة البيضاء، اضغط على رمز <strong> رمز الزائد (+) في أعلى يمين القائمة المعنية. ثم أدخل رقم الهاتف (مع رمز البلد للحصول على أفضل النتائج).</strong></p>
+
+		<h3 class="mt-5" data-tx="t0022">إزالة رقم من القائمة</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="حذف من القائمة" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">مرر لليسار فوق الرقم وانقر على أيقونة سلة المهملات لإزالته</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">التزامن:</strong></p>
+					<p class="mt-2" data-tx="t0026">تتم مزامنة قوائمك الشخصية مع حساب PhoneBlock الخاص بك، وتكون متاحة تلقائيًا على جميع أجهزتك التي قمت بتسجيل الدخول عليها بنفس الحساب.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">نصائح للاستخدام</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">القائمة السوداء</h3>
+				<ul>
+					<li data-tx="t0029">أضف الأرقام التي تزعجك شخصياً</li>
+					<li data-tx="t0030">حتى لو لم يكونوا موجودين بعد في قاعدة بيانات PhoneBlock</li>
+					<li data-tx="t0031">يتم حظر الرقم على الفور</li>
+					<li data-tx="t0032">مثالي للمتصلين الدائمين</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">القائمة البيضاء</h3>
+				<ul>
+					<li data-tx="t0034">إضافة أرقام مهمة (الطبيب، المدرسة، العمل)</li>
+					<li data-tx="t0035">يمنع الحجب العرضي</li>
+					<li data-tx="t0036">له الأولوية على قاعدة بيانات المجتمع</li>
+					<li data-tx="t0037">مهم بشكل خاص للمكالمات الحرجة</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>ملاحظة:</strong> لقوائمك الشخصية الأسبقية دائمًا على قاعدة بيانات مجتمع PhoneBlock. لن يتم حظر أي رقم في قائمتك البيضاء أبدًا، حتى لو تم الإبلاغ عنه كرسالة غير مرغوب فيها من قبل آلاف المستخدمين الآخرين.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">وظائف أخرى</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">عرض سجل المكالمات</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">الإبلاغ عن أرقام الرسائل الاقتحامية</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">البحث عن الأرقام</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">العودة إلى التثبيت</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

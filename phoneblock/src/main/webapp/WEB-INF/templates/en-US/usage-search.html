@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Search by number</h1>
+
+		<p class="subtitle" data-tx="t0002">You can look up any phone number in the PhoneBlock database, even without a call having taken place.</p>
+
+		<h2 data-tx="t0003">How to search for a number</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Step 1: Open search</h3>
+				<figure class="image">
+					<img alt="Open search" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Tap on the magnifying glass icon at the top right to open the search function</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Step 2: Enter number</h3>
+				<figure class="image">
+					<img alt="Enter number" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Enter the phone number and tap on "Search"</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">What the search shows</h2>
+
+		<p data-tx="t0011">After the search you will see the following information about the number:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">If the number is known:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>SPAM score:</strong> Number of negative ratings</li>
+					<li data-tx="t0014"><strong>Categories:</strong> Type of SPAM (advertising, fraud, etc.)</li>
+					<li data-tx="t0015"><strong>Comments:</strong> Testimonials from other users</li>
+					<li data-tx="t0016"><strong>Reviews:</strong> Positive and negative reports</li>
+				</ul>
+				<p class="mt-3" data-tx="t0017">You can rate the number directly as SPAM or legitimate or add it to your blacklist/whitelist.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">If the number is unknown:</h3>
+				<ul>
+					<li data-tx="t0019">The app indicates that no information is available</li>
+					<li data-tx="t0020">You can be the first to rate the number</li>
+					<li data-tx="t0021">Optionally add to blacklist or whitelist</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Tip:</strong> If you have received a suspicious call from an unknown number, you can look it up here and report it as SPAM.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Search tips</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Format of the telephone number</h3>
+			<p class="mt-2" data-tx="t0025">For best search results enter the number with country code:</p>
+			<ul class="mt-2">
+				<li data-tx="t0026"><strong>Germany:</strong> +49 or 0049 before the number (e.g. +49 30 12345678)</li>
+				<li data-tx="t0027"><strong>Switzerland:</strong> +41 or 0041 before the number</li>
+				<li data-tx="t0028"><strong>Austria:</strong> +43 or 0043 before the number</li>
+			</ul>
+			<p class="mt-3" data-tx="t0029">The search also works without a country code, but the results are then less reliable.</p>
+		</div>
+
+		<div class="notification is-success mt-4">
+			<h3 data-tx="t0030">Data protection during the search</h3>
+			<p class="mt-2" data-tx="t0031">During the search, the number is transmitted to the PhoneBlock server as a SHA-1 hash. The server cannot recalculate the original number from this.</p>
+			<p class="mt-2" data-tx="t0032"><strong>This means:</strong> PhoneBlock only finds out which number you are searching for if it already exists in the SPAM database. For all other numbers, your search remains private.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">When is the search useful?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Frequent use cases:</h3>
+				<ul>
+					<li data-tx="t0035">Check the unknown number on the display before you answer the phone</li>
+					<li data-tx="t0036">Look up missed calls</li>
+					<li data-tx="t0037">Check numbers from SMS or e-mails</li>
+					<li data-tx="t0038">Check whether the number is legitimate before calling back</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0039">What you can do after the search:</h3>
+				<ul>
+					<li data-tx="t0040">Rate number as SPAM or legitimate</li>
+					<li data-tx="t0041">Add to blacklist (always block)</li>
+					<li data-tx="t0042">Add to whitelist (never block)</li>
+					<li data-tx="t0043">Read comments from other users</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0044">Further functions</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0045">View call history</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0046">Report SPAM numbers</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0047">Manage blacklist/whitelist</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0048">Back to the installation</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

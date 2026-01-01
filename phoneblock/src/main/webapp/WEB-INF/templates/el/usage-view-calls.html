@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Προβολή μπλοκαρισμένων και αναπάντητων κλήσεων</h1>
+
+		<p class="subtitle" data-tx="t0002">Το PhoneBlock Mobile σας εμφανίζει όλες τις αποκλεισμένες κλήσεις SPAM και τις αναπάντητες κλήσεις από άγνωστους αριθμούς.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0003"><strong>Προστασία δεδομένων:</strong> Οι κλήσεις από αριθμούς στη λίστα επαφών σας δεν καταγράφονται. Η εφαρμογή επεξεργάζεται μόνο άγνωστους αριθμούς.</p>
+		</div>
+
+		<h2 data-tx="t0004">Πώς λειτουργεί</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0005">Αυτόματο μπλοκάρισμα</h3>
+				<figure class="image">
+					<img alt="Κλήση SPAM μπλοκαρισμένη" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007">Οι αποκλεισμένες κλήσεις SPAM εμφανίζονται αυτόματα στην εφαρμογή. Θα λάβετε μια ειδοποίηση με τον αριθμό και τη βαθμολογία SPAM.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0008">Καλέστε λεπτομέρειες</h3>
+				<p class="mt-5" data-tx="t0009">Πατήστε σε μια καταχώρηση στο ιστορικό κλήσεων για να δείτε λεπτομέρειες:</p>
+				<ul>
+					<li data-tx="t0010"><strong>SPAM score:</strong> Αριθμός αρνητικών αξιολογήσεων από την κοινότητα</li>
+					<li data-tx="t0011"><strong>Ώρα:</strong> Πότε έγινε η κλήση</li>
+					<li data-tx="t0012"><strong>Κατηγορίες:</strong> Τύπος SPAM (π.χ. διαφήμιση, απάτη, ανταγωνισμός)</li>
+					<li data-tx="t0013"><strong>Σχόλια:</strong> Αναφορές και εμπειρίες άλλων χρηστών του PhoneBlock</li>
+				</ul>
+				<p class="mt-4" data-tx="t0014">Από εδώ μπορείτε επίσης να βαθμολογήσετε τον αριθμό ή να τον προσθέσετε στην προσωπική σας μαύρη/λευκή λίστα.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015">Πώς λειτουργεί το μπλοκάρισμα;</strong></p>
+			<p class="mt-2" data-tx="t0016">Το PhoneBlock Mobile χρησιμοποιεί την υπηρεσία CallScreeningService του Android για να ελέγχει τις εισερχόμενες κλήσεις πριν χτυπήσουν. Εάν ο αριθμός βρίσκεται στη βάση δεδομένων SPAM και ξεπεραστεί το όριο που έχετε ορίσει, η κλήση αποκλείεται αυτόματα.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0017">Επόμενα βήματα</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0018">Αναφορά αριθμών SPAM</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0019">Διαχείριση μαύρης/λευκής λίστας</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0020">Επιστροφή στην εγκατάσταση</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

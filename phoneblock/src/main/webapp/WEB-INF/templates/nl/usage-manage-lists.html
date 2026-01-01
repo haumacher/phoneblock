@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Persoonlijke zwarte en witte lijst beheren</h1>
+
+		<p class="subtitle" data-tx="t0002">Naast de database van de community kun je je eigen lijsten bijhouden om het filteren van oproepen aan te passen.</p>
+
+		<h2 data-tx="t0003">Wat zijn blacklist en whitelist?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004">Zwarte lijst</h3>
+					<p class="has-text-white" data-tx="t0005">Nummers op uw blacklist worden <strong>altijd geblokkeerd</strong>, ongeacht of ze als SPAM bekend staan in de PhoneBlock database of niet.</p>
+					<p class="has-text-white mt-2" data-tx="t0006"><strong>Gebruik:</strong> Voor vervelende bellers die je persoonlijk wilt blokkeren.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007">Whitelist</h3>
+					<p class="has-text-white" data-tx="t0008">Nummers op uw witte lijst worden <strong>nooit geblokkeerd</strong>, zelfs als ze in de PhoneBlock-database als SPAM worden gemeld.</p>
+					<p class="has-text-white mt-2" data-tx="t0009"><strong>Gebruik:</strong> Voor belangrijke nummers die per ongeluk kunnen worden geblokkeerd.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Lijsten beheren</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011">Stap 1: Instellingen openen</h3>
+				<figure class="image">
+					<img alt="Instellingen openen" class="appscreen" data-tx="t0012" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013">Tik op het menupictogram (☰) linksboven en selecteer "Instellingen".</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014">Stap 2: Lijst selecteren</h3>
+				<figure class="image">
+					<img alt="Zwarte lijst openen" class="appscreen" data-tx="t0015" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016">Selecteer "Zwarte lijst" of "Witte lijst" in de instellingen</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017">Stap 3: Lijst weergeven</h3>
+				<figure class="image">
+					<img alt="Zwarte lijst weergeven" class="appscreen" data-tx="t0018" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019">Je persoonlijke nummers worden weergegeven</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0020">Aantal toevoegen</h3>
+		<p data-tx="t0021">Om een nieuw nummer toe te voegen aan je zwarte of witte lijst, tik je op het <strong>plus-symbool (+)</strong> rechtsboven in de betreffende lijst. Voer vervolgens het telefoonnummer in (met landcode voor het beste resultaat).</p>
+
+		<h3 class="mt-5" data-tx="t0022">Nummer uit lijst verwijderen</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Verwijderen uit lijst" class="appscreen" data-tx="t0023" th:src="@{/assets/img/mobile/usage-5-delete-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024">Veeg naar links over het nummer en tik op het prullenbakpictogram om het te verwijderen</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0025">Synchronisatie:</strong></p>
+					<p class="mt-2" data-tx="t0026">Uw persoonlijke lijsten worden gesynchroniseerd met uw PhoneBlock-account en zijn automatisch beschikbaar op al uw apparaten waarop u bent aangemeld met hetzelfde account.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Tips voor gebruik</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028">Zwarte lijst</h3>
+				<ul>
+					<li data-tx="t0029">Nummers toevoegen die je persoonlijk storen</li>
+					<li data-tx="t0030">Zelfs als ze nog niet in de PhoneBlock-database staan</li>
+					<li data-tx="t0031">Het nummer wordt onmiddellijk geblokkeerd</li>
+					<li data-tx="t0032">Ideaal voor hardnekkige bellers</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033">Whitelist</h3>
+				<ul>
+					<li data-tx="t0034">Belangrijke nummers toevoegen (dokter, school, werk)</li>
+					<li data-tx="t0035">Voorkomt per ongeluk blokkeren</li>
+					<li data-tx="t0036">Heeft voorrang op de gemeenschapsdatabase</li>
+					<li data-tx="t0037">Vooral belangrijk voor kritieke oproepen</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p data-tx="t0038"><strong>Noot:</strong> Uw persoonlijke lijsten hebben altijd voorrang op de PhoneBlock gemeenschapsdatabase. Een nummer op uw witte lijst zal nooit worden geblokkeerd, zelfs als het door duizenden andere gebruikers als SPAM is gerapporteerd.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0039">Verdere functies</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0040">Gesprekshistorie bekijken</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0041">SPAM-nummers melden</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-search}">
+				<span class="icon">
+					<i class="fas fa-search"></i>
+				</span>
+				<span data-tx="t0042">Zoeken naar nummers</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0043">Terug naar de installatie</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

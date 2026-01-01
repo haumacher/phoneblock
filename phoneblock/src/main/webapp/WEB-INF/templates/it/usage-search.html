@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Ricerca di numeri</h1>
+
+		<p class="subtitle" data-tx="t0002">È possibile cercare qualsiasi numero di telefono nel database di PhoneBlock, anche senza che sia stata effettuata una chiamata.</p>
+
+		<h2 data-tx="t0003">Come cercare un numero</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Passo 1: aprire la ricerca</h3>
+				<figure class="image">
+					<img alt="Ricerca aperta" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Toccare l'icona della lente di ingrandimento in alto a destra per aprire la funzione di ricerca.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Fase 2: Inserire il numero</h3>
+				<figure class="image">
+					<img alt="Inserire il numero" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Inserite il numero di telefono e toccate "Cerca".</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Cosa mostra la ricerca</h2>
+
+		<p data-tx="t0011">Dopo la ricerca vengono visualizzate le seguenti informazioni sul numero:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Se il numero è noto:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>Punteggio SPAM:</strong> Numero di valutazioni negative</li>
+					<li data-tx="t0014"><strong>Categorie:</strong> Tipo di SPAM (pubblicità, frode, ecc.)</li>
+					<li data-tx="t0015"><strong>Commenti:</strong> Testimonianze di altri utenti</li>
+					<li data-tx="t0016"><strong>Recensioni:</strong> Segnalazioni positive e negative</li>
+				</ul>
+				<p class="mt-3" data-tx="t0017">È possibile classificare direttamente il numero come SPAM o legittimo o aggiungerlo alla propria blacklist/whitelist.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Se il numero è sconosciuto:</h3>
+				<ul>
+					<li data-tx="t0019">L'applicazione indica che non sono disponibili informazioni</li>
+					<li data-tx="t0020">Potete essere i primi a valutare il numero</li>
+					<li data-tx="t0021">Aggiungere facoltativamente alla blacklist o alla whitelist</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Suggerimento:</strong> Se avete ricevuto una chiamata sospetta da un numero sconosciuto, potete cercarla qui e segnalarla come SPAM.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Suggerimenti per la ricerca</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Formato del numero di telefono</h3>
+			<p class="mt-2" data-tx="t0025">Per ottenere i migliori risultati di ricerca, inserire il numero con il prefisso internazionale:</p>
+			<ul class="mt-2">
+				<li data-tx="t0026"><strong>Germania:</strong> +49 o 0049 prima del numero (es. +49 30 12345678)</li>
+				<li data-tx="t0027"><strong>Svizzera:</strong> +41 o 0041 prima del numero</li>
+				<li data-tx="t0028"><strong>Austria:</strong> +43 o 0043 prima del numero</li>
+			</ul>
+			<p class="mt-3" data-tx="t0029">La ricerca funziona anche senza codice paese, ma i risultati sono meno affidabili.</p>
+		</div>
+
+		<div class="notification is-success mt-4">
+			<h3 data-tx="t0030">Protezione dei dati durante la ricerca</h3>
+			<p class="mt-2" data-tx="t0031">Durante la ricerca, il numero viene trasmesso al server PhoneBlock come un hash SHA-1. Il server non può ricalcolare il numero originale da questo.</p>
+			<p class="mt-2" data-tx="t0032"><strong>Questo significa:</strong> PhoneBlock apprende il numero che state cercando solo se esiste già nel database SPAM. Per tutti gli altri numeri, la ricerca rimane privata.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">Quando è utile la ricerca?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Casi d'uso frequenti:</h3>
+				<ul>
+					<li data-tx="t0035">Controllare il numero sconosciuto sul display prima di rispondere al telefono.</li>
+					<li data-tx="t0036">Cercare le chiamate perse</li>
+					<li data-tx="t0037">Controllare i numeri da SMS o e-mail</li>
+					<li data-tx="t0038">Controllare se il numero è legittimo prima di richiamare</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0039">Cosa si può fare dopo la ricerca:</h3>
+				<ul>
+					<li data-tx="t0040">Valutare il numero come SPAM o legittimo</li>
+					<li data-tx="t0041">Aggiungi alla lista nera (blocca sempre)</li>
+					<li data-tx="t0042">Aggiungi alla whitelist (non bloccare mai)</li>
+					<li data-tx="t0043">Leggere i commenti degli altri utenti</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0044">Ulteriori funzioni</h2>
+		<div class="buttons">
+			<a class="button is-link" th:href="@{/usage-view-calls}">
+				<span class="icon">
+					<i class="fas fa-phone"></i>
+				</span>
+				<span data-tx="t0045">Visualizzare la cronologia delle chiamate</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0046">Segnala numeri SPAM</span>
+			</a>
+			<a class="button is-link" th:href="@{/usage-manage-lists}">
+				<span class="icon">
+					<i class="fas fa-list"></i>
+				</span>
+				<span data-tx="t0047">Gestione di blacklist/whitelist</span>
+			</a>
+		</div>
+
+		<div class="buttons mt-3">
+			<a class="button" th:href="@{/setup-android}">
+				<span class="icon">
+					<i class="fas fa-arrow-left"></i>
+				</span>
+				<span data-tx="t0048">Torniamo all'installazione</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
