@@ -108,36 +108,7 @@
 			<p data-tx="t0038"><strong>注意：</strong>您的个人列表始终优先于 PhoneBlock 社区数据库。您的白名单上的号码永远不会被阻止，即使它已被成千上万的其他用户报告为垃圾邮件。</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0039">其他功能</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0040">查看通话记录</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0041">报告垃圾邮件号码</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0042">搜索数字</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0043">回到安装</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

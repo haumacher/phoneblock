@@ -93,36 +93,7 @@
 			<p class="mt-2" data-tx="t0035">Elk rapport helpt om de PhoneBlock database up-to-date en betrouwbaar te houden. De gemeenschap profiteert van uw ervaring.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0036">Verdere functies</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0037">Gesprekshistorie bekijken</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-manage-lists}">
-				<span class="icon">
-					<i class="fas fa-list"></i>
-				</span>
-				<span data-tx="t0038">Zwarte lijst/witlijst beheren</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0039">Zoeken naar nummers</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0040">Terug naar de installatie</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

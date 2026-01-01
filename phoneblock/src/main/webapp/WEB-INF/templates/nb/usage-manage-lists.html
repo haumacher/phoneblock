@@ -108,36 +108,7 @@
 			<p data-tx="t0038"><strong>Note:</strong> Dine personlige lister har alltid forrang over PhoneBlocks fellesskapsdatabase. Et nummer på din hviteliste vil aldri bli blokkert, selv om det har blitt rapportert som SPAM av tusenvis av andre brukere.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0039">Flere funksjoner</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0040">Se anropshistorikk</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0041">Rapporter SPAM-nummer</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0042">Søk etter tall</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0043">Tilbake til installasjonen</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

@@ -108,36 +108,7 @@
 			<p data-tx="t0038"><strong>Anmärkning:</strong> Dina personliga listor har alltid företräde framför PhoneBlocks community-databas. Ett nummer på din vitlista kommer aldrig att blockeras, även om det har rapporterats som SPAM av tusentals andra användare.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0039">Ytterligare funktioner</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0040">Visa samtalshistorik</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0041">Rapportera SPAM-nummer</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0042">Sök efter nummer</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0043">Tillbaka till installationen</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

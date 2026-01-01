@@ -59,30 +59,7 @@
 			</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0017">Nächste Schritte</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0018">SPAM-Nummern melden</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-manage-lists}">
-				<span class="icon">
-					<i class="fas fa-list"></i>
-				</span>
-				<span data-tx="t0019">Blacklist/Whitelist verwalten</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0020">Zurück zur Installation</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

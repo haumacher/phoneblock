@@ -108,36 +108,7 @@
 			<p data-tx="t0038"><strong>Nota:</strong> Le vostre liste personali hanno sempre la precedenza sul database della comunità PhoneBlock. Un numero presente nella vostra whitelist non sarà mai bloccato, anche se è stato segnalato come SPAM da migliaia di altri utenti.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0039">Ulteriori funzioni</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0040">Visualizza la cronologia delle chiamate</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0041">Segnala numeri SPAM</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0042">Ricerca di numeri</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0043">Torniamo all'installazione</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

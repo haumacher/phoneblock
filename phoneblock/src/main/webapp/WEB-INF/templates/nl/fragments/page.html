@@ -306,6 +306,44 @@
 </footer>
 </th:block>
 
+<div th:fragment="mobileUsageNav">
+	<h2 class="mt-5" data-tx="t9001">Verdere functies</h2>
+	<div class="buttons">
+		<a class="button is-link" th:href="@{/usage-view-calls}">
+			<span class="icon">
+				<i class="fas fa-phone"></i>
+			</span>
+			<span data-tx="t9002">Gesprekshistorie bekijken</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-report-spam}">
+			<span class="icon">
+				<i class="fas fa-flag"></i>
+			</span>
+			<span data-tx="t9003">SPAM-nummers melden</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-manage-lists}">
+			<span class="icon">
+				<i class="fas fa-list"></i>
+			</span>
+			<span data-tx="t9004">Zwarte lijst/witlijst beheren</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-search}">
+			<span class="icon">
+				<i class="fas fa-search"></i>
+			</span>
+			<span data-tx="t9005">Zoeken op nummer</span>
+		</a>
+	</div>
+
+	<div class="buttons mt-3">
+		<a class="button" th:href="@{/setup-android}">
+			<span class="icon">
+				<i class="fas fa-arrow-left"></i>
+			</span>
+			<span data-tx="t9006">Terug naar de installatie</span>
+		</a>
+	</div>
+</div>
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>

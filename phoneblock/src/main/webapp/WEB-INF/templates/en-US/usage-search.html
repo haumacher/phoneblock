@@ -101,36 +101,7 @@
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0044">Further functions</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0045">View call history</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0046">Report SPAM numbers</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-manage-lists}">
-				<span class="icon">
-					<i class="fas fa-list"></i>
-				</span>
-				<span data-tx="t0047">Manage blacklist/whitelist</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0048">Back to the installation</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

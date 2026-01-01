@@ -44,30 +44,7 @@
 			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile gebruikt Android's CallScreeningService om inkomende oproepen te screenen voordat ze overgaan. Als het nummer in de SPAM-database staat en de door jou ingestelde drempel wordt overschreden, wordt de oproep automatisch geblokkeerd.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0017">Volgende stappen</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0018">SPAM-nummers melden</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-manage-lists}">
-				<span class="icon">
-					<i class="fas fa-list"></i>
-				</span>
-				<span data-tx="t0019">Zwarte lijst/witlijst beheren</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0020">Terug naar de installatie</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

@@ -93,36 +93,7 @@
 			<p class="mt-2" data-tx="t0035">Ogni segnalazione contribuisce a mantenere il database di PhoneBlock aggiornato e affidabile. La comunità beneficia della vostra esperienza.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0036">Ulteriori funzioni</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0037">Visualizza la cronologia delle chiamate</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-manage-lists}">
-				<span class="icon">
-					<i class="fas fa-list"></i>
-				</span>
-				<span data-tx="t0038">Gestione di blacklist/whitelist</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0039">Ricerca di numeri</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0040">Torniamo all'installazione</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 

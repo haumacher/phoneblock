@@ -108,36 +108,7 @@
 			<p data-tx="t0038"><strong>Σημείωση:</strong> Οι προσωπικές σας λίστες έχουν πάντα προτεραιότητα έναντι της βάσης δεδομένων της κοινότητας PhoneBlock. Ένας αριθμός στη δική σας λευκή λίστα δεν θα μπλοκαριστεί ποτέ, ακόμη και αν έχει αναφερθεί ως SPAM από χιλιάδες άλλους χρήστες.</p>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0039">Περαιτέρω λειτουργίες</h2>
-		<div class="buttons">
-			<a class="button is-link" th:href="@{/usage-view-calls}">
-				<span class="icon">
-					<i class="fas fa-phone"></i>
-				</span>
-				<span data-tx="t0040">Προβολή ιστορικού κλήσεων</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-report-spam}">
-				<span class="icon">
-					<i class="fas fa-flag"></i>
-				</span>
-				<span data-tx="t0041">Αναφορά αριθμών SPAM</span>
-			</a>
-			<a class="button is-link" th:href="@{/usage-search}">
-				<span class="icon">
-					<i class="fas fa-search"></i>
-				</span>
-				<span data-tx="t0042">Αναζήτηση για αριθμούς</span>
-			</a>
-		</div>
-
-		<div class="buttons mt-3">
-			<a class="button" th:href="@{/setup-android}">
-				<span class="icon">
-					<i class="fas fa-arrow-left"></i>
-				</span>
-				<span data-tx="t0043">Επιστροφή στην εγκατάσταση</span>
-			</a>
-		</div>
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
 	</div>
 </section>
 
