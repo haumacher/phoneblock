@@ -536,6 +536,21 @@
     }
   },
 
+  "legitimateReportsCount": "{count, plural, =1{1 Legitim-Meldung} other{{count} Legitim-Meldungen}}",
+  "@legitimateReportsCount": {
+    "description": "Number of legitimate reports for a phone number",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "noReports": "Keine Meldungen",
+  "@noReports": {
+    "description": "No reports available for this number"
+  },
+
   "todayTime": "Heute, {time}",
   "@todayTime": {
     "description": "Today with time",

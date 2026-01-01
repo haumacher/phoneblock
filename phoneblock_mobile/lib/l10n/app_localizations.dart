@@ -668,6 +668,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 Meldung} other{{count} Meldungen}}'**
   String reportsCount(int count);
 
+  /// Number of legitimate reports for a phone number
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Legitim-Meldung} other{{count} Legitim-Meldungen}}'**
+  String legitimateReportsCount(int count);
+
+  /// No reports available for this number
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meldungen'**
+  String get noReports;
+
   /// Today with time
   ///
   /// In de, this message translates to:

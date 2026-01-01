@@ -191,6 +191,10 @@
 
   "reportsCount": "{count, plural, =1{1 report} other{{count} reports}}",
 
+  "legitimateReportsCount": "{count, plural, =1{1 legitimate report} other{{count} legitimate reports}}",
+
+  "noReports": "No reports",
+
   "todayTime": "Today, {time}",
 
   "yesterdayTime": "Yesterday, {time}",

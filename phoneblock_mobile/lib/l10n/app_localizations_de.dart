@@ -339,6 +339,20 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String legitimateReportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Legitim-Meldungen',
+      one: '1 Legitim-Meldung',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noReports => 'Keine Meldungen';
+
+  @override
   String todayTime(String time) {
     return 'Heute, $time';
   }

@@ -1100,7 +1100,11 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  context.l10n.reportsCount(call.votes),
+                  call.votes > 0
+                      ? context.l10n.reportsCount(call.votes)
+                      : call.votes < 0
+                          ? context.l10n.legitimateReportsCount(call.votes.abs())
+                          : context.l10n.noReports,
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
