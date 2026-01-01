@@ -2350,38 +2350,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(),
                 ListTile(
-                  title: Text(context.l10n.serverSettings),
-                  subtitle: Text(context.l10n.serverSettingsDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => PhoneBlockWebView(
-                          title: localizations.serverSettings,
-                          path: '/settings',
-                          authToken: token,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
                   title: Text(context.l10n.blacklistTitle),
                   subtitle: Text(context.l10n.blacklistDescription),
                   trailing: const Icon(Icons.chevron_right),
@@ -2432,6 +2400,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     navigator.push(
                       MaterialPageRoute(
                         builder: (context) => WhitelistScreen(authToken: token),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  title: Text(context.l10n.serverSettings),
+                  subtitle: Text(context.l10n.serverSettingsDescription),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    final navigator = Navigator.of(context);
+                    final scaffold = ScaffoldMessenger.of(context);
+                    final localizations = context.l10n;
+
+                    String? token = await getAuthToken();
+                    if (token == null) {
+                      scaffold.showSnackBar(
+                        SnackBar(
+                          content: Text(localizations.notLoggedInShort),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (context) => PhoneBlockWebView(
+                          title: localizations.serverSettings,
+                          path: '/settings',
+                          authToken: token,
+                        ),
                       ),
                     );
                   },
