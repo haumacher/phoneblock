@@ -9,24 +9,29 @@
 	<div class="content">
 		<h1 data-tx="t0001">Administrer personlig svarteliste og hviteliste</h1>
 
-		<p class="subtitle" data-tx="t0002">I tillegg til fellesdatabasen kan du vedlikeholde dine egne lister for å tilpasse anropsfiltreringen.</p>
+		<p class="subtitle" data-tx="t0034">Legg til viktige numre (lege, skole, jobb)</p>
 
-		<h2 data-tx="t0003">Hva er svarteliste og hviteliste?</h2>
+		<div class="notification is-info">
+			<p><strong data-tx="t0035">Forhindrer utilsiktet blokkering</strong></p>
+			<p class="mt-2" data-tx="t0036">Har prioritet over fellesskapsdatabasen</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003">Hva er svarteliste og hviteliste?</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<div class="notification is-danger">
 					<h3 class="has-text-white" data-tx="t0004">Svarteliste</h3>
-					<p class="has-text-white" data-tx="t0005">Numre på svartelisten din er <strong>alltid blokkert</strong>, uavhengig av om de er kjent som SPAM i PhoneBlock-databasen eller ikke.</p>
-					<p class="has-text-white mt-2" data-tx="t0006"><strong>Bruk:</strong> For irriterende innringere som du ønsker å blokkere personlig.</p>
+					<p class="has-text-white" data-tx="t0037">Spesielt viktig for kritiske samtaler</p>
+					<p class="has-text-white mt-2" data-tx="t0038"><strong>Note:</strong> Dine personlige lister har alltid forrang over PhoneBlocks fellesskapsdatabase. Et nummer på din hviteliste vil aldri bli blokkert, selv om det har blitt rapportert som SPAM av tusenvis av andre brukere.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
 				<div class="notification is-success">
 					<h3 class="has-text-white" data-tx="t0007">Hviteliste</h3>
-					<p class="has-text-white" data-tx="t0008">Numre på hvitelisten din vil <strong>aldri bli blokkert</strong>, selv om de er rapportert som SPAM i PhoneBlock-databasen.</p>
-					<p class="has-text-white mt-2" data-tx="t0009"><strong>Bruk:</strong> For viktige numre som kan bli blokkert ved en feiltakelse.</p>
+					<p class="has-text-white" data-tx="t0039">Numre på hvitelisten din vil <strong>aldri bli blokkert</strong>, selv om de blir rapportert som SPAM i fellesskapsdatabasen.</p>
+					<p class="has-text-white mt-2" data-tx="t0040"><strong>Viktig:</strong> Dine oppføringer på hvitelisten bidrar også til databasen og hjelper til med å korrigere feilaktige SPAM-meldinger.</p>
 				</div>
 			</div>
 		</div>
@@ -59,8 +64,17 @@
 			</div>
 		</div>
 
-		<h3 class="mt-5" data-tx="t0020">Legg til nummer</h3>
-		<p data-tx="t0021">Hvis du vil legge til et nytt nummer på svartelisten eller hvitelisten, trykker du på <strong>plussymbolet (+)</strong> øverst til høyre i den respektive listen. Skriv deretter inn telefonnummeret (med landskode for best resultat).</p>
+		<h3 class="mt-5" data-tx="t0041">Hvordan tall legges til i listene</h3>
+		<p data-tx="t0042">Tall legges <strong>automatisk</strong> til i listene dine når du vurderer dem:</p>
+		<ul>
+			<li data-tx="t0043"><strong>SPAM-melding:</strong> Hvis du rapporterer et nummer som SPAM, blir det automatisk lagt til i svartelisten din</li>
+			<li data-tx="t0044"><strong>Legitim melding:</strong> Hvis du merker et nummer som legitimt, blir det automatisk lagt til i hvitelisten din</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045">Du kan rangere tall:</p>
+		<ul>
+			<li data-tx="t0046">Fra anropshistorikken din</li>
+			<li data-tx="t0047">Bruk <a th:href="@{/usage-search}">søkefunksjonen</a> for å slå opp et bestemt nummer</li>
+		</ul>
 
 		<h3 class="mt-5" data-tx="t0022">Fjern nummer fra listen</h3>
 
@@ -74,38 +88,45 @@
 
 			<div class="column is-half">
 				<div class="notification is-info mt-5">
-					<p><strong data-tx="t0025">Synkronisering:</strong></p>
-					<p class="mt-2" data-tx="t0026">De personlige listene dine synkroniseres med PhoneBlock-kontoen din og er automatisk tilgjengelige på alle enheter der du er logget inn med samme konto.</p>
+					<p><strong data-tx="t0048">Lagring på serveren:</strong></p>
+					<p class="mt-2" data-tx="t0049">Listene dine lagres på PhoneBlock-serveren og tas i betraktning i SPAM-sjekken. <strong>Dine personlige lister har alltid prioritet</strong> over den generelle fellesskapsdatabasen.</p>
+					<p class="mt-2" data-tx="t0050">Dette betyr at rangeringene dine gjelder for alle enheter der du er logget inn med PhoneBlock-kontoen din.</p>
 				</div>
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0027">Tips for bruk</h2>
+		<h2 class="mt-5" data-tx="t0051">Sammendrag: Slik fungerer listene</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<h3 data-tx="t0028">Svarteliste</h3>
 				<ul>
-					<li data-tx="t0029">Legg til tall som plager deg personlig</li>
-					<li data-tx="t0030">Selv om de ennå ikke finnes i PhoneBlock-databasen</li>
-					<li data-tx="t0031">Nummeret blir blokkert umiddelbart</li>
-					<li data-tx="t0032">Ideell for utholdende innringere</li>
+					<li data-tx="t0052">Opprettes automatisk når du rapporterer numre som SPAM</li>
+					<li data-tx="t0053">Blokkerer numre umiddelbart, selv uten høy SPAM-poengsum i fellesskapet</li>
+					<li data-tx="t0054">Meldingene dine bidrar til den felles SPAM-databasen</li>
+					<li data-tx="t0055">Ideell for å blokkere vedvarende anrop umiddelbart</li>
 				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0033">Hviteliste</h3>
 				<ul>
-					<li data-tx="t0034">Legg til viktige numre (lege, skole, jobb)</li>
-					<li data-tx="t0035">Forhindrer utilsiktet blokkering</li>
-					<li data-tx="t0036">Har prioritet over fellesskapsdatabasen</li>
-					<li data-tx="t0037">Spesielt viktig for kritiske samtaler</li>
+					<li data-tx="t0056">Opprettes automatisk når du markerer tall som legitime</li>
+					<li data-tx="t0057">Forhindrer blokkering, selv med en høy SPAM-score i fellesskapet</li>
+					<li data-tx="t0058">Dine positive anmeldelser bidrar til å rette opp falske SPAM-meldinger</li>
+					<li data-tx="t0059">Viktig for tall du ikke vil gå glipp av under noen omstendigheter</li>
 				</ul>
 			</div>
 		</div>
 
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060">Bidrag til fellesskapet:</strong></p>
+			<p class="mt-2" data-tx="t0061">Hver av dine anmeldelser - enten de er SPAM eller legitime - hjelper hele PhoneBlock-fellesskapet. Dine personlige lister har alltid forrang over den generelle databasen, men vurderingene dine er også inkludert i fellesskapets vurdering.</p>
+		</div>
+
 		<div class="notification is-warning mt-5">
-			<p data-tx="t0038"><strong>Note:</strong> Dine personlige lister har alltid forrang over PhoneBlocks fellesskapsdatabase. Et nummer på din hviteliste vil aldri bli blokkert, selv om det har blitt rapportert som SPAM av tusenvis av andre brukere.</p>
+			<p><strong data-tx="t0062">Viktig å forstå:</strong></p>
+			<p class="mt-2" data-tx="t0063">Et nummer på hvitelisten din vil <strong>aldri bli blokkert</strong>, selv om tusenvis av andre brukere har rapportert det som SPAM. Motsatt vil et nummer på svartelisten din <strong>alltid bli blokkert</strong>, selv om det anses som legitimt i fellesskapsdatabasen.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

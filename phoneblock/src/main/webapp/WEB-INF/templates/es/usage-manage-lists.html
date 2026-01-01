@@ -9,24 +9,29 @@
 	<div class="content">
 		<h1 data-tx="t0001">Gestión de listas negras y blancas personales</h1>
 
-		<p class="subtitle" data-tx="t0002">Además de la base de datos comunitaria, puede mantener sus propias listas para personalizar el filtrado de llamadas.</p>
+		<p class="subtitle" data-tx="t0034">Añadir números importantes (médico, colegio, trabajo)</p>
 
-		<h2 data-tx="t0003">¿Qué son la lista negra y la lista blanca?</h2>
+		<div class="notification is-info">
+			<p><strong data-tx="t0035">Evita el bloqueo accidental</strong></p>
+			<p class="mt-2" data-tx="t0036">Tiene prioridad sobre la base de datos comunitaria</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003">¿Qué son la lista negra y la lista blanca?</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<div class="notification is-danger">
 					<h3 class="has-text-white" data-tx="t0004">Lista negra</h3>
-					<p class="has-text-white" data-tx="t0005">Los números de tu lista negra están <strong>siempre bloqueados</strong>, independientemente de si son conocidos como SPAM en la base de datos de PhoneBlock o no.</p>
-					<p class="has-text-white mt-2" data-tx="t0006"><strong>Uso:</strong> Para llamadas molestas que desea bloquear personalmente.</p>
+					<p class="has-text-white" data-tx="t0037">Especialmente importante para las llamadas críticas</p>
+					<p class="has-text-white mt-2" data-tx="t0038"><strong>Nota:</strong> Tus listas personales siempre tienen prioridad sobre la base de datos de la comunidad PhoneBlock. Un número en su lista blanca nunca será bloqueado, incluso si ha sido reportado como SPAM por miles de otros usuarios.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
 				<div class="notification is-success">
 					<h3 class="has-text-white" data-tx="t0007">Lista blanca</h3>
-					<p class="has-text-white" data-tx="t0008">Los números de tu lista blanca <strong>nunca serán bloqueados</strong>, incluso si son reportados como SPAM en la base de datos de PhoneBlock.</p>
-					<p class="has-text-white mt-2" data-tx="t0009"><strong>Uso:</strong> Para números importantes que podrían bloquearse por error.</p>
+					<p class="has-text-white" data-tx="t0039">Los números de tu lista blanca <strong>nunca serán bloqueados</strong>, aunque sean denunciados como SPAM en la base de datos de la comunidad.</p>
+					<p class="has-text-white mt-2" data-tx="t0040"><strong>Importante:</strong> Sus entradas en la lista blanca también contribuyen a la base de datos y ayudan a corregir mensajes SPAM incorrectos.</p>
 				</div>
 			</div>
 		</div>
@@ -59,8 +64,17 @@
 			</div>
 		</div>
 
-		<h3 class="mt-5" data-tx="t0020">Añadir número</h3>
-		<p data-tx="t0021">Para añadir un nuevo número a su lista negra o blanca, pulse el símbolo <strong>más (+)</strong> en la parte superior derecha de la lista correspondiente. A continuación, introduce el número de teléfono (con el prefijo del país para obtener mejores resultados).</p>
+		<h3 class="mt-5" data-tx="t0041">Cómo se añaden números a las listas</h3>
+		<p data-tx="t0042">Los números se añaden <strong>automáticamente</strong> a tus listas cuando las calificas:</p>
+		<ul>
+			<li data-tx="t0043"><strong>Mensaje SPAM:</strong> Si denuncias un número como SPAM, se añadirá automáticamente a tu lista negra.</li>
+			<li data-tx="t0044"><strong>Mensaje legítimo:</strong> Si marcas un número como legítimo, se añade automáticamente a tu lista blanca.</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045">Puedes valorar números:</p>
+		<ul>
+			<li data-tx="t0046">Del historial de llamadas</li>
+			<li data-tx="t0047">Utiliza la <a th:href="@{/usage-search}">función de búsqueda</a> para buscar un número concreto</li>
+		</ul>
 
 		<h3 class="mt-5" data-tx="t0022">Eliminar número de la lista</h3>
 
@@ -74,38 +88,45 @@
 
 			<div class="column is-half">
 				<div class="notification is-info mt-5">
-					<p><strong data-tx="t0025">Sincronización:</strong></p>
-					<p class="mt-2" data-tx="t0026">Sus listas personales se sincronizan con su cuenta PhoneBlock y están disponibles automáticamente en todos sus dispositivos en los que haya iniciado sesión con la misma cuenta.</p>
+					<p><strong data-tx="t0048">Almacenamiento en el servidor:</strong></p>
+					<p class="mt-2" data-tx="t0049">Tus listas se almacenan en el servidor de PhoneBlock y se tienen en cuenta en la comprobación de SPAM. <strong>Tus listas personales siempre tienen prioridad</strong> sobre la base de datos general de la comunidad.</p>
+					<p class="mt-2" data-tx="t0050">Esto significa que sus clasificaciones se aplican a todos los dispositivos en los que haya iniciado sesión con su cuenta PhoneBlock.</p>
 				</div>
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0027">Consejos de uso</h2>
+		<h2 class="mt-5" data-tx="t0051">Resumen: Cómo funcionan las listas</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<h3 data-tx="t0028">Lista negra</h3>
 				<ul>
-					<li data-tx="t0029">Añada los números que le molestan personalmente</li>
-					<li data-tx="t0030">Aunque aún no estén en la base de datos de PhoneBlock</li>
-					<li data-tx="t0031">El número se bloquea inmediatamente</li>
-					<li data-tx="t0032">Ideal para llamantes persistentes</li>
+					<li data-tx="t0052">Se crea automáticamente cuando se denuncian números como SPAM</li>
+					<li data-tx="t0053">Bloquea números inmediatamente, incluso sin una alta puntuación de SPAM de la comunidad</li>
+					<li data-tx="t0054">Tus mensajes contribuyen a la base de datos compartida de SPAM</li>
+					<li data-tx="t0055">Ideal para bloquear inmediatamente las llamadas persistentes</li>
 				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0033">Lista blanca</h3>
 				<ul>
-					<li data-tx="t0034">Añadir números importantes (médico, colegio, trabajo)</li>
-					<li data-tx="t0035">Evita el bloqueo accidental</li>
-					<li data-tx="t0036">Tiene prioridad sobre la base de datos comunitaria</li>
-					<li data-tx="t0037">Especialmente importante para las llamadas críticas</li>
+					<li data-tx="t0056">Se crea automáticamente al marcar números como legítimos</li>
+					<li data-tx="t0057">Evita el bloqueo, incluso con una alta puntuación de SPAM comunitario</li>
+					<li data-tx="t0058">Tus valoraciones positivas ayudan a corregir los falsos mensajes SPAM</li>
+					<li data-tx="t0059">Importante para los números que no quiere perderse bajo ninguna circunstancia</li>
 				</ul>
 			</div>
 		</div>
 
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060">Contribución comunitaria:</strong></p>
+			<p class="mt-2" data-tx="t0061">Cada una de tus valoraciones - ya sean SPAM o legítimas - ayuda a toda la comunidad PhoneBlock. Tus listas personales siempre tienen prioridad sobre la base de datos general, pero tus valoraciones también se incluyen en la valoración de la comunidad.</p>
+		</div>
+
 		<div class="notification is-warning mt-5">
-			<p data-tx="t0038"><strong>Nota:</strong> Tus listas personales siempre tienen prioridad sobre la base de datos de la comunidad PhoneBlock. Un número en su lista blanca nunca será bloqueado, incluso si ha sido reportado como SPAM por miles de otros usuarios.</p>
+			<p><strong data-tx="t0062">Es importante entenderlo:</strong></p>
+			<p class="mt-2" data-tx="t0063">Un número de tu lista blanca <strong>nunca será bloqueado</strong>, aunque miles de usuarios lo hayan reportado como SPAM. Por el contrario, un número de tu lista negra <strong>siempre será bloqueado</strong>, aunque esté considerado legítimo en la base de datos de la comunidad.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

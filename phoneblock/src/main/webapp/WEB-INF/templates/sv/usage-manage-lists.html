@@ -9,24 +9,29 @@
 	<div class="content">
 		<h1 data-tx="t0001">Hantera personlig svart- och vitlista</h1>
 
-		<p class="subtitle" data-tx="t0002">Förutom community-databasen kan du underhålla dina egna listor för att anpassa samtalsfiltreringen.</p>
+		<p class="subtitle" data-tx="t0034">Lägg till viktiga nummer (läkare, skola, arbete)</p>
 
-		<h2 data-tx="t0003">Vad är svartlista och vitlista?</h2>
+		<div class="notification is-info">
+			<p><strong data-tx="t0035">Förhindrar oavsiktlig blockering</strong></p>
+			<p class="mt-2" data-tx="t0036">Har prioritet över community-databasen</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003">Vad är svartlista och vitlista?</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<div class="notification is-danger">
 					<h3 class="has-text-white" data-tx="t0004">Svarta listan</h3>
-					<p class="has-text-white" data-tx="t0005">Numren på din svarta lista är <strong>alltid blockerade</strong>, oavsett om de är kända som SPAM i PhoneBlock-databasen eller inte.</p>
-					<p class="has-text-white mt-2" data-tx="t0006"><strong>Användning:</strong> För irriterande uppringare som du vill blockera personligen.</p>
+					<p class="has-text-white" data-tx="t0037">Särskilt viktigt vid kritiska samtal</p>
+					<p class="has-text-white mt-2" data-tx="t0038"><strong>Anmärkning:</strong> Dina personliga listor har alltid företräde framför PhoneBlocks community-databas. Ett nummer på din vitlista kommer aldrig att blockeras, även om det har rapporterats som SPAM av tusentals andra användare.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
 				<div class="notification is-success">
 					<h3 class="has-text-white" data-tx="t0007">Vitlista</h3>
-					<p class="has-text-white" data-tx="t0008">Numren på din vitlista kommer <strong>aldrig att blockeras</strong>, även om de rapporteras som SPAM i PhoneBlock-databasen.</p>
-					<p class="has-text-white mt-2" data-tx="t0009"><strong>Användning:</strong> För viktiga nummer som kan blockeras av misstag.</p>
+					<p class="has-text-white" data-tx="t0039">Numren på din vitlista kommer <strong>aldrig att blockeras</strong>, även om de rapporteras som SPAM i community-databasen.</p>
+					<p class="has-text-white mt-2" data-tx="t0040"><strong>Viktigt:</strong> Dina vitlisteposter bidrar också till databasen och hjälper till att korrigera felaktiga SPAM-meddelanden.</p>
 				</div>
 			</div>
 		</div>
@@ -59,8 +64,17 @@
 			</div>
 		</div>
 
-		<h3 class="mt-5" data-tx="t0020">Lägg till nummer</h3>
-		<p data-tx="t0021">Om du vill lägga till ett nytt nummer i din svarta eller vita lista trycker du på <strong>plus-symbolen (+)</strong> längst upp till höger i respektive lista. Ange sedan telefonnumret (med landskod för bästa resultat).</p>
+		<h3 class="mt-5" data-tx="t0041">Hur nummer läggs till i listorna</h3>
+		<p data-tx="t0042">Nummer läggs <strong>automatiskt</strong> till i dina listor när du betygsätter dem:</p>
+		<ul>
+			<li data-tx="t0043"><strong>SPAM-meddelande:</strong> Om du rapporterar ett nummer som SPAM kommer det automatiskt att läggas till i din svarta lista</li>
+			<li data-tx="t0044"><strong>Legitimt meddelande:</strong> Om du markerar ett nummer som legitimt läggs det automatiskt till i din vitlista</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045">Du kan betygsätta siffror:</p>
+		<ul>
+			<li data-tx="t0046">Från din samtalshistorik</li>
+			<li data-tx="t0047">Använd <a th:href="@{/usage-search}">sökfunktionen</a> för att söka efter ett visst nummer</li>
+		</ul>
 
 		<h3 class="mt-5" data-tx="t0022">Ta bort nummer från listan</h3>
 
@@ -74,38 +88,45 @@
 
 			<div class="column is-half">
 				<div class="notification is-info mt-5">
-					<p><strong data-tx="t0025">Synkronisering:</strong></p>
-					<p class="mt-2" data-tx="t0026">Dina personliga listor synkroniseras med ditt PhoneBlock-konto och är automatiskt tillgängliga på alla dina enheter som du är inloggad på med samma konto.</p>
+					<p><strong data-tx="t0048">Lagring på servern:</strong></p>
+					<p class="mt-2" data-tx="t0049">Dina listor lagras på PhoneBlock-servern och tas med i beräkningen vid SPAM-kontrollen. <strong>Dina personliga listor har alltid prioritet</strong> över den allmänna databasen.</p>
+					<p class="mt-2" data-tx="t0050">Detta innebär att dina betyg gäller för alla enheter där du är inloggad med ditt PhoneBlock-konto.</p>
 				</div>
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0027">Tips för användning</h2>
+		<h2 class="mt-5" data-tx="t0051">Sammanfattning: Hur listorna fungerar</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<h3 data-tx="t0028">Svarta listan</h3>
 				<ul>
-					<li data-tx="t0029">Lägg till siffror som stör dig personligen</li>
-					<li data-tx="t0030">Även om de ännu inte finns i PhoneBlock-databasen</li>
-					<li data-tx="t0031">Numret blockeras omedelbart</li>
-					<li data-tx="t0032">Idealisk för ihärdiga uppringare</li>
+					<li data-tx="t0052">Skapas automatiskt när du rapporterar nummer som SPAM</li>
+					<li data-tx="t0053">Blockerar nummer omedelbart, även utan en hög SPAM-poäng i samhället</li>
+					<li data-tx="t0054">Dina meddelanden bidrar till den gemensamma SPAM-databasen</li>
+					<li data-tx="t0055">Idealisk för att blockera ihållande samtal omedelbart</li>
 				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0033">Vitlista</h3>
 				<ul>
-					<li data-tx="t0034">Lägg till viktiga nummer (läkare, skola, arbete)</li>
-					<li data-tx="t0035">Förhindrar oavsiktlig blockering</li>
-					<li data-tx="t0036">Har prioritet över community-databasen</li>
-					<li data-tx="t0037">Särskilt viktigt vid kritiska samtal</li>
+					<li data-tx="t0056">Skapas automatiskt när du markerar nummer som legitima</li>
+					<li data-tx="t0057">Förhindrar blockering, även med en hög SPAM-poäng i samhället</li>
+					<li data-tx="t0058">Dina positiva omdömen hjälper till att korrigera falska SPAM-meddelanden</li>
+					<li data-tx="t0059">Viktigt för nummer som du inte vill missa under några omständigheter</li>
 				</ul>
 			</div>
 		</div>
 
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060">Bidrag från gemenskapen:</strong></p>
+			<p class="mt-2" data-tx="t0061">Var och en av dina recensioner - oavsett om de är SPAM eller legitima - hjälper hela PhoneBlock-gemenskapen. Dina personliga listor har alltid företräde framför den allmänna databasen, men dina betyg ingår också i communitybetyget.</p>
+		</div>
+
 		<div class="notification is-warning mt-5">
-			<p data-tx="t0038"><strong>Anmärkning:</strong> Dina personliga listor har alltid företräde framför PhoneBlocks community-databas. Ett nummer på din vitlista kommer aldrig att blockeras, även om det har rapporterats som SPAM av tusentals andra användare.</p>
+			<p><strong data-tx="t0062">Viktigt att förstå:</strong></p>
+			<p class="mt-2" data-tx="t0063">Ett nummer på din vitlista kommer <strong>aldrig att blockeras</strong>, även om tusentals andra användare har rapporterat det som SPAM. Omvänt kommer ett nummer på din svarta lista <strong>alltid att blockeras</strong>, även om det anses vara legitimt i community-databasen.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

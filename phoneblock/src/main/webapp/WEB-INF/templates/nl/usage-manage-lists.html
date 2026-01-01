@@ -9,24 +9,29 @@
 	<div class="content">
 		<h1 data-tx="t0001">Persoonlijke zwarte en witte lijst beheren</h1>
 
-		<p class="subtitle" data-tx="t0002">Naast de database van de community kun je je eigen lijsten bijhouden om het filteren van oproepen aan te passen.</p>
+		<p class="subtitle" data-tx="t0034">Belangrijke nummers toevoegen (dokter, school, werk)</p>
 
-		<h2 data-tx="t0003">Wat zijn blacklist en whitelist?</h2>
+		<div class="notification is-info">
+			<p><strong data-tx="t0035">Voorkomt per ongeluk blokkeren</strong></p>
+			<p class="mt-2" data-tx="t0036">Heeft voorrang op de gemeenschapsdatabase</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003">Wat zijn blacklist en whitelist?</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<div class="notification is-danger">
 					<h3 class="has-text-white" data-tx="t0004">Zwarte lijst</h3>
-					<p class="has-text-white" data-tx="t0005">Nummers op uw blacklist worden <strong>altijd geblokkeerd</strong>, ongeacht of ze als SPAM bekend staan in de PhoneBlock database of niet.</p>
-					<p class="has-text-white mt-2" data-tx="t0006"><strong>Gebruik:</strong> Voor vervelende bellers die je persoonlijk wilt blokkeren.</p>
+					<p class="has-text-white" data-tx="t0037">Vooral belangrijk voor kritieke oproepen</p>
+					<p class="has-text-white mt-2" data-tx="t0038"><strong>Noot:</strong> Uw persoonlijke lijsten hebben altijd voorrang op de PhoneBlock gemeenschapsdatabase. Een nummer op uw witte lijst zal nooit worden geblokkeerd, zelfs als het door duizenden andere gebruikers als SPAM is gerapporteerd.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
 				<div class="notification is-success">
 					<h3 class="has-text-white" data-tx="t0007">Whitelist</h3>
-					<p class="has-text-white" data-tx="t0008">Nummers op uw witte lijst worden <strong>nooit geblokkeerd</strong>, zelfs als ze in de PhoneBlock-database als SPAM worden gemeld.</p>
-					<p class="has-text-white mt-2" data-tx="t0009"><strong>Gebruik:</strong> Voor belangrijke nummers die per ongeluk kunnen worden geblokkeerd.</p>
+					<p class="has-text-white" data-tx="t0039">Nummers op je witte lijst zullen <strong>nooit worden geblokkeerd</strong>, zelfs als ze als SPAM worden gerapporteerd in de gemeenschapsdatabase.</p>
+					<p class="has-text-white mt-2" data-tx="t0040"><strong>Belangrijk:</strong> Uw vermeldingen op de witte lijst dragen ook bij aan de database en helpen bij het corrigeren van onjuiste SPAM-berichten.</p>
 				</div>
 			</div>
 		</div>
@@ -59,8 +64,17 @@
 			</div>
 		</div>
 
-		<h3 class="mt-5" data-tx="t0020">Aantal toevoegen</h3>
-		<p data-tx="t0021">Om een nieuw nummer toe te voegen aan je zwarte of witte lijst, tik je op het <strong>plus-symbool (+)</strong> rechtsboven in de betreffende lijst. Voer vervolgens het telefoonnummer in (met landcode voor het beste resultaat).</p>
+		<h3 class="mt-5" data-tx="t0041">Hoe nummers aan de lijsten worden toegevoegd</h3>
+		<p data-tx="t0042">Nummers worden <strong>automatisch</strong> toegevoegd aan je lijsten wanneer je ze beoordeelt:</p>
+		<ul>
+			<li data-tx="t0043"><strong>SPAM-bericht:</strong> Als je een nummer als SPAM meldt, wordt het automatisch aan je zwarte lijst toegevoegd.</li>
+			<li data-tx="t0044"><strong>Gerechtvaardigd bericht:</strong> Als je een nummer als gerechtvaardigd markeert, wordt het automatisch toegevoegd aan je witte lijst.</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045">Je kunt nummers beoordelen:</p>
+		<ul>
+			<li data-tx="t0046">Uit je belgeschiedenis</li>
+			<li data-tx="t0047">Gebruik de <a th:href="@{/usage-search}">zoekfunctie</a> om een specifiek nummer op te zoeken</li>
+		</ul>
 
 		<h3 class="mt-5" data-tx="t0022">Nummer uit lijst verwijderen</h3>
 
@@ -74,38 +88,45 @@
 
 			<div class="column is-half">
 				<div class="notification is-info mt-5">
-					<p><strong data-tx="t0025">Synchronisatie:</strong></p>
-					<p class="mt-2" data-tx="t0026">Uw persoonlijke lijsten worden gesynchroniseerd met uw PhoneBlock-account en zijn automatisch beschikbaar op al uw apparaten waarop u bent aangemeld met hetzelfde account.</p>
+					<p><strong data-tx="t0048">Opslag op de server:</strong></p>
+					<p class="mt-2" data-tx="t0049">Uw lijsten worden opgeslagen op de PhoneBlock-server en meegenomen in de SPAM-controle. <strong>Uw persoonlijke lijsten hebben altijd voorrang</strong> op de algemene gemeenschapsdatabase.</p>
+					<p class="mt-2" data-tx="t0050">Dit betekent dat uw beoordelingen gelden voor alle apparaten waarop u bent aangemeld met uw PhoneBlock-account.</p>
 				</div>
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0027">Tips voor gebruik</h2>
+		<h2 class="mt-5" data-tx="t0051">Samenvatting: Hoe de lijsten werken</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<h3 data-tx="t0028">Zwarte lijst</h3>
 				<ul>
-					<li data-tx="t0029">Nummers toevoegen die je persoonlijk storen</li>
-					<li data-tx="t0030">Zelfs als ze nog niet in de PhoneBlock-database staan</li>
-					<li data-tx="t0031">Het nummer wordt onmiddellijk geblokkeerd</li>
-					<li data-tx="t0032">Ideaal voor hardnekkige bellers</li>
+					<li data-tx="t0052">Automatisch aangemaakt wanneer je nummers als SPAM rapporteert</li>
+					<li data-tx="t0053">Blokkeert nummers onmiddellijk, zelfs zonder een hoge SPAM-score van de gemeenschap</li>
+					<li data-tx="t0054">Uw berichten dragen bij aan de gedeelde SPAM database</li>
+					<li data-tx="t0055">Ideaal om hardnekkige bellers onmiddellijk te blokkeren</li>
 				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0033">Whitelist</h3>
 				<ul>
-					<li data-tx="t0034">Belangrijke nummers toevoegen (dokter, school, werk)</li>
-					<li data-tx="t0035">Voorkomt per ongeluk blokkeren</li>
-					<li data-tx="t0036">Heeft voorrang op de gemeenschapsdatabase</li>
-					<li data-tx="t0037">Vooral belangrijk voor kritieke oproepen</li>
+					<li data-tx="t0056">Automatisch aangemaakt wanneer je nummers als legitiem markeert</li>
+					<li data-tx="t0057">Voorkomt blokkeren, zelfs met een hoge SPAM-score van de gemeenschap</li>
+					<li data-tx="t0058">Uw positieve beoordelingen helpen valse SPAM-berichten te corrigeren</li>
+					<li data-tx="t0059">Belangrijk voor nummers die je in geen geval wilt missen</li>
 				</ul>
 			</div>
 		</div>
 
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060">Bijdrage van de Gemeenschap:</strong></p>
+			<p class="mt-2" data-tx="t0061">Al uw beoordelingen - of ze nu SPAM of legitiem zijn - helpen de hele PhoneBlock-community. Uw persoonlijke lijsten hebben altijd voorrang op de algemene database, maar uw beoordelingen worden ook opgenomen in de beoordeling van de community.</p>
+		</div>
+
 		<div class="notification is-warning mt-5">
-			<p data-tx="t0038"><strong>Noot:</strong> Uw persoonlijke lijsten hebben altijd voorrang op de PhoneBlock gemeenschapsdatabase. Een nummer op uw witte lijst zal nooit worden geblokkeerd, zelfs als het door duizenden andere gebruikers als SPAM is gerapporteerd.</p>
+			<p><strong data-tx="t0062">Belangrijk om te begrijpen:</strong></p>
+			<p class="mt-2" data-tx="t0063">Een nummer op je witte lijst zal <strong>nooit worden geblokkeerd</strong>, zelfs als duizenden andere gebruikers het als SPAM hebben gerapporteerd. Omgekeerd zal een nummer op je zwarte lijst <strong>altijd worden geblokkeerd</strong>, zelfs als het als legitiem wordt beschouwd in de database van de community.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

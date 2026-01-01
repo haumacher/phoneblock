@@ -9,23 +9,33 @@
 	<div class="content">
 		<h1 data-tx="t0001">Persönliche Blacklist und Whitelist verwalten</h1>
 
-		<p class="subtitle" data-tx="t0002">
-			Zusätzlich zur Community-Datenbank kannst du deine eigenen Listen führen, um die Anruffilterung
-			individuell anzupassen.
+		<p class="subtitle" data-tx="t0034">
+			Deine persönlichen Bewertungen werden mit der Community-Datenbank kombiniert,
+			wobei deine persönlichen Listen immer Vorrang haben.
 		</p>
 
-		<h2 data-tx="t0003">Was sind Blacklist und Whitelist?</h2>
+		<div class="notification is-info">
+			<p><strong data-tx="t0035">Wie funktioniert die Kombination?</strong></p>
+			<p class="mt-2" data-tx="t0036">
+				PhoneBlock prüft bei jedem eingehenden Anruf zunächst deine persönlichen Listen.
+				Nur wenn die Nummer dort nicht vorhanden ist, wird die Community-Datenbank herangezogen.
+				<strong>Deine Entscheidung hat immer das letzte Wort.</strong>
+			</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003">Was sind Blacklist und Whitelist?</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<div class="notification is-danger">
 					<h3 class="has-text-white" data-tx="t0004">Blacklist</h3>
-					<p class="has-text-white" data-tx="t0005">
-						Nummern auf deiner Blacklist werden <strong>immer blockiert</strong>, unabhängig davon,
-						ob sie in der PhoneBlock-Datenbank als SPAM bekannt sind oder nicht.
+					<p class="has-text-white" data-tx="t0037">
+						Nummern auf deiner Blacklist werden <strong>immer blockiert</strong>, auch wenn sie
+						noch keine hohe Bewertung in der SPAM-Datenbank haben.
 					</p>
-					<p class="has-text-white mt-2" data-tx="t0006">
-						<strong>Verwendung:</strong> Für nervige Anrufer, die du persönlich blockieren möchtest.
+					<p class="has-text-white mt-2" data-tx="t0038">
+						<strong>Wichtig:</strong> Nummern in deiner Blacklist tragen zum Aufbau der gemeinsamen
+						SPAM-Datenbank bei und helfen so der gesamten Community.
 					</p>
 				</div>
 			</div>
@@ -33,12 +43,13 @@
 			<div class="column is-half">
 				<div class="notification is-success">
 					<h3 class="has-text-white" data-tx="t0007">Whitelist</h3>
-					<p class="has-text-white" data-tx="t0008">
+					<p class="has-text-white" data-tx="t0039">
 						Nummern auf deiner Whitelist werden <strong>niemals blockiert</strong>, selbst wenn sie
-						in der PhoneBlock-Datenbank als SPAM gemeldet sind.
+						in der Community-Datenbank als SPAM gemeldet sind.
 					</p>
-					<p class="has-text-white mt-2" data-tx="t0009">
-						<strong>Verwendung:</strong> Für wichtige Nummern, die fälschlicherweise blockiert werden könnten.
+					<p class="has-text-white mt-2" data-tx="t0040">
+						<strong>Wichtig:</strong> Deine Whitelist-Einträge tragen ebenfalls zur Datenbank bei
+						und helfen, falsche SPAM-Meldungen zu korrigieren.
 					</p>
 				</div>
 			</div>
@@ -78,11 +89,21 @@
 			</div>
 		</div>
 
-		<h3 class="mt-5" data-tx="t0020">Nummer hinzufügen</h3>
-		<p data-tx="t0021">
-			Um eine neue Nummer zu deiner Blacklist oder Whitelist hinzuzufügen, tippe auf das <strong>Plus-Symbol (+)</strong>
-			oben rechts in der jeweiligen Liste. Gib dann die Telefonnummer ein (mit Ländervorwahl für beste Ergebnisse).
+		<h3 class="mt-5" data-tx="t0041">Wie Nummern zu den Listen hinzugefügt werden</h3>
+		<p data-tx="t0042">
+			Nummern werden <strong>automatisch</strong> zu deinen Listen hinzugefügt, wenn du sie bewertest:
 		</p>
+		<ul>
+			<li data-tx="t0043"><strong>SPAM-Meldung:</strong> Wenn du eine Nummer als SPAM meldest, wird sie automatisch zu deiner Blacklist hinzugefügt</li>
+			<li data-tx="t0044"><strong>Legitim-Meldung:</strong> Wenn du eine Nummer als legitim markierst, wird sie automatisch zu deiner Whitelist hinzugefügt</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045">
+			Du kannst Nummern bewerten:
+		</p>
+		<ul>
+			<li data-tx="t0046">Aus deinem Anrufverlauf heraus</li>
+			<li data-tx="t0047">Über die <a th:href="@{/usage-search}">Suchfunktion</a>, um gezielt eine Nummer nachzuschlagen</li>
+		</ul>
 
 		<h3 class="mt-5" data-tx="t0022">Nummer aus Liste entfernen</h3>
 
@@ -98,43 +119,60 @@
 
 			<div class="column is-half">
 				<div class="notification is-info mt-5">
-					<p><strong data-tx="t0025">Synchronisation:</strong></p>
-					<p class="mt-2" data-tx="t0026">
-						Deine persönlichen Listen werden mit deinem PhoneBlock-Konto synchronisiert und sind
-						automatisch auf allen deinen Geräten verfügbar, auf denen du mit demselben Konto
-						angemeldet bist.
+					<p><strong data-tx="t0048">Speicherung auf dem Server:</strong></p>
+					<p class="mt-2" data-tx="t0049">
+						Deine Listen werden auf dem PhoneBlock-Server gespeichert und bei der SPAM-Prüfung
+						berücksichtigt. <strong>Deine persönlichen Listen haben dabei immer Vorrang</strong>
+						vor der allgemeinen Community-Datenbank.
+					</p>
+					<p class="mt-2" data-tx="t0050">
+						Das bedeutet: Deine Bewertungen gelten auf allen Geräten, auf denen du mit deinem
+						PhoneBlock-Konto angemeldet bist.
 					</p>
 				</div>
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0027">Tipps zur Verwendung</h2>
+		<h2 class="mt-5" data-tx="t0051">Zusammenfassung: So funktionieren die Listen</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<h3 data-tx="t0028">Blacklist</h3>
 				<ul>
-					<li data-tx="t0029">Füge Nummern hinzu, die dich persönlich belästigen</li>
-					<li data-tx="t0030">Auch wenn sie noch nicht in der PhoneBlock-Datenbank sind</li>
-					<li data-tx="t0031">Die Nummer wird sofort blockiert</li>
-					<li data-tx="t0032">Ideal für hartnäckige Anrufer</li>
+					<li data-tx="t0052">Wird automatisch erstellt, wenn du Nummern als SPAM meldest</li>
+					<li data-tx="t0053">Blockiert Nummern sofort, auch ohne hohen Community-SPAM-Score</li>
+					<li data-tx="t0054">Deine Meldungen tragen zur gemeinsamen SPAM-Datenbank bei</li>
+					<li data-tx="t0055">Ideal, um hartnäckige Anrufer sofort zu blockieren</li>
 				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0033">Whitelist</h3>
 				<ul>
-					<li data-tx="t0034">Füge wichtige Nummern hinzu (Arzt, Schule, Arbeit)</li>
-					<li data-tx="t0035">Verhindert versehentliche Blockierung</li>
-					<li data-tx="t0036">Hat Vorrang vor der Community-Datenbank</li>
-					<li data-tx="t0037">Besonders wichtig bei kritischen Anrufen</li>
+					<li data-tx="t0056">Wird automatisch erstellt, wenn du Nummern als legitim markierst</li>
+					<li data-tx="t0057">Verhindert Blockierung, selbst bei hohem Community-SPAM-Score</li>
+					<li data-tx="t0058">Deine positiven Bewertungen helfen, falsche SPAM-Meldungen zu korrigieren</li>
+					<li data-tx="t0059">Wichtig für Nummern, die du auf keinen Fall verpassen willst</li>
 				</ul>
 			</div>
 		</div>
 
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060">Community-Beitrag:</strong></p>
+			<p class="mt-2" data-tx="t0061">
+				Jede deiner Bewertungen – ob SPAM oder legitim – hilft der gesamten PhoneBlock-Community.
+				Deine persönlichen Listen haben dabei immer Vorrang vor der allgemeinen Datenbank,
+				aber deine Bewertungen fließen auch in die Community-Bewertung ein.
+			</p>
+		</div>
+
 		<div class="notification is-warning mt-5">
-			<p data-tx="t0038"><strong>Hinweis:</strong> Deine persönlichen Listen haben immer Vorrang vor der PhoneBlock-Community-Datenbank.
-			Eine Nummer auf deiner Whitelist wird niemals blockiert, auch wenn sie von tausenden anderen Nutzern als SPAM gemeldet wurde.</p>
+			<p><strong data-tx="t0062">Wichtig zu verstehen:</strong></p>
+			<p class="mt-2" data-tx="t0063">
+				Eine Nummer auf deiner Whitelist wird <strong>niemals blockiert</strong>, auch wenn tausende
+				andere Nutzer sie als SPAM gemeldet haben. Umgekehrt wird eine Nummer auf deiner Blacklist
+				<strong>immer blockiert</strong>, selbst wenn sie in der Community-Datenbank als legitim gilt.
+			</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

@@ -9,24 +9,29 @@
 	<div class="content">
 		<h1 data-tx="t0001">Manage personal blacklist and whitelist</h1>
 
-		<p class="subtitle" data-tx="t0002">In addition to the community database, you can keep your own lists to customize call filtering.</p>
+		<p class="subtitle" data-tx="t0034">Add important numbers (doctor, school, work)</p>
 
-		<h2 data-tx="t0003">What are blacklist and whitelist?</h2>
+		<div class="notification is-info">
+			<p><strong data-tx="t0035">Prevents accidental blocking</strong></p>
+			<p class="mt-2" data-tx="t0036">Has priority over the community database</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003">What are blacklist and whitelist?</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<div class="notification is-danger">
 					<h3 class="has-text-white" data-tx="t0004">Blacklist</h3>
-					<p class="has-text-white" data-tx="t0005">Numbers on your blacklist are <strong>always blocked</strong>, regardless of whether they are known as SPAM in the PhoneBlock database or not.</p>
-					<p class="has-text-white mt-2" data-tx="t0006"><strong>Use:</strong> For annoying callers that you want to block personally.</p>
+					<p class="has-text-white" data-tx="t0037">Particularly important for critical calls</p>
+					<p class="has-text-white mt-2" data-tx="t0038"><strong>Note:</strong> Your personal lists always take precedence over the PhoneBlock community database. A number on your whitelist will never be blocked, even if it has been reported as SPAM by thousands of other users.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
 				<div class="notification is-success">
 					<h3 class="has-text-white" data-tx="t0007">Whitelist</h3>
-					<p class="has-text-white" data-tx="t0008">Numbers on your whitelist will <strong>never be blocked</strong>, even if they are reported as SPAM in the PhoneBlock database.</p>
-					<p class="has-text-white mt-2" data-tx="t0009"><strong>Use:</strong> For important numbers that could be blocked by mistake.</p>
+					<p class="has-text-white" data-tx="t0039">Numbers on your whitelist will <strong>never be blocked</strong>, even if they are reported as SPAM in the community database.</p>
+					<p class="has-text-white mt-2" data-tx="t0040"><strong>Important:</strong> Your whitelist entries also contribute to the database and help to correct incorrect SPAM messages.</p>
 				</div>
 			</div>
 		</div>
@@ -59,8 +64,17 @@
 			</div>
 		</div>
 
-		<h3 class="mt-5" data-tx="t0020">Add number</h3>
-		<p data-tx="t0021">To add a new number to your blacklist or whitelist, tap on the <strong>plus symbol (+)</strong> at the top right of the respective list. Then enter the phone number (with country code for best results).</p>
+		<h3 class="mt-5" data-tx="t0041">How numbers are added to the lists</h3>
+		<p data-tx="t0042">Numbers are <strong>automatically</strong> added to your lists when you rate them:</p>
+		<ul>
+			<li data-tx="t0043"><strong>SPAM message:</strong> If you report a number as SPAM, it will automatically be added to your blacklist</li>
+			<li data-tx="t0044"><strong>Legitimate message:</strong> If you mark a number as legitimate, it is automatically added to your whitelist</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045">You can rate numbers:</p>
+		<ul>
+			<li data-tx="t0046">From your call history</li>
+			<li data-tx="t0047">Use the <a th:href="@{/usage-search}">search function</a> to look up a specific number</li>
+		</ul>
 
 		<h3 class="mt-5" data-tx="t0022">Remove number from list</h3>
 
@@ -74,38 +88,45 @@
 
 			<div class="column is-half">
 				<div class="notification is-info mt-5">
-					<p><strong data-tx="t0025">Synchronization:</strong></p>
-					<p class="mt-2" data-tx="t0026">Your personal lists are synchronized with your PhoneBlock account and are automatically available on all your devices on which you are logged in with the same account.</p>
+					<p><strong data-tx="t0048">Storage on the server:</strong></p>
+					<p class="mt-2" data-tx="t0049">Your lists are stored on the PhoneBlock server and taken into account during the SPAM check. <strong>Your personal lists always have priority</strong> over the general community database.</p>
+					<p class="mt-2" data-tx="t0050">This means that your ratings apply to all devices on which you are logged in with your PhoneBlock account.</p>
 				</div>
 			</div>
 		</div>
 
-		<h2 class="mt-5" data-tx="t0027">Tips for use</h2>
+		<h2 class="mt-5" data-tx="t0051">Summary: How the lists work</h2>
 
 		<div class="columns">
 			<div class="column is-half">
 				<h3 data-tx="t0028">Blacklist</h3>
 				<ul>
-					<li data-tx="t0029">Add numbers that bother you personally</li>
-					<li data-tx="t0030">Even if they are not yet in the PhoneBlock database</li>
-					<li data-tx="t0031">The number is blocked immediately</li>
-					<li data-tx="t0032">Ideal for persistent callers</li>
+					<li data-tx="t0052">Automatically created when you report numbers as SPAM</li>
+					<li data-tx="t0053">Blocks numbers immediately, even without a high community SPAM score</li>
+					<li data-tx="t0054">Your messages contribute to the shared SPAM database</li>
+					<li data-tx="t0055">Ideal for blocking persistent callers immediately</li>
 				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0033">Whitelist</h3>
 				<ul>
-					<li data-tx="t0034">Add important numbers (doctor, school, work)</li>
-					<li data-tx="t0035">Prevents accidental blocking</li>
-					<li data-tx="t0036">Has priority over the community database</li>
-					<li data-tx="t0037">Particularly important for critical calls</li>
+					<li data-tx="t0056">Automatically created when you mark numbers as legitimate</li>
+					<li data-tx="t0057">Prevents blocking, even with a high community SPAM score</li>
+					<li data-tx="t0058">Your positive reviews help to correct false SPAM messages</li>
+					<li data-tx="t0059">Important for numbers you don't want to miss under any circumstances</li>
 				</ul>
 			</div>
 		</div>
 
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060">Community contribution:</strong></p>
+			<p class="mt-2" data-tx="t0061">Each of your ratings - whether SPAM or legitimate - helps the entire PhoneBlock community. Your personal lists always take precedence over the general database, but your ratings are also included in the community rating.</p>
+		</div>
+
 		<div class="notification is-warning mt-5">
-			<p data-tx="t0038"><strong>Note:</strong> Your personal lists always take precedence over the PhoneBlock community database. A number on your whitelist will never be blocked, even if it has been reported as SPAM by thousands of other users.</p>
+			<p><strong data-tx="t0062">Important to understand:</strong></p>
+			<p class="mt-2" data-tx="t0063">A number on your whitelist will <strong>never be blocked</strong>, even if thousands of other users have reported it as SPAM. Conversely, a number on your blacklist will <strong>always be blocked</strong>, even if it is considered legitimate in the community database.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
