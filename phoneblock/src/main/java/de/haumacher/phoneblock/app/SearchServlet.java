@@ -222,7 +222,7 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		String dialPrefix = lookupDialPrefix(req);
-		PhoneNumer number = extractNumber(query, dialPrefix);
+		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
@@ -264,7 +264,7 @@ public class SearchServlet extends HttpServlet {
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
 
 		String dialPrefix = lookupDialPrefix(req);
-		PhoneNumer number = extractNumber(query, dialPrefix);
+		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
@@ -308,7 +308,7 @@ public class SearchServlet extends HttpServlet {
 	}
 
 	public static SearchResult analyze(String query, String userName, String dialPrefix) {
-		PhoneNumer number = extractNumber(query);
+		PhoneNumer number = NumberAnalyzer.extractNumber(query);
 		if (number == null) {
 			return null;
 		}
@@ -326,23 +326,6 @@ public class SearchServlet extends HttpServlet {
 
 			return analyzeDb(db, session, number, dialPrefix, true, langs);
 		}
-	}
-
-	private static PhoneNumer extractNumber(String query) {
-		return extractNumber(query, NumberAnalyzer.GERMAN_DIAL_PREFIX);
-	}
-	
-	private static PhoneNumer extractNumber(String query, String dialPrefix) {
-		String rawPhoneNumber = NumberAnalyzer.normalizeNumber(query);
-		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
-			return null;
-		}
-		
-		PhoneNumer number = NumberAnalyzer.analyze(rawPhoneNumber, dialPrefix);
-		if (number == null) {
-			return null;
-		}
-		return number;
 	}
 
 	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
