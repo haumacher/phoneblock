@@ -1699,25 +1699,6 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Opens a PhoneBlock URL in the external browser with authentication.
-  /// If a token is available, the URL is augmented with a token parameter for automatic login.
-  /// If no token is available, opens the URL anyway (user will see login page).
-  Future<void> _openPhoneBlockInBrowser(String path) async {
-    final url = await buildPhoneBlockUrlWithToken(path);
-    final uri = Uri.parse(url);
-
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.errorOpeningPhoneBlock),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   /// Formats the timestamp for display.
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
