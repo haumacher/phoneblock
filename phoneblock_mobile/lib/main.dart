@@ -1152,7 +1152,25 @@ class _MainScreenState extends State<MainScreen> {
 
     // Show appropriate reporting option based on current status
     if (isSpam) {
-      // SPAM call - offer to mark as legitimate
+      // SPAM call - offer both to add another SPAM report and to mark as legitimate
+      items.add(
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.report, color: Colors.orange),
+              SizedBox(width: 12),
+              Text(context.l10n.reportAsSpam),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () {
+              if (context.mounted) {
+                _reportAsSpam(context, call);
+              }
+            });
+          },
+        ),
+      );
       items.add(
         PopupMenuItem(
           child: Row(
