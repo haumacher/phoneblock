@@ -44,15 +44,25 @@
 					<li data-tx="t0015"><strong>Comments:</strong> Testimonials from other users</li>
 					<li data-tx="t0016"><strong>Reviews:</strong> Positive and negative reports</li>
 				</ul>
-				<p class="mt-3" data-tx="t0017">You can rate the number directly as SPAM or legitimate or add it to your blacklist/whitelist.</p>
+				<p class="mt-3" data-tx="t0039">What you can do after the search:</p>
+				<ul>
+					<li data-tx="t0040">Rate number as SPAM or legitimate</li>
+					<li data-tx="t0041">Add to blacklist (always block)</li>
+				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0018">If the number is unknown:</h3>
 				<ul>
 					<li data-tx="t0019">The app indicates that no information is available</li>
-					<li data-tx="t0020">You can be the first to rate the number</li>
-					<li data-tx="t0021">Optionally add to blacklist or whitelist</li>
+					<li data-tx="t0042">Add to whitelist (never block)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Read comments from other users</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">A SPAM rating adds the number to your <strong>blacklist</strong></li>
+					<li data-tx="t0045">A Legitim rating adds the number to your <strong>whitelist</strong></li>
 				</ul>
 				<p class="mt-3" data-tx="t0022"><strong>Tip:</strong> If you have received a suspicious call from an unknown number, you can look it up here and report it as SPAM.</p>
 			</div>
@@ -62,19 +72,18 @@
 
 		<div class="notification is-info">
 			<h3 data-tx="t0024">Format of the telephone number</h3>
-			<p class="mt-2" data-tx="t0025">For best search results enter the number with country code:</p>
+			<p class="mt-2" data-tx="t0046">You can enter numbers with or without a country code:</p>
 			<ul class="mt-2">
-				<li data-tx="t0026"><strong>Germany:</strong> +49 or 0049 before the number (e.g. +49 30 12345678)</li>
-				<li data-tx="t0027"><strong>Switzerland:</strong> +41 or 0041 before the number</li>
-				<li data-tx="t0028"><strong>Austria:</strong> +43 or 0043 before the number</li>
+				<li data-tx="t0047"><strong>With country code:</strong> +49 30 12345678 (Germany), +41 44 1234567 (Switzerland), +43 1 1234567 (Austria)</li>
+				<li data-tx="t0048"><strong>Without country code:</strong> The number is automatically supplemented with the country code from your settings</li>
 			</ul>
-			<p class="mt-3" data-tx="t0029">The search also works without a country code, but the results are then less reliable.</p>
+			<p class="mt-3" data-tx="t0049"><strong>Tip:</strong> If you are looking for a foreign number, always enter the full country code.</p>
 		</div>
 
-		<div class="notification is-success mt-4">
-			<h3 data-tx="t0030">Data protection during the search</h3>
-			<p class="mt-2" data-tx="t0031">During the search, the number is transmitted to the PhoneBlock server as a SHA-1 hash. The server cannot recalculate the original number from this.</p>
-			<p class="mt-2" data-tx="t0032"><strong>This means:</strong> PhoneBlock only finds out which number you are searching for if it already exists in the SPAM database. For all other numbers, your search remains private.</p>
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Data protection during the search</h3>
+			<p class="mt-2" data-tx="t0051">During the search, the number <strong>is transmitted to the PhoneBlock server in plain text</strong>. This is necessary so that you can rate the number and add it to the database.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Important:</strong> The hash-based data protection function (SHA-1) is only used for incoming calls. For the active search, the complete transmission of the number is required to enable all functions (rating, comments).</p>
 		</div>
 
 		<h2 class="mt-5" data-tx="t0033">When is the search useful?</h2>
@@ -91,13 +100,14 @@
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0039">What you can do after the search:</h3>
+				<h3 data-tx="t0053">What you can do after the search:</h3>
 				<ul>
-					<li data-tx="t0040">Rate number as SPAM or legitimate</li>
-					<li data-tx="t0041">Add to blacklist (always block)</li>
-					<li data-tx="t0042">Add to whitelist (never block)</li>
-					<li data-tx="t0043">Read comments from other users</li>
+					<li data-tx="t0054"><strong>Rating as SPAM</strong> (will be added to the blacklist → always blocked)</li>
+					<li data-tx="t0055"><strong>Rating as legitimate</strong> (will be added to the whitelist → never blocked)</li>
+					<li data-tx="t0056">Read comments from other users</li>
+					<li data-tx="t0057">Optionally add your own comment</li>
 				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Note:</strong> Rating and adding to the list is one and the same action!</p>
 			</div>
 		</div>
 

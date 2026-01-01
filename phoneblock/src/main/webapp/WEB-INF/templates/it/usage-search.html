@@ -44,15 +44,25 @@
 					<li data-tx="t0015"><strong>Commenti:</strong> Testimonianze di altri utenti</li>
 					<li data-tx="t0016"><strong>Recensioni:</strong> Segnalazioni positive e negative</li>
 				</ul>
-				<p class="mt-3" data-tx="t0017">È possibile classificare direttamente il numero come SPAM o legittimo o aggiungerlo alla propria blacklist/whitelist.</p>
+				<p class="mt-3" data-tx="t0039">Cosa si può fare dopo la ricerca:</p>
+				<ul>
+					<li data-tx="t0040">Valutare il numero come SPAM o legittimo</li>
+					<li data-tx="t0041">Aggiungi alla lista nera (blocca sempre)</li>
+				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0018">Se il numero è sconosciuto:</h3>
 				<ul>
 					<li data-tx="t0019">L'applicazione indica che non sono disponibili informazioni</li>
-					<li data-tx="t0020">Potete essere i primi a valutare il numero</li>
-					<li data-tx="t0021">Aggiungere facoltativamente alla blacklist o alla whitelist</li>
+					<li data-tx="t0042">Aggiungi alla whitelist (non bloccare mai)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Leggere i commenti degli altri utenti</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">Una valutazione SPAM aggiunge il numero alla vostra <strong>lista nera</strong>.</li>
+					<li data-tx="t0045">Una valutazione legittima aggiunge il numero alla vostra <strong>whitelist</strong>.</li>
 				</ul>
 				<p class="mt-3" data-tx="t0022"><strong>Suggerimento:</strong> Se avete ricevuto una chiamata sospetta da un numero sconosciuto, potete cercarla qui e segnalarla come SPAM.</p>
 			</div>
@@ -62,19 +72,18 @@
 
 		<div class="notification is-info">
 			<h3 data-tx="t0024">Formato del numero di telefono</h3>
-			<p class="mt-2" data-tx="t0025">Per ottenere i migliori risultati di ricerca, inserire il numero con il prefisso internazionale:</p>
+			<p class="mt-2" data-tx="t0046">È possibile inserire numeri con o senza codice paese:</p>
 			<ul class="mt-2">
-				<li data-tx="t0026"><strong>Germania:</strong> +49 o 0049 prima del numero (es. +49 30 12345678)</li>
-				<li data-tx="t0027"><strong>Svizzera:</strong> +41 o 0041 prima del numero</li>
-				<li data-tx="t0028"><strong>Austria:</strong> +43 o 0043 prima del numero</li>
+				<li data-tx="t0047"><strong>Con prefisso nazionale:</strong> +49 30 12345678 (Germania), +41 44 1234567 (Svizzera), +43 1 1234567 (Austria)</li>
+				<li data-tx="t0048"><strong>Senza prefisso nazionale:</strong> Il numero viene automaticamente integrato con il prefisso nazionale dalle vostre impostazioni.</li>
 			</ul>
-			<p class="mt-3" data-tx="t0029">La ricerca funziona anche senza codice paese, ma i risultati sono meno affidabili.</p>
+			<p class="mt-3" data-tx="t0049"><strong>Suggerimento:</strong> Se si cerca un numero straniero, inserire sempre il codice paese completo.</p>
 		</div>
 
-		<div class="notification is-success mt-4">
-			<h3 data-tx="t0030">Protezione dei dati durante la ricerca</h3>
-			<p class="mt-2" data-tx="t0031">Durante la ricerca, il numero viene trasmesso al server PhoneBlock come un hash SHA-1. Il server non può ricalcolare il numero originale da questo.</p>
-			<p class="mt-2" data-tx="t0032"><strong>Questo significa:</strong> PhoneBlock apprende il numero che state cercando solo se esiste già nel database SPAM. Per tutti gli altri numeri, la ricerca rimane privata.</p>
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Protezione dei dati durante la ricerca</h3>
+			<p class="mt-2" data-tx="t0051">Durante la ricerca, il numero <strong>viene trasmesso al server PhoneBlock in testo normale</strong>. Questo è necessario per poter valutare il numero e aggiungerlo al database.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Importante:</strong> La funzione di protezione dei dati basata su hash (SHA-1) viene utilizzata solo per le chiamate in entrata. Per la ricerca attiva, è necessaria la trasmissione completa del numero per attivare tutte le funzioni (valutazione, commenti).</p>
 		</div>
 
 		<h2 class="mt-5" data-tx="t0033">Quando è utile la ricerca?</h2>
@@ -91,13 +100,14 @@
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0039">Cosa si può fare dopo la ricerca:</h3>
+				<h3 data-tx="t0053">Cosa si può fare dopo la ricerca:</h3>
 				<ul>
-					<li data-tx="t0040">Valutare il numero come SPAM o legittimo</li>
-					<li data-tx="t0041">Aggiungi alla lista nera (blocca sempre)</li>
-					<li data-tx="t0042">Aggiungi alla whitelist (non bloccare mai)</li>
-					<li data-tx="t0043">Leggere i commenti degli altri utenti</li>
+					<li data-tx="t0054"><strong>Rating as SPAM</strong> (sarà aggiunto alla blacklist → sempre bloccato)</li>
+					<li data-tx="t0055"><strong>Valutazione come legittima</strong> (sarà aggiunta alla whitelist → mai bloccata)</li>
+					<li data-tx="t0056">Leggere i commenti degli altri utenti</li>
+					<li data-tx="t0057">Possibilità di aggiungere un proprio commento</li>
 				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Nota:</strong> La valutazione e l'aggiunta all'elenco sono la stessa azione!</p>
 			</div>
 		</div>
 

@@ -44,15 +44,25 @@
 					<li data-tx="t0015"><strong>Komentarze:</strong> Referencje od innych użytkowników</li>
 					<li data-tx="t0016"><strong>Recenzje:</strong> Raporty pozytywne i negatywne</li>
 				</ul>
-				<p class="mt-3" data-tx="t0017">Możesz bezpośrednio ocenić numer jako SPAM lub legalny lub dodać go do czarnej/ białej listy.</p>
+				<p class="mt-3" data-tx="t0039">Co można zrobić po zakończeniu wyszukiwania?</p>
+				<ul>
+					<li data-tx="t0040">Oceń numer jako SPAM lub legalny</li>
+					<li data-tx="t0041">Dodaj do czarnej listy (zawsze blokuj)</li>
+				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0018">Jeśli numer jest nieznany:</h3>
 				<ul>
 					<li data-tx="t0019">Aplikacja wskazuje, że informacje nie są dostępne</li>
-					<li data-tx="t0020">Możesz być pierwszym, który oceni ten numer</li>
-					<li data-tx="t0021">Opcjonalnie dodaj do czarnej lub białej listy</li>
+					<li data-tx="t0042">Dodaj do białej listy (nigdy nie blokuj)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Przeczytaj komentarze innych użytkowników</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">Ocena SPAM dodaje numer do <strong>blacklisty</strong>.</li>
+					<li data-tx="t0045">Legalna ocena dodaje numer do <strong>whitelist</strong>.</li>
 				</ul>
 				<p class="mt-3" data-tx="t0022"><strong>Wskazówka:</strong> Jeśli otrzymałeś podejrzane połączenie z nieznanego numeru, możesz sprawdzić je tutaj i zgłosić jako SPAM.</p>
 			</div>
@@ -62,19 +72,18 @@
 
 		<div class="notification is-info">
 			<h3 data-tx="t0024">Format numeru telefonu</h3>
-			<p class="mt-2" data-tx="t0025">Aby uzyskać najlepsze wyniki wyszukiwania, wprowadź numer z numerem kierunkowym kraju:</p>
+			<p class="mt-2" data-tx="t0046">Numery można wprowadzać z kodem kraju lub bez niego:</p>
 			<ul class="mt-2">
-				<li data-tx="t0026"><strong>Niemcy:</strong> +49 lub 0049 przed numerem (np. +49 30 12345678)</li>
-				<li data-tx="t0027"><strong>Szwajcaria:</strong> +41 lub 0041 przed numerem</li>
-				<li data-tx="t0028"><strong>Austria:</strong> +43 lub 0043 przed numerem</li>
+				<li data-tx="t0047"><strong>Kod kraju:</strong> +49 30 12345678 (Niemcy), +41 44 1234567 (Szwajcaria), +43 1 1234567 (Austria)</li>
+				<li data-tx="t0048"><strong>Bez kodu kraju:</strong> Numer jest automatycznie uzupełniany kodem kraju z ustawień użytkownika.</li>
 			</ul>
-			<p class="mt-3" data-tx="t0029">Wyszukiwanie działa również bez kodu kraju, ale wyniki są wtedy mniej wiarygodne.</p>
+			<p class="mt-3" data-tx="t0049"><strong>Wskazówka:</strong> Jeśli szukasz numeru zagranicznego, zawsze wpisuj pełny kod kraju.</p>
 		</div>
 
-		<div class="notification is-success mt-4">
-			<h3 data-tx="t0030">Ochrona danych podczas wyszukiwania</h3>
-			<p class="mt-2" data-tx="t0031">Podczas wyszukiwania numer jest przesyłany do serwera PhoneBlock w postaci skrótu SHA-1. Serwer nie może na tej podstawie ponownie obliczyć oryginalnego numeru.</p>
-			<p class="mt-2" data-tx="t0032"><strong>Oznacza to, że:</strong> PhoneBlock dowiaduje się, jakiego numeru szukasz tylko wtedy, gdy istnieje on już w bazie danych SPAM. Dla wszystkich innych numerów wyszukiwanie pozostaje prywatne.</p>
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Ochrona danych podczas wyszukiwania</h3>
+			<p class="mt-2" data-tx="t0051">Podczas wyszukiwania numer <strong>jest przesyłany do serwera PhoneBlock w postaci zwykłego tekstu</strong>. Jest to konieczne, aby można było ocenić numer i dodać go do bazy danych.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Ważne:</strong> Funkcja ochrony danych oparta na skrócie (SHA-1) jest używana tylko w przypadku połączeń przychodzących. W przypadku aktywnego wyszukiwania wymagana jest pełna transmisja numeru w celu włączenia wszystkich funkcji (ocena, komentarze).</p>
 		</div>
 
 		<h2 class="mt-5" data-tx="t0033">Kiedy wyszukiwanie jest przydatne?</h2>
@@ -91,13 +100,14 @@
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0039">Co można zrobić po zakończeniu wyszukiwania?</h3>
+				<h3 data-tx="t0053">Co można zrobić po zakończeniu wyszukiwania?</h3>
 				<ul>
-					<li data-tx="t0040">Oceń numer jako SPAM lub legalny</li>
-					<li data-tx="t0041">Dodaj do czarnej listy (zawsze blokuj)</li>
-					<li data-tx="t0042">Dodaj do białej listy (nigdy nie blokuj)</li>
-					<li data-tx="t0043">Przeczytaj komentarze innych użytkowników</li>
+					<li data-tx="t0054"><strong>Rating as SPAM</strong> (zostanie dodany do czarnej listy → zawsze blokowany)</li>
+					<li data-tx="t0055"><strong>Rating as legitimate</strong> (zostanie dodany do białej listy → nigdy nie zostanie zablokowany)</li>
+					<li data-tx="t0056">Przeczytaj komentarze innych użytkowników</li>
+					<li data-tx="t0057">Opcjonalnie dodaj własny komentarz</li>
 				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Uwaga:</strong> Ocenianie i dodawanie do listy to jedna i ta sama czynność!</p>
 			</div>
 		</div>
 

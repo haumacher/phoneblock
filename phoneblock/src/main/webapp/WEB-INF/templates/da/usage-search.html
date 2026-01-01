@@ -44,15 +44,25 @@
 					<li data-tx="t0015"><strong>Kommentarer:</strong> Udtalelser fra andre brugere</li>
 					<li data-tx="t0016"><strong>Anmeldelser:</strong> Positive og negative rapporter</li>
 				</ul>
-				<p class="mt-3" data-tx="t0017">Du kan bedømme nummeret direkte som SPAM eller legitimt eller tilføje det til din sortliste/hvidliste.</p>
+				<p class="mt-3" data-tx="t0039">Hvad du kan gøre efter søgningen:</p>
+				<ul>
+					<li data-tx="t0040">Bedøm nummeret som SPAM eller legitimt</li>
+					<li data-tx="t0041">Tilføj til sortliste (blokér altid)</li>
+				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0018">Hvis nummeret er ukendt:</h3>
 				<ul>
 					<li data-tx="t0019">Appen angiver, at ingen information er tilgængelig</li>
-					<li data-tx="t0020">Du kan være den første til at bedømme nummeret</li>
-					<li data-tx="t0021">Tilføj eventuelt til sortliste eller hvidliste</li>
+					<li data-tx="t0042">Tilføj til hvidliste (blokér aldrig)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Læs kommentarer fra andre brugere</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">En SPAM-vurdering føjer nummeret til din <strong>blackliste</strong>.</li>
+					<li data-tx="t0045">En legitim vurdering føjer nummeret til din <strong>hvidliste</strong>.</li>
 				</ul>
 				<p class="mt-3" data-tx="t0022"><strong>Tip:</strong> Hvis du har modtaget et mistænkeligt opkald fra et ukendt nummer, kan du slå det op her og rapportere det som SPAM.</p>
 			</div>
@@ -62,19 +72,18 @@
 
 		<div class="notification is-info">
 			<h3 data-tx="t0024">Telefonnummerets format</h3>
-			<p class="mt-2" data-tx="t0025">For at få de bedste søgeresultater skal du indtaste nummeret med landekode:</p>
+			<p class="mt-2" data-tx="t0046">Du kan indtaste numre med eller uden landekode:</p>
 			<ul class="mt-2">
-				<li data-tx="t0026"><strong>Tyskland:</strong> +49 eller 0049 før nummeret (f.eks. +49 30 12345678)</li>
-				<li data-tx="t0027"><strong>Schweiz:</strong> +41 eller 0041 før nummeret</li>
-				<li data-tx="t0028"><strong>Østrig:</strong> +43 eller 0043 før nummeret</li>
+				<li data-tx="t0047"><strong>Med landekode:</strong> +49 30 12345678 (Tyskland), +41 44 1234567 (Schweiz), +43 1 1234567 (Østrig)</li>
+				<li data-tx="t0048"><strong>Uden landekode:</strong> Nummeret suppleres automatisk med landekoden fra dine indstillinger.</li>
 			</ul>
-			<p class="mt-3" data-tx="t0029">Søgningen fungerer også uden landekode, men så er resultaterne mindre pålidelige.</p>
+			<p class="mt-3" data-tx="t0049"><strong>Tip:</strong> Hvis du søger efter et udenlandsk nummer, skal du altid indtaste den fulde landekode.</p>
 		</div>
 
-		<div class="notification is-success mt-4">
-			<h3 data-tx="t0030">Databeskyttelse under søgningen</h3>
-			<p class="mt-2" data-tx="t0031">Under søgningen overføres nummeret til PhoneBlock-serveren som en SHA-1-hash. Serveren kan ikke genberegne det oprindelige nummer ud fra dette.</p>
-			<p class="mt-2" data-tx="t0032"><strong>Det betyder:</strong> PhoneBlock får kun at vide, hvilket nummer du søger efter, hvis det allerede findes i SPAM-databasen. For alle andre numre forbliver din søgning privat.</p>
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Databeskyttelse under søgningen</h3>
+			<p class="mt-2" data-tx="t0051">Under søgningen overføres nummeret <strong> til PhoneBlock-serveren i almindelig tekst</strong>. Dette er nødvendigt, så du kan bedømme nummeret og tilføje det til databasen.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Vigtigt:</strong> Den hashbaserede databeskyttelsesfunktion (SHA-1) bruges kun til indgående opkald. For den aktive søgning kræves der fuldstændig overførsel af nummeret for at aktivere alle funktioner (vurdering, kommentarer).</p>
 		</div>
 
 		<h2 class="mt-5" data-tx="t0033">Hvornår er søgningen nyttig?</h2>
@@ -91,13 +100,14 @@
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0039">Hvad du kan gøre efter søgningen:</h3>
+				<h3 data-tx="t0053">Hvad du kan gøre efter søgningen:</h3>
 				<ul>
-					<li data-tx="t0040">Bedøm nummeret som SPAM eller legitimt</li>
-					<li data-tx="t0041">Tilføj til sortliste (blokér altid)</li>
-					<li data-tx="t0042">Tilføj til hvidliste (blokér aldrig)</li>
-					<li data-tx="t0043">Læs kommentarer fra andre brugere</li>
+					<li data-tx="t0054"><strong>Rating as SPAM</strong> (føjes til den sorte liste → altid blokeret)</li>
+					<li data-tx="t0055"><strong>Rating as legitimate</strong> (vil blive tilføjet til hvidlisten → aldrig blokeret)</li>
+					<li data-tx="t0056">Læs kommentarer fra andre brugere</li>
+					<li data-tx="t0057">Tilføj eventuelt din egen kommentar</li>
 				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Note:</strong> Bedømmelse og tilføjelse til listen er én og samme handling!</p>
 			</div>
 		</div>
 

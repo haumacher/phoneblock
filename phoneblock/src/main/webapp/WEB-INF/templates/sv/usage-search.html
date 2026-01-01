@@ -44,15 +44,25 @@
 					<li data-tx="t0015"><strong>Kommentarer:</strong> Vittnesmål från andra användare</li>
 					<li data-tx="t0016"><strong>Recensioner:</strong> Positiva och negativa rapporter</li>
 				</ul>
-				<p class="mt-3" data-tx="t0017">Du kan direkt bedöma numret som SPAM eller legitimt eller lägga till det på din svarta lista/vitlista.</p>
+				<p class="mt-3" data-tx="t0039">Vad du kan göra efter sökningen:</p>
+				<ul>
+					<li data-tx="t0040">Betygsätt numret som SPAM eller legitimt</li>
+					<li data-tx="t0041">Lägg till i svart lista (alltid blockera)</li>
+				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0018">Om numret är okänt:</h3>
 				<ul>
 					<li data-tx="t0019">Appen anger att ingen information finns tillgänglig</li>
-					<li data-tx="t0020">Du kan bli den första att betygsätta numret</li>
-					<li data-tx="t0021">Lägg till i svartlista eller vitlista (valfritt)</li>
+					<li data-tx="t0042">Lägg till på vitlista (blockeras aldrig)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Läs kommentarer från andra användare</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">En SPAM-klassificering lägger till numret i din <strong>blacklist</strong>.</li>
+					<li data-tx="t0045">Ett legitimt betyg lägger till numret i din <strong>vitlista</strong></li>
 				</ul>
 				<p class="mt-3" data-tx="t0022"><strong>Tips:</strong> Om du har fått ett misstänkt samtal från ett okänt nummer kan du söka upp det här och rapportera det som SPAM.</p>
 			</div>
@@ -62,19 +72,18 @@
 
 		<div class="notification is-info">
 			<h3 data-tx="t0024">Format för telefonnumret</h3>
-			<p class="mt-2" data-tx="t0025">För bästa sökresultat anger du numret med landskod:</p>
+			<p class="mt-2" data-tx="t0046">Du kan ange nummer med eller utan landskod:</p>
 			<ul class="mt-2">
-				<li data-tx="t0026"><strong>Tyskland:</strong> +49 eller 0049 före numret (t.ex. +49 30 12345678)</li>
-				<li data-tx="t0027"><strong>Schweiz:</strong> +41 eller 0041 före numret</li>
-				<li data-tx="t0028"><strong>Österrike:</strong> +43 eller 0043 före numret</li>
+				<li data-tx="t0047"><strong>Med landskod:</strong> +49 30 12345678 (Tyskland), +41 44 1234567 (Schweiz), +43 1 1234567 (Österrike)</li>
+				<li data-tx="t0048"><strong>Utan landskod:</strong> Numret kompletteras automatiskt med landskoden från dina inställningar</li>
 			</ul>
-			<p class="mt-3" data-tx="t0029">Sökningen fungerar även utan landskod, men resultaten blir då mindre tillförlitliga.</p>
+			<p class="mt-3" data-tx="t0049"><strong>Tips:</strong> Om du söker efter ett utländskt nummer ska du alltid ange hela landskoden.</p>
 		</div>
 
-		<div class="notification is-success mt-4">
-			<h3 data-tx="t0030">Dataskydd under sökningen</h3>
-			<p class="mt-2" data-tx="t0031">Under sökningen överförs numret till PhoneBlock-servern som en SHA-1-hash. Servern kan inte räkna om det ursprungliga numret från detta.</p>
-			<p class="mt-2" data-tx="t0032"><strong>Detta innebär:</strong> PhoneBlock får bara reda på vilket nummer du söker efter om det redan finns i SPAM-databasen. För alla andra nummer förblir din sökning privat.</p>
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Dataskydd under sökningen</h3>
+			<p class="mt-2" data-tx="t0051">Under sökningen överförs numret <strong>till PhoneBlock-servern i klartext</strong>. Detta är nödvändigt för att du ska kunna betygsätta numret och lägga till det i databasen.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Viktigt:</strong> Den hashbaserade dataskyddsfunktionen (SHA-1) används endast för inkommande samtal. För den aktiva sökningen krävs fullständig överföring av numret för att aktivera alla funktioner (betyg, kommentarer).</p>
 		</div>
 
 		<h2 class="mt-5" data-tx="t0033">När är sökningen användbar?</h2>
@@ -91,13 +100,14 @@
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0039">Vad du kan göra efter sökningen:</h3>
+				<h3 data-tx="t0053">Vad du kan göra efter sökningen:</h3>
 				<ul>
-					<li data-tx="t0040">Betygsätt numret som SPAM eller legitimt</li>
-					<li data-tx="t0041">Lägg till i svart lista (alltid blockera)</li>
-					<li data-tx="t0042">Lägg till på vitlista (blockeras aldrig)</li>
-					<li data-tx="t0043">Läs kommentarer från andra användare</li>
+					<li data-tx="t0054"><strong>Rating as SPAM</strong> (kommer att läggas till i den svarta listan → alltid blockerad)</li>
+					<li data-tx="t0055"><strong>Rating as legitimate</strong> (kommer att läggas till i vitlistan → aldrig blockerad)</li>
+					<li data-tx="t0056">Läs kommentarer från andra användare</li>
+					<li data-tx="t0057">Lägg eventuellt till din egen kommentar</li>
 				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Anmärkning:</strong> Att betygsätta och lägga till i listan är en och samma åtgärd!</p>
 			</div>
 		</div>
 

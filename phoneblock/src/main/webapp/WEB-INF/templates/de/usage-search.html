@@ -51,18 +51,27 @@
 					<li data-tx="t0015"><strong>Kommentare:</strong> Erfahrungsberichte anderer Nutzer</li>
 					<li data-tx="t0016"><strong>Bewertungen:</strong> Positive und negative Meldungen</li>
 				</ul>
-				<p class="mt-3" data-tx="t0017">
-					Du kannst die Nummer direkt als SPAM oder legitim bewerten oder zu deiner
-					Blacklist/Whitelist hinzufügen.
+				<p class="mt-3" data-tx="t0039">
+					Du kannst die Nummer bewerten:
 				</p>
+				<ul>
+					<li data-tx="t0040"><strong>Als SPAM melden</strong> → wird automatisch zu deiner Blacklist hinzugefügt</li>
+					<li data-tx="t0041"><strong>Als legitim markieren</strong> → wird automatisch zu deiner Whitelist hinzugefügt</li>
+				</ul>
 			</div>
 
 			<div class="column is-half">
 				<h3 data-tx="t0018">Falls die Nummer unbekannt ist:</h3>
 				<ul>
 					<li data-tx="t0019">Die App zeigt an, dass keine Informationen vorliegen</li>
-					<li data-tx="t0020">Du kannst die Nummer als erste/r bewerten</li>
-					<li data-tx="t0021">Optional zur Blacklist oder Whitelist hinzufügen</li>
+					<li data-tx="t0042">Du kannst die Nummer als erste/r bewerten</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Bewertung = Listeneintrag:</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">Eine SPAM-Bewertung fügt die Nummer deiner <strong>Blacklist</strong> hinzu</li>
+					<li data-tx="t0045">Eine Legitim-Bewertung fügt die Nummer deiner <strong>Whitelist</strong> hinzu</li>
 				</ul>
 				<p class="mt-3" data-tx="t0022">
 					<strong>Tipp:</strong> Wenn du einen verdächtigen Anruf von einer unbekannten Nummer
@@ -75,29 +84,29 @@
 
 		<div class="notification is-info">
 			<h3 data-tx="t0024">Format der Telefonnummer</h3>
-			<p class="mt-2" data-tx="t0025">
-				Für beste Suchergebnisse gib die Nummer mit Ländervorwahl ein:
+			<p class="mt-2" data-tx="t0046">
+				Du kannst Nummern mit oder ohne Ländervorwahl eingeben:
 			</p>
 			<ul class="mt-2">
-				<li data-tx="t0026"><strong>Deutschland:</strong> +49 oder 0049 vor der Nummer (z.B. +49 30 12345678)</li>
-				<li data-tx="t0027"><strong>Schweiz:</strong> +41 oder 0041 vor der Nummer</li>
-				<li data-tx="t0028"><strong>Österreich:</strong> +43 oder 0043 vor der Nummer</li>
+				<li data-tx="t0047"><strong>Mit Ländervorwahl:</strong> +49 30 12345678 (Deutschland), +41 44 1234567 (Schweiz), +43 1 1234567 (Österreich)</li>
+				<li data-tx="t0048"><strong>Ohne Ländervorwahl:</strong> Die Nummer wird automatisch mit der Ländervorwahl aus deinen Einstellungen ergänzt</li>
 			</ul>
-			<p class="mt-3" data-tx="t0029">
-				Die Suche funktioniert auch ohne Ländervorwahl, aber die Ergebnisse sind dann weniger zuverlässig.
+			<p class="mt-3" data-tx="t0049">
+				<strong>Tipp:</strong> Wenn du nach einer ausländischen Nummer suchst, gib immer die vollständige
+				Ländervorwahl an.
 			</p>
 		</div>
 
-		<div class="notification is-success mt-4">
-			<h3 data-tx="t0030">Datenschutz bei der Suche</h3>
-			<p class="mt-2" data-tx="t0031">
-				Bei der Suche wird die Nummer als SHA-1 Hash an den PhoneBlock-Server übermittelt.
-				Der Server kann daraus die ursprüngliche Nummer nicht zurückrechnen.
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Datenschutz bei der Suche</h3>
+			<p class="mt-2" data-tx="t0051">
+				Bei der Suche wird die Nummer <strong>im Klartext</strong> an den PhoneBlock-Server übermittelt.
+				Dies ist notwendig, damit du die Nummer bewerten und zur Datenbank hinzufügen kannst.
 			</p>
-			<p class="mt-2" data-tx="t0032">
-				<strong>Das bedeutet:</strong> PhoneBlock erfährt nur, nach welcher Nummer du suchst, wenn
-				diese bereits in der SPAM-Datenbank vorhanden ist. Bei allen anderen Nummern bleibt deine
-				Suche privat.
+			<p class="mt-2" data-tx="t0052">
+				<strong>Wichtig:</strong> Die Hash-basierte Datenschutzfunktion (SHA-1) wird nur bei
+				eingehenden Anrufen verwendet. Bei der aktiven Suche ist die vollständige Übermittlung
+				der Nummer erforderlich, um dir alle Funktionen (Bewertung, Kommentare) zu ermöglichen.
 			</p>
 		</div>
 
@@ -115,13 +124,16 @@
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0039">Was du nach der Suche tun kannst:</h3>
+				<h3 data-tx="t0053">Was du nach der Suche tun kannst:</h3>
 				<ul>
-					<li data-tx="t0040">Nummer als SPAM oder legitim bewerten</li>
-					<li data-tx="t0041">Zur Blacklist hinzufügen (immer blockieren)</li>
-					<li data-tx="t0042">Zur Whitelist hinzufügen (nie blockieren)</li>
-					<li data-tx="t0043">Kommentare anderer Nutzer lesen</li>
+					<li data-tx="t0054"><strong>Als SPAM bewerten</strong> (wird zur Blacklist hinzugefügt → immer blockiert)</li>
+					<li data-tx="t0055"><strong>Als legitim bewerten</strong> (wird zur Whitelist hinzugefügt → nie blockiert)</li>
+					<li data-tx="t0056">Kommentare anderer Nutzer lesen</li>
+					<li data-tx="t0057">Optional einen eigenen Kommentar hinzufügen</li>
 				</ul>
+				<p class="mt-3" data-tx="t0058">
+					<strong>Merke:</strong> Bewerten und zur Liste hinzufügen ist ein und dieselbe Aktion!
+				</p>
 			</div>
 		</div>
 
