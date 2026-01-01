@@ -20,12 +20,11 @@
 			<li data-tx="t0007"><strong>Номер звіту:</strong> Повідомляйте про номери спаму безпосередньо з програми</li>
 			<li data-tx="t0008"><strong>Персональні списки:</strong> Керуйте власними чорними та білими списками</li>
 			<li data-tx="t0009"><strong>Максимальний захист даних:</strong> Для вхідних дзвінків на сервер передається лише SHA-1 хеш номера, а не сам номер. Тому PhoneBlock не дізнається, хто дзвонив, якщо тільки це не відомий спам-номер.</li>
-			<li data-tx="t0010"><strong>Нема доступу до списку контактів:</strong> Додатку не потрібен доступ до ваших контактів. Номери з вашої телефонної книги ніколи не обробляються PhoneBlock Mobile.</li>
+			<li data-tx="t0010"><strong>Без доступу до списку контактів:</strong> Додатку не потрібен доступ до ваших контактів. Номери з вашої телефонної книги ніколи не обробляються PhoneBlock Mobile.</li>
 		</ul>
 
 		<h3 data-tx="t0011">Встановлення</h3>
 
-		<h4 data-tx="t0012">Крок 1: Завантажте додаток</h4>
 		<p data-tx="t0107">Завантажте додаток PhoneBlock Mobile з Google Play Store і відкрийте його:</p>
 		<p>
 			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
@@ -37,46 +36,52 @@
 		</p>
 
 		<div class="columns is-multiline">
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0012">Крок 1: Відкрийте програму</h4>
 				<figure class="image">
 					<img alt="Відкрийте додаток" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0089"><strong>Крок 1:</strong> Відкрийте програму і натисніть "Підключитися до PhoneBlock"</p>
+				<p class="has-text-centered mt-2" data-tx="t0089">Відкрийте додаток і натисніть "Підключитися до PhoneBlock"</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0108">Крок 2: Увійдіть до системи</h4>
 				<figure class="image">
 					<img alt="Увійдіть за допомогою Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0091"><strong>Крок 2:</strong> Увійдіть до PhoneBlock (наприклад, за допомогою Google)</p>
+				<p class="has-text-centered mt-2" data-tx="t0091">Зареєструйтеся в PhoneBlock (наприклад, в Google)</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0109">Крок 3: Підтвердіть токен</h4>
 				<figure class="image">
 					<img alt="Створіть токен доступу" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0093"><strong>Крок 3:</strong> Підтвердіть створення токена для додатку</p>
+				<p class="has-text-centered mt-2" data-tx="t0093">Підтвердіть створення токена для додатку</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0110">Крок 4: Авторизація запиту</h4>
 				<figure class="image">
 					<img alt="Запросити дозвіл" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0095"><strong>Крок 4:</strong> Натисніть "Запросити авторизацію"</p>
+				<p class="has-text-centered mt-2" data-tx="t0095">Натисніть "Запросити авторизацію"</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0111">Крок 5: Авторизація гранту</h4>
 				<figure class="image">
 					<img alt="Авторизація гранту" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0097"><strong>Крок 5:</strong> Увімкніть PhoneBlock Mobile у налаштуваннях Android</p>
+				<p class="has-text-centered mt-2" data-tx="t0097">Увімкніть PhoneBlock Mobile у налаштуваннях Android</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0112">Крок 6: Готово!</h4>
 				<figure class="image">
 					<img alt="Налаштування завершено" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0099"><strong>Крок 6:</strong> Готово! Додаток активовано</p>
+				<p class="has-text-centered mt-2" data-tx="t0099">Додаток активовано</p>
 			</div>
 		</div>
 
@@ -90,7 +95,7 @@
 			<li data-tx="t0103">Перегляд заблокованих та пропущених дзвінків</li>
 			<li data-tx="t0104">Повідомляти про номери як про спам або легальні</li>
 			<li data-tx="t0105">Керуйте особистим чорним та білим списком</li>
-			<li data-tx="t0106">Пошук за номером</li>
+			<li data-tx="t0106">Пошук номерів</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

@@ -25,7 +25,6 @@
 
 		<h3 data-tx="t0011">Installazione</h3>
 
-		<h4 data-tx="t0012">Passo 1: Scaricare l'applicazione</h4>
 		<p data-tx="t0107">Scaricare l'applicazione PhoneBlock Mobile dal Google Play Store e aprirla:</p>
 		<p>
 			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
@@ -37,46 +36,52 @@
 		</p>
 
 		<div class="columns is-multiline">
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0012">Passo 1: aprire l'applicazione</h4>
 				<figure class="image">
 					<img alt="Aprire l'applicazione" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0089"><strong>Fase 1:</strong> Aprire l'applicazione e toccare "Connetti a PhoneBlock".</p>
+				<p class="has-text-centered mt-2" data-tx="t0089">Aprire l'applicazione e toccare "Connetti a PhoneBlock".</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0108">Fase 2: accesso</h4>
 				<figure class="image">
 					<img alt="Accedere con Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0091"><strong>Fase 2:</strong> Accedere a PhoneBlock (ad esempio con Google)</p>
+				<p class="has-text-centered mt-2" data-tx="t0091">Registrarsi con PhoneBlock (ad es. con Google)</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0109">Fase 3: Conferma del token</h4>
 				<figure class="image">
 					<img alt="Creare un token di accesso" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0093"><strong>Fase 3:</strong> Confermare la creazione del token per l'app</p>
+				<p class="has-text-centered mt-2" data-tx="t0093">Confermare la creazione del token per l'app</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0110">Fase 4: Richiesta di autorizzazione</h4>
 				<figure class="image">
 					<img alt="Richiesta di autorizzazione" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0095"><strong>Fase 4:</strong> Toccare "Richiedi autorizzazione".</p>
+				<p class="has-text-centered mt-2" data-tx="t0095">Toccare "Richiesta di autorizzazione".</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0111">Fase 5: concessione dell'autorizzazione</h4>
 				<figure class="image">
 					<img alt="Concessione dell'autorizzazione" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0097"><strong>Fase 5:</strong> Attivare PhoneBlock Mobile nelle impostazioni Android</p>
+				<p class="has-text-centered mt-2" data-tx="t0097">Attivare PhoneBlock Mobile nelle impostazioni di Android</p>
 			</div>
 
-			<div class="column is-half">
+			<div class="column is-one-third">
+				<h4 data-tx="t0112">Fase 6: Fatto!</h4>
 				<figure class="image">
 					<img alt="Impostazione completata" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0099"><strong>Fase 6:</strong> Fatto! L'applicazione è ora attiva</p>
+				<p class="has-text-centered mt-2" data-tx="t0099">L'applicazione è ora attiva</p>
 			</div>
 		</div>
 
@@ -85,12 +90,12 @@
 		</div>
 
 		<h4 data-tx="t0101">Cosa si può fare ora?</h4>
-		<p data-tx="t0102">L'applicazione è ora attiva e blocca automaticamente le chiamate SPAM. Nell'app è possibile:</p>
+		<p data-tx="t0102">L'app è ora attiva e blocca automaticamente le chiamate SPAM. Nell'app è possibile:</p>
 		<ul>
 			<li data-tx="t0103">Visualizzare le chiamate bloccate e perse</li>
 			<li data-tx="t0104">Segnalare i numeri come SPAM o legittimi</li>
 			<li data-tx="t0105">Gestire la propria blacklist e whitelist personale</li>
-			<li data-tx="t0106">Ricerca di numeri</li>
+			<li data-tx="t0106">Ricerca per numero</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">
@@ -98,7 +103,7 @@
 			<p data-tx="t0028">Se in precedenza si è utilizzato il metodo CardDAV con PeopleSync o DAVx⁵, è necessario eseguire i seguenti passaggi prima di utilizzare PhoneBlock Mobile:</p>
 			<ol>
 				<li data-tx="t0029">Disattivare la sincronizzazione CardDAV dell'elenco di blocco PhoneBlock in PeopleSync/DAVx⁵</li>
-				<li data-tx="t0030">Eliminare i contatti SPAM sincronizzati dalla rubrica del telefono</li>
+				<li data-tx="t0030">Cancellare i contatti SPAM sincronizzati dalla rubrica telefonica</li>
 			</ol>
 			<p class="mt-2" data-tx="t0031"><strong>Ragione:</strong> Per motivi di protezione dei dati, PhoneBlock Mobile non elabora i numeri che sono salvati nell'elenco dei contatti. Se i numeri SPAM rimangono salvati come contatti, non possono essere riconosciuti e bloccati dall'applicazione.</p>
 		</div>
@@ -210,7 +215,7 @@
 			<li data-tx="t0079">Apparecchiature più complesse</li>
 		</ul>
 
-		<p data-tx="t0080">Se si desidera comunque utilizzare il metodo CardDAV, è possibile trovare le istruzioni nel blog <a href="https://news.phoneblock.net/" target="_blank">PhoneBlock</a>.</p>
+		<p data-tx="t0080">Se volete ancora utilizzare il metodo CardDAV, potete trovare le istruzioni nel blog <a href="https://news.phoneblock.net/" target="_blank">PhoneBlock</a>.</p>
 	</div>
 </section>
 
