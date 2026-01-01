@@ -1942,11 +1942,15 @@ class PersonalizedNumber extends _JsonObject {
 	/// User's comment for this number (may be null).
 	String? comment;
 
+	/// User's rating for this number (may be null).
+	Rating? rating;
+
 	/// Creates a PersonalizedNumber.
 	PersonalizedNumber({
 			this.phone = "",
 			this.label,
 			this.comment,
+			this.rating,
 	});
 
 	/// Parses a PersonalizedNumber from a string source.
@@ -1979,6 +1983,10 @@ class PersonalizedNumber extends _JsonObject {
 				comment = json.expectString();
 				break;
 			}
+			case "rating": {
+				rating = readRating(json);
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -2000,6 +2008,12 @@ class PersonalizedNumber extends _JsonObject {
 		if (_comment != null) {
 			json.addKey("comment");
 			json.addString(_comment);
+		}
+
+		var _rating = rating;
+		if (_rating != null) {
+			json.addKey("rating");
+			writeRating(json, _rating);
 		}
 	}
 

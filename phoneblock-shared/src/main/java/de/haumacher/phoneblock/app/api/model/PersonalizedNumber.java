@@ -24,11 +24,16 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** @see #getComment() */
 	public static final String COMMENT__PROP = "comment";
 
+	/** @see #getRating() */
+	public static final String RATING__PROP = "rating";
+
 	private String _phone = "";
 
 	private String _label = null;
 
 	private String _comment = null;
+
+	private de.haumacher.phoneblock.app.api.model.Rating _rating = null;
 
 	/**
 	 * Creates a {@link PersonalizedNumber} instance.
@@ -116,6 +121,34 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		return _comment != null;
 	}
 
+	/**
+	 * User's rating for this number (may be null).
+	 */
+	public final de.haumacher.phoneblock.app.api.model.Rating getRating() {
+		return _rating;
+	}
+
+	/**
+	 * @see #getRating()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PersonalizedNumber setRating(de.haumacher.phoneblock.app.api.model.Rating value) {
+		internalSetRating(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getRating()} without chain call utility. */
+	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
+		_listener.beforeSet(this, RATING__PROP, value);
+		_rating = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getRating()} has a value.
+	 */
+	public final boolean hasRating() {
+		return _rating != null;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -147,7 +180,8 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		java.util.Arrays.asList(
 			PHONE__PROP, 
 			LABEL__PROP, 
-			COMMENT__PROP));
+			COMMENT__PROP, 
+			RATING__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -160,6 +194,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			case PHONE__PROP: return getPhone();
 			case LABEL__PROP: return getLabel();
 			case COMMENT__PROP: return getComment();
+			case RATING__PROP: return getRating();
 			default: return null;
 		}
 	}
@@ -170,6 +205,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			case PHONE__PROP: internalSetPhone((String) value); break;
 			case LABEL__PROP: internalSetLabel((String) value); break;
 			case COMMENT__PROP: internalSetComment((String) value); break;
+			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
 		}
 	}
 
@@ -198,6 +234,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			out.name(COMMENT__PROP);
 			out.value(getComment());
 		}
+		if (hasRating()) {
+			out.name(RATING__PROP);
+			getRating().writeTo(out);
+		}
 	}
 
 	@Override
@@ -206,6 +246,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -221,6 +262,9 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** XML attribute or element name of a {@link #getComment} property. */
 	private static final String COMMENT__XML_ATTR = "comment";
+
+	/** XML attribute or element name of a {@link #getRating} property. */
+	private static final String RATING__XML_ATTR = "rating";
 
 	@Override
 	public String getXmlTagName() {
@@ -238,6 +282,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
 		out.writeAttribute(LABEL__XML_ATTR, getLabel());
 		out.writeAttribute(COMMENT__XML_ATTR, getComment());
+		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -287,6 +332,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 				setComment(value);
 				break;
 			}
+			case RATING__XML_ATTR: {
+				setRating(de.haumacher.phoneblock.app.api.model.Rating.valueOfProtocol(value));
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -306,6 +355,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			}
 			case COMMENT__XML_ATTR: {
 				setComment(in.getElementText());
+				break;
+			}
+			case RATING__XML_ATTR: {
+				setRating(de.haumacher.phoneblock.app.api.model.Rating.valueOfProtocol(in.getElementText()));
 				break;
 			}
 			default: {

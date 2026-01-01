@@ -420,6 +420,10 @@ message PersonalizedNumber {
 	/** User's comment for this number (may be null). */
 	@Nullable
 	string comment;
+
+	/** User's rating for this number (may be null). */
+	@Nullable
+	Rating rating;
 }
 
 /** A list of phone numbers (used for blacklist/whitelist responses). */

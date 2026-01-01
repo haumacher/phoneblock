@@ -126,17 +126,17 @@ public class PersonalizationServlet extends HttpServlet {
 				return;
 			}
 
-			// Fetch comments for the numbers
+			// Fetch comments and ratings for the numbers
 			SpamReports spamReports = session.getMapper(SpamReports.class);
-			Map<String, String> commentsMap = new HashMap<>();
+			Map<String, DBPhoneComment> commentsMap = new HashMap<>();
 			if (!phoneNumbers.isEmpty()) {
 				List<DBPhoneComment> userComments = spamReports.getUserComments(userId, phoneNumbers);
 				for (DBPhoneComment entry : userComments) {
-					commentsMap.put(entry.getPhone(), entry.getComment());
+					commentsMap.put(entry.getPhone(), entry);
 				}
 			}
 
-			// Build PersonalizedNumber list with comments and locale-formatted labels
+			// Build PersonalizedNumber list with comments, ratings, and locale-formatted labels
 			List<PersonalizedNumber> numbers = new ArrayList<>();
 			for (String rawPhone : phoneNumbers) {
 				// Parse and format the phone number according to the locale they are stored in the DB.
@@ -147,10 +147,12 @@ public class PersonalizationServlet extends HttpServlet {
 				String phoneInternational = phoneInfo.getPlus();
 				String label = phoneInfo.getShortcut();
 
+				DBPhoneComment commentRating = commentsMap.get(rawPhone);
 				PersonalizedNumber pn = PersonalizedNumber.create()
 					.setPhone(phoneInternational)
 					.setLabel(label)
-					.setComment(commentsMap.get(rawPhone));
+					.setComment(commentRating != null ? commentRating.getComment() : null)
+					.setRating(commentRating != null ? commentRating.getRating() : null);
 				numbers.add(pn);
 			}
 

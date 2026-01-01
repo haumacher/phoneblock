@@ -1930,6 +1930,19 @@ Icon icon(Rating rating) {
   }
 }
 
+/// Converts api.Rating enum to state.Rating enum.
+Rating _convertApiRating(api.Rating rating) {
+  switch (rating) {
+    case api.Rating.aLegitimate: return Rating.aLEGITIMATE;
+    case api.Rating.bMissed: return Rating.uNKNOWN;
+    case api.Rating.cPing: return Rating.pING;
+    case api.Rating.dPoll: return Rating.pOLL;
+    case api.Rating.eAdvertising: return Rating.aDVERTISING;
+    case api.Rating.fGamble: return Rating.gAMBLE;
+    case api.Rating.gFraud: return Rating.fRAUD;
+  }
+}
+
 class RateScreen extends StatelessWidget {
   final Call call;
 
@@ -2669,7 +2682,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     final confirmRemoveMessage = _isBlacklist
         ? (String phone) => context.l10n.confirmRemoveFromBlacklist(phone)
         : (String phone) => context.l10n.confirmRemoveFromWhitelist(phone);
-    final icon = _isBlacklist
+    final defaultIcon = _isBlacklist
         ? const Icon(Icons.block, color: Colors.red)
         : const Icon(Icons.check_circle, color: Colors.green);
 
@@ -2796,7 +2809,12 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                               });
                             },
                             child: ListTile(
-                              leading: icon,
+                              leading: personalizedNumber.rating != null
+                                  ? CircleAvatar(
+                                      backgroundColor: bgColor(_convertApiRating(personalizedNumber.rating!)).withValues(alpha: 0.1),
+                                      child: icon(_convertApiRating(personalizedNumber.rating!)),
+                                    )
+                                  : defaultIcon,
                               title: Text(displayPhone),
                               subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
                                   ? Text(

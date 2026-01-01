@@ -403,7 +403,7 @@ public interface SpamReports {
 
 	@Select("""
 			<script>
-			select s.PHONE, s.COMMENT
+			select s.PHONE, s.COMMENT, s.RATING
 			from COMMENTS s
 			where s.USERID = #{userId}
 			and s.PHONE in
