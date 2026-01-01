@@ -263,6 +263,11 @@ When modifying `phoneblock-shared/`:
 
 **IMPORTANT**: The `data-tx` attributes in HTML templates are auto-generated magic attributes that link translations across multiple language files.
 
+**Source Languages:**
+- **Only edit `de/` (German) and `en-US/` (English) templates** - These are the source language files
+- **All other language directories are auto-generated** - Never edit them directly (ar, da, el, es, fr, it, nb, nl, pl, sv, uk, zh-Hans, etc.)
+- Translation tool regenerates all other languages from de/en-US sources during build
+
 Rules when modifying templates:
 - **Never duplicate `data-tx` attributes** - Each unique text should have only one `data-tx` reference
 - **Remove `data-tx` when changing text content** - Modified text breaks the I18N linkage
