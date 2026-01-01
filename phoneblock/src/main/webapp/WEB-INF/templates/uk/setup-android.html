@@ -8,40 +8,171 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001">Встановлення Android</h1>
-		
-		<p data-tx="t0002">Під час встановлення до ваших контактів буде додано адресну книгу PhoneBlock. Якщо вам зателефонують зі спам-номера, це одразу ж відобразиться на екрані, наприклад, "СПАМ: 03016637169". Також у пропущених дзвінках можна одразу побачити, що не варто передзвонювати, не погугливши номер.</p>
-		
-		<p data-tx="t0003">Ви не можете використовувати цю функцію для блокування СПАМ-дзвінків (ваш телефон все одно дзвонитиме, але ви бачитимете, що це СПАМ-дзвінок). Ви можете заблокувати СПАМ-дзвінки, <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">встановивши SpamBlocker</a> та інтегрувавши базу даних PhoneBlock. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> є незалежним додатком, якщо у вас виникли проблеми з ним, будь ласка, зв'яжіться безпосередньо з розробником.</p>
-		
-		<p data-tx="t0004">Для синхронізації адресної книги вам потрібна програма, з якою ви можете синхронізувати інтернет-телефонні книги. Ви можете використовувати "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", наприклад, або "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Інструкції тут написані для "PeopleSync", але процедура з "DAVx⁵" дуже схожа:</p>
-		
-		<h2 data-tx="t0005">Крок 1: Відкрийте Playstore і знайдіть "PeopleSync"</h2>
-		
+
+		<h2 data-tx="t0002">Мобільний додаток PhoneBlock</h2>
+
+		<p data-tx="t0003">Мобільний додаток <strong>PhoneBlock</strong> - це офіційний додаток для виявлення та блокування спам-дзвінків безпосередньо на вашому смартфоні Android. Додаток використовує вбудовану фільтрацію дзвінків Android для автоматичного блокування СПАМ-дзвінків ще до того, як ваш телефон задзвонить.</p>
+
+		<h3 data-tx="t0004">Функції</h3>
+		<ul>
+			<li data-tx="t0005"><strong>Автоматичне блокування спаму:</strong> Дзвінки з відомих спам-номерів блокуються безпосередньо</li>
+			<li data-tx="t0006"><strong>Історія дзвінків:</strong> Огляд заблокованих та пропущених дзвінків (тільки з невідомих номерів, яких немає у вашому списку контактів)</li>
+			<li data-tx="t0007"><strong>Номер звіту:</strong> Повідомляйте про номери спаму безпосередньо з програми</li>
+			<li data-tx="t0008"><strong>Персональні списки:</strong> Керуйте власними чорними та білими списками</li>
+			<li data-tx="t0009"><strong>Максимальний захист даних:</strong> Для вхідних дзвінків на сервер передається лише SHA-1 хеш номера, а не сам номер. Тому PhoneBlock не дізнається, хто дзвонив, якщо тільки це не відомий спам-номер.</li>
+			<li data-tx="t0010"><strong>Нема доступу до списку контактів:</strong> Додатку не потрібен доступ до ваших контактів. Номери з вашої телефонної книги ніколи не обробляються PhoneBlock Mobile.</li>
+		</ul>
+
+		<h3 data-tx="t0011">Встановлення</h3>
+
+		<h4 data-tx="t0012">Крок 1: Завантажте додаток</h4>
+		<p data-tx="t0013">Завантажте мобільний додаток PhoneBlock з Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+				<span class="icon">
+					<i class="fab fa-google-play"></i>
+				</span>
+				<span>Відкрити в Play Store</span>
+			  </a> </p>
+
+		<h4 data-tx="t0014">Крок 2: Підключіться до PhoneBlock</h4>
+		<p data-tx="t0015">Відкрийте додаток і натисніть "Підключитися до PhoneBlock". Вас буде перенаправлено на сайт PhoneBlock для входу. Після успішного входу токен доступу до додатку буде створено автоматично.</p>
+
 		<div class="columns">
-			<div class="column">
-	  			<img alt="Відкритий ігровий магазин" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
-	  		</div>
-		
-			<div class="column">
-				<img alt="Пошук у PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Відкрийте та підключіть додаток" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+				</figure>
+			</div>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Реєстрація в PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+				</figure>
 			</div>
 		</div>
-		
-		<p class="buttons is-centered">
-		  <a class="button" href="#">
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-left"></i>
-		    </span>
-		    <span data-tx="t0006">Назад</span>
-		  </a>
-		  
-		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
-		    <span data-tx="t0007">Далі</span>
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-right"></i>
-		    </span>
-		  </a>
-		</p>
+
+		<h4 data-tx="t0018">Крок 3: Отримання дозволу на отримання гранту</h4>
+		<p data-tx="t0019">Для того, щоб програма могла блокувати СПАМ-дзвінки, їй потрібна авторизація для фільтрації дзвінків. Натисніть "Запросити авторизацію" і дозвольте додатку доступ до фільтрації дзвінків у налаштуваннях Android.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0020"><strong>Системні вимоги:</strong> PhoneBlock Mobile потребує щонайменше Android 10 (API 29). Фільтрація викликів (CallScreeningService) доступна лише в Android починаючи з цієї версії.</p>
+		</div>
+
+		<h4 data-tx="t0021">Крок 4: Готово!</h4>
+		<p data-tx="t0022">Тепер додаток активний і автоматично блокує СПАМ-дзвінки. Ви можете в додатку:</p>
+		<ul>
+			<li data-tx="t0023">Перегляд заблокованих та пропущених дзвінків</li>
+			<li data-tx="t0024">Повідомляти про номери як про спам або легальні</li>
+			<li data-tx="t0025">Керуйте особистим чорним та білим списком</li>
+			<li data-tx="t0026">Пошук за номером</li>
+		</ul>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0027">Важливо для тих, хто переходить з синхронізації CardDAV:</strong></p>
+			<p data-tx="t0028">Якщо ви раніше використовували метод CardDAV з PeopleSync або DAVx⁵, перед використанням PhoneBlock Mobile необхідно виконати наступні кроки:</p>
+			<ol>
+				<li data-tx="t0029">Вимкніть синхронізацію CardDAV списку блокування PhoneBlock у PeopleSync/DAVx⁵.</li>
+				<li data-tx="t0030">Видаліть синхронізовані контакти зі спаму з вашої телефонної книги</li>
+			</ol>
+			<p class="mt-2" data-tx="t0031"><strong>Причина:</strong> З міркувань захисту даних PhoneBlock Mobile не обробляє номери, збережені у вашому списку контактів. Якщо спам-номера залишаються збереженими як контакти, вони не можуть бути розпізнані та заблоковані додатком.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0032">Альтернатива: SpamBlocker</h2>
+
+		<p data-tx="t0033">Окрім офіційного додатку PhoneBlock Mobile, ви також можете використовувати незалежний додаток <a href="https://github.com/aj3423/SpamBlocker" target="_blank">SpamBlocker</a> та інтегрувати базу даних PhoneBlock. Інструкції ви можете знайти тут: <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/" target="_blank">Налаштування SpamBlocker за допомогою PhoneBlock</a>.</p>
+
+		<h3 data-tx="t0034">Порівняння: PhoneBlock Mobile проти SpamBlocker</h3>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0035">Функція</th>
+						<th data-tx="t0036">PhoneBlock Mobile</th>
+						<th data-tx="t0037">SpamBlocker</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0038">Блокування спам-дзвінків</td>
+						<td data-tx="t0039"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+						<td data-tx="t0040"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+					</tr>
+					<tr>
+						<td data-tx="t0041">Журнал дзвінків</td>
+						<td data-tx="t0042"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+						<td data-tx="t0043"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+					</tr>
+					<tr>
+						<td data-tx="t0044">Повідомити про спам</td>
+						<td data-tx="t0045"><span class="icon has-text-success"><i class="fas fa-check"></i></span> У додатку</td>
+						<td data-tx="t0046"><span class="icon has-text-warning"><i class="fas fa-globe"></i></span> Про сайт</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047">Персональні списки</td>
+						<td data-tx="t0048"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так, синхронізовано</td>
+						<td data-tx="t0049"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так, місцевий</td>
+					</tr>
+					<tr>
+						<td data-tx="t0050">Захист даних</td>
+						<td data-tx="t0051"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 хеш</td>
+						<td data-tx="t0052"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 хеш</td>
+					</tr>
+					<tr>
+						<td data-tx="t0053">Інтеграція з PhoneBlock</td>
+						<td data-tx="t0054"><span class="icon has-text-success"><i class="fas fa-plug"></i></span> Рідна</td>
+						<td data-tx="t0055"><span class="icon has-text-info"><i class="fas fa-cog"></i></span> Налаштовується вручну</td>
+					</tr>
+					<tr>
+						<td data-tx="t0056">Інші бази даних спаму</td>
+						<td data-tx="t0057"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Ні</td>
+						<td data-tx="t0058"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так (декілька)</td>
+					</tr>
+					<tr>
+						<td data-tx="t0059">Розширені параметри фільтрації</td>
+						<td data-tx="t0060"><span class="icon has-text-info"><i class="fas fa-minus"></i></span> База</td>
+						<td data-tx="t0061"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Великий</td>
+					</tr>
+					<tr>
+						<td data-tx="t0062">Фільтрація SMS</td>
+						<td data-tx="t0063"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Ні</td>
+						<td data-tx="t0064"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+					</tr>
+					<tr>
+						<td data-tx="t0065">Розвиток</td>
+						<td data-tx="t0066"><span class="icon has-text-info"><i class="fas fa-house"></i></span> Команда PhoneBlock</td>
+						<td data-tx="t0067"><span class="icon has-text-info"><i class="fas fa-users"></i></span> Незалежний (aj3423)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0068"><strong>Рекомендація:</strong> Якщо вам потрібне просте, безпосередньо інтегроване рішення для PhoneBlock, використовуйте <strong>PhoneBlock Mobile</strong>. Якщо ви хочете використовувати розширені функції фільтрації, фільтрацію SMS або кілька баз даних СПАМу, кращим вибором буде <strong>SpamBlocker</strong>.</p>
+			<p class="mt-2" data-tx="t0069"><strong>Примітка:</strong> SpamBlocker є незалежною програмою. Якщо у вас виникли проблеми, будь ласка, зверніться безпосередньо до <a href="https://github.com/aj3423/SpamBlocker" target="_blank">розробника</a>.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0070">Альтернатива: Синхронізація CardDAV (застаріла)</h2>
+
+		<p data-tx="t0071">Попередній метод, що використовує синхронізацію CardDAV з такими програмами, як PeopleSync або DAVx⁵, все ще можливий, але <strong>більш не рекомендується</strong>. Цей метод лише показує спам-номера у ваших контактах, але не блокує дзвінки.</p>
+
+		<p data-tx="t0072">Переваги методу CardDAV:</p>
+		<ul>
+			<li data-tx="t0073">Також працює на старих версіях Android (до Android 10)</li>
+			<li data-tx="t0074">Показує позначку СПАМ у пропущених дзвінках</li>
+		</ul>
+
+		<p data-tx="t0075">Недоліки:</p>
+		<ul>
+			<li data-tx="t0076">Без автоматичного блокування</li>
+			<li data-tx="t0077">Телефон продовжує дзвонити від спам-дзвінків</li>
+			<li data-tx="t0078">Для синхронізації CardDAV потрібен додатковий додаток</li>
+			<li data-tx="t0079">Більш складне обладнання</li>
+		</ul>
+
+		<p data-tx="t0080">Якщо ви все ще хочете використовувати метод CardDAV, ви можете знайти інструкції в блозі <a href="https://news.phoneblock.net/" target="_blank">PhoneBlock</a>.</p>
 	</div>
 </section>
 

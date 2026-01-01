@@ -8,40 +8,171 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001">安装安卓系统</h1>
-		
-		<p data-tx="t0002">安装程序会将 PhoneBlock 地址簿添加到您的通讯录中。如果您接到垃圾号码打来的电话，它会立即显示出来，例如 "SPAM: 03016637169"。您还可以在未接来电中立即看到不值得回拨的号码，而无需先谷歌这个号码。</p>
-		
-		<p data-tx="t0003">您不能用它来阻止垃圾邮件电话（您的手机仍然会响，但您会看到这是一个垃圾邮件电话）。您可以通过 <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/"> 安装 SpamBlocker</a> 并整合 PhoneBlock 数据库来阻止垃圾邮件电话。<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a>是一款独立应用程序，如果您在使用过程中遇到任何问题，请直接联系开发人员。</p>
-		
-		<p data-tx="t0004">要同步地址簿，您需要一个可以同步互联网电话簿的应用程序。例如，您可以使用"<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>"或"<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>"。这里的说明是针对 "PeopleSync "编写的，但使用 "DAVx⁵"的步骤非常相似：</p>
-		
-		<h2 data-tx="t0005">步骤 1：打开 Playstore，搜索 "PeopleSync</h2>
-		
+
+		<h2 data-tx="t0002">PhoneBlock 移动应用程序</h2>
+
+		<p data-tx="t0003"><strong>PhoneBlock移动应用程序</strong>是直接在Android智能手机上检测和阻止垃圾邮件电话的官方应用程序。该应用程序使用 Android 内置的呼叫过滤功能，可在您的手机响铃前自动阻止垃圾邮件呼叫。</p>
+
+		<h3 data-tx="t0004">功能</h3>
+		<ul>
+			<li data-tx="t0005"><strong>自动拦截垃圾邮件：</strong>直接拦截来自已知垃圾邮件号码的呼叫</li>
+			<li data-tx="t0006"><strong>通话记录：</strong>已拦截和未接来电概览（仅限不在联系人列表中的未知号码来电）</li>
+			<li data-tx="t0007"><strong>报告号码：</strong>直接从应用程序报告垃圾邮件号码</li>
+			<li data-tx="t0008"><strong>个人列表：</strong>管理自己的黑名单和白名单</li>
+			<li data-tx="t0009"><strong>最大限度的数据保护：</strong>对于来电，只有号码的SHA-1哈希值被传送到服务器，而不是号码本身。因此，除非是已知的垃圾邮件号码，否则 PhoneBlock 不会查出来电者是谁。</li>
+			<li data-tx="t0010"><strong>无需访问联系人列表：</strong>应用程序无需访问您的联系人。PhoneBlock Mobile不会处理电话簿中的号码。</li>
+		</ul>
+
+		<h3 data-tx="t0011">安装</h3>
+
+		<h4 data-tx="t0012">步骤 1：下载应用程序</h4>
+		<p data-tx="t0013">从 Google Play 商店下载 PhoneBlock Mobile 应用程序：<br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+				<span class="icon">
+					<i class="fab fa-google-play"></i>
+				</span>
+				<span>在 Play 应用商店中打开</span>
+			  </a></p>
+
+		<h4 data-tx="t0014">步骤 2：连接 PhoneBlock</h4>
+		<p data-tx="t0015">打开应用程序，点击 "连接到 PhoneBlock"。您将被重定向到 PhoneBlock 进行登录。登录成功后，将自动创建应用程序的访问令牌。</p>
+
 		<div class="columns">
-			<div class="column">
-	  			<img alt="打开 Playstore" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
-	  		</div>
-		
-			<div class="column">
-				<img alt="搜索 PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="打开并连接应用程序" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+				</figure>
+			</div>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="使用 PhoneBlock 注册" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+				</figure>
 			</div>
 		</div>
-		
-		<p class="buttons is-centered">
-		  <a class="button" href="#">
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-left"></i>
-		    </span>
-		    <span data-tx="t0006">返回</span>
-		  </a>
-		  
-		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
-		    <span data-tx="t0007">更多</span>
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-right"></i>
-		    </span>
-		  </a>
-		</p>
+
+		<h4 data-tx="t0018">步骤 3：授权</h4>
+		<p data-tx="t0019">为了让应用程序阻止垃圾电话，它需要获得呼叫过滤授权。点击 "请求授权"，允许应用程序访问 Android 设置中的呼叫过滤功能。</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0020"><strong>系统要求：</strong> PhoneBlock Mobile 至少需要 Android 10 (API 29)。呼叫过滤（CallScreeningService）仅适用于该版本以后的安卓系统。</p>
+		</div>
+
+		<h4 data-tx="t0021">步骤 4：完成！</h4>
+		<p data-tx="t0022">该应用程序现已激活，可自动拦截垃圾邮件电话。您可以在应用程序中</p>
+		<ul>
+			<li data-tx="t0023">查看已拦截和未接来电</li>
+			<li data-tx="t0024">将号码报告为垃圾邮件或合法号码</li>
+			<li data-tx="t0025">管理个人黑名单和白名单</li>
+			<li data-tx="t0026">搜索数字</li>
+		</ul>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0027">对于从 CardDAV 同步转换而来的用户非常重要：</strong></p>
+			<p data-tx="t0028">如果您以前曾在 PeopleSync 或 DAVx⁵ 中使用过 CardDAV 方法，则必须在使用 PhoneBlock Mobile 之前执行以下步骤：</p>
+			<ol>
+				<li data-tx="t0029">停用 PeopleSync/DAVx⁵ 中 PhoneBlock blocklist 的 CardDAV 同步功能</li>
+				<li data-tx="t0030">从电话簿中删除同步的垃圾邮件联系人</li>
+			</ol>
+			<p class="mt-2" data-tx="t0031"><strong>原因：</strong>出于数据保护原因，PhoneBlock Mobile 不会处理保存在联系人列表中的号码。如果垃圾号码仍作为联系人保存，应用程序将无法识别和阻止它们。</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0032">替代品： 垃圾邮件拦截器</h2>
+
+		<p data-tx="t0033">除官方 PhoneBlock Mobile 应用程序外，您还可以使用独立应用程序 <a href="https://github.com/aj3423/SpamBlocker" target="_blank">SpamBlocker</a> 并整合 PhoneBlock 数据库。你可以在这里找到说明：<a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/" target="_blank">使用 PhoneBlock 设置 SpamBlocker</a>。</p>
+
+		<h3 data-tx="t0034">比较： PhoneBlock Mobile 与 SpamBlocker</h3>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0035">功能</th>
+						<th data-tx="t0036">PhoneBlock Mobile</th>
+						<th data-tx="t0037">垃圾邮件拦截器</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0038">阻止垃圾邮件电话</td>
+						<td data-tx="t0039"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+						<td data-tx="t0040"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+					</tr>
+					<tr>
+						<td data-tx="t0041">通话记录</td>
+						<td data-tx="t0042"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+						<td data-tx="t0043"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+					</tr>
+					<tr>
+						<td data-tx="t0044">举报垃圾邮件</td>
+						<td data-tx="t0045"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 应用程序中</td>
+						<td data-tx="t0046"><span class="icon has-text-warning"><i class="fas fa-globe"></i></span> 关于网站</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047">个人清单</td>
+						<td data-tx="t0048"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是，同步</td>
+						<td data-tx="t0049"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是，本地</td>
+					</tr>
+					<tr>
+						<td data-tx="t0050">数据保护</td>
+						<td data-tx="t0051"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 哈希值</td>
+						<td data-tx="t0052"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 哈希值</td>
+					</tr>
+					<tr>
+						<td data-tx="t0053">PhoneBlock 集成</td>
+						<td data-tx="t0054"><span class="icon has-text-success"><i class="fas fa-plug"></i></span> 本机</td>
+						<td data-tx="t0055"><span class="icon has-text-info"><i class="fas fa-cog"></i></span> 可手动配置</td>
+					</tr>
+					<tr>
+						<td data-tx="t0056">其他垃圾邮件数据库</td>
+						<td data-tx="t0057"><span class="icon has-text-danger"><i class="fas fa-times"></i></span>否</td>
+						<td data-tx="t0058"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是（几个）</td>
+					</tr>
+					<tr>
+						<td data-tx="t0059">高级过滤选项</td>
+						<td data-tx="t0060"><span class="icon has-text-info"><i class="fas fa-minus"></i></span> 基地</td>
+						<td data-tx="t0061"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 广泛</td>
+					</tr>
+					<tr>
+						<td data-tx="t0062">短信过滤</td>
+						<td data-tx="t0063"><span class="icon has-text-danger"><i class="fas fa-times"></i></span>否</td>
+						<td data-tx="t0064"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+					</tr>
+					<tr>
+						<td data-tx="t0065">发展</td>
+						<td data-tx="t0066"><span class="icon has-text-info"><i class="fas fa-house"></i></span> PhoneBlock 团队</td>
+						<td data-tx="t0067"><span class="icon has-text-info"><i class="fas fa-users"></i></span> 独立人士 (aj3423)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0068"><strong>建议：</strong>如果您想要一个简单、直接集成的 PhoneBlock 解决方案，请使用 <strong>PhoneBlock Mobile</strong>。如果您想使用高级过滤功能、SMS 过滤或多个 SPAM 数据库，<strong>SpamBlocker</strong> 是更好的选择。</p>
+			<p class="mt-2" data-tx="t0069"><strong>注意：</strong> SpamBlocker 是一款独立应用程序。如有任何问题，请直接联系 <a href="https://github.com/aj3423/SpamBlocker" target="_blank"> 开发人员</a>。</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0070">替代方案：CardDAV 同步（已过时）</h2>
+
+		<p data-tx="t0071">以前使用 CardDAV 与 PeopleSync 或 DAVx⁵ 等应用程序同步的方法仍然可行，但<strong>不再推荐</strong>。这种方法只会显示联系人中的垃圾号码，但不会阻止通话。</p>
+
+		<p data-tx="t0072">CardDAV 方法的优点</p>
+		<ul>
+			<li data-tx="t0073">也适用于旧版本的安卓系统（安卓 10 之前的版本）</li>
+			<li data-tx="t0074">在未接来电中显示垃圾邮件标签</li>
+		</ul>
+
+		<p data-tx="t0075">缺点</p>
+		<ul>
+			<li data-tx="t0076">无自动屏蔽</li>
+			<li data-tx="t0077">电话仍被垃圾邮件骚扰</li>
+			<li data-tx="t0078">同步 CardDAV 需要额外的应用程序</li>
+			<li data-tx="t0079">更复杂的设备</li>
+		</ul>
+
+		<p data-tx="t0080">如果您仍想使用 CardDAV 方法，可以在<a href="https://news.phoneblock.net/" target="_blank">PhoneBlock 博客</a>中找到相关说明。</p>
 	</div>
 </section>
 

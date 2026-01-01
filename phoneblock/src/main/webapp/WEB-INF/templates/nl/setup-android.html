@@ -8,40 +8,171 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001">Android-installatie</h1>
-		
-		<p data-tx="t0002">De installatie voegt het PhoneBlock-adresboek toe aan uw contacten. Als je gebeld wordt door een spornummer, wordt dit onmiddellijk weergegeven, bv. "SPAM: 03016637169". Je kunt ook meteen in de gemiste oproepen zien dat het niet de moeite waard is om terug te bellen zonder eerst het nummer te hoeven googelen.</p>
-		
-		<p data-tx="t0003">U kunt dit niet gebruiken om SPAM-oproepen te blokkeren (uw telefoon zal nog steeds overgaan, maar u zult zien dat het een SPAM-oproep is). U kunt SPAM-oproepen blokkeren door <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a> te installeren en de PhoneBlock-database te integreren. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is een onafhankelijke app, neem rechtstreeks contact op met de ontwikkelaar als je er problemen mee hebt.</p>
-		
-		<p data-tx="t0004">Voor het synchroniseren van adresboeken heb je een app nodig waarmee je internettelefoonboeken kunt synchroniseren. Je kunt bijvoorbeeld "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>" of "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>" gebruiken. De instructies hier zijn geschreven voor "PeopleSync", maar de procedure met "DAVx⁵" is vergelijkbaar:</p>
-		
-		<h2 data-tx="t0005">Stap 1: Open de Playstore en zoek naar "PeopleSync".</h2>
-		
+
+		<h2 data-tx="t0002">PhoneBlock Mobiele App</h2>
+
+		<p data-tx="t0003">De <strong>PhoneBlock Mobile App</strong> is de officiële app voor het detecteren en blokkeren van SPAM oproepen direct op je Android smartphone. De app maakt gebruik van Android's ingebouwde oproepfilter om automatisch SPAM oproepen te blokkeren voordat je telefoon overgaat.</p>
+
+		<h3 data-tx="t0004">Functies</h3>
+		<ul>
+			<li data-tx="t0005"><strong>Automatische SPAM-blokkering:</strong> Oproepen van bekende SPAM-nummers worden direct geblokkeerd</li>
+			<li data-tx="t0006"><strong>Oproepgeschiedenis:</strong> Overzicht van geblokkeerde en gemiste oproepen (alleen van onbekende nummers die niet in je contactlijst staan)</li>
+			<li data-tx="t0007"><strong>Nummer melden:</strong> SPAM-nummers rechtstreeks vanuit de app melden</li>
+			<li data-tx="t0008"><strong>Persoonlijke lijsten:</strong> Beheer je eigen zwarte en witte lijsten</li>
+			<li data-tx="t0009"><strong>Maximale gegevensbescherming:</strong> Voor inkomende oproepen wordt alleen de SHA-1 hash van het nummer naar de server verzonden, niet het nummer zelf. PhoneBlock komt er dus niet achter wie er heeft gebeld, tenzij het een bekend SPAM-nummer is.</li>
+			<li data-tx="t0010"><strong>Geen toegang tot uw contactenlijst:</strong> De app heeft geen toegang tot uw contacten nodig. Nummers uit uw telefoonboek worden nooit verwerkt door PhoneBlock Mobile.</li>
+		</ul>
+
+		<h3 data-tx="t0011">Installatie</h3>
+
+		<h4 data-tx="t0012">Stap 1: Download de app</h4>
+		<p data-tx="t0013">Download de app PhoneBlock Mobile uit de Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+				<span class="icon">
+					<i class="fab fa-google-play"></i>
+				</span>
+				<span>Openen in Play Store</span>
+			  </a></p>
+
+		<h4 data-tx="t0014">Stap 2: Verbinding maken met PhoneBlock</h4>
+		<p data-tx="t0015">Open de app en tik op "Verbinding maken met PhoneBlock". U wordt doorgestuurd naar PhoneBlock om in te loggen. Zodra u succesvol bent ingelogd, wordt er automatisch een toegangstoken voor de app aangemaakt.</p>
+
 		<div class="columns">
-			<div class="column">
-	  			<img alt="Playstore openen" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
-	  		</div>
-		
-			<div class="column">
-				<img alt="Zoeken naar PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Open en verbind de app" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+				</figure>
+			</div>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Registratie met PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+				</figure>
 			</div>
 		</div>
-		
-		<p class="buttons is-centered">
-		  <a class="button" href="#">
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-left"></i>
-		    </span>
-		    <span data-tx="t0006">Terug</span>
-		  </a>
-		  
-		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
-		    <span data-tx="t0007">Verder</span>
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-right"></i>
-		    </span>
-		  </a>
-		</p>
+
+		<h4 data-tx="t0018">Stap 3: Autorisaties verlenen</h4>
+		<p data-tx="t0019">Om de app SPAM-oproepen te laten blokkeren, heeft hij toestemming nodig voor het filteren van oproepen. Tik op "Toestemming aanvragen" en geef de app toegang tot oproepfiltering in de Android-instellingen.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0020"><strong>Systeemvereisten:</strong> PhoneBlock Mobile vereist minimaal Android 10 (API 29). Het filteren van oproepen (CallScreeningService) is alleen beschikbaar in Android vanaf deze versie.</p>
+		</div>
+
+		<h4 data-tx="t0021">Stap 4: Klaar!</h4>
+		<p data-tx="t0022">De app is nu actief en blokkeert automatisch SPAM-oproepen. Je kunt in de app:</p>
+		<ul>
+			<li data-tx="t0023">Geblokkeerde en gemiste oproepen bekijken</li>
+			<li data-tx="t0024">Meld nummers als SPAM of legitiem</li>
+			<li data-tx="t0025">Beheer je persoonlijke zwarte en witte lijst</li>
+			<li data-tx="t0026">Zoeken op nummer</li>
+		</ul>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0027">Belangrijk voor wie overschakelt van CardDAV-synchronisatie:</strong></p>
+			<p data-tx="t0028">Als u eerder de CardDAV-methode hebt gebruikt met PeopleSync of DAVx⁵, moet u de volgende stappen uitvoeren voordat u PhoneBlock Mobile gebruikt:</p>
+			<ol>
+				<li data-tx="t0029">Deactiveer de CardDAV-synchronisatie van de PhoneBlock-blokkeringslijst in PeopleSync/DAVx⁵</li>
+				<li data-tx="t0030">De gesynchroniseerde SPAM-contacten uit uw telefoonboek verwijderen</li>
+			</ol>
+			<p class="mt-2" data-tx="t0031"><strong>Redenering:</strong> Om redenen van gegevensbescherming verwerkt PhoneBlock Mobile geen nummers die in uw contactenlijst zijn opgeslagen. Als SPAM-nummers opgeslagen blijven als contactpersonen, kunnen ze niet worden herkend en geblokkeerd door de app.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0032">Alternatief: SpamBlocker</h2>
+
+		<p data-tx="t0033">Naast de officiële PhoneBlock Mobile app kunt u ook de onafhankelijke app <a href="https://github.com/aj3423/SpamBlocker" target="_blank">SpamBlocker</a> gebruiken en de PhoneBlock database integreren. U vindt de instructies hier: <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/" target="_blank">SpamBlocker instellen met PhoneBlock</a>.</p>
+
+		<h3 data-tx="t0034">Vergelijking: PhoneBlock Mobile vs. SpamBlocker</h3>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0035">Functie</th>
+						<th data-tx="t0036">PhoneBlock Mobiel</th>
+						<th data-tx="t0037">SpamBlocker</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0038">SPAM-oproepen blokkeren</td>
+						<td data-tx="t0039"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0040"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+					</tr>
+					<tr>
+						<td data-tx="t0041">Gespreksgeschiedenis</td>
+						<td data-tx="t0042"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0043"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+					</tr>
+					<tr>
+						<td data-tx="t0044">SPAM melden</td>
+						<td data-tx="t0045"><span class="icon has-text-success"><i class="fas fa-check"></i></span> In de app</td>
+						<td data-tx="t0046"><span class="icon has-text-warning"><i class="fas fa-globe"></i></span> Over website</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047">Persoonlijke lijsten</td>
+						<td data-tx="t0048"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja, gesynchroniseerd</td>
+						<td data-tx="t0049"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja, lokaal</td>
+					</tr>
+					<tr>
+						<td data-tx="t0050">Gegevensbescherming</td>
+						<td data-tx="t0051"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 hash</td>
+						<td data-tx="t0052"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 hash</td>
+					</tr>
+					<tr>
+						<td data-tx="t0053">PhoneBlock Integratie</td>
+						<td data-tx="t0054"><span class="icon has-text-success"><i class="fas fa-plug"></i></span> Moedertaal</td>
+						<td data-tx="t0055"><span class="icon has-text-info"><i class="fas fa-cog"></i></span> Handmatig configureerbaar</td>
+					</tr>
+					<tr>
+						<td data-tx="t0056">Andere SPAM-databases</td>
+						<td data-tx="t0057"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nee</td>
+						<td data-tx="t0058"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja (meerdere)</td>
+					</tr>
+					<tr>
+						<td data-tx="t0059">Geavanceerde filteropties</td>
+						<td data-tx="t0060"><span class="icon has-text-info"><i class="fas fa-minus"></i></span> Basis</td>
+						<td data-tx="t0061"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Uitgebreid</td>
+					</tr>
+					<tr>
+						<td data-tx="t0062">SMS filteren</td>
+						<td data-tx="t0063"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nee</td>
+						<td data-tx="t0064"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+					</tr>
+					<tr>
+						<td data-tx="t0065">Ontwikkeling</td>
+						<td data-tx="t0066"><span class="icon has-text-info"><i class="fas fa-house"></i></span> PhoneBlock Team</td>
+						<td data-tx="t0067"><span class="icon has-text-info"><i class="fas fa-users"></i></span> Onafhankelijk (aj3423)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0068"><strong>Aanbeveling:</strong> Als u een eenvoudige, direct geïntegreerde oplossing voor PhoneBlock wilt, gebruik dan <strong>PhoneBlock Mobile</strong>. Als je geavanceerde filterfuncties, sms-filtering of meerdere SPAM-databases wilt gebruiken, is <strong>SpamBlocker</strong> de betere keuze.</p>
+			<p class="mt-2" data-tx="t0069"><strong>Noot:</strong> SpamBlocker is een onafhankelijke app. Neem bij problemen rechtstreeks contact op met de <a href="https://github.com/aj3423/SpamBlocker" target="_blank">ontwikkelaar</a>.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0070">Alternatief: CardDAV-synchronisatie (verouderd)</h2>
+
+		<p data-tx="t0071">De vorige methode met CardDAV-synchronisatie met apps zoals PeopleSync of DAVx⁵ is nog steeds mogelijk, maar <strong>niet langer aanbevolen</strong>. Deze methode toont alleen SPAM-nummers in je contacten, maar blokkeert geen oproepen.</p>
+
+		<p data-tx="t0072">Voordelen van de CardDAV-methode:</p>
+		<ul>
+			<li data-tx="t0073">Werkt ook op oudere Android-versies (voor Android 10)</li>
+			<li data-tx="t0074">Toont SPAM-label in gemiste oproepen</li>
+		</ul>
+
+		<p data-tx="t0075">Nadelen:</p>
+		<ul>
+			<li data-tx="t0076">Geen automatische blokkering</li>
+			<li data-tx="t0077">De telefoon rinkelt nog steeds met SPAM-oproepen</li>
+			<li data-tx="t0078">Extra app vereist voor CardDAV-synchronisatie</li>
+			<li data-tx="t0079">Complexere apparatuur</li>
+		</ul>
+
+		<p data-tx="t0080">Als je toch de CardDAV-methode wilt gebruiken, kun je de instructies vinden in de <a href="https://news.phoneblock.net/" target="_blank">PhoneBlock blog</a>.</p>
 	</div>
 </section>
 

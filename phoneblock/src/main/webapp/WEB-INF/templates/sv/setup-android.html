@@ -8,40 +8,171 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001">Installation av Android</h1>
-		
-		<p data-tx="t0002">Installationen lägger till PhoneBlocks adressbok i dina kontakter. Om du får ett samtal från ett skräppostnummer visas detta omedelbart, t.ex. "SPAM: 03016637169". Du kan också se direkt i de missade samtalen att det inte är värt att ringa tillbaka utan att behöva googla numret först.</p>
-		
-		<p data-tx="t0003">Du kan inte använda detta för att blockera SPAM-samtal (din telefon kommer fortfarande att ringa, men du kommer att se att det är ett SPAM-samtal). Du kan blockera SPAM-samtal genom att <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">installera SpamBlocker</a> och integrera PhoneBlock-databasen. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> är en oberoende app, vänligen kontakta utvecklaren direkt om du har några problem med den.</p>
-		
-		<p data-tx="t0004">För synkronisering av adressboken behöver du en app som du kan synkronisera Internettelefonböcker med. Du kan t.ex. använda "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>" eller "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Instruktionerna här är skrivna för "PeopleSync", men proceduren med "DAVx⁵" är mycket lik:</p>
-		
-		<h2 data-tx="t0005">Steg 1: Öppna Playstore och sök efter "PeopleSync"</h2>
-		
+
+		<h2 data-tx="t0002">PhoneBlock mobilapp</h2>
+
+		<p data-tx="t0003"><strong>PhoneBlock Mobile App</strong> är den officiella appen för att upptäcka och blockera SPAM-samtal direkt på din Android-smartphone. Appen använder Androids inbyggda samtalsfiltrering för att automatiskt blockera SPAM-samtal innan din telefon ringer.</p>
+
+		<h3 data-tx="t0004">Funktioner</h3>
+		<ul>
+			<li data-tx="t0005"><strong>Automatisk SPAM-blockering:</strong> Samtal från kända SPAM-nummer blockeras direkt</li>
+			<li data-tx="t0006"><strong>Samtalshistorik:</strong> Översikt över blockerade och missade samtal (endast från okända nummer som inte finns i din kontaktlista)</li>
+			<li data-tx="t0007"><strong>Rapportera nummer:</strong> Rapportera SPAM-nummer direkt från appen</li>
+			<li data-tx="t0008"><strong>Personliga listor:</strong> Hantera din egen svart- och vitlista</li>
+			<li data-tx="t0009"><strong>Maximalt dataskydd:</strong> För inkommande samtal överförs endast SHA-1-hashen för numret till servern, inte själva numret. PhoneBlock får därför inte reda på vem som har ringt om det inte är ett känt SPAM-nummer.</li>
+			<li data-tx="t0010"><strong>Ingen åtkomst till kontaktlistan:</strong> Appen behöver inte tillgång till dina kontakter. Nummer från din telefonbok behandlas aldrig av PhoneBlock Mobile.</li>
+		</ul>
+
+		<h3 data-tx="t0011">Installation</h3>
+
+		<h4 data-tx="t0012">Steg 1: Ladda ner appen</h4>
+		<p data-tx="t0013">Ladda ner PhoneBlock Mobile-appen från Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+				<span class="icon">
+					<i class="fab fa-google-play"></i>
+				</span>
+				<span>Öppna i Play Store</span>
+			  </a></p>
+
+		<h4 data-tx="t0014">Steg 2: Anslut med PhoneBlock</h4>
+		<p data-tx="t0015">Öppna appen och tryck på "Anslut till PhoneBlock". Du kommer att omdirigeras till PhoneBlock för att logga in. När du har loggat in skapas automatiskt en access token för appen.</p>
+
 		<div class="columns">
-			<div class="column">
-	  			<img alt="Öppna Playstore" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
-	  		</div>
-		
-			<div class="column">
-				<img alt="Sök efter PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Öppna och anslut appen" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+				</figure>
+			</div>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Registrering med PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+				</figure>
 			</div>
 		</div>
-		
-		<p class="buttons is-centered">
-		  <a class="button" href="#">
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-left"></i>
-		    </span>
-		    <span data-tx="t0006">Tillbaka</span>
-		  </a>
-		  
-		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
-		    <span data-tx="t0007">Ytterligare</span>
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-right"></i>
-		    </span>
-		  </a>
-		</p>
+
+		<h4 data-tx="t0018">Steg 3: Beviljande av tillstånd</h4>
+		<p data-tx="t0019">För att appen ska kunna blockera SPAM-samtal måste den ha behörighet för samtalsfiltrering. Tryck på "Begär behörighet" och ge appen tillgång till samtalsfiltrering i Android-inställningarna.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0020"><strong>Systemkrav:</strong> PhoneBlock Mobile kräver minst Android 10 (API 29). Samtalsfiltrering (CallScreeningService) är endast tillgänglig i Android från och med denna version.</p>
+		</div>
+
+		<h4 data-tx="t0021">Steg 4: Klart!</h4>
+		<p data-tx="t0022">Appen är nu aktiv och blockerar automatiskt SPAM-samtal. Det kan du göra i appen:</p>
+		<ul>
+			<li data-tx="t0023">Visa blockerade och missade samtal</li>
+			<li data-tx="t0024">Rapportera nummer som SPAM eller legitima</li>
+			<li data-tx="t0025">Hantera din personliga svart- och vitlista</li>
+			<li data-tx="t0026">Sök efter nummer</li>
+		</ul>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0027">Viktigt för dem som byter från CardDAV-synkronisering:</strong></p>
+			<p data-tx="t0028">Om du tidigare har använt CardDAV-metoden med PeopleSync eller DAVx⁵ måste du utföra följande steg innan du använder PhoneBlock Mobile:</p>
+			<ol>
+				<li data-tx="t0029">Avaktivera CardDAV-synkroniseringen av PhoneBlock-blocklistan i PeopleSync/DAVx⁵</li>
+				<li data-tx="t0030">Ta bort de synkroniserade SPAM-kontakterna från din telefonbok</li>
+			</ol>
+			<p class="mt-2" data-tx="t0031"><strong>Anledning:</strong> Av dataskyddsskäl behandlar PhoneBlock Mobile inte nummer som sparas i din kontaktlista. Om SPAM-nummer fortfarande sparas som kontakter kan de inte identifieras och blockeras av appen.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0032">Alternativ: SpamBlocker</h2>
+
+		<p data-tx="t0033">Förutom den officiella PhoneBlock Mobile-appen kan du också använda den oberoende appen <a href="https://github.com/aj3423/SpamBlocker" target="_blank">SpamBlocker</a> och integrera PhoneBlock-databasen. Du hittar instruktioner här: <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/" target="_blank">Installera SpamBlocker med PhoneBlock</a>.</p>
+
+		<h3 data-tx="t0034">Jämförelse: PhoneBlock Mobile vs. SpamBlocker</h3>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0035">Funktion</th>
+						<th data-tx="t0036">TelefonBlock Mobil</th>
+						<th data-tx="t0037">SpamBlockerare</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0038">Blockera SPAM-samtal</td>
+						<td data-tx="t0039"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0040"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+					</tr>
+					<tr>
+						<td data-tx="t0041">Samtalshistorik</td>
+						<td data-tx="t0042"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0043"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+					</tr>
+					<tr>
+						<td data-tx="t0044">Rapportera SPAM</td>
+						<td data-tx="t0045"><span class="icon has-text-success"><i class="fas fa-check"></i></span> I appen</td>
+						<td data-tx="t0046"><span class="icon has-text-warning"><i class="fas fa-globe"></i></span> Om webbplatsen</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047">Personliga listor</td>
+						<td data-tx="t0048"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja, synkroniserad</td>
+						<td data-tx="t0049"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja, lokalt</td>
+					</tr>
+					<tr>
+						<td data-tx="t0050">Skydd av personuppgifter</td>
+						<td data-tx="t0051"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 hash</td>
+						<td data-tx="t0052"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> SHA-1 hash</td>
+					</tr>
+					<tr>
+						<td data-tx="t0053">Integration av PhoneBlock</td>
+						<td data-tx="t0054"><span class="icon has-text-success"><i class="fas fa-plug"></i></span> Inhemsk</td>
+						<td data-tx="t0055"><span class="icon has-text-info"><i class="fas fa-cog"></i></span> Manuellt konfigurerbar</td>
+					</tr>
+					<tr>
+						<td data-tx="t0056">Andra SPAM-databaser</td>
+						<td data-tx="t0057"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nej</td>
+						<td data-tx="t0058"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja (flera)</td>
+					</tr>
+					<tr>
+						<td data-tx="t0059">Avancerade filteralternativ</td>
+						<td data-tx="t0060"><span class="icon has-text-info"><i class="fas fa-minus"></i></span> Bas</td>
+						<td data-tx="t0061"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Omfattande</td>
+					</tr>
+					<tr>
+						<td data-tx="t0062">SMS-filtrering</td>
+						<td data-tx="t0063"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nej</td>
+						<td data-tx="t0064"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+					</tr>
+					<tr>
+						<td data-tx="t0065">Utveckling</td>
+						<td data-tx="t0066"><span class="icon has-text-info"><i class="fas fa-house"></i></span> PhoneBlock Team</td>
+						<td data-tx="t0067"><span class="icon has-text-info"><i class="fas fa-users"></i></span> Oberoende (aj3423)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0068"><strong>Recommendation:</strong> Om du vill ha en enkel, direkt integrerad lösning för PhoneBlock, använd <strong>PhoneBlock Mobile</strong>. Om du vill använda avancerade filterfunktioner, SMS-filtrering eller flera SPAM-databaser är <strong>SpamBlocker</strong> ett bättre val.</p>
+			<p class="mt-2" data-tx="t0069"><strong>Anmärkning:</strong> SpamBlocker är en oberoende app. Vänligen kontakta <a href="https://github.com/aj3423/SpamBlocker" target="_blank">utvecklaren</a> direkt om du har några problem.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0070">Alternativ: CardDAV-synkronisering (föråldrad)</h2>
+
+		<p data-tx="t0071">Den tidigare metoden som använde CardDAV-synkronisering med appar som PeopleSync eller DAVx⁵ är fortfarande möjlig, men <strong>rekommenderas inte längre</strong>. Den här metoden visar bara SPAM-nummer i dina kontakter, men blockerar inte samtal.</p>
+
+		<p data-tx="t0072">Fördelar med CardDAV-metoden:</p>
+		<ul>
+			<li data-tx="t0073">Fungerar även på äldre Android-versioner (före Android 10)</li>
+			<li data-tx="t0074">Visar SPAM-märkning i missade samtal</li>
+		</ul>
+
+		<p data-tx="t0075">Nackdelar:</p>
+		<ul>
+			<li data-tx="t0076">Ingen automatisk blockering</li>
+			<li data-tx="t0077">Telefonen ringer fortfarande med SPAM-samtal</li>
+			<li data-tx="t0078">Ytterligare en app krävs för CardDAV-synkronisering</li>
+			<li data-tx="t0079">Mer komplex utrustning</li>
+		</ul>
+
+		<p data-tx="t0080">Om du fortfarande vill använda CardDAV-metoden hittar du instruktionerna i <a href="https://news.phoneblock.net/" target="_blank">PhoneBlock-bloggen</a>.</p>
 	</div>
 </section>
 

@@ -8,40 +8,171 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001">Instalación en Android</h1>
-		
-		<p data-tx="t0002">La instalación añade la libreta de direcciones de PhoneBlock a tus contactos. Si recibes una llamada de un número de spam, se mostrará inmediatamente, por ejemplo, "SPAM: 03016637169". También puedes ver inmediatamente en las llamadas perdidas que no merece la pena devolver la llamada sin tener que buscar primero el número en Google.</p>
-		
-		<p data-tx="t0003">No puede usar esto para bloquear llamadas SPAM (su teléfono seguirá sonando, pero verá que es una llamada SPAM). Puede bloquear las llamadas SPAM <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">instalando SpamBlocker</a> e integrando la base de datos PhoneBlock. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> es una app independiente, por favor contacta directamente con el desarrollador si tienes algún problema con ella.</p>
-		
-		<p data-tx="t0004">Para sincronizar la agenda de direcciones, necesitas una app con la que puedas sincronizar las agendas telefónicas de Internet. Puede utilizar "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>", por ejemplo, o "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵</a>". Las instrucciones aquí están escritas para "PeopleSync", pero el procedimiento con "DAVx⁵" es muy similar:</p>
-		
-		<h2 data-tx="t0005">Paso 1: Abre Playstore y busca "PeopleSync".</h2>
-		
+
+		<h2 data-tx="t0002">Aplicación móvil PhoneBlock</h2>
+
+		<p data-tx="t0003">La <strong>PhoneBlock Mobile App</strong> es la aplicación oficial para detectar y bloquear llamadas SPAM directamente en su smartphone Android. La aplicación utiliza el filtrado de llamadas integrado de Android para bloquear automáticamente las llamadas SPAM antes de que suene el teléfono.</p>
+
+		<h3 data-tx="t0004">Funciones</h3>
+		<ul>
+			<li data-tx="t0005"><strong>Bloqueo automático de SPAM:</strong> Las llamadas de números SPAM conocidos se bloquean directamente.</li>
+			<li data-tx="t0006"><strong>Historial de llamadas:</strong> Resumen de llamadas bloqueadas y perdidas (sólo de números desconocidos que no estén en tu lista de contactos).</li>
+			<li data-tx="t0007"><strong>Notificar número:</strong> Notificar números de SPAM directamente desde la app.</li>
+			<li data-tx="t0008"><strong>Listas personales:</strong> Gestiona tu propia lista negra y blanca.</li>
+			<li data-tx="t0009"><strong>Máxima protección de datos:</strong> Para las llamadas entrantes, sólo se transmite al servidor el hash SHA-1 del número, no el número en sí. Por lo tanto, PhoneBlock no averigua quién ha llamado a menos que se trate de un número SPAM conocido.</li>
+			<li data-tx="t0010"><strong>Sin acceso a la lista de contactos:</strong> La aplicación no necesita acceder a tus contactos. Los números de tu agenda nunca son procesados por PhoneBlock Mobile.</li>
+		</ul>
+
+		<h3 data-tx="t0011">Instalación</h3>
+
+		<h4 data-tx="t0012">Paso 1: Descargar la aplicación</h4>
+		<p data-tx="t0013">Descarga la aplicación PhoneBlock Mobile desde Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+				<span class="icon">
+					<i class="fab fa-google-play"></i>
+				</span>
+				<span>Abrir en Play Store</span>
+			  </a>.</p>
+
+		<h4 data-tx="t0014">Paso 2: Conectar con PhoneBlock</h4>
+		<p data-tx="t0015">Abra la aplicación y pulse en "Conectar con PhoneBlock". Será redirigido a PhoneBlock para iniciar sesión. Una vez que haya iniciado sesión correctamente, se creará automáticamente un token de acceso para la aplicación.</p>
+
 		<div class="columns">
-			<div class="column">
-	  			<img alt="Abrir Playstore" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
-	  		</div>
-		
-			<div class="column">
-				<img alt="Buscar PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Abrir y conectar la aplicación" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+				</figure>
+			</div>
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Registro en PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+				</figure>
 			</div>
 		</div>
-		
-		<p class="buttons is-centered">
-		  <a class="button" href="#">
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-left"></i>
-		    </span>
-		    <span data-tx="t0006">Volver</span>
-		  </a>
-		  
-		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
-		    <span data-tx="t0007">Más información en</span>
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-right"></i>
-		    </span>
-		  </a>
-		</p>
+
+		<h4 data-tx="t0018">Paso 3: Conceder autorizaciones</h4>
+		<p data-tx="t0019">Para que la aplicación pueda bloquear las llamadas SPAM, necesita autorización para el filtrado de llamadas. Toca en "Solicitar autorización" y permite que la app acceda al filtrado de llamadas en los ajustes de Android.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0020"><strong>Requisitos del sistema:</strong> PhoneBlock Mobile requiere al menos Android 10 (API 29). El filtrado de llamadas (CallScreeningService) solo está disponible en Android a partir de esta versión.</p>
+		</div>
+
+		<h4 data-tx="t0021">Paso 4: ¡Hecho!</h4>
+		<p data-tx="t0022">La aplicación ya está activa y bloquea automáticamente las llamadas de SPAM. Puede en la aplicación:</p>
+		<ul>
+			<li data-tx="t0023">Ver llamadas bloqueadas y perdidas</li>
+			<li data-tx="t0024">Notificar números como SPAM o legítimos</li>
+			<li data-tx="t0025">Gestiona tu lista negra y blanca personal</li>
+			<li data-tx="t0026">Búsqueda por número</li>
+		</ul>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0027">Importante para los que cambian de la sincronización CardDAV:</strong></p>
+			<p data-tx="t0028">Si ha utilizado previamente el método CardDAV con PeopleSync o DAVx⁵, debe realizar los siguientes pasos antes de utilizar PhoneBlock Mobile:</p>
+			<ol>
+				<li data-tx="t0029">Desactivar la sincronización CardDAV de la lista de bloqueo PhoneBlock en PeopleSync/DAVx⁵.</li>
+				<li data-tx="t0030">Borrar los contactos SPAM sincronizados de tu agenda telefónica</li>
+			</ol>
+			<p class="mt-2" data-tx="t0031"><strong>Razón:</strong> Por razones de protección de datos, PhoneBlock Mobile no procesa los números guardados en su lista de contactos. Si los números SPAM permanecen guardados como contactos, no pueden ser reconocidos y bloqueados por la app.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0032">Alternativa: SpamBlocker</h2>
+
+		<p data-tx="t0033">Además de la aplicación oficial PhoneBlock Mobile, también puede utilizar la aplicación independiente <a href="https://github.com/aj3423/SpamBlocker" target="_blank">SpamBlocker</a> e integrar la base de datos PhoneBlock. Puedes encontrar las instrucciones aquí: <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/" target="_blank">Cómo configurar SpamBlocker con PhoneBlock</a>.</p>
+
+		<h3 data-tx="t0034">Comparación: PhoneBlock Mobile vs. SpamBlocker</h3>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0035">Función</th>
+						<th data-tx="t0036">PhoneBlock Móvil</th>
+						<th data-tx="t0037">SpamBlocker</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0038">Bloquear llamadas SPAM</td>
+						<td data-tx="t0039"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí</td>
+						<td data-tx="t0040"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí</td>
+					</tr>
+					<tr>
+						<td data-tx="t0041">Historial de llamadas</td>
+						<td data-tx="t0042"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí</td>
+						<td data-tx="t0043"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí</td>
+					</tr>
+					<tr>
+						<td data-tx="t0044">Denunciar SPAM</td>
+						<td data-tx="t0045"><span class="icon has-text-success"><i class="fas fa-check"></i></span> En la aplicación</td>
+						<td data-tx="t0046"><span class="icon has-text-warning"><i class="fas fa-globe"></i></span> Acerca del sitio web</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047">Listas personales</td>
+						<td data-tx="t0048"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí, sincronizado</td>
+						<td data-tx="t0049"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí, local</td>
+					</tr>
+					<tr>
+						<td data-tx="t0050">Protección de datos</td>
+						<td data-tx="t0051"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> hash SHA-1</td>
+						<td data-tx="t0052"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> hash SHA-1</td>
+					</tr>
+					<tr>
+						<td data-tx="t0053">Integración de PhoneBlock</td>
+						<td data-tx="t0054"><span class="icon has-text-success"><i class="fas fa-plug"></i></span> Nativo</td>
+						<td data-tx="t0055"><span class="icon has-text-info"><i class="fas fa-cog"></i></span> Configurable manualmente</td>
+					</tr>
+					<tr>
+						<td data-tx="t0056">Otras bases de datos SPAM</td>
+						<td data-tx="t0057"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> No</td>
+						<td data-tx="t0058"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí (varios)</td>
+					</tr>
+					<tr>
+						<td data-tx="t0059">Opciones avanzadas de filtrado</td>
+						<td data-tx="t0060"><span class="icon has-text-info"><i class="fas fa-minus"></i></span> Base</td>
+						<td data-tx="t0061"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Extenso</td>
+					</tr>
+					<tr>
+						<td data-tx="t0062">Filtrado de SMS</td>
+						<td data-tx="t0063"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> No</td>
+						<td data-tx="t0064"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sí</td>
+					</tr>
+					<tr>
+						<td data-tx="t0065">Desarrollo</td>
+						<td data-tx="t0066"><span class="icon has-text-info"><i class="fas fa-house"></i></span> Equipo PhoneBlock</td>
+						<td data-tx="t0067"><span class="icon has-text-info"><i class="fas fa-users"></i></span> Independiente (aj3423)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0068"><strong>Recomendación:</strong> Si desea una solución sencilla y directamente integrada para PhoneBlock, utilice <strong>PhoneBlock Mobile</strong>. Si desea utilizar funciones avanzadas de filtrado, filtrado de SMS o múltiples bases de datos de SPAM, <strong>SpamBlocker</strong> es la mejor opción.</p>
+			<p class="mt-2" data-tx="t0069"><strong>Nota:</strong> SpamBlocker es una aplicación independiente. Póngase en contacto directamente con el <a href="https://github.com/aj3423/SpamBlocker" target="_blank">desarrollador</a> si tiene algún problema.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0070">Alternativa: Sincronización CardDAV (obsoleta)</h2>
+
+		<p data-tx="t0071">El método anterior que utilizaba la sincronización CardDAV con apps como PeopleSync o DAVx⁵ sigue siendo posible, pero <strong>ya no se recomienda</strong>. Este método solo muestra los números SPAM en tus contactos, pero no bloquea las llamadas.</p>
+
+		<p data-tx="t0072">Ventajas del método CardDAV:</p>
+		<ul>
+			<li data-tx="t0073">También funciona en versiones anteriores de Android (antes de Android 10)</li>
+			<li data-tx="t0074">Muestra el etiquetado SPAM en las llamadas perdidas</li>
+		</ul>
+
+		<p data-tx="t0075">Desventajas:</p>
+		<ul>
+			<li data-tx="t0076">Sin bloqueo automático</li>
+			<li data-tx="t0077">El teléfono sigue sonando con llamadas de SPAM</li>
+			<li data-tx="t0078">Aplicación adicional necesaria para la sincronización CardDAV</li>
+			<li data-tx="t0079">Equipos más complejos</li>
+		</ul>
+
+		<p data-tx="t0080">Si todavía quieres usar el método CardDAV, puedes encontrar las instrucciones en el blog <a href="https://news.phoneblock.net/" target="_blank">PhoneBlock</a>.</p>
 	</div>
 </section>
 
