@@ -26,43 +26,71 @@
 		<h3 data-tx="t0011">Installation</h3>
 
 		<h4 data-tx="t0012">Steg 1: Ladda ner appen</h4>
-		<p data-tx="t0013">Ladda ner PhoneBlock Mobile-appen från Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+		<p data-tx="t0107">Ladda ner PhoneBlock Mobile-appen från Google Play Store och öppna den:</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
 				<span class="icon">
 					<i class="fab fa-google-play"></i>
 				</span>
-				<span>Öppna i Play Store</span>
-			  </a></p>
+				<span data-tx="t0087">Öppna i Play Store</span>
+			</a>
+		</p>
 
-		<h4 data-tx="t0014">Steg 2: Anslut med PhoneBlock</h4>
-		<p data-tx="t0015">Öppna appen och tryck på "Anslut till PhoneBlock". Du kommer att omdirigeras till PhoneBlock för att logga in. När du har loggat in skapas automatiskt en access token för appen.</p>
-
-		<div class="columns">
+		<div class="columns is-multiline">
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Öppna och anslut appen" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+					<img alt="Öppna app" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089"><strong>Steg 1:</strong> Öppna appen och tryck på "Anslut till PhoneBlock"</p>
 			</div>
+
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Registrering med PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+					<img alt="Logga in med Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091"><strong>Steg 2:</strong> Logga in på PhoneBlock (t.ex. med Google)</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Skapa åtkomsttoken" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093"><strong>Steg 3:</strong> Bekräfta skapandet av token för appen</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Begäran om tillstånd" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095"><strong>Steg 4:</strong> Tryck på "Begär auktorisation"</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Beviljande av tillstånd" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097"><strong>Steg 5:</strong> Aktivera PhoneBlock Mobile i Android-inställningarna</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Installationen slutförd" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099"><strong>Steg 6:</strong> Klart! Appen är nu aktiv</p>
 			</div>
 		</div>
 
-		<h4 data-tx="t0018">Steg 3: Beviljande av tillstånd</h4>
-		<p data-tx="t0019">För att appen ska kunna blockera SPAM-samtal måste den ha behörighet för samtalsfiltrering. Tryck på "Begär behörighet" och ge appen tillgång till samtalsfiltrering i Android-inställningarna.</p>
-
-		<div class="notification is-info">
-			<p data-tx="t0020"><strong>Systemkrav:</strong> PhoneBlock Mobile kräver minst Android 10 (API 29). Samtalsfiltrering (CallScreeningService) är endast tillgänglig i Android från och med denna version.</p>
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100"><strong>Systemkrav:</strong> PhoneBlock Mobile kräver minst Android 10 (API 29). Samtalsfiltrering (CallScreeningService) är endast tillgänglig i Android från och med denna version.</p>
 		</div>
 
-		<h4 data-tx="t0021">Steg 4: Klart!</h4>
-		<p data-tx="t0022">Appen är nu aktiv och blockerar automatiskt SPAM-samtal. Det kan du göra i appen:</p>
+		<h4 data-tx="t0101">Vad kan du göra nu?</h4>
+		<p data-tx="t0102">Appen är nu aktiv och blockerar automatiskt SPAM-samtal. I appen kan du:</p>
 		<ul>
-			<li data-tx="t0023">Visa blockerade och missade samtal</li>
-			<li data-tx="t0024">Rapportera nummer som SPAM eller legitima</li>
-			<li data-tx="t0025">Hantera din personliga svart- och vitlista</li>
-			<li data-tx="t0026">Sök efter nummer</li>
+			<li data-tx="t0103">Visa blockerade och missade samtal</li>
+			<li data-tx="t0104">Rapportera nummer som SPAM eller legitima</li>
+			<li data-tx="t0105">Hantera din personliga svart- och vitlista</li>
+			<li data-tx="t0106">Sök efter nummer</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

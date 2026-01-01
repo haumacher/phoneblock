@@ -26,43 +26,71 @@
 		<h3 data-tx="t0011">Εγκατάσταση</h3>
 
 		<h4 data-tx="t0012">Βήμα 1: Κατεβάστε την εφαρμογή</h4>
-		<p data-tx="t0013">Κατεβάστε την εφαρμογή PhoneBlock Mobile από το Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+		<p data-tx="t0107">Κατεβάστε την εφαρμογή PhoneBlock Mobile από το Google Play Store και ανοίξτε την:</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
 				<span class="icon">
 					<i class="fab fa-google-play"></i>
 				</span>
-				<span>Άνοιγμα στο Play Store</span>
-			  </a></p>
+				<span data-tx="t0087">Άνοιγμα στο Play Store</span>
+			</a>
+		</p>
 
-		<h4 data-tx="t0014">Βήμα 2: Σύνδεση με το PhoneBlock</h4>
-		<p data-tx="t0015">Ανοίξτε την εφαρμογή και πατήστε "Σύνδεση στο PhoneBlock". Θα μεταφερθείτε στο PhoneBlock για να συνδεθείτε. Μόλις συνδεθείτε επιτυχώς, θα δημιουργηθεί αυτόματα ένα διακριτικό πρόσβασης για την εφαρμογή.</p>
-
-		<div class="columns">
+		<div class="columns is-multiline">
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Ανοίξτε και συνδέστε την εφαρμογή" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+					<img alt="Άνοιγμα εφαρμογής" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089"><strong>Βήμα 1:</strong> Ανοίξτε την εφαρμογή και πατήστε "Σύνδεση στο PhoneBlock".</p>
 			</div>
+
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Εγγραφή με το PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+					<img alt="Συνδεθείτε με το Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091"><strong>Βήμα 2:</strong> Συνδεθείτε στο PhoneBlock (π.χ. με τη Google)</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Δημιουργία κωδικού πρόσβασης" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093"><strong>Βήμα 3:</strong> Επιβεβαιώστε τη δημιουργία token για την εφαρμογή</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Αίτηση εξουσιοδότησης" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095"><strong>Βήμα 4:</strong> Πατήστε "Αίτηση εξουσιοδότησης"</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Χορήγηση άδειας" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097"><strong>Βήμα 5:</strong> Ενεργοποιήστε το PhoneBlock Mobile στις ρυθμίσεις του Android.</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Η ρύθμιση ολοκληρώθηκε" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099"><strong>Βήμα 6:</strong> Έγινε! Η εφαρμογή είναι τώρα ενεργή</p>
 			</div>
 		</div>
 
-		<h4 data-tx="t0018">Βήμα 3: Χορήγηση αδειών</h4>
-		<p data-tx="t0019">Προκειμένου η εφαρμογή να μπλοκάρει τις κλήσεις SPAM, απαιτείται εξουσιοδότηση για το φιλτράρισμα κλήσεων. Πατήστε στην επιλογή "Αίτηση εξουσιοδότησης" και επιτρέψτε στην εφαρμογή την πρόσβαση στο φιλτράρισμα κλήσεων στις ρυθμίσεις του Android.</p>
-
-		<div class="notification is-info">
-			<p data-tx="t0020"><strong>Προϋπόθεση συστήματος:</strong> Το PhoneBlock Mobile απαιτεί τουλάχιστον Android 10 (API 29). Το φιλτράρισμα κλήσεων (CallScreeningService) είναι διαθέσιμο στο Android μόνο από αυτή την έκδοση και μετά.</p>
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100"><strong>Προϋπόθεση συστήματος:</strong> Το PhoneBlock Mobile απαιτεί τουλάχιστον Android 10 (API 29). Το φιλτράρισμα κλήσεων (CallScreeningService) είναι διαθέσιμο στο Android μόνο από αυτή την έκδοση και μετά.</p>
 		</div>
 
-		<h4 data-tx="t0021">Βήμα 4: Έγινε!</h4>
-		<p data-tx="t0022">Η εφαρμογή είναι τώρα ενεργή και μπλοκάρει αυτόματα τις κλήσεις SPAM. Μπορείτε στην εφαρμογή:</p>
+		<h4 data-tx="t0101">Τι μπορείτε να κάνετε τώρα;</h4>
+		<p data-tx="t0102">Η εφαρμογή είναι τώρα ενεργή και μπλοκάρει αυτόματα τις κλήσεις SPAM. Στην εφαρμογή μπορείτε:</p>
 		<ul>
-			<li data-tx="t0023">Προβολή μπλοκαρισμένων και αναπάντητων κλήσεων</li>
-			<li data-tx="t0024">Αναφέρετε αριθμούς ως SPAM ή νόμιμους</li>
-			<li data-tx="t0025">Διαχειριστείτε την προσωπική σας μαύρη και λευκή λίστα</li>
-			<li data-tx="t0026">Αναζήτηση με αριθμό</li>
+			<li data-tx="t0103">Προβολή μπλοκαρισμένων και αναπάντητων κλήσεων</li>
+			<li data-tx="t0104">Αναφέρετε αριθμούς ως SPAM ή νόμιμους</li>
+			<li data-tx="t0105">Διαχειριστείτε την προσωπική σας μαύρη και λευκή λίστα</li>
+			<li data-tx="t0106">Αναζήτηση για αριθμούς</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

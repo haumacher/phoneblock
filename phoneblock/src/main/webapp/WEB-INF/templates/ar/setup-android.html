@@ -26,43 +26,71 @@
 		<h3 data-tx="t0011">التركيب</h3>
 
 		<h4 data-tx="t0012">الخطوة 1: قم بتنزيل التطبيق</h4>
-		<p data-tx="t0013">قم بتنزيل تطبيق PhoneBlock Mobile من متجر Google Play: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+		<p data-tx="t0107">قم بتنزيل تطبيق PhoneBlock Mobile من متجر Google Play وافتحه:</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
 				<span class="icon">
 					<i class="fab fa-google-play"></i>
 				</span>
-				<span>افتح في متجر Play</span>
-			  </a></p>
+				<span data-tx="t0087">افتح في متجر Play</span>
+			</a>
+		</p>
 
-		<h4 data-tx="t0014">الخطوة 2: التواصل مع PhoneBlock</h4>
-		<p data-tx="t0015">افتح التطبيق وانقر على "الاتصال ب PhoneBlock". ستتم إعادة توجيهك إلى PhoneBlock لتسجيل الدخول. بمجرد تسجيل الدخول بنجاح، سيتم إنشاء رمز وصول للتطبيق تلقائياً.</p>
-
-		<div class="columns">
+		<div class="columns is-multiline">
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="افتح التطبيق وقم بتوصيله" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+					<img alt="افتح التطبيق" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089"><strong>الخطوة 1:</strong> افتح التطبيق وانقر على "الاتصال ب PhoneBlock"</p>
 			</div>
+
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="التسجيل مع PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+					<img alt="تسجيل الدخول باستخدام Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091"><strong>الخطوة 2:</strong> تسجيل الدخول إلى PhoneBlock (على سبيل المثال باستخدام Google)</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="إنشاء رمز وصول مميز" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093"><strong>الخطوة 3:</strong> تأكيد إنشاء الرمز المميز للتطبيق</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="طلب التفويض" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095"><strong>الخطوة 4:</strong> انقر فوق "طلب تفويض"</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="منح التفويض" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097"><strong>الخطوة 5:</strong> تفعيل PhoneBlock Mobile في إعدادات Android</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="اكتمل الإعداد" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099"><strong>الخطوة 6:</strong> تم! التطبيق نشط الآن</p>
 			</div>
 		</div>
 
-		<h4 data-tx="t0018">الخطوة 3: منح التفويضات</h4>
-		<p data-tx="t0019">لكي يتمكن التطبيق من حظر مكالمات الرسائل الاقتحامية (SPAM)، فإنه يتطلب تفويضًا لتصفية المكالمات. اضغط على "طلب تفويض" واسمح للتطبيق بالوصول إلى تصفية المكالمات في إعدادات Android.</p>
-
-		<div class="notification is-info">
-			<p data-tx="t0020"><strong>متطلبات النظام:</strong> يتطلب PhoneBlock Mobile على الأقل نظام Android 10 (واجهة برمجة التطبيقات 29). لا تتوفر تصفية المكالمات (CallScreeningService) إلا في نظام Android من هذا الإصدار فصاعدًا.</p>
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100"><strong>متطلبات النظام:</strong> يتطلب PhoneBlock Mobile على الأقل نظام Android 10 (واجهة برمجة التطبيقات 29). لا تتوفر تصفية المكالمات (CallScreeningService) إلا في نظام Android بدءًا من هذا الإصدار فصاعدًا.</p>
 		</div>
 
-		<h4 data-tx="t0021">الخطوة 4: تم!</h4>
-		<p data-tx="t0022">التطبيق نشط الآن ويقوم تلقائيًا بحظر المكالمات غير المرغوب فيها. يمكنك في التطبيق</p>
+		<h4 data-tx="t0101">ما الذي يمكنك فعله الآن؟</h4>
+		<p data-tx="t0102">التطبيق الآن نشط ويحظر تلقائيًا مكالمات الرسائل الاقتحامية. في التطبيق يمكنك:</p>
 		<ul>
-			<li data-tx="t0023">عرض المكالمات المحظورة والفائتة</li>
-			<li data-tx="t0024">الإبلاغ عن الأرقام كرسائل غير مرغوب فيها أو شرعية</li>
-			<li data-tx="t0025">إدارة قائمتك الشخصية السوداء وقائمتك البيضاء</li>
-			<li data-tx="t0026">البحث بالرقم</li>
+			<li data-tx="t0103">عرض المكالمات المحظورة والفائتة</li>
+			<li data-tx="t0104">الإبلاغ عن الأرقام كرسائل غير مرغوب فيها أو شرعية</li>
+			<li data-tx="t0105">إدارة قائمتك الشخصية السوداء وقائمتك البيضاء</li>
+			<li data-tx="t0106">البحث بالرقم</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

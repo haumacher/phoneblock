@@ -26,43 +26,71 @@
 		<h3 data-tx="t0011">安装</h3>
 
 		<h4 data-tx="t0012">步骤 1：下载应用程序</h4>
-		<p data-tx="t0013">从 Google Play 商店下载 PhoneBlock Mobile 应用程序：<br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+		<p data-tx="t0107">从 Google Play 商店下载 PhoneBlock Mobile 应用程序并打开：</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
 				<span class="icon">
 					<i class="fab fa-google-play"></i>
 				</span>
-				<span>在 Play 应用商店中打开</span>
-			  </a></p>
+				<span data-tx="t0087">在 Play Store 中打开</span>
+			</a>
+		</p>
 
-		<h4 data-tx="t0014">步骤 2：连接 PhoneBlock</h4>
-		<p data-tx="t0015">打开应用程序，点击 "连接到 PhoneBlock"。您将被重定向到 PhoneBlock 进行登录。登录成功后，将自动创建应用程序的访问令牌。</p>
-
-		<div class="columns">
+		<div class="columns is-multiline">
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="打开并连接应用程序" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+					<img alt="打开应用程序" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089"><strong>步骤 1：</strong>打开应用程序，点击 "连接到 PhoneBlock</p>
 			</div>
+
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="使用 PhoneBlock 注册" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+					<img alt="使用 Google 登录" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091"><strong>步骤 2：</strong>登录 PhoneBlock（例如使用 Google）</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="创建访问令牌" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093"><strong>步骤 3：</strong>确认为应用程序创建令牌</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="申请授权" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095"><strong>步骤 4：</strong> 轻按 "请求授权 "按钮</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="授权" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097"><strong>步骤 5：</strong>在 Android 设置中激活 PhoneBlock Mobile</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="设置完成" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099"><strong>步骤 6：</strong> 完成！应用程序现已激活</p>
 			</div>
 		</div>
 
-		<h4 data-tx="t0018">步骤 3：授权</h4>
-		<p data-tx="t0019">为了让应用程序阻止垃圾电话，它需要获得呼叫过滤授权。点击 "请求授权"，允许应用程序访问 Android 设置中的呼叫过滤功能。</p>
-
-		<div class="notification is-info">
-			<p data-tx="t0020"><strong>系统要求：</strong> PhoneBlock Mobile 至少需要 Android 10 (API 29)。呼叫过滤（CallScreeningService）仅适用于该版本以后的安卓系统。</p>
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100"><strong>系统要求：</strong> PhoneBlock Mobile 至少需要 Android 10 (API 29)。呼叫过滤（CallScreeningService）仅适用于该版本以后的安卓系统。</p>
 		</div>
 
-		<h4 data-tx="t0021">步骤 4：完成！</h4>
-		<p data-tx="t0022">该应用程序现已激活，可自动拦截垃圾邮件电话。您可以在应用程序中</p>
+		<h4 data-tx="t0101">你现在能做什么？</h4>
+		<p data-tx="t0102">该应用程序现已激活，可自动拦截垃圾邮件电话。在该应用程序中，您可以</p>
 		<ul>
-			<li data-tx="t0023">查看已拦截和未接来电</li>
-			<li data-tx="t0024">将号码报告为垃圾邮件或合法号码</li>
-			<li data-tx="t0025">管理个人黑名单和白名单</li>
-			<li data-tx="t0026">搜索数字</li>
+			<li data-tx="t0103">查看已拦截和未接来电</li>
+			<li data-tx="t0104">将号码报告为垃圾邮件或合法号码</li>
+			<li data-tx="t0105">管理个人黑名单和白名单</li>
+			<li data-tx="t0106">搜索数字</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

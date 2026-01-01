@@ -26,43 +26,71 @@
 		<h3 data-tx="t0011">Instalación</h3>
 
 		<h4 data-tx="t0012">Paso 1: Descargar la aplicación</h4>
-		<p data-tx="t0013">Descarga la aplicación PhoneBlock Mobile desde Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+		<p data-tx="t0107">Descarga la aplicación PhoneBlock Mobile de Google Play Store y ábrela:</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
 				<span class="icon">
 					<i class="fab fa-google-play"></i>
 				</span>
-				<span>Abrir en Play Store</span>
-			  </a>.</p>
+				<span data-tx="t0087">Abrir en Play Store</span>
+			</a>
+		</p>
 
-		<h4 data-tx="t0014">Paso 2: Conectar con PhoneBlock</h4>
-		<p data-tx="t0015">Abra la aplicación y pulse en "Conectar con PhoneBlock". Será redirigido a PhoneBlock para iniciar sesión. Una vez que haya iniciado sesión correctamente, se creará automáticamente un token de acceso para la aplicación.</p>
-
-		<div class="columns">
+		<div class="columns is-multiline">
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Abrir y conectar la aplicación" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+					<img alt="Abrir la aplicación" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089"><strong>Paso 1:</strong> Abre la app y toca "Conectar con PhoneBlock".</p>
 			</div>
+
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Registro en PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+					<img alt="Iniciar sesión con Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091"><strong>Paso 2:</strong> Inicia sesión en PhoneBlock (por ejemplo, con Google).</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Crear token de acceso" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093"><strong>Paso 3:</strong> Confirmar la creación del token para la app.</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Solicitar autorización" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095"><strong>Paso 4:</strong> Pulse "Solicitar autorización".</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Conceder autorización" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097"><strong>Paso 5:</strong> Activar PhoneBlock Mobile en los ajustes de Android.</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Configuración completada" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099"><strong>Paso 6:</strong> ¡Listo! La aplicación ya está activa</p>
 			</div>
 		</div>
 
-		<h4 data-tx="t0018">Paso 3: Conceder autorizaciones</h4>
-		<p data-tx="t0019">Para que la aplicación pueda bloquear las llamadas SPAM, necesita autorización para el filtrado de llamadas. Toca en "Solicitar autorización" y permite que la app acceda al filtrado de llamadas en los ajustes de Android.</p>
-
-		<div class="notification is-info">
-			<p data-tx="t0020"><strong>Requisitos del sistema:</strong> PhoneBlock Mobile requiere al menos Android 10 (API 29). El filtrado de llamadas (CallScreeningService) solo está disponible en Android a partir de esta versión.</p>
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100"><strong>Requisitos del sistema:</strong> PhoneBlock Mobile requiere al menos Android 10 (API 29). El filtrado de llamadas (CallScreeningService) solo está disponible en Android a partir de esta versión.</p>
 		</div>
 
-		<h4 data-tx="t0021">Paso 4: ¡Hecho!</h4>
-		<p data-tx="t0022">La aplicación ya está activa y bloquea automáticamente las llamadas de SPAM. Puede en la aplicación:</p>
+		<h4 data-tx="t0101">¿Qué puede hacer ahora?</h4>
+		<p data-tx="t0102">La app ya está activa y bloquea automáticamente las llamadas de SPAM. En la app puedes:</p>
 		<ul>
-			<li data-tx="t0023">Ver llamadas bloqueadas y perdidas</li>
-			<li data-tx="t0024">Notificar números como SPAM o legítimos</li>
-			<li data-tx="t0025">Gestiona tu lista negra y blanca personal</li>
-			<li data-tx="t0026">Búsqueda por número</li>
+			<li data-tx="t0103">Ver llamadas bloqueadas y perdidas</li>
+			<li data-tx="t0104">Notificar números como SPAM o legítimos</li>
+			<li data-tx="t0105">Gestiona tu lista negra y blanca personal</li>
+			<li data-tx="t0106">Buscar números</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">

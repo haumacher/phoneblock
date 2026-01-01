@@ -26,43 +26,71 @@
 		<h3 data-tx="t0011">Installatie</h3>
 
 		<h4 data-tx="t0012">Stap 1: Download de app</h4>
-		<p data-tx="t0013">Download de app PhoneBlock Mobile uit de Google Play Store: <br/> <a class="button is-primary mt-2" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+		<p data-tx="t0107">Download de app PhoneBlock Mobile uit de Google Play Store en open deze:</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
 				<span class="icon">
 					<i class="fab fa-google-play"></i>
 				</span>
-				<span>Openen in Play Store</span>
-			  </a></p>
+				<span data-tx="t0087">Openen in de Play Store</span>
+			</a>
+		</p>
 
-		<h4 data-tx="t0014">Stap 2: Verbinding maken met PhoneBlock</h4>
-		<p data-tx="t0015">Open de app en tik op "Verbinding maken met PhoneBlock". U wordt doorgestuurd naar PhoneBlock om in te loggen. Zodra u succesvol bent ingelogd, wordt er automatisch een toegangstoken voor de app aangemaakt.</p>
-
-		<div class="columns">
+		<div class="columns is-multiline">
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Open en verbind de app" class="appscreen" data-tx="t0016" th:src="@{/assets/img/mobile/connect-1.png}"/>
+					<img alt="App openen" class="appscreen" data-tx="t0088" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089"><strong>Stap 1:</strong> Open de app en tik op "Verbinding maken met PhoneBlock".</p>
 			</div>
+
 			<div class="column is-half">
 				<figure class="image">
-					<img alt="Registratie met PhoneBlock" class="appscreen" data-tx="t0017" th:src="@{/assets/img/mobile/connect-2.png}"/>
+					<img alt="Aanmelden met Google" class="appscreen" data-tx="t0090" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
 				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091"><strong>Stap 2:</strong> Aanmelden bij PhoneBlock (bijvoorbeeld bij Google)</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Toegangstoken aanmaken" class="appscreen" data-tx="t0092" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093"><strong>Stap 3:</strong> Bevestig het aanmaken van tokens voor de app</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Toestemming aanvragen" class="appscreen" data-tx="t0094" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095"><strong>Stap 4:</strong> Tik op "Autorisatie aanvragen".</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Toestemming verlenen" class="appscreen" data-tx="t0096" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097"><strong>Stap 5:</strong> Activeer PhoneBlock Mobile in de Android-instellingen</p>
+			</div>
+
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Setup voltooid" class="appscreen" data-tx="t0098" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099"><strong>Stap 6:</strong> Klaar! De app is nu actief</p>
 			</div>
 		</div>
 
-		<h4 data-tx="t0018">Stap 3: Autorisaties verlenen</h4>
-		<p data-tx="t0019">Om de app SPAM-oproepen te laten blokkeren, heeft hij toestemming nodig voor het filteren van oproepen. Tik op "Toestemming aanvragen" en geef de app toegang tot oproepfiltering in de Android-instellingen.</p>
-
-		<div class="notification is-info">
-			<p data-tx="t0020"><strong>Systeemvereisten:</strong> PhoneBlock Mobile vereist minimaal Android 10 (API 29). Het filteren van oproepen (CallScreeningService) is alleen beschikbaar in Android vanaf deze versie.</p>
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100"><strong>Systeemvereisten:</strong> PhoneBlock Mobile vereist minimaal Android 10 (API 29). Het filteren van oproepen (CallScreeningService) is alleen beschikbaar in Android vanaf deze versie.</p>
 		</div>
 
-		<h4 data-tx="t0021">Stap 4: Klaar!</h4>
-		<p data-tx="t0022">De app is nu actief en blokkeert automatisch SPAM-oproepen. Je kunt in de app:</p>
+		<h4 data-tx="t0101">Wat kun je nu doen?</h4>
+		<p data-tx="t0102">De app is nu actief en blokkeert automatisch SPAM-oproepen. In de app kun je:</p>
 		<ul>
-			<li data-tx="t0023">Geblokkeerde en gemiste oproepen bekijken</li>
-			<li data-tx="t0024">Meld nummers als SPAM of legitiem</li>
-			<li data-tx="t0025">Beheer je persoonlijke zwarte en witte lijst</li>
-			<li data-tx="t0026">Zoeken op nummer</li>
+			<li data-tx="t0103">Geblokkeerde en gemiste oproepen bekijken</li>
+			<li data-tx="t0104">Meld nummers als SPAM of legitiem</li>
+			<li data-tx="t0105">Beheer je persoonlijke zwarte en witte lijst</li>
+			<li data-tx="t0106">Zoeken naar nummers</li>
 		</ul>
 
 		<div class="notification is-warning mt-4">
