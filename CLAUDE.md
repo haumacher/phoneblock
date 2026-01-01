@@ -263,10 +263,17 @@ When modifying `phoneblock-shared/`:
 
 **IMPORTANT**: The `data-tx` attributes in HTML templates are auto-generated magic attributes that link translations across multiple language files.
 
-**Source Languages:**
-- **Only edit `de/` (German) and `en-US/` (English) templates** - These are the source language files
-- **All other language directories are auto-generated** - Never edit them directly (ar, da, el, es, fr, it, nb, nl, pl, sv, uk, zh-Hans, etc.)
-- Translation tool regenerates all other languages from de/en-US sources during build
+**Source Language:**
+- **Only edit `de/` (German) templates** - This is the ONLY source language file to edit
+- **ALL other language directories are auto-generated** - Never edit them directly, including en-US (ar, da, el, en-US, es, fr, it, nb, nl, pl, sv, uk, zh-Hans, etc.)
+- Translation tool automatically generates all other languages from de/ sources during build
+
+**Page Title Translations:**
+- When creating new pages, add page title keys to `phoneblock/src/main/java/Messages_de.properties`
+- Format: `page.{page-name}.title=German Title Text`
+- Example: `page.usage-search.title=Nach Nummern suchen - PhoneBlock Mobile`
+- Used in template head: `<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>`
+- Without this entry, the page will fail to render with an error
 
 Rules when modifying templates:
 - **Never duplicate `data-tx` attributes** - Each unique text should have only one `data-tx` reference
