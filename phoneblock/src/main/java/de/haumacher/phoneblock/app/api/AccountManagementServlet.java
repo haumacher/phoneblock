@@ -128,10 +128,21 @@ public class AccountManagementServlet extends HttpServlet {
 			}
 		}
 
-		// Validate dial prefix format (if provided directly, not from country code)
-		if (dialPrefix != null && !dialPrefix.isEmpty() && !DIAL_PREFIX_PATTERN.matcher(dialPrefix).matches()) {
-			ServletUtil.sendError(resp, "Invalid dial prefix format. Expected format: '+XX' (e.g., '+49', '+1', '+351')");
-			return;
+		// Validate dial prefix format and verify it's a known prefix (if provided directly, not from country code)
+		if (dialPrefix != null && !dialPrefix.isEmpty()) {
+			if (!DIAL_PREFIX_PATTERN.matcher(dialPrefix).matches()) {
+				ServletUtil.sendError(resp, "Invalid dial prefix format. Expected format: '+XX' (e.g., '+49', '+1', '+351')");
+				return;
+			}
+
+			// Verify the dial prefix is actually known by the service
+			if (countryCode == null || countryCode.isEmpty()) {
+				// Only verify if dial prefix was provided directly (not converted from country code)
+				if (Countries.fromDialPrefix(dialPrefix) == null) {
+					ServletUtil.sendError(resp, "Unknown dial prefix '" + dialPrefix + "'. Please use a valid country dial prefix.");
+					return;
+				}
+			}
 		}
 
 		// Validate display name (basic validation - not empty if provided)
