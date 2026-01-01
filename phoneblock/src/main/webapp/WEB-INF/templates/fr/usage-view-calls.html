@@ -9,39 +9,106 @@
 	<div class="content">
 		<h1 data-tx="t0001">Consulter les appels bloqués et manqués</h1>
 
-		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile t'indique tous les appels SPAM bloqués et les appels manqués provenant de numéros inconnus.</p>
+		<p class="subtitle" data-tx="t0017">PhoneBlock Mobile vérifie tous les appels entrants provenant de numéros inconnus et te montre lesquels ont été bloqués et lesquels sont passés.</p>
 
 		<div class="notification is-info">
-			<p data-tx="t0003"><strong>Protection des données:</strong> Les appels provenant de numéros figurant dans ta liste de contacts ne sont pas enregistrés. L'application ne traite que les numéros inconnus.</p>
+			<p data-tx="t0018"><strong>Important:</strong> Seuls les numéros inconnus sont vérifiés !</p>
+			<p class="mt-2" data-tx="t0019">Les appels provenant de numéros figurant dans ta liste de contacts ne sont jamais vérifiés et n'apparaissent pas dans la liste d'appels PhoneBlock. L'application ne traite que les numéros qui ne sont pas enregistrés dans ton répertoire.</p>
 		</div>
 
-		<h2 data-tx="t0004">Comment ça marche</h2>
+		<h2 data-tx="t0020">L'historique des appels</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<h3 data-tx="t0005">Blocage automatique</h3>
+				<h3 data-tx="t0021">Aperçu de tous les appels vérifiés</h3>
 				<figure class="image">
-					<img alt="Appel SPAM bloqué" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+					<img alt="Liste des appels vérifiés" class="appscreen" data-tx="t0022" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0007">Les appels SPAM bloqués sont automatiquement affichés dans l'application. Tu reçois une notification avec le numéro et le score SPAM.</p>
+				<p class="has-text-centered mt-2" data-tx="t0023">L'application affiche tous les appels de numéros inconnus avec leur statut respectif</p>
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0008">Détails de l'appel</h3>
-				<p class="mt-5" data-tx="t0009">Appuie sur une entrée de l'historique des appels pour en voir les détails :</p>
-				<ul>
-					<li data-tx="t0010"><strong>SPAM-Score:</strong> Nombre d'évaluations négatives de la communauté</li>
-					<li data-tx="t0011"><strong>Temps:</strong> Quand l'appel a eu lieu</li>
-					<li data-tx="t0012"><strong>Catégories:</strong> Type de SPAM (par ex. publicité, fraude, jeu-concours)</li>
-					<li data-tx="t0013"><strong>Commentaires:</strong> Témoignages et expériences d'autres utilisateurs de PhoneBlock</li>
-				</ul>
-				<p class="mt-4" data-tx="t0014">De là, tu peux aussi évaluer toi-même le numéro ou l'ajouter à ta liste noire/liste blanche personnelle.</p>
+				<h3 data-tx="t0024">Appels SPAM bloqués</h3>
+				<figure class="image">
+					<img alt="Appel SPAM bloqué" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Les appels SPAM bloqués sont affichés avec une icône rouge et un score SPAM. Tu recevras une notification de blocage.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Quels numéros sont bloqués en tant que SPAM ?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028">Numéros de SPAM (sont bloqués)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029">Un numéro est bloqué en tant que SPAM si :</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030">elle a un score SPAM élevé dans la base de données PhoneBlock</li>
+						<li data-tx="t0031">le score SPAM dépasse le seuil que vous avez défini</li>
+						<li data-tx="t0032">elle figure sur ta liste noire personnelle (indépendamment du score)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033"><strong>Résultat:</strong> Ton téléphone ne sonne pas, l'appel est automatiquement rejeté.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034">Numéros légitimes (laissés passer)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035">Un numéro est considéré comme légitime si :</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036">elle n'est pas présente dans la base de données PhoneBlock</li>
+						<li data-tx="t0037">elle a un score SPAM faible, inférieur à ton seuil</li>
+						<li data-tx="t0038">elle figure sur ta liste blanche personnelle (elle n'est jamais bloquée)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039"><strong>Résultat:</strong> Ton téléphone sonne normalement, l'appel passe.</p>
+				</div>
 			</div>
 		</div>
 
 		<div class="notification is-success mt-5">
 			<p><strong data-tx="t0015">Comment fonctionne le blocage ?</strong></p>
 			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile utilise le CallScreeningService d'Android pour vérifier les appels entrants avant même qu'ils ne sonnent. Si le numéro se trouve dans la base de données SPAM et que la valeur seuil que tu as définie est dépassée, l'appel est automatiquement bloqué.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040">Signaler les numéros SPAM de l'historique des appels</h2>
+
+		<p data-tx="t0041">Si tu as reçu un appel d'un numéro inconnu qui est passé pour légitime, mais qui était en fait du SPAM, tu peux le signaler directement depuis l'historique des appels :</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042">Quand faut-il signaler un numéro ?</h3>
+				<ul>
+					<li data-tx="t0043">Le numéro n'est pas encore dans la base de données PhoneBlock (score SPAM faible ou nul)</li>
+					<li data-tx="t0044">L'appel était clairement indésirable (publicité, fraude, etc.)</li>
+					<li data-tx="t0045">Vous souhaitez avertir la communauté de ce numéro</li>
+					<li data-tx="t0046">Le numéro doit être automatiquement bloqué à l'avenir</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047">Que se passe-t-il en cas de signalement ?</h3>
+				<ul>
+					<li data-tx="t0048">Le numéro est <strong>automatiquement ajouté à ta blacklist</strong>.</li>
+					<li data-tx="t0049">Tu seras protégé(e) à l'avenir contre d'autres appels de ce numéro</li>
+					<li data-tx="t0050">Ton message contribue à la base de données PhoneBlock</li>
+					<li data-tx="t0051">D'autres utilisateurs profitent de ton évaluation</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052">Vers les instructions : signaler les numéros de SPAM</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053">Important :</strong></p>
+			<p class="mt-2" data-tx="t0054">Si tu signales un numéro comme SPAM, il sera ajouté à ta liste noire personnelle et sera toujours bloqué à l'avenir. Cette décision a la priorité sur l'évaluation de la communauté.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

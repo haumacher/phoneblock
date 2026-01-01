@@ -9,39 +9,106 @@
 	<div class="content">
 		<h1 data-tx="t0001">Перегляд заблокованих та пропущених дзвінків</h1>
 
-		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile показує всі заблоковані СПАМ-дзвінки та пропущені дзвінки з невідомих номерів.</p>
+		<p class="subtitle" data-tx="t0017">PhoneBlock Mobile перевіряє всі вхідні дзвінки з невідомих номерів і показує, які з них були заблоковані, а які пройшли.</p>
 
 		<div class="notification is-info">
-			<p data-tx="t0003"><strong>Захист даних:</strong> Дзвінки з номерів зі списку контактів не записуються. Додаток обробляє лише невідомі номери.</p>
+			<p data-tx="t0018"><strong>Важливо:</strong> Перевіряються тільки невідомі числа!</p>
+			<p class="mt-2" data-tx="t0019">Дзвінки з номерів зі списку контактів ніколи не перевіряються і не з'являються у списку дзвінків PhoneBlock. Додаток обробляє лише номери, які не збережені у вашій телефонній книзі.</p>
 		</div>
 
-		<h2 data-tx="t0004">Як це працює</h2>
+		<h2 data-tx="t0020">Історія дзвінків</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<h3 data-tx="t0005">Автоматичне блокування</h3>
+				<h3 data-tx="t0021">Огляд усіх перевірених дзвінків</h3>
 				<figure class="image">
-					<img alt="Спам-дзвінок заблоковано" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+					<img alt="Список підтверджених дзвінків" class="appscreen" data-tx="t0022" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0007">Заблоковані СПАМ-дзвінки автоматично відображаються в додатку. Ви отримаєте сповіщення з номером та оцінкою спаму.</p>
+				<p class="has-text-centered mt-2" data-tx="t0023">Додаток показує всі дзвінки з невідомих номерів з відповідним статусом</p>
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0008">Деталі дзвінка</h3>
-				<p class="mt-5" data-tx="t0009">Натисніть на запис у журналі викликів, щоб переглянути деталі:</p>
-				<ul>
-					<li data-tx="t0010"><strong>Оцінка спаму:</strong> Кількість негативних оцінок від спільноти</li>
-					<li data-tx="t0011"><strong>Час:</strong> Коли було здійснено дзвінок</li>
-					<li data-tx="t0012"><strong>Категорії:</strong> Тип спаму (наприклад, реклама, шахрайство, конкуренція)</li>
-					<li data-tx="t0013"><strong>Коментарі:</strong> Звіти та досвід інших користувачів PhoneBlock</li>
-				</ul>
-				<p class="mt-4" data-tx="t0014">Тут ви також можете оцінити номер самостійно або додати його до особистого чорного/білого списку.</p>
+				<h3 data-tx="t0024">Заблоковані спам-дзвінки</h3>
+				<figure class="image">
+					<img alt="Спам-дзвінок заблоковано" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Заблоковані СПАМ-дзвінки відображаються з червоним символом та оцінкою СПАМ. Ви отримаєте повідомлення про блокування.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Які номери блокуються як спам?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028">СПАМ-номера (будуть заблоковані)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029">Номер блокується як спам, якщо:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030">у вас високий показник спаму в базі даних PhoneBlock</li>
+						<li data-tx="t0031">Показник спаму перевищує встановлене вами порогове значення</li>
+						<li data-tx="t0032">Вона у вашому особистому чорному списку (незалежно від оцінки)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033"><strong>Результат:</strong> Ваш телефон не дзвонить, дзвінок автоматично відхилено.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034">Легальні номери (пропускаються)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035">Число вважається легітимним, якщо:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036">Відсутній у базі даних PhoneBlock</li>
+						<li data-tx="t0037">Він має низький показник спаму, нижчий за ваш поріг</li>
+						<li data-tx="t0038">Вона у вашому особистому білому списку (ніколи не буде заблокована)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039"><strong>Результат:</strong> Ваш телефон дзвонить нормально, дзвінок проходить.</p>
+				</div>
 			</div>
 		</div>
 
 		<div class="notification is-success mt-5">
 			<p><strong data-tx="t0015">Як працює блокування?</strong></p>
 			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile використовує службу CallScreeningService в Android для перевірки вхідних дзвінків до того, як вони надійдуть. Якщо номер знаходиться в базі даних спаму і перевищує встановлений вами поріг, дзвінок автоматично блокується.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040">Повідомлення про спам-номера з журналу дзвінків</h2>
+
+		<p data-tx="t0041">Якщо ви отримали дзвінок з невідомого номера, який надійшов як легальний, але насправді виявився спамом, ви можете повідомити про це безпосередньо зі списку дзвінків:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042">Коли ви повинні повідомити номер?</h3>
+				<ul>
+					<li data-tx="t0043">Номер ще не знаходиться в базі даних PhoneBlock (низький або відсутній показник спаму)</li>
+					<li data-tx="t0044">Дзвінок був явно небажаним (реклама, шахрайство тощо).</li>
+					<li data-tx="t0045">Ви хочете попередити громаду про цей номер</li>
+					<li data-tx="t0046">Надалі номер буде заблоковано автоматично</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047">Що відбувається у випадку повідомлення?</h3>
+				<ul>
+					<li data-tx="t0048">Номер <strong>автоматично додається до вашого чорного списку&lt;/x1</strong></li>
+					<li data-tx="t0049">Ви будете захищені від майбутніх дзвінків з цього номера</li>
+					<li data-tx="t0050">Ваше повідомлення поповнює базу даних PhoneBlock</li>
+					<li data-tx="t0051">Інші користувачі отримують вигоду від вашого рейтингу</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052">До інструкції: Повідомляти про номери спаму</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053">Це важливо:</strong></p>
+			<p class="mt-2" data-tx="t0054">Якщо ви повідомляєте про номер як про СПАМ, він буде доданий до вашого особистого чорного списку і в майбутньому буде заблокований назавжди. Це рішення має пріоритет над рейтингом спільноти.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

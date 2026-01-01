@@ -9,39 +9,106 @@
 	<div class="content">
 		<h1 data-tx="t0001">Visa blockerade och missade samtal</h1>
 
-		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile visar dig alla blockerade SPAM-samtal och missade samtal från okända nummer.</p>
+		<p class="subtitle" data-tx="t0017">PhoneBlock Mobile kontrollerar alla inkommande samtal från okända nummer och visar vilka som har blockerats och vilka som har gått igenom.</p>
 
 		<div class="notification is-info">
-			<p data-tx="t0003"><strong>Dataskydd:</strong> Samtal från nummer i din kontaktlista spelas inte in. Appen bearbetar endast okända nummer.</p>
+			<p data-tx="t0018"><strong>Viktigt:</strong> Endast okända nummer kontrolleras!</p>
+			<p class="mt-2" data-tx="t0019">Samtal från nummer i din kontaktlista kontrolleras aldrig och visas inte i PhoneBlocks samtalslista. Appen behandlar endast nummer som inte finns sparade i din telefonbok.</p>
 		</div>
 
-		<h2 data-tx="t0004">Så här fungerar det</h2>
+		<h2 data-tx="t0020">Samtalshistorik</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<h3 data-tx="t0005">Automatisk blockering</h3>
+				<h3 data-tx="t0021">Översikt över alla kontrollerade samtal</h3>
 				<figure class="image">
-					<img alt="SPAM-samtal blockerat" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+					<img alt="Lista över kontrollerade samtal" class="appscreen" data-tx="t0022" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0007">Blockerade SPAM-samtal visas automatiskt i appen. Du får ett meddelande med numret och SPAM-poängen.</p>
+				<p class="has-text-centered mt-2" data-tx="t0023">Appen visar alla samtal från okända nummer med respektive status</p>
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0008">Ring detaljer</h3>
-				<p class="mt-5" data-tx="t0009">Tryck på en post i samtalshistoriken för att se detaljer:</p>
-				<ul>
-					<li data-tx="t0010"><strong>SPAM score:</strong> Antal negativa betyg från communityt</li>
-					<li data-tx="t0011"><strong>Tid:</strong> När samtalet gjordes</li>
-					<li data-tx="t0012"><strong>Kategorier:</strong> Typ av SPAM (t.ex. reklam, bedrägeri, konkurrens)</li>
-					<li data-tx="t0013"><strong>Kommentarer:</strong> Rapporter och erfarenheter från andra PhoneBlock-användare</li>
-				</ul>
-				<p class="mt-4" data-tx="t0014">Härifrån kan du också själv betygsätta numret eller lägga till det på din personliga svartlista/vitlista.</p>
+				<h3 data-tx="t0024">Blockerade SPAM-samtal</h3>
+				<figure class="image">
+					<img alt="SPAM-samtal blockerat" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Blockerade SPAM-samtal visas med en röd symbol och SPAM-poäng. Du kommer att få ett meddelande om blockeringen.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Vilka nummer blockeras som SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028">SPAM-nummer (kommer att blockeras)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029">Ett nummer blockeras som SPAM om:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030">du har en hög SPAM-poäng i PhoneBlock-databasen</li>
+						<li data-tx="t0031">SPAM-poängen överskrider ditt inställda tröskelvärde</li>
+						<li data-tx="t0032">Hon finns på din personliga svarta lista (oavsett poäng)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033"><strong>Resultat:</strong> Din telefon ringer inte, samtalet avvisas automatiskt.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034">Legitima nummer (släpps igenom)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035">Ett nummer anses vara legitimt om:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036">Den är inte tillgänglig i PhoneBlock-databasen</li>
+						<li data-tx="t0037">Den har en låg SPAM-poäng under ditt tröskelvärde</li>
+						<li data-tx="t0038">Hon finns på din personliga vitlista (kommer aldrig att blockeras)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039"><strong>Resultat:</strong> Din telefon ringer normalt, samtalet går igenom.</p>
+				</div>
 			</div>
 		</div>
 
 		<div class="notification is-success mt-5">
 			<p><strong data-tx="t0015">Hur fungerar blockeringen?</strong></p>
 			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile använder Androids CallScreeningService för att filtrera inkommande samtal innan de ringer. Om numret finns i SPAM-databasen och ditt inställda tröskelvärde överskrids blockeras samtalet automatiskt.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040">Rapportera SPAM-nummer från samtalshistoriken</h2>
+
+		<p data-tx="t0041">Om du har fått ett samtal från ett okänt nummer som uppfattades som legitimt men som i själva verket var skräppost, kan du rapportera det direkt från samtalslistan:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042">När ska du rapportera ett nummer?</h3>
+				<ul>
+					<li data-tx="t0043">Numret finns ännu inte i PhoneBlock-databasen (låg eller ingen SPAM-poäng)</li>
+					<li data-tx="t0044">Samtalet var uppenbart oönskat (reklam, bedrägeri etc.)</li>
+					<li data-tx="t0045">Du vill varna samhället för det här numret</li>
+					<li data-tx="t0046">Numret ska i fortsättningen blockeras automatiskt</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047">Vad händer vid en eventuell anmälan?</h3>
+				<ul>
+					<li data-tx="t0048">Numret läggs <strong>automatiskt till i din svarta lista&lt;/x1</strong></li>
+					<li data-tx="t0049">Du kommer att skyddas mot framtida samtal från detta nummer</li>
+					<li data-tx="t0050">Ditt meddelande bidrar till PhoneBlock-databasen</li>
+					<li data-tx="t0051">Andra användare drar nytta av ditt betyg</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052">Till instruktionerna: Rapportera SPAM-nummer</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053">Viktigt:</strong></p>
+			<p class="mt-2" data-tx="t0054">Om du rapporterar ett nummer som SPAM kommer det att läggas till i din personliga svarta lista och kommer alltid att blockeras i framtiden. Detta beslut har företräde framför community-betyget.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

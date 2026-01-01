@@ -9,39 +9,106 @@
 	<div class="content">
 		<h1 data-tx="t0001">查看已拦截和未接来电</h1>
 
-		<p class="subtitle" data-tx="t0002">PhoneBlock Mobile 可显示所有已拦截的垃圾邮件电话和来自未知号码的未接来电。</p>
+		<p class="subtitle" data-tx="t0017">PhoneBlock Mobile 会检查所有来自未知号码的来电，并显示哪些已被拦截，哪些已经接通。</p>
 
 		<div class="notification is-info">
-			<p data-tx="t0003"><strong>数据保护：</strong>不会记录来自联系人列表中号码的通话。应用程序只处理未知号码。</p>
+			<p data-tx="t0018"><strong>重要：</strong> 仅检查未知号码！</p>
+			<p class="mt-2" data-tx="t0019">来自联系人列表中号码的呼叫不会被检查，也不会出现在 PhoneBlock 呼叫列表中。该应用程序只处理未保存在电话簿中的号码。</p>
 		</div>
 
-		<h2 data-tx="t0004">工作原理</h2>
+		<h2 data-tx="t0020">通话记录</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<h3 data-tx="t0005">自动屏蔽</h3>
+				<h3 data-tx="t0021">所有已检查通话的概览</h3>
 				<figure class="image">
-					<img alt="拦截垃圾邮件电话" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+					<img alt="经核实的通话清单" class="appscreen" data-tx="t0022" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0007">被拦截的垃圾电话会自动显示在应用程序中。您将收到包含号码和 SPAM 分数的通知。</p>
+				<p class="has-text-centered mt-2" data-tx="t0023">该程序可显示所有未知号码的来电及其各自的状态</p>
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0008">电话详情</h3>
-				<p class="mt-5" data-tx="t0009">点击通话记录中的条目查看详情：</p>
-				<ul>
-					<li data-tx="t0010"><strong>垃圾邮件得分：</strong>社区负面评价的数量</li>
-					<li data-tx="t0011"><strong>时间：</strong>通话时间</li>
-					<li data-tx="t0012"><strong>类别：</strong>垃圾邮件类型（如广告、欺诈、竞争等）</li>
-					<li data-tx="t0013"><strong>评论：</strong>其他 PhoneBlock 用户的报告和经验</li>
-				</ul>
-				<p class="mt-4" data-tx="t0014">在这里，您还可以对号码进行评分，或将其添加到您的个人黑名单/白名单中。</p>
+				<h3 data-tx="t0024">拦截垃圾邮件电话</h3>
+				<figure class="image">
+					<img alt="拦截垃圾邮件电话" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">被拦截的垃圾邮件电话会显示红色符号和垃圾邮件分数。您将收到有关拦截的通知。</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">哪些号码会被当作垃圾邮件拦截？</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028">垃圾邮件号码（将被阻止）</h3>
+					<p class="has-text-white mt-2" data-tx="t0029">如果出现以下情况，该号码将被拦截为垃圾邮件：</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030">您在 PhoneBlock 数据库中的垃圾邮件得分较高</li>
+						<li data-tx="t0031">垃圾邮件得分超过您设置的阈值</li>
+						<li data-tx="t0032">她上了你的个人黑名单（无论得分高低）</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033"><strong>结果：</strong>您的电话没有响铃，呼叫被自动拒接。</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034">合法号码（允许通过）</h3>
+					<p class="has-text-white mt-2" data-tx="t0035">在下列情况下，一个号码被认为是合法的</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036">PhoneBlock 数据库中没有该功能</li>
+						<li data-tx="t0037">垃圾邮件得分较低，低于您的阈值</li>
+						<li data-tx="t0038">她在您的个人白名单上（永远不会被屏蔽）</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039"><strong>结果：</strong>您的电话正常响铃，呼叫接通。</p>
+				</div>
 			</div>
 		</div>
 
 		<div class="notification is-success mt-5">
 			<p><strong data-tx="t0015">拦截是如何进行的？</strong></p>
 			<p class="mt-2" data-tx="t0016">PhoneBlock Mobile 使用 Android 的 CallScreeningService 在来电铃声响起之前对来电进行筛选。如果号码在垃圾邮件数据库中，并且超过了您设置的阈值，则会自动阻止来电。</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040">报告通话记录中的垃圾邮件号码</h2>
+
+		<p data-tx="t0041">如果您接到了一个陌生号码打来的电话，而该号码是合法的，但实际上是垃圾邮件，您可以直接从呼叫列表中进行报告：</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042">什么时候应该报告号码？</h3>
+				<ul>
+					<li data-tx="t0043">该号码尚未录入 PhoneBlock 数据库（垃圾邮件得分较低或没有得分）</li>
+					<li data-tx="t0044">电话明显不受欢迎（广告、欺诈等）</li>
+					<li data-tx="t0045">您希望向社会公布这个号码</li>
+					<li data-tx="t0046">该号码今后将被自动屏蔽</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047">收到报告后怎么办？</h3>
+				<ul>
+					<li data-tx="t0048">该号码已自动添加到您的黑名单&lt;/x1</li>
+					<li data-tx="t0049">您将受到保护，今后不会再接到这个号码打来的电话</li>
+					<li data-tx="t0050">您的信息为 PhoneBlock 数据库做出了贡献</li>
+					<li data-tx="t0051">其他用户可从您的评级中获益</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052">指示：报告垃圾邮件号码</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053">重要：</strong></p>
+			<p class="mt-2" data-tx="t0054">如果您将某个号码报告为垃圾邮件，该号码将被添加到您的个人黑名单中，并在今后始终被阻止。此决定优先于社区评级。</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

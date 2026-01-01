@@ -9,39 +9,106 @@
 	<div class="content">
 		<h1 data-tx="t0001">عرض المكالمات المحظورة والفائتة</h1>
 
-		<p class="subtitle" data-tx="t0002">يُظهر لك PhoneBlock Mobile جميع المكالمات المحظورة والمكالمات الفائتة من أرقام غير معروفة.</p>
+		<p class="subtitle" data-tx="t0017">يتحقق PhoneBlock Mobile من جميع المكالمات الواردة من أرقام مجهولة ويوضح لك المكالمات التي تم حظرها والمكالمات التي تم تمريرها.</p>
 
 		<div class="notification is-info">
-			<p data-tx="t0003"><strong> حماية البيانات:</strong> لا يتم تسجيل المكالمات من الأرقام الموجودة في قائمة جهات الاتصال الخاصة بك. يعالج التطبيق الأرقام غير المعروفة فقط.</p>
+			<p data-tx="t0018"><strong>مهم:</strong> يتم التحقق من الأرقام غير المعروفة فقط!</p>
+			<p class="mt-2" data-tx="t0019">لا يتم التحقق من المكالمات الواردة من الأرقام الموجودة في قائمة جهات الاتصال الخاصة بك ولا تظهر في قائمة مكالمات PhoneBlock. يعالج التطبيق فقط الأرقام غير المحفوظة في دفتر هاتفك.</p>
 		</div>
 
-		<h2 data-tx="t0004">كيف تعمل</h2>
+		<h2 data-tx="t0020">سجل المكالمات</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<h3 data-tx="t0005">الحجب التلقائي</h3>
+				<h3 data-tx="t0021">نظرة عامة على جميع المكالمات التي تم فحصها</h3>
 				<figure class="image">
-					<img alt="تم حظر مكالمة سبام" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+					<img alt="قائمة المكالمات التي تم التحقق منها" class="appscreen" data-tx="t0022" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0007">يتم عرض مكالمات الرسائل الاقتحامية المحظورة تلقائيًا في التطبيق. ستتلقى إشعارًا بالرقم ودرجة الرسائل الاقتحامية.</p>
+				<p class="has-text-centered mt-2" data-tx="t0023">يعرض التطبيق جميع المكالمات الواردة من أرقام مجهولة مع الحالة الخاصة بكل منها</p>
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0008">تفاصيل المكالمة</h3>
-				<p class="mt-5" data-tx="t0009">اضغط على إدخال في سجل المكالمات للاطلاع على التفاصيل:</p>
-				<ul>
-					<li data-tx="t0010"><strong> درجة الرسائل غير المرغوب فيها: </strong> عدد التقييمات السلبية من المجتمع</li>
-					<li data-tx="t0011"><strong>الوقت:</strong> عند إجراء المكالمة</li>
-					<li data-tx="t0012"><strong>الفئات:</strong>نوع الرسائل الاقتحامية (مثل الإعلانات والاحتيال والمنافسة)</li>
-					<li data-tx="t0013"><strong>التعليقات:</strong> تقارير وتجارب مستخدمي PhoneBlock الآخرين</li>
-				</ul>
-				<p class="mt-4" data-tx="t0014">من هنا يمكنك أيضًا تقييم الرقم بنفسك أو إضافته إلى قائمتك الشخصية السوداء/القائمة البيضاء.</p>
+				<h3 data-tx="t0024">مكالمات الرسائل الاقتحامية المحظورة</h3>
+				<figure class="image">
+					<img alt="تم حظر مكالمة سبام" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">يتم عرض مكالمات الرسائل الاقتحامية المحظورة برمز أحمر ودرجة الرسائل الاقتحامية. ستتلقى إشعاراً بالحظر.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">ما هي الأرقام المحظورة باعتبارها رسائل اقتحامية (SPAM)؟</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028">أرقام الرسائل الاقتحامية (سيتم حظرها)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029">يتم حظر الرقم كرسالة غير مرغوب فيها إذا:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030">لديك درجة عالية من الرسائل الاقتحامية في قاعدة بيانات PhoneBlock</li>
+						<li data-tx="t0031">درجة الرسائل الاقتحامية تتجاوز قيمة العتبة التي قمت بتعيينها</li>
+						<li data-tx="t0032">إنها على قائمتك السوداء الشخصية (بغض النظر عن النتيجة)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033"><strong>النتيجة:</strong> لا يرن هاتفك، يتم رفض المكالمة تلقائيًا.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034">الأرقام الشرعية (مسموح بها)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035">يعتبر الرقم مشروعاً إذا:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036">وهي غير متوفرة في قاعدة بيانات PhoneBlock</li>
+						<li data-tx="t0037">يحتوي على درجة منخفضة من الرسائل الاقتحامية (SPAM) أقل من الحد الذي حددته</li>
+						<li data-tx="t0038">إنها على قائمتك البيضاء الشخصية (لن يتم حظرها أبدًا)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039"><strong>النتيجة:</strong> يرن هاتفك بشكل طبيعي، وتمر المكالمة.</p>
+				</div>
 			</div>
 		</div>
 
 		<div class="notification is-success mt-5">
 			<p><strong data-tx="t0015">كيف يعمل الحجب؟</strong></p>
 			<p class="mt-2" data-tx="t0016">يستخدم PhoneBlock Mobile خدمة CallScreeningService في نظام Android لفحص المكالمات الواردة قبل أن ترن. إذا كان الرقم موجوداً في قاعدة بيانات الرسائل الاقتحامية (SPAM) وتم تجاوز الحد الذي حددته، يتم حظر المكالمة تلقائياً.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040">الإبلاغ عن أرقام الرسائل الاقتحامية من سجل المكالمات</h2>
+
+		<p data-tx="t0041">إذا كنت قد تلقيت مكالمة من رقم غير معروف جاءك على أنه رقم شرعي ولكنه في الواقع كان رسالة مزعجة غير مرغوب فيها، يمكنك الإبلاغ عنها مباشرةً من قائمة المكالمات:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042">متى يجب عليك الإبلاغ عن رقم؟</h3>
+				<ul>
+					<li data-tx="t0043">الرقم ليس موجودًا بعد في قاعدة بيانات PhoneBlock (درجة الرسائل الاقتحامية منخفضة أو معدومة)</li>
+					<li data-tx="t0044">من الواضح أن المكالمة كانت غير مرغوب فيها (إعلان، احتيال، إلخ)</li>
+					<li data-tx="t0045">تريد تحذير المجتمع من هذا الرقم</li>
+					<li data-tx="t0046">سيتم حظر الرقم تلقائيًا في المستقبل</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047">ماذا يحدث في حالة وجود بلاغ؟</h3>
+				<ul>
+					<li data-tx="t0048">تتم إضافة الرقم <strong> تلقائيًا إلى قائمتك السوداء&lt;/x1</strong></li>
+					<li data-tx="t0049">ستتم حمايتك من المكالمات المستقبلية من هذا الرقم</li>
+					<li data-tx="t0050">رسالتك تساهم في قاعدة بيانات PhoneBlock</li>
+					<li data-tx="t0051">يستفيد المستخدمون الآخرون من تقييمك</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052">إلى التعليمات: الإبلاغ عن أرقام الرسائل الاقتحامية</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053">مهم:</strong></p>
+			<p class="mt-2" data-tx="t0054">إذا قمت بالإبلاغ عن رقم كرسالة غير مرغوب فيها، فسيتم إضافته إلى قائمتك السوداء الشخصية وسيتم حظره دائمًا في المستقبل. هذا القرار له الأسبقية على تصنيف المجتمع.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>

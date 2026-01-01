@@ -9,39 +9,106 @@
 	<div class="content">
 		<h1 data-tx="t0001">Προβολή μπλοκαρισμένων και αναπάντητων κλήσεων</h1>
 
-		<p class="subtitle" data-tx="t0002">Το PhoneBlock Mobile σας εμφανίζει όλες τις αποκλεισμένες κλήσεις SPAM και τις αναπάντητες κλήσεις από άγνωστους αριθμούς.</p>
+		<p class="subtitle" data-tx="t0017">Το PhoneBlock Mobile ελέγχει όλες τις εισερχόμενες κλήσεις από άγνωστους αριθμούς και σας δείχνει ποιες έχουν μπλοκαριστεί και ποιες έχουν περάσει.</p>
 
 		<div class="notification is-info">
-			<p data-tx="t0003"><strong>Προστασία δεδομένων:</strong> Οι κλήσεις από αριθμούς στη λίστα επαφών σας δεν καταγράφονται. Η εφαρμογή επεξεργάζεται μόνο άγνωστους αριθμούς.</p>
+			<p data-tx="t0018"><strong>Σημαντικό:</strong> Ελέγχονται μόνο οι άγνωστοι αριθμοί!</p>
+			<p class="mt-2" data-tx="t0019">Οι κλήσεις από αριθμούς στη λίστα επαφών σας δεν ελέγχονται ποτέ και δεν εμφανίζονται στη λίστα κλήσεων PhoneBlock. Η εφαρμογή επεξεργάζεται μόνο αριθμούς που δεν είναι αποθηκευμένοι στον τηλεφωνικό σας κατάλογο.</p>
 		</div>
 
-		<h2 data-tx="t0004">Πώς λειτουργεί</h2>
+		<h2 data-tx="t0020">Το ιστορικό κλήσεων</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<h3 data-tx="t0005">Αυτόματο μπλοκάρισμα</h3>
+				<h3 data-tx="t0021">Επισκόπηση όλων των ελεγχόμενων κλήσεων</h3>
 				<figure class="image">
-					<img alt="Κλήση SPAM μπλοκαρισμένη" class="appscreen" data-tx="t0006" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+					<img alt="Κατάλογος επαληθευμένων κλήσεων" class="appscreen" data-tx="t0022" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
 				</figure>
-				<p class="has-text-centered mt-2" data-tx="t0007">Οι αποκλεισμένες κλήσεις SPAM εμφανίζονται αυτόματα στην εφαρμογή. Θα λάβετε μια ειδοποίηση με τον αριθμό και τη βαθμολογία SPAM.</p>
+				<p class="has-text-centered mt-2" data-tx="t0023">Η εφαρμογή εμφανίζει όλες τις κλήσεις από άγνωστους αριθμούς με την αντίστοιχη κατάστασή τους</p>
 			</div>
 
 			<div class="column is-half">
-				<h3 data-tx="t0008">Καλέστε λεπτομέρειες</h3>
-				<p class="mt-5" data-tx="t0009">Πατήστε σε μια καταχώρηση στο ιστορικό κλήσεων για να δείτε λεπτομέρειες:</p>
-				<ul>
-					<li data-tx="t0010"><strong>SPAM score:</strong> Αριθμός αρνητικών αξιολογήσεων από την κοινότητα</li>
-					<li data-tx="t0011"><strong>Ώρα:</strong> Πότε έγινε η κλήση</li>
-					<li data-tx="t0012"><strong>Κατηγορίες:</strong> Τύπος SPAM (π.χ. διαφήμιση, απάτη, ανταγωνισμός)</li>
-					<li data-tx="t0013"><strong>Σχόλια:</strong> Αναφορές και εμπειρίες άλλων χρηστών του PhoneBlock</li>
-				</ul>
-				<p class="mt-4" data-tx="t0014">Από εδώ μπορείτε επίσης να βαθμολογήσετε τον αριθμό ή να τον προσθέσετε στην προσωπική σας μαύρη/λευκή λίστα.</p>
+				<h3 data-tx="t0024">Αποκλεισμένες κλήσεις SPAM</h3>
+				<figure class="image">
+					<img alt="Κλήση SPAM μπλοκαρισμένη" class="appscreen" data-tx="t0025" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026">Οι αποκλεισμένες κλήσεις SPAM εμφανίζονται με κόκκινο σύμβολο και βαθμολογία SPAM. Θα λάβετε μια ειδοποίηση σχετικά με τον αποκλεισμό.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027">Ποιοι αριθμοί μπλοκάρονται ως SPAM;</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028">Αριθμοί SPAM (θα μπλοκαριστούν)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029">Ένας αριθμός μπλοκάρεται ως SPAM εάν:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030">έχετε υψηλή βαθμολογία SPAM στη βάση δεδομένων του PhoneBlock</li>
+						<li data-tx="t0031">Η βαθμολογία SPAM υπερβαίνει την τιμή κατωφλίου που έχετε ορίσει</li>
+						<li data-tx="t0032">Είναι στην προσωπική σας μαύρη λίστα (ανεξάρτητα από το σκορ)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033"><strong>Αποτέλεσμα:</strong> Το τηλέφωνό σας δεν χτυπάει, η κλήση απορρίπτεται αυτόματα.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034">Νόμιμοι αριθμοί (επιτρέπονται)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035">Ένας αριθμός θεωρείται νόμιμος εάν:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036">Δεν είναι διαθέσιμο στη βάση δεδομένων του PhoneBlock</li>
+						<li data-tx="t0037">Έχει χαμηλή βαθμολογία SPAM κάτω από το όριο σας</li>
+						<li data-tx="t0038">Είναι στην προσωπική σας λευκή λίστα (δεν θα μπλοκαριστεί ποτέ)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039"><strong>Αποτέλεσμα:</strong> Το τηλέφωνό σας χτυπά κανονικά, η κλήση πραγματοποιείται.</p>
+				</div>
 			</div>
 		</div>
 
 		<div class="notification is-success mt-5">
 			<p><strong data-tx="t0015">Πώς λειτουργεί το μπλοκάρισμα;</strong></p>
 			<p class="mt-2" data-tx="t0016">Το PhoneBlock Mobile χρησιμοποιεί την υπηρεσία CallScreeningService του Android για να ελέγχει τις εισερχόμενες κλήσεις πριν χτυπήσουν. Εάν ο αριθμός βρίσκεται στη βάση δεδομένων SPAM και ξεπεραστεί το όριο που έχετε ορίσει, η κλήση αποκλείεται αυτόματα.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040">Αναφορά αριθμών SPAM από το ιστορικό κλήσεων</h2>
+
+		<p data-tx="t0041">Εάν έχετε λάβει κλήση από άγνωστο αριθμό που εμφανίστηκε ως νόμιμη, αλλά στην πραγματικότητα ήταν SPAM, μπορείτε να την αναφέρετε απευθείας από τη λίστα κλήσεων:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042">Πότε πρέπει να αναφέρετε έναν αριθμό;</h3>
+				<ul>
+					<li data-tx="t0043">Ο αριθμός δεν είναι ακόμη στη βάση δεδομένων του PhoneBlock (χαμηλή ή μηδενική βαθμολογία SPAM)</li>
+					<li data-tx="t0044">Η κλήση ήταν σαφώς ανεπιθύμητη (διαφήμιση, απάτη κ.λπ.)</li>
+					<li data-tx="t0045">Θέλετε να προειδοποιήσετε την κοινότητα για αυτόν τον αριθμό</li>
+					<li data-tx="t0046">Ο αριθμός θα μπλοκαριστεί αυτόματα στο μέλλον</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047">Τι συμβαίνει σε περίπτωση αναφοράς;</h3>
+				<ul>
+					<li data-tx="t0048">Ο αριθμός προστίθεται <strong>αυτόματα στη μαύρη λίστα σας&lt;/x1</strong></li>
+					<li data-tx="t0049">Θα προστατεύεστε από μελλοντικές κλήσεις από αυτόν τον αριθμό</li>
+					<li data-tx="t0050">Το μήνυμά σας συμβάλλει στη βάση δεδομένων του PhoneBlock</li>
+					<li data-tx="t0051">Άλλοι χρήστες επωφελούνται από τη βαθμολογία σας</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052">Στις οδηγίες: Αναφορά αριθμών SPAM</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053">Σημαντικό:</strong></p>
+			<p class="mt-2" data-tx="t0054">Εάν αναφέρετε έναν αριθμό ως SPAM, θα προστεθεί στην προσωπική σας μαύρη λίστα και θα μπλοκάρεται πάντα στο μέλλον. Αυτή η απόφαση υπερισχύει της αξιολόγησης της κοινότητας.</p>
 		</div>
 
 		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
