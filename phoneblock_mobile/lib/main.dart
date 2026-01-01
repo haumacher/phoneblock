@@ -1912,7 +1912,7 @@ Color bgColor(Rating rating) {
     case Rating.uNKNOWN: return const Color.fromRGBO(170, 172, 170, 1);
     case Rating.pING: return const Color.fromRGBO(31, 94, 220, 1);
     case Rating.pOLL: return const Color.fromRGBO(157, 31, 220, 1);
-    case Rating.aDVERTISING: return const Color.fromRGBO(255, 224, 138, 1);
+    case Rating.aDVERTISING: return const Color.fromRGBO(255, 152, 0, 1); // Darker orange for better contrast
     case Rating.gAMBLE: return const Color.fromRGBO(241, 122, 70, 1);
     case Rating.fRAUD: return const Color.fromRGBO(241, 70, 104, 1);
   }
