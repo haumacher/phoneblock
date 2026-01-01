@@ -1628,8 +1628,7 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
 
-    // Remove spaces and special characters, keep only digits and +
-    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final cleanedNumber = phoneNumber.trim();
 
     if (cleanedNumber.isEmpty) {
       if (mounted) {
