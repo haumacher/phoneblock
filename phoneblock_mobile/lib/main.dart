@@ -687,6 +687,7 @@ class _SetupWizardState extends State<SetupWizard> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(context.l10n.setupTitle),
+          automaticallyImplyLeading: false,
         ),
         body: Stepper(
         currentStep: _currentStep.index,
