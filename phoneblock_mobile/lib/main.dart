@@ -2727,7 +2727,21 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                               color: Colors.red,
                               alignment: Alignment.centerRight,
                               padding: const EdgeInsets.only(right: 20),
-                              child: const Icon(Icons.delete, color: Colors.white),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    context.l10n.delete,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Icon(Icons.delete, color: Colors.white, size: 32),
+                                ],
+                              ),
                             ),
                             confirmDismiss: (direction) async {
                               // Show confirmation dialog
