@@ -993,22 +993,13 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildCallListItem(ScreenedCall call) {
     final isSpam = call.wasBlocked;
 
-    // Use rating-specific color and icon if available, otherwise default colors
-    Color color;
-    IconData iconData;
-    String labelText;
-
-    if (call.rating != null && call.rating != Rating.uNKNOWN && isSpam) {
-      // Use rating-specific styling
-      color = bgColor(call.rating!);
-      iconData = icon(call.rating!).icon!;
-      labelText = (label(context, call.rating!) as Text).data!;
-    } else {
-      // Default styling (also used for Rating.uNKNOWN)
-      color = isSpam ? Colors.red : Colors.green;
-      iconData = isSpam ? Icons.block : Icons.check_circle;
-      labelText = isSpam ? context.l10n.ratingSpam : context.l10n.ratingLegitimate;
-    }
+    // Use rating-specific styling if available, otherwise default styling
+    final hasRatingIcon = call.rating != null && call.rating != Rating.uNKNOWN && isSpam;
+    final rating = hasRatingIcon ? call.rating! : (isSpam ? Rating.uNKNOWN : Rating.aLEGITIMATE);
+    final color = bgColor(rating);
+    final String labelText = hasRatingIcon
+        ? (label(context, rating) as Text).data!
+        : (isSpam ? context.l10n.ratingSpam : context.l10n.ratingLegitimate);
 
     return Dismissible(
       key: Key('call_${call.id}'),
@@ -1087,10 +1078,7 @@ class _MainScreenState extends State<MainScreen> {
             _lastTapPosition = details.globalPosition;
           },
           child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.1),
-              child: Icon(iconData, color: color),
-            ),
+            leading: buildRatingAvatar(rating),
             title: Text(
               call.phoneNumber,
               style: const TextStyle(
@@ -1941,6 +1929,15 @@ Rating _convertApiRating(api.Rating rating) {
     case api.Rating.fGamble: return Rating.gAMBLE;
     case api.Rating.gFraud: return Rating.fRAUD;
   }
+}
+
+/// Creates a CircleAvatar with rating-specific icon and colors.
+Widget buildRatingAvatar(Rating rating) {
+  final color = bgColor(rating);
+  return CircleAvatar(
+    backgroundColor: color.withValues(alpha: 0.1),
+    child: Icon(icon(rating).icon!, color: color),
+  );
 }
 
 class RateScreen extends StatelessWidget {
@@ -2810,10 +2807,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                             },
                             child: ListTile(
                               leading: personalizedNumber.rating != null
-                                  ? CircleAvatar(
-                                      backgroundColor: bgColor(_convertApiRating(personalizedNumber.rating!)).withValues(alpha: 0.1),
-                                      child: icon(_convertApiRating(personalizedNumber.rating!)),
-                                    )
+                                  ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
                                   : defaultIcon,
                               title: Text(displayPhone),
                               subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
