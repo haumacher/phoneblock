@@ -341,14 +341,14 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count Legitim-Meldungen',
-      one: '1 Legitim-Meldung',
+      other: '$count legitimate reports',
+      one: '1 legitimate report',
     );
     return '$_temp0';
   }
 
   @override
-  String get noReports => 'Keine Meldungen';
+  String get noReports => 'No reports';
 
   @override
   String todayTime(String time) {
