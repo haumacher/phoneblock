@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Buscar números</h1>
+
+		<p class="subtitle" data-tx="t0002">Puede buscar cualquier número de teléfono en la base de datos PhoneBlock, incluso sin que se haya producido una llamada.</p>
+
+		<h2 data-tx="t0003">Cómo buscar un número</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Paso 1: Abrir la búsqueda</h3>
+				<figure class="image">
+					<img alt="Búsqueda abierta" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Pulse el icono de la lupa en la parte superior derecha para abrir la función de búsqueda.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Paso 2: Introducir el número</h3>
+				<figure class="image">
+					<img alt="Introduzca el número" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Introduzca el número de teléfono y pulse "Buscar".</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Lo que muestra la búsqueda</h2>
+
+		<p data-tx="t0011">Tras la búsqueda verás la siguiente información sobre el número:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Si se conoce el número:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>Puntuación SPAM:</strong> Número de valoraciones negativas</li>
+					<li data-tx="t0014"><strong>Categorías:</strong> Tipo de SPAM (publicidad, fraude, etc.)</li>
+					<li data-tx="t0015"><strong>Comentarios:</strong> Testimonios de otros usuarios</li>
+					<li data-tx="t0016"><strong>Revisiones:</strong> Informes positivos y negativos</li>
+				</ul>
+				<p class="mt-3" data-tx="t0039">Qué puede hacer después de la búsqueda:</p>
+				<ul>
+					<li data-tx="t0040">Califique el número como SPAM o legítimo</li>
+					<li data-tx="t0041">Añadir a la lista negra (bloquear siempre)</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Si el número es desconocido:</h3>
+				<ul>
+					<li data-tx="t0019">La aplicación indica que no hay información disponible</li>
+					<li data-tx="t0042">Añadir a lista blanca (nunca bloquear)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Leer comentarios de otros usuarios</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">Una clasificación SPAM añade el número a su <strong>lista negra</strong>.</li>
+					<li data-tx="t0045">Una calificación legítima añade el número a tu <strong>lista blanca</strong>.</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Consejo:</strong> Si has recibido una llamada sospechosa de un número desconocido, puedes buscarla aquí y denunciarla como SPAM.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Consejos de búsqueda</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Formato del número de teléfono</h3>
+			<p class="mt-2" data-tx="t0046">Puede introducir números con o sin indicativo de país:</p>
+			<ul class="mt-2">
+				<li data-tx="t0047"><strong>Con el prefijo del país:</strong> +49 30 12345678 (Alemania), +41 44 1234567 (Suiza), +43 1 1234567 (Austria)</li>
+				<li data-tx="t0048"><strong>Sin código de país:</strong> El número se complementa automáticamente con el código de país de su configuración.</li>
+			</ul>
+			<p class="mt-3" data-tx="t0049"><strong>Consejo:</strong> Si buscas un número extranjero, introduce siempre el prefijo completo del país.</p>
+		</div>
+
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Protección de datos durante la búsqueda</h3>
+			<p class="mt-2" data-tx="t0051">Durante la búsqueda, el número <strong>se transmite al servidor de PhoneBlock en texto plano</strong>. Esto es necesario para poder calificar el número y añadirlo a la base de datos.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Importante:</strong> La función de protección de datos basada en hash (SHA-1) sólo se utiliza para las llamadas entrantes. Para la búsqueda activa, se requiere la transmisión completa del número para habilitar todas las funciones (valoración, comentarios).</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">¿Cuándo es útil la búsqueda?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Casos de uso frecuentes:</h3>
+				<ul>
+					<li data-tx="t0035">Compruebe el número desconocido en la pantalla antes de contestar al teléfono</li>
+					<li data-tx="t0036">Buscar llamadas perdidas</li>
+					<li data-tx="t0037">Comprobar números de SMS o correos electrónicos</li>
+					<li data-tx="t0038">Compruebe si el número es legítimo antes de devolver la llamada</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0053">Qué puede hacer después de la búsqueda:</h3>
+				<ul>
+					<li data-tx="t0054"><strong>Calificación como SPAM</strong> (se añadirá a la lista negra → siempre bloqueado)</li>
+					<li data-tx="t0055"><strong>Calificación como legítimo</strong> (se añadirá a la lista blanca → nunca se bloqueará)</li>
+					<li data-tx="t0056">Leer comentarios de otros usuarios</li>
+					<li data-tx="t0057">Si lo desea, añada su propio comentario</li>
+				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Nota:</strong> ¡Calificar y añadir a la lista es una misma acción!</p>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

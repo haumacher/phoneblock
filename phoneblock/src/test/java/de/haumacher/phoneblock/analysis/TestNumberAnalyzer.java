@@ -16,6 +16,14 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
  */
 class TestNumberAnalyzer {
 	
+	void testExtract() {
+		PhoneNumer numberDe = NumberAnalyzer.extractNumber("+49123456789", "+49");
+		assertEquals("0123456789", numberDe.getId());
+
+		PhoneNumer numberUs = NumberAnalyzer.extractNumber("+49123456789", "+1");
+		assertEquals("0123456789", numberUs.getId());
+	}
+	
 	@ParameterizedTest
 	@CsvSource({"+1684" + "123456789,American Samoa",
 			"+49" + "308154" + ",Germany",

@@ -12,21 +12,30 @@
 	<h1 data-tx="t0001">PhoneBlock-Account verknüpfen</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0002">
-			Um Deinen PhoneBlock-Account mit Deinem Mobilgerät zu verknüpfen, musst Dich zuerst anmelden 
-			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank 
+		<p data-tx="t0005" th:if="${!#strings.isEmpty(tokenLabel)}">
+			Um Deinen PhoneBlock-Account mit <strong th:text="${tokenLabel}">Deinem Mobilgerät</strong> zu verknüpfen, musst Dich zuerst anmelden
+			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank
 			für die Filterung von Anrufen nutzen kann.
 		</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+		<p data-tx="t0002" th:if="${#strings.isEmpty(tokenLabel)}">
+			Um Deinen PhoneBlock-Account mit Deinem Mobilgerät zu verknüpfen, musst Dich zuerst anmelden
+			bzw. einen Account erstellen. Du benötigst einen Account, damit Dein Mobiltelefon die PhoneBlock-Datenbank
+			für die Filterung von Anrufen nutzen kann.
+		</p>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0003">
+		<p data-tx="t0006" th:if="${!#strings.isEmpty(tokenLabel)}">
+			Jetzt kannst Du Deinen PhoneBlock-Account <code th:text="${userName}"></code> mit <strong th:text="${tokenLabel}">Deinem Mobilgerät</strong> verbinden:
+		</p>
+		<p data-tx="t0003" th:if="${#strings.isEmpty(tokenLabel)}">
 			Jetzt kannst Du Deinen PhoneBlock-Account <code th:text="${userName}"></code> mit Deinem Mobilgerät verbinden:
 		</p>
-	
+
 		<form method="post" th:action="@{/create-token}">
+			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">
@@ -43,7 +52,7 @@
 </div>
 </section>
 
-<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

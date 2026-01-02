@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -595,11 +596,15 @@ public class DB {
 		return authorization;
 	}
 
-	public AuthToken createAPIToken(String login, long now, String userAgent) {
+	public AuthToken createAPIToken(String login, long now, String userAgent, String label) {
 		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+				.setAccessLogin(true)
 				.setAccessDownload(true)
 				.setAccessQuery(true)
 				.setAccessRate(true);
+		if (label != null && !label.trim().isEmpty()) {
+			authorization.setLabel(label.trim());
+		}
 		createAuthToken(authorization);
 		return authorization;
 	}
@@ -608,7 +613,7 @@ public class DB {
 		return AuthToken.create()
 			.setUserName(login)
 			.setCreated(now)
-			.setLastAccess(now)
+			.setLastAccess(0)
 			.setUserAgent(nonNullUA(userAgent));
 	}
 	
@@ -642,23 +647,42 @@ public class DB {
 				}
 				
 				result.setUserName(users.getUserName(result.getUserId()));
-				
+
 				// Remember token, since an update is sent to the client.
 				result.setToken(token);
-				
-				// Rate limit DB modification.
-				if (now - result.getLastAccess() > RATE_LIMIT_MS) {
+
+				// Update DB if rate limit exceeded or user agent changed.
+				boolean userAgentChanged = !Objects.equals(result.getUserAgent(), userAgent);
+
+				// Detect first token usage (before any updates)
+				boolean isFirstAccess = result.getLastAccess() == 0;
+
+				if (now - result.getLastAccess() > RATE_LIMIT_MS || userAgentChanged) {
 					users.updateAuthToken(result.getId(), now, userAgent);
 					result.setLastAccess(now);
-			
+					result.setUserAgent(userAgent);
+
 					if (renew) {
 						LOG.info("Renewing autorization token for user {}.", result.getUserName());
 						renewToken(users, result);
 					}
-					
+
 					session.commit();
 				}
-				
+
+				// Send welcome mail on first token usage (independent of rate limit)
+				if (isFirstAccess && !result.isImplicit() && _config.isSendWelcomeMails() && _mailService != null) {
+					LOG.info("First token usage detected for token {}, sending welcome mail.",
+					         result.getId());
+
+					DBUserSettings userSettings = getUserSettings(users, result.getUserName());
+					String deviceLabel = result.getLabel();
+
+					final String finalDeviceLabel = deviceLabel;
+					_scheduler.executor().submit(() ->
+					    _mailService.sendMobileWelcomeMail(userSettings, finalDeviceLabel));
+				}
+
 				return result;
 			}
 		} catch (IOException e) {
@@ -982,7 +1006,18 @@ public class DB {
 				// Limit to DB constraint.
 				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
 			}
-			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, comment.getUserId());
+
+			// Delete existing comment by this user for this phone number (ensure only one comment per user per number)
+			Long userId = comment.getUserId();
+			if (userId != null) {
+				int deleted = reports.deleteUserComments(userId, phone);
+				if (deleted > 0) {
+					LOG.info("Replaced existing comment for phone {} by user ID {}.", phone, userId);
+					updateRequired = true;
+				}
+			}
+
+			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, userId);
 			updateRequired = true;
 		}
 
@@ -990,14 +1025,14 @@ public class DB {
 			updateRequired |= processVotes(reports, number, dialPrefix, Ratings.getVotes(rating), created);
 			if (rating != Rating.B_MISSED) {
 				Rating oldRating = rating(reports, phone);
-				
+
 				// Record rating.
-				reports.incRating(phone, rating, created);
-				
+				reports.updateRating(phone, rating, 1, created);
+
 				Rating newRating = rating(reports, phone);
 				updateRequired |= oldRating != newRating;
 			}
-			
+
 			pingRelatedNumbers(reports, phone, created);
 		}
 		

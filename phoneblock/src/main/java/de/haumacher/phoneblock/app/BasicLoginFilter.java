@@ -13,7 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.ab.CreateABServlet;
 import de.haumacher.phoneblock.ab.ListABServlet;
+import de.haumacher.phoneblock.app.api.AccountManagementServlet;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
+import de.haumacher.phoneblock.app.api.PersonalizationServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
 import de.haumacher.phoneblock.app.api.SpamCheckServlet;
@@ -35,6 +37,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebFilter(urlPatterns = {
 	CreateABServlet.PATH,
 	ListABServlet.PATH,
+	AccountManagementServlet.PATH,
+	PersonalizationServlet.BLACKLIST_PATTERN,
+	PersonalizationServlet.WHITELIST_PATTERN,
 	BlocklistServlet.PATH,
 	SpamCheckServlet.PATH,
 	TestConnectServlet.PATH,
@@ -93,18 +98,22 @@ public class BasicLoginFilter extends LoginFilter {
 	@Override
 	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
 		switch (request.getServletPath()) {
-		case BlocklistServlet.PATH: 
+		case BlocklistServlet.PATH:
 			return authorization.isAccessDownload();
-		case RateServlet.PATH: 
-		case CallReportServlet.URL_PATTERN: 
+		case RateServlet.PATH:
+		case CallReportServlet.URL_PATTERN:
 			return authorization.isAccessRate();
-		case CreateABServlet.PATH: 
-		case ListABServlet.PATH: 
-		case SearchApiServlet.PREFIX: 
-		case SpamCheckServlet.PATH: 
-		case TestConnectServlet.PATH: 
+		case AccountManagementServlet.PATH:
+		case PersonalizationServlet.BLACKLIST_PATH:
+		case PersonalizationServlet.WHITELIST_PATH:
+			return authorization.isAccessLogin();
+		case CreateABServlet.PATH:
+		case ListABServlet.PATH:
+		case SearchApiServlet.PREFIX:
+		case SpamCheckServlet.PATH:
+		case TestConnectServlet.PATH:
 			return authorization.isAccessQuery();
-		case CardDavServlet.DIR_NAME: 
+		case CardDavServlet.DIR_NAME:
 			return authorization.isAccessCarddav();
 		default:
 			LOG.warn("Requesting CardDAV permission for unknown resource: {} - {}", request.getServletPath(), request.getPathInfo());

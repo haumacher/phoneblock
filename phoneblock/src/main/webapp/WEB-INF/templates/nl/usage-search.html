@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Zoeken naar nummers</h1>
+
+		<p class="subtitle" data-tx="t0002">Je kunt elk telefoonnummer opzoeken in de PhoneBlock database, zelfs zonder dat er een gesprek heeft plaatsgevonden.</p>
+
+		<h2 data-tx="t0003">Een nummer zoeken</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Stap 1: Zoeken openen</h3>
+				<figure class="image">
+					<img alt="Open zoeken" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Tik op het vergrootglaspictogram rechtsboven om de zoekfunctie te openen</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Stap 2: Nummer invoeren</h3>
+				<figure class="image">
+					<img alt="Voer nummer in" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Voer het telefoonnummer in en tik op "Zoeken".</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Wat de zoekopdracht laat zien</h2>
+
+		<p data-tx="t0011">Na het zoeken zie je de volgende informatie over het nummer:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Als het nummer bekend is:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>SPAM-score:</strong> Aantal negatieve beoordelingen</li>
+					<li data-tx="t0014"><strong>Categorieën:</strong> Type SPAM (reclame, fraude, enz.)</li>
+					<li data-tx="t0015"><strong>Commentaren:</strong> Getuigenissen van andere gebruikers</li>
+					<li data-tx="t0016"><strong>Beoordelingen:</strong> Positieve en negatieve beoordelingen</li>
+				</ul>
+				<p class="mt-3" data-tx="t0039">Wat je kunt doen na de zoekopdracht:</p>
+				<ul>
+					<li data-tx="t0040">Nummer beoordelen als SPAM of legitiem</li>
+					<li data-tx="t0041">Toevoegen aan zwarte lijst (altijd blokkeren)</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Als het nummer onbekend is:</h3>
+				<ul>
+					<li data-tx="t0019">De app geeft aan dat er geen informatie beschikbaar is</li>
+					<li data-tx="t0042">Toevoegen aan witte lijst (nooit blokkeren)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Lees opmerkingen van andere gebruikers</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">Een SPAM beoordeling voegt het nummer toe aan je <strong>blacklist</strong>.</li>
+					<li data-tx="t0045">Een legitieme beoordeling voegt het nummer toe aan je <strong>whitelist</strong>.</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Tip:</strong> Als je een verdacht telefoontje van een onbekend nummer hebt ontvangen, kun je het hier opzoeken en als SPAM rapporteren.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Zoektips</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Formaat van het telefoonnummer</h3>
+			<p class="mt-2" data-tx="t0046">Je kunt nummers met of zonder landcode invoeren:</p>
+			<ul class="mt-2">
+				<li data-tx="t0047"><strong>Met landnummer:</strong> +49 30 12345678 (Duitsland), +41 44 1234567 (Zwitserland), +43 1 1234567 (Oostenrijk)</li>
+				<li data-tx="t0048"><strong>Zonder landcode:</strong> Het nummer wordt automatisch aangevuld met de landcode uit je instellingen</li>
+			</ul>
+			<p class="mt-3" data-tx="t0049"><strong>Tip:</strong> Als je een buitenlands nummer zoekt, voer dan altijd de volledige landcode in.</p>
+		</div>
+
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Gegevensbescherming tijdens het zoeken</h3>
+			<p class="mt-2" data-tx="t0051">Tijdens het zoeken wordt het nummer <strong>in platte tekst</strong> naar de PhoneBlock server verzonden. Dit is nodig zodat u het nummer kunt beoordelen en toevoegen aan de database.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Belangrijk:</strong> De gegevensbeschermingsfunctie op basis van hash (SHA-1) wordt alleen gebruikt voor inkomende oproepen. Voor actief zoeken is de volledige verzending van het nummer nodig om alle functies (beoordeling, opmerkingen) in te schakelen.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">Wanneer is zoeken nuttig?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Veelvoorkomende gebruikssituaties:</h3>
+				<ul>
+					<li data-tx="t0035">Controleer het onbekende nummer op het display voordat u de telefoon opneemt.</li>
+					<li data-tx="t0036">Gemiste oproepen opzoeken</li>
+					<li data-tx="t0037">Nummers van sms'jes of e-mails controleren</li>
+					<li data-tx="t0038">Controleer of het nummer legitiem is voordat u terugbelt</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0053">Wat je kunt doen na de zoekopdracht:</h3>
+				<ul>
+					<li data-tx="t0054"><strong>Aanmerken als SPAM</strong> (wordt toegevoegd aan de zwarte lijst → altijd geblokkeerd)</li>
+					<li data-tx="t0055"><strong>Rating als legitiem</strong> (wordt toegevoegd aan de witte lijst → nooit geblokkeerd)</li>
+					<li data-tx="t0056">Lees opmerkingen van andere gebruikers</li>
+					<li data-tx="t0057">Voeg optioneel je eigen commentaar toe</li>
+				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Aantekening:</strong> Beoordelen en toevoegen aan de lijst is een en dezelfde actie!</p>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

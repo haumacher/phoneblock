@@ -9,16 +9,22 @@
 <section class="section">
 <div class="content">
 
-<h1 data-tx="t0001">Du er vellykket logget inn</h1>
+<h1 data-tx="t0001">Fullfør lenken</h1>
 
-<p data-tx="t0002">Ditt autorisasjonstoken: <code id="token" th:text="${loginToken}"></code>.</p>
+<p data-tx="t0002">Hvis du ser denne siden, har ikke nettleseren din videresendt lenken til PhoneBlock-appen din. Du må gjøre dette manuelt ved å åpne denne siden "i appen". Åpne menyen nederst:</p>
 
-<p data-tx="t0003">Innloggingen din til PhoneBlock var vellykket. Denne siden skal lukkes automatisk, og den mobile enheten din skal koble seg til PhoneBlock. Hvis dette ikke skjer, kan det være noe galt med mobilapplikasjonen din.</p>
+<img alt="Åpne menyen" data-tx="t0003" th:src="@{/assets/img/mobile/connect-1.png}"/>
+	
+<p data-tx="t0004">Og velg alternativet "Åpne med app":</p>
+
+<img alt="Alternativet &quot;Åpne med app" data-tx="t0005" th:src="@{/assets/img/mobile/connect-2.png}"/>
+
+<p data-tx="t0006">Ditt autorisasjonstoken: <code id="loginToken" th:text="${loginToken}"></code><a class="copyToClipboard" data-tx="t0007" id="loginToken_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></p>
 
 </div>
 </section>
 
-<script th:src="@{/assets/js/mobile-response.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

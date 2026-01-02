@@ -4,6 +4,9 @@ option NoInterfaces;
 option NoBinary;
 option NoReflection;
 
+// Generator has problems with repeated primitive types.
+// option DartLib = "../../../../phoneblock_mobile/lib/api.dart";
+
 /**
  * Information that must be requested to start a registration process.
  */
@@ -352,25 +355,80 @@ message PhoneNumer {
 
 message SearchResult {
 	string phoneId;
-	
+
 	PhoneNumer number;
-	
+
 	repeated UserComment comments;
-	
+
 	PhoneInfo info;
-	
+
 	repeated int searches;
-	
+
 	string aiSummary;
-	
+
 	repeated string relatedNumbers;
-	
+
 	string prev;
-	
+
 	string next;
-	
+
 	Rating topRating;
-	
+
 	map<Rating,int> ratings;
+}
+
+/** Base message with common account settings fields. */
+abstract message AccountData {
+	/** The preferred language tag (e.g., "de", "en-US", "pt-BR"). */
+	@Nullable
+	string lang;
+
+	/** The user's country dial prefix (e.g., "+49", "+1", "+351"). */
+	@Nullable
+	string dialPrefix;
+
+	/** The user's display name. */
+	@Nullable
+	string displayName;
+}
+
+/** Request to update user account settings. */
+message UpdateAccountRequest extends AccountData {
+	// Inherits lang, dialPrefix, displayName from AccountData
+
+	/** ISO 3166-1 alpha-2 country code (e.g., "DE", "US", "BR"). If provided, the server will convert it to the corresponding dial prefix. */
+	@Nullable
+	string countryCode;
+}
+
+/** Response from account settings operations. */
+message AccountSettings extends AccountData {
+	/** The user's email address. */
+	@Nullable
+	string email;
+}
+
+/** Entry in a personalized number list with optional comment. */
+message PersonalizedNumber {
+	/** The phone number in international format (for API communication). */
+	string phone;
+
+	/** The phone number formatted according to user's locale/country (for display). */
+	@Nullable
+	string label;
+
+	/** User's comment for this number (may be null). */
+	@Nullable
+	string comment;
+
+	/** User's rating for this number (may be null). */
+	@Nullable
+	Rating rating;
+}
+
+/** A list of phone numbers (used for blacklist/whitelist responses). */
+message NumberList {
+	/** Phone numbers with optional comments. */
+	repeated PersonalizedNumber numbers;
 }
 

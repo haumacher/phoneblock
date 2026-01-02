@@ -1,0 +1,750 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "PhoneBlock Mobile",
+  "@appTitle": {
+    "description": "Application title"
+  },
+
+  "settings": "Einstellungen",
+  "@settings": {
+    "description": "Settings menu item"
+  },
+
+  "deleteAll": "Alle löschen",
+  "@deleteAll": {
+    "description": "Delete all button tooltip"
+  },
+
+  "noCallsYet": "Noch keine Anrufe gefiltert",
+  "@noCallsYet": {
+    "description": "Empty state title"
+  },
+
+  "noCallsDescription": "PhoneBlock wird eingehende Anrufe automatisch überprüfen und SPAM-Anrufe blockieren.",
+  "@noCallsDescription": {
+    "description": "Empty state description"
+  },
+
+  "blocked": "Blockiert",
+  "@blocked": {
+    "description": "Label for blocked calls"
+  },
+
+  "accepted": "Angenommen",
+  "@accepted": {
+    "description": "Label for accepted calls"
+  },
+
+  "votes": "{count} Stimmen",
+  "@votes": {
+    "description": "Number of votes for a phone number",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "viewOnPhoneBlock": "Auf PhoneBlock anzeigen",
+  "@viewOnPhoneBlock": {
+    "description": "Menu item to view number on PhoneBlock website"
+  },
+
+  "confirmDeleteAll": "Alle gefilterten Anrufe löschen?",
+  "@confirmDeleteAll": {
+    "description": "Confirmation dialog title"
+  },
+
+  "confirmDeleteAllMessage": "Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@confirmDeleteAllMessage": {
+    "description": "Confirmation dialog message"
+  },
+
+  "cancel": "Abbrechen",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+
+  "delete": "Löschen",
+  "@delete": {
+    "description": "Delete button"
+  },
+
+  "settingsTitle": "Einstellungen",
+  "@settingsTitle": {
+    "description": "Settings screen title"
+  },
+
+  "callScreening": "Anruffilterung",
+  "@callScreening": {
+    "description": "Call screening section header"
+  },
+
+  "minSpamReports": "Minimale SPAM-Meldungen",
+  "@minSpamReports": {
+    "description": "Minimum spam reports setting"
+  },
+
+  "minSpamReportsDescription": "Nummern werden ab {count} Meldungen blockiert",
+  "@minSpamReportsDescription": {
+    "description": "Description for minimum spam reports",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "blockNumberRanges": "Nummernbereiche blockieren",
+  "@blockNumberRanges": {
+    "description": "Block number ranges toggle"
+  },
+
+  "blockNumberRangesDescription": "Blockiere Bereiche mit vielen SPAM-Meldungen",
+  "@blockNumberRangesDescription": {
+    "description": "Description for block number ranges"
+  },
+
+  "minSpamReportsInRange": "Minimale SPAM-Meldungen im Bereich",
+  "@minSpamReportsInRange": {
+    "description": "Minimum spam reports in range setting"
+  },
+
+  "minSpamReportsInRangeDescription": "Bereiche werden ab {count} Meldungen blockiert",
+  "@minSpamReportsInRangeDescription": {
+    "description": "Description for minimum spam reports in range",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "about": "Über",
+  "@about": {
+    "description": "About section header"
+  },
+
+  "version": "Version",
+  "@version": {
+    "description": "Version label"
+  },
+
+  "developer": "Entwickler",
+  "@developer": {
+    "description": "Developer label"
+  },
+
+  "developerName": "Bernhard Haumacher",
+  "@developerName": {
+    "description": "Developer name"
+  },
+
+  "website": "Website",
+  "@website": {
+    "description": "Website label"
+  },
+
+  "websiteUrl": "phoneblock.net",
+  "@websiteUrl": {
+    "description": "Website URL"
+  },
+
+  "sourceCode": "Quellcode",
+  "@sourceCode": {
+    "description": "Source code label"
+  },
+
+  "sourceCodeLicense": "Open Source (GPL-3.0)",
+  "@sourceCodeLicense": {
+    "description": "Source code license"
+  },
+
+  "aboutDescription": "PhoneBlock ist ein Open-Source Projekt ohne Tracking und ohne Werbung. Der Dienst wird durch Spenden finanziert.",
+  "@aboutDescription": {
+    "description": "About description text"
+  },
+
+  "donate": "Spenden",
+  "@donate": {
+    "description": "Donate button"
+  },
+
+  "pendingCallsNotification": "{count, plural, =1{1 neuer gefilterter Anruf} other{{count} neue gefilterte Anrufe}}",
+  "@pendingCallsNotification": {
+    "description": "Notification title for pending filtered calls",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "tapToOpen": "Tippen zum Öffnen der App",
+  "@tapToOpen": {
+    "description": "Notification text to tap to open"
+  },
+
+  "setupWelcome": "Willkommen bei PhoneBlock Mobile",
+  "@setupWelcome": {
+    "description": "Setup wizard welcome message"
+  },
+
+  "setupPermissionsRequired": "Erforderliche Berechtigungen",
+  "@setupPermissionsRequired": {
+    "description": "Setup permissions required header"
+  },
+
+  "grantPermission": "Berechtigung erteilen",
+  "@grantPermission": {
+    "description": "Grant permission button"
+  },
+
+  "continue_": "Weiter",
+  "@continue_": {
+    "description": "Continue button"
+  },
+
+  "finish": "Fertig",
+  "@finish": {
+    "description": "Finish button"
+  },
+
+  "loginRequired": "PhoneBlock Anmeldung",
+  "@loginRequired": {
+    "description": "Login required header"
+  },
+
+  "loginToPhoneBlock": "Bei PhoneBlock anmelden",
+  "@loginToPhoneBlock": {
+    "description": "Login button text"
+  },
+
+  "verifyingLogin": "Anmeldung wird überprüft...",
+  "@verifyingLogin": {
+    "description": "Verifying login message"
+  },
+
+  "loginFailed": "Anmeldung fehlgeschlagen",
+  "@loginFailed": {
+    "description": "Login failed message"
+  },
+
+  "loginSuccess": "Anmeldung erfolgreich!",
+  "@loginSuccess": {
+    "description": "Login success message"
+  },
+
+  "reportAsLegitimate": "Als legitim melden",
+  "@reportAsLegitimate": {
+    "description": "Menu item to report as legitimate"
+  },
+
+  "reportAsSpam": "Als SPAM melden",
+  "@reportAsSpam": {
+    "description": "Menu item to report as spam"
+  },
+
+  "viewOnPhoneBlockMenu": "Auf PhoneBlock ansehen",
+  "@viewOnPhoneBlockMenu": {
+    "description": "Menu item to view on PhoneBlock"
+  },
+
+  "deleteCall": "Löschen",
+  "@deleteCall": {
+    "description": "Menu item to delete call"
+  },
+
+  "report": "Melden",
+  "@report": {
+    "description": "Report button"
+  },
+
+  "notLoggedIn": "Nicht angemeldet. Bitte melden Sie sich an.",
+  "@notLoggedIn": {
+    "description": "Not logged in error message"
+  },
+
+  "reportedAsLegitimate": "{phoneNumber} als legitim gemeldet",
+  "@reportedAsLegitimate": {
+    "description": "Successfully reported as legitimate",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "reportError": "Fehler beim Melden: {error}",
+  "@reportError": {
+    "description": "Error reporting number",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "reportedAsSpam": "{phoneNumber} als SPAM gemeldet",
+  "@reportedAsSpam": {
+    "description": "Successfully reported as spam",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "selectSpamCategory": "SPAM-Kategorie wählen",
+  "@selectSpamCategory": {
+    "description": "Select spam category dialog title"
+  },
+
+  "errorDeletingAllCalls": "Fehler beim Löschen aller Anrufe",
+  "@errorDeletingAllCalls": {
+    "description": "Error deleting all calls"
+  },
+
+  "errorDeletingCall": "Fehler beim Löschen des Anrufs",
+  "@errorDeletingCall": {
+    "description": "Error deleting single call"
+  },
+
+  "notLoggedInShort": "Nicht angemeldet",
+  "@notLoggedInShort": {
+    "description": "Not logged in - short version"
+  },
+
+  "errorOpeningPhoneBlock": "Fehler beim Öffnen von PhoneBlock.",
+  "@errorOpeningPhoneBlock": {
+    "description": "Error opening PhoneBlock website"
+  },
+
+  "permissionNotGranted": "Berechtigung wurde nicht erteilt.",
+  "@permissionNotGranted": {
+    "description": "Permission not granted message"
+  },
+
+  "setupTitle": "PhoneBlock Mobile - Einrichtung",
+  "@setupTitle": {
+    "description": "Setup wizard title"
+  },
+
+  "welcome": "Willkommen",
+  "@welcome": {
+    "description": "Welcome header"
+  },
+
+  "connectPhoneBlockAccount": "PhoneBlock-Konto verbinden",
+  "@connectPhoneBlockAccount": {
+    "description": "Connect PhoneBlock account subtitle"
+  },
+
+  "permissions": "Berechtigungen",
+  "@permissions": {
+    "description": "Permissions header"
+  },
+
+  "allowCallFiltering": "Anrufe filtern erlauben",
+  "@allowCallFiltering": {
+    "description": "Allow call filtering subtitle"
+  },
+
+  "done": "Fertig",
+  "@done": {
+    "description": "Done header"
+  },
+
+  "setupComplete": "Einrichtung abgeschlossen",
+  "@setupComplete": {
+    "description": "Setup complete subtitle"
+  },
+
+  "minReportsCount": "Minimale Anzahl Meldungen",
+  "@minReportsCount": {
+    "description": "Minimum reports count label"
+  },
+
+  "callsBlockedAfterReports": "Anrufe werden ab {count} Meldungen blockiert",
+  "@callsBlockedAfterReports": {
+    "description": "Description for calls blocked after reports",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rangesBlockedAfterReports": "Bereiche werden ab {count} Meldungen blockiert",
+  "@rangesBlockedAfterReports": {
+    "description": "Description for ranges blocked after reports",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "welcomeMessage": "Willkommen bei PhoneBlock Mobile!\n\nDiese App hilft Ihnen, Spam-Anrufe automatisch zu blockieren. Dazu benötigen Sie ein kostenloses Konto bei PhoneBlock.net.\n\nVerbinden Sie Ihr PhoneBlock-Konto, um fortzufahren:",
+  "@welcomeMessage": {
+    "description": "Welcome message in setup wizard"
+  },
+
+  "connectToPhoneBlock": "Mit PhoneBlock verbinden",
+  "@connectToPhoneBlock": {
+    "description": "Button to connect to PhoneBlock"
+  },
+
+  "connectedToPhoneBlock": "Mit PhoneBlock verbunden",
+  "@connectedToPhoneBlock": {
+    "description": "Status message when connected"
+  },
+
+  "accountConnectedSuccessfully": "✓ Konto erfolgreich verbunden",
+  "@accountConnectedSuccessfully": {
+    "description": "Success message for account connection"
+  },
+
+  "permissionsMessage": "Um Spam-Anrufe automatisch zu blockieren, benötigt PhoneBlock Mobile die Berechtigung, eingehende Anrufe zu prüfen.\n\nDiese Berechtigung ist erforderlich, damit die App funktioniert:",
+  "@permissionsMessage": {
+    "description": "Permissions explanation message"
+  },
+
+  "permissionGranted": "Berechtigung erteilt",
+  "@permissionGranted": {
+    "description": "Status when permission is granted"
+  },
+
+  "permissionGrantedSuccessfully": "✓ Berechtigung erfolgreich erteilt",
+  "@permissionGrantedSuccessfully": {
+    "description": "Success message for permission granted"
+  },
+
+  "setupCompleteMessage": "Einrichtung abgeschlossen!\n\nPhoneBlock Mobile ist jetzt bereit, Spam-Anrufe zu blockieren. Die App prüft automatisch eingehende Anrufe und blockiert bekannte Spam-Nummern basierend auf der PhoneBlock-Datenbank.\n\nDrücken Sie \"Fertig\", um zur Hauptansicht zu gelangen.",
+  "@setupCompleteMessage": {
+    "description": "Setup complete message"
+  },
+
+  "verifyingLoginTitle": "Überprüfe Login",
+  "@verifyingLoginTitle": {
+    "description": "Title for login verification screen"
+  },
+
+  "loginSuccessMessage": "Login erfolgreich!",
+  "@loginSuccessMessage": {
+    "description": "Login success message"
+  },
+
+  "redirectingToSetup": "Weiterleitung zur Einrichtung...",
+  "@redirectingToSetup": {
+    "description": "Redirecting to setup message"
+  },
+
+  "tokenVerificationFailed": "Token-Überprüfung fehlgeschlagen: {error}",
+  "@tokenVerificationFailed": {
+    "description": "Token verification failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "backToSetup": "Zurück zur Einrichtung",
+  "@backToSetup": {
+    "description": "Back to setup button"
+  },
+
+  "tokenBeingVerified": "Token wird überprüft...",
+  "@tokenBeingVerified": {
+    "description": "Token being verified message"
+  },
+
+  "failedToOpenPhoneBlock": "PhoneBlock konnte nicht geöffnet werden.",
+  "@failedToOpenPhoneBlock": {
+    "description": "Failed to open PhoneBlock error"
+  },
+
+  "ratingLegitimate": "Legitim",
+  "@ratingLegitimate": {
+    "description": "Legitimate rating label"
+  },
+
+  "ratingAdvertising": "Werbung",
+  "@ratingAdvertising": {
+    "description": "Advertising rating label"
+  },
+
+  "ratingSpam": "SPAM",
+  "@ratingSpam": {
+    "description": "SPAM rating label"
+  },
+
+  "ratingPingCall": "Ping-Anruf",
+  "@ratingPingCall": {
+    "description": "Ping call rating label"
+  },
+
+  "ratingGamble": "Gewinnspiel",
+  "@ratingGamble": {
+    "description": "Gamble/Prize draw rating label"
+  },
+
+  "ratingFraud": "Betrug",
+  "@ratingFraud": {
+    "description": "Fraud rating label"
+  },
+
+  "ratingPoll": "Umfrage",
+  "@ratingPoll": {
+    "description": "Poll/Survey rating label"
+  },
+
+  "noLoginTokenReceived": "Kein Login-Token empfangen.",
+  "@noLoginTokenReceived": {
+    "description": "Error message when no login token is received"
+  },
+
+  "settingSaved": "Einstellung gespeichert",
+  "@settingSaved": {
+    "description": "Success message when setting is saved"
+  },
+
+  "errorSaving": "Fehler beim Speichern",
+  "@errorSaving": {
+    "description": "Error message when saving fails"
+  },
+
+  "ratePhoneNumber": "{phoneNumber} bewerten",
+  "@ratePhoneNumber": {
+    "description": "Title for rating screen",
+    "placeholders": {
+      "phoneNumber": {
+        "type": "String"
+      }
+    }
+  },
+
+  "reportsCount": "{count, plural, =1{1 Meldung} other{{count} Meldungen}}",
+  "@reportsCount": {
+    "description": "Number of reports for a phone number",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "legitimateReportsCount": "{count, plural, =1{1 Legitim-Meldung} other{{count} Legitim-Meldungen}}",
+  "@legitimateReportsCount": {
+    "description": "Number of legitimate reports for a phone number",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "noReports": "Keine Meldungen",
+  "@noReports": {
+    "description": "No reports available for this number"
+  },
+
+  "todayTime": "Heute, {time}",
+  "@todayTime": {
+    "description": "Today with time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "yesterdayTime": "Gestern, {time}",
+  "@yesterdayTime": {
+    "description": "Yesterday with time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "callHistoryRetention": "Anrufverlauf-Speicherung",
+  "@callHistoryRetention": {
+    "description": "Call history retention setting title"
+  },
+
+  "retentionPeriodDescription": "{days, plural, =1{Anrufe 1 Tag behalten} other{Anrufe {days} Tage behalten}}",
+  "@retentionPeriodDescription": {
+    "description": "Retention period description with days",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "retentionInfinite": "Alle Anrufe behalten",
+  "@retentionInfinite": {
+    "description": "Keep all calls option"
+  },
+
+  "retentionDays": "{days, plural, =1{1 Tag} other{{days} Tage}}",
+  "@retentionDays": {
+    "description": "Number of days for retention period",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "retentionInfiniteOption": "Unbegrenzt",
+  "@retentionInfiniteOption": {
+    "description": "Infinite retention option"
+  },
+
+  "addCommentSpam": "Kommentar hinzufügen (Optional)",
+  "@addCommentSpam": {
+    "description": "Add comment dialog title for spam"
+  },
+
+  "commentHintSpam": "Warum ist das Spam? Worum ging es bei dem Anruf? Bitte höflich bleiben.",
+  "@commentHintSpam": {
+    "description": "Comment text field hint for spam"
+  },
+
+  "addCommentLegitimate": "Kommentar hinzufügen (Optional)",
+  "@addCommentLegitimate": {
+    "description": "Add comment dialog title for legitimate"
+  },
+
+  "commentHintLegitimate": "Warum ist das legitim? Wer hat Sie angerufen? Bitte höflich bleiben.",
+  "@commentHintLegitimate": {
+    "description": "Comment text field hint for legitimate"
+  },
+
+  "serverSettings": "Server-Einstellungen",
+  "@serverSettings": {
+    "description": "Server settings menu item"
+  },
+
+  "serverSettingsDescription": "Verwalten Sie Ihre PhoneBlock-Kontoeinstellungen",
+  "@serverSettingsDescription": {
+    "description": "Description for server settings"
+  },
+
+  "searchNumber": "Nummer suchen",
+  "@searchNumber": {
+    "description": "Search number button tooltip"
+  },
+
+  "searchPhoneNumber": "Telefonnummer suchen",
+  "@searchPhoneNumber": {
+    "description": "Search phone number dialog title"
+  },
+
+  "enterPhoneNumber": "Telefonnummer eingeben",
+  "@enterPhoneNumber": {
+    "description": "Enter phone number label"
+  },
+
+  "phoneNumberHint": "z.B. +49 123 456789",
+  "@phoneNumberHint": {
+    "description": "Phone number hint text"
+  },
+
+  "search": "Suchen",
+  "@search": {
+    "description": "Search button"
+  },
+
+  "invalidPhoneNumber": "Bitte geben Sie eine gültige Telefonnummer ein",
+  "@invalidPhoneNumber": {
+    "description": "Error message for invalid phone number"
+  },
+
+  "blacklistTitle": "Blacklist",
+  "@blacklistTitle": {
+    "description": "Blacklist screen title"
+  },
+
+  "blacklistDescription": "Von Ihnen blockierte Nummern",
+  "@blacklistDescription": {
+    "description": "Blacklist description in settings"
+  },
+
+  "whitelistTitle": "Whitelist",
+  "@whitelistTitle": {
+    "description": "Whitelist screen title"
+  },
+
+  "whitelistDescription": "Von Ihnen als legitim markierte Nummern",
+  "@whitelistDescription": {
+    "description": "Whitelist description in settings"
+  },
+
+  "blacklistEmpty": "Ihre Blacklist ist leer",
+  "@blacklistEmpty": {
+    "description": "Empty blacklist message"
+  },
+
+  "whitelistEmpty": "Ihre Whitelist ist leer",
+  "@whitelistEmpty": {
+    "description": "Empty whitelist message"
+  },
+
+  "errorLoadingList": "Fehler beim Laden der Liste",
+  "@errorLoadingList": {
+    "description": "Error loading list message"
+  },
+
+  "numberRemovedFromList": "Nummer entfernt",
+  "@numberRemovedFromList": {
+    "description": "Success message when number is removed"
+  },
+
+  "errorRemovingNumber": "Fehler beim Entfernen der Nummer",
+  "@errorRemovingNumber": {
+    "description": "Error removing number message"
+  },
+
+  "confirmRemoval": "Entfernen bestätigen",
+  "@confirmRemoval": {
+    "description": "Confirm removal dialog title"
+  },
+
+  "confirmRemoveFromBlacklist": "{phone} von der Blacklist entfernen?",
+  "@confirmRemoveFromBlacklist": {
+    "description": "Confirm remove from blacklist message"
+  },
+
+  "confirmRemoveFromWhitelist": "{phone} von der Whitelist entfernen?",
+  "@confirmRemoveFromWhitelist": {
+    "description": "Confirm remove from whitelist message"
+  },
+
+  "remove": "Entfernen",
+  "@remove": {
+    "description": "Remove button text"
+  },
+
+  "retry": "Erneut versuchen",
+  "@retry": {
+    "description": "Retry button text"
+  },
+
+  "editComment": "Kommentar bearbeiten",
+
+  "commentLabel": "Kommentar",
+
+  "commentHint": "Notiz zu dieser Nummer hinzufügen",
+
+  "save": "Speichern",
+
+  "commentUpdated": "Kommentar aktualisiert",
+
+  "errorUpdatingComment": "Fehler beim Aktualisieren des Kommentars"
+}

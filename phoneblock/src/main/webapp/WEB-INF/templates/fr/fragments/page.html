@@ -44,7 +44,7 @@
 </head>
 
 <body th:dir="${currentLang.direction}">
-<section class="hero is-small is-primary" th:fragment="header">
+<section class="hero is-small is-primary" th:fragment="header" th:unless="${inMobileApp}">
 	<div class="hero-body">
 		<div class="title">
 			<img alt="Logo PhoneBlock" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"/>
@@ -277,18 +277,20 @@
 
 
 <th:block th:fragment="footer">
+
+<th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
 		<h2 data-tx="t0019">Participez!</h2>
-		
+
 		<p data-tx="t0020">Si tu aimes PhoneBlock, aide-nous à le faire connaître et partage-le avec tes amis. Plus il y a de participants, moins il y a de chances que tu reçoives quand même un appel publicitaire!</p>
 	</div>
 </section>
-  
+
 <footer class="footer">
 	<div class="content has-text-centered">
 		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 par <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. Le code source est licencié sous <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. The website content is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
-		
+
 		<p data-tx="t0022"><strong>FRITZ!Box</strong> et <strong>FRITZ!OS</strong> sont des marques déposées de <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> n'a aucun rapport avec cela.</p>
 
 		<p>
@@ -302,9 +304,49 @@
 		</p>
 	</div>
 </footer>
+</th:block>
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>
+
+<div th:fragment="mobileUsageNav">
+	<h2 class="mt-5" data-tx="t9001">Autres fonctions</h2>
+	<div class="buttons">
+		<a class="button is-link" th:href="@{/usage-view-calls}">
+			<span class="icon">
+				<i class="fas fa-phone"></i>
+			</span>
+			<span data-tx="t9002">Consulter l'historique des appels</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-report-spam}">
+			<span class="icon">
+				<i class="fas fa-flag"></i>
+			</span>
+			<span data-tx="t9003">Signaler les numéros de SPAM</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-manage-lists}">
+			<span class="icon">
+				<i class="fas fa-list"></i>
+			</span>
+			<span data-tx="t9004">Gérer la liste noire/liste blanche</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-search}">
+			<span class="icon">
+				<i class="fas fa-search"></i>
+			</span>
+			<span data-tx="t9005">Rechercher des numéros</span>
+		</a>
+	</div>
+
+	<div class="buttons mt-3">
+		<a class="button" th:href="@{/setup-android}">
+			<span class="icon">
+				<i class="fas fa-arrow-left"></i>
+			</span>
+			<span data-tx="t9006">Retour à l'installation</span>
+		</a>
+	</div>
+</div>
 
 </body>
 </html>

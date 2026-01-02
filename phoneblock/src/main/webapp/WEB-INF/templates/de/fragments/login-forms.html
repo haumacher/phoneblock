@@ -61,6 +61,7 @@
 	  		<div class="panel-block">
 	  		<div class="content">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 					<label class="label" data-tx="t0007">E-Mail</label>
 					<div class="control has-icons-left has-icons-right">
@@ -144,6 +145,7 @@
 	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
 				    <input class="input" data-tx="t0023" placeholder="Benutzername" th:name="${userNameParam}" type="text"/>

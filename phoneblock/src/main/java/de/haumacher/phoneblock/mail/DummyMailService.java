@@ -36,6 +36,11 @@ public class DummyMailService implements MailService {
 	}
 
 	@Override
+	public void sendMobileWelcomeMail(UserSettings userSettings, String deviceLabel) {
+		LOG.info("Send mobile welcome to {} for device '{}'.", userSettings.getEmail(), deviceLabel);
+	}
+
+	@Override
 	public boolean sendHelpMail(UserSettings userSettings) {
 		LOG.info("Send help to {}.", userSettings.getEmail());
 		return true;

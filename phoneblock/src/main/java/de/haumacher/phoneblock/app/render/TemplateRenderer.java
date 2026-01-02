@@ -8,6 +8,7 @@ import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.web.servlet.IServletWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
+import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.app.render.controller.MobileLoginController;
@@ -28,7 +29,7 @@ public class TemplateRenderer {
     static {
         controllersByURL = new HashMap<String, WebController>();
         controllersByURL.put("/login", new LoginController(SettingsServlet.PATH));
-        controllersByURL.put("/mobile/login", new MobileLoginController());
+        controllersByURL.put(CreateAuthTokenServlet.MOBILE_LOGIN, new MobileLoginController());
         controllersByURL.put("/status", new StatusController());
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
         controllersByURL.put("/phone-info", new PhoneInfoController());

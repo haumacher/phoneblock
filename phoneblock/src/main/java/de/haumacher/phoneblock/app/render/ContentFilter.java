@@ -14,7 +14,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,6 +34,7 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.AssignContributionServlet;
 import de.haumacher.phoneblock.app.BasicLoginFilter;
+import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.DeleteAccountServlet;
 import de.haumacher.phoneblock.app.EMailVerificationServlet;
@@ -90,6 +90,11 @@ public class ContentFilter extends LoginFilter {
 	static {
 		LEGACY_PAGES = new HashMap<>();
 		LEGACY_PAGES.put("/signup.jsp", "/login.jsp");
+		LEGACY_PAGES.put("/setup-android/03-people-sync-install", "/setup-android");
+		LEGACY_PAGES.put("/setup-android/05-people-sync-accept", "/setup-android");
+		LEGACY_PAGES.put("/setup-android/07-people-sync-add", "/setup-android");
+		LEGACY_PAGES.put("/setup-android/09-people-sync-account-finished", "/setup-android");
+		LEGACY_PAGES.put("/setup-android/11-spam-contacts", "/setup-android");
 		
 		NO_POW = new HashSet<>();
 		NO_POW.add("/");
@@ -131,33 +136,44 @@ public class ContentFilter extends LoginFilter {
 
 	@Override
 	protected boolean checkTokenAuthorization(HttpServletRequest request, AuthToken authorization) {
+		String path = request.getServletPath();
+		if (path.startsWith(SearchServlet.NUMS_PREFIX)) {
+			return authorization.isAccessQuery();
+		}
+		
+		switch (path) {
+		case RatingServlet.PATH: 
+			return authorization.isAccessRate();
+		default:
 		return authorization.isAccessLogin();
+		}
 	}
 
 	@Override
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		String uri = request.getRequestURI().substring(request.getContextPath().length());
+		if (NO_POW.contains(uri) 
+				|| !request.getMethod().equals("GET")
+				|| uri.startsWith(CardDavServlet.DIR_NAME)
+				|| uri.startsWith("/assets") 
+				|| uri.startsWith("/webjars")
+				|| uri.startsWith("/oauth")
+				|| uri.startsWith("/api")
+				|| uri.startsWith("/mobile") 
+				|| uri.startsWith("/ab") // Many resources being requested from the web UI. 
+				|| uri.startsWith("/resource-not-found") 
+				|| uri.endsWith(".png") 
+				|| uri.endsWith(".svg") 
+				|| uri.endsWith(".css") 
+				|| uri.endsWith(".js") 
+				) {
+			// Resources for which prove of work is not possible/required.
+			render(request, response, chain);
+			return;
+		};
+
 		if (!SearchServlet.isGoodBot(request)) {
-			String uri = request.getRequestURI().substring(request.getContextPath().length());
-			if (NO_POW.contains(uri) 
-					|| !request.getMethod().equals("GET")
-					|| uri.startsWith(CardDavServlet.DIR_NAME)
-					|| uri.startsWith("/assets") 
-					|| uri.startsWith("/webjars")
-					|| uri.startsWith("/oauth")
-					|| uri.startsWith("/api")
-					|| uri.startsWith("/mobile") 
-					|| uri.startsWith("/ab") // Many resources being requested from the web UI. 
-					|| uri.startsWith("/resource-not-found") 
-					|| uri.endsWith(".png") 
-					|| uri.endsWith(".svg") 
-					|| uri.endsWith(".css") 
-					|| uri.endsWith(".js") 
-			) {
-				render(request, response, chain);
-				return;
-			};
-			
 			// Not a well-known bot and no authenticated user. This might be a problematic bulk query, request a proof of work.
 			HttpSession session = request.getSession();
 			Integer counter = (Integer) session.getAttribute(POW_COUNTER_ATTR);
@@ -451,15 +467,7 @@ public class ContentFilter extends LoginFilter {
 			@Override
 			public String resolveMessage(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
 				Locale locale = context.getLocale();
-
-				ResourceBundle bundle = ResourceBundle.getBundle("Messages", locale);
-				String message = bundle.getString(key);
-				
-				if (messageParameters != null && messageParameters.length > 0) {
-					return new MessageFormat(message).format(messageParameters);
-				} else {
-					return message;
-				}
+				return I18N.getMessage(locale, key, messageParameters);
 			}
 			
 			@Override

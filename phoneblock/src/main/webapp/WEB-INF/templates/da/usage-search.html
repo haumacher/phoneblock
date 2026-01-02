@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001">Søg efter numre</h1>
+
+		<p class="subtitle" data-tx="t0002">Du kan slå et hvilket som helst telefonnummer op i PhoneBlock-databasen, selv uden at der er foretaget et opkald.</p>
+
+		<h2 data-tx="t0003">Sådan søger du efter et nummer</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004">Trin 1: Åbn søgning</h3>
+				<figure class="image">
+					<img alt="Åben søgning" class="appscreen" data-tx="t0005" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006">Tryk på forstørrelsesglas-ikonet øverst til højre for at åbne søgefunktionen</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007">Trin 2: Indtast nummer</h3>
+				<figure class="image">
+					<img alt="Indtast nummer" class="appscreen" data-tx="t0008" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009">Indtast telefonnummeret, og tryk på "Søg"</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010">Hvad søgningen viser</h2>
+
+		<p data-tx="t0011">Efter søgningen vil du se følgende oplysninger om nummeret:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012">Hvis nummeret er kendt:</h3>
+				<ul>
+					<li data-tx="t0013"><strong>SPAM-score:</strong> Antal negative vurderinger</li>
+					<li data-tx="t0014"><strong>Kategorier:</strong> Type SPAM (reklame, svindel osv.)</li>
+					<li data-tx="t0015"><strong>Kommentarer:</strong> Udtalelser fra andre brugere</li>
+					<li data-tx="t0016"><strong>Anmeldelser:</strong> Positive og negative rapporter</li>
+				</ul>
+				<p class="mt-3" data-tx="t0039">Hvad du kan gøre efter søgningen:</p>
+				<ul>
+					<li data-tx="t0040">Bedøm nummeret som SPAM eller legitimt</li>
+					<li data-tx="t0041">Tilføj til sortliste (blokér altid)</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018">Hvis nummeret er ukendt:</h3>
+				<ul>
+					<li data-tx="t0019">Appen angiver, at ingen information er tilgængelig</li>
+					<li data-tx="t0042">Tilføj til hvidliste (blokér aldrig)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043">Læs kommentarer fra andre brugere</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044">En SPAM-vurdering føjer nummeret til din <strong>blackliste</strong>.</li>
+					<li data-tx="t0045">En legitim vurdering føjer nummeret til din <strong>hvidliste</strong>.</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022"><strong>Tip:</strong> Hvis du har modtaget et mistænkeligt opkald fra et ukendt nummer, kan du slå det op her og rapportere det som SPAM.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023">Tips til søgning</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024">Telefonnummerets format</h3>
+			<p class="mt-2" data-tx="t0046">Du kan indtaste numre med eller uden landekode:</p>
+			<ul class="mt-2">
+				<li data-tx="t0047"><strong>Med landekode:</strong> +49 30 12345678 (Tyskland), +41 44 1234567 (Schweiz), +43 1 1234567 (Østrig)</li>
+				<li data-tx="t0048"><strong>Uden landekode:</strong> Nummeret suppleres automatisk med landekoden fra dine indstillinger.</li>
+			</ul>
+			<p class="mt-3" data-tx="t0049"><strong>Tip:</strong> Hvis du søger efter et udenlandsk nummer, skal du altid indtaste den fulde landekode.</p>
+		</div>
+
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050">Databeskyttelse under søgningen</h3>
+			<p class="mt-2" data-tx="t0051">Under søgningen overføres nummeret <strong> til PhoneBlock-serveren i almindelig tekst</strong>. Dette er nødvendigt, så du kan bedømme nummeret og tilføje det til databasen.</p>
+			<p class="mt-2" data-tx="t0052"><strong>Vigtigt:</strong> Den hashbaserede databeskyttelsesfunktion (SHA-1) bruges kun til indgående opkald. For den aktive søgning kræves der fuldstændig overførsel af nummeret for at aktivere alle funktioner (vurdering, kommentarer).</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033">Hvornår er søgningen nyttig?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034">Hyppige brugsscenarier:</h3>
+				<ul>
+					<li data-tx="t0035">Tjek det ukendte nummer på displayet, før du tager telefonen</li>
+					<li data-tx="t0036">Slå ubesvarede opkald op</li>
+					<li data-tx="t0037">Tjek numre fra SMS eller e-mails</li>
+					<li data-tx="t0038">Tjek, om nummeret er legitimt, før du ringer tilbage</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0053">Hvad du kan gøre efter søgningen:</h3>
+				<ul>
+					<li data-tx="t0054"><strong>Rating as SPAM</strong> (føjes til den sorte liste → altid blokeret)</li>
+					<li data-tx="t0055"><strong>Rating as legitimate</strong> (vil blive tilføjet til hvidlisten → aldrig blokeret)</li>
+					<li data-tx="t0056">Læs kommentarer fra andre brugere</li>
+					<li data-tx="t0057">Tilføj eventuelt din egen kommentar</li>
+				</ul>
+				<p class="mt-3" data-tx="t0058"><strong>Note:</strong> Bedømmelse og tilføjelse til listen er én og samme handling!</p>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

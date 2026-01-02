@@ -9,16 +9,22 @@
 <section class="section">
 <div class="content">
 
-<h1 data-tx="t0001">Ha iniciado sesión correctamente</h1>
+<h1 data-tx="t0001">Finalizar enlace</h1>
 
-<p data-tx="t0002">Su token de autorización: <code id="token" th:text="${loginToken}"></code></p>
+<p data-tx="t0002">Si ve esta página, entonces su navegador no ha reenviado el enlace a su aplicación PhoneBlock. Debe hacerlo manualmente abriendo esta página "en la app". Abra el menú en la parte inferior:</p>
 
-<p data-tx="t0003">Su conexión a PhoneBlock se ha realizado correctamente. Esta página debería cerrarse automáticamente y su dispositivo móvil debería conectarse a PhoneBlock. Si esto no sucede, entonces puede haber algo mal con su aplicación móvil.</p>
+<img alt="Abrir menú" data-tx="t0003" th:src="@{/assets/img/mobile/connect-1.png}"/>
+	
+<p data-tx="t0004">Y selecciona la opción "Abrir con app":</p>
+
+<img alt="Opción &quot;Abrir con aplicación" data-tx="t0005" th:src="@{/assets/img/mobile/connect-2.png}"/>
+
+<p data-tx="t0006">Su token de autorización: <code id="loginToken" th:text="${loginToken}"></code><a class="copyToClipboard" data-tx="t0007" id="loginToken_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></p>
 
 </div>
 </section>
 
-<script th:src="@{/assets/js/mobile-response.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>
