@@ -38,14 +38,14 @@
 							</span>
 						</div>
 
-						<p class="help is-danger" data-tx="t0007:3e6fa396" th:if="${message != null}">
+						<p class="help is-danger" th:if="${message != null}">
 							<span th:text="${message}"></span>
-							<a th:href="@{/mobile/login}">Nochmal probieren</a>.								
+							<a data-tx="t0010:668224a9" th:href="@{/mobile/login}">Nochmal probieren</a>.								
 						</p>
 
-						<p class="help" data-tx="t0008:82e861f0" th:if="${message == null}">
-							<span>Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!</span>
-							<a th:href="@{/mobile/login}">Nochmal probieren</a>.								
+						<p class="help" th:if="${message == null}">
+							<span data-tx="t0011:8db88b77">Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!</span>
+							<a data-tx="t0012:668224a9" th:href="@{/mobile/login}">Nochmal probieren</a>.								
 						</p>
 					</div>		
 							

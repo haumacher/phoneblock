@@ -67,8 +67,8 @@
   	</th:block>
 
 	<ul>
-		<li data-tx="t0008:3f55024">
-			Alternative Schreibweisen: 
+		<li>
+			<span data-tx="t0008:324747a0">Alternative Schreibweisen:</span> 
 			<th:block th:if="${number.shortcut}">
 				<code dir="ltr" th:text="${number.shortcut}"></code>, 
 			</th:block>
@@ -117,7 +117,7 @@
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
-			<a data-onclick="showNumber" data-tx="t0021:6cb8b4ad" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
+			<a data-onclick="showNumber" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
 		</span>
 	</blockquote>
 </th:block>	
@@ -268,7 +268,7 @@
 	<div class="media-content">
 	  <div class="content">
 		<p class="commentHeader" th:with="phoneInfo=${#converters.analyze(comment.phone)}">
-		  <strong data-tx="t0030:6cb8b4ad">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></strong>
+		  <strong>☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></strong>
 		  <small>
 		  <a target="_blank" th:href="@{/link/{service}/{phone}(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}" th:unless="${#strings.isEmpty(comment.service)}"></a>
 		  <span data-tx="t0031:88251796" th:if="${#strings.isEmpty(comment.service)}">PhoneBlock</span>
