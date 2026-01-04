@@ -95,19 +95,26 @@ TODO: This URL is reserved for PhoneBlock Mobile. Ask for a custom integration U
 
 Store the token in your app's secure storage:
 
-```kotlin
+```java
 // Android example using EncryptedSharedPreferences
-val sharedPreferences = EncryptedSharedPreferences.create(
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+
+MasterKey masterKey = new MasterKey.Builder(context)
+    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+    .build();
+
+SharedPreferences sharedPreferences = EncryptedSharedPreferences.create(
+    context,
     "phoneblock_prefs",
     masterKey,
-    context,
     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-)
+);
 
 sharedPreferences.edit()
     .putString("auth_token", token)
-    .apply()
+    .apply();
 ```
 
 ### Token Properties
@@ -394,67 +401,165 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 A typical call screening app integration:
 
-```kotlin
-class PhoneBlockService(private val context: Context) {
-    private val baseUrl = "https://phoneblock.net/phoneblock/api"
-    private var authToken: String? = null
+```java
+import android.content.Context;
+import android.content.SharedPreferences;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import org.json.JSONObject;
 
-    init {
+public class PhoneBlockService {
+    private static final String BASE_URL = "https://phoneblock.net/phoneblock/api";
+    private final Context context;
+    private String authToken;
+
+    public PhoneBlockService(Context context) {
+        this.context = context;
         // Load stored token
-        authToken = context.getSharedPreferences("phoneblock", Context.MODE_PRIVATE)
-            .getString("auth_token", null)
+        SharedPreferences prefs = context.getSharedPreferences("phoneblock", Context.MODE_PRIVATE);
+        this.authToken = prefs.getString("auth_token", null);
     }
 
-    suspend fun checkIncomingCall(phoneNumber: String): CallScreeningDecision {
-        // Normalize to E.164 format
-        val normalized = normalizePhoneNumber(phoneNumber)
+    public CallScreeningDecision checkIncomingCall(String phoneNumber) {
+        try {
+            // Normalize to E.164 format
+            String normalized = normalizePhoneNumber(phoneNumber);
 
-        // Hash for privacy
-        val hash = hashPhoneNumber(normalized)
+            // Hash for privacy
+            String hash = hashPhoneNumber(normalized);
 
-        // Query PhoneBlock API
-        val response = httpClient.get("$baseUrl/check?sha1=$hash") {
-            headers {
-                append("Authorization", "Bearer $authToken")
-                append("User-Agent", "MyCallBlocker/1.0.0")
+            // Query PhoneBlock API
+            PhoneInfo info = queryApi(hash);
+
+            if (info != null) {
+                // Apply your blocking logic
+                if ("G_FRAUD".equals(info.rating) || "F_GAMBLE".equals(info.rating)) {
+                    return CallScreeningDecision.REJECT;
+                }
+
+                if (info.votes > 10 &&
+                    ("E_ADVERTISING".equals(info.rating) || "D_POLL".equals(info.rating))) {
+                    return CallScreeningDecision.SILENCE;
+                }
+
+                if ("A_LEGITIMATE".equals(info.rating)) {
+                    return CallScreeningDecision.ALLOW;
+                }
+
+                return CallScreeningDecision.SCREEN;
             }
-        }
-
-        if (response.status.value == 200) {
-            val info = response.body<PhoneInfo>()
-
-            // Apply your blocking logic
-            return when {
-                info.rating == "G_FRAUD" -> CallScreeningDecision.REJECT
-                info.rating == "F_GAMBLE" -> CallScreeningDecision.REJECT
-                info.votes > 10 && info.rating in listOf("E_ADVERTISING", "D_POLL") ->
-                    CallScreeningDecision.SILENCE
-                info.rating == "A_LEGITIMATE" -> CallScreeningDecision.ALLOW
-                else -> CallScreeningDecision.SCREEN
-            }
+        } catch (Exception e) {
+            // Log error but fail open
+            android.util.Log.e("PhoneBlock", "Failed to check number", e);
         }
 
         // Default: allow call if API fails
-        return CallScreeningDecision.ALLOW
+        return CallScreeningDecision.ALLOW;
     }
 
-    fun normalizePhoneNumber(phone: String): String {
+    private PhoneInfo queryApi(String hash) throws IOException {
+        URL url = new URL(BASE_URL + "/check?sha1=" + hash);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        try {
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + authToken);
+            conn.setRequestProperty("User-Agent", "MyCallBlocker/1.0.0");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                // Read and parse JSON response
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                JSONObject json = new JSONObject(response.toString());
+                return PhoneInfo.fromJson(json);
+            }
+        } finally {
+            conn.disconnect();
+        }
+
+        return null;
+    }
+
+    public String normalizePhoneNumber(String phone) {
         // Remove all non-digit characters except leading +
-        val cleaned = phone.replace(Regex("[^+\\d]"), "")
+        String cleaned = phone.replaceAll("[^+\\d]", "");
 
         // Add country code if missing (using device SIM country)
-        return if (cleaned.startsWith("+")) {
-            cleaned
+        if (cleaned.startsWith("+")) {
+            return cleaned;
         } else {
-            val dialPrefix = getDialPrefixFromDevice()
-            "$dialPrefix${cleaned.trimStart('0')}"
+            String dialPrefix = getDialPrefixFromDevice();
+            String withoutLeadingZero = cleaned.replaceFirst("^0+", "");
+            return dialPrefix + withoutLeadingZero;
         }
     }
 
-    fun hashPhoneNumber(phone: String): String {
-        val digest = MessageDigest.getInstance("SHA-1")
-        val hash = digest.digest(phone.toByteArray(StandardCharsets.UTF_8))
-        return hash.joinToString("") { "%02X".format(it) }
+    public String hashPhoneNumber(String phone) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        byte[] hash = digest.digest(phone.getBytes(StandardCharsets.UTF_8));
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            hexString.append(String.format("%02X", b));
+        }
+        return hexString.toString();
+    }
+
+    private String getDialPrefixFromDevice() {
+        // Get dial prefix from device SIM country
+        android.telephony.TelephonyManager tm =
+            (android.telephony.TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        String countryIso = tm.getSimCountryIso();
+
+        // Map country ISO to dial prefix (simplified example)
+        switch (countryIso.toUpperCase()) {
+            case "DE": return "+49";
+            case "US": return "+1";
+            case "GB": return "+44";
+            case "FR": return "+33";
+            // Add more countries as needed
+            default: return "+49"; // Default to Germany
+        }
+    }
+
+    public enum CallScreeningDecision {
+        ALLOW, REJECT, SILENCE, SCREEN
+    }
+
+    public static class PhoneInfo {
+        public String phone;
+        public int votes;
+        public int votesWildcard;
+        public String rating;
+        public boolean archived;
+        public long dateAdded;
+        public long lastUpdate;
+
+        public static PhoneInfo fromJson(JSONObject json) throws org.json.JSONException {
+            PhoneInfo info = new PhoneInfo();
+            info.phone = json.optString("phone");
+            info.votes = json.optInt("votes", 0);
+            info.votesWildcard = json.optInt("votesWildcard", 0);
+            info.rating = json.optString("rating");
+            info.archived = json.optBoolean("archived", false);
+            info.dateAdded = json.optLong("dateAdded", 0);
+            info.lastUpdate = json.optLong("lastUpdate", 0);
+            return info;
+        }
     }
 }
 ```
@@ -463,33 +568,59 @@ class PhoneBlockService(private val context: Context) {
 
 Integration for SMS spam detection:
 
-```kotlin
-class SmsSpamFilter(private val phoneBlockService: PhoneBlockService) {
+```java
+import java.util.Arrays;
+import java.util.List;
 
-    suspend fun checkSmsSpam(sender: String, message: String): Boolean {
-        val phoneInfo = phoneBlockService.checkNumber(sender)
+public class SmsSpamFilter {
+    private final PhoneBlockService phoneBlockService;
+    private static final List<String> SPAM_KEYWORDS = Arrays.asList(
+        "winner", "prize", "free", "click here", "verify account"
+    );
+
+    public SmsSpamFilter(PhoneBlockService phoneBlockService) {
+        this.phoneBlockService = phoneBlockService;
+    }
+
+    public boolean checkSmsSpam(String sender, String message) {
+        PhoneBlockService.PhoneInfo phoneInfo = phoneBlockService.checkNumber(sender);
+
+        if (phoneInfo == null) {
+            return false;
+        }
 
         // High-confidence spam detection
         if (phoneInfo.votes > 20 &&
-            phoneInfo.rating in listOf("G_FRAUD", "F_GAMBLE", "E_ADVERTISING")) {
-            return true
+            ("G_FRAUD".equals(phoneInfo.rating) ||
+             "F_GAMBLE".equals(phoneInfo.rating) ||
+             "E_ADVERTISING".equals(phoneInfo.rating))) {
+            return true;
         }
 
         // Additional heuristics based on message content
-        val spamKeywords = listOf("winner", "prize", "free", "click here", "verify account")
-        val hasSpamKeywords = spamKeywords.any { message.lowercase().contains(it) }
+        boolean hasSpamKeywords = hasSpamKeywords(message);
 
         if (hasSpamKeywords && phoneInfo.votes > 5) {
             // Report as spam
             phoneBlockService.reportSpam(
-                phone = sender,
-                rating = "E_ADVERTISING",
-                comment = "SMS spam with suspicious keywords"
-            )
-            return true
+                sender,
+                "E_ADVERTISING",
+                "SMS spam with suspicious keywords"
+            );
+            return true;
         }
 
-        return false
+        return false;
+    }
+
+    private boolean hasSpamKeywords(String message) {
+        String lowerMessage = message.toLowerCase();
+        for (String keyword : SPAM_KEYWORDS) {
+            if (lowerMessage.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 ```
@@ -498,27 +629,61 @@ class SmsSpamFilter(private val phoneBlockService: PhoneBlockService) {
 
 Show spam warnings in contact details:
 
-```kotlin
-class ContactDetailsActivity : AppCompatActivity() {
+```java
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+public class ContactDetailsActivity extends AppCompatActivity {
+    private PhoneBlockService phoneBlockService;
+    private ExecutorService executorService;
 
-        val phoneNumber = intent.getStringExtra("phone")
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_contact_details);
 
-        lifecycleScope.launch {
-            val spamInfo = phoneBlockService.checkNumber(phoneNumber)
+        phoneBlockService = new PhoneBlockService(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-            if (spamInfo.votes > 0) {
-                showSpamWarning(
-                    rating = spamInfo.rating,
-                    votes = spamInfo.votes,
-                    onReport = {
-                        // Allow user to add their own report
-                        showReportDialog(phoneNumber)
-                    }
-                )
+        String phoneNumber = getIntent().getStringExtra("phone");
+
+        // Check spam status in background thread
+        executorService.execute(() -> {
+            PhoneBlockService.PhoneInfo spamInfo = phoneBlockService.checkNumber(phoneNumber);
+
+            if (spamInfo != null && spamInfo.votes > 0) {
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    showSpamWarning(
+                        spamInfo.rating,
+                        spamInfo.votes,
+                        () -> {
+                            // Allow user to add their own report
+                            showReportDialog(phoneNumber);
+                        }
+                    );
+                });
             }
+        });
+    }
+
+    private void showSpamWarning(String rating, int votes, Runnable onReportAction) {
+        // Display spam warning UI with rating and votes
+        // Implementation depends on your UI framework
+    }
+
+    private void showReportDialog(String phoneNumber) {
+        // Show dialog to allow user to report the number
+        // Implementation depends on your UI framework
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) {
+            executorService.shutdown();
         }
     }
 }
@@ -546,41 +711,65 @@ This helps PhoneBlock:
 
 Implement robust error handling:
 
-```kotlin
-suspend fun checkNumber(phone: String): PhoneInfo? {
-    return try {
-        val response = httpClient.get("$baseUrl/check?sha1=${hashPhone(phone)}") {
-            timeout {
-                requestTimeoutMillis = 5000
-                socketTimeoutMillis = 5000
-            }
-            headers {
-                append("Authorization", "Bearer $authToken")
-                append("User-Agent", userAgent)
-            }
-        }
+```java
+public PhoneInfo checkNumber(String phone) {
+    HttpURLConnection conn = null;
+    try {
+        String hash = hashPhoneNumber(phone);
+        URL url = new URL(baseUrl + "/check?sha1=" + hash);
+        conn = (HttpURLConnection) url.openConnection();
 
-        when (response.status.value) {
-            200 -> response.body<PhoneInfo>()
-            401 -> {
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer " + authToken);
+        conn.setRequestProperty("User-Agent", userAgent);
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(5000);
+
+        int responseCode = conn.getResponseCode();
+
+        switch (responseCode) {
+            case 200:
+                // Success - parse response
+                BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                JSONObject json = new JSONObject(response.toString());
+                return PhoneInfo.fromJson(json);
+
+            case 401:
                 // Token expired or invalid - re-authenticate
-                authToken = null
-                null
-            }
-            429 -> {
+                Log.w(TAG, "Token expired, re-authentication required");
+                authToken = null;
+                return null;
+
+            case 429:
                 // Rate limited - back off
-                delay(60000)
-                null
-            }
-            else -> {
-                Log.e(TAG, "API error: ${response.status}")
-                null
-            }
+                Log.w(TAG, "Rate limited, backing off");
+                try {
+                    Thread.sleep(60000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+                return null;
+
+            default:
+                Log.e(TAG, "API error: HTTP " + responseCode);
+                return null;
         }
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to check number", e)
+    } catch (IOException | JSONException | NoSuchAlgorithmException e) {
+        Log.e(TAG, "Failed to check number", e);
         // Fail open - allow call by default
-        null
+        return null;
+    } finally {
+        if (conn != null) {
+            conn.disconnect();
+        }
     }
 }
 ```
@@ -617,22 +806,20 @@ suspend fun checkNumber(phone: String): PhoneInfo? {
 
 Always normalize phone numbers to E.164 format before hashing:
 
-```kotlin
-fun normalizeToE164(phone: String, defaultDialPrefix: String): String {
+```java
+public String normalizeToE164(String phone, String defaultDialPrefix) {
     // Remove all formatting
-    val cleaned = phone.replace(Regex("[^+\\d]"), "")
+    String cleaned = phone.replaceAll("[^+\\d]", "");
 
-    return when {
+    if (cleaned.startsWith("+")) {
         // Already in international format
-        cleaned.startsWith("+") -> cleaned
-
+        return cleaned;
+    } else if (cleaned.startsWith("0")) {
         // National format with leading zero
-        cleaned.startsWith("0") -> {
-            defaultDialPrefix + cleaned.substring(1)
-        }
-
+        return defaultDialPrefix + cleaned.substring(1);
+    } else {
         // National format without leading zero
-        else -> defaultDialPrefix + cleaned
+        return defaultDialPrefix + cleaned;
     }
 }
 
@@ -653,14 +840,14 @@ fun normalizeToE164(phone: String, defaultDialPrefix: String): String {
 
 Always test against the test server first:
 
-```kotlin
-class PhoneBlockApi(
-    private val isProduction: Boolean = false
-) {
-    private val baseUrl = if (isProduction) {
-        "https://phoneblock.net/phoneblock/api"
-    } else {
-        "https://phoneblock.net/pb-test/api"
+```java
+public class PhoneBlockApi {
+    private final String baseUrl;
+
+    public PhoneBlockApi(boolean isProduction) {
+        this.baseUrl = isProduction
+            ? "https://phoneblock.net/phoneblock/api"
+            : "https://phoneblock.net/pb-test/api";
     }
 
     // ... implementation
@@ -671,23 +858,50 @@ class PhoneBlockApi(
 
 Tokens are long-lived but can expire. Implement token refresh:
 
-```kotlin
-suspend fun ensureValidToken(): Boolean {
+```java
+public boolean ensureValidToken() {
     if (authToken == null) {
-        return false
+        return false;
     }
 
     // Test token validity
-    val isValid = testConnection()
+    boolean isValid = testConnection();
 
     if (!isValid) {
         // Clear invalid token and prompt re-authentication
-        authToken = null
-        showAuthenticationPrompt()
-        return false
+        authToken = null;
+        showAuthenticationPrompt();
+        return false;
     }
 
-    return true
+    return true;
+}
+
+private boolean testConnection() {
+    try {
+        URL url = new URL(baseUrl + "/test-connect");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer " + authToken);
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(5000);
+
+        int responseCode = conn.getResponseCode();
+        conn.disconnect();
+
+        return responseCode == 200;
+    } catch (IOException e) {
+        Log.e(TAG, "Failed to test connection", e);
+        return false;
+    }
+}
+
+private void showAuthenticationPrompt() {
+    // Redirect user to login page to get new token
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setData(Uri.parse("https://phoneblock.net/phoneblock/mobile/login?label=" +
+        Uri.encode("MyApp on " + android.os.Build.MODEL)));
+    context.startActivity(intent);
 }
 ```
 
@@ -702,6 +916,12 @@ https://phoneblock.net/phoneblock/api/phoneblock.json
 You can use this to generate client libraries:
 
 ```bash
+# Generate Java client
+openapi-generator generate \
+  -i https://phoneblock.net/phoneblock/api/phoneblock.json \
+  -g java \
+  -o phoneblock-client-java
+
 # Generate Kotlin client
 openapi-generator generate \
   -i https://phoneblock.net/phoneblock/api/phoneblock.json \
