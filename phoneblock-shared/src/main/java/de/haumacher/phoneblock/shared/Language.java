@@ -77,6 +77,11 @@ public class Language {
 			this.fallbacks[n] = Locale.forLanguageTag(fallbacks[n]);
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return this.tag;
+	}
 
 	public static Language[] all() {
 		return LANGUAGES;
