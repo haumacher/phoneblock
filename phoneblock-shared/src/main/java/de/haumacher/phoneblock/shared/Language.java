@@ -2,6 +2,7 @@ package de.haumacher.phoneblock.shared;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,9 +45,10 @@ public class Language {
 	};
 	
 	private static final Map<String, Language> LANG_BY_TAG = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> l.tag, l -> l));
-	private static final Map<Locale, Language> LANG_BY_LOCALE = Arrays.stream(LANGUAGES).collect(Collectors.toMap(l -> Locale.forLanguageTag(l.tag), l -> l));
+	private static final Map<Locale, Language> LANG_BY_LOCALE = new HashMap<>();
 	static {
 		for (Language lang : LANGUAGES) {
+			LANG_BY_LOCALE.put(lang.locale, lang);
 			for (Locale fallback : lang.fallbacks) {
 				LANG_BY_LOCALE.put(fallback, lang);
 			}
