@@ -137,13 +137,13 @@
 						<code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>
 					</li>
 
-					<li data-tx="t0047:d95b548">
+					<li data-tx="t0047:a4773f13">
 						Trage den Benutzernamen <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>, den Du bei der
 						<a th:href="@{/login(location='/settings')}">Registrierung</a> erhalten hast, in das Feld 
 						<i>Benutzername</i> ein. 
 					</li>
 
-					<li data-tx="t0048:21a0ad48">
+					<li data-tx="t0048:151291e0">
 						Das Passwort<th:block th:unless="${token}">, 
 						das Du bei der <a th:href="@{/login(location='/settings')}">Registrierung</a> erhalten 
 						hast, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a>,</th:block> muss Du jetzt noch in das Feld

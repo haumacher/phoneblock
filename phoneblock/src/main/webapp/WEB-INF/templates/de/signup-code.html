@@ -35,9 +35,9 @@
 					      <i class="fas fa-exclamation-triangle"></i>
 						</span>
 					  </div>
-						<p class="help is-danger" data-tx="t0006:3e6fa396" th:if="${errorMessage}">
+						<p class="help is-danger" th:if="${errorMessage}">
 							<span th:text="${errorMessage}"></span>
-							<a th:href="|${contextPath}${restartPage}?location=${location}|">Nochmal probieren</a>.								
+							<a data-tx="t0010:668224a9" th:href="|${contextPath}${restartPage}?location=${location}|">Nochmal probieren</a>.								
 						</p>
 						<p class="help is-info" data-tx="t0007:f4e5dd82" th:unless="${errorMessage}">
 							Keine E-Mail erhalten? Prüfe bitte Deinen Spam-Ordner!
