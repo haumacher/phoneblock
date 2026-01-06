@@ -13,6 +13,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -275,7 +276,10 @@ public abstract class LoginFilter implements Filter {
 		try (SqlSession tx = db.openSession()) {
 			Users users = tx.getMapper(Users.class);
 			String lang = users.getLang(userName);
-			session.setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
+			Language selectedLang = DefaultController.selectLanguage(lang);
+			session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
+			
+			LOG.debug("Initialized user session for '{}' in language '{}'.", userName, selectedLang);
 		}
 	}
 
