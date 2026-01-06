@@ -51,6 +51,16 @@ Future<String> _getDeviceName() async {
   }
 }
 
+/// Gets the device's locale as a language tag string.
+/// Returns a language tag like "de-DE", "en-US", etc.
+///
+/// This is suitable for use in the Accept-Language HTTP header.
+String getDeviceLocale() {
+  final locale = PlatformDispatcher.instance.locale;
+  final languageTag = locale.toLanguageTag(); // e.g., "de-DE", "en-US"
+  return languageTag;
+}
+
 /// Gets the device's locale information including language tag and country code.
 /// Returns a map with 'lang' (e.g., "de-DE", "en-US") and 'countryCode' (e.g., "DE", "US").
 ///
@@ -58,10 +68,11 @@ Future<String> _getDeviceName() async {
 /// than the locale country code since it reflects the actual network operator.
 /// The server will convert the country code to the appropriate dial prefix.
 /// If country code cannot be determined, it is omitted from the result.
-Future<Map<String, String>> getDeviceLocale() async {
+///
+/// This is used for syncing account settings with the PhoneBlock server.
+Future<Map<String, String>> getDeviceLocaleSettings() async {
   try {
-    final locale = PlatformDispatcher.instance.locale;
-    final languageTag = locale.toLanguageTag(); // e.g., "de-DE", "en-US"
+    final languageTag = getDeviceLocale();
 
     final result = <String, String>{
       'lang': languageTag,
@@ -87,14 +98,10 @@ Future<Map<String, String>> getDeviceLocale() async {
       }
     }
 
-    if (kDebugMode) {
-      print('Device locale: $languageTag');
-    }
-
     return result;
   } catch (e) {
     if (kDebugMode) {
-      print('Error getting device locale: $e');
+      print('Error getting device locale settings: $e');
     }
     // Return default values on error
     return {'lang': 'en'};
@@ -1729,7 +1736,7 @@ class VerifyLoginState extends State<VerifyLogin> {
     checkResult = callPhoneBlockApi(pbApiTest, authToken: token).then((response) async {
       if (response.statusCode == 200) {
         // Token is valid, update account settings with device locale
-        final localeSettings = await getDeviceLocale();
+        final localeSettings = await getDeviceLocaleSettings();
         await updateAccountSettings(token, localeSettings);
       }
       return response;
@@ -2020,14 +2027,48 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
               _isLoading = false;
             });
           },
+          onNavigationRequest: (NavigationRequest request) {
+            // Intercept all navigation requests to add custom headers
+            if (request.url.startsWith(pbBaseUrl)) {
+              // This is a PhoneBlock page - load it with our custom headers
+              _loadPageWithHeaders(request.url);
+            } else {
+              // External link - open in system browser instead of WebView
+              _launchExternalUrl(request.url);
+            }
+            // Prevent default navigation since we're handling it ourselves
+            return NavigationDecision.prevent;
+          },
         ),
-      )
-      ..loadRequest(
-        Uri.parse('$pbBaseUrl${widget.path}'),
-        headers: {
-          'Authorization': 'Bearer ${widget.authToken}',
-        },
       );
+
+    _loadPageWithHeaders('$pbBaseUrl${widget.path}');
+  }
+
+  /// Loads a page with custom headers (Authorization and Accept-Language).
+  Future<void> _loadPageWithHeaders(String url) async {
+    // Get device locale for Accept-Language header
+    final languageTag = getDeviceLocale();
+
+    await _controller.loadRequest(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer ${widget.authToken}',
+        'Accept-Language': languageTag,
+      },
+    );
+  }
+
+  /// Opens an external URL in the system's default browser.
+  Future<void> _launchExternalUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (kDebugMode) {
+        print('Could not launch external URL: $url');
+      }
+    }
   }
 
   @override
