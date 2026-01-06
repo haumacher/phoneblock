@@ -2050,6 +2050,10 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
     // Get device locale for Accept-Language header
     final languageTag = getDeviceLocale();
 
+    if (kDebugMode) {
+      print("Loading with language '$languageTag': $url");
+    }
+
     await _controller.loadRequest(
       Uri.parse(url),
       headers: {
