@@ -23,6 +23,10 @@ import org.simplejavamail.utils.mail.dkim.SigningAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DB;
@@ -292,29 +296,134 @@ public class MailServiceImpl implements MailService {
 	}
 
 	/**
-	 * Convert HTML to plain text by removing all HTML tags and collapsing multiple empty lines.
+	 * Convert HTML to plain text using jsoup.
+	 *
+	 * <p>
+	 * This method:
+	 * <ul>
+	 * <li>Removes script, style, and other technical content</li>
+	 * <li>Preserves links in format: "Link Text (https://url)"</li>
+	 * <li>Adds spacing for block elements (paragraphs, headings)</li>
+	 * <li>Handles all HTML entities automatically</li>
+	 * <li>Collapses multiple empty lines</li>
+	 * </ul>
+	 * </p>
 	 *
 	 * @param html The HTML content
-	 * @return Plain text version
+	 * @return Plain text version suitable for email clients that don't support HTML
 	 */
-	private String htmlToPlainText(String html) {
-		// Remove all HTML tags (opening and closing)
-		String text = html.replaceAll("<[^>]+>", "");
+	static String htmlToPlainText(String html) {
+		// Parse HTML
+		Document doc = Jsoup.parse(html);
 
-		// Decode common HTML entities (decode &amp; last to avoid creating new entities)
-		text = text.replace("&nbsp;", " ");
-		text = text.replace("&lt;", "<");
-		text = text.replace("&gt;", ">");
-		text = text.replace("&quot;", "\"");
-		text = text.replace("&amp;", "&");  // Must be last!
+		// Remove script, style, and other non-content tags
+		doc.select("script, style, head").remove();
 
-		// Remove duplicate empty lines (replace multiple consecutive newlines with max 2)
-		text = text.replaceAll("(\r?\n){3,}", "\n\n");
+		// Process links to preserve URLs
+		for (Element link : doc.select("a[href]")) {
+			String href = link.attr("href");
+			String text = link.text();
 
-		// Trim leading/trailing whitespace
-		text = text.trim();
+			// Replace link with "text (URL)" format
+			// Skip if href is empty or same as text (to avoid "url (url)")
+			if (!href.isEmpty() && !href.equals(text)) {
+				link.text(text + " (" + href + ")");
+			}
+		}
+
+		// Replace block elements with their content plus newlines
+		// Process in reverse order to avoid DOM modification issues
+		for (Element br : doc.select("br")) {
+			br.replaceWith(new org.jsoup.nodes.TextNode("\n"));
+		}
+
+		for (Element elem : doc.select("p, div, h1, h2, h3, h4, h5, h6")) {
+			// Add newlines before and after block elements
+			String elemText = elem.text();
+			elem.replaceWith(new org.jsoup.nodes.TextNode("\n" + elemText + "\n"));
+		}
+
+		// Get text content (jsoup handles all HTML entities automatically)
+		String text = doc.body().wholeText();
+
+		// Clean up excessive whitespace
+		text = text.replaceAll("(?m)^[ \\t]+", "");  // Trim leading whitespace on each line
+		text = text.replaceAll("(\r?\n){3,}", "\n\n");  // Max 2 consecutive newlines
+		text = text.replaceAll("[ \\t]+", " ");  // Multiple spaces to single space
+
+		// Apply line wrapping at 70 characters
+		text = wrapLines(text.trim(), 70);
 
 		return text;
+	}
+
+	/**
+	 * Wrap lines to a maximum width, preserving existing line breaks.
+	 *
+	 * @param text The text to wrap
+	 * @param maxWidth Maximum line width (typically 70 for email)
+	 * @return Text with lines wrapped
+	 */
+	static String wrapLines(String text, int maxWidth) {
+		StringBuilder result = new StringBuilder();
+		String[] paragraphs = text.split("\n");
+
+		for (int i = 0; i < paragraphs.length; i++) {
+			String paragraph = paragraphs[i];
+
+			if (paragraph.isEmpty()) {
+				// Preserve empty lines (paragraph breaks)
+				result.append("\n");
+			} else if (paragraph.length() <= maxWidth) {
+				// Line is already short enough
+				result.append(paragraph);
+				if (i < paragraphs.length - 1) {
+					result.append("\n");
+				}
+			} else {
+				// Need to wrap this line
+				String wrapped = wrapSingleLine(paragraph, maxWidth);
+				result.append(wrapped);
+				if (i < paragraphs.length - 1) {
+					result.append("\n");
+				}
+			}
+		}
+
+		return result.toString();
+	}
+
+	/**
+	 * Wrap a single line of text at word boundaries.
+	 *
+	 * @param line The line to wrap
+	 * @param maxWidth Maximum line width
+	 * @return Wrapped text with newlines inserted
+	 */
+	static String wrapSingleLine(String line, int maxWidth) {
+		StringBuilder result = new StringBuilder();
+		String[] words = line.split(" ");
+		int currentLineLength = 0;
+
+		for (int i = 0; i < words.length; i++) {
+			String word = words[i];
+
+			if (currentLineLength == 0) {
+				// First word on the line
+				result.append(word);
+				currentLineLength = word.length();
+			} else if (currentLineLength + 1 + word.length() <= maxWidth) {
+				// Word fits on current line
+				result.append(" ").append(word);
+				currentLineLength += 1 + word.length();
+			} else {
+				// Word doesn't fit, start new line
+				result.append("\n").append(word);
+				currentLineLength = word.length();
+			}
+		}
+
+		return result.toString();
 	}
 
 	private void sendMail(String subjectKey, InternetAddress receiver, String locale, String template, Map<String, String> variables)
