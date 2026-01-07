@@ -31,7 +31,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accepted => 'مقبولة';
 
   @override
-  String votes(int count) {
+  String votes(Object count) {
     return '$countالأصوات';
   }
 
@@ -60,7 +60,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get minSpamReports => 'الحد الأدنى من الرسائل الاقتحامية';
 
   @override
-  String minSpamReportsDescription(int count) {
+  String minSpamReportsDescription(Object count) {
     return 'يتم حظر الأرقام من $countالرسائل فصاعدًا';
   }
 
@@ -76,7 +76,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'الحد الأدنى من الرسائل الاقتحامية في منطقة';
 
   @override
-  String minSpamReportsInRangeDescription(int count) {
+  String minSpamReportsInRangeDescription(Object count) {
     return 'يتم حظر المناطق من $count الرسائل فصاعدًا';
   }
 
@@ -112,7 +112,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get donate => 'التبرعات';
 
   @override
-  String pendingCallsNotification(int count) {
+  String pendingCallsNotification(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -174,17 +174,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notLoggedIn => 'غير مسجل. يرجى تسجيل الدخول';
 
   @override
-  String reportedAsLegitimate(String phoneNumber) {
+  String reportedAsLegitimate(Object phoneNumber) {
     return '$phoneNumber الذي تم الإبلاغ عنه على أنه شرعي';
   }
 
   @override
-  String reportError(String error) {
+  String reportError(Object error) {
     return 'خطأ عند الإبلاغ: $error';
   }
 
   @override
-  String reportedAsSpam(String phoneNumber) {
+  String reportedAsSpam(Object phoneNumber) {
     return '$phoneNumber الذي تم الإبلاغ عنه كرسالة غير مرغوب فيها';
   }
 
@@ -231,12 +231,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get minReportsCount => 'الحد الأدنى لعدد الرسائل';
 
   @override
-  String callsBlockedAfterReports(int count) {
+  String callsBlockedAfterReports(Object count) {
     return 'يتم حظر المكالمات من رسائل $count';
   }
 
   @override
-  String rangesBlockedAfterReports(int count) {
+  String rangesBlockedAfterReports(Object count) {
     return 'يتم حظر المناطق من $count الرسائل فصاعدًا';
   }
 
@@ -277,7 +277,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get redirectingToSetup => 'إعادة التوجيه إلى المنشأة...';
 
   @override
-  String tokenVerificationFailed(String error) {
+  String tokenVerificationFailed(Object error) {
     return 'فشل التحقق من الرمز المميز: <x1> خطأ<x1>';
   }
 
@@ -321,12 +321,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorSaving => 'خطأ عند الحفظ';
 
   @override
-  String ratePhoneNumber(String phoneNumber) {
+  String ratePhoneNumber(Object phoneNumber) {
     return 'معدل $phoneNumber';
   }
 
   @override
-  String reportsCount(int count) {
+  String reportsCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -337,7 +337,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String legitimateReportsCount(int count) {
+  String legitimateReportsCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -351,12 +351,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noReports => 'لا توجد رسائل';
 
   @override
-  String todayTime(String time) {
+  String todayTime(Object time) {
     return 'اليوم، $time';
   }
 
   @override
-  String yesterdayTime(String time) {
+  String yesterdayTime(Object time) {
     return 'يوم أمس، $time';
   }
 
@@ -364,7 +364,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get callHistoryRetention => 'تخزين سجل المكالمات';
 
   @override
-  String retentionPeriodDescription(int days) {
+  String retentionPeriodDescription(num days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -378,7 +378,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get retentionInfinite => 'احتفظ بجميع المكالمات';
 
   @override
-  String retentionDays(int days) {
+  String retentionDays(num days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -447,6 +447,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get whitelistEmpty => 'قائمتك البيضاء فارغة';
+
+  @override
+  String get blacklistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+
+  @override
+  String get whitelistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
 
   @override
   String get errorLoadingList => 'خطأ في تحميل القائمة';

@@ -31,7 +31,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accepted => 'Angenommen';
 
   @override
-  String votes(int count) {
+  String votes(Object count) {
     return '$count Stimmen';
   }
 
@@ -61,7 +61,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get minSpamReports => 'Minimale SPAM-Meldungen';
 
   @override
-  String minSpamReportsDescription(int count) {
+  String minSpamReportsDescription(Object count) {
     return 'Nummern werden ab $count Meldungen blockiert';
   }
 
@@ -76,7 +76,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get minSpamReportsInRange => 'Minimale SPAM-Meldungen im Bereich';
 
   @override
-  String minSpamReportsInRangeDescription(int count) {
+  String minSpamReportsInRangeDescription(Object count) {
     return 'Bereiche werden ab $count Meldungen blockiert';
   }
 
@@ -112,7 +112,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get donate => 'Spenden';
 
   @override
-  String pendingCallsNotification(int count) {
+  String pendingCallsNotification(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -174,17 +174,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notLoggedIn => 'Nicht angemeldet. Bitte melden Sie sich an.';
 
   @override
-  String reportedAsLegitimate(String phoneNumber) {
+  String reportedAsLegitimate(Object phoneNumber) {
     return '$phoneNumber als legitim gemeldet';
   }
 
   @override
-  String reportError(String error) {
+  String reportError(Object error) {
     return 'Fehler beim Melden: $error';
   }
 
   @override
-  String reportedAsSpam(String phoneNumber) {
+  String reportedAsSpam(Object phoneNumber) {
     return '$phoneNumber als SPAM gemeldet';
   }
 
@@ -231,12 +231,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get minReportsCount => 'Minimale Anzahl Meldungen';
 
   @override
-  String callsBlockedAfterReports(int count) {
+  String callsBlockedAfterReports(Object count) {
     return 'Anrufe werden ab $count Meldungen blockiert';
   }
 
   @override
-  String rangesBlockedAfterReports(int count) {
+  String rangesBlockedAfterReports(Object count) {
     return 'Bereiche werden ab $count Meldungen blockiert';
   }
 
@@ -278,7 +278,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get redirectingToSetup => 'Weiterleitung zur Einrichtung...';
 
   @override
-  String tokenVerificationFailed(String error) {
+  String tokenVerificationFailed(Object error) {
     return 'Token-Überprüfung fehlgeschlagen: $error';
   }
 
@@ -323,12 +323,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get errorSaving => 'Fehler beim Speichern';
 
   @override
-  String ratePhoneNumber(String phoneNumber) {
+  String ratePhoneNumber(Object phoneNumber) {
     return '$phoneNumber bewerten';
   }
 
   @override
-  String reportsCount(int count) {
+  String reportsCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -339,7 +339,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String legitimateReportsCount(int count) {
+  String legitimateReportsCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -353,12 +353,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noReports => 'Keine Meldungen';
 
   @override
-  String todayTime(String time) {
+  String todayTime(Object time) {
     return 'Heute, $time';
   }
 
   @override
-  String yesterdayTime(String time) {
+  String yesterdayTime(Object time) {
     return 'Gestern, $time';
   }
 
@@ -366,7 +366,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get callHistoryRetention => 'Anrufverlauf-Speicherung';
 
   @override
-  String retentionPeriodDescription(int days) {
+  String retentionPeriodDescription(num days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -380,7 +380,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get retentionInfinite => 'Alle Anrufe behalten';
 
   @override
-  String retentionDays(int days) {
+  String retentionDays(num days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -450,6 +450,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get whitelistEmpty => 'Ihre Whitelist ist leer';
+
+  @override
+  String get blacklistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+
+  @override
+  String get whitelistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
 
   @override
   String get errorLoadingList => 'Fehler beim Laden der Liste';

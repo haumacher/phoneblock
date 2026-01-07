@@ -30,7 +30,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accepted => '已接受';
 
   @override
-  String votes(int count) {
+  String votes(Object count) {
     return '$count票数';
   }
 
@@ -59,7 +59,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get minSpamReports => '尽量减少垃圾邮件';
 
   @override
-  String minSpamReportsDescription(int count) {
+  String minSpamReportsDescription(Object count) {
     return '从 $count 信息开始，号码将被屏蔽';
   }
 
@@ -73,7 +73,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get minSpamReportsInRange => '在以下领域尽量减少垃圾邮件';
 
   @override
-  String minSpamReportsInRangeDescription(int count) {
+  String minSpamReportsInRangeDescription(Object count) {
     return '从$count信息开始，区域将被封锁';
   }
 
@@ -108,7 +108,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get donate => '捐赠';
 
   @override
-  String pendingCallsNotification(int count) {
+  String pendingCallsNotification(num count) {
     return '<x1>计数</x1';
   }
 
@@ -164,17 +164,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notLoggedIn => '尚未注册。请登录。';
 
   @override
-  String reportedAsLegitimate(String phoneNumber) {
+  String reportedAsLegitimate(Object phoneNumber) {
     return '$phoneNumber被报告为合法号码';
   }
 
   @override
-  String reportError(String error) {
+  String reportError(Object error) {
     return '报告时出错：<x1>错误</x1';
   }
 
   @override
-  String reportedAsSpam(String phoneNumber) {
+  String reportedAsSpam(Object phoneNumber) {
     return '$phoneNumber被报告为垃圾邮件';
   }
 
@@ -221,12 +221,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get minReportsCount => '最少信息数量';
 
   @override
-  String callsBlockedAfterReports(int count) {
+  String callsBlockedAfterReports(Object count) {
     return '阻止来自 $count 信息的呼叫';
   }
 
   @override
-  String rangesBlockedAfterReports(int count) {
+  String rangesBlockedAfterReports(Object count) {
     return '从$count信息开始，区域将被封锁';
   }
 
@@ -267,7 +267,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get redirectingToSetup => '转发到设施...';
 
   @override
-  String tokenVerificationFailed(String error) {
+  String tokenVerificationFailed(Object error) {
     return '令牌验证失败：<x1>错误</x1';
   }
 
@@ -311,17 +311,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorSaving => '保存时出错';
 
   @override
-  String ratePhoneNumber(String phoneNumber) {
+  String ratePhoneNumber(Object phoneNumber) {
     return '费率 <x1> 电话号码</x1';
   }
 
   @override
-  String reportsCount(int count) {
+  String reportsCount(num count) {
     return '<x1>计数</x1';
   }
 
   @override
-  String legitimateReportsCount(int count) {
+  String legitimateReportsCount(num count) {
     return '<x1>计数</x1';
   }
 
@@ -329,12 +329,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noReports => '无信息';
 
   @override
-  String todayTime(String time) {
+  String todayTime(Object time) {
     return '今天，<x1>时间</x1';
   }
 
   @override
-  String yesterdayTime(String time) {
+  String yesterdayTime(Object time) {
     return '昨天，<x1>时间</x1';
   }
 
@@ -342,7 +342,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get callHistoryRetention => '通话记录存储';
 
   @override
-  String retentionPeriodDescription(int days) {
+  String retentionPeriodDescription(num days) {
     return '<x1>天数</x1';
   }
 
@@ -350,7 +350,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retentionInfinite => '保留所有通话';
 
   @override
-  String retentionDays(int days) {
+  String retentionDays(num days) {
     return '<x1>天数</x1';
   }
 
@@ -410,6 +410,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get whitelistEmpty => '您的白名单是空的';
+
+  @override
+  String get blacklistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+
+  @override
+  String get whitelistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
 
   @override
   String get errorLoadingList => '加载列表出错';

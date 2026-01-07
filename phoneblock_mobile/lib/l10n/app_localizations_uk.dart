@@ -31,7 +31,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get accepted => 'Прийнято';
 
   @override
-  String votes(int count) {
+  String votes(Object count) {
     return '$count голоси';
   }
 
@@ -60,7 +60,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get minSpamReports => 'Мінімум СПАМ-повідомлень';
 
   @override
-  String minSpamReportsDescription(int count) {
+  String minSpamReportsDescription(Object count) {
     return 'Номери блокуються, починаючи з $count повідомлень і далі';
   }
 
@@ -75,7 +75,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get minSpamReportsInRange => 'Мінімум СПАМ-повідомлень в області';
 
   @override
-  String minSpamReportsInRangeDescription(int count) {
+  String minSpamReportsInRangeDescription(Object count) {
     return 'Області блокуються, починаючи з $count повідомлень і далі';
   }
 
@@ -111,7 +111,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get donate => 'Пожертви';
 
   @override
-  String pendingCallsNotification(int count) {
+  String pendingCallsNotification(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -173,17 +173,17 @@ class AppLocalizationsUk extends AppLocalizations {
   String get notLoggedIn => 'Ви не зареєстровані. Будь ласка, увійдіть.';
 
   @override
-  String reportedAsLegitimate(String phoneNumber) {
+  String reportedAsLegitimate(Object phoneNumber) {
     return '$phoneNumber повідомлено як легітимний';
   }
 
   @override
-  String reportError(String error) {
+  String reportError(Object error) {
     return 'Помилка під час звітування: $error';
   }
 
   @override
-  String reportedAsSpam(String phoneNumber) {
+  String reportedAsSpam(Object phoneNumber) {
     return '$phoneNumber повідомлено як СПАМ';
   }
 
@@ -231,12 +231,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get minReportsCount => 'Мінімальна кількість повідомлень';
 
   @override
-  String callsBlockedAfterReports(int count) {
+  String callsBlockedAfterReports(Object count) {
     return 'Дзвінки блокуються з повідомлень $count';
   }
 
   @override
-  String rangesBlockedAfterReports(int count) {
+  String rangesBlockedAfterReports(Object count) {
     return 'Області блокуються, починаючи з $count повідомлень і далі';
   }
 
@@ -278,7 +278,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get redirectingToSetup => 'Пересилання на об\'єкт...';
 
   @override
-  String tokenVerificationFailed(String error) {
+  String tokenVerificationFailed(Object error) {
     return 'Не вдалося перевірити токен: $error';
   }
 
@@ -322,12 +322,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get errorSaving => 'Помилка при збереженні';
 
   @override
-  String ratePhoneNumber(String phoneNumber) {
+  String ratePhoneNumber(Object phoneNumber) {
     return 'Оцініть $phoneNumber';
   }
 
   @override
-  String reportsCount(int count) {
+  String reportsCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -338,7 +338,7 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String legitimateReportsCount(int count) {
+  String legitimateReportsCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -352,12 +352,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get noReports => 'Немає повідомлень';
 
   @override
-  String todayTime(String time) {
+  String todayTime(Object time) {
     return 'Сьогодні, $time';
   }
 
   @override
-  String yesterdayTime(String time) {
+  String yesterdayTime(Object time) {
     return 'Вчора, $time';
   }
 
@@ -365,7 +365,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get callHistoryRetention => 'Зберігання історії дзвінків';
 
   @override
-  String retentionPeriodDescription(int days) {
+  String retentionPeriodDescription(num days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -379,7 +379,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get retentionInfinite => 'Тримайте всі дзвінки';
 
   @override
-  String retentionDays(int days) {
+  String retentionDays(num days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -448,6 +448,14 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get whitelistEmpty => 'Ваш білий список порожній';
+
+  @override
+  String get blacklistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+
+  @override
+  String get whitelistEmptyHelp =>
+      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
 
   @override
   String get errorLoadingList => 'Помилка завантаження списку';
