@@ -450,11 +450,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+      'Add numbers by reporting unwanted calls as spam.';
 
   @override
   String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+      'Add numbers by reporting blocked calls as legitimate.';
 
   @override
   String get errorLoadingList => 'Error loading list';

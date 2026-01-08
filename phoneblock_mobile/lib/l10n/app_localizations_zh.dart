@@ -412,12 +412,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get whitelistEmpty => '您的白名单是空的';
 
   @override
-  String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+  String get blacklistEmptyHelp => '将不需要的电话报告为垃圾邮件，从而增加号码。';
 
   @override
-  String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+  String get whitelistEmptyHelp => '将被拦截的来电报告为合法来电，从而增加号码。';
 
   @override
   String get errorLoadingList => '加载列表出错';

@@ -2703,6 +2703,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
   Widget build(BuildContext context) {
     final title = _isBlacklist ? context.l10n.blacklistTitle : context.l10n.whitelistTitle;
     final emptyMessage = _isBlacklist ? context.l10n.blacklistEmpty : context.l10n.whitelistEmpty;
+    final emptyHelpText = _isBlacklist ? context.l10n.blacklistEmptyHelp : context.l10n.whitelistEmptyHelp;
     final confirmRemoveMessage = _isBlacklist
         ? (String phone) => context.l10n.confirmRemoveFromBlacklist(phone)
         : (String phone) => context.l10n.confirmRemoveFromWhitelist(phone);
@@ -2734,16 +2735,28 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                 )
               : _numbers.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.check_circle_outline, size: 48, color: Colors.green),
-                          const SizedBox(height: 16),
-                          Text(
-                            emptyMessage,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle_outline, size: 48, color: Colors.green),
+                            const SizedBox(height: 16),
+                            Text(
+                              emptyMessage,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              emptyHelpText,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : RefreshIndicator(

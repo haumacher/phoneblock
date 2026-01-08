@@ -457,11 +457,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+      'Aggiungere numeri segnalando le chiamate indesiderate come spam.';
 
   @override
   String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+      'Aggiungere numeri segnalando le chiamate bloccate come legittime.';
 
   @override
   String get errorLoadingList => 'Errore nel caricamento dell\'elenco';

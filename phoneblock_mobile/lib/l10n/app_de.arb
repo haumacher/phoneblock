@@ -661,6 +661,16 @@
     "description": "Empty whitelist message",
     "x-translated": "98bab48a"
   },
+  "blacklistEmptyHelp": "Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.",
+  "@blacklistEmptyHelp": {
+    "description": "Help text explaining how to add numbers to blacklist",
+    "x-translated": "e9005e2d"
+  },
+  "whitelistEmptyHelp": "Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.",
+  "@whitelistEmptyHelp": {
+    "description": "Help text explaining how to add numbers to whitelist",
+    "x-translated": "33e1439f"
+  },
   "errorLoadingList": "Fehler beim Laden der Liste",
   "@errorLoadingList": {
     "description": "Error loading list message",

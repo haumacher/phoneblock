@@ -135,5 +135,7 @@
   "commentHint": "Ajouter une note à ce numéro",
   "save": "Enregistrer",
   "commentUpdated": "Commentaire mis à jour",
-  "errorUpdatingComment": "Erreur lors de la mise à jour du commentaire"
+  "errorUpdatingComment": "Erreur lors de la mise à jour du commentaire",
+  "blacklistEmptyHelp": "Ajoutez des numéros en signalant les appels indésirables comme spam.",
+  "whitelistEmptyHelp": "Ajoutez des numéros en signalant les appels bloqués comme légitimes."
 }

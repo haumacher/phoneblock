@@ -135,5 +135,7 @@
   "commentHint": "Voeg een notitie toe aan dit nummer",
   "save": "Sla",
   "commentUpdated": "Commentaar bijgewerkt",
-  "errorUpdatingComment": "Fout bij het bijwerken van de opmerking"
+  "errorUpdatingComment": "Fout bij het bijwerken van de opmerking",
+  "blacklistEmptyHelp": "Nummers toevoegen door ongewenste oproepen als spam te melden.",
+  "whitelistEmptyHelp": "Nummers toevoegen door geblokkeerde oproepen als legitiem te melden."
 }

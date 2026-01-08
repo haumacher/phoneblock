@@ -122,6 +122,8 @@
   "whitelistDescription": "Numre, du har markeret som legitime",
   "blacklistEmpty": "Din sortliste er tom",
   "whitelistEmpty": "Din hvidliste er tom",
+  "blacklistEmptyHelp": "Tilføj numre ved at rapportere uønskede opkald som spam.",
+  "whitelistEmptyHelp": "Tilføj numre ved at rapportere blokerede opkald som legitime.",
   "errorLoadingList": "Fejl ved indlæsning af listen",
   "numberRemovedFromList": "Antal fjernet",
   "errorRemovingNumber": "Fejl ved fjernelse af nummer",

@@ -135,5 +135,7 @@
   "commentHint": "Dodaj notatkę do tego numeru",
   "save": "Zapisz",
   "commentUpdated": "Komentarz zaktualizowany",
-  "errorUpdatingComment": "Błąd podczas aktualizacji komentarza"
+  "errorUpdatingComment": "Błąd podczas aktualizacji komentarza",
+  "blacklistEmptyHelp": "Dodaj numery, zgłaszając niechciane połączenia jako spam.",
+  "whitelistEmptyHelp": "Dodaj numery, zgłaszając zablokowane połączenia jako prawidłowe."
 }

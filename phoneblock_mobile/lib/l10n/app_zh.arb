@@ -135,5 +135,7 @@
   "commentHint": "为该号码添加备注",
   "save": "节省",
   "commentUpdated": "评论已更新",
-  "errorUpdatingComment": "更新注释时出错"
+  "errorUpdatingComment": "更新注释时出错",
+  "blacklistEmptyHelp": "将不需要的电话报告为垃圾邮件，从而增加号码。",
+  "whitelistEmptyHelp": "将被拦截的来电报告为合法来电，从而增加号码。"
 }

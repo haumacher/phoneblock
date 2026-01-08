@@ -449,11 +449,11 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+      'Tilføj numre ved at rapportere uønskede opkald som spam.';
 
   @override
   String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+      'Tilføj numre ved at rapportere blokerede opkald som legitime.';
 
   @override
   String get errorLoadingList => 'Fejl ved indlæsning af listen';

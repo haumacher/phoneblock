@@ -135,5 +135,7 @@
   "commentHint": "Lägg till en anteckning till detta nummer",
   "save": "Spara",
   "commentUpdated": "Kommentar uppdaterad",
-  "errorUpdatingComment": "Fel vid uppdatering av kommentaren"
+  "errorUpdatingComment": "Fel vid uppdatering av kommentaren",
+  "blacklistEmptyHelp": "Lägg till nummer genom att rapportera oönskade samtal som skräppost.",
+  "whitelistEmptyHelp": "Lägg till nummer genom att rapportera blockerade samtal som legitima."
 }

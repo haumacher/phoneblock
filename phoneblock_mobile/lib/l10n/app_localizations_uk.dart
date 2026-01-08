@@ -451,11 +451,11 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+      'Додайте номери, повідомляючи про небажані дзвінки як про спам.';
 
   @override
   String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+      'Додавайте номери, повідомляючи про заблоковані дзвінки як легітимні.';
 
   @override
   String get errorLoadingList => 'Помилка завантаження списку';

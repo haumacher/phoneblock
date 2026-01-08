@@ -122,6 +122,8 @@
   "whitelistDescription": "الأرقام التي حددتها على أنها شرعية",
   "blacklistEmpty": "قائمتك السوداء فارغة",
   "whitelistEmpty": "قائمتك البيضاء فارغة",
+  "blacklistEmptyHelp": "إضافة أرقام عن طريق الإبلاغ عن المكالمات غير المرغوب فيها كرسائل غير مرغوب فيها.",
+  "whitelistEmptyHelp": "إضافة أرقام عن طريق الإبلاغ عن المكالمات المحظورة على أنها مشروعة.",
   "errorLoadingList": "خطأ في تحميل القائمة",
   "numberRemovedFromList": "الرقم الذي تمت إزالته",
   "errorRemovingNumber": "خطأ عند إزالة الرقم",

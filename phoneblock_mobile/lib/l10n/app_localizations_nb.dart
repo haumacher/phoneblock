@@ -452,11 +452,11 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+      'Legg til numre ved å rapportere uønskede anrop som søppelpost.';
 
   @override
   String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+      'Legg til numre ved å rapportere blokkerte anrop som legitime.';
 
   @override
   String get errorLoadingList => 'Feil ved innlasting av listen';

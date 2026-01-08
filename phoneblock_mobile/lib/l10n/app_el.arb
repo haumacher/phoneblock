@@ -122,6 +122,8 @@
   "whitelistDescription": "Αριθμοί που έχετε επισημάνει ως νόμιμους",
   "blacklistEmpty": "Η μαύρη λίστα σας είναι άδεια",
   "whitelistEmpty": "Η λευκή σας λίστα είναι άδεια",
+  "blacklistEmptyHelp": "Προσθέστε αριθμούς αναφέροντας ανεπιθύμητες κλήσεις ως spam.",
+  "whitelistEmptyHelp": "Προσθέστε αριθμούς αναφέροντας αποκλεισμένες κλήσεις ως νόμιμες.",
   "errorLoadingList": "Σφάλμα φόρτωσης της λίστας",
   "numberRemovedFromList": "Αριθμός που αφαιρέθηκε",
   "errorRemovingNumber": "Σφάλμα κατά την αφαίρεση του αριθμού",

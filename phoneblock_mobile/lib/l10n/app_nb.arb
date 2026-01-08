@@ -135,5 +135,7 @@
   "commentHint": "Legg til en merknad til dette nummeret",
   "save": "Spar",
   "commentUpdated": "Kommentar oppdatert",
-  "errorUpdatingComment": "Feil ved oppdatering av kommentaren"
+  "errorUpdatingComment": "Feil ved oppdatering av kommentaren",
+  "blacklistEmptyHelp": "Legg til numre ved å rapportere uønskede anrop som søppelpost.",
+  "whitelistEmptyHelp": "Legg til numre ved å rapportere blokkerte anrop som legitime."
 }

@@ -453,11 +453,11 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get blacklistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie unerwünschte Anrufe als Spam melden.';
+      'Dodaj numery, zgłaszając niechciane połączenia jako spam.';
 
   @override
   String get whitelistEmptyHelp =>
-      'Fügen Sie Nummern hinzu, indem Sie blockierte Anrufe als legitim melden.';
+      'Dodaj numery, zgłaszając zablokowane połączenia jako prawidłowe.';
 
   @override
   String get errorLoadingList => 'Błąd ładowania listy';
