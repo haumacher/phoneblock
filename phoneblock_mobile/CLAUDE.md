@@ -16,6 +16,32 @@ PhoneBlock Mobile is a Flutter-based Android application that integrates with th
 - `flutter test` - Run tests
 - `flutter analyze` - Run static analysis
 
+### Internationalization (I18N)
+
+**Auto-Translation with DeepL:**
+The project uses the [auto-translate](https://github.com/haumacher/auto-translate) Gradle plugin to automatically translate ARB files from German to all other languages.
+
+**Source Language:** German (`lib/l10n/app_de.arb`)
+- **Only edit the German ARB file** - This is the ONLY source file you should modify
+- **All other language files are auto-generated** - Never manually edit `app_en.arb`, `app_es.arb`, etc.
+
+**Translation Workflow:**
+1. Edit strings in `lib/l10n/app_de.arb`
+2. Run `./gradlew translateArb` from the `phoneblock_mobile` directory
+3. The plugin will automatically translate to all target languages (ar, da, el, en, es, fr, it, nb, nl, pl, sv, uk, zh)
+4. Run `flutter gen-l10n` to regenerate Dart localization code
+
+**DeepL API Configuration:**
+- Add your DeepL API key to `gradle.properties`: `deepl.auth.key=YOUR_KEY`
+- Or store globally in `~/.gradle/gradle.properties` for security
+- Get a free API key at https://www.deepl.com/pro-api
+
+**Translation Features:**
+- Incremental translation: only translates new or modified strings
+- Preserves ICU MessageFormat placeholders (`{count}`, `{phoneNumber}`, etc.)
+- Handles plural forms and select statements automatically
+- Maintains the `x-translated` metadata for tracking
+
 ### Android Build
 - Release builds require a `key.properties` file in the android directory with signing configuration
 - The app uses signing configuration for release builds defined in `android/app/build.gradle`

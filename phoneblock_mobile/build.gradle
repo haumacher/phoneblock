@@ -1,0 +1,9 @@
+plugins {
+    id 'de.haumacher.auto-translate-arb' version '1.0.2'
+}
+
+translateArb {
+    serverId = 'deepl'
+    sourceFile = file('lib/l10n/app_de.arb')
+    targetLangs = ['ar', 'da', 'el', 'en', 'es', 'fr', 'it', 'nb', 'nl', 'pl', 'sv', 'uk', 'zh']
+}
