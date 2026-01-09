@@ -132,4 +132,4 @@ PhoneBlock is an open-source community project. Contributions are welcome!
 
 ## Support
 
-PhoneBlock is funded by donations. Please consider supporting the project at phoneblock.net.
+PhoneBlock is funded by donations. Please consider [supporting the project](https://phoneblock.net/phoneblock/support) at phoneblock.net.
