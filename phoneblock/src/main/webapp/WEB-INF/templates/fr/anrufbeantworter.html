@@ -8,31 +8,31 @@
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="Logo de la messagerie PhoneBlock" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+			<img alt="Logo de la messagerie PhoneBlock" data-tx="t0059:c5ed6770" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
 		</div>
 	
-		<h1 data-tx="t0001">Installation en tant que répondeur téléphonique</h1>
+		<h1 data-tx="t0001:68e08dfe">Installation en tant que répondeur téléphonique</h1>
 		
-		<p data-tx="t0002">PhoneBlock te propose un répondeur intelligent qui ne répond automatiquement à l'appel que si le numéro de l'appelant figure dans la base de données <a th:href="@{/status}">SPAM de PhoneBlock</a>. Tout comme pour la <a th:href="@{/setup}">configuration de la liste de blocage</a>, tu n'as pas besoin de ton propre appareil ou ordinateur pour cela. Tu crées un répondeur PhoneBlock ici sur le site web et tu le connectes via Internet à ta Fritz!Box ou à un autre routeur Internet compatible VOIP. Tu peux lire <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">ici</a> comment fonctionne exactement le répondeur PhoneBlock.</p>
+		<p data-tx="t0002:42f17d69">PhoneBlock te propose un répondeur intelligent qui ne répond automatiquement à l'appel que si le numéro de l'appelant figure dans la base de données <a th:href="@{/status}">SPAM de PhoneBlock</a>. Tout comme pour la <a th:href="@{/setup}">configuration de la liste de blocage</a>, tu n'as pas besoin de ton propre appareil ou ordinateur pour cela. Tu crées un répondeur PhoneBlock ici sur le site web et tu le connectes via Internet à ta Fritz!Box ou à un autre routeur Internet compatible VOIP. Tu peux lire <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">ici</a> comment fonctionne exactement le répondeur PhoneBlock.</p>
 		
-		<p data-tx="t0003">Les étapes suivantes te permettront d'accéder à ta messagerie vocale PhoneBlock :</p>
+		<p data-tx="t0003:fd0f4a43">Les étapes suivantes te permettront d'accéder à ta messagerie vocale PhoneBlock :</p>
 		
 		<ol>
-			<li><a data-tx="t0004" href="#register">S'inscrire sur PhoneBlock</a></li>
-			<li><a data-tx="t0005" href="#create">Créer un répondeur téléphonique</a></li>
-			<li><a data-tx="t0006" href="#dyndns">Configurer DynDNS dans la Fritz!Box</a></li>
-			<li><a data-tx="t0007" href="#sip">Configurer un appareil de téléphonie dans la Fritz!Box</a></li>
-			<li><a data-tx="t0008" href="#enable">Activer la messagerie vocale PhoneBlock</a></li>
-			<li><a data-tx="t0009" href="#test">Tester le répondeur</a></li>
+			<li><a data-tx="t0004:5cb36b90" href="#register">S'inscrire sur PhoneBlock</a></li>
+			<li><a data-tx="t0005:3942efdd" href="#create">Créer un répondeur téléphonique</a></li>
+			<li><a data-tx="t0006:a63ba47b" href="#dyndns">Configurer DynDNS dans la Fritz!Box</a></li>
+			<li><a data-tx="t0007:4cfff5b1" href="#sip">Configurer un appareil de téléphonie dans la Fritz!Box</a></li>
+			<li><a data-tx="t0008:643de862" href="#enable">Activer la messagerie vocale PhoneBlock</a></li>
+			<li><a data-tx="t0009:18890e90" href="#test">Tester le répondeur</a></li>
 		</ol>
 		
-		 <p data-tx="t0010">Les instructions te guident pas à pas à travers la configuration. La configuration dans la Fritz!Box n'est pas simple, mais si tu suis exactement la procédure décrite ici, rien ne peut vraiment aller de travers.</p>
+		 <p data-tx="t0010:c8cb5362">Les instructions te guident pas à pas à travers la configuration. La configuration dans la Fritz!Box n'est pas simple, mais si tu suis exactement la procédure décrite ici, rien ne peut vraiment aller de travers.</p>
 		 
-		<h2 data-tx="t0011" id="register">Étape 1 : S'inscrire sur PhoneBlock</h2>
+		<h2 data-tx="t0011:e8d5bb12" id="register">Étape 1 : S'inscrire sur PhoneBlock</h2>
 
-		<p data-tx="t0012">A partir d'ici, tu as besoin de trois fenêtres de navigateur (ou onglets). Une pour ce mode d'emploi, une pour l'application de répondeur téléphonique PhoneBlock et une pour l'interface de configuration de ta Fritz!Box.</p>
+		<p data-tx="t0012:d6a793c3">A partir d'ici, tu as besoin de trois fenêtres de navigateur (ou onglets). Une pour ce mode d'emploi, une pour l'application de répondeur téléphonique PhoneBlock et une pour l'interface de configuration de ta Fritz!Box.</p>
 		
-		<p data-tx="t0013" th:if="${loggedIn}">Tout d'abord, tu dois t'inscrire ou te connecter à PhoneBlock pour commencer la configuration.</p>
+		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Tout d'abord, tu dois t'inscrire ou te connecter à PhoneBlock pour commencer la configuration.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -40,15 +40,15 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
-				<span data-tx="t0014">S'inscrire</span>			
+				<span data-tx="t0014:1dc205">S'inscrire</span>			
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015" unless:if="${loggedIn}">Tu es connecté en tant que <code dir="ltr" th:text="${userName}"></code>, super, passons directement à l'étape suivante!</p>
+		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Tu es connecté en tant que <code dir="ltr" th:text="${userName}"></code>, super, passons directement à l'étape suivante!</p>
 		
-		<h2 data-tx="t0016" id="create">Étape 2 : Créer un répondeur téléphonique</h2>
+		<h2 data-tx="t0016:babb04ed" id="create">Étape 2 : Créer un répondeur téléphonique</h2>
 		
-		<p data-tx="t0017">Si tu cliques ici, une fenêtre s'ouvre avec l'application de répondeur téléphonique <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock</a>. Lors de la première ouverture, la liste de tes répondeurs est vide et en bas à droite se trouve un bouton avec lequel tu peux te créer un répondeur. Appuie sur ce bouton plus.</p>
+		<p data-tx="t0017:3e41626b">Si tu cliques ici, une fenêtre s'ouvre avec l'application de répondeur téléphonique <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock</a>. Lors de la première ouverture, la liste de tes répondeurs est vide et en bas à droite se trouve un bouton avec lequel tu peux te créer un répondeur. Appuie sur ce bouton plus.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -56,46 +56,46 @@
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
-				<span data-tx="t0018">Ouvrir l'application</span>			
+				<span data-tx="t0018:c1b379ba">Ouvrir l'application</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Configurer DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  			<img alt="Configurer DynDNS" class="image appscreen" data-tx="t0060:1f43c62e" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0019" id="dyndns">Étape 4 : Configurer DynDNS</h2>
+		<h2 data-tx="t0019:66374e47" id="dyndns">Étape 4 : Configurer DynDNS</h2>
 		
-		<p data-tx="t0020">Via "DynDNS", ta Fritz!Box communique son adresse IP à PhoneBlock. C'est nécessaire pour que le répondeur PhoneBlock trouve ta Fritz!Box pour s'y connecter.</p>
+		<p data-tx="t0020:c848fac8">Via "DynDNS", ta Fritz!Box communique son adresse IP à PhoneBlock. C'est nécessaire pour que le répondeur PhoneBlock trouve ta Fritz!Box pour s'y connecter.</p>
 		
-		<h3 data-tx="t0021">Activer PhoneBlock-DynDNS</h3>
+		<h3 data-tx="t0021:2a28f3c0">Activer PhoneBlock-DynDNS</h3>
 		
-		<p data-tx="t0022">Dans l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a>, active le commutateur "Utiliser le DynDNS de PhoneBlock" (si tu t'y connais bien et que tu utilises déjà un autre fournisseur DynDNS, tu peux aussi entrer directement le nom d'hôte de ta Fritz!Box).</p>
+		<p data-tx="t0022:87bebd4d">Dans l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a>, active le commutateur "Utiliser le DynDNS de PhoneBlock" (si tu t'y connais bien et que tu utilises déjà un autre fournisseur DynDNS, tu peux aussi entrer directement le nom d'hôte de ta Fritz!Box).</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Configurer DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  			<img alt="Configurer DynDNS" class="image appscreen" data-tx="t0061:1f43c62e" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0023">Sur la page suivante, confirme en cliquant sur "Activer DynDNS".</p>
+		<p data-tx="t0023:2215223d">Sur la page suivante, confirme en cliquant sur "Activer DynDNS".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Configurer DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  			<img alt="Configurer DynDNS" class="image appscreen" data-tx="t0062:1f43c62e" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0024">Tu recevras alors des données d'accès pour le PhoneBlock-DynDNS que tu pourras saisir dans ta Fritz!Box (voir plus loin).</p>
+		<p data-tx="t0024:fbbe4128">Tu recevras alors des données d'accès pour le PhoneBlock-DynDNS que tu pourras saisir dans ta Fritz!Box (voir plus loin).</p>
 
-		<h3 data-tx="t0025">Saisir les données de connexion dans la Fritz!Box</h3>
+		<h3 data-tx="t0025:e0a9e979">Saisir les données de connexion dans la Fritz!Box</h3>
 		
-		<p data-tx="t0026">Ce lien <a class="showFB" href="http://fritz.box" target="fritzbox"> ouvre une fenêtre pour ta Fritz!Box</a>. Connecte-toi avec ton mot de passe Fritz!Box. Si tu ne l'as jamais fait, tu trouveras le mot de passe sur le dessous de la Fritz!Box.</p>
+		<p data-tx="t0026:a1fbdc6">Ce lien <a class="showFB" href="http://fritz.box" target="fritzbox"> ouvre une fenêtre pour ta Fritz!Box</a>. Connecte-toi avec ton mot de passe Fritz!Box. Si tu ne l'as jamais fait, tu trouveras le mot de passe sur le dessous de la Fritz!Box.</p>
 		
-		<p data-tx="t0027">Dans ta <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>, navigue dans la barre latérale vers "Internet &gt; Partages" et sélectionne l'onglet "DynDNS".</p>
+		<p data-tx="t0027:acadeadb">Dans ta <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>, navigue dans la barre latérale vers "Internet &gt; Partages" et sélectionne l'onglet "DynDNS".</p>
 
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -103,161 +103,161 @@
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
-				<span data-tx="t0028">Ouvrir la Fritz!Box</span>			
+				<span data-tx="t0028:ca7e0236">Ouvrir la Fritz!Box</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Configurer DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  			<img alt="Configurer DynDNS" class="image" data-tx="t0063:1f43c62e" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0029">Copie de l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a> les données pour "Update-Url", "Nom de domaine", "Nom d'utilisateur" et "Mot de passe" et saisis-les dans ta <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Et confirme en cliquant sur "Appliquer" (point 5 de l'image ci-dessous).</p>
+		<p data-tx="t0029:61e24f6c">Copie de l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a> les données pour "Update-Url", "Nom de domaine", "Nom d'utilisateur" et "Mot de passe" et saisis-les dans ta <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Et confirme en cliquant sur "Appliquer" (point 5 de l'image ci-dessous).</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Configurer DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  			<img alt="Configurer DynDNS" class="image" data-tx="t0064:1f43c62e" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
 	  		</div>
 		</div>
 		
-		<h3 data-tx="t0030">Vérifier le DynDNS</h3>
+		<h3 data-tx="t0030:f89d6560">Vérifier le DynDNS</h3>
 
-		<p data-tx="t0031">Retourne maintenant à l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a> et fais vérifier les paramètres (point 6 sur l'image ci-dessus). Si PhoneBlock a trouvé ta Fritz!Box, tu arrives à la page suivante avec les données d'accès pour le répondeur téléphonique proprement dit.</p>
+		<p data-tx="t0031:ad4e12a2">Retourne maintenant à l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a> et fais vérifier les paramètres (point 6 sur l'image ci-dessus). Si PhoneBlock a trouvé ta Fritz!Box, tu arrives à la page suivante avec les données d'accès pour le répondeur téléphonique proprement dit.</p>
 		
-		<h2 data-tx="t0032" id="sip">Étape 4 : Configurer le répondeur dans la Fritz!Box</h2>
+		<h2 data-tx="t0032:44450112" id="sip">Étape 4 : Configurer le répondeur dans la Fritz!Box</h2>
 		
-		<p data-tx="t0033">Le répondeur est maintenant configuré comme appareil de téléphonie dans la Fritz!Box. Pour cela, ouvre à nouveau ton interface <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
+		<p data-tx="t0033:4f8f1cf0">Le répondeur est maintenant configuré comme appareil de téléphonie dans la Fritz!Box. Pour cela, ouvre à nouveau ton interface <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
 
-		<h3 data-tx="t0034">Configurer un appareil de téléphonie</h3>
+		<h3 data-tx="t0034:7174860c">Configurer un appareil de téléphonie</h3>
 
-		<p data-tx="t0035">Navigue dans la barre latérale vers "Téléphonie &gt; Périphériques de téléphonie" et clique sur le bouton "Configurer un nouveau périphérique".</p>
+		<p data-tx="t0035:7625ab2c">Navigue dans la barre latérale vers "Téléphonie &gt; Périphériques de téléphonie" et clique sur le bouton "Configurer un nouveau périphérique".</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Configurer l'appareil" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  			<img alt="Configurer l'appareil" class="image" data-tx="t0065:f09b0f6a" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
 	  		</div>
 		</div>
 		
-		<h3 data-tx="t0036">Choisir le type d'appareil</h3>
+		<h3 data-tx="t0036:db70c215">Choisir le type d'appareil</h3>
 
-		<p data-tx="t0037">Choisis l'option "Téléphone (avec ou sans répondeur)" et clique sur "Suivant". Remarque : ne choisis pas <b>l'option "Répondeur", qui est en soi évidente, car elle ne permet de configurer que des répondeurs intégrés à la Fritz!Box.</b></p>
-		
-		<div class="columns">
-			<div class="column is-8 is-offset-2">
-	  			<img alt="Créer un appareil" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
-	  		</div>
-		</div>
-
-		<h3 data-tx="t0038">Configurer un téléphone IP</h3>
-
-		<p data-tx="t0039">Sur la page "Connecter un téléphone", sélectionne l'option "LAN/WLAN (téléphone IP)" et donne au nouvel appareil le nom "PhoneBlock" dans le champ de texte ci-dessous. Clique ensuite sur "Suivant".</p>
-
-		<div class="columns">
-			<div class="column is-8 is-offset-2">
-	  			<img alt="Créer un téléphone IP" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
-	  		</div>
-		</div>
-
-		<h3 data-tx="t0040">Reprendre les données d'accès</h3>
-
-		<p data-tx="t0041">Sur la page suivante "Appliquer les paramètres dans le téléphone IP", on te demande le "nom d'utilisateur" et le "mot de passe". Copie ici les données correspondantes qui t'ont été indiquées dans l'<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">application de messagerie vocale</a>. Clique sur "Suivant".</p>
+		<p data-tx="t0037:3dd58459">Choisis l'option "Téléphone (avec ou sans répondeur)" et clique sur "Suivant". Remarque : ne choisis pas <b>l'option "Répondeur", qui est en soi évidente, car elle ne permet de configurer que des répondeurs intégrés à la Fritz!Box.</b></p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Données utilisateur" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  			<img alt="Créer un appareil" class="image" data-tx="t0066:ff32e6e0" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
 	  		</div>
 		</div>
-		
-		<h3 data-tx="t0042">Paramètres pour les appels sortants</h3>
 
-		<p data-tx="t0043">Sur la page "Configurer le téléphone pour les appels sortants", tu peux simplement cliquer sur "Suivant". Le répondeur téléphonique PhoneBlock n'a pas besoin d'un numéro d'appel pour les appels sortants, car il n'effectue jamais d'appels actifs. Nous désactiverons ce numéro d'appel dans une étape ultérieure, afin que ton répondeur ne puisse vraiment pas effectuer d'appels.</p>
+		<h3 data-tx="t0038:42c8988e">Configurer un téléphone IP</h3>
+
+		<p data-tx="t0039:fd8ae4f4">Sur la page "Connecter un téléphone", sélectionne l'option "LAN/WLAN (téléphone IP)" et donne au nouvel appareil le nom "PhoneBlock" dans le champ de texte ci-dessous. Clique ensuite sur "Suivant".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Créer un téléphone IP" class="image" data-tx="t0067:65164e9e" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040:18a91842">Reprendre les données d'accès</h3>
+
+		<p data-tx="t0041:ea5a4ae3">Sur la page suivante "Appliquer les paramètres dans le téléphone IP", on te demande le "nom d'utilisateur" et le "mot de passe". Copie ici les données correspondantes qui t'ont été indiquées dans l'<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">application de messagerie vocale</a>. Clique sur "Suivant".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Appels sortants" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  			<img alt="Données utilisateur" class="image" data-tx="t0068:b09238a4" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
 	  		</div>
 		</div>
+		
+		<h3 data-tx="t0042:9c3075bf">Paramètres pour les appels sortants</h3>
 
-		<h3 data-tx="t0044">Sélectionner les numéros à protéger</h3>
-
-		<p data-tx="t0045">Sur la page "Configurer les paramètres du téléphone pour les appels entrants", tu devrais laisser le paramètre par défaut "accepter tous les appels". Si tu ne veux protéger que certains numéros contre les appels SPAM, tu peux aussi sélectionner ici les numéros pour lesquels le répondeur verra un appel. Clique sur "Suivant".</p>
+		<p data-tx="t0043:defacb75">Sur la page "Configurer le téléphone pour les appels sortants", tu peux simplement cliquer sur "Suivant". Le répondeur téléphonique PhoneBlock n'a pas besoin d'un numéro d'appel pour les appels sortants, car il n'effectue jamais d'appels actifs. Nous désactiverons ce numéro d'appel dans une étape ultérieure, afin que ton répondeur ne puisse vraiment pas effectuer d'appels.</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Numéros protégés" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  			<img alt="Appels sortants" class="image" data-tx="t0069:7969a9c" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0046">Confirmer la configuration</h3>
+		<h3 data-tx="t0044:41335921">Sélectionner les numéros à protéger</h3>
 
-		<p data-tx="t0047">Tu arrives maintenant sur la page de résumé "Appliquer les paramètres". Tu peux vérifier une nouvelle fois les réglages effectués et les confirmer en cliquant sur "Appliquer".</p>
+		<p data-tx="t0045:d4e7d">Sur la page "Configurer les paramètres du téléphone pour les appels entrants", tu devrais laisser le paramètre par défaut "accepter tous les appels". Si tu ne veux protéger que certains numéros contre les appels SPAM, tu peux aussi sélectionner ici les numéros pour lesquels le répondeur verra un appel. Clique sur "Suivant".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Vérifier les paramètres" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  			<img alt="Numéros protégés" class="image" data-tx="t0070:392b972a" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0048">Terminer la configuration de l'appareil</h3>
+		<h3 data-tx="t0046:76127bee">Confirmer la configuration</h3>
 
-		<p data-tx="t0049">Tu es de retour dans l'"Aperçu des appareils". Tu devrais maintenant voir ton nouveau répondeur "PhoneBlock" dans la liste. Mais avant de pouvoir activer le répondeur, tu dois encore procéder à d'autres réglages. Pour ce faire, clique sur le crayon d'édition à la fin de la ligne PhoneBlock.</p>
+		<p data-tx="t0047:7dba7b36">Tu arrives maintenant sur la page de résumé "Appliquer les paramètres". Tu peux vérifier une nouvelle fois les réglages effectués et les confirmer en cliquant sur "Appliquer".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Modifier le répondeur téléphonique" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  			<img alt="Vérifier les paramètres" class="image" data-tx="t0071:94f59104" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0050">Interdire les appels sortants</h3>
+		<h3 data-tx="t0048:f9c95105">Terminer la configuration de l'appareil</h3>
 
-		<p data-tx="t0051">Dans le champ de sélection "Appels sortants", tu peux maintenant sélectionner la dernière entrée vide pour t'assurer que ton répondeur ne peut pas passer d'appels de manière autonome. Ne clique <b>pas</b> sur le bouton Appliquer en bas, mais sur le deuxième onglet "Données de connexion". Il te sera alors demandé si tu souhaites enregistrer les modifications. Dans ce dialogue, clique sur "Appliquer".</p>
+		<p data-tx="t0049:775725f8">Tu es de retour dans l'"Aperçu des appareils". Tu devrais maintenant voir ton nouveau répondeur "PhoneBlock" dans la liste. Mais avant de pouvoir activer le répondeur, tu dois encore procéder à d'autres réglages. Pour ce faire, clique sur le crayon d'édition à la fin de la ligne PhoneBlock.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Modifier le répondeur téléphonique" class="image" data-tx="t0072:c2aab27" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050:c0e2f0a0">Interdire les appels sortants</h3>
+
+		<p data-tx="t0051:2b456b4d">Dans le champ de sélection "Appels sortants", tu peux maintenant sélectionner la dernière entrée vide pour t'assurer que ton répondeur ne peut pas passer d'appels de manière autonome. Ne clique <b>pas</b> sur le bouton Appliquer en bas, mais sur le deuxième onglet "Données de connexion". Il te sera alors demandé si tu souhaites enregistrer les modifications. Dans ce dialogue, clique sur "Appliquer".</p>
 		
 		<div class="columns">
 			<div class="column">
-	  			<img alt="Empêcher les appels sortants" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  			<img alt="Empêcher les appels sortants" class="image" data-tx="t0073:332b04a6" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
 	  		</div>
 			<div class="column">
-	  			<img alt="Confirmer" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  			<img alt="Confirmer" class="image" data-tx="t0074:323f3118" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0052">Autoriser la connexion depuis Internet</h3>
+		<h3 data-tx="t0052:f4b608b3">Autoriser la connexion depuis Internet</h3>
 
-		<p data-tx="t0053">Dans l'onglet "Données de connexion", tu dois encore activer l'option "Autoriser la connexion depuis Internet" et copier à nouveau le mot de passe de l'application de répondeur automatique <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}"></a> et le saisir dans le champ "Mot de passe". Ce n'est qu'ensuite que tu cliques sur le bouton "Appliquer".</p>
+		<p data-tx="t0053:73c1e78d">Dans l'onglet "Données de connexion", tu dois encore activer l'option "Autoriser la connexion depuis Internet" et copier à nouveau le mot de passe de l'application de répondeur automatique <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}"></a> et le saisir dans le champ "Mot de passe". Ce n'est qu'ensuite que tu cliques sur le bouton "Appliquer".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Accès à partir d'Internet" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  			<img alt="Accès à partir d'Internet" class="image" data-tx="t0075:1287d69f" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0054" id="enable">Étape 5 : Activer le répondeur téléphonique</h2>
+		<h2 data-tx="t0054:ca3d1f9d" id="enable">Étape 5 : Activer le répondeur téléphonique</h2>
 		
-		<p data-tx="t0055">La configuration de ton répondeur est maintenant terminée. Retourne dans l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a> et allume ton nouveau répondeur.</p>
+		<p data-tx="t0055:9d44f6ee">La configuration de ton répondeur est maintenant terminée. Retourne dans l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a> et allume ton nouveau répondeur.</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Accès à partir d'Internet" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  			<img alt="Accès à partir d'Internet" class="image appscreen" data-tx="t0076:1287d69f" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0056">Félicitations, si tout s'est bien passé, le répondeur devrait maintenant être affiché en vert comme "activé" dans l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a>. Les prochains appelants indésirables pourront à l'avenir discuter avec PhoneBlock.</p>
+		<p data-tx="t0056:46e348c9">Félicitations, si tout s'est bien passé, le répondeur devrait maintenant être affiché en vert comme "activé" dans l'application <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Répondeur</a>. Les prochains appelants indésirables pourront à l'avenir discuter avec PhoneBlock.</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Répondeur connecté" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  			<img alt="Répondeur connecté" class="image appscreen" data-tx="t0077:7d38a51" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0057" id="test">Étape 6 : Tester le répondeur téléphonique</h2>
+		<h2 data-tx="t0057:7e3a9894" id="test">Étape 6 : Tester le répondeur téléphonique</h2>
 
-		<p data-tx="t0058">Si tu veux essayer comment se déroule une conversation avec le répondeur PhoneBlock, qui n'est pas très courant, tu peux l'appeler depuis un téléphone directement connecté à la Fritz!Box (par ex. un téléphone sans fil DECT) en utilisant le <b>numéro interne</b> du répondeur. Le répondeur répond toujours à ces appels de test. <b>Important:</b> Cela fonctionne <b>uniquement</b> via le numéro interne du répondeur (qui commence normalement par "**"). Tu trouveras le numéro interne dans l'aperçu des appareils de ta Fritz!Box, à la ligne "PhoneBlock". Essaie donc de lui faire estimer une installation photovoltaïque. Amuse-toi bien!</p>
+		<p data-tx="t0058:f4aaac68">Si tu veux essayer comment se déroule une conversation avec le répondeur PhoneBlock, qui n'est pas très courant, tu peux l'appeler depuis un téléphone directement connecté à la Fritz!Box (par ex. un téléphone sans fil DECT) en utilisant le <b>numéro interne</b> du répondeur. Le répondeur répond toujours à ces appels de test. <b>Important:</b> Cela fonctionne <b>uniquement</b> via le numéro interne du répondeur (qui commence normalement par "**"). Tu trouveras le numéro interne dans l'aperçu des appareils de ta Fritz!Box, à la ligne "PhoneBlock". Essaie donc de lui faire estimer une installation photovoltaïque. Amuse-toi bien!</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Répondeur connecté" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  			<img alt="Répondeur connecté" class="image" data-tx="t0078:7d38a51" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
 	  		</div>
 		</div>
 		

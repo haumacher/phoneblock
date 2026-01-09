@@ -7,47 +7,47 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001">Installation de l'iPhone</h1>
+		<h1 data-tx="t0001:ab611ecc">Installation de l'iPhone</h1>
 		
-		<p data-tx="t0002">L'installation ajoute le carnet d'adresses PhoneBlock à tes contacts. Si tu reçois un appel d'un numéro de spam, tu en seras immédiatement informé, par exemple "SPAM : 03016637169". De même, tu vois tout de suite dans les appels manqués qu'il ne vaut pas la peine de rappeler ici sans googler d'abord le numéro.</p>
+		<p data-tx="t0002:2b88b172">L'installation ajoute le carnet d'adresses PhoneBlock à tes contacts. Si tu reçois un appel d'un numéro de spam, tu en seras immédiatement informé, par exemple "SPAM : 03016637169". De même, tu vois tout de suite dans les appels manqués qu'il ne vaut pas la peine de rappeler ici sans googler d'abord le numéro.</p>
 
-		<p data-tx="t0003">L'installation se déroule selon les étapes suivantes :</p>
+		<p data-tx="t0003:85b28045">L'installation se déroule selon les étapes suivantes :</p>
 		
    		<ol>
-   		<li><a data-tx="t0004" th:href="@{/login(location=${currentPage})}">Inscris-toi sur PhoneBlock.</a></li>
-   		<li data-tx="t0005">Ouvre "Paramètres" &gt; "Contacts" &gt; "Comptes".</li>
-   		<li data-tx="t0006">Tape sur "Ajouter un compte" - "Autres" &gt; "Ajouter un compte CardDAV".</li>
+   		<li><a data-tx="t0004:61875b8b" th:href="@{/login(location=${currentPage})}">Inscris-toi sur PhoneBlock.</a></li>
+   		<li data-tx="t0005:a31aa698">Ouvre "Paramètres" &gt; "Contacts" &gt; "Comptes".</li>
+   		<li data-tx="t0006:ab5dd94a">Tape sur "Ajouter un compte" - "Autres" &gt; "Ajouter un compte CardDAV".</li>
    		<li>
-   			<div data-tx="t0007">Saisis tes données d'accès et tape sur "Continuer".</div>
+   			<div data-tx="t0007:77f669c0">Saisis tes données d'accès et tape sur "Continuer".</div>
    			<dl>
-				<dt><b data-tx="t0016">Serveur</b></dt>
-				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></dd>
+				<dt><b data-tx="t0016:e4287b86">Serveur</b></dt>
+				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b data-tx="t0017">Nom d'utilisateur</b></dt>
+				<dt><b data-tx="t0017:548c40c1">Nom d'utilisateur</b></dt>
 				<dd>
-				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0018" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Inscrivez-vous</a> pour voir votre nom d'utilisateur.</span>
+				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Inscrivez-vous</a> pour voir votre nom d'utilisateur.</span>
 				</dd>
 
-				<dt><b data-tx="t0019">Mot de passe</b></dt>
+				<dt><b data-tx="t0019:e99dee32">Mot de passe</b></dt>
 				<dd>
-				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0020" th:unless="${token}">T'a été affiché directement après la première connexion, tu peux en générer un nouveau <a th:href="@{/settings}">dans les paramètres</a>.</span>
+				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block>
+				<span data-tx="t0020:aa45285a" th:unless="${token}">T'a été affiché directement après la première connexion, tu peux en générer un nouveau <a th:href="@{/settings}">dans les paramètres</a>.</span>
 				</dd>
 
-				<dt><b data-tx="t0021">Description</b></dt>
-				<dd data-tx="t0022">PhoneBlock</dd>		
+				<dt><b data-tx="t0021:c1a59138">Description</b></dt>
+				<dd data-tx="t0022:88251796">PhoneBlock</dd>		
    			</dl>
    		</li>
-   		<li data-tx="t0008">Active "Contacts" et tape sur "Sauvegarder".</li>
-		<li data-tx="t0009">Tu peux maintenant voir les appels avec "SPAM : ..." dans ton carnet de contacts et à la sonnerie. Tu peux ainsi voir immédiatement si cela vaut la peine de répondre ou de rappeler.</li>
+   		<li data-tx="t0008:e822af69">Active "Contacts" et tape sur "Sauvegarder".</li>
+		<li data-tx="t0009:257d1868">Tu peux maintenant voir les appels avec "SPAM : ..." dans ton carnet de contacts et à la sonnerie. Tu peux ainsi voir immédiatement si cela vaut la peine de répondre ou de rappeler.</li>
    		</ol>
 
-		<p data-tx="t0010">Tu n'as plus tes données d'accès sous la main? Pas de problème, il suffit de <a th:href="@{/settings}">réinitialiser le mot de passe dans les paramètres</a>.</p>
+		<p data-tx="t0010:943e8468">Tu n'as plus tes données d'accès sous la main? Pas de problème, il suffit de <a th:href="@{/settings}">réinitialiser le mot de passe dans les paramètres</a>.</p>
    		
-   		<p data-tx="t0011">Tu trouveras également ailleurs <a th:href="@{/link/carddav-install}">un guide avec des images</a>. Dans ces instructions, tu dois seulement utiliser les données d'accès PhoneBlock dans l'étape où le serveur, le nom d'utilisateur et le mot de passe sont saisis (voir ci-dessus).</p>
+   		<p data-tx="t0011:e1cc12a8">Tu trouveras également ailleurs <a th:href="@{/link/carddav-install}">un guide avec des images</a>. Dans ces instructions, tu dois seulement utiliser les données d'accès PhoneBlock dans l'étape où le serveur, le nom d'utilisateur et le mot de passe sont saisis (voir ci-dessus).</p>
    		
-   		<p data-tx="t0012">Si tu n'utilises PhoneBlock que sur l'iPhone, tu peux aussi augmenter le nombre d'entrées <a th:href="@{/settings}">dans les paramètres</a>. Si cela pose des problèmes, merci de nous en faire part (voir <a th:href="@{/faq}">FAQ</a>).</p>
+   		<p data-tx="t0012:707461f9">Si tu n'utilises PhoneBlock que sur l'iPhone, tu peux aussi augmenter le nombre d'entrées <a th:href="@{/settings}">dans les paramètres</a>. Si cela pose des problèmes, merci de nous en faire part (voir <a th:href="@{/faq}">FAQ</a>).</p>
 	</div>
 </section>
 

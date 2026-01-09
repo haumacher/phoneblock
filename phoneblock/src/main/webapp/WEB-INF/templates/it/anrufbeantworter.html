@@ -8,31 +8,31 @@
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="Logo della segreteria telefonica PhoneBlock" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+			<img alt="Logo della segreteria telefonica PhoneBlock" data-tx="t0059:c5ed6770" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
 		</div>
 	
-		<h1 data-tx="t0001">Installazione come segreteria telefonica</h1>
+		<h1 data-tx="t0001:68e08dfe">Installazione come segreteria telefonica</h1>
 		
-		<p data-tx="t0002">PhoneBlock vi offre una segreteria telefonica intelligente che risponde automaticamente alla chiamata solo se il numero del chiamante è elencato nel database <a th:href="@{/status}">SPAM</a> di PhoneBlock. Come per l'<a th:href="@{/setup}">impostazione della lista di blocco</a>, non avete bisogno di un dispositivo o di un computer proprio per questo. Si crea una segreteria telefonica PhoneBlock qui sul sito web e la si registra via Internet sul Fritz!Box o su un altro router Internet con capacità VOIP. Potete scoprire esattamente come funziona la segreteria telefonica PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">qui</a>.</p>
+		<p data-tx="t0002:42f17d69">PhoneBlock vi offre una segreteria telefonica intelligente che risponde automaticamente alla chiamata solo se il numero del chiamante è elencato nel database <a th:href="@{/status}">SPAM</a> di PhoneBlock. Come per l'<a th:href="@{/setup}">impostazione della lista di blocco</a>, non avete bisogno di un dispositivo o di un computer proprio per questo. Si crea una segreteria telefonica PhoneBlock qui sul sito web e la si registra via Internet sul Fritz!Box o su un altro router Internet con capacità VOIP. Potete scoprire esattamente come funziona la segreteria telefonica PhoneBlock <a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">qui</a>.</p>
 		
-		<p data-tx="t0003">I passi seguenti vi condurranno alla vostra segreteria telefonica PhoneBlock:</p>
+		<p data-tx="t0003:fd0f4a43">I passi seguenti vi condurranno alla vostra segreteria telefonica PhoneBlock:</p>
 		
 		<ol>
-			<li><a data-tx="t0004" href="#register">Registrarsi con PhoneBlock</a></li>
-			<li><a data-tx="t0005" href="#create">Creare una segreteria telefonica</a></li>
-			<li><a data-tx="t0006" href="#dyndns">Configurazione di DynDNS nel Fritz!Box</a></li>
-			<li><a data-tx="t0007" href="#sip">Impostazione del dispositivo di telefonia nel Fritz!Box</a></li>
-			<li><a data-tx="t0008" href="#enable">Attivare la segreteria telefonica PhoneBlock</a></li>
-			<li><a data-tx="t0009" href="#test">Prova la segreteria telefonica</a></li>
+			<li><a data-tx="t0004:5cb36b90" href="#register">Registrarsi con PhoneBlock</a></li>
+			<li><a data-tx="t0005:3942efdd" href="#create">Creare una segreteria telefonica</a></li>
+			<li><a data-tx="t0006:a63ba47b" href="#dyndns">Configurazione di DynDNS nel Fritz!Box</a></li>
+			<li><a data-tx="t0007:4cfff5b1" href="#sip">Impostazione del dispositivo di telefonia nel Fritz!Box</a></li>
+			<li><a data-tx="t0008:643de862" href="#enable">Attivare la segreteria telefonica PhoneBlock</a></li>
+			<li><a data-tx="t0009:18890e90" href="#test">Prova la segreteria telefonica</a></li>
 		</ol>
 		
-		 <p data-tx="t0010">Le istruzioni vi guideranno passo dopo passo nella configurazione. La configurazione del Fritz!Box non è semplice, ma se si segue esattamente la procedura qui descritta, nulla può andare storto.</p>
+		 <p data-tx="t0010:c8cb5362">Le istruzioni vi guideranno passo dopo passo nella configurazione. La configurazione del Fritz!Box non è semplice, ma se si segue esattamente la procedura qui descritta, nulla può andare storto.</p>
 		 
-		<h2 data-tx="t0011" id="register">Passo 1: Registrazione con PhoneBlock</h2>
+		<h2 data-tx="t0011:e8d5bb12" id="register">Passo 1: Registrazione con PhoneBlock</h2>
 
-		<p data-tx="t0012">Da qui, avrete bisogno di tre finestre (o schede) del browser. Una per questa guida, una per l'applicazione della segreteria telefonica PhoneBlock e una per l'interfaccia di configurazione del Fritz!Box</p>
+		<p data-tx="t0012:d6a793c3">Da qui, avrete bisogno di tre finestre (o schede) del browser. Una per questa guida, una per l'applicazione della segreteria telefonica PhoneBlock e una per l'interfaccia di configurazione del Fritz!Box</p>
 		
-		<p data-tx="t0013" th:if="${loggedIn}">Innanzitutto, è necessario registrarsi o accedere a PhoneBlock per iniziare la configurazione.</p>
+		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Innanzitutto, è necessario registrarsi o accedere a PhoneBlock per iniziare la configurazione.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -40,15 +40,15 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
-				<span data-tx="t0014">Accedi</span>			
+				<span data-tx="t0014:1dc205">Accedi</span>			
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015" unless:if="${loggedIn}">Hai effettuato l'accesso come <code dir="ltr" th:text="${userName}"></code>, bene, passiamo alla fase successiva!</p>
+		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Hai effettuato l'accesso come <code dir="ltr" th:text="${userName}"></code>, bene, passiamo alla fase successiva!</p>
 		
-		<h2 data-tx="t0016" id="create">Fase 2: Creare la segreteria telefonica</h2>
+		<h2 data-tx="t0016:babb04ed" id="create">Fase 2: Creare la segreteria telefonica</h2>
 		
-		<p data-tx="t0017">Facendo clic qui si apre una finestra con l'applicazione <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Segreteria telefonica di PhoneBlock</a>. Quando la si apre per la prima volta, l'elenco delle segreterie telefoniche è vuoto e c'è un pulsante in basso a destra con il quale è possibile creare una segreteria telefonica. Premere questo pulsante più.</p>
+		<p data-tx="t0017:3e41626b">Facendo clic qui si apre una finestra con l'applicazione <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Segreteria telefonica di PhoneBlock</a>. Quando la si apre per la prima volta, l'elenco delle segreterie telefoniche è vuoto e c'è un pulsante in basso a destra con il quale è possibile creare una segreteria telefonica. Premere questo pulsante più.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -56,46 +56,46 @@
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
-				<span data-tx="t0018">Aprire l'applicazione</span>			
+				<span data-tx="t0018:c1b379ba">Aprire l'applicazione</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Impostazione di DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  			<img alt="Impostazione di DynDNS" class="image appscreen" data-tx="t0060:1f43c62e" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0019" id="dyndns">Passo 4: Impostazione di DynDNS</h2>
+		<h2 data-tx="t0019:66374e47" id="dyndns">Passo 4: Impostazione di DynDNS</h2>
 		
-		<p data-tx="t0020">Il vostro Fritz!Box comunica a PhoneBlock il suo indirizzo IP tramite "DynDNS". Questo è necessario affinché la segreteria telefonica di PhoneBlock possa trovare il vostro Fritz!Box</p>
+		<p data-tx="t0020:c848fac8">Il vostro Fritz!Box comunica a PhoneBlock il suo indirizzo IP tramite "DynDNS". Questo è necessario affinché la segreteria telefonica di PhoneBlock possa trovare il vostro Fritz!Box</p>
 		
-		<h3 data-tx="t0021">Attivare PhoneBlock DynDNS</h3>
+		<h3 data-tx="t0021:2a28f3c0">Attivare PhoneBlock DynDNS</h3>
 		
-		<p data-tx="t0022">Attivate l'interruttore "Utilizza PhoneBlock DynDNS" nell'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a> (se siete esperti e utilizzate già un altro provider DynDNS, potete anche inserire direttamente il nome host del vostro Fritz!Box).</p>
+		<p data-tx="t0022:87bebd4d">Attivate l'interruttore "Utilizza PhoneBlock DynDNS" nell'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a> (se siete esperti e utilizzate già un altro provider DynDNS, potete anche inserire direttamente il nome host del vostro Fritz!Box).</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Impostazione di DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  			<img alt="Impostazione di DynDNS" class="image appscreen" data-tx="t0061:1f43c62e" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0023">Nella pagina successiva, confermare con "Attiva DynDNS".</p>
+		<p data-tx="t0023:2215223d">Nella pagina successiva, confermare con "Attiva DynDNS".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Impostazione di DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  			<img alt="Impostazione di DynDNS" class="image appscreen" data-tx="t0062:1f43c62e" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0024">Ora riceverete i dati di accesso al PhoneBlock DynDNS, che potrete inserire nel vostro Fritz!Box (vedi sotto).</p>
+		<p data-tx="t0024:fbbe4128">Ora riceverete i dati di accesso al PhoneBlock DynDNS, che potrete inserire nel vostro Fritz!Box (vedi sotto).</p>
 
-		<h3 data-tx="t0025">Inserite i dati di accesso nel Fritz!Box</h3>
+		<h3 data-tx="t0025:e0a9e979">Inserite i dati di accesso nel Fritz!Box</h3>
 		
-		<p data-tx="t0026">Questo link <a class="showFB" href="http://fritz.box" target="fritzbox">apre una finestra per il vostro Fritz!Box</a>. Accedete con la vostra password Fritz!Box. Se non l'avete mai fatto prima, troverete la password sul fondo del Fritz!Box</p>
+		<p data-tx="t0026:a1fbdc6">Questo link <a class="showFB" href="http://fritz.box" target="fritzbox">apre una finestra per il vostro Fritz!Box</a>. Accedete con la vostra password Fritz!Box. Se non l'avete mai fatto prima, troverete la password sul fondo del Fritz!Box</p>
 		
-		<p data-tx="t0027">Nel vostro <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>, andate su "Internet &gt; Azioni" nella barra laterale e selezionate la scheda "DynDNS".</p>
+		<p data-tx="t0027:acadeadb">Nel vostro <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>, andate su "Internet &gt; Azioni" nella barra laterale e selezionate la scheda "DynDNS".</p>
 
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -103,161 +103,161 @@
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
-				<span data-tx="t0028">Aprire Fritz!Box</span>			
+				<span data-tx="t0028:ca7e0236">Aprire Fritz!Box</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Impostazione di DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  			<img alt="Impostazione di DynDNS" class="image" data-tx="t0063:1f43c62e" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0029">Copiate i dati relativi a "Update url", "Domain name", "User name" e "Password" dall'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Computer risponditore</a> e inseriteli nella vostra <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Confermate quindi con "Applica" (punto 5 nell'immagine sottostante).</p>
+		<p data-tx="t0029:61e24f6c">Copiate i dati relativi a "Update url", "Domain name", "User name" e "Password" dall'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Computer risponditore</a> e inseriteli nella vostra <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>. Confermate quindi con "Applica" (punto 5 nell'immagine sottostante).</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Impostazione di DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  			<img alt="Impostazione di DynDNS" class="image" data-tx="t0064:1f43c62e" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
 	  		</div>
 		</div>
 		
-		<h3 data-tx="t0030">Controllare DynDNS</h3>
+		<h3 data-tx="t0030:f89d6560">Controllare DynDNS</h3>
 
-		<p data-tx="t0031">Ora tornate all'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Segreteria telefonica</a> e controllate le impostazioni (punto 6 dell'immagine precedente). Se PhoneBlock ha trovato il vostro Fritz!Box, verrete portati alla pagina successiva con i dati di accesso alla segreteria telefonica.</p>
+		<p data-tx="t0031:ad4e12a2">Ora tornate all'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Segreteria telefonica</a> e controllate le impostazioni (punto 6 dell'immagine precedente). Se PhoneBlock ha trovato il vostro Fritz!Box, verrete portati alla pagina successiva con i dati di accesso alla segreteria telefonica.</p>
 		
-		<h2 data-tx="t0032" id="sip">Fase 4: Impostazione della segreteria telefonica nel Fritz!Box</h2>
+		<h2 data-tx="t0032:44450112" id="sip">Fase 4: Impostazione della segreteria telefonica nel Fritz!Box</h2>
 		
-		<p data-tx="t0033">La segreteria telefonica è ora impostata come dispositivo di telefonia nel Fritz!Box Per farlo, aprite di nuovo l'interfaccia <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
+		<p data-tx="t0033:4f8f1cf0">La segreteria telefonica è ora impostata come dispositivo di telefonia nel Fritz!Box Per farlo, aprite di nuovo l'interfaccia <a class="showFB" href="http://fritz.box" target="fritzbox">Fritz!Box</a>.</p>
 
-		<h3 data-tx="t0034">Impostazione del dispositivo di telefonia</h3>
+		<h3 data-tx="t0034:7174860c">Impostazione del dispositivo di telefonia</h3>
 
-		<p data-tx="t0035">Andate su "Telefonia &gt; Dispositivi di telefonia" nella barra laterale e fate clic sul pulsante "Imposta nuovo dispositivo".</p>
+		<p data-tx="t0035:7625ab2c">Andate su "Telefonia &gt; Dispositivi di telefonia" nella barra laterale e fate clic sul pulsante "Imposta nuovo dispositivo".</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Impostazione del dispositivo" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  			<img alt="Impostazione del dispositivo" class="image" data-tx="t0065:f09b0f6a" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
 	  		</div>
 		</div>
 		
-		<h3 data-tx="t0036">Selezionare il tipo di dispositivo</h3>
+		<h3 data-tx="t0036:db70c215">Selezionare il tipo di dispositivo</h3>
 
-		<p data-tx="t0037">Selezionate l'opzione "Telefono (con e senza segreteria telefonica)" e fate clic su "Avanti". Nota: Non selezionare l'opzione "Segreteria telefonica", in quanto può essere utilizzata solo per configurare le segreterie telefoniche installate in modo permanente nel Fritz!Box</p>
-		
-		<div class="columns">
-			<div class="column is-8 is-offset-2">
-	  			<img alt="Creare un dispositivo" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
-	  		</div>
-		</div>
-
-		<h3 data-tx="t0038">Configurazione del telefono IP</h3>
-
-		<p data-tx="t0039">Nella pagina "Collega telefono", selezionare l'opzione "LAN/WLAN (telefono IP)" e assegnare al nuovo dispositivo il nome "PhoneBlock" nel campo di testo sottostante. Quindi fare clic su "Avanti".</p>
-
-		<div class="columns">
-			<div class="column is-8 is-offset-2">
-	  			<img alt="Creare un telefono IP" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
-	  		</div>
-		</div>
-
-		<h3 data-tx="t0040">Trasferimento dei dati di accesso</h3>
-
-		<p data-tx="t0041">Nella pagina successiva "Applicare le impostazioni nel telefono IP" verranno richiesti "Nome utente" e "Password". Copiare qui i dati corrispondenti che vengono visualizzati nell'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica&lt;/x1 Fare clic su "Avanti".</a></p>
+		<p data-tx="t0037:3dd58459">Selezionate l'opzione "Telefono (con e senza segreteria telefonica)" e fate clic su "Avanti". Nota: Non selezionare l'opzione "Segreteria telefonica", in quanto può essere utilizzata solo per configurare le segreterie telefoniche installate in modo permanente nel Fritz!Box<b></b></p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Dati utente" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  			<img alt="Creare un dispositivo" class="image" data-tx="t0066:ff32e6e0" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
 	  		</div>
 		</div>
-		
-		<h3 data-tx="t0042">Impostazioni per le chiamate in uscita</h3>
 
-		<p data-tx="t0043">Nella pagina "Imposta il telefono per le chiamate in uscita", è sufficiente fare clic su "Avanti". La segreteria telefonica PhoneBlock non ha bisogno di un numero di telefono per le chiamate in uscita, perché non effettua mai attivamente chiamate. Questo numero verrà disattivato in una fase successiva, in modo che la segreteria telefonica non possa realmente effettuare chiamate.</p>
+		<h3 data-tx="t0038:42c8988e">Configurazione del telefono IP</h3>
+
+		<p data-tx="t0039:fd8ae4f4">Nella pagina "Collega telefono", selezionare l'opzione "LAN/WLAN (telefono IP)" e assegnare al nuovo dispositivo il nome "PhoneBlock" nel campo di testo sottostante. Quindi fare clic su "Avanti".</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Creare un telefono IP" class="image" data-tx="t0067:65164e9e" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040:18a91842">Trasferimento dei dati di accesso</h3>
+
+		<p data-tx="t0041:ea5a4ae3">Nella pagina successiva "Applicare le impostazioni nel telefono IP" verranno richiesti "Nome utente" e "Password". Copiare qui i dati corrispondenti che vengono visualizzati nell'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica&lt;/x1 Fare clic su "Avanti".</a></p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Chiamate in uscita" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  			<img alt="Dati utente" class="image" data-tx="t0068:b09238a4" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
 	  		</div>
 		</div>
+		
+		<h3 data-tx="t0042:9c3075bf">Impostazioni per le chiamate in uscita</h3>
 
-		<h3 data-tx="t0044">Selezionare i numeri da proteggere</h3>
-
-		<p data-tx="t0045">Nella pagina "Configurazione delle impostazioni del telefono per le chiamate in entrata", si dovrebbe lasciare l'impostazione predefinita "Accetta tutte le chiamate". Se si desidera proteggere solo alcuni numeri dalle chiamate SPAM, è possibile selezionare anche i numeri per i quali la segreteria telefonica vedrà una chiamata. Fare clic su "Avanti".</p>
+		<p data-tx="t0043:defacb75">Nella pagina "Imposta il telefono per le chiamate in uscita", è sufficiente fare clic su "Avanti". La segreteria telefonica PhoneBlock non ha bisogno di un numero di telefono per le chiamate in uscita, perché non effettua mai attivamente chiamate. Questo numero verrà disattivato in una fase successiva, in modo che la segreteria telefonica non possa realmente effettuare chiamate.</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Numeri protetti" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  			<img alt="Chiamate in uscita" class="image" data-tx="t0069:7969a9c" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0046">Confermare la configurazione</h3>
+		<h3 data-tx="t0044:41335921">Selezionare i numeri da proteggere</h3>
 
-		<p data-tx="t0047">A questo punto si accede alla pagina di riepilogo "Applica impostazioni". È possibile verificare nuovamente le impostazioni effettuate e confermarle con "Applica".</p>
+		<p data-tx="t0045:d4e7d">Nella pagina "Configurazione delle impostazioni del telefono per le chiamate in entrata", si dovrebbe lasciare l'impostazione predefinita "Accetta tutte le chiamate". Se si desidera proteggere solo alcuni numeri dalle chiamate SPAM, è possibile selezionare anche i numeri per i quali la segreteria telefonica vedrà una chiamata. Fare clic su "Avanti".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Controllare le impostazioni" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  			<img alt="Numeri protetti" class="image" data-tx="t0070:392b972a" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0048">Terminare la configurazione del dispositivo</h3>
+		<h3 data-tx="t0046:76127bee">Confermare la configurazione</h3>
 
-		<p data-tx="t0049">Siete tornati alla "Panoramica dei dispositivi". Dovreste ora vedere la vostra nuova segreteria telefonica "PhoneBlock" nell'elenco. Tuttavia, prima di poter accendere la segreteria telefonica, è necessario effettuare ulteriori impostazioni. A tal fine, fare clic sulla matita di modifica alla fine della riga PhoneBlock.</p>
+		<p data-tx="t0047:7dba7b36">A questo punto si accede alla pagina di riepilogo "Applica impostazioni". È possibile verificare nuovamente le impostazioni effettuate e confermarle con "Applica".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Modifica della segreteria telefonica" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  			<img alt="Controllare le impostazioni" class="image" data-tx="t0071:94f59104" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0050">Interruzione delle chiamate in uscita</h3>
+		<h3 data-tx="t0048:f9c95105">Terminare la configurazione del dispositivo</h3>
 
-		<p data-tx="t0051">Nel campo di selezione "Chiamate in uscita" è ora possibile selezionare l'ultima voce vuota per garantire che la segreteria telefonica non possa effettuare chiamate in modo indipendente. Non cliccate sul pulsante Applica, ma sulla seconda scheda "Dati di accesso". A questo punto vi verrà chiesto se volete salvare le modifiche. Fare clic su "Applica" in questa finestra di dialogo.</p>
+		<p data-tx="t0049:775725f8">Siete tornati alla "Panoramica dei dispositivi". Dovreste ora vedere la vostra nuova segreteria telefonica "PhoneBlock" nell'elenco. Tuttavia, prima di poter accendere la segreteria telefonica, è necessario effettuare ulteriori impostazioni. A tal fine, fare clic sulla matita di modifica alla fine della riga PhoneBlock.</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="Modifica della segreteria telefonica" class="image" data-tx="t0072:c2aab27" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050:c0e2f0a0">Interruzione delle chiamate in uscita</h3>
+
+		<p data-tx="t0051:2b456b4d">Nel campo di selezione "Chiamate in uscita" è ora possibile selezionare l'ultima voce vuota per garantire che la segreteria telefonica non possa effettuare chiamate in modo indipendente. Non cliccate sul pulsante Applica, ma sulla seconda scheda "Dati di accesso". A questo punto vi verrà chiesto se volete salvare le modifiche. Fare clic su "Applica" in questa finestra di dialogo.<b></b></p>
 		
 		<div class="columns">
 			<div class="column">
-	  			<img alt="Impedire le chiamate in uscita" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  			<img alt="Impedire le chiamate in uscita" class="image" data-tx="t0073:332b04a6" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
 	  		</div>
 			<div class="column">
-	  			<img alt="Confermare" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  			<img alt="Confermare" class="image" data-tx="t0074:323f3118" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0052">Consentire l'accesso da Internet</h3>
+		<h3 data-tx="t0052:f4b608b3">Consentire l'accesso da Internet</h3>
 
-		<p data-tx="t0053">Nella scheda "Dati di accesso" è necessario attivare l'opzione "Consenti accesso da Internet" e copiare di nuovo la password dall'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a> e inserirla nel campo "Password". Solo a questo punto fare clic sul pulsante "Applica".</p>
+		<p data-tx="t0053:73c1e78d">Nella scheda "Dati di accesso" è necessario attivare l'opzione "Consenti accesso da Internet" e copiare di nuovo la password dall'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a> e inserirla nel campo "Password". Solo a questo punto fare clic sul pulsante "Applica".</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Accesso da Internet" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  			<img alt="Accesso da Internet" class="image" data-tx="t0075:1287d69f" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0054" id="enable">Fase 5: Accendere la segreteria telefonica</h2>
+		<h2 data-tx="t0054:ca3d1f9d" id="enable">Fase 5: Accendere la segreteria telefonica</h2>
 		
-		<p data-tx="t0055">La configurazione della segreteria telefonica è ora completa. Tornare all'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a> e accendere la nuova segreteria telefonica.</p>
+		<p data-tx="t0055:9d44f6ee">La configurazione della segreteria telefonica è ora completa. Tornare all'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a> e accendere la nuova segreteria telefonica.</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Accesso da Internet" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  			<img alt="Accesso da Internet" class="image appscreen" data-tx="t0076:1287d69f" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0056">Congratulazioni, se tutto è andato bene, la segreteria telefonica dovrebbe ora essere visualizzata in verde come "accesa" nell'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a>. I prossimi chiamanti sgradevoli possono essere discussi in futuro con PhoneBlock.</p>
+		<p data-tx="t0056:46e348c9">Congratulazioni, se tutto è andato bene, la segreteria telefonica dovrebbe ora essere visualizzata in verde come "accesa" nell'app <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">segreteria telefonica</a>. I prossimi chiamanti sgradevoli possono essere discussi in futuro con PhoneBlock.</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Segreteria telefonica collegata" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  			<img alt="Segreteria telefonica collegata" class="image appscreen" data-tx="t0077:7d38a51" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0057" id="test">Fase 6: prova della segreteria telefonica</h2>
+		<h2 data-tx="t0057:7e3a9894" id="test">Fase 6: prova della segreteria telefonica</h2>
 
-		<p data-tx="t0058">Se volete provare come funziona una chiamata con la segreteria telefonica PhoneBlock, non proprio quotidiana, potete chiamarla da un telefono collegato direttamente al Fritz!Box (ad esempio un telefono cordless DECT) tramite il <b>numero interno</b> della segreteria telefonica. La segreteria telefonica accetta sempre queste chiamate di prova. <b>Importante:</b> Questo funziona <b>solo</b> tramite il numero interno della segreteria telefonica (di solito inizia con "**"). Il numero interno si trova nella panoramica del dispositivo Fritz!Box, nella riga "PhoneBlock". Perché non provate a stimare un impianto fotovoltaico per lui? Divertitevi!</p>
+		<p data-tx="t0058:f4aaac68">Se volete provare come funziona una chiamata con la segreteria telefonica PhoneBlock, non proprio quotidiana, potete chiamarla da un telefono collegato direttamente al Fritz!Box (ad esempio un telefono cordless DECT) tramite il <b>numero interno</b> della segreteria telefonica. La segreteria telefonica accetta sempre queste chiamate di prova. <b>Importante:</b> Questo funziona <b>solo</b> tramite il numero interno della segreteria telefonica (di solito inizia con "**"). Il numero interno si trova nella panoramica del dispositivo Fritz!Box, nella riga "PhoneBlock". Perché non provate a stimare un impianto fotovoltaico per lui? Divertitevi!</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="Segreteria telefonica collegata" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  			<img alt="Segreteria telefonica collegata" class="image" data-tx="t0078:7d38a51" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
 	  		</div>
 		</div>
 		

@@ -7,53 +7,53 @@
 
 <section class="section" th:unless="${userName}">
 	<div class="content">
-		<h1 data-tx="t0001">Settings</h1>
+		<h1 data-tx="t0001:1798fbdb">Settings</h1>
 		
-		<p data-tx="t0002">To edit your personal settings, you must <a th:href="@{/login(location=${location})}">log in</a>.</p>
+		<p data-tx="t0002:d4c49b15">To edit your personal settings, you must <a th:href="@{/login(location=${location})}">log in</a>.</p>
 	</div>
 </section>
 
 <section class="section" th:if="${userName}">
 	<div class="content">
-		<h1 data-tx="t0003">Settings</h1>
-			<p data-tx="t0004">Welcome <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
+		<h1 data-tx="t0003:1798fbdb">Settings</h1>
+			<p data-tx="t0004:d8072a01">Welcome <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
 			
 			<form method="post" th:action="@{/update-settings}">
 
 			<article class="message is-info" th:if="${token}">
 			  <div class="message-header">
-			    <p data-tx="t0005">Your access data</p>
+			    <p data-tx="t0005:5df14f18">Your access data</p>
 			  </div>
 			  
 			  <div class="message-body">
 				<div class="field">
-				  <label class="label" data-tx="t0006">Internet address of the CardDAV server</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0006:f48153ce">Internet address of the CardDAV server</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
-				  <label class="label" data-tx="t0007">User name</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">You must enter this value as the user name for <a th:href="@{/setup}">calling up the blocklist</a>.</p>
+				  <label class="label" data-tx="t0007:548c40c1">User name</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008:bceeee4f">You must enter this value as the user name for <a th:href="@{/setup}">calling up the blocklist</a>.</p>
 				</div>
 					
 				<div class="field">
-				  <label class="label" data-tx="t0009">password</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">You must use this password to <a th:href="@{/setup}">set up the phone book</a> or to log in to this website.</p>
-				  <p class="help" data-tx="t0011">Please make a note of the password (or save it in a <a href="https://keepass.info/">password manager</a>), as it will only be displayed until you log out or your session expires.</p>
+				  <label class="label" data-tx="t0009:e99dee32">password</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010:b5380dd1">You must use this password to <a th:href="@{/setup}">set up the phone book</a> or to log in to this website.</p>
+				  <p class="help" data-tx="t0011:90026712">Please make a note of the password (or save it in a <a href="https://keepass.info/">password manager</a>), as it will only be displayed until you log out or your session expires.</p>
 				</div>
 			  </div>
 			</article>
 
 			<div class="field" th:unless="${token}">
-			  <label class="label" data-tx="t0012">User name</label>
-			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">You must enter this value as the user name for <a th:href="@{/setup}">retrieving the blocklist</a>. Your password was displayed when you first logged in. If you no longer remember it, you can create a <a href="#resetPassword">new password</a> at the bottom of this page. But be careful: the old password will become invalid.</p>
+			  <label class="label" data-tx="t0012:548c40c1">User name</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013:6f72b3a6">You must enter this value as the user name for <a th:href="@{/setup}">retrieving the blocklist</a>. Your password was displayed when you first logged in. If you no longer remember it, you can create a <a href="#resetPassword">new password</a> at the bottom of this page. But be careful: the old password will become invalid.</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0094">Your country code</label>
+			  <label class="label" data-tx="t0094:1e57ddfa">Your country code</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="myDialPrefix">
@@ -64,69 +64,69 @@
 			      <i class="fa-solid fa-earth-americas"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0091">Telephone numbers with your country code will appear in your block list in abbreviated form (as national numbers). SPAM reports from you have a special weight for other users in your country.</p>
+			  <p class="help" data-tx="t0091:5d390f48">Telephone numbers with your country code will appear in your block list in abbreviated form (as national numbers). SPAM reports from you have a special weight for other users in your country.</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0014">Maximum blocklist size</label>
+			  <label class="label" data-tx="t0014:41337e7b">Maximum blocklist size</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (small for very old Fritz!Boxes)</option>
-			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recommended for most Fritz!Boxes)</option>
-			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (e.g. still works on FRITZ!Box 7590)</option>
-			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (see notes below)</option>
-			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (huge, see notes below)</option>
-			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extreme, be careful, your Fritz!Box may crash)</option>
+			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (small for very old Fritz!Boxes)</option>
+			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recommended for most Fritz!Boxes)</option>
+			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (e.g. still works on FRITZ!Box 7590)</option>
+			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (see notes below)</option>
+			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (huge, see notes below)</option>
+			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extreme, be careful, your Fritz!Box may crash)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-ruler-vertical"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0021">If you have problems updating the blocklist, you can reduce the size of your blocklist here. AVM recommends filling phone books with a maximum of 1000 entries. The FRITZ!Box 7590, for example, can handle up to 3000 entries in a phone book.</p>
+			  <p class="help" data-tx="t0021:28fc9e2c">If you have problems updating the blocklist, you can reduce the size of your blocklist here. AVM recommends filling phone books with a maximum of 1000 entries. The FRITZ!Box 7590, for example, can handle up to 3000 entries in a phone book.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Attention:</b> If you want to test how many entries your box can store in a phone book, proceed as follows: Start with the default setting of 2000 entries. Synchronize the blocklist and display the blocklist phonebook. Scroll to the very end and display the print preview of the blocklist and note the number of pages that would be printed. Now increase the blocklist size by one step, resynchronize the blocklist and display the print preview of the blocklist again. If the number of pages has increased accordingly, then your box can handle this size, try the next size. If the number of pages in the print preview has not increased or has not increased accordingly, then use the last smaller size of the blocklist. Interestingly, the Fritz!Box box does not report an error if a phone book becomes too large, but either simply does not synchronize or simply omits any numbers. I have seen boxes simply crash if the phone book size is too large - so be careful.</p>
+			  <p class="help" data-tx="t0022:73c1facc"><b>Attention:</b> If you want to test how many entries your box can store in a phone book, proceed as follows: Start with the default setting of 2000 entries. Synchronize the blocklist and display the blocklist phonebook. Scroll to the very end and display the print preview of the blocklist and note the number of pages that would be printed. Now increase the blocklist size by one step, resynchronize the blocklist and display the print preview of the blocklist again. If the number of pages has increased accordingly, then your box can handle this size, try the next size. If the number of pages in the print preview has not increased or has not increased accordingly, then use the last smaller size of the blocklist. Interestingly, the Fritz!Box box does not report an error if a phone book becomes too large, but either simply does not synchronize or simply omits any numbers. I have seen boxes simply crash if the phone book size is too large - so be careful.</p>
 			</div>
 			
 			<div class="field">
-			  <label class="label" data-tx="t0023">Minimum confidence</label>
+			  <label class="label" data-tx="t0023:6621f89a">Minimum confidence</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="minVotes">
-			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2 (block immediately)</option>	
-			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 (awaiting confirmations)</option>	
-			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 (only when safe)</option>	
-			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100 (top spammers only)</option>	
+			    <option data-tx="t0024:a337a091" th:selected="${settings.minVotes == 2}" value="2">2 (block immediately)</option>	
+			    <option data-tx="t0025:eeb2021a" th:selected="${settings.minVotes == 4}" value="4">4 (awaiting confirmations)</option>	
+			    <option data-tx="t0026:a8e81033" th:selected="${settings.minVotes == 10}" value="10">10 (only when safe)</option>	
+			    <option data-tx="t0027:10a19182" th:selected="${settings.minVotes == 100}" value="100">100 (top spammers only)</option>	
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-phone-volume"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0028">The higher the number you choose, the more complaints a telephone number must have before it is added to your personal blocklist and the greater the probability that you will also receive a call from a new spam number. Each complaint adds 2 to the confidence.</p>
+			  <p class="help" data-tx="t0028:6efc5ac9">The higher the number you choose, the more complaints a telephone number must have before it is added to your personal blocklist and the greater the probability that you will also receive a call from a new spam number. Each complaint adds 2 to the confidence.</p>
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Summarize numbers with "*"</label>
-			  <p class="help" data-tx="t0030">If you select this option, adjacent numbers in your blocklist will be combined into one number with a wildcard ("*"). Many professional spammers have a multi-device connection and use a whole block of numbers as senders. With this option, all these numbers are automatically blocked and your blocklist can include more spam numbers. The Fritz!Box supports phone books with wildcard numbers and then blocks the entire specified number range. However, you may not be able to use wildcard numbers on other devices.</p>
+			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Summarize numbers with "*"</label>
+			  <p class="help" data-tx="t0030:fd1d1b6b">If you select this option, adjacent numbers in your blocklist will be combined into one number with a wildcard ("*"). Many professional spammers have a multi-device connection and use a whole block of numbers as senders. With this option, all these numbers are automatically blocked and your blocklist can include more spam numbers. The Fritz!Box supports phone books with wildcard numbers and then blocks the entire specified number range. However, you may not be able to use wildcard numbers on other devices.</p>
 			</div>
 
 			<div class="field">
 			  <label class="checkbox">
 			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
-				<span data-tx="t0092">National numbers only</span>
+				<span data-tx="t0092:781fecd1">National numbers only</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093">This option is useful if you have blocked all foreign numbers in your Fritz! With this option, only national numbers will appear in your blocklist. This means that more numbers relevant to you will fit into your blocklist. Make sure that you have set your country code correctly above.</p> 
+			  <p class="help" data-tx="t0093:2f41e7b3">This option is useful if you have blocked all foreign numbers in your Fritz! With this option, only national numbers will appear in your blocklist. This means that more numbers relevant to you will fit into your blocklist. Make sure that you have set your country code correctly above.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031" type="submit">Save</button>
+			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Save</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings}">Discard</a>
+			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Discard</a>
 			  </p>
 			</div>
 		</form>
@@ -135,19 +135,19 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0033" id="myAPIKeys">Your API keys</h2>
-	<p data-tx="t0034">If you use other applications to check phone numbers with PhoneBlock (e.g. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> or <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), then you need an API key. For the blocklist phonebook in your Fritz!Box, you simply use your PhoneBlock username and PhoneBlock password, so you don't need an API key for this.</p>
+	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Your API keys</h2>
+	<p data-tx="t0034:c7b86819">If you use other applications to check phone numbers with PhoneBlock (e.g. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> or <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), then you need an API key. For the blocklist phonebook in your Fritz!Box, you simply use your PhoneBlock username and PhoneBlock password, so you don't need an API key for this.</p>
 	
-	<p data-tx="t0035" th:if="${explicitTokens.empty}">You have not yet created any API keys.</p>
+	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">You have not yet created any API keys.</p>
 	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
 			</th>
-			<th data-tx="t0036">Name</th>
-			<th data-tx="t0037">Generates</th>
-			<th data-tx="t0038">Last use</th>
-			<th data-tx="t0039">Device</th>
+			<th data-tx="t0036:b4d4555f">Name</th>
+			<th data-tx="t0037:1e1e9f52">Generates</th>
+			<th data-tx="t0038:46b89898">Last use</th>
+			<th data-tx="t0039:9b222602">Device</th>
 		</tr>
 
 		<tr th:each="authToken : ${explicitTokens}">
@@ -157,7 +157,7 @@
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
 			<td>
-				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">Not used.</th:block>
+				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">Not used.</th:block>
 				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
 			</td>
 			<td th:text="${authToken.userAgent}"></td>
@@ -166,7 +166,7 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041" type="submit">Delete selected</button>
+	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Delete selected</button>
 	  </p>
 	</div>
 	
@@ -176,21 +176,21 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042" id="createAPIKey">Generate API key</h2>
+	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">Generate API key</h2>
 
 	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0043">Remark for use</label>
+	  <label class="label" data-tx="t0043:dcf4d98e">Remark for use</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Use for..." type="text"/>
+	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="Use for..." type="text"/>
 	  </p>
-	  <p class="help" data-tx="t0044">You can enter a note here about what you generated the API key for, e.g. "SpamBlocker on grandma's cell phone.".</p>
+	  <p class="help" data-tx="t0044:c40769ec">You can enter a note here about what you generated the API key for, e.g. "SpamBlocker on grandma's cell phone.".</p>
 	</div>
 		
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045" type="submit">Generate API key</button>
+	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">Generate API key</button>
 	  </p>
 	</div>
 
@@ -201,14 +201,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046" id="blacklist">Your blacklist</h2>
+	<h2 data-tx="t0046:9bb283fa" id="blacklist">Your blacklist</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:if="${blacklist.empty}">You have not explicitly blocked any numbers. To block a number, search for the number using the search field above and write a negative comment, or make a phone book entry for the number in the blocklist in your Fritz!Box</p>
+	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">You have not explicitly blocked any numbers. To block a number, search for the number using the search field above and write a negative comment, or make a phone book entry for the number in the blocklist in your Fritz!Box</p>
 
 	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048">You have explicitly blocked these numbers. You can remove an accidental block here:</p>
+	<p data-tx="t0048:7a2801d3">You have explicitly blocked these numbers. You can remove an accidental block here:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
 			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
@@ -217,7 +217,7 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049" type="submit">Delete</button>
+	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Delete</button>
 	  </p>
 	</div>
 	</th:block>
@@ -229,17 +229,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0095">Block number</label>
+	  <label class="label" data-tx="t0095:7309300c">Block number</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096" name="add-bl" placeholder="New SPAM number" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="New SPAM number" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0098">You can enter one or more SPAM telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. The numbers will then be added to your personal blocklist.</p>
+	  <p class="help" data-tx="t0098:7b65bad4">You can enter one or more SPAM telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. The numbers will then be added to your personal blocklist.</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099" type="submit">Add</button>
+	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Add</button>
 	  </p>
 	</div>
 	
@@ -250,14 +250,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0050" id="whitelist">Your whitelist</h2>
+	<h2 data-tx="t0050:4c4f40df" id="whitelist">Your whitelist</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:if="${whitelist.empty}">You have not excluded any numbers from the blocking.</p>
+	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">You have not excluded any numbers from the blocking.</p>
 
 	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052">You have explicitly excluded these numbers from the blocking:</p>
+	<p data-tx="t0052:98b17ee4">You have explicitly excluded these numbers from the blocking:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
@@ -267,7 +267,7 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053" type="submit">Delete</button>
+	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Delete</button>
 	  </p>
 	</div>
 	</th:block>
@@ -279,17 +279,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0054">Add exception</label>
+	  <label class="label" data-tx="t0054:ce0c23fb">Add exception</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="New exception" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="New exception" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">You can enter one or more telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. These numbers will then no longer be blocked.</p>
+	  <p class="help" data-tx="t0056:edaaa5f7">You can enter one or more telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. These numbers will then no longer be blocked.</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057" type="submit">Add</button>
+	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Add</button>
 	  </p>
 	</div>
 	
@@ -299,19 +299,19 @@
 
 <section class="section">
 <div class="content">
-	<h2 data-tx="t0058" id="sec-contributions">Your donations for the operation of PhoneBlock</h2>
+	<h2 data-tx="t0058:8e777536" id="sec-contributions">Your donations for the operation of PhoneBlock</h2>
 	
-	<p data-tx="t0059">If you have made a <a th:href="@{/support}">donation for the operation of PhoneBlock</a>, it will be listed here (after some time). For this to work, it would be nice if you could include the first few characters of your username in the transfer message, e.g. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></span>. Unfortunately, contributions via the GitHub sponsor program cannot be listed here.</p>
+	<p data-tx="t0059:5bf315a2">If you have made a <a th:href="@{/support}">donation for the operation of PhoneBlock</a>, it will be listed here (after some time). For this to work, it would be nice if you could include the first few characters of your username in the transfer message, e.g. <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090:3f7efe41" href="#" id="purpose_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></span>. Unfortunately, contributions via the GitHub sponsor program cannot be listed here.</p>
 	
-	<p data-tx="t0060" th:if="${contributions.empty}">No donations found.</p>
+	<p data-tx="t0060:5bf4088c" th:if="${contributions.empty}">No donations found.</p>
 	
 	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>
-			<th data-tx="t0061">Date</th>
-			<th data-tx="t0062">Message</th>
-			<th data-tx="t0063">Amount</th>
+			<th data-tx="t0061:73a7fbc0">Date</th>
+			<th data-tx="t0062:4944d83c">Message</th>
+			<th data-tx="t0063:151fc0c3">Amount</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -323,34 +323,34 @@
 	</tbody>
 	</table>
 	
-	<p data-tx="t0064">Thank you very much for contributing to the costs of running PhoneBlock!</p>	
+	<p data-tx="t0064:9559be26">Thank you very much for contributing to the costs of running PhoneBlock!</p>	
 	</th:block>
 </div>
 
 <nav class="panel is-info">
-	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">Missing a payment?</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065:ec12e167">Missing a payment?</span></a></p>
 	<div class="is-collapsible" id="contribForm">
 
 	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
 	<div class="panel-block">
 	<div class="content">
-		<p data-tx="t0066">Are you missing a payment? You can search for a payment here. Enter your full name (which your bank/PayPal uses as the sender) and the date of the transfer:</p>
+		<p data-tx="t0066:76883029">Are you missing a payment? You can search for a payment here. Enter your full name (which your bank/PayPal uses as the sender) and the date of the transfer:</p>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0067">Sender</label>
+		  <label class="label" data-tx="t0067:fce43ee4">Sender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
+		    <input class="input" data-tx="t0089:2a2ec866" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
-		  <p class="help" data-tx="t0068">In the case of a bank transfer, the name of the account holder who made the transfer. Please also state the date of the transfer below.</p>
+		  <p class="help" data-tx="t0068:b7f565b6">In the case of a bank transfer, the name of the account holder who made the transfer. Please also state the date of the transfer below.</p>
 		</div>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0069">Date</label>
+		  <label class="label" data-tx="t0069:73a7fbc0">Date</label>
 		  <p class="control has-icons-left">
 		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
-		  <p class="help" data-tx="t0070">The date of the bank transfer. Please also enter the full name of the account holder who made the transfer above.</p>
+		  <p class="help" data-tx="t0070:99e4757b">The date of the bank transfer. Please also enter the full name of the account holder who made the transfer above.</p>
 		</div>
 	</div>
 	</div>
@@ -360,7 +360,7 @@
 		    <span class="icon">
 				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
-			<span data-tx="t0071">Search contribution</span>
+			<span data-tx="t0071:86083faf">Search contribution</span>
 		</button>
 	</div>
 
@@ -372,17 +372,17 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0072">Danger zone</h2>
-	<p data-tx="t0073">Use this functionality with caution. You can break your PhoneBlock installation with it!</p>
+	<h2 data-tx="t0072:47d9a31d">Danger zone</h2>
+	<p data-tx="t0073:46d23ac6">Use this functionality with caution. You can break your PhoneBlock installation with it!</p>
 	</div>
 		
 <nav class="panel is-warning" id="resetPassword">
-	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">Create new password</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074:889c5574">Create new password</span></a></p>
 	<div class="is-collapsible" id="resetForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075">Be careful, this will invalidate your old PhoneBlock password. You must then enter the new password in the settings of your Fritz!Box or your cell phone so that the blocklist can still be accessed.</p>
+	  			<p data-tx="t0075:f48c1f2f">Be careful, this will invalidate your old PhoneBlock password. You must then enter the new password in the settings of your Fritz!Box or your cell phone so that the blocklist can still be accessed.</p>
 	  		</div>
 	  	</div>
 	  	
@@ -391,7 +391,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-eraser"></i>
 			    </span>
-				<span data-tx="t0076">Reset password</span>
+				<span data-tx="t0076:457c3a43">Reset password</span>
 			</button>
   		</div>
   		</form>
@@ -399,12 +399,12 @@
 </nav>
 
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">Log out on all devices</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077:ad62bbd">Log out on all devices</span></a></p>
 	<div class="is-collapsible" id="logoutForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0078">Logs you out of all devices for which you have activated the "Stay logged in on this device" option when logging in. On your next visit, you will have to log in again on all devices. Use this logout function if you have accidentally activated the "Stay logged in" function on a public PC.</p>
+	  			<p data-tx="t0078:a1c4341c">Logs you out of all devices for which you have activated the "Stay logged in on this device" option when logging in. On your next visit, you will have to log in again on all devices. Use this logout function if you have accidentally activated the "Stay logged in" function on a public PC.</p>
 	  		</div>
 	  	</div>
 	  	
@@ -413,7 +413,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-from-bracket"></i>
 			    </span>
-				<span data-tx="t0079">Log out everywhere</span>
+				<span data-tx="t0079:4646847e">Log out everywhere</span>
 			</button>
   		</div>
   		</form>
@@ -421,12 +421,12 @@
 </nav>
 	
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">Delete account</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080:a95c6f94">Delete account</span></a></p>
 	<div class="is-collapsible" id="quitForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0081">Be careful, all your data will be deleted. It will no longer be possible to retrieve the blocklist or access the PhoneBlock database from any of your devices!</p>
+	  			<p data-tx="t0081:d1ddc761">Be careful, all your data will be deleted. It will no longer be possible to retrieve the blocklist or access the PhoneBlock database from any of your devices!</p>
 	  		</div>
 	  	</div>
 	  	
@@ -435,7 +435,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-power-off"></i>
 			    </span>
-				<span data-tx="t0082">Delete access, no further security query!</span>
+				<span data-tx="t0082:4639073e">Delete access, no further security query!</span>
 			</button>
   		</div>
   		</form>

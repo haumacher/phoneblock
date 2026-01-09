@@ -9,18 +9,18 @@
 <section class="section">
 <div class="content">
 
-	<h1 data-tx="t0001">ربط حساب PhoneBlock</h1>
+	<h1 data-tx="t0001:9d84fe0">ربط حساب PhoneBlock</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0005" th:if="${!#strings.isEmpty(tokenLabel)}">لربط حساب PhoneBlock الخاص بك بـ <strong th:text="${tokenLabel}"> جهازك المحمول ، يجب عليك أولاً تسجيل الدخول أو إنشاء حساب. تحتاج إلى حساب حتى يتمكن هاتفك المحمول من استخدام قاعدة بيانات PhoneBlock لتصفية المكالمات.</strong></p>
-		<p data-tx="t0002" th:if="${#strings.isEmpty(tokenLabel)}">لربط حساب PhoneBlock بجهازك المحمول، يجب عليك أولاً تسجيل الدخول أو إنشاء حساب. تحتاج إلى حساب حتى يتمكن هاتفك المحمول من استخدام قاعدة بيانات PhoneBlock لتصفية المكالمات.</p>
+		<p data-tx="t0005:3832ca35" th:if="${!#strings.isEmpty(tokenLabel)}">لربط حساب PhoneBlock الخاص بك بـ <strong th:text="${tokenLabel}"> جهازك المحمول ، يجب عليك أولاً تسجيل الدخول أو إنشاء حساب. تحتاج إلى حساب حتى يتمكن هاتفك المحمول من استخدام قاعدة بيانات PhoneBlock لتصفية المكالمات.</strong></p>
+		<p data-tx="t0002:e1cdad0" th:if="${#strings.isEmpty(tokenLabel)}">لربط حساب PhoneBlock بجهازك المحمول، يجب عليك أولاً تسجيل الدخول أو إنشاء حساب. تحتاج إلى حساب حتى يتمكن هاتفك المحمول من استخدام قاعدة بيانات PhoneBlock لتصفية المكالمات.</p>
 
 		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0006" th:if="${!#strings.isEmpty(tokenLabel)}">يمكنك الآن توصيل حساب PhoneBlock الخاص بك <code th:text="${userName}"></code> مع <strong th:text="${tokenLabel}">جهازك المحمول</strong>:</p>
-		<p data-tx="t0003" th:if="${#strings.isEmpty(tokenLabel)}">يمكنك الآن توصيل حساب PhoneBlock الخاص بك <code th:text="${userName}"></code> بجهازك المحمول:</p>
+		<p data-tx="t0006:f42186be" th:if="${!#strings.isEmpty(tokenLabel)}">يمكنك الآن توصيل حساب PhoneBlock الخاص بك <code th:text="${userName}"></code> مع <strong th:text="${tokenLabel}">جهازك المحمول</strong>:</p>
+		<p data-tx="t0003:7de9a863" th:if="${#strings.isEmpty(tokenLabel)}">يمكنك الآن توصيل حساب PhoneBlock الخاص بك <code th:text="${userName}"></code> بجهازك المحمول:</p>
 
 		<form method="post" th:action="@{/create-token}">
 			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
@@ -30,7 +30,7 @@
 		          <span class="icon">
 				      <i class="fa-solid fa-link"></i>
 				  </span>
-			      <span data-tx="t0004">ربط حساب PhoneBlock</span>
+			      <span data-tx="t0004:9d84fe0">ربط حساب PhoneBlock</span>
 			    </button>
 			  </p>
 			</div>

@@ -8,31 +8,31 @@
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="Logo PhoneBlock" data-tx="t0015" th:src="@{/assets/img/animation.svg}"/>
+			<img alt="Logo PhoneBlock" data-tx="t0015:5b0e8765" th:src="@{/assets/img/animation.svg}"/>
 		</div>
 
-		<h1 data-tx="t0001">Rejeter automatiquement les appels indésirables</h1>
+		<h1 data-tx="t0001:79729e8b">Rejeter automatiquement les appels indésirables</h1>
 
-		<p data-tx="t0002">Ton numéro de téléphone est aussi tombé entre les mains de commerçants d'adresses douteux et tu reçois constamment des appels importuns qui veulent "optimiser" ta facture d'électricité, te donner des conseils pour une installation solaire, t'annoncer un nouveau gros gain ou t'offrir d'autres "avantages"? Alors <b>PhoneBlock</b> est exactement ce dont tu as besoin!</p>
+		<p data-tx="t0002:d74f7216">Ton numéro de téléphone est aussi tombé entre les mains de commerçants d'adresses douteux et tu reçois constamment des appels importuns qui veulent "optimiser" ta facture d'électricité, te donner des conseils pour une installation solaire, t'annoncer un nouveau gros gain ou t'offrir d'autres "avantages"? Alors <b>PhoneBlock</b> est exactement ce dont tu as besoin!</p>
 
 		<div th:replace="~{fragments/page :: buttons}"></div>
 
-		<h2 data-tx="t0007">Comment fonctionne PhoneBlock?</h2>
+		<h2 data-tx="t0007:20eeb709">Comment fonctionne PhoneBlock?</h2>
 
-		<p data-tx="t0008">PhoneBlock est une liste de numéros de téléphone suspectés d'être des spams, gérée par la communauté PhoneBlock. Le répondeur <a th:href="@{/anrufbeantworter}">PhoneBlock</a> accepte alors les appels des personnes figurant sur la liste de blocage, de sorte que ton téléphone reste muet lors de ces appels.</p>
+		<p data-tx="t0008:62e0be42">PhoneBlock est une liste de numéros de téléphone suspectés d'être des spams, gérée par la communauté PhoneBlock. Le répondeur <a th:href="@{/anrufbeantworter}">PhoneBlock</a> accepte alors les appels des personnes figurant sur la liste de blocage, de sorte que ton téléphone reste muet lors de ces appels.</p>
 		
-		<p data-tx="t0009">Tu peux aussi importer la liste de blocage comme annuaire téléphonique dans ton routeur Internet "FRITZ!Box" et bloquer les appels des numéros de cet <a th:href="@{/setup}">annuaire spécial</a>. Tu n'as plus besoin de bloquer manuellement des plages de numéros, car ta Fritz!Box actualise automatiquement la liste de blocage chaque nuit. Dès qu'un numéro est ajouté à cette liste de blocage, ta FRITZ!Box rejette automatiquement les appelants portant ce numéro. Le <a th:href="@{/anrufbeantworter}">répondeur</a> est toutefois la meilleure solution, car un annuaire téléphonique est limité en taille et ne peut pas contenir tous les numéros de la liste de blocage.</p>
+		<p data-tx="t0009:149bd771">Tu peux aussi importer la liste de blocage comme annuaire téléphonique dans ton routeur Internet "FRITZ!Box" et bloquer les appels des numéros de cet <a th:href="@{/setup}">annuaire spécial</a>. Tu n'as plus besoin de bloquer manuellement des plages de numéros, car ta Fritz!Box actualise automatiquement la liste de blocage chaque nuit. Dès qu'un numéro est ajouté à cette liste de blocage, ta FRITZ!Box rejette automatiquement les appelants portant ce numéro. Le <a th:href="@{/anrufbeantworter}">répondeur</a> est toutefois la meilleure solution, car un annuaire téléphonique est limité en taille et ne peut pas contenir tous les numéros de la liste de blocage.</p>
 
-		<p data-tx="t0010">Si tu reçois quand même un appel indésirable parce que le numéro n'est pas encore inscrit dans la liste des numéros bloqués, tu peux facilement bloquer le <a th:href="@{/block}">numéro dans ta FRITZ!Box</a>. Pour cela, tu crées une entrée pour l'appelant indésirable dans le carnet d'adresses PhoneBlock directement dans ta Fritz!Box. Dès que tu as fait cela, ta FrizBox met à jour la liste de blocage pour tous les membres de la communauté PhoneBlock et les appels provenant de ce nouveau numéro sont immédiatement refusés par tous les autres. C'est certes un peu plus compliqué que de bloquer directement le numéro dans ton Fritz!BoxPhone, mais cela a l'avantage de protéger toute la communauté PhoneBlock contre <a th:href="@{/status}">d'autres appels de spam</a>.</p>
+		<p data-tx="t0010:c0b8328d">Si tu reçois quand même un appel indésirable parce que le numéro n'est pas encore inscrit dans la liste des numéros bloqués, tu peux facilement bloquer le <a th:href="@{/block}">numéro dans ta FRITZ!Box</a>. Pour cela, tu crées une entrée pour l'appelant indésirable dans le carnet d'adresses PhoneBlock directement dans ta Fritz!Box. Dès que tu as fait cela, ta FrizBox met à jour la liste de blocage pour tous les membres de la communauté PhoneBlock et les appels provenant de ce nouveau numéro sont immédiatement refusés par tous les autres. C'est certes un peu plus compliqué que de bloquer directement le numéro dans ton Fritz!BoxPhone, mais cela a l'avantage de protéger toute la communauté PhoneBlock contre <a th:href="@{/status}">d'autres appels de spam</a>.</p>
 
-		<h2 data-tx="t0011">Quelles sont les conditions préalables?</h2>
+		<h2 data-tx="t0011:db4a3206">Quelles sont les conditions préalables?</h2>
 
 		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
+			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016:778ea20f" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
 			</a>
 		</div>
 		
-		<p data-tx="t0012">PhoneBlock peut soit bloquer les appels indésirables sur la <a th:href="@{/setup}">"ligne fixe"</a> en combinaison avec un <a th:href="@{/link/fritzbox}">"routeur Internet FRITZ!Box" d'AVM</a>, soit indiquer directement sur ton <a th:href="@{/setup-android}">téléphone mobile</a> si un appelant est potentiellement indésirable.</p>
+		<p data-tx="t0012:21ca43c">PhoneBlock peut soit bloquer les appels indésirables sur la <a th:href="@{/setup}">"ligne fixe"</a> en combinaison avec un <a th:href="@{/link/fritzbox}">"routeur Internet FRITZ!Box" d'AVM</a>, soit indiquer directement sur ton <a th:href="@{/setup-android}">téléphone mobile</a> si un appelant est potentiellement indésirable.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -41,15 +41,15 @@
 				<span class="icon is-small is-left">
 					<i class="fa-solid fa-magnifying-glass"></i>
 				</span>
-				<span class="display-initial" data-tx="t0013">Rechercher une Fritz!Box</span>
-				<span class="display-searching" data-tx="t0017">Attendez...</span>
-				<span class="display-success" data-tx="t0018">Trouvé, vas-y !</span>
-				<span class="display-failed" data-tx="t0019">Pas trouvé, que faire ?</span>
+				<span class="display-initial" data-tx="t0013:f1e2844f">Rechercher une Fritz!Box</span>
+				<span class="display-searching" data-tx="t0017:afb59ec0">Attendez...</span>
+				<span class="display-success" data-tx="t0018:a0e3f5f5">Trouvé, vas-y !</span>
+				<span class="display-failed" data-tx="t0019:ab0e4be2">Pas trouvé, que faire ?</span>
 			</a>
 		  </div>
 		</div>
 
-		<p data-tx="t0014">Tu n'es pas sûr d'avoir une Fritz!Box? Si tu te trouves chez toi en wifi, appuie sur le bouton de recherche ci-dessus. PhoneBlock essaie alors de trouver une Fritz!Box près de chez toi.</p>
+		<p data-tx="t0014:d5f9ffe8">Tu n'es pas sûr d'avoir une Fritz!Box? Si tu te trouves chez toi en wifi, appuie sur le bouton de recherche ci-dessus. PhoneBlock essaie alors de trouver une Fritz!Box près de chez toi.</p>
 	</div>
 </section>
 

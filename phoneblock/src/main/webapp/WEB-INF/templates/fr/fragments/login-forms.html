@@ -6,7 +6,7 @@
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Se connecter avec Google</span></a>
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001:33460370">Se connecter avec Google</span></a>
 		</p>
 		<div class="is-collapsible" id="googleLogin">
 			<div class="panel-block">
@@ -20,13 +20,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0002">Rester connecté sur cet appareil (définit un <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0002:a4820387">Rester connecté sur cet appareil (définit un <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0003">En t'inscrivant, tu acceptes les <a th:href="@{/usage}">conditions d'utilisation</a>.</div>
+				  <div class="control" data-tx="t0003:d22b9755">En t'inscrivant, tu acceptes les <a th:href="@{/usage}">conditions d'utilisation</a>.</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -35,12 +35,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0004">Aller à Google</span>
+				      <span data-tx="t0004:15fed624">Aller à Google</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0005">Si tu as un compte Google, tu peux t'en servir pour te connecter facilement à PhoneBlock. La première connexion avec Google crée un compte PhoneBlock. A l'avenir, tu pourras te connecter soit avec le nom d'utilisateur PhoneBlock créé, soit à nouveau via Google.</p>
+				<p class="help" data-tx="t0005:cc14ebc6">Si tu as un compte Google, tu peux t'en servir pour te connecter facilement à PhoneBlock. La première connexion avec Google crée un compte PhoneBlock. A l'avenir, tu pourras te connecter soit avec le nom d'utilisateur PhoneBlock créé, soit à nouveau via Google.</p>
 				
 				</form>
 			</div>
@@ -49,7 +49,7 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">S'inscrire avec un e-mail</span></a></p>
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006:b99ac6c2">S'inscrire avec un e-mail</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
@@ -57,9 +57,9 @@
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
-					<label class="label" data-tx="t0007">Courrier électronique</label>
+					<label class="label" data-tx="t0007:30c9dcb9">Courrier électronique</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0020" name="email" placeholder="Ton adresse e-mail" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <input data-tx="t0020:460db871" name="email" placeholder="Ton adresse e-mail" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
@@ -71,12 +71,12 @@
 				</div>
 
 				<div>
-					<label class="label" data-tx="t0019">Code de sécurité</label>
+					<label class="label" data-tx="t0019:10d7cfff">Code de sécurité</label>
 
-					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"/>
+					<img alt="Captcha" data-tx="t0021:ccf7588c" th:src="${captchaSrc}"/>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input autocomplete="off" data-tx="t0022" name="captcha" placeholder="Texte dans l'image ci-dessus" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <input autocomplete="off" data-tx="t0022:4be67cdf" name="captcha" placeholder="Texte dans l'image ci-dessus" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>
@@ -91,13 +91,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0008">Rester connecté sur cet appareil (définit un <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0008:a4820387">Rester connecté sur cet appareil (définit un <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0009">En t'inscrivant, tu acceptes les <a th:href="@{/usage}">conditions d'utilisation</a>.</div>
+				  <div class="control" data-tx="t0009:d22b9755">En t'inscrivant, tu acceptes les <a th:href="@{/usage}">conditions d'utilisation</a>.</div>
 				</div>
 
 				<div class="field is-grouped">
@@ -106,12 +106,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0010">Demander un code</span>
+				      <span data-tx="t0010:ba8e91df">Demander un code</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0011">Tu recevras un code à l'adresse e-mail indiquée, avec lequel tu pourras t'inscrire. La première connexion par e-mail crée un compte PhoneBlock. À l'avenir, tu pourras te connecter avec le nom d'utilisateur PhoneBlock généré ou en envoyant à nouveau un code à usage unique.</p>
+				<p class="help" data-tx="t0011:8379fde">Tu recevras un code à l'adresse e-mail indiquée, avec lequel tu pourras t'inscrire. La première connexion par e-mail crée un compte PhoneBlock. À l'avenir, tu pourras te connecter avec le nom d'utilisateur PhoneBlock généré ou en envoyant à nouveau un code à usage unique.</p>
 			</div>
 			</div>
 			</form>
@@ -120,19 +120,19 @@
 	
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Se connecter avec le nom d'utilisateur PhoneBlock</span></a>
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012:2a4951de">Se connecter avec le nom d'utilisateur PhoneBlock</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0025">Tu ne peux utiliser cette option que pour te connecter après t'être déjà enregistré sur PhoneBlock. Tu obtiendras ton nom d'utilisateur PhoneBlock en t'inscrivant via Google ou par e-mail (voir ci-dessus).</p>
+	  			<p data-tx="t0025:27d4e511">Tu ne peux utiliser cette option que pour te connecter après t'être déjà enregistré sur PhoneBlock. Tu obtiendras ton nom d'utilisateur PhoneBlock en t'inscrivant via Google ou par e-mail (voir ci-dessus).</p>
 	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" data-tx="t0023" placeholder="Nom d'utilisateur" th:name="${userNameParam}" type="text"/>
+				    <input class="input" data-tx="t0023:2d49d98d" placeholder="Nom d'utilisateur" th:name="${userNameParam}" type="text"/>
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -140,30 +140,30 @@
 				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
-				  <p class="help" data-tx="t0013">Utilise le nom d'utilisateur que tu as reçu lors de ton inscription avec Google ou ton adresse e-mail.</p>
+				  <p class="help" data-tx="t0013:544c2ad9">Utilise le nom d'utilisateur que tu as reçu lors de ton inscription avec Google ou ton adresse e-mail.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" data-tx="t0024" placeholder="Mot de passe PhoneBlock" th:name="${passwordParam}" type="password"/>
+				    <input class="input" data-tx="t0024:8f7e39e6" placeholder="Mot de passe PhoneBlock" th:name="${passwordParam}" type="password"/>
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
-					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Les données de connexion ne correspondent pas, merci de vérifier les données saisies et de réessayer.</p>
-					  <p class="help" data-tx="t0015" th:unless="${loginError}">Le mot de passe t'a été indiqué après ta première connexion. Si tu n'as plus le mot de passe sous la main, connecte-toi simplement avec Google ou ton adresse e-mail, voir ci-dessus.</p>
+					  <p class="help is-danger" data-tx="t0014:f8e64400" th:if="${loginError}">Les données de connexion ne correspondent pas, merci de vérifier les données saisies et de réessayer.</p>
+					  <p class="help" data-tx="t0015:64d4c87a" th:unless="${loginError}">Le mot de passe t'a été indiqué après ta première connexion. Si tu n'as plus le mot de passe sous la main, connecte-toi simplement avec Google ou ton adresse e-mail, voir ci-dessus.</p>
 				</div>
 
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0016">Rester connecté sur cet appareil (définit un <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0016:a4820387">Rester connecté sur cet appareil (définit un <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0017">En t'inscrivant, tu acceptes les <a th:href="@{/usage}">conditions d'utilisation</a>.</div>
+				  <div class="control" data-tx="t0017:d22b9755">En t'inscrivant, tu acceptes les <a th:href="@{/usage}">conditions d'utilisation</a>.</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -172,7 +172,7 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0018">S'inscrire</span>
+				      <span data-tx="t0018:1dc205">S'inscrire</span>
 				    </button>
 				  </p>
 				</div>

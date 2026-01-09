@@ -7,53 +7,53 @@
 
 <section class="section" th:unless="${userName}">
 	<div class="content">
-		<h1 data-tx="t0001">Instellingen</h1>
+		<h1 data-tx="t0001:1798fbdb">Instellingen</h1>
 		
-		<p data-tx="t0002">Om je persoonlijke instellingen te bewerken, moet je <a th:href="@{/login(location=${location})}">inloggen</a>.</p>
+		<p data-tx="t0002:d4c49b15">Om je persoonlijke instellingen te bewerken, moet je <a th:href="@{/login(location=${location})}">inloggen</a>.</p>
 	</div>
 </section>
 
 <section class="section" th:if="${userName}">
 	<div class="content">
-		<h1 data-tx="t0003">Instellingen</h1>
-			<p data-tx="t0004">Welkom <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
+		<h1 data-tx="t0003:1798fbdb">Instellingen</h1>
+			<p data-tx="t0004:d8072a01">Welkom <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
 			
 			<form method="post" th:action="@{/update-settings}">
 
 			<article class="message is-info" th:if="${token}">
 			  <div class="message-header">
-			    <p data-tx="t0005">Uw toegangsgegevens</p>
+			    <p data-tx="t0005:5df14f18">Uw toegangsgegevens</p>
 			  </div>
 			  
 			  <div class="message-body">
 				<div class="field">
-				  <label class="label" data-tx="t0006">Internetadres van de CardDAV-server</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0006:f48153ce">Internetadres van de CardDAV-server</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
-				  <label class="label" data-tx="t0007">Gebruikersnaam</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">Je moet deze waarde invoeren als de gebruikersnaam voor <a th:href="@{/setup}">het oproepen van de blokkadelijst</a>.</p>
+				  <label class="label" data-tx="t0007:548c40c1">Gebruikersnaam</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008:bceeee4f">Je moet deze waarde invoeren als de gebruikersnaam voor <a th:href="@{/setup}">het oproepen van de blokkadelijst</a>.</p>
 				</div>
 					
 				<div class="field">
-				  <label class="label" data-tx="t0009">wachtwoord</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">Je moet dit wachtwoord gebruiken om <a th:href="@{/setup}">het telefoonboek in te stellen</a> of om in te loggen op deze website.</p>
-				  <p class="help" data-tx="t0011">Noteer het wachtwoord (of sla het op in een <a href="https://keepass.info/">wachtwoordmanager</a>), want het wordt alleen weergegeven totdat je uitlogt of je sessie verloopt.</p>
+				  <label class="label" data-tx="t0009:e99dee32">wachtwoord</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010:b5380dd1">Je moet dit wachtwoord gebruiken om <a th:href="@{/setup}">het telefoonboek in te stellen</a> of om in te loggen op deze website.</p>
+				  <p class="help" data-tx="t0011:90026712">Noteer het wachtwoord (of sla het op in een <a href="https://keepass.info/">wachtwoordmanager</a>), want het wordt alleen weergegeven totdat je uitlogt of je sessie verloopt.</p>
 				</div>
 			  </div>
 			</article>
 
 			<div class="field" th:unless="${token}">
-			  <label class="label" data-tx="t0012">Gebruikersnaam</label>
-			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">Je moet deze waarde invoeren als gebruikersnaam voor <a th:href="@{/setup}">het ophalen van de blokkadelijst</a>. Je wachtwoord werd weergegeven toen je voor het eerst inlogde. Als je het niet meer weet, kun je onderaan deze pagina een <a href="#resetPassword">nieuw wachtwoord</a> aanmaken. Maar let op: het oude wachtwoord wordt ongeldig.</p>
+			  <label class="label" data-tx="t0012:548c40c1">Gebruikersnaam</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013:6f72b3a6">Je moet deze waarde invoeren als gebruikersnaam voor <a th:href="@{/setup}">het ophalen van de blokkadelijst</a>. Je wachtwoord werd weergegeven toen je voor het eerst inlogde. Als je het niet meer weet, kun je onderaan deze pagina een <a href="#resetPassword">nieuw wachtwoord</a> aanmaken. Maar let op: het oude wachtwoord wordt ongeldig.</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0094">Je landcode</label>
+			  <label class="label" data-tx="t0094:1e57ddfa">Je landcode</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="myDialPrefix">
@@ -64,69 +64,69 @@
 			      <i class="fa-solid fa-earth-americas"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0091">Telefoonnummers met jouw landcode verschijnen in afgekorte vorm (als nationale nummers) in jouw blokkadelijst. SPAM-meldingen van jou hebben een speciaal gewicht voor andere gebruikers in jouw land.</p>
+			  <p class="help" data-tx="t0091:5d390f48">Telefoonnummers met jouw landcode verschijnen in afgekorte vorm (als nationale nummers) in jouw blokkadelijst. SPAM-meldingen van jou hebben een speciaal gewicht voor andere gebruikers in jouw land.</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0014">Maximale grootte bloklijst</label>
+			  <label class="label" data-tx="t0014:41337e7b">Maximale grootte bloklijst</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (klein voor zeer oude Fritz!Boxes)</option>
-			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (aanbevolen voor de meeste Fritz!Boxes)</option>
-			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (werkt bijvoorbeeld nog steeds op FRITZ!Box 7590)</option>
-			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (zie opmerkingen hieronder)</option>
-			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (enorm, zie opmerkingen hieronder)</option>
-			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extreem, wees voorzichtig, je Fritz!Box kan crashen)</option>
+			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (klein voor zeer oude Fritz!Boxes)</option>
+			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (aanbevolen voor de meeste Fritz!Boxes)</option>
+			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (werkt bijvoorbeeld nog steeds op FRITZ!Box 7590)</option>
+			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (zie opmerkingen hieronder)</option>
+			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (enorm, zie opmerkingen hieronder)</option>
+			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extreem, wees voorzichtig, je Fritz!Box kan crashen)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-ruler-vertical"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0021">Als je problemen hebt met het bijwerken van de blokkadelijst, kun je hier de grootte van je blokkadelijst verkleinen. AVM raadt aan om telefoonboeken te vullen met maximaal 1000 vermeldingen. De FRITZ!Box 7590 kan bijvoorbeeld tot 3000 vermeldingen in een telefoonboek verwerken.</p>
+			  <p class="help" data-tx="t0021:28fc9e2c">Als je problemen hebt met het bijwerken van de blokkadelijst, kun je hier de grootte van je blokkadelijst verkleinen. AVM raadt aan om telefoonboeken te vullen met maximaal 1000 vermeldingen. De FRITZ!Box 7590 kan bijvoorbeeld tot 3000 vermeldingen in een telefoonboek verwerken.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Attentie:</b> Als je wilt testen hoeveel vermeldingen je box in een telefoonboek kan opslaan, ga dan als volgt te werk: Begin met de standaardinstelling van 2000 vermeldingen. Synchroniseer de blokkadelijst en geef het telefoonboek van de blokkadelijst weer. Scroll helemaal naar het einde en geef het afdrukvoorbeeld van de blocklist weer en noteer het aantal pagina's dat zou worden afgedrukt. Verhoog nu de grootte van de blokkadelijst met één stap, synchroniseer de blokkadelijst opnieuw en geef het afdrukvoorbeeld van de blokkadelijst opnieuw weer. Als het aantal pagina's overeenkomstig is toegenomen, dan kan je box deze grootte aan, probeer de volgende grootte. Als het aantal pagina's in het afdrukvoorbeeld niet is toegenomen of niet overeenkomstig is toegenomen, gebruik dan het laatste kleinere formaat van de bloklijst. Interessant is dat de Fritz!Box box geen fout meldt als een telefoonboek te groot wordt, maar gewoon niet synchroniseert of gewoon nummers weglaat. Ik heb boxen zien crashen als het telefoonboek te groot werd - wees dus voorzichtig.</p>
+			  <p class="help" data-tx="t0022:73c1facc"><b>Attentie:</b> Als je wilt testen hoeveel vermeldingen je box in een telefoonboek kan opslaan, ga dan als volgt te werk: Begin met de standaardinstelling van 2000 vermeldingen. Synchroniseer de blokkadelijst en geef het telefoonboek van de blokkadelijst weer. Scroll helemaal naar het einde en geef het afdrukvoorbeeld van de blocklist weer en noteer het aantal pagina's dat zou worden afgedrukt. Verhoog nu de grootte van de blokkadelijst met één stap, synchroniseer de blokkadelijst opnieuw en geef het afdrukvoorbeeld van de blokkadelijst opnieuw weer. Als het aantal pagina's overeenkomstig is toegenomen, dan kan je box deze grootte aan, probeer de volgende grootte. Als het aantal pagina's in het afdrukvoorbeeld niet is toegenomen of niet overeenkomstig is toegenomen, gebruik dan het laatste kleinere formaat van de bloklijst. Interessant is dat de Fritz!Box box geen fout meldt als een telefoonboek te groot wordt, maar gewoon niet synchroniseert of gewoon nummers weglaat. Ik heb boxen zien crashen als het telefoonboek te groot werd - wees dus voorzichtig.</p>
 			</div>
 			
 			<div class="field">
-			  <label class="label" data-tx="t0023">Minimaal vertrouwen</label>
+			  <label class="label" data-tx="t0023:6621f89a">Minimaal vertrouwen</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="minVotes">
-			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2 (onmiddellijk vergrendelen)</option>	
-			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 (wachten op bevestigingen)</option>	
-			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 (alleen wanneer veilig)</option>	
-			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100 (alleen topspammers)</option>	
+			    <option data-tx="t0024:a337a091" th:selected="${settings.minVotes == 2}" value="2">2 (onmiddellijk vergrendelen)</option>	
+			    <option data-tx="t0025:eeb2021a" th:selected="${settings.minVotes == 4}" value="4">4 (wachten op bevestigingen)</option>	
+			    <option data-tx="t0026:a8e81033" th:selected="${settings.minVotes == 10}" value="10">10 (alleen wanneer veilig)</option>	
+			    <option data-tx="t0027:10a19182" th:selected="${settings.minVotes == 100}" value="100">100 (alleen topspammers)</option>	
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-phone-volume"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0028">Hoe hoger het nummer dat je kiest, hoe meer klachten een telefoonnummer moet hebben voordat het wordt toegevoegd aan je persoonlijke blokkadelijst en hoe groter de kans dat je ook wordt gebeld door een nieuw spornummer. Elke klacht voegt 2 toe aan de vertrouwensscore.</p>
+			  <p class="help" data-tx="t0028:6efc5ac9">Hoe hoger het nummer dat je kiest, hoe meer klachten een telefoonnummer moet hebben voordat het wordt toegevoegd aan je persoonlijke blokkadelijst en hoe groter de kans dat je ook wordt gebeld door een nieuw spornummer. Elke klacht voegt 2 toe aan de vertrouwensscore.</p>
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Nummers samenvatten met "*"</label>
-			  <p class="help" data-tx="t0030">Als je deze optie selecteert, worden naburige nummers in je blokkadelijst gecombineerd tot één nummer met een jokerteken ("*"). Veel professionele spammers hebben een verbinding met meerdere apparaten en gebruiken een heel blok nummers als afzenders. Met deze optie worden al deze nummers automatisch geblokkeerd en kan je blocklist meer spamnummers bevatten. De Fritz!Box ondersteunt telefoonboeken met wildcardnummers en blokkeert dan het hele opgegeven nummerbereik. Het is echter mogelijk dat je wildcardnummers niet kunt gebruiken op andere apparaten.</p>
+			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Nummers samenvatten met "*"</label>
+			  <p class="help" data-tx="t0030:fd1d1b6b">Als je deze optie selecteert, worden naburige nummers in je blokkadelijst gecombineerd tot één nummer met een jokerteken ("*"). Veel professionele spammers hebben een verbinding met meerdere apparaten en gebruiken een heel blok nummers als afzenders. Met deze optie worden al deze nummers automatisch geblokkeerd en kan je blocklist meer spamnummers bevatten. De Fritz!Box ondersteunt telefoonboeken met wildcardnummers en blokkeert dan het hele opgegeven nummerbereik. Het is echter mogelijk dat je wildcardnummers niet kunt gebruiken op andere apparaten.</p>
 			</div>
 
 			<div class="field">
 			  <label class="checkbox">
 			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
-				<span data-tx="t0092">Alleen nationale nummers</span>
+				<span data-tx="t0092:781fecd1">Alleen nationale nummers</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093">Deze optie is handig als je alle buitenlandse nummers hebt geblokkeerd in je Fritz! box. Met deze optie verschijnen alleen nationale nummers in je blokkadelijst. Dit betekent dat er meer nummers die relevant zijn voor jou in je blokkadelijst passen. Zorg ervoor dat je hierboven je landcode correct hebt ingesteld.</p> 
+			  <p class="help" data-tx="t0093:2f41e7b3">Deze optie is handig als je alle buitenlandse nummers hebt geblokkeerd in je Fritz! box. Met deze optie verschijnen alleen nationale nummers in je blokkadelijst. Dit betekent dat er meer nummers die relevant zijn voor jou in je blokkadelijst passen. Zorg ervoor dat je hierboven je landcode correct hebt ingesteld.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031" type="submit">Sla</button>
+			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Sla</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings}">Gooi weg</a>
+			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Gooi weg</a>
 			  </p>
 			</div>
 		</form>
@@ -135,19 +135,19 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0033" id="myAPIKeys">Uw API-sleutels</h2>
-	<p data-tx="t0034">Als je andere applicaties gebruikt om telefoonnummers te controleren met PhoneBlock (bijv. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> of <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), dan heb je een API-sleutel nodig. Voor het telefoonboek van de blokkadelijst in je Fritz!Box gebruik je gewoon je PhoneBlock-gebruikersnaam en PhoneBlock-wachtwoord, dus hiervoor heb je geen API-sleutel nodig.</p>
+	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Uw API-sleutels</h2>
+	<p data-tx="t0034:c7b86819">Als je andere applicaties gebruikt om telefoonnummers te controleren met PhoneBlock (bijv. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> of <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), dan heb je een API-sleutel nodig. Voor het telefoonboek van de blokkadelijst in je Fritz!Box gebruik je gewoon je PhoneBlock-gebruikersnaam en PhoneBlock-wachtwoord, dus hiervoor heb je geen API-sleutel nodig.</p>
 	
-	<p data-tx="t0035" th:if="${explicitTokens.empty}">U hebt nog geen API-sleutels gemaakt.</p>
+	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">U hebt nog geen API-sleutels gemaakt.</p>
 	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
 			</th>
-			<th data-tx="t0036">Naam</th>
-			<th data-tx="t0037">Genereert</th>
-			<th data-tx="t0038">Laatste gebruik</th>
-			<th data-tx="t0039">Apparaat</th>
+			<th data-tx="t0036:b4d4555f">Naam</th>
+			<th data-tx="t0037:1e1e9f52">Genereert</th>
+			<th data-tx="t0038:46b89898">Laatste gebruik</th>
+			<th data-tx="t0039:9b222602">Apparaat</th>
 		</tr>
 
 		<tr th:each="authToken : ${explicitTokens}">
@@ -157,7 +157,7 @@
 			<td th:text="${authToken.label}"></td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
 			<td>
-				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">Niet gebruikt.</th:block>
+				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">Niet gebruikt.</th:block>
 				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
 			</td>
 			<td th:text="${authToken.userAgent}"></td>
@@ -166,7 +166,7 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041" type="submit">Geselecteerde verwijderen</button>
+	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Geselecteerde verwijderen</button>
 	  </p>
 	</div>
 	
@@ -176,21 +176,21 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042" id="createAPIKey">API-sleutel genereren</h2>
+	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">API-sleutel genereren</h2>
 
 	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0043">Opmerking voor gebruik</label>
+	  <label class="label" data-tx="t0043:dcf4d98e">Opmerking voor gebruik</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Te gebruiken voor..." type="text"/>
+	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="Te gebruiken voor..." type="text"/>
 	  </p>
-	  <p class="help" data-tx="t0044">Je kunt hier een opmerking invoeren over waar je de API-sleutel voor hebt gegenereerd, bijvoorbeeld "SpamBlocker op oma's mobiele telefoon.".</p>
+	  <p class="help" data-tx="t0044:c40769ec">Je kunt hier een opmerking invoeren over waar je de API-sleutel voor hebt gegenereerd, bijvoorbeeld "SpamBlocker op oma's mobiele telefoon.".</p>
 	</div>
 		
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045" type="submit">API-sleutel genereren</button>
+	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">API-sleutel genereren</button>
 	  </p>
 	</div>
 
@@ -201,14 +201,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046" id="blacklist">Je zwarte lijst</h2>
+	<h2 data-tx="t0046:9bb283fa" id="blacklist">Je zwarte lijst</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoek je naar het nummer via het zoekveld hierboven en schrijf je een negatieve opmerking, of maak je een telefoonboekvermelding voor het nummer in de blokkadelijst in je Fritz!Box</p>
+	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoek je naar het nummer via het zoekveld hierboven en schrijf je een negatieve opmerking, of maak je een telefoonboekvermelding voor het nummer in de blokkadelijst in je Fritz!Box</p>
 
 	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
+	<p data-tx="t0048:7a2801d3">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
 			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
@@ -217,7 +217,7 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049" type="submit">Verwijder</button>
+	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Verwijder</button>
 	  </p>
 	</div>
 	</th:block>
@@ -229,17 +229,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0095">Bloknummer</label>
+	  <label class="label" data-tx="t0095:7309300c">Bloknummer</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096" name="add-bl" placeholder="Nieuw SPAM-nummer" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="Nieuw SPAM-nummer" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0098">Je kunt hier een of meer SPAM-telefoonnummers invoeren, gescheiden door komma's, in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. De nummers worden dan toegevoegd aan je persoonlijke blokkadelijst.</p>
+	  <p class="help" data-tx="t0098:7b65bad4">Je kunt hier een of meer SPAM-telefoonnummers invoeren, gescheiden door komma's, in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. De nummers worden dan toegevoegd aan je persoonlijke blokkadelijst.</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099" type="submit">Voeg  toe</button>
+	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Voeg toe</button>
 	  </p>
 	</div>
 	
@@ -250,14 +250,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0050" id="whitelist">Uw witte lijst</h2>
+	<h2 data-tx="t0050:4c4f40df" id="whitelist">Uw witte lijst</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:if="${whitelist.empty}">Je hebt geen nummers uitgesloten van de blokkering.</p>
+	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">Je hebt geen nummers uitgesloten van de blokkering.</p>
 
 	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052">Je hebt deze nummers expliciet uitgesloten van de blokkering:</p>
+	<p data-tx="t0052:98b17ee4">Je hebt deze nummers expliciet uitgesloten van de blokkering:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
@@ -267,7 +267,7 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053" type="submit">Verwijder</button>
+	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Verwijder</button>
 	  </p>
 	</div>
 	</th:block>
@@ -279,17 +279,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0054">Uitzondering toevoegen</label>
+	  <label class="label" data-tx="t0054:ce0c23fb">Uitzondering toevoegen</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Nieuwe uitzondering" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="Nieuwe uitzondering" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">Je kunt een of meer telefoonnummers gescheiden door komma's invoeren in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. Deze nummers worden dan niet langer geblokkeerd.</p>
+	  <p class="help" data-tx="t0056:edaaa5f7">Je kunt een of meer telefoonnummers gescheiden door komma's invoeren in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. Deze nummers worden dan niet langer geblokkeerd.</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057" type="submit">Voeg  toe</button>
+	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Voeg toe</button>
 	  </p>
 	</div>
 	
@@ -299,19 +299,19 @@
 
 <section class="section">
 <div class="content">
-	<h2 data-tx="t0058" id="sec-contributions">Uw donaties voor de werking van PhoneBlock</h2>
+	<h2 data-tx="t0058:8e777536" id="sec-contributions">Uw donaties voor de werking van PhoneBlock</h2>
 	
-	<p data-tx="t0059">Als je een <a th:href="@{/support}">donatie hebt gedaan voor de werking van PhoneBlock</a>, wordt die hier (na enige tijd) vermeld. Om dit te laten werken, zou het fijn zijn als je de eerste paar tekens van je gebruikersnaam in het bericht van de donatie zet, bijvoorbeeld <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></span>. Helaas kunnen bijdragen via het GitHub sponsorprogramma hier niet vermeld worden.</p>
+	<p data-tx="t0059:5bf315a2">Als je een <a th:href="@{/support}">donatie hebt gedaan voor de werking van PhoneBlock</a>, wordt die hier (na enige tijd) vermeld. Om dit te laten werken, zou het fijn zijn als je de eerste paar tekens van je gebruikersnaam in het bericht van de donatie zet, bijvoorbeeld <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090:3f7efe41" href="#" id="purpose_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></span>. Helaas kunnen bijdragen via het GitHub sponsorprogramma hier niet vermeld worden.</p>
 	
-	<p data-tx="t0060" th:if="${contributions.empty}">Geen donaties gevonden.</p>
+	<p data-tx="t0060:5bf4088c" th:if="${contributions.empty}">Geen donaties gevonden.</p>
 	
 	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>
-			<th data-tx="t0061">datum</th>
-			<th data-tx="t0062">Bericht</th>
-			<th data-tx="t0063">Bedrag</th>
+			<th data-tx="t0061:73a7fbc0">datum</th>
+			<th data-tx="t0062:4944d83c">Bericht</th>
+			<th data-tx="t0063:151fc0c3">Bedrag</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -323,34 +323,34 @@
 	</tbody>
 	</table>
 	
-	<p data-tx="t0064">Hartelijk dank voor uw bijdrage aan de kosten van PhoneBlock!</p>	
+	<p data-tx="t0064:9559be26">Hartelijk dank voor uw bijdrage aan de kosten van PhoneBlock!</p>	
 	</th:block>
 </div>
 
 <nav class="panel is-info">
-	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">Een betaling gemist?</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065:ec12e167">Een betaling gemist?</span></a></p>
 	<div class="is-collapsible" id="contribForm">
 
 	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
 	<div class="panel-block">
 	<div class="content">
-		<p data-tx="t0066">Mis je een betaling? Je kunt hier zoeken naar een betaling. Voer je volledige naam in (die je bank/PayPal gebruikt als afzender) en de datum van de overboeking:</p>
+		<p data-tx="t0066:76883029">Mis je een betaling? Je kunt hier zoeken naar een betaling. Voer je volledige naam in (die je bank/PayPal gebruikt als afzender) en de datum van de overboeking:</p>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0067">Afzender</label>
+		  <label class="label" data-tx="t0067:fce43ee4">Afzender</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Max Mustermann" type="text"/>
+		    <input class="input" data-tx="t0089:2a2ec866" name="contrib-name" placeholder="Max Mustermann" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
-		  <p class="help" data-tx="t0068">In het geval van een bankoverschrijving, de naam van de rekeninghouder die de overschrijving heeft gedaan. Vermeld hieronder ook de datum van de overschrijving.</p>
+		  <p class="help" data-tx="t0068:b7f565b6">In het geval van een bankoverschrijving, de naam van de rekeninghouder die de overschrijving heeft gedaan. Vermeld hieronder ook de datum van de overschrijving.</p>
 		</div>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0069">datum</label>
+		  <label class="label" data-tx="t0069:73a7fbc0">datum</label>
 		  <p class="control has-icons-left">
 		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
-		  <p class="help" data-tx="t0070">De datum van de overschrijving. Vul hierboven ook de volledige naam in van de rekeninghouder die de overschrijving heeft gedaan.</p>
+		  <p class="help" data-tx="t0070:99e4757b">De datum van de overschrijving. Vul hierboven ook de volledige naam in van de rekeninghouder die de overschrijving heeft gedaan.</p>
 		</div>
 	</div>
 	</div>
@@ -360,7 +360,7 @@
 		    <span class="icon">
 				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
-			<span data-tx="t0071">Bijdrage zoeken</span>
+			<span data-tx="t0071:86083faf">Bijdrage zoeken</span>
 		</button>
 	</div>
 
@@ -372,17 +372,17 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0072">Gevarenzone</h2>
-	<p data-tx="t0073">Gebruik deze functionaliteit met voorzichtigheid. U kunt er uw PhoneBlock-installatie mee breken!</p>
+	<h2 data-tx="t0072:47d9a31d">Gevarenzone</h2>
+	<p data-tx="t0073:46d23ac6">Gebruik deze functionaliteit met voorzichtigheid. U kunt er uw PhoneBlock-installatie mee breken!</p>
 	</div>
 		
 <nav class="panel is-warning" id="resetPassword">
-	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">Nieuw wachtwoord aanmaken</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074:889c5574">Nieuw wachtwoord aanmaken</span></a></p>
 	<div class="is-collapsible" id="resetForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075">Let op, hierdoor wordt uw oude PhoneBlock-wachtwoord ongeldig. U moet dan het nieuwe wachtwoord invoeren in de instellingen van uw Fritz!Box of uw mobiele telefoon, zodat de blokkadelijst nog steeds toegankelijk is.</p>
+	  			<p data-tx="t0075:f48c1f2f">Let op, hierdoor wordt uw oude PhoneBlock-wachtwoord ongeldig. U moet dan het nieuwe wachtwoord invoeren in de instellingen van uw Fritz!Box of uw mobiele telefoon, zodat de blokkadelijst nog steeds toegankelijk is.</p>
 	  		</div>
 	  	</div>
 	  	
@@ -391,7 +391,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-eraser"></i>
 			    </span>
-				<span data-tx="t0076">Wachtwoord opnieuw instellen</span>
+				<span data-tx="t0076:457c3a43">Wachtwoord opnieuw instellen</span>
 			</button>
   		</div>
   		</form>
@@ -399,12 +399,12 @@
 </nav>
 
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">Afmelden op alle apparaten</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077:ad62bbd">Afmelden op alle apparaten</span></a></p>
 	<div class="is-collapsible" id="logoutForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0078">Logt je uit op alle apparaten waarvoor je de optie "Blijf aangemeld op dit apparaat" hebt geactiveerd bij het aanmelden. Bij je volgende bezoek moet je opnieuw inloggen op alle apparaten. Gebruik deze afmeldfunctie als je per ongeluk de functie "Blijf aangemeld" hebt geactiveerd op een openbare pc.</p>
+	  			<p data-tx="t0078:a1c4341c">Logt je uit op alle apparaten waarvoor je de optie "Blijf aangemeld op dit apparaat" hebt geactiveerd bij het aanmelden. Bij je volgende bezoek moet je opnieuw inloggen op alle apparaten. Gebruik deze afmeldfunctie als je per ongeluk de functie "Blijf aangemeld" hebt geactiveerd op een openbare pc.</p>
 	  		</div>
 	  	</div>
 	  	
@@ -413,7 +413,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-from-bracket"></i>
 			    </span>
-				<span data-tx="t0079">Overal afmelden</span>
+				<span data-tx="t0079:4646847e">Overal afmelden</span>
 			</button>
   		</div>
   		</form>
@@ -421,12 +421,12 @@
 </nav>
 	
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">Account verwijderen</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080:a95c6f94">Account verwijderen</span></a></p>
 	<div class="is-collapsible" id="quitForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0081">Wees voorzichtig, al uw gegevens worden verwijderd. Het zal niet langer mogelijk zijn om de blokkadelijst op te halen of toegang te krijgen tot de PhoneBlock-database vanaf een van uw apparaten!</p>
+	  			<p data-tx="t0081:d1ddc761">Wees voorzichtig, al uw gegevens worden verwijderd. Het zal niet langer mogelijk zijn om de blokkadelijst op te halen of toegang te krijgen tot de PhoneBlock-database vanaf een van uw apparaten!</p>
 	  		</div>
 	  	</div>
 	  	
@@ -435,7 +435,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-power-off"></i>
 			    </span>
-				<span data-tx="t0082">Toegang verwijderen, geen verdere beveiligingsvragen!</span>
+				<span data-tx="t0082:4639073e">Toegang verwijderen, geen verdere beveiligingsvragen!</span>
 			</button>
   		</div>
   		</form>

@@ -13,21 +13,21 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title" data-tx="t0001">Ange kod</h1>
-	        <p class="subtitle" data-tx="t0002">Bekräfta e-postadressen.</p>
+	        <h1 class="title" data-tx="t0001:825bd295">Ange kod</h1>
+	        <p class="subtitle" data-tx="t0002:c7ab0bc1">Bekräfta e-postadressen.</p>
 	        <div class="content">
 				<p>
-					<div data-tx="t0003">Ett e-postmeddelande skickades till adressen <code dir="ltr" th:text="${email}"></code>.</div> 
-					<div data-tx="t0004">Kontrollera din brevlåda och ange koden här.</div> 
+					<div data-tx="t0003:5008487">Ett e-postmeddelande skickades till adressen <code dir="ltr" th:text="${email}"></code>.</div> 
+					<div data-tx="t0004:56f23cd3">Kontrollera din brevlåda och ange koden här.</div> 
 				</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-web}">
 					<div class="field">
-					  <label class="label" data-tx="t0005">Kod</label>
+					  <label class="label" data-tx="t0005:a34add52">Kod</label>
 					  <div class="control has-icons-left has-icons-right">
 					    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 					    <input name="rememberMe" th:if="${rememberMe}" th:value="${rememberMe}" type="hidden"/>
 
-					    <input data-tx="t0009" name="code" placeholder="Bekräftelsekod" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value=""/>
+					    <input data-tx="t0009:eba94e42" name="code" placeholder="Bekräftelsekod" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value=""/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-barcode"></i>
 					    </span>
@@ -35,12 +35,15 @@
 					      <i class="fas fa-exclamation-triangle"></i>
 						</span>
 					  </div>
-						<p class="help is-danger" data-tx="t0006" th:if="${errorMessage}"><span th:text="${errorMessage}"></span> <a th:href="|${contextPath}${restartPage}?location=${location}|">Prova igen</a>.</p>
-						<p class="help is-info" data-tx="t0007" th:unless="${errorMessage}">Har du inte fått något e-postmeddelande? Vänligen kontrollera din skräppostmapp! <a th:href="|${contextPath}${restartPage}?location=${location}|"> Försök igen</a>.</p>
+						<p class="help is-danger" th:if="${errorMessage}">
+							<span th:text="${errorMessage}"></span>
+							<a data-tx="t0010:668224a9" th:href="|${contextPath}${restartPage}?location=${location}|">Försök igen</a>.								
+						</p>
+						<p class="help is-info" data-tx="t0007:f4e5dd82" th:unless="${errorMessage}">Har du inte fått något e-postmeddelande? Vänligen kontrollera din skräppostmapp! <a th:href="|${contextPath}${restartPage}?location=${location}|"> Försök igen</a>.</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" data-tx="t0008" type="submit">Logga in</button>
+				    	<button class="button is-link" data-tx="t0008:1dc205" type="submit">Logga in</button>
 					</div>
 				</form>
 	        </div>

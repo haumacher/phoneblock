@@ -32,7 +32,7 @@
 	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"/>
 	<link rel="stylesheet" th:href="|${contextPath}${deps.flags}/css/flag-icons.min.css|"/>
 	
-	<link data-tx="t0042" href="https://news.phoneblock.net/feed" rel="alternate" title="Оновлення PhoneBlock" type="application/rss+xml"/>
+	<link data-tx="t0042:3e5d77fa" href="https://news.phoneblock.net/feed" rel="alternate" title="Оновлення PhoneBlock" type="application/rss+xml"/>
 	
 	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"/>
 	
@@ -47,8 +47,8 @@
 <section class="hero is-small is-primary" th:fragment="header" th:unless="${inMobileApp}">
 	<div class="hero-body">
 		<div class="title">
-			<img alt="Логотип PhoneBlock" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"/>
-			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
+			<img alt="Логотип PhoneBlock" class="logo-image" data-tx="t0043:5b0e8765" th:src="@{/assets/img/app-logo.svg}"/>
+			<a data-tx="t0001:88251796" th:href="@{/}">PhoneBlock</a>
 			
 			<div class="dropdown is-hoverable">
 			  <div class="dropdown-trigger">
@@ -66,21 +66,21 @@
 			  </div>
 			</div>			
 		</div>
-		<div class="subtitle" data-tx="t0002">Фільтр спаму для вашого телефону</div>
+		<div class="subtitle" data-tx="t0002:cb9e862e">Фільтр спаму для вашого телефону</div>
 		<a target="_blank" th:href="@{/link/github}">
-			<img alt="Вилка на GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
+			<img alt="Вилка на GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044:9c6e94b" height="149" th:src="@{/assets/forkme.png}" width="149"/>
 			<img alt="" class="github-image ltr is-hidden-desktop" data-tx="t0049" height="45" th:src="@{/assets/forkme.png}" width="45"/>
-			<img alt="Вилка на GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
+			<img alt="Вилка на GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054:9c6e94b" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
 			<img alt="" class="github-image rtl is-hidden-desktop" data-tx="t0055" height="45" th:src="@{/assets/forkme_rtl.png}" width="45"/>
 		</a>
 	</div>
   <div class="hero-foot">
-  <nav aria-label="головна навігація" class="navbar" data-tx="t0056" role="navigation">
+  <nav aria-label="головна навігація" class="navbar" data-tx="t0056:d188b03" role="navigation">
 	<div class="navbar-brand">
 		<div class="navbar-item">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/nums}">
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" data-tx="t0045" name="num" placeholder="Дослідити номер телефону" type="tel"/>
+		  <input class="input is-rounded" data-tx="t0045:954976dd" name="num" placeholder="Дослідити номер телефону" type="tel"/>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
@@ -91,52 +91,52 @@
 		</form>
 		</div>
 
-		<a aria-expanded="false" aria-label="меню" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		<a aria-expanded="false" aria-label="меню" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057:4531fd3e" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
 		</a>
 	</div>
 	<div class="navbar-menu" id="navbarBasicExample">
 		<div class="navbar-start">
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Встановлення</a>
+				<a class="navbar-link prevent-default" data-tx="t0003:bba1983" href="#">Встановлення</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Автовідповідач</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Блокування телефонної книги</a>
-					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
-					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
-					<a class="navbar-item" data-tx="t0060" th:href="@{/setup-switchboard}">Телефонні системи</a>
+					<a class="navbar-item" data-tx="t0004:b64ed532" th:href="@{/anrufbeantworter}">Автовідповідач</a>
+					<a class="navbar-item" data-tx="t0005:b7a22f37" th:href="@{/setup}">Блокування телефонної книги</a>
+					<a class="navbar-item" data-tx="t0006:aecec7cb" th:href="@{/setup-android}">Android</a>
+					<a class="navbar-item" data-tx="t0007:b21bebc5" th:href="@{/setup-iphone}">iPhone</a>
+					<a class="navbar-item" data-tx="t0060:2303782b" th:href="@{/setup-switchboard}">Телефонні системи</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">ПОШИРЕНІ ЗАПИТАННЯ</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Статус</a>
+			<a class="navbar-item" data-tx="t0008:838673e9" th:href="@{/faq}">ПОШИРЕНІ ЗАПИТАННЯ</a>
+			<a class="navbar-item" data-tx="t0009:a4d61d50" th:href="@{/status}">Статус</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0010">Більше</a>
+				<a class="navbar-link prevent-default" data-tx="t0010:4d1bcf1">Більше</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Пожертвувати на PhoneBlock</a>
+					<a class="navbar-item" data-tx="t0011:f69e31a1" th:href="@{/support}">Пожертвувати на PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API для розробників</a>
-					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">Проект GitHub</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Додати заборону дзвінків</a>
+					<a class="navbar-item" data-tx="t0012:c5ba5dfc" th:href="@{/api}">API для розробників</a>
+					<a class="navbar-item" data-tx="t0013:e63dea7a" target="_blank" th:href="@{/link/github}">Проект GitHub</a>
+					<a class="navbar-item" data-tx="t0014:26f04851" th:href="@{/block}">Додати заборону дзвінків</a>
 					
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Повідомити про помилку</a>
+					<a class="navbar-item" data-tx="t0015:905b157b" target="_blank" th:href="@{/link/new-issue}">Повідомити про помилку</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Додаток Answerbot">
+			<a class="navbar-item" data-tx="t0046:2fbd1fd3" target="_blank" th:href="@{/ab/}" title="Додаток Answerbot">
 				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
 		    </a>
 
-			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="На сторінку новин">
+			<a class="navbar-item" data-tx="t0047:610040e2" href="https://news.phoneblock.net" target="_blank" title="На сторінку новин">
 				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
 		    </a>
       			
-			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-стрічка">
+			<a class="navbar-item" data-tx="t0048:c8f25491" href="https://news.phoneblock.net/feed" target="_blank" title="RSS-стрічка">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>
@@ -148,19 +148,19 @@
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
-						<strong data-tx="t0016">Увійдіть в систему</strong>
+						<strong data-tx="t0016:7d2e5872">Увійдіть в систему</strong>
 					</a>
 					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>
-						<strong data-tx="t0017">Налаштування</strong>
+						<strong data-tx="t0017:be386be1">Налаштування</strong>
 					</a>
 					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>
-						<strong data-tx="t0018">Вийдіть з системи</strong>
+						<strong data-tx="t0018:8057fee">Вийдіть з системи</strong>
 					</a>
 				</div>
 			</div>
@@ -176,7 +176,7 @@
 	    <span class="icon">
 			<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 	    </span>
-		<span data-tx="t0061">Автовідповідач</span>			
+		<span data-tx="t0061:b64ed532">Автовідповідач</span>			
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -184,7 +184,7 @@
 	    <span class="icon">
 			<i class="fa-solid fa-phone"></i>
 	    </span>
-		<span data-tx="t0062">Список блоків</span>			
+		<span data-tx="t0062:d40d3f00">Список блоків</span>			
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -192,7 +192,7 @@
 	    <span class="icon">
 			<i class="fa-solid fa-mobile-screen"></i>
 	    </span>
-		<span data-tx="t0063">Android</span>
+		<span data-tx="t0063:aecec7cb">Android</span>
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -200,7 +200,7 @@
 	    <span class="icon">
 			<i class="fa-brands fa-apple"></i>
 	    </span>
-		<span data-tx="t0064">iPhone</span>
+		<span data-tx="t0064:b21bebc5">iPhone</span>
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -208,7 +208,7 @@
 	    <span class="icon">
 			<i class="fa-solid fa-asterisk"></i>
 	    </span>
-		<span data-tx="t0065">Телефонна система</span>
+		<span data-tx="t0065:9faa419a">Телефонна система</span>
 	</a>
   </div>
 </div>
@@ -218,8 +218,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0034">PhoneBlock для Android</p>
-				<p class="subtitle" data-tx="t0035">Ще не встановили? Тоді вперед!</p>
+				<p class="title" data-tx="t0034:9908b98c">PhoneBlock для Android</p>
+				<p class="subtitle" data-tx="t0035:94e91b90">Ще не встановили? Тоді вперед!</p>
 			  </div>
 			</a>
 		</div>
@@ -227,8 +227,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/anrufbeantworter}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0036">PhoneBlock для Fritz!Box</p>
-				<p class="subtitle" data-tx="t0037">Вимкніть рекламні дзвінки на стаціонарному телефоні!</p>
+				<p class="title" data-tx="t0036:c341be06">PhoneBlock для Fritz!Box</p>
+				<p class="subtitle" data-tx="t0037:1287f042">Вимкніть рекламні дзвінки на стаціонарному телефоні!</p>
 			  </div>
 			</a>
 		</div>
@@ -238,8 +238,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/setup-ipone/}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0038">PhoneBlock для iPhone</p>
-				<p class="subtitle" data-tx="t0039">Ще не встановили? Тоді вперед!</p>
+				<p class="title" data-tx="t0038:ac5e5c2e">PhoneBlock для iPhone</p>
+				<p class="subtitle" data-tx="t0039:94e91b90">Ще не встановили? Тоді вперед!</p>
 			  </div>
 			</a>
 		</div>
@@ -247,8 +247,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/anrufbeantworter}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0040">PhoneBlock для Fritz!Box</p>
-				<p class="subtitle" data-tx="t0041">Вимкніть рекламні дзвінки на стаціонарному телефоні!</p>
+				<p class="title" data-tx="t0040:c341be06">PhoneBlock для Fritz!Box</p>
+				<p class="subtitle" data-tx="t0041:1287f042">Вимкніть рекламні дзвінки на стаціонарному телефоні!</p>
 			  </div>
 			</a>
 		</div>
@@ -258,8 +258,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/anrufbeantworter}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0050">PhoneBlock для Fritz!Box</p>
-				<p class="subtitle" data-tx="t0051">Вимкніть рекламні дзвінки на стаціонарному телефоні!</p>
+				<p class="title" data-tx="t0050:c341be06">PhoneBlock для Fritz!Box</p>
+				<p class="subtitle" data-tx="t0051:1287f042">Вимкніть рекламні дзвінки на стаціонарному телефоні!</p>
 			  </div>
 			</a>
 		</div>
@@ -267,8 +267,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0052">PhoneBlock для Android</p>
-				<p class="subtitle" data-tx="t0053">Ще не встановили? Тоді вперед!</p>
+				<p class="title" data-tx="t0052:9908b98c">PhoneBlock для Android</p>
+				<p class="subtitle" data-tx="t0053:94e91b90">Ще не встановили? Тоді вперед!</p>
 			  </div>
 			</a>
 		</div>
@@ -281,26 +281,26 @@
 <th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
-		<h2 data-tx="t0019">Долучайтеся!</h2>
+		<h2 data-tx="t0019:65a3e5b0">Долучайтеся!</h2>
 
-		<p data-tx="t0020">Якщо вам подобається PhoneBlock, будь ласка, допоможіть поширити інформацію та поділіться нею з друзями. Чим більше людей візьмуть участь, тим менше шансів, що ви все ще отримаєте рекламний дзвінок!</p>
+		<p data-tx="t0020:8fcfa323">Якщо вам подобається PhoneBlock, будь ласка, допоможіть поширити інформацію та поділіться нею з друзями. Чим більше людей візьмуть участь, тим менше шансів, що ви все ще отримаєте рекламний дзвінок!</p>
 	</div>
 </section>
 
 <footer class="footer">
 	<div class="content has-text-centered">
-		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. Вихідний код ліцензовано на умовах <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. Вміст веб-сайту ліцензовано на умовах <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
+		<p data-tx="t0021:34a82d9d"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. Вихідний код ліцензовано на умовах <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. Вміст веб-сайту ліцензовано на умовах <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
 
-		<p data-tx="t0022"><strong>FRITZ!Box</strong> та <strong>FRITZ!OS</strong> є зареєстрованими торговими марками компанії <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> не має до цього жодного відношення.</p>
+		<p data-tx="t0022:a2362eaf"><strong>FRITZ!Box</strong> та <strong>FRITZ!OS</strong> є зареєстрованими торговими марками компанії <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> не має до цього жодного відношення.</p>
 
 		<p>
-			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Захист даних - ніякого відстеження, ніякої реклами, ніякого печива</a></strong><br/>
+			<strong><a data-tx="t0023:b2b65883" th:href="@{/datenschutz}">Захист даних - ніякого відстеження, ніякої реклами, ніякого печива</a></strong><br/>
 			<th:block th:unless="${#strings.equals(currentLang.tag, 'de')}">
-			<strong><a data-tx="t0058" th:href="@{link/deepl}">Переклад з deepl.com, дякуємо!</a></strong><br/>
-			<strong><a data-tx="t0059" th:href="|${contextPath}/link/translations${template}|">Редагувати переклад цієї сторінки</a></strong><br/>
+			<strong><a data-tx="t0058:9698970a" th:href="@{link/deepl}">Переклад з deepl.com, дякуємо!</a></strong><br/>
+			<strong><a data-tx="t0059:99006217" th:href="|${contextPath}/link/translations${template}|">Редагувати переклад цієї сторінки</a></strong><br/>
 			</th:block>
-			<strong><a data-tx="t0024" th:href="@{/usage}">Умови використання</a></strong><br/>
-			<strong><a data-tx="t0025" th:href="@{/impressum}">Відбиток</a></strong>
+			<strong><a data-tx="t0024:95905892" th:href="@{/usage}">Умови використання</a></strong><br/>
+			<strong><a data-tx="t0025:9752b6bd" th:href="@{/impressum}">Відбиток</a></strong>
 		</p>
 	</div>
 </footer>
@@ -310,31 +310,31 @@
 </th:block>
 
 <div th:fragment="mobileUsageNav">
-	<h2 class="mt-5" data-tx="t9001">Інші функції</h2>
+	<h2 class="mt-5" data-tx="t9001:7a902c3f">Інші функції</h2>
 	<div class="buttons">
 		<a class="button is-link" th:href="@{/usage-view-calls}">
 			<span class="icon">
 				<i class="fas fa-phone"></i>
 			</span>
-			<span data-tx="t9002">Перегляд журналу дзвінків</span>
+			<span data-tx="t9002:d564f2b1">Перегляд журналу дзвінків</span>
 		</a>
 		<a class="button is-link" th:href="@{/usage-report-spam}">
 			<span class="icon">
 				<i class="fas fa-flag"></i>
 			</span>
-			<span data-tx="t9003">Повідомляти про номери спаму</span>
+			<span data-tx="t9003:6045153a">Повідомляти про номери спаму</span>
 		</a>
 		<a class="button is-link" th:href="@{/usage-manage-lists}">
 			<span class="icon">
 				<i class="fas fa-list"></i>
 			</span>
-			<span data-tx="t9004">Керування чорним/білим списком</span>
+			<span data-tx="t9004:fd642441">Керування чорним/білим списком</span>
 		</a>
 		<a class="button is-link" th:href="@{/usage-search}">
 			<span class="icon">
 				<i class="fas fa-search"></i>
 			</span>
-			<span data-tx="t9005">Пошук за номером</span>
+			<span data-tx="t9005:a392f709">Пошук за номером</span>
 		</a>
 	</div>
 
@@ -343,7 +343,7 @@
 			<span class="icon">
 				<i class="fas fa-arrow-left"></i>
 			</span>
-			<span data-tx="t9006">Повертаємось до інсталяції</span>
+			<span data-tx="t9006:d6954d15">Повертаємось до інсталяції</span>
 		</a>
 	</div>
 </div>

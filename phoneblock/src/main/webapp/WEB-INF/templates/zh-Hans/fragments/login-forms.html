@@ -6,7 +6,7 @@
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">使用 Google 登录</span></a>
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001:33460370">使用 Google 登录</span></a>
 		</p>
 		<div class="is-collapsible" id="googleLogin">
 			<div class="panel-block">
@@ -20,13 +20,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0002">保持在此设备上登录（设置 <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0002:a4820387">保持在此设备上登录（设置 <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0003">注册即表示您接受<a th:href="@{/usage}">使用条款</a>。</div>
+				  <div class="control" data-tx="t0003:d22b9755">注册即表示您接受<a th:href="@{/usage}">使用条款</a>。</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -35,12 +35,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0004">继续谷歌</span>
+				      <span data-tx="t0004:15fed624">继续谷歌</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0005">如果你有谷歌账户，可以用它方便地登录 PhoneBlock。首次使用 Google 登录时，会创建一个 PhoneBlock 账户。以后，你既可以使用创建的 PhoneBlock 用户名登录，也可以再次通过 Google 登录。</p>
+				<p class="help" data-tx="t0005:cc14ebc6">如果你有谷歌账户，可以用它方便地登录 PhoneBlock。首次使用 Google 登录时，会创建一个 PhoneBlock 账户。以后，你既可以使用创建的 PhoneBlock 用户名登录，也可以再次通过 Google 登录。</p>
 				
 				</form>
 			</div>
@@ -49,7 +49,7 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">使用电子邮件登录</span></a></p>
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006:b99ac6c2">使用电子邮件登录</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
@@ -57,9 +57,9 @@
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
-					<label class="label" data-tx="t0007">电子邮件</label>
+					<label class="label" data-tx="t0007:30c9dcb9">电子邮件</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0020" name="email" placeholder="您的电子邮件地址" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <input data-tx="t0020:460db871" name="email" placeholder="您的电子邮件地址" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
@@ -71,12 +71,12 @@
 				</div>
 
 				<div>
-					<label class="label" data-tx="t0019">安全代码</label>
+					<label class="label" data-tx="t0019:10d7cfff">安全代码</label>
 
-					<img alt="验证码" data-tx="t0021" th:src="${captchaSrc}"/>
+					<img alt="验证码" data-tx="t0021:ccf7588c" th:src="${captchaSrc}"/>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input autocomplete="off" data-tx="t0022" name="captcha" placeholder="上图中的文字" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <input autocomplete="off" data-tx="t0022:4be67cdf" name="captcha" placeholder="上图中的文字" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>
@@ -91,13 +91,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0008">保持在此设备上登录（设置 <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0008:a4820387">保持在此设备上登录（设置 <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0009">注册即表示您接受<a th:href="@{/usage}">使用条款</a>。</div>
+				  <div class="control" data-tx="t0009:d22b9755">注册即表示您接受<a th:href="@{/usage}">使用条款</a>。</div>
 				</div>
 
 				<div class="field is-grouped">
@@ -106,12 +106,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0010">申请代码</span>
+				      <span data-tx="t0010:ba8e91df">申请代码</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0011">您将收到一个发送到您输入的电子邮件地址的代码，您可以使用该代码登录。首次使用电子邮件登录会创建一个 PhoneBlock 账户。今后，您可以使用生成的 PhoneBlock 用户名或再次发送一次性代码登录。</p>
+				<p class="help" data-tx="t0011:8379fde">您将收到一个发送到您输入的电子邮件地址的代码，您可以使用该代码登录。首次使用电子邮件登录会创建一个 PhoneBlock 账户。今后，您可以使用生成的 PhoneBlock 用户名或再次发送一次性代码登录。</p>
 			</div>
 			</div>
 			</form>
@@ -120,19 +120,19 @@
 	
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">使用 PhoneBlock 用户名登录</span></a>
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012:2a4951de">使用 PhoneBlock 用户名登录</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0025">您只能在注册 PhoneBlock 后使用此选项登录。通过谷歌或电子邮件注册时，您将收到 PhoneBlock 用户名（见上文）。</p>
+	  			<p data-tx="t0025:27d4e511">您只能在注册 PhoneBlock 后使用此选项登录。通过谷歌或电子邮件注册时，您将收到 PhoneBlock 用户名（见上文）。</p>
 	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
 			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" data-tx="t0023" placeholder="用户名" th:name="${userNameParam}" type="text"/>
+				    <input class="input" data-tx="t0023:2d49d98d" placeholder="用户名" th:name="${userNameParam}" type="text"/>
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -140,30 +140,30 @@
 				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
-				  <p class="help" data-tx="t0013">请使用您在 Google 注册时获得的用户名或电子邮件地址。</p>
+				  <p class="help" data-tx="t0013:544c2ad9">请使用您在 Google 注册时获得的用户名或电子邮件地址。</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" data-tx="t0024" placeholder="PhoneBlock 密码" th:name="${passwordParam}" type="password"/>
+				    <input class="input" data-tx="t0024:8f7e39e6" placeholder="PhoneBlock 密码" th:name="${passwordParam}" type="password"/>
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
-					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">登录信息不匹配，请检查条目并重试。</p>
-					  <p class="help" data-tx="t0015" th:unless="${loginError}">密码已在首次登录后向您显示。如果您手头没有密码，只需使用 Google 或您的电子邮件地址登录即可，见上文。</p>
+					  <p class="help is-danger" data-tx="t0014:f8e64400" th:if="${loginError}">登录信息不匹配，请检查条目并重试。</p>
+					  <p class="help" data-tx="t0015:64d4c87a" th:unless="${loginError}">密码已在首次登录后向您显示。如果您手头没有密码，只需使用 Google 或您的电子邮件地址登录即可，见上文。</p>
 				</div>
 
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0016">保持在此设备上登录（设置 <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0016:a4820387">保持在此设备上登录（设置 <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0017">注册即表示您接受<a th:href="@{/usage}">使用条款</a>。</div>
+				  <div class="control" data-tx="t0017:d22b9755">注册即表示您接受<a th:href="@{/usage}">使用条款</a>。</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -172,7 +172,7 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0018">登录</span>
+				      <span data-tx="t0018:1dc205">登录</span>
 				    </button>
 				  </p>
 				</div>

@@ -7,21 +7,21 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001">Встановлення як телефонної книги</h1>
+		<h1 data-tx="t0001:3dfe1d89">Встановлення як телефонної книги</h1>
 
 <th:block th:unless="${token}">
-		<p data-tx="t0002">Для встановлення списку блокування вам потрібен інтернет-роутер <a th:href="@{/link/fritzbox}">"FRITZ!Box" від AVM</a> та обліковий запис PhoneBlock. Це не обов'язково повинна бути остання модель, але ви повинні перевірити, чи встановлена на ньому остання версія FRITZ!OS (07.29 або новіша). Якщо це не так, скористайтеся наступними інструкціями по встановленню, щоб перевірити, чи ваша версія вже пропонує необхідні опції.</p>
+		<p data-tx="t0002:10d70c8f">Для встановлення списку блокування вам потрібен інтернет-роутер <a th:href="@{/link/fritzbox}">"FRITZ!Box" від AVM</a> та обліковий запис PhoneBlock. Це не обов'язково повинна бути остання модель, але ви повинні перевірити, чи встановлена на ньому остання версія FRITZ!OS (07.29 або новіша). Якщо це не так, скористайтеся наступними інструкціями по встановленню, щоб перевірити, чи ваша версія вже пропонує необхідні опції.</p>
 		
-		<p data-tx="t0003">Примітка: Через технічні обмеження Fritz!Box, весь список блокування не може бути завантажений до телефонної книги. Тому налаштування автовідповідача <a th:href="@{/anrufbeantworter}">PhoneBlock</a> забезпечує кращий захист від СПАМ-дзвінків.</p>
+		<p data-tx="t0003:d62d702f">Примітка: Через технічні обмеження Fritz!Box, весь список блокування не може бути завантажений до телефонної книги. Тому налаштування автовідповідача <a th:href="@{/anrufbeantworter}">PhoneBlock</a> забезпечує кращий захист від СПАМ-дзвінків.</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
 			<a th:href="@{/login(location='/setup')}">
-				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Створіть обліковий запис PhoneBlock</button>
+				<button class="button is-medium is-info is-fullwidth" data-tx="t0004:e5f7ac3b">Створіть обліковий запис PhoneBlock</button>
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">Ви вже зареєстровані як <code dir="ltr" th:text="${userName}"></code>, чудово! Ви можете почати прямо зараз.</p>
+		<p data-tx="t0005:d432c618" th:if="${login}">Ви вже зареєстровані як <code dir="ltr" th:text="${userName}"></code>, чудово! Ви можете почати прямо зараз.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -29,23 +29,23 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <p class="title" data-tx="t0006">Ваші дані для входу</p>
-	        <p class="subtitle" data-tx="t0007">Для встановлення вам знадобляться наступні дані.</p>
+	        <p class="title" data-tx="t0006:3c8661fc">Ваші дані для входу</p>
+	        <p class="subtitle" data-tx="t0007:da814461">Для встановлення вам знадобляться наступні дані.</p>
 	        <div class="content">
 		
 				<div class="field">
-				  <label class="label" data-tx="t0008">Інтернет-адреса сервера CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0008:f48153ce">Інтернет-адреса сервера CardDAV</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034:3f7efe41" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
-				  <label class="label" data-tx="t0009">Ім'я користувача</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0009:548c40c1">Ім'я користувача</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035:3f7efe41" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
-				  <label class="label" data-tx="t0010">пароль</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0010:e99dee32">пароль</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036:3f7efe41" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -54,97 +54,104 @@
   </div>
 </div>
 		
-		<h2 data-tx="t0011">Увійдіть до своєї скриньки FRITZ!</h2>
+		<h2 data-tx="t0011:68345496">Увійдіть до своєї скриньки FRITZ!</h2>
 		
-		<p data-tx="t0012">Для того, щоб це спрацювало, ви повинні бути вдома у вашій бездротовій локальній мережі або ваш комп'ютер повинен бути підключений безпосередньо до FRITZ!Box за допомогою кабелю. Спочатку FRITZ!Box запитає у вас пароль. Якщо ви ніколи раніше не входили в систему, ви знайдете цей пароль на нижній панелі пристрою.</p>
+		<p data-tx="t0012:2354f60">Для того, щоб це спрацювало, ви повинні бути вдома у вашій бездротовій локальній мережі або ваш комп'ютер повинен бути підключений безпосередньо до FRITZ!Box за допомогою кабелю. Спочатку FRITZ!Box запитає у вас пароль. Якщо ви ніколи раніше не входили в систему, ви знайдете цей пароль на нижній панелі пристрою.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="http://fritz.box" target="_blank">
-				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013">Увійдіть до FRITZ!Box</button>
+				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013:d44f7d1">Увійдіть до FRITZ!Box</button>
 			</a>
 		  </div>
 		</div>
 		
-		<h2 data-tx="t0014">Створіть нову телефонну книгу "Blocklist"</h2>
+		<h2 data-tx="t0014:1462db79">Створіть нову телефонну книгу "Blocklist"</h2>
 		
-		<p data-tx="t0015">Для того, щоб ваш FRITZ!Box блокував спам-дзвінки, йому потрібна власна телефонна книга, в яку заносяться всі номери небажаних абонентів. Назвемо цю телефонну книгу "Блок-лист". Для цього</p>
+		<p data-tx="t0015:60de307b">Для того, щоб ваш FRITZ!Box блокував спам-дзвінки, йому потрібна власна телефонна книга, в яку заносяться всі номери небажаних абонентів. Назвемо цю телефонну книгу "Блок-лист". Для цього</p>
 		
 		<ol>
-			<li data-tx="t0016">Спочатку перейдіть до розділу "Телефонія",</li>
-			<li data-tx="t0017">оберіть пункт меню "Телефонна книга" та</li>
-			<li data-tx="t0018">потім натисніть на посилання "Нова телефонна книга".</li>
+			<li data-tx="t0016:ee677f2e">Спочатку перейдіть до розділу "Телефонія",</li>
+			<li data-tx="t0017:bf3c833">оберіть пункт меню "Телефонна книга" та</li>
+			<li data-tx="t0018:9545daeb">потім натисніть на посилання "Нова телефонна книга".</li>
 		</ol>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Список викликів Fritz!Box" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
+			<img alt="Список викликів Fritz!Box" class="image" data-tx="t0037:b9f34dc9" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
 		  </div>
 		</div>
 		
-		<h2 data-tx="t0019">Введіть дані для входу до свого облікового запису PhoneBlock</h2>
+		<h2 data-tx="t0019:1d99d84a">Введіть дані для входу до свого облікового запису PhoneBlock</h2>
 		
-		<p data-tx="t0020">Тепер вам потрібні дані для входу до вашого облікового запису PhoneBlock.</p>
+		<p data-tx="t0020:9d799fdb">Тепер вам потрібні дані для входу до вашого облікового запису PhoneBlock.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> Назвіть телефонну книгу, яку буде використано як блок-лист, <code dir="ltr">Блок-лист</code>. Ця назва знадобиться вам на наступному кроці.</li>
+			<li data-tx="t0021:4fe53af5"><span class="tag is-danger">11</span> Назвіть телефонну книгу, яку буде використано як блок-лист, <code dir="ltr">Блок-лист</code>. Ця назва знадобиться вам на наступному кроці.</li>
 
-			<li data-tx="t0022">Тепер виберіть <span class="tag is-danger">2</span> опцію <i>Використовувати телефонну книгу інтернет-провайдера</i>.</li>
+			<li data-tx="t0022:fceb3cd7">Тепер виберіть <span class="tag is-danger">22</span> опцію <i>Використовувати телефонну книгу інтернет-провайдера</i>.</li>
 
-			<li data-tx="t0023">Потім ви можете вибрати <span class="tag is-danger">3</span> провайдера <i>CardDAV провайдера</i>.</li>
+			<li data-tx="t0023:1f3cec2">Потім ви можете вибрати <span class="tag is-danger">33</span> провайдера <i>CardDAV провайдера</i>.</li>
 
-			<li data-tx="t0024">Майже готово, тепер дані для входу <span class="tag is-danger">4</span>. Найкраще перенести їх за допомогою Cut&amp;Paste, щоб уникнути помилок при введенні! <ul>
-					<li> У полі <i>Інтернет-адреса сервера CardDAV</i> введіть URL адресної книги PhoneBlock: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a> </li>
+			<li>
+				<div data-tx="t0045:bf8e4ca8">Майже готово, тепер дані для входу <span class="tag is-danger">44</span>. Краще перенести їх за допомогою Cut&amp;Paste, щоб уникнути помилок при введенні!</div>
+				
+				<ul>
+					<li>
+						<span data-tx="t0046:73e19fbb">Введіть URL адресної книги PhoneBlock у полі <i>Інтернет-адреса сервера CardDAV</i>:</span>
+						<code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>
+					</li>
 
-					<li> У полі <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block> введіть ім'я користувача <a th:href="@{/login(location='/settings')}"></a>, яке ви отримали під час <i>реєстрації</i>. </li>
+					<li data-tx="t0047:a4773f13">Введіть ім'я користувача <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>, яке ви отримали під час <a th:href="@{/login(location='/settings')}">реєстрації</a> у полі <i>ім'я користувача</i>.</li>
 
-					<li>Пароль <th:block th:unless="${token}">, який ви отримали під час <a th:href="@{/login(location='/settings')}">реєстрації</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>,</th:block> тепер слід ввести у полі <i>Пароль</i>. </li>
-				    </ul> &lt;/x11</li>
+					<li data-tx="t0048:151291e0">Пароль<th:block th:unless="${token}">, який ви отримали під час <a th:href="@{/login(location='/settings')}">реєстрації</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a>,</th:block> тепер потрібно ввести в поле <i>пароль</i>.</li>
+				</ul>
+			</li>
 
-			<li data-tx="t0025">Тепер ви можете підтвердити <span class="tag is-danger">5</span> створення нової телефонної книги. Зверніть увагу: Виберіть <b>ні один з ваших телефонів</b> в розділі "Призначення телефону"! Інакше в контактах на вашому телефоні ви побачите лише абонентів зі спамом.</li>
+			<li data-tx="t0025:4dc0b0c8">Тепер ви можете підтвердити <span class="tag is-danger">55</span> створення нової телефонної книги. Зверніть увагу: Виберіть <b>ні один з ваших телефонів</b> в розділі "Призначення телефону"! Інакше в контактах на вашому телефоні ви побачите лише абонентів зі спамом.</li>
 		</ul>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Створіть нову адресну книгу" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
+			<img alt="Створіть нову адресну книгу" class="image" data-tx="t0038:50de9d04" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0026">Перевірте, чи створено ваш "Блок-лист"</h2>
+		<h2 data-tx="t0026:688d3d5a">Перевірте, чи створено ваш "Блок-лист"</h2>
 		
-		<p data-tx="t0027">Якщо все пройшло успішно, то ваш FRITZ!Box завантажив всі номери з блокування PhoneBlock. Тепер у вас повинна з'явитися нова телефонна книга "Блокування" в розділі "Телефонія / Телефонна книга". Якщо ви виберете вкладку "Блокування", ви побачите всі номери поточних абонентів, які отримують спам.</p>
+		<p data-tx="t0027:6bd9c881">Якщо все пройшло успішно, то ваш FRITZ!Box завантажив всі номери з блокування PhoneBlock. Тепер у вас повинна з'явитися нова телефонна книга "Блокування" в розділі "Телефонія / Телефонна книга". Якщо ви виберете вкладку "Блокування", ви побачите всі номери поточних абонентів, які отримують спам.</p>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Показати отриманий список блокування" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
+			<img alt="Показати отриманий список блокування" class="image" data-tx="t0039:3d7cbd9f" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0028">Дозвольте FRITZ!Box відхиляти дзвінки з "Блокованого списку"</h2>
+		<h2 data-tx="t0028:7a66db10">Дозвольте FRITZ!Box відхиляти дзвінки з "Блокованого списку"</h2>
 		
-		<p data-tx="t0029">У розділі "Телефонія / Обробка викликів" ви можете вказати нову телефонну книгу "Блокування" як діапазон телефонних номерів для блокування.</p>			
+		<p data-tx="t0029:ffbbaf55">У розділі "Телефонія / Обробка викликів" ви можете вказати нову телефонну книгу "Блокування" як діапазон телефонних номерів для блокування.</p>			
 		
-		<p data-tx="t0030">Прокрутіть вниз до підпункту "Діапазони номерів блоків" і натисніть кнопку "Додати діапазон".</p>
-
-		<div class="columns">
-		  <div class="column is-8 is-offset-2">
-			<img alt="Додати нову заборону викликів" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
-		  </div>
-		</div>
-		
-		<p data-tx="t0031">На новому екрані виберіть опцію "Телефонна книга" у виборі "Область" і виберіть новостворену телефонну книгу "Блокований список" як "Телефонну книгу", яку потрібно заблокувати.</p>
+		<p data-tx="t0030:2d9a1437">Прокрутіть вниз до підпункту "Діапазони номерів блоків" і натисніть кнопку "Додати діапазон".</p>
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Блокувати абонентів з номером телефону в списку блокування" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
+			<img alt="Додати нову заборону викликів" class="image" data-tx="t0040:e5649829" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
 		  </div>
 		</div>
 		
-		<p data-tx="t0032">Чудово! Ви все налаштували. Тепер ваш телефон буде набагато рідше дзвонити через небажаних абонентів. А якщо це станеться, ви легко зможете змусити порушника спокою для вас і всієї спільноти PhoneBlock замовкнути:</p>
+		<p data-tx="t0031:56b8a409">На новому екрані виберіть опцію "Телефонна книга" у виборі "Область" і виберіть новостворену телефонну книгу "Блокований список" як "Телефонну книгу", яку потрібно заблокувати.</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Блокувати абонентів з номером телефону в списку блокування" class="image" data-tx="t0041:a8687137" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0032:8943dc0d">Чудово! Ви все налаштували. Тепер ваш телефон буде набагато рідше дзвонити через небажаних абонентів. А якщо це станеться, ви легко зможете змусити порушника спокою для вас і всієї спільноти PhoneBlock замовкнути:</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Заблокувати номер телефону</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033:fcebb7bf">Заблокувати номер телефону</button></a>
 		  </div>
 		</div>
 	</div>

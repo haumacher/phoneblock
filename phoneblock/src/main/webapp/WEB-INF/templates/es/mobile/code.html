@@ -14,17 +14,17 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title" data-tx="t0001">Confirmar dirección de correo electrónico</h1>
-	        <p class="subtitle" data-tx="t0002">Introduzca el código del correo electrónico.</p>
+	        <h1 class="title" data-tx="t0001:4fcae186">Confirmar dirección de correo electrónico</h1>
+	        <p class="subtitle" data-tx="t0002:5aca0af4">Introduzca el código del correo electrónico.</p>
 	        <div class="content">
-				<p data-tx="t0003">Se ha enviado un correo electrónico a la dirección <code th:text="${email}"></code>.</p>
-				<p data-tx="t0004">Compruebe su buzón, copie el código e introdúzcalo aquí. Esto confirmará su dirección de correo electrónico.</p>
+				<p data-tx="t0003:5008487">Se ha enviado un correo electrónico a la dirección <code th:text="${email}"></code>.</p>
+				<p data-tx="t0004:691e4431">Compruebe su buzón, copie el código e introdúzcalo aquí. Esto confirmará su dirección de correo electrónico.</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
 					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 					<div class="field">
-						<label class="label" data-tx="t0005">Código</label>
+						<label class="label" data-tx="t0005:a34add52">Código</label>
 						<div class="control has-icons-left has-icons-right">
-							<input data-tx="t0006" name="code" placeholder="Código de confirmación" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<input data-tx="t0006:eba94e42" name="code" placeholder="Código de confirmación" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
 							<span class="icon is-small is-left">
 							  <i class="fa-solid fa-barcode"></i>
 							</span>
@@ -33,13 +33,19 @@
 							</span>
 						</div>
 
-						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">Inténtalo de nuevo</a>.</p>
+						<p class="help is-danger" th:if="${message != null}">
+							<span th:text="${message}"></span>
+							<a data-tx="t0010:668224a9" th:href="@{/mobile/login}">Inténtalo de nuevo</a>.								
+						</p>
 
-						<p class="help" data-tx="t0008" th:if="${message == null}"><span>¿No ha recibido el correo electrónico? Por favor, comprueba tu carpeta de spam</span> <a th:href="@{/mobile/login}">Inténtalo de nuevo</a>.</p>
+						<p class="help" th:if="${message == null}">
+							<span data-tx="t0011:8db88b77">¿No ha recibido ningún correo electrónico? Compruebe su carpeta de correo no deseado.</span>
+							<a data-tx="t0012:668224a9" th:href="@{/mobile/login}">Inténtalo de nuevo</a>.								
+						</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" data-tx="t0009" type="submit">Crear una cuenta</button>
+				    	<button class="button is-link" data-tx="t0009:c2e2ce7d" type="submit">Crear una cuenta</button>
 					</div>
 				</form>
 	        </div>

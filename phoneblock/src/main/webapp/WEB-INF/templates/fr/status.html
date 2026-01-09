@@ -7,30 +7,30 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">Derniers rapports sur les appels indésirables</h1>
+	<h1 data-tx="t0001:54233bf1">Derniers rapports sur les appels indésirables</h1>
 	
-	<p data-tx="t0002">Tu peux <em>bloquer automatiquement les appels téléphoniques indésirables</em> si tu installes PhoneBlock.</p>
+	<p data-tx="t0002:e2048063">Tu peux <em>bloquer automatiquement les appels téléphoniques indésirables</em> si tu installes PhoneBlock.</p>
 	
 	<div th:replace="~{fragments/page :: buttons}"></div>
 
-	<p data-tx="t0007">Avec PhoneBlock, ton téléphone reste muet lors de tels appels. Plusieurs numéros sont ajoutés chaque jour. Partage la page <a th:href="@{/}">PhoneBlock</a> sur FaceBook par exemple, afin que le plus grand nombre possible de personnes y participe et que la terreur téléphonique prenne ainsi fin.</p>
+	<p data-tx="t0007:97c2301c">Avec PhoneBlock, ton téléphone reste muet lors de tels appels. Plusieurs numéros sont ajoutés chaque jour. Partage la page <a th:href="@{/}">PhoneBlock</a> sur FaceBook par exemple, afin que le plus grand nombre possible de personnes y participe et que la terreur téléphonique prenne ainsi fin.</p>
 	
 	<th:block th:if="${searches.size &gt; 0}">
-		<h2 data-tx="t0008">Recherches actuelles</h2> 
+		<h2 data-tx="t0008:3b3c411a">Recherches actuelles</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0009">Numéro d'appel</th>
-					<th data-tx="t0010" title="Nombre de recherches sur ce numéro depuis hier">Aujourd'hui et hier</th>
-					<th data-tx="t0011" title="Total des recherches effectuées pour ce numéro">Total</th>
-					<th data-tx="t0012">Dernière demande</th>
+					<th data-tx="t0009:f81244e7">Numéro d'appel</th>
+					<th data-tx="t0010:f517d764" title="Nombre de recherches sur ce numéro depuis hier">Aujourd'hui et hier</th>
+					<th data-tx="t0011:85004b33" title="Total des recherches effectuées pour ce numéro">Total</th>
+					<th data-tx="t0012:753ee794">Dernière demande</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${searches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.count}"></td>
@@ -42,25 +42,25 @@
 	</th:block>
 
 	<th:block th:if="${reports.size &gt; 0}">
-		<h2 data-tx="t0014">Rapports de spam de la dernière heure</h2> 
+		<h2 data-tx="t0014:2af91ce">Rapports de spam de la dernière heure</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0015">Numéro d'appel</th>
-					<th data-tx="t0016" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
-					<th data-tx="t0017">Rapporte</th>
-					<th data-tx="t0018" title="Date à partir de laquelle le numéro a été signalé pour la première fois.">Actif depuis</th>
+					<th data-tx="t0015:f81244e7">Numéro d'appel</th>
+					<th data-tx="t0016:f2d569ff" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
+					<th data-tx="t0017:280e5744">Rapporte</th>
+					<th data-tx="t0018:5417b564" title="Date à partir de laquelle le numéro a été signalé pour la première fois.">Actif depuis</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${reports}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
-					<td data-tx="t0020"><th:block th:text="${(now - report.updated) / 1000 / 60}"></th:block> minutes ago</td>
+					<td data-tx="t0020:4c93f3fb"><th:block th:text="${(now - report.updated) / 1000 / 60}"></th:block> minutes ago</td>
 					
 					<td th:text="${report.added &gt; 0 ? #dates.format(#converters.fromEpoch(report.added)) : '-'}"></td>
 				</tr>
@@ -69,21 +69,21 @@
 	</th:block>
 
 	<th:block th:if="${newlyBlocked.size &gt; 0}">
-		<h2 data-tx="t0021">Dernières entrées dans la Block-List</h2> 
+		<h2 data-tx="t0021:e093f8cf">Dernières entrées dans la Block-List</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0022">Numéro d'appel</th>
-					<th data-tx="t0023" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
-					<th data-tx="t0024">Dernière plainte</th>
-					<th data-tx="t0025" title="Date à partir de laquelle le numéro a été rapporté pour la première fois.">Actif depuis</th>
+					<th data-tx="t0022:f81244e7">Numéro d'appel</th>
+					<th data-tx="t0023:f2d569ff" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
+					<th data-tx="t0024:eb93493c">Dernière plainte</th>
+					<th data-tx="t0025:5417b564" title="Date à partir de laquelle le numéro a été rapporté pour la première fois.">Actif depuis</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${newlyBlocked}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -95,21 +95,21 @@
 	</th:block>
 
 	<th:block th:if="${topSpammers.size &gt; 0}">
-		<h2 data-tx="t0027">Top spammeurs actuels</h2> 
+		<h2 data-tx="t0027:34e46216">Top spammeurs actuels</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0028">Numéro d'appel</th>
-					<th data-tx="t0029" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
-					<th data-tx="t0030">Dernière plainte</th>
-					<th data-tx="t0031" title="Date à partir de laquelle le numéro a été rapporté pour la première fois.">Actif depuis</th>
+					<th data-tx="t0028:f81244e7">Numéro d'appel</th>
+					<th data-tx="t0029:f2d569ff" title="Plus le chiffre est grand, plus PhoneBlock est sûr que le numéro de téléphone est une source d'appels indésirables.">Confiance</th>
+					<th data-tx="t0030:eb93493c">Dernière plainte</th>
+					<th data-tx="t0031:5417b564" title="Date à partir de laquelle le numéro a été rapporté pour la première fois.">Actif depuis</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${topSpammers}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -121,21 +121,21 @@
 	</th:block>
 
 	<th:block th:if="${topSearches.size &gt; 0}">
-		<h2 data-tx="t0033">Numéros les plus recherchés</h2> 
+		<h2 data-tx="t0033:af2ec8f4">Numéros les plus recherchés</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0034">Numéro d'appel</th>
-					<th data-tx="t0035" title="Nombre de recherches effectuées sur ce numéro">Demandes de recherche</th>
-					<th data-tx="t0036" title="Nombre de votes SPAM pour ce numéro">Votes</th>
-					<th data-tx="t0037">Dernière demande</th>
+					<th data-tx="t0034:f81244e7">Numéro d'appel</th>
+					<th data-tx="t0035:80360dbb" title="Nombre de recherches effectuées sur ce numéro">Demandes de recherche</th>
+					<th data-tx="t0036:993374fa" title="Nombre de votes SPAM pour ce numéro">Votes</th>
+					<th data-tx="t0037:753ee794">Dernière demande</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${topSearches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.searches}"></td>
@@ -146,9 +146,9 @@
 		</table>
 	</th:block>
 
-	<h2 data-tx="t0039">Base de données PhoneBlock</h2>
+	<h2 data-tx="t0039:198844bf">Base de données PhoneBlock</h2>
 
-	<p data-tx="t0040">Numéros de SPAM connus : <th:block th:text="${statistics['02-blocked']}"></th:block> numéros actifs sur la liste de blocage, <th:block th:text="${statistics['01-reported']}"></th:block> numéros avec plaintes. Au total <th:block th:text="${status.totalVotes}"></th:block> rapports d'utilisateurs, <th:block th:text="${status.archivedReports}"></th:block> numéros inactifs soupçonnés de spam.</p>
+	<p data-tx="t0040:99927fb8">Numéros de SPAM connus : <th:block th:text="${statistics['02-blocked']}"></th:block> numéros actifs sur la liste de blocage, <th:block th:text="${statistics['01-reported']}"></th:block> numéros avec plaintes. Au total <th:block th:text="${status.totalVotes}"></th:block> rapports d'utilisateurs, <th:block th:text="${status.archivedReports}"></th:block> numéros inactifs soupçonnés de spam.</p>
 </div>
 
 </section>
