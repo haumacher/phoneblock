@@ -122,6 +122,8 @@
   "whitelistDescription": "Numbers you have marked as legitimate",
   "blacklistEmpty": "Your blacklist is empty",
   "whitelistEmpty": "Your whitelist is empty",
+  "blacklistEmptyHelp": "Add numbers by reporting unwanted calls as spam.",
+  "whitelistEmptyHelp": "Add numbers by reporting blocked calls as legitimate.",
   "errorLoadingList": "Error loading list",
   "numberRemovedFromList": "Number removed",
   "errorRemovingNumber": "Error removing number",
@@ -135,7 +137,5 @@
   "commentHint": "Add a note about this number",
   "save": "Save",
   "commentUpdated": "Comment updated",
-  "errorUpdatingComment": "Error updating comment",
-  "blacklistEmptyHelp": "Add numbers by reporting unwanted calls as spam.",
-  "whitelistEmptyHelp": "Add numbers by reporting blocked calls as legitimate."
+  "errorUpdatingComment": "Error updating comment"
 }

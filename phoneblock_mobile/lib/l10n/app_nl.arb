@@ -122,6 +122,8 @@
   "whitelistDescription": "Nummers die je als legitiem hebt gemarkeerd",
   "blacklistEmpty": "Je zwarte lijst is leeg",
   "whitelistEmpty": "Uw witte lijst is leeg",
+  "blacklistEmptyHelp": "Nummers toevoegen door ongewenste oproepen als spam te melden.",
+  "whitelistEmptyHelp": "Nummers toevoegen door geblokkeerde oproepen als legitiem te melden.",
   "errorLoadingList": "Fout bij het laden van de lijst",
   "numberRemovedFromList": "Aantal verwijderd",
   "errorRemovingNumber": "Fout bij het verwijderen van het nummer",
@@ -135,7 +137,5 @@
   "commentHint": "Voeg een notitie toe aan dit nummer",
   "save": "Sla",
   "commentUpdated": "Commentaar bijgewerkt",
-  "errorUpdatingComment": "Fout bij het bijwerken van de opmerking",
-  "blacklistEmptyHelp": "Nummers toevoegen door ongewenste oproepen als spam te melden.",
-  "whitelistEmptyHelp": "Nummers toevoegen door geblokkeerde oproepen als legitiem te melden."
+  "errorUpdatingComment": "Fout bij het bijwerken van de opmerking"
 }

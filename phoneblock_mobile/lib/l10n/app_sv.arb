@@ -122,6 +122,8 @@
   "whitelistDescription": "Nummer som du har markerat som legitima",
   "blacklistEmpty": "Din svarta lista är tom",
   "whitelistEmpty": "Din vitlista är tom",
+  "blacklistEmptyHelp": "Lägg till nummer genom att rapportera oönskade samtal som skräppost.",
+  "whitelistEmptyHelp": "Lägg till nummer genom att rapportera blockerade samtal som legitima.",
   "errorLoadingList": "Fel vid laddning av listan",
   "numberRemovedFromList": "Antal borttagna",
   "errorRemovingNumber": "Fel när du tar bort numret",
@@ -135,7 +137,5 @@
   "commentHint": "Lägg till en anteckning till detta nummer",
   "save": "Spara",
   "commentUpdated": "Kommentar uppdaterad",
-  "errorUpdatingComment": "Fel vid uppdatering av kommentaren",
-  "blacklistEmptyHelp": "Lägg till nummer genom att rapportera oönskade samtal som skräppost.",
-  "whitelistEmptyHelp": "Lägg till nummer genom att rapportera blockerade samtal som legitima."
+  "errorUpdatingComment": "Fel vid uppdatering av kommentaren"
 }

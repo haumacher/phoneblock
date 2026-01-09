@@ -122,6 +122,8 @@
   "whitelistDescription": "Numre du har merket som legitime",
   "blacklistEmpty": "Svartelisten din er tom",
   "whitelistEmpty": "Hvitelisten din er tom",
+  "blacklistEmptyHelp": "Legg til numre ved å rapportere uønskede anrop som søppelpost.",
+  "whitelistEmptyHelp": "Legg til numre ved å rapportere blokkerte anrop som legitime.",
   "errorLoadingList": "Feil ved innlasting av listen",
   "numberRemovedFromList": "Antall fjernet",
   "errorRemovingNumber": "Feil ved fjerning av nummeret",
@@ -135,7 +137,5 @@
   "commentHint": "Legg til en merknad til dette nummeret",
   "save": "Spar",
   "commentUpdated": "Kommentar oppdatert",
-  "errorUpdatingComment": "Feil ved oppdatering av kommentaren",
-  "blacklistEmptyHelp": "Legg til numre ved å rapportere uønskede anrop som søppelpost.",
-  "whitelistEmptyHelp": "Legg til numre ved å rapportere blokkerte anrop som legitime."
+  "errorUpdatingComment": "Feil ved oppdatering av kommentaren"
 }

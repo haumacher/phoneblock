@@ -122,6 +122,8 @@
   "whitelistDescription": "Numery oznaczone jako legalne",
   "blacklistEmpty": "Twoja czarna lista jest pusta",
   "whitelistEmpty": "Biała lista jest pusta",
+  "blacklistEmptyHelp": "Dodaj numery, zgłaszając niechciane połączenia jako spam.",
+  "whitelistEmptyHelp": "Dodaj numery, zgłaszając zablokowane połączenia jako prawidłowe.",
   "errorLoadingList": "Błąd ładowania listy",
   "numberRemovedFromList": "Usunięta liczba",
   "errorRemovingNumber": "Błąd podczas usuwania numeru",
@@ -135,7 +137,5 @@
   "commentHint": "Dodaj notatkę do tego numeru",
   "save": "Zapisz",
   "commentUpdated": "Komentarz zaktualizowany",
-  "errorUpdatingComment": "Błąd podczas aktualizacji komentarza",
-  "blacklistEmptyHelp": "Dodaj numery, zgłaszając niechciane połączenia jako spam.",
-  "whitelistEmptyHelp": "Dodaj numery, zgłaszając zablokowane połączenia jako prawidłowe."
+  "errorUpdatingComment": "Błąd podczas aktualizacji komentarza"
 }

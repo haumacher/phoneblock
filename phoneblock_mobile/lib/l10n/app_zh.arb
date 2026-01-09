@@ -122,6 +122,8 @@
   "whitelistDescription": "您已标记为合法的号码",
   "blacklistEmpty": "您的黑名单是空的",
   "whitelistEmpty": "您的白名单是空的",
+  "blacklistEmptyHelp": "将不需要的电话报告为垃圾邮件，从而增加号码。",
+  "whitelistEmptyHelp": "将被拦截的来电报告为合法来电，从而增加号码。",
   "errorLoadingList": "加载列表出错",
   "numberRemovedFromList": "删除数量",
   "errorRemovingNumber": "删除数字时出错",
@@ -135,7 +137,5 @@
   "commentHint": "为该号码添加备注",
   "save": "节省",
   "commentUpdated": "评论已更新",
-  "errorUpdatingComment": "更新注释时出错",
-  "blacklistEmptyHelp": "将不需要的电话报告为垃圾邮件，从而增加号码。",
-  "whitelistEmptyHelp": "将被拦截的来电报告为合法来电，从而增加号码。"
+  "errorUpdatingComment": "更新注释时出错"
 }

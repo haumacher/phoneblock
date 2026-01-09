@@ -122,6 +122,8 @@
   "whitelistDescription": "Numeri che avete contrassegnato come legittimi",
   "blacklistEmpty": "La lista nera è vuota",
   "whitelistEmpty": "La whitelist è vuota",
+  "blacklistEmptyHelp": "Aggiungere numeri segnalando le chiamate indesiderate come spam.",
+  "whitelistEmptyHelp": "Aggiungere numeri segnalando le chiamate bloccate come legittime.",
   "errorLoadingList": "Errore nel caricamento dell'elenco",
   "numberRemovedFromList": "Numero rimosso",
   "errorRemovingNumber": "Errore durante la rimozione del numero",
@@ -135,7 +137,5 @@
   "commentHint": "Aggiungere una nota a questo numero",
   "save": "Risparmiare",
   "commentUpdated": "Commento aggiornato",
-  "errorUpdatingComment": "Errore durante l'aggiornamento del commento",
-  "blacklistEmptyHelp": "Aggiungere numeri segnalando le chiamate indesiderate come spam.",
-  "whitelistEmptyHelp": "Aggiungere numeri segnalando le chiamate bloccate come legittime."
+  "errorUpdatingComment": "Errore durante l'aggiornamento del commento"
 }
