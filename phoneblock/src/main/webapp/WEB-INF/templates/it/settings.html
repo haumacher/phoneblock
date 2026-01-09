@@ -123,7 +123,7 @@
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Salvare</button>
+			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Risparmiare</button>
 			  </p>
 			  <p class="control">
 			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Scartare</a>
@@ -139,7 +139,7 @@
 	<p data-tx="t0034:c7b86819">Se si utilizzano altre applicazioni per controllare i numeri di telefono con PhoneBlock (ad esempio <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> o <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), è necessaria una chiave API. Per la rubrica della lista di blocco nel vostro Fritz!Box, utilizzate semplicemente il vostro nome utente PhoneBlock e la password PhoneBlock, quindi non avete bisogno di una chiave API.</p>
 	
 	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">Non è stata ancora creata alcuna chiave API.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
+	<div th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
@@ -152,9 +152,24 @@
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
-			<td th:text="${authToken.label}"></td>
+			<td>
+				<span class="apikey-label" th:text="${authToken.label}"></span>
+				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Risparmiare" type="button">
+						<i class="fa-solid fa-check"></i>
+					</button>
+					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Annullamento" type="button">
+						<i class="fa-solid fa-xmark"></i>
+					</button>
+					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="Rinominare" type="button">
+						<i class="fa-solid fa-pen-to-square"></i>
+					</button>
+				</form>
+			</td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
 			<td>
 				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">Non utilizzati.</th:block>
@@ -163,14 +178,16 @@
 			<td th:text="${authToken.userAgent}"></td>
 		</tr>
 	</table>
-	
+
+	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
 	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Cancellare la voce selezionata</button>
 	  </p>
 	</div>
-	
 	</form>
+
+	</div>
 	</div>
 </section>
 

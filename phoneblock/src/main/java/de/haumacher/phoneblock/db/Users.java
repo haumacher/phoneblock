@@ -166,6 +166,16 @@ public interface Users {
 			where USERID=#{userId} and ID=#{id}
 			""")
 	void deleteAuthToken(long userId, long id);
+
+	/**
+	 * Rename an auth token for a given user. Note: The user ID is required to prevent a user from renaming tokens of other users. This call is done from the settings servlet.
+	 */
+	@Update("""
+			update TOKENS
+			set LABEL=#{label}
+			where USERID=#{userId} and ID=#{id}
+			""")
+	void renameAuthToken(long userId, long id, String label);
 	
 	@Delete("""
 			delete from TOKENS
