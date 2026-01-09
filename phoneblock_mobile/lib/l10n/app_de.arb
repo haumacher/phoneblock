@@ -39,7 +39,9 @@
   "@votes": {
     "description": "Number of votes for a phone number",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "4258ff11"
   },
@@ -87,7 +89,9 @@
   "@minSpamReportsDescription": {
     "description": "Description for minimum spam reports",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "424f3040"
   },
@@ -110,7 +114,9 @@
   "@minSpamReportsInRangeDescription": {
     "description": "Description for minimum spam reports in range",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "b61df461"
   },
@@ -168,7 +174,9 @@
   "@pendingCallsNotification": {
     "description": "Notification title for pending filtered calls",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "ecf92714"
   },
@@ -261,7 +269,9 @@
   "@reportedAsLegitimate": {
     "description": "Successfully reported as legitimate",
     "placeholders": {
-      "phoneNumber": {}
+      "phoneNumber": {
+        "type": "String"
+      }
     },
     "x-translated": "2503e1ca"
   },
@@ -269,7 +279,9 @@
   "@reportError": {
     "description": "Error reporting number",
     "placeholders": {
-      "error": {}
+      "error": {
+        "type": "String"
+      }
     },
     "x-translated": "78c78513"
   },
@@ -277,7 +289,9 @@
   "@reportedAsSpam": {
     "description": "Successfully reported as spam",
     "placeholders": {
-      "phoneNumber": {}
+      "phoneNumber": {
+        "type": "String"
+      }
     },
     "x-translated": "332667ac"
   },
@@ -355,7 +369,9 @@
   "@callsBlockedAfterReports": {
     "description": "Description for calls blocked after reports",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "17497534"
   },
@@ -363,7 +379,9 @@
   "@rangesBlockedAfterReports": {
     "description": "Description for ranges blocked after reports",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "b61df461"
   },
@@ -426,7 +444,9 @@
   "@tokenVerificationFailed": {
     "description": "Token verification failed message",
     "placeholders": {
-      "error": {}
+      "error": {
+        "type": "String"
+      }
     },
     "x-translated": "7e38f911"
   },
@@ -499,7 +519,9 @@
   "@ratePhoneNumber": {
     "description": "Title for rating screen",
     "placeholders": {
-      "phoneNumber": {}
+      "phoneNumber": {
+        "type": "String"
+      }
     },
     "x-translated": "dd350270"
   },
@@ -507,7 +529,9 @@
   "@reportsCount": {
     "description": "Number of reports for a phone number",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "549c5b01"
   },
@@ -515,7 +539,9 @@
   "@legitimateReportsCount": {
     "description": "Number of legitimate reports for a phone number",
     "placeholders": {
-      "count": {}
+      "count": {
+        "type": "int"
+      }
     },
     "x-translated": "3a4f60d"
   },
@@ -528,7 +554,9 @@
   "@todayTime": {
     "description": "Today with time",
     "placeholders": {
-      "time": {}
+      "time": {
+        "type": "String"
+      }
     },
     "x-translated": "2e487f5"
   },
@@ -536,7 +564,9 @@
   "@yesterdayTime": {
     "description": "Yesterday with time",
     "placeholders": {
-      "time": {}
+      "time": {
+        "type": "String"
+      }
     },
     "x-translated": "d5778efd"
   },
@@ -549,7 +579,9 @@
   "@retentionPeriodDescription": {
     "description": "Retention period description with days",
     "placeholders": {
-      "days": {}
+      "days": {
+        "type": "int"
+      }
     },
     "x-translated": "9c69e2"
   },
@@ -562,7 +594,9 @@
   "@retentionDays": {
     "description": "Number of days for retention period",
     "placeholders": {
-      "days": {}
+      "days": {
+        "type": "int"
+      }
     },
     "x-translated": "9033b311"
   },
