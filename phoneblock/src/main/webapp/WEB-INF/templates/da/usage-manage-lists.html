@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:2850f7f6">Administrer personlig sortliste og hvidliste</h1>
+
+		<p class="subtitle" data-tx="t0034:9f13298f">Tilføj vigtige numre (læge, skole, arbejde)</p>
+
+		<div class="notification is-info">
+			<p><strong data-tx="t0035:1d8f9c1a">Forhindrer utilsigtet blokering</strong></p>
+			<p class="mt-2" data-tx="t0036:8685d528">Har prioritet over fællesskabsdatabasen<strong></strong></p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003:f7249f5">Hvad er blacklist og whitelist?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004:71e2fcb4">Sortliste</h3>
+					<p class="has-text-white" data-tx="t0037:efc309c5">Særligt vigtigt ved kritiske opkald<strong></strong></p>
+					<p class="has-text-white mt-2" data-tx="t0038:4472eb86"><strong>Note:</strong> Dine personlige lister har altid forrang for PhoneBlocks fælles database. Et nummer på din hvidliste vil aldrig blive blokeret, selv om det er blevet rapporteret som SPAM af tusindvis af andre brugere.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007:a61f3f91">Hvidliste</h3>
+					<p class="has-text-white" data-tx="t0039:a9508e7">Numre på din hvidliste vil <strong>aldrig blive blokeret</strong>, selv om de er rapporteret som SPAM i community-databasen.</p>
+					<p class="has-text-white mt-2" data-tx="t0040:3fc513ef"><strong>Vigtigt:</strong> Dine hvidlisteposter bidrager også til databasen og hjælper med at rette forkerte SPAM-meddelelser.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010:e0c7382c">Administrer lister</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:2e4a69bc">Trin 1: Åbn indstillinger</h3>
+				<figure class="image">
+					<img alt="Åbn indstillinger" class="appscreen" data-tx="t0012:bbfe3492" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:611d6764">Tryk på menuikonet (☰) øverst til venstre, og vælg "Indstillinger".</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014:a3a9e05b">Trin 2: Vælg liste</h3>
+				<figure class="image">
+					<img alt="Åbn sortliste" class="appscreen" data-tx="t0015:be271bd3" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016:4a61fc20">Vælg "Blacklist" eller "Whitelist" fra indstillingerne</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017:f3687544">Trin 3: Vis listen</h3>
+				<figure class="image">
+					<img alt="Vis sortliste" class="appscreen" data-tx="t0018:11eb4e8" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019:763f7ae6">Dine personlige numre vises</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0041:2fba86d1">Sådan tilføjes numre til listerne</h3>
+		<p data-tx="t0042:c45b21f8">Numre tilføjes <strong>automatisk</strong> til dine lister, når du vurderer dem:</p>
+		<ul>
+			<li data-tx="t0043:5a74afb1"><strong>SPAM-meddelelse:</strong> Hvis du rapporterer et nummer som SPAM, tilføjes det automatisk til din sortliste.</li>
+			<li data-tx="t0044:35bd4263"><strong>Legitim besked:</strong> Hvis du markerer et nummer som legitimt, tilføjes det automatisk til din hvidliste.</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045:d2640e6e">Du kan bedømme tal:</p>
+		<ul>
+			<li data-tx="t0046:af37ab79">Fra din opkaldshistorik</li>
+			<li data-tx="t0047:8bb9b49">Brug <a th:href="@{/usage-search}">søgefunktionen</a> til at slå et bestemt nummer op</li>
+		</ul>
+
+		<h3 class="mt-5" data-tx="t0022:b2c98f16">Fjern nummer fra liste</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Slet fra listen" class="appscreen" data-tx="t0023:be0a5913" th:src="@{/assets/img/mobile/settings-4-remove-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024:9f7a8c84">Stryg til venstre over nummeret, og tryk på skraldespandsikonet for at fjerne det</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0048:d4ace865">Opbevaring på serveren:</strong></p>
+					<p class="mt-2" data-tx="t0049:c771c2a1">Dine lister gemmes på PhoneBlock-serveren og tages i betragtning i SPAM-kontrollen. <strong>Dine personlige lister har altid prioritet</strong> over den generelle community-database.</p>
+					<p class="mt-2" data-tx="t0050:d3fca5e3">Det betyder, at dine vurderinger gælder for alle enheder, hvor du er logget ind med din PhoneBlock-konto.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0051:f61fe09a">Resumé: Sådan fungerer listerne</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028:71e2fcb4">Sortliste</h3>
+				<ul>
+					<li data-tx="t0052:75d3e969">Oprettes automatisk, når du rapporterer numre som SPAM</li>
+					<li data-tx="t0053:ae65b0">Blokerer numre med det samme, selv uden en høj SPAM-score i samfundet</li>
+					<li data-tx="t0054:e44462a4">Dine beskeder bidrager til den fælles SPAM-database</li>
+					<li data-tx="t0055:40f508ac">Ideel til at blokere vedvarende opkald med det samme</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033:a61f3f91">Hvidliste</h3>
+				<ul>
+					<li data-tx="t0056:11118fe4">Oprettes automatisk, når du markerer numre som legitime</li>
+					<li data-tx="t0057:a73011eb">Forhindrer blokering, selv med en høj community SPAM-score</li>
+					<li data-tx="t0058:e2186719">Dine positive anmeldelser hjælper med at korrigere falske SPAM-meddelelser</li>
+					<li data-tx="t0059:62343da7">Vigtigt for numre, du under ingen omstændigheder vil gå glip af</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060:b396dba2">Bidrag til fællesskabet:</strong></p>
+			<p class="mt-2" data-tx="t0061:e5c1e3e6">Hver af dine anmeldelser - uanset om de er SPAM eller legitime - hjælper hele PhoneBlock-fællesskabet. Dine personlige lister har altid forrang for den generelle database, men dine vurderinger indgår også i fællesskabets vurdering.</p>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p><strong data-tx="t0062:36376dd1">Det er vigtigt at forstå:</strong></p>
+			<p class="mt-2" data-tx="t0063:284598c">Et nummer på din hvidliste vil <strong>aldrig blive blokeret</strong>, selv om tusindvis af andre brugere har rapporteret det som SPAM. Omvendt vil et nummer på din sortliste <strong>altid blive blokeret</strong>, selv om det anses for legitimt i community-databasen.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

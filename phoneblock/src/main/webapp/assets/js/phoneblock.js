@@ -247,3 +247,78 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	});
 });
+
+// API Key rename functionality
+document.addEventListener('DOMContentLoaded', function () {
+	// Edit button click handler
+	const editButtons = document.querySelectorAll('.apikey-edit-btn');
+	editButtons.forEach(function (button) {
+		button.addEventListener('click', function (event) {
+			event.preventDefault();
+			const form = button.closest('.apikey-rename-form');
+			const td = form.parentElement;
+			const label = td.querySelector('.apikey-label');
+			const input = form.querySelector('.apikey-input');
+			const saveBtn = form.querySelector('.apikey-save-btn');
+			const cancelBtn = form.querySelector('.apikey-cancel-btn');
+
+			// Switch to edit mode
+			label.style.display = 'none';
+			button.style.display = 'none';
+			input.style.display = 'inline-block';
+			saveBtn.style.display = 'inline-block';
+			cancelBtn.style.display = 'inline-block';
+			input.focus();
+			input.select();
+		});
+	});
+
+	// Save button click handler
+	const saveButtons = document.querySelectorAll('.apikey-save-btn');
+	saveButtons.forEach(function (button) {
+		button.addEventListener('click', function (event) {
+			event.preventDefault();
+			const form = button.closest('.apikey-rename-form');
+			form.submit();
+		});
+	});
+
+	// Cancel button click handler
+	const cancelButtons = document.querySelectorAll('.apikey-cancel-btn');
+	cancelButtons.forEach(function (button) {
+		button.addEventListener('click', function (event) {
+			event.preventDefault();
+			const form = button.closest('.apikey-rename-form');
+			const td = form.parentElement;
+			const label = td.querySelector('.apikey-label');
+			const input = form.querySelector('.apikey-input');
+			const saveBtn = form.querySelector('.apikey-save-btn');
+			const editBtn = form.querySelector('.apikey-edit-btn');
+
+			// Cancel editing - restore original state
+			label.style.display = 'inline';
+			editBtn.style.display = 'inline-block';
+			input.style.display = 'none';
+			saveBtn.style.display = 'none';
+			button.style.display = 'none';
+			input.value = input.defaultValue;
+		});
+	});
+
+	// Handle keyboard shortcuts in input field
+	const labelInputs = document.querySelectorAll('.apikey-input');
+	labelInputs.forEach(function (input) {
+		input.addEventListener('keydown', function (event) {
+			const form = input.closest('.apikey-rename-form');
+			const cancelBtn = form.querySelector('.apikey-cancel-btn');
+
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				cancelBtn.click();
+			} else if (event.key === 'Enter') {
+				event.preventDefault();
+				form.submit();
+			}
+		});
+	});
+});

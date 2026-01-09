@@ -6,7 +6,7 @@
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Iniciar sesión con Google</span></a>
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001:33460370">Iniciar sesión con Google</span></a>
 		</p>
 		<div class="is-collapsible" id="googleLogin">
 			<div class="panel-block">
@@ -20,13 +20,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0002">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0002:a4820387">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0003">Al registrarse, acepta las <a th:href="@{/usage}">Condiciones de uso</a>.</div>
+				  <div class="control" data-tx="t0003:d22b9755">Al registrarse, acepta las <a th:href="@{/usage}">Condiciones de uso</a>.</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -35,12 +35,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0004">Continuar con Google</span>
+				      <span data-tx="t0004:15fed624">Continuar con Google</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0005">Si tienes una cuenta de Google, puedes utilizarla para iniciar sesión cómodamente en PhoneBlock. La primera vez que inicie sesión con Google, se creará una cuenta PhoneBlock. En el futuro, puede iniciar sesión con el nombre de usuario PhoneBlock creado o de nuevo a través de Google.</p>
+				<p class="help" data-tx="t0005:cc14ebc6">Si tienes una cuenta de Google, puedes utilizarla para iniciar sesión cómodamente en PhoneBlock. La primera vez que inicie sesión con Google, se creará una cuenta PhoneBlock. En el futuro, puede iniciar sesión con el nombre de usuario PhoneBlock creado o de nuevo a través de Google.</p>
 				
 				</form>
 			</div>
@@ -49,16 +49,17 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Conectarse con el correo electrónico</span></a></p>
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006:b99ac6c2">Conectarse con el correo electrónico</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
 	  		<div class="content">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
-					<label class="label" data-tx="t0007">correo electrónico</label>
+					<label class="label" data-tx="t0007:30c9dcb9">correo electrónico</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0020" name="email" placeholder="Su dirección de correo electrónico" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <input data-tx="t0020:460db871" name="email" placeholder="Su dirección de correo electrónico" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
@@ -70,12 +71,12 @@
 				</div>
 
 				<div>
-					<label class="label" data-tx="t0019">Código de seguridad</label>
+					<label class="label" data-tx="t0019:10d7cfff">Código de seguridad</label>
 
-					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"/>
+					<img alt="Captcha" data-tx="t0021:ccf7588c" th:src="${captchaSrc}"/>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input autocomplete="off" data-tx="t0022" name="captcha" placeholder="Texto de la imagen superior" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <input autocomplete="off" data-tx="t0022:4be67cdf" name="captcha" placeholder="Texto de la imagen superior" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>
@@ -90,13 +91,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0008">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0008:a4820387">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0009">Al registrarse, acepta las <a th:href="@{/usage}">Condiciones de uso</a>.</div>
+				  <div class="control" data-tx="t0009:d22b9755">Al registrarse, acepta las <a th:href="@{/usage}">Condiciones de uso</a>.</div>
 				</div>
 
 				<div class="field is-grouped">
@@ -105,12 +106,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0010">Solicitar código</span>
+				      <span data-tx="t0010:ba8e91df">Solicitar código</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0011">Recibirá un código en la dirección de correo electrónico que haya introducido, que podrá utilizar para iniciar sesión. El primer inicio de sesión con correo electrónico crea una cuenta PhoneBlock. En el futuro, podrá iniciar sesión con el nombre de usuario PhoneBlock generado o enviando de nuevo un código de un solo uso.</p>
+				<p class="help" data-tx="t0011:8379fde">Recibirá un código en la dirección de correo electrónico que haya introducido, que podrá utilizar para iniciar sesión. El primer inicio de sesión con correo electrónico crea una cuenta PhoneBlock. En el futuro, podrá iniciar sesión con el nombre de usuario PhoneBlock generado o enviando de nuevo un código de un solo uso.</p>
 			</div>
 			</div>
 			</form>
@@ -119,18 +120,19 @@
 	
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Iniciar sesión con el nombre de usuario PhoneBlock</span></a>
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012:2a4951de">Iniciar sesión con el nombre de usuario PhoneBlock</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0025">Sólo puede utilizar esta opción para iniciar sesión después de haberse registrado en PhoneBlock. Recibirá el nombre de usuario de PhoneBlock cuando se registre, ya sea a través de Google o por correo electrónico (véase más arriba).</p>
+	  			<p data-tx="t0025:27d4e511">Sólo puede utilizar esta opción para iniciar sesión después de haberse registrado en PhoneBlock. Recibirá el nombre de usuario de PhoneBlock cuando se registre, ya sea a través de Google o por correo electrónico (véase más arriba).</p>
 	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" data-tx="t0023" placeholder="Nombre de usuario" th:name="${userNameParam}" type="text"/>
+				    <input class="input" data-tx="t0023:2d49d98d" placeholder="Nombre de usuario" th:name="${userNameParam}" type="text"/>
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -138,30 +140,30 @@
 				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
-				  <p class="help" data-tx="t0013">Utiliza el nombre de usuario que recibiste al registrarte en Google o tu dirección de correo electrónico.</p>
+				  <p class="help" data-tx="t0013:544c2ad9">Utiliza el nombre de usuario que recibiste al registrarte en Google o tu dirección de correo electrónico.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" data-tx="t0024" placeholder="Contraseña PhoneBlock" th:name="${passwordParam}" type="password"/>
+				    <input class="input" data-tx="t0024:8f7e39e6" placeholder="Contraseña PhoneBlock" th:name="${passwordParam}" type="password"/>
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
-					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Los datos de acceso no coinciden, por favor, compruebe las entradas e inténtelo de nuevo.</p>
-					  <p class="help" data-tx="t0015" th:unless="${loginError}">La contraseña se le mostró después del primer inicio de sesión. Si ya no tiene la contraseña a mano, simplemente inicie sesión con Google o su dirección de correo electrónico, véase más arriba.</p>
+					  <p class="help is-danger" data-tx="t0014:f8e64400" th:if="${loginError}">Los datos de acceso no coinciden, por favor, compruebe las entradas e inténtelo de nuevo.</p>
+					  <p class="help" data-tx="t0015:64d4c87a" th:unless="${loginError}">La contraseña se le mostró después del primer inicio de sesión. Si ya no tiene la contraseña a mano, simplemente inicie sesión con Google o su dirección de correo electrónico, véase más arriba.</p>
 				</div>
 
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0016">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz}">cookie</a>)</span>
+					  <span data-tx="t0016:a4820387">Permanecer conectado en este dispositivo (establece una <a th:href="@{/datenschutz}">cookie</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0017">Al registrarse, acepta las <a th:href="@{/usage}">Condiciones de uso</a>.</div>
+				  <div class="control" data-tx="t0017:d22b9755">Al registrarse, acepta las <a th:href="@{/usage}">Condiciones de uso</a>.</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -170,7 +172,7 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0018">Conectarse</span>
+				      <span data-tx="t0018:1dc205">Conectarse</span>
 				    </button>
 				  </p>
 				</div>

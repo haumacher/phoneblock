@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">Wyświetlanie zablokowanych i nieodebranych połączeń</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile sprawdza wszystkie połączenia przychodzące od nieznanych numerów i pokazuje, które z nich zostały zablokowane, a które się przedostały.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Ważne:</strong> Sprawdzane są tylko nieznane numery!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Połączenia z numerów z listy kontaktów nigdy nie są sprawdzane i nie pojawiają się na liście połączeń PhoneBlock. Aplikacja przetwarza tylko te numery, które nie są zapisane w książce telefonicznej.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">Historia połączeń</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Przegląd wszystkich sprawdzonych połączeń</h3>
+				<figure class="image">
+					<img alt="Lista zweryfikowanych połączeń" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">Aplikacja pokazuje wszystkie połączenia z nieznanych numerów wraz z ich statusem</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Zablokowane połączenia SPAM</h3>
+				<figure class="image">
+					<img alt="Połączenie SPAM zablokowane" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Zablokowane połączenia SPAM są wyświetlane z czerwonym symbolem i wynikiem SPAM. Otrzymasz powiadomienie o zablokowaniu połączenia.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">Które numery są blokowane jako SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">Numery SPAM (będą blokowane)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">Numer jest blokowany jako SPAM, jeśli:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">masz wysoki wynik SPAM w bazie danych PhoneBlock</li>
+						<li data-tx="t0031:bbf61b78">Wynik SPAM przekracza ustawioną wartość progową</li>
+						<li data-tx="t0032:496c5432">Jest na twojej osobistej czarnej liście (niezależnie od wyniku).</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Wynik:</strong> Telefon nie dzwoni, połączenie jest automatycznie odrzucane.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Legalne numery (są przepuszczane)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">Numer jest uznawany za prawidłowy, jeśli</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">Nie jest on dostępny w bazie danych PhoneBlock</li>
+						<li data-tx="t0037:be800714">Ma niski wynik SPAM poniżej progu użytkownika</li>
+						<li data-tx="t0038:dc6b0dd6">Jest na Twojej osobistej białej liście (nigdy nie zostanie zablokowana).</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Wynik:</strong> Telefon dzwoni normalnie, połączenie zostało nawiązane.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">Jak działa blokowanie?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile wykorzystuje usługę CallScreeningService systemu Android do sprawdzania połączeń przychodzących, zanim zadzwonią. Jeśli numer znajduje się w bazie danych SPAM i zostanie przekroczony ustawiony próg, połączenie zostanie automatycznie zablokowane.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">Zgłaszanie numerów SPAM z historii połączeń</h2>
+
+		<p data-tx="t0041:26708b3">Jeśli otrzymałeś połączenie z nieznanego numeru, które zostało odebrane jako legalne, ale w rzeczywistości było spamem, możesz zgłosić je bezpośrednio z listy połączeń:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">Kiedy należy zgłosić numer?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">Numer nie znajduje się jeszcze w bazie danych PhoneBlock (niski wynik SPAM lub jego brak).</li>
+					<li data-tx="t0044:e2b6f50e">Połączenie było wyraźnie niechciane (reklama, oszustwo itp.).</li>
+					<li data-tx="t0045:ba58fceb">Chcesz ostrzec społeczność przed tym numerem</li>
+					<li data-tx="t0046:53de68c0">Numer ma być automatycznie blokowany w przyszłości.</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">Co dzieje się w przypadku zgłoszenia?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">Numer jest <strong>automatycznie dodawany do czarnej listy&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">Będziesz chroniony przed przyszłymi połączeniami z tego numeru</li>
+					<li data-tx="t0050:da8797c6">Twoja wiadomość zasila bazę danych PhoneBlock</li>
+					<li data-tx="t0051:1f62ed10">Inni użytkownicy korzystają z Twojej oceny</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">Do instrukcji: Zgłaszanie numerów SPAM</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Ważne:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">Jeśli zgłosisz numer jako SPAM, zostanie on dodany do Twojej osobistej czarnej listy i będzie zawsze blokowany w przyszłości. Decyzja ta ma pierwszeństwo przed oceną społeczności.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

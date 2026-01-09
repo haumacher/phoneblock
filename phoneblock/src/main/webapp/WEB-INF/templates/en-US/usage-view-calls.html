@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">View blocked and missed calls</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile checks all incoming calls from unknown numbers and shows you which have been blocked and which have gotten through.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Important:</strong> Only unknown numbers are checked!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Calls from numbers in your contact list are never checked and do not appear in the PhoneBlock call list. The app only processes numbers that are not stored in your phone book.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">The call history</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Overview of all calls checked</h3>
+				<figure class="image">
+					<img alt="List of verified calls" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">The app shows all calls from unknown numbers with their respective status</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Blocked SPAM calls</h3>
+				<figure class="image">
+					<img alt="SPAM call blocked" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Blocked SPAM calls are displayed with a red symbol and SPAM score. You will receive a notification about the block.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">Which numbers are blocked as SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">SPAM numbers (will be blocked)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">A number is blocked as SPAM if:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">you have a high SPAM score in the PhoneBlock database</li>
+						<li data-tx="t0031:bbf61b78">The SPAM score exceeds your set threshold value</li>
+						<li data-tx="t0032:496c5432">She is on your personal blacklist (regardless of the score)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Result:</strong> Your phone does not ring, the call is automatically rejected.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Legitimate numbers (are allowed through)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">A number is considered legitimate if:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">it is not available in the PhoneBlock database</li>
+						<li data-tx="t0037:be800714">It has a low SPAM score below your threshold</li>
+						<li data-tx="t0038:dc6b0dd6">She is on your personal whitelist (will never be blocked)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Result:</strong> Your phone rings normally, the call goes through.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">How does the blocking work?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile uses Android's CallScreeningService to screen incoming calls before they ring. If the number is in the SPAM database and your set threshold is exceeded, the call is automatically blocked.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">Report SPAM numbers from the call history</h2>
+
+		<p data-tx="t0041:26708b3">If you received a call from an unknown number that came through as legitimate but was actually SPAM, you can report it directly from the call list:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">When should you report a number?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">The number is not yet in the PhoneBlock database (low or no SPAM score)</li>
+					<li data-tx="t0044:e2b6f50e">The call was clearly unwanted (advertising, fraud, etc.)</li>
+					<li data-tx="t0045:ba58fceb">You want to warn the community about this number</li>
+					<li data-tx="t0046:53de68c0">The number is to be blocked automatically in future</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">What happens when a message is received?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">The number is <strong>automatically added to your blacklist&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">You will be protected from future calls from this number</li>
+					<li data-tx="t0050:da8797c6">Your message contributes to the PhoneBlock database</li>
+					<li data-tx="t0051:1f62ed10">Other users benefit from your rating</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">To the instructions: Report SPAM numbers</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Important:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">If you report a number as SPAM, it will be added to your personal blacklist and will always be blocked in the future. This decision takes precedence over the community rating.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

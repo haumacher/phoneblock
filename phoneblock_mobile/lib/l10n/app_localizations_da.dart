@@ -1,0 +1,503 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Danish (`da`).
+class AppLocalizationsDa extends AppLocalizations {
+  AppLocalizationsDa([String locale = 'da']) : super(locale);
+
+  @override
+  String get appTitle => 'PhoneBlock Mobil';
+
+  @override
+  String get settings => 'Indstillinger';
+
+  @override
+  String get deleteAll => 'Slet alle';
+
+  @override
+  String get noCallsYet => 'Ingen opkald filtreret endnu';
+
+  @override
+  String get noCallsDescription =>
+      'PhoneBlock screener automatisk indgående opkald og blokerer SPAM-opkald.';
+
+  @override
+  String get blocked => 'Blokeret';
+
+  @override
+  String get accepted => 'Accepteret';
+
+  @override
+  String votes(Object count) {
+    return '$count stemmer';
+  }
+
+  @override
+  String get viewOnPhoneBlock => 'Vis på PhoneBlock';
+
+  @override
+  String get confirmDeleteAll => 'Slet alle filtrerede opkald?';
+
+  @override
+  String get confirmDeleteAllMessage => 'Denne handling kan ikke fortrydes.';
+
+  @override
+  String get cancel => 'Annuller';
+
+  @override
+  String get delete => 'Sletning';
+
+  @override
+  String get settingsTitle => 'Indstillinger';
+
+  @override
+  String get callScreening => 'Filtrering af opkald';
+
+  @override
+  String get minSpamReports => 'Minimalt med SPAM-beskeder';
+
+  @override
+  String minSpamReportsDescription(Object count) {
+    return 'Numre blokeres fra $count beskeder og fremefter';
+  }
+
+  @override
+  String get blockNumberRanges => 'Bloknummer-intervaller';
+
+  @override
+  String get blockNumberRangesDescription =>
+      'Bloker områder med mange SPAM-beskeder';
+
+  @override
+  String get minSpamReportsInRange => 'Minimale SPAM-beskeder i området';
+
+  @override
+  String minSpamReportsInRangeDescription(Object count) {
+    return 'Områder er blokeret fra $count beskeder og fremefter';
+  }
+
+  @override
+  String get about => 'Omkring';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get developer => 'Udvikler';
+
+  @override
+  String get developerName => 'Bernhard Haumacher';
+
+  @override
+  String get website => 'Hjemmeside';
+
+  @override
+  String get websiteUrl => 'phoneblock.net';
+
+  @override
+  String get sourceCode => 'Kildekode';
+
+  @override
+  String get sourceCodeLicense => 'Open Source (GPL-3.0)';
+
+  @override
+  String get aboutDescription =>
+      'PhoneBlock er et open source-projekt uden sporing og uden reklamer. Tjenesten er finansieret af donationer.';
+
+  @override
+  String get donate => 'Donationer';
+
+  @override
+  String pendingCallsNotification(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nye filtrerede opkald',
+      one: '1 nyt filtreret opkald',
+    );
+    return '$_temp0.';
+  }
+
+  @override
+  String get tapToOpen => 'Tryk for at åbne appen';
+
+  @override
+  String get setupWelcome => 'Velkommen til PhoneBlock Mobile';
+
+  @override
+  String get setupPermissionsRequired => 'Nødvendige tilladelser';
+
+  @override
+  String get grantPermission => 'Giv tilladelse';
+
+  @override
+  String get continue_ => 'Yderligere';
+
+  @override
+  String get finish => 'Færdig';
+
+  @override
+  String get loginRequired => 'Registrering af PhoneBlock';
+
+  @override
+  String get loginToPhoneBlock => 'Registrer dig med PhoneBlock';
+
+  @override
+  String get verifyingLogin => 'Registreringen vil blive kontrolleret...';
+
+  @override
+  String get loginFailed => 'Login mislykkedes';
+
+  @override
+  String get loginSuccess => 'Registrering vellykket!';
+
+  @override
+  String get reportAsLegitimate => 'Rapporter som legitim';
+
+  @override
+  String get reportAsSpam => 'Rapporter som SPAM';
+
+  @override
+  String get viewOnPhoneBlockMenu => 'Se på PhoneBlock';
+
+  @override
+  String get deleteCall => 'Sletning';
+
+  @override
+  String get report => 'Rapport';
+
+  @override
+  String get notLoggedIn => 'Ikke registreret. Log venligst ind.';
+
+  @override
+  String reportedAsLegitimate(Object phoneNumber) {
+    return '$phoneNumber rapporteret som legitimt';
+  }
+
+  @override
+  String reportError(Object error) {
+    return 'Fejl ved rapportering: $error.';
+  }
+
+  @override
+  String reportedAsSpam(Object phoneNumber) {
+    return '$phoneNumber rapporteret som SPAM';
+  }
+
+  @override
+  String get selectSpamCategory => 'Vælg SPAM-kategori';
+
+  @override
+  String get errorDeletingAllCalls => 'Fejl ved sletning af alle kald';
+
+  @override
+  String get errorDeletingCall => 'Fejl ved annullering af opkald';
+
+  @override
+  String get notLoggedInShort => 'Ikke registreret';
+
+  @override
+  String get errorOpeningPhoneBlock => 'Fejl ved åbning af PhoneBlock.';
+
+  @override
+  String get permissionNotGranted => 'Der er ikke givet tilladelse.';
+
+  @override
+  String get setupTitle => 'PhoneBlock Mobile - opsætning';
+
+  @override
+  String get welcome => 'Velkommen til';
+
+  @override
+  String get connectPhoneBlockAccount => 'Tilslut PhoneBlock-konto';
+
+  @override
+  String get permissions => 'Tilladelser';
+
+  @override
+  String get allowCallFiltering => 'Gør det muligt at filtrere opkald';
+
+  @override
+  String get done => 'Færdig';
+
+  @override
+  String get setupComplete => 'Installation afsluttet';
+
+  @override
+  String get minReportsCount => 'Minimum antal beskeder';
+
+  @override
+  String callsBlockedAfterReports(Object count) {
+    return 'Opkald er blokeret fra $count beskeder';
+  }
+
+  @override
+  String rangesBlockedAfterReports(Object count) {
+    return 'Områder er blokeret fra $count beskeder og fremefter';
+  }
+
+  @override
+  String get welcomeMessage =>
+      'Velkommen til PhoneBlock Mobile!\n\nDenne app hjælper dig med at blokere spamopkald automatisk. Du skal have en gratis konto hos PhoneBlock.net.\n\nOpret forbindelse til din PhoneBlock-konto for at fortsætte:';
+
+  @override
+  String get connectToPhoneBlock => 'Opret forbindelse med PhoneBlock';
+
+  @override
+  String get connectedToPhoneBlock => 'Forbundet med PhoneBlock';
+
+  @override
+  String get accountConnectedSuccessfully => '✓ Konto tilsluttet med succes';
+
+  @override
+  String get permissionsMessage =>
+      'For automatisk at blokere spamopkald kræver PhoneBlock Mobile tilladelse til at kontrollere indgående opkald.\n\nDenne tilladelse er nødvendig, for at appen kan fungere:';
+
+  @override
+  String get permissionGranted => 'Tilladelse givet';
+
+  @override
+  String get permissionGrantedSuccessfully => '✓ Godkendelse givet med succes';
+
+  @override
+  String get setupCompleteMessage =>
+      'Installationen er færdig!\n\nPhoneBlock Mobile er nu klar til at blokere spamopkald. Appen screener automatisk indgående opkald og blokerer kendte spamnumre baseret på PhoneBlock-databasen.\n\nTryk på \"Done\" for at gå til hovedvisningen.';
+
+  @override
+  String get verifyingLoginTitle => 'Tjek login';
+
+  @override
+  String get loginSuccessMessage => 'Login vellykket!';
+
+  @override
+  String get redirectingToSetup => 'Videresendelse til anlægget...';
+
+  @override
+  String tokenVerificationFailed(Object error) {
+    return 'Token-verifikation mislykkedes: $error.';
+  }
+
+  @override
+  String get backToSetup => 'Tilbage til anlægget';
+
+  @override
+  String get tokenBeingVerified => 'Token er tjekket...';
+
+  @override
+  String get failedToOpenPhoneBlock => 'PhoneBlock kunne ikke åbnes.';
+
+  @override
+  String get ratingLegitimate => 'Legitim';
+
+  @override
+  String get ratingAdvertising => 'Reklame';
+
+  @override
+  String get ratingSpam => 'SPAM';
+
+  @override
+  String get ratingPingCall => 'Ping-opkald';
+
+  @override
+  String get ratingGamble => 'Konkurrence';
+
+  @override
+  String get ratingFraud => 'Bedrageri';
+
+  @override
+  String get ratingPoll => 'Undersøgelse';
+
+  @override
+  String get noLoginTokenReceived => 'Intet login-token modtaget.';
+
+  @override
+  String get settingSaved => 'Indstilling gemt';
+
+  @override
+  String get errorSaving => 'Fejl ved lagring';
+
+  @override
+  String ratePhoneNumber(Object phoneNumber) {
+    return 'Bedøm $phoneNumber.';
+  }
+
+  @override
+  String reportsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count beskeder',
+      one: '1 Besked',
+    );
+    return '$_temp0.';
+  }
+
+  @override
+  String legitimateReportsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Legitime beskeder',
+      one: '1 Legitim besked',
+    );
+    return '$_temp0.';
+  }
+
+  @override
+  String get noReports => 'Ingen beskeder';
+
+  @override
+  String todayTime(Object time) {
+    return 'I dag, $time.';
+  }
+
+  @override
+  String yesterdayTime(Object time) {
+    return 'I går, $time.';
+  }
+
+  @override
+  String get callHistoryRetention => 'Lagring af opkaldshistorik';
+
+  @override
+  String retentionPeriodDescription(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Behold opkald $days dage',
+      one: 'Behold opkald 1 dag',
+    );
+    return '$_temp0.';
+  }
+
+  @override
+  String get retentionInfinite => 'Behold alle opkald';
+
+  @override
+  String retentionDays(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days dage',
+      one: '1 dag',
+    );
+    return '$_temp0.';
+  }
+
+  @override
+  String get retentionInfiniteOption => 'Ubegrænset';
+
+  @override
+  String get addCommentSpam => 'Tilføj kommentar (valgfrit)';
+
+  @override
+  String get commentHintSpam =>
+      'Hvorfor er det spam? Hvad drejede opkaldet sig om? Vær venlig at være høflig.';
+
+  @override
+  String get addCommentLegitimate => 'Tilføj kommentar (valgfrit)';
+
+  @override
+  String get commentHintLegitimate =>
+      'Hvorfor er dette legitimt? Hvem har ringet til dig? Vær venlig at være høflig.';
+
+  @override
+  String get serverSettings => 'Serverindstillinger';
+
+  @override
+  String get serverSettingsDescription =>
+      'Administrer indstillingerne for din PhoneBlock-konto';
+
+  @override
+  String get searchNumber => 'Søg nummer';
+
+  @override
+  String get searchPhoneNumber => 'Søg efter telefonnummer';
+
+  @override
+  String get enterPhoneNumber => 'Indtast telefonnummer';
+
+  @override
+  String get phoneNumberHint => 'f.eks. +49 123 456789';
+
+  @override
+  String get search => 'Søg efter';
+
+  @override
+  String get invalidPhoneNumber => 'Indtast venligst et gyldigt telefonnummer';
+
+  @override
+  String get blacklistTitle => 'Sortliste';
+
+  @override
+  String get blacklistDescription => 'Numre, der er blokeret af dig';
+
+  @override
+  String get whitelistTitle => 'Hvidliste';
+
+  @override
+  String get whitelistDescription => 'Numre, du har markeret som legitime';
+
+  @override
+  String get blacklistEmpty => 'Din sortliste er tom';
+
+  @override
+  String get whitelistEmpty => 'Din hvidliste er tom';
+
+  @override
+  String get blacklistEmptyHelp =>
+      'Tilføj numre ved at rapportere uønskede opkald som spam.';
+
+  @override
+  String get whitelistEmptyHelp =>
+      'Tilføj numre ved at rapportere blokerede opkald som legitime.';
+
+  @override
+  String get errorLoadingList => 'Fejl ved indlæsning af listen';
+
+  @override
+  String get numberRemovedFromList => 'Antal fjernet';
+
+  @override
+  String get errorRemovingNumber => 'Fejl ved fjernelse af nummer';
+
+  @override
+  String get confirmRemoval => 'Bekræft fjernelse';
+
+  @override
+  String confirmRemoveFromBlacklist(Object phone) {
+    return 'Fjerne $phone fra den sorte liste?';
+  }
+
+  @override
+  String confirmRemoveFromWhitelist(Object phone) {
+    return 'Fjerne $phone fra hvidlisten?';
+  }
+
+  @override
+  String get remove => 'Fjerne';
+
+  @override
+  String get retry => 'Prøv igen';
+
+  @override
+  String get editComment => 'Rediger kommentar';
+
+  @override
+  String get commentLabel => 'Kommentar';
+
+  @override
+  String get commentHint => 'Tilføj en note til dette nummer';
+
+  @override
+  String get save => 'Gemme';
+
+  @override
+  String get commentUpdated => 'Kommentar opdateret';
+
+  @override
+  String get errorUpdatingComment => 'Fejl ved opdatering af kommentar';
+}

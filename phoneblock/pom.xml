@@ -1,9 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.haumacher</groupId>
+	<parent>
+		<groupId>de.haumacher</groupId>
+		<artifactId>phoneblock-parent</artifactId>
+		<version>1.8.2-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>phoneblock</artifactId>
-	<version>1.7.16-SNAPSHOT</version>
 	
 	<name>PhoneBlock</name>
 	<description>Ad blocker for your Fritz!Box</description>
@@ -322,7 +326,14 @@
 		<dependency>
 		    <groupId>org.junit.jupiter</groupId>
 		    <artifactId>junit-jupiter</artifactId>
-		    <version>5.11.1</version>
+		    <version>5.14.1</version>
+		    <scope>test</scope>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.junit.jupiter</groupId>
+		    <artifactId>junit-jupiter-api</artifactId>
+		    <version>5.14.1</version>
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -350,7 +361,7 @@
 				<groupId>de.haumacher.msgbuf</groupId>
 				<version>${msgbuf.version}</version>
 				<artifactId>msgbuf-generator-maven-plugin</artifactId>
-				
+
 				<executions>
 					<execution>
 						<id>generate-protocols</id>
@@ -360,7 +371,29 @@
 					</execution>
 				</executions>
 			</plugin>
-		
+
+			<!-- To trigger manually: mvn auto-translate:translate@translate-templates -->
+			<plugin>
+				<groupId>de.haumacher</groupId>
+				<artifactId>auto-translate-maven-plugin</artifactId>
+				<version>1.1.0</version>
+				
+				<executions>
+					<execution>
+						<id>translate-templates</id>
+						<goals>
+							<goal>translate</goal>
+						</goals>
+						
+						<configuration>
+							<sourceLang>de</sourceLang>
+							<targetLangs>ar,da,el,en-US,es,fr,it,nb,nl,pl,sv,uk,zh-Hans</targetLangs>
+							<templateDirectory>${project.basedir}/src/main/webapp/WEB-INF/templates</templateDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>

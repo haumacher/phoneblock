@@ -5,11 +5,14 @@ package de.haumacher.phoneblock.db;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -324,22 +327,22 @@ public interface SpamReports {
 	
 	@Update("""
 			update NUMBERS s
-			set 
-				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', 1, 0), 
-				s.PING = s.PING + casewhen(#{rating}='C_PING', 1, 0), 
-				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', 1, 0), 
-				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', 1, 0), 
-				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', 1, 0), 
-				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', 1, 0), 
-				s.UPDATED = greatest(s.UPDATED, #{now}), 
-				s.LASTPING = greatest(s.LASTPING, #{now}) 
+			set
+				s.LEGITIMATE = s.LEGITIMATE + casewhen(#{rating}='A_LEGITIMATE', #{delta}, 0),
+				s.PING = s.PING + casewhen(#{rating}='C_PING', #{delta}, 0),
+				s.POLL = s.POLL + casewhen(#{rating}='D_POLL', #{delta}, 0),
+				s.ADVERTISING = s.ADVERTISING + casewhen(#{rating}='E_ADVERTISING', #{delta}, 0),
+				s.GAMBLE = s.GAMBLE + casewhen(#{rating}='F_GAMBLE', #{delta}, 0),
+				s.FRAUD = s.FRAUD + casewhen(#{rating}='G_FRAUD', #{delta}, 0),
+				s.UPDATED = greatest(s.UPDATED, #{now}),
+				s.LASTPING = casewhen(#{delta} > 0, greatest(s.LASTPING, #{now}), s.LASTPING)
 			where s.PHONE = #{phone}
 			""")
-	int incRating(String phone, Rating rating, long now);
-	
+	int updateRating(String phone, Rating rating, int delta, long now);
+
 	@Update("""
 			update NUMBERS s
-			set 
+			set
 				s.SEARCHES = s.SEARCHES + 1, 
 				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1, 
 				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}), 
@@ -384,11 +387,33 @@ public interface SpamReports {
 	List<DBUserComment> getAllComments(String prefix, int expectedLength, Collection<String> langs);
 	
 	@Insert("""
-			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID) 
+			insert into COMMENTS (ID, PHONE, RATING, COMMENT, LOCALE, SERVICE, CREATED, USERID)
 			values (#{id}, #{phone}, #{rating}, #{comment}, #{lang}, #{service}, #{created}, #{userId})
 			""")
 	void addComment(String id, String phone, Rating rating, String comment, String lang, String service, long created, Long userId);
-	
+
+	@Select("select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID from COMMENTS s where USERID = #{userId} and PHONE = #{phone} limit 1")
+	DBUserComment getUserComment(long userId, String phone);
+
+	@Delete("delete from COMMENTS where USERID = #{userId} and PHONE = #{phone}")
+	int deleteUserComments(long userId, String phone);
+
+	@Update("update COMMENTS set COMMENT = #{comment} where USERID = #{userId} and PHONE = #{phone}")
+	int updateUserComment(long userId, String phone, String comment);
+
+	@Select("""
+			<script>
+			select s.PHONE, s.COMMENT, s.RATING
+			from COMMENTS s
+			where s.USERID = #{userId}
+			and s.PHONE in
+			<foreach item="item" index="index" collection="phones" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			</script>
+			""")
+	List<DBPhoneComment> getUserComments(long userId, Collection<String> phones);
+
 	@Update("update COMMENTS s set s.UP = s.UP + #{up}, s.DOWN = s.DOWN + #{down} where s.ID = #{id}")
 	int updateCommentVotes(String id, int up, int down);
 	

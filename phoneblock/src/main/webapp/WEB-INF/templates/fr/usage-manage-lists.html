@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:2850f7f6">Gérer la liste noire et la liste blanche personnelles</h1>
+
+		<p class="subtitle" data-tx="t0034:9f13298f">Ajoute des numéros importants (médecin, école, travail)</p>
+
+		<div class="notification is-info">
+			<p><strong data-tx="t0035:1d8f9c1a">Empêche les blocages accidentels</strong></p>
+			<p class="mt-2" data-tx="t0036:8685d528">A la priorité sur la base de données de la communauté<strong></strong></p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003:f7249f5">Qu'est-ce que la liste noire et la liste blanche ?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004:71e2fcb4">Liste noire</h3>
+					<p class="has-text-white" data-tx="t0037:efc309c5">Particulièrement important en cas d'appels critiques<strong></strong></p>
+					<p class="has-text-white mt-2" data-tx="t0038:4472eb86"><strong>Remarque:</strong> Tes listes personnelles ont toujours la priorité sur la base de données de la communauté PhoneBlock. Un numéro figurant sur ta liste blanche ne sera jamais bloqué, même s'il a été signalé comme SPAM par des milliers d'autres utilisateurs.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007:a61f3f91">Liste blanche</h3>
+					<p class="has-text-white" data-tx="t0039:a9508e7">Les numéros figurant sur ta liste blanche ne sont <strong>jamais bloqués</strong>, même s'ils sont signalés comme SPAM dans la base de données de la communauté.</p>
+					<p class="has-text-white mt-2" data-tx="t0040:3fc513ef"><strong>Important:</strong> Tes entrées dans la liste blanche contribuent également à la base de données et aident à corriger les messages SPAM erronés.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010:e0c7382c">Gérer les listes</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:2e4a69bc">Étape 1 : Ouvrir les paramètres</h3>
+				<figure class="image">
+					<img alt="Ouvrir les paramètres" class="appscreen" data-tx="t0012:bbfe3492" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:611d6764">Appuie sur l'icône de menu (☰) en haut à gauche et sélectionne "Paramètres".</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014:a3a9e05b">Étape 2 : sélectionner la liste</h3>
+				<figure class="image">
+					<img alt="Ouvrir une liste noire" class="appscreen" data-tx="t0015:be271bd3" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016:4a61fc20">Choisis "Blacklist" ou "Whitelist" dans les paramètres.</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017:f3687544">Étape 3 : Afficher la liste</h3>
+				<figure class="image">
+					<img alt="Afficher la liste noire" class="appscreen" data-tx="t0018:11eb4e8" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019:763f7ae6">Tes numéros personnels s'affichent</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0041:2fba86d1">Comment ajouter des numéros aux listes</h3>
+		<p data-tx="t0042:c45b21f8">Les numéros sont <strong>automatiquement</strong> ajoutés à tes listes lorsque tu les évalues :</p>
+		<ul>
+			<li data-tx="t0043:5a74afb1"><strong>SPAM:</strong> Si tu signales un numéro comme SPAM, il sera automatiquement ajouté à ta liste noire.</li>
+			<li data-tx="t0044:35bd4263"><strong>Message légitime:</strong> Si vous marquez un numéro comme légitime, il sera automatiquement ajouté à votre liste blanche.</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045:d2640e6e">Tu peux évaluer des numéros :</p>
+		<ul>
+			<li data-tx="t0046:af37ab79">À partir de l'historique de tes appels</li>
+			<li data-tx="t0047:8bb9b49">Via la fonction de recherche <a th:href="@{/usage-search}"></a>, pour rechercher un numéro de manière ciblée</li>
+		</ul>
+
+		<h3 class="mt-5" data-tx="t0022:b2c98f16">Supprimer un numéro de la liste</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="Supprimer de la liste" class="appscreen" data-tx="t0023:be0a5913" th:src="@{/assets/img/mobile/settings-4-remove-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024:9f7a8c84">Balaye le numéro vers la gauche et appuie sur l'icône de la corbeille pour le supprimer.</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0048:d4ace865">Stockage sur le serveur :</strong></p>
+					<p class="mt-2" data-tx="t0049:c771c2a1">Tes listes sont enregistrées sur le serveur PhoneBlock et prises en compte lors de la vérification des SPAM. <strong>Vos listes personnelles ont toujours la priorité</strong> sur la base de données générale de la communauté.</p>
+					<p class="mt-2" data-tx="t0050:d3fca5e3">Cela signifie que tes évaluations sont valables sur tous les appareils sur lesquels tu es connecté à ton compte PhoneBlock.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0051:f61fe09a">Résumé : Comment fonctionnent les listes</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028:71e2fcb4">Liste noire</h3>
+				<ul>
+					<li data-tx="t0052:75d3e969">Créé automatiquement lorsque vous signalez des numéros comme SPAM</li>
+					<li data-tx="t0053:ae65b0">Bloque immédiatement les numéros, même sans un score élevé de SPAM communautaire</li>
+					<li data-tx="t0054:e44462a4">Tes messages contribuent à la base de données commune du SPAM</li>
+					<li data-tx="t0055:40f508ac">Idéal pour bloquer immédiatement les appelants récalcitrants</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033:a61f3f91">Liste blanche</h3>
+				<ul>
+					<li data-tx="t0056:11118fe4">Créé automatiquement lorsque tu marques des numéros comme légitimes</li>
+					<li data-tx="t0057:a73011eb">Empêche le blocage, même si le score SPAM de la communauté est élevé</li>
+					<li data-tx="t0058:e2186719">Tes évaluations positives aident à corriger les faux messages SPAM</li>
+					<li data-tx="t0059:62343da7">Important pour les numéros que tu ne veux en aucun cas manquer</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060:b396dba2">Contribution de la communauté :</strong></p>
+			<p class="mt-2" data-tx="t0061:e5c1e3e6">Chacune de tes évaluations, qu'elle soit SPAM ou légitime, aide l'ensemble de la communauté PhoneBlock. Tes listes personnelles ont toujours la priorité sur la base de données générale, mais tes évaluations sont également prises en compte dans l'évaluation de la communauté.</p>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p><strong data-tx="t0062:36376dd1">Important à comprendre :</strong></p>
+			<p class="mt-2" data-tx="t0063:284598c">Un numéro sur ta liste blanche ne sera <strong>jamais bloqué</strong>, même si des milliers d'autres utilisateurs l'ont signalé comme SPAM. Inversement, un numéro sur ta liste noire sera <strong>toujours bloqué</strong>, même s'il est considéré comme légitime dans la base de données de la communauté.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

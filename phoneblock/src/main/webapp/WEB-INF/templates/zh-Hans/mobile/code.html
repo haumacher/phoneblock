@@ -14,16 +14,17 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title" data-tx="t0001">确认电子邮件地址</h1>
-	        <p class="subtitle" data-tx="t0002">输入电子邮件中的代码。</p>
+	        <h1 class="title" data-tx="t0001:4fcae186">确认电子邮件地址</h1>
+	        <p class="subtitle" data-tx="t0002:5aca0af4">输入电子邮件中的代码。</p>
 	        <div class="content">
-				<p data-tx="t0003">已向 <code th:text="${email}"></code> 发送电子邮件。</p>
-				<p data-tx="t0004">请检查您的邮箱，复制代码并在此处输入。这将确认您的电子邮件地址。</p>
+				<p data-tx="t0003:5008487">已向 <code th:text="${email}"></code> 发送电子邮件。</p>
+				<p data-tx="t0004:691e4431">请检查您的邮箱，复制代码并在此处输入。这将确认您的电子邮件地址。</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 					<div class="field">
-						<label class="label" data-tx="t0005">代码</label>
+						<label class="label" data-tx="t0005:a34add52">代码</label>
 						<div class="control has-icons-left has-icons-right">
-							<input data-tx="t0006" name="code" placeholder="确认代码" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<input data-tx="t0006:eba94e42" name="code" placeholder="确认代码" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
 							<span class="icon is-small is-left">
 							  <i class="fa-solid fa-barcode"></i>
 							</span>
@@ -32,13 +33,19 @@
 							</span>
 						</div>
 
-						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">再试一次</a>。</p>
+						<p class="help is-danger" th:if="${message != null}">
+							<span th:text="${message}"></span>
+							<a data-tx="t0010:668224a9" th:href="@{/mobile/login}">再试一次</a>.								
+						</p>
 
-						<p class="help" data-tx="t0008" th:if="${message == null}"><span>未收到电子邮件？请检查您的垃圾邮件文件夹！</span> <a th:href="@{/mobile/login}">再试一次</a>。</p>
+						<p class="help" th:if="${message == null}">
+							<span data-tx="t0011:8db88b77">未收到电子邮件？请检查您的垃圾邮件文件夹！</span>
+							<a data-tx="t0012:668224a9" th:href="@{/mobile/login}">再试一次</a>.								
+						</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" data-tx="t0009" type="submit">创建账户</button>
+				    	<button class="button is-link" data-tx="t0009:c2e2ce7d" type="submit">创建账户</button>
 					</div>
 				</form>
 	        </div>
@@ -50,6 +57,8 @@
 
 </div>
 </section>
+
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

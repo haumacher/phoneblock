@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:a392f709">搜索数字</h1>
+
+		<p class="subtitle" data-tx="t0002:6f434e2">您可以查询 PhoneBlock 数据库中的任何电话号码，即使没有发生通话。</p>
+
+		<h2 data-tx="t0003:dd99e8ab">如何搜索数字</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004:c8b5450c">步骤 1：打开搜索</h3>
+				<figure class="image">
+					<img alt="打开搜索" class="appscreen" data-tx="t0005:bfc9750b" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006:5370f414">点击右上角的放大镜图标打开搜索功能</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007:7fee025e">步骤 2：输入编号</h3>
+				<figure class="image">
+					<img alt="输入编号" class="appscreen" data-tx="t0008:b52055e0" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009:1d56944b">输入电话号码并点击 "搜索</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010:b55e0261">搜索结果</h2>
+
+		<p data-tx="t0011:e232fe4a">搜索后，您将看到该号码的以下信息：</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012:38ad0e2c">如果号码已知：</h3>
+				<ul>
+					<li data-tx="t0013:7af27195"><strong>垃圾邮件得分：</strong>负面评价数量</li>
+					<li data-tx="t0014:4089d0f2"><strong>类别：</strong>垃圾邮件类型（广告、欺诈等）</li>
+					<li data-tx="t0015:af6f54d0"><strong>评论：</strong>其他用户的评价</li>
+					<li data-tx="t0016:e00ef249"><strong>评论：</strong>正面和负面报道</li>
+				</ul>
+				<p class="mt-3" data-tx="t0039:4a10760e">搜索后您可以做什么</p>
+				<ul>
+					<li data-tx="t0040:faf11002">将号码评为垃圾邮件或合法号码<strong></strong></li>
+					<li data-tx="t0041:8f789427">添加到黑名单（始终阻止）<strong></strong></li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018:6751a8c5">如果号码未知：</h3>
+				<ul>
+					<li data-tx="t0019:ee4cd912">应用程序显示没有可用信息</li>
+					<li data-tx="t0042:ba2252ec">添加到白名单（永不拦截）</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043:e5367544">阅读其他用户的评论</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044:bd774b20">垃圾邮件评级会将该号码添加到您的<strong>黑名单</strong>中。</li>
+					<li data-tx="t0045:8c3537ba">合法评级会将号码加入您的 <strong> 白名单</strong>。</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022:b15c494"><strong>小贴士：</strong>如果您收到了来自未知号码的可疑来电，可以在这里查找并将其报告为垃圾邮件。</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023:81ea5c6">搜索提示</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024:86ca3d86">电话号码格式</h3>
+			<p class="mt-2" data-tx="t0046:518b7b88">您可以输入带或不带国家代码的号码：</p>
+			<ul class="mt-2">
+				<li data-tx="t0047:d024b4c6"><strong>带国家拨号代码：</strong> +49 30 12345678（德国），+41 44 1234567（瑞士），+43 1 1234567（奥地利）</li>
+				<li data-tx="t0048:65d9fd8a"><strong>无国家代码：</strong>号码会自动加上您设置的国家代码</li>
+			</ul>
+			<p class="mt-3" data-tx="t0049:3e0a546f"><strong>提示：</strong>如果要搜索国外号码，请务必输入完整的国家代码。</p>
+		</div>
+
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050:63900750">搜索过程中的数据保护</h3>
+			<p class="mt-2" data-tx="t0051:fec83863">在搜索过程中，号码 <strong> 会以纯文本形式传输到 PhoneBlock 服务器</strong>。这是必要的，以便您可以对号码进行评级并将其添加到数据库中。</p>
+			<p class="mt-2" data-tx="t0052:1e029ddb"><strong>重要：</strong>基于哈希值的数据保护功能（SHA-1）仅用于来电。对于主动搜索，需要完整传输号码才能启用所有功能（评级、评论）。</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033:c908016f">什么时候搜索有用？</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034:f22eafac">常用案例</h3>
+				<ul>
+					<li data-tx="t0035:3dbf84ea">接听电话前查看显示屏上的未知号码</li>
+					<li data-tx="t0036:bbac69db">查询未接来电</li>
+					<li data-tx="t0037:fff61fd7">查看短信或电子邮件中的号码</li>
+					<li data-tx="t0038:a4595d9f">回拨前请检查号码是否合法</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0053:c8516691">搜索后您可以做什么</h3>
+				<ul>
+					<li data-tx="t0054:d6755430"><strong>评为垃圾邮件</strong>（将被添加到黑名单→始终被阻止）</li>
+					<li data-tx="t0055:452970dd"><strong>评级为合法</strong>（将被添加到白名单 → 永远不会被阻止）</li>
+					<li data-tx="t0056:bdc779d8">阅读其他用户的评论</li>
+					<li data-tx="t0057:c2d14384">可选择添加自己的评论</li>
+				</ul>
+				<p class="mt-3" data-tx="t0058:e80ee25"><strong>注意：</strong>评级和添加到列表是同一个操作！</p>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:c8a24e95">Meld nummers als SPAM of legitiem</h1>
+
+		<p class="subtitle" data-tx="t0002:63bf7196">Uw berichten helpen de hele PhoneBlock-gemeenschap om zichzelf te beschermen tegen SPAM-oproepen.</p>
+
+		<h2 data-tx="t0003:6f24859b">SPAM-nummer melden</h2>
+
+		<p data-tx="t0004:a8ee9c0c">Als je een SPAM-oproep ontvangt, kun je het nummer direct in de app rapporteren. Hoe meer details je geeft, hoe nuttiger je melding is voor andere gebruikers.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005:e594f5e9">Stap 1: SPAM melden</h3>
+				<figure class="image">
+					<img alt="SPAM melden" class="appscreen" data-tx="t0006:542e5a23" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007:e5e96702">Tik op de knop "SPAM melden" voor de betreffende oproep in de geschiedenis</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008:ae2236f5">Stap 2: Categorie selecteren</h3>
+				<figure class="image">
+					<img alt="Selecteer SPAM-categorie" class="appscreen" data-tx="t0009:aeb6b06e" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010:f4766cfd">Selecteer de juiste categorie uit de lijst</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:303b3a03">Stap 3: Geef commentaar (optioneel)</h3>
+				<figure class="image">
+					<img alt="Beschrijving toevoegen" class="appscreen" data-tx="t0012:f8f221c2" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:3b71b430">Voeg optioneel een opmerking toe om andere gebruikers te helpen</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014:e0d196df">Beschikbare SPAM-categorieën</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015:b95630ea"><strong>Reclame:</strong> Ongevraagde reclameoproepen</li>
+					<li data-tx="t0016:f90affe7"><strong>Competitie:</strong> Onjuiste prijsmeldingen</li>
+					<li data-tx="t0017:1572ca14"><strong>Kostenval:</strong> Dure betaalnummers</li>
+					<li data-tx="t0018:8e1de0b"><strong>Scams:</strong> Frauduleuze oproepen (bijv. zwendel met kleinkinderen)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019:49f7c80a"><strong>Bellen:</strong> Kort belsignaal om terug te bellen</li>
+					<li data-tx="t0020:4c84f068"><strong>Ongewenste enquêtes:</strong> Ongewenste enquêtes</li>
+					<li data-tx="t0021:f8a87cb6"><strong>Anderen:</strong> Andere soorten SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022:b4318350">Markeer nummer als legitiem</h2>
+
+		<p data-tx="t0023:54052bdf">Als een nummer ten onrechte als SPAM is gemarkeerd, kun je het als legitiem beoordelen. Dit helpt om onjuiste berichten te corrigeren en de kwaliteit van de database te verbeteren.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024:44477396">Markeer als legitiem</h3>
+				<figure class="image">
+					<img alt="Markeer als legitiem" class="appscreen" data-tx="t0025:62a239ad" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:ce53d1d9">Tik op "Markeer als legitiem" om een positieve beoordeling te geven. Optioneel kun je hier ook een opmerking toevoegen.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027:8a56254d">Wanneer moet ik dit doen?</h3>
+				<p class="mt-5" data-tx="t0028:251143e9">Markeer een nummer als legitiem als:</p>
+				<ul>
+					<li data-tx="t0029:2fda0631">Het is een serieuze oproep</li>
+					<li data-tx="t0030:da6a605f">Het nummer komt van een echt bedrijf</li>
+					<li data-tx="t0031:917297e9">Je kent het nummer en het is onjuist gerapporteerd</li>
+					<li data-tx="t0032:5cbfb922">De oproep werd aangevraagd (bijv. dokterspraktijk, handelaar, pakketdienst)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033:8e3cddb8"><strong>Noot:</strong> Legitieme beoordelingen helpen om het nummer uit de SPAM-database te verwijderen of de SPAM-score te verlagen.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034:d32c7bb5">Bedankt voor je hulp!</strong></p>
+			<p class="mt-2" data-tx="t0035:6ded6ef1">Elk rapport helpt om de PhoneBlock database up-to-date en betrouwbaar te houden. De gemeenschap profiteert van uw ervaring.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

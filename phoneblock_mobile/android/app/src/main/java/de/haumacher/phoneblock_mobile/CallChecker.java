@@ -7,9 +7,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.telecom.Call;
 import android.telecom.CallScreeningService;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +29,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class CallChecker extends CallScreeningService {
 
     ScheduledExecutorService _pool;
@@ -64,6 +67,8 @@ public class CallChecker extends CallScreeningService {
         SharedPreferences prefs = MainActivity.getPreferences(this);
         String authToken = prefs.getString("auth_token", null);
         int minVotes = prefs.getInt("min_votes", 4);
+        boolean blockRanges = prefs.getBoolean("block_ranges", false);
+        int minRangeVotes = prefs.getInt("min_range_votes", 10);
 
         if (authToken == null) {
             // Not logged in, no screening possible.
@@ -72,58 +77,122 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
-        String number = handle.getSchemeSpecificPart();
+        String rawNumber = handle.getSchemeSpecificPart();
+
+        // Get country code for normalization
+        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        String countryIso = tm != null ? tm.getNetworkCountryIso() : null;
+
+        // Normalize to international format for consistent hashing
+        String number = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryIso);
+        if (number == null) {
+            // Unable to normalize, accept the call
+            Log.w(CallChecker.class.getName(), "Unable to normalize number: " + rawNumber);
+            acceptCall(callDetails);
+            return;
+        }
 
         AtomicBoolean canceled = new AtomicBoolean();
 
-        ScheduledFuture<?> future = _pool.schedule(() -> {
+        // Array to hold timeout future reference (needs to be final for lambda access)
+        final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
+
+        ScheduledFuture<?> queryFuture = _pool.schedule(() -> {
             try {
                 JSONObject json = queryPhoneBlock(number, authToken);
                 boolean archived = json.getBoolean("archived");
                 int votes = json.getInt("votes");
+                int votesWildcard = json.optInt("votesWildcard", 0);
+                String rating = json.optString("rating", null);
+
+                // Check if number should be blocked based on direct votes or range votes
+                final boolean shouldBlock;
+                final String blockReason;
 
                 if (votes >= minVotes && !archived) {
+                    shouldBlock = true;
+                    blockReason = votes + " votes";
+                } else if (blockRanges && votesWildcard >= minRangeVotes) {
+                    shouldBlock = true;
+                    blockReason = votesWildcard + " range votes";
+                } else {
+                    shouldBlock = false;
+                    blockReason = "";
+                }
+
+                if (shouldBlock) {
                     if (canceled.compareAndSet(false, true)) {
+                        // Cancel timeout since we got a result
+                        if (timeoutFuture[0] != null) {
+                            timeoutFuture[0].cancel(false);
+                        }
                         Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + votes + " votes)");
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + blockReason + ", rating: " + rating + ")");
                             respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
+                            // Report blocked call (persists even when app is not running)
+                            // Use rawNumber for display, normalized number is only for API queries
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, rating);
                         });
                     }
                     return;
                 } else {
-                    Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
+                    if (canceled.compareAndSet(false, true)) {
+                        // Cancel timeout since we got a result
+                        if (timeoutFuture[0] != null) {
+                            timeoutFuture[0].cancel(false);
+                        }
+                        Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes)");
+                            acceptCall(callDetails);
+                            // Report accepted call (persists even when app is not running)
+                            // Use rawNumber for display, normalized number is only for API queries
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, false, votes, rating);
+                        });
+                    }
+                    return;
                 }
             } catch (MalformedURLException e) {
                 Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock URL, cannot screen call: " + number);
             } catch (IOException ex) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Failed to query PhoneBlock, cannot screen call: " + number, ex);
+                Log.d(CallChecker.class.getName(), "onScreenCall: failed to query PhoneBlock, cannot screen call: " + number, ex);
             } catch (JSONException ex) {
                 Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock result, cannot screen call: " + number, ex);
             }
 
             if (canceled.compareAndSet(false, true)) {
+                // Cancel timeout since we're handling the error
+                if (timeoutFuture[0] != null) {
+                    timeoutFuture[0].cancel(false);
+                }
                 Handler.createAsync(Looper.getMainLooper()).post(() -> {
                     acceptCall(callDetails);
                 });
             }
         }, 0, TimeUnit.MILLISECONDS);
 
-        _pool.schedule(() -> {
+        timeoutFuture[0] = _pool.schedule(() -> {
             if (canceled.compareAndSet(false, true)) {
                 Handler.createAsync(Looper.getMainLooper()).post(() -> {
                     Log.d(CallChecker.class.getName(), "onScreenCall: PhoneBlock query timeout, cannot screen call: " + number);
                     acceptCall(callDetails);
                 });
             }
-            future.cancel(true);
+            queryFuture.cancel(true);
         }, 4500, TimeUnit.MILLISECONDS);
     }
 
-    private static @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
-        URL url = new URL("https://phoneblock.net/pb-test/api/num/" + number + "?format=json");
+    private @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
+        SharedPreferences prefs = MainActivity.getPreferences(this);
+        String queryUrl = prefs.getString("query_url", "https://phoneblock.net/phoneblock/api/check?sha1={sha1}&format=json");
+        String appVersion = prefs.getString("app_version", "unknown");
+
+        // Compute SHA1 hash of the phone number for privacy
+        String sha1Hash = PhoneNumberUtils.computeSHA1(number);
+
+        URL url = new URL(queryUrl.replace("{sha1}", sha1Hash));
         URLConnection connection = url.openConnection();
-        connection.setRequestProperty("Authorization", "Bearer: " + authToken);
-        connection.setRequestProperty("User-Agent", "PhoneBlock mobile");
+        connection.setRequestProperty("Authorization", "Bearer " + authToken);
+        connection.setRequestProperty("User-Agent", "PhoneBlockMobile/" + appVersion);
         return new JSONObject(readTextContent(connection));
     }
 
@@ -140,6 +209,15 @@ public class CallChecker extends CallScreeningService {
                     result.append(buffer, 0, direct);
                 }
             }
+        } catch (IOException e) {
+            // Log HTTP error details if available
+            if (connection instanceof java.net.HttpURLConnection) {
+                java.net.HttpURLConnection httpConn = (java.net.HttpURLConnection) connection;
+                int responseCode = httpConn.getResponseCode();
+                String responseMessage = httpConn.getResponseMessage();
+                Log.e(CallChecker.class.getName(), "HTTP error: " + responseCode + " " + responseMessage + " for URL: " + connection.getURL());
+            }
+            throw e;
         }
         return result.toString();
     }

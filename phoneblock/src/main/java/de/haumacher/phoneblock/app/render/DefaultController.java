@@ -100,7 +100,7 @@ public class DefaultController implements WebController {
 		
 		request.setAttribute("template", i18nTemplate);
 		
-        resolveDialPrefix(request);
+        resolveDialPrefix(request, lang);
 		
 		final IServletWebExchange webExchange = renderer.buildExchange(request, response);
         WebContext ctx = new WebContext(webExchange, lang.locale);
@@ -187,7 +187,7 @@ public class DefaultController implements WebController {
         		DB db = DBService.getInstance();
         		try (SqlSession tx = db.openSession()) {
         			Users users = tx.getMapper(Users.class);
-        			users.setLocale(login, lang.tag);
+        			users.setLang(login, lang.tag);
         			tx.commit();
         		}
         	}
@@ -196,12 +196,12 @@ public class DefaultController implements WebController {
         return lang;
 	}
 
-	private static void resolveDialPrefix(HttpServletRequest request) {
-		String dialPrefix = selectDialPrefix(request);
+	private static void resolveDialPrefix(HttpServletRequest request, Language lang) {
+		String dialPrefix = selectDialPrefix(request, lang);
 		request.setAttribute("currentDialPrefix", dialPrefix);
 	}
 	
-	public static String selectDialPrefix(HttpServletRequest request) {
+	public static String selectDialPrefix(HttpServletRequest request, Language lang) {
 		String selectedPrefix = request.getParameter(DIAL_PREFIX_ATTR);
 		String dialPrefix = null;
 		if (selectedPrefix == null) {
@@ -242,6 +242,10 @@ public class DefaultController implements WebController {
 			}
 		}
 		
+		if (dialPrefix == null) {
+			dialPrefix = lang.dialPrefix;
+		}
+		
 		return dialPrefix;
 	}
 	
@@ -256,6 +260,12 @@ public class DefaultController implements WebController {
 	}
 
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
+		// Use request parameters as template variables (at least as default values).
+		for (Enumeration<String> it = request.getParameterNames(); it.hasMoreElements(); ) {
+			String attribute = it.nextElement();
+			ctx.setVariable(attribute, request.getParameter(attribute));
+		}
+
 		// Use request attributes as template variables.
 		for (Enumeration<String> it = request.getAttributeNames(); it.hasMoreElements(); ) {
 			String attribute = it.nextElement();
@@ -285,11 +295,13 @@ public class DefaultController implements WebController {
     	String userAgent = request.getHeader("User-Agent");
     	userAgent = userAgent == null ? "" : userAgent.toLowerCase();
     	boolean android = userAgent.contains("android");
-    	boolean iphone = userAgent.contains("iPhone");
-    	
+    	boolean iphone = userAgent.contains("iphone");
+    	boolean inMobileApp = userAgent.startsWith("phoneblockmobile/");
+
     	ctx.setVariable("android", Boolean.valueOf(android));
 		ctx.setVariable("iphone", Boolean.valueOf(iphone));
 		ctx.setVariable("fritzbox", Boolean.valueOf(!android && !iphone));
+		ctx.setVariable("inMobileApp", Boolean.valueOf(inMobileApp));
 		
 		ctx.setVariable("ratings", RATINGS);
 		ctx.setVariable("languages", Language.all());

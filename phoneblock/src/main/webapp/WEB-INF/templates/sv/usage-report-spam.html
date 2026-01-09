@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:c8a24e95">Rapportera nummer som SPAM eller legitima</h1>
+
+		<p class="subtitle" data-tx="t0002:63bf7196">Dina meddelanden hjälper hela PhoneBlock-gruppen att skydda sig mot SPAM-samtal.</p>
+
+		<h2 data-tx="t0003:6f24859b">Rapportera SPAM-nummer</h2>
+
+		<p data-tx="t0004:a8ee9c0c">Om du får ett SPAM-samtal kan du rapportera numret direkt i appen. Ju mer information du ger, desto mer användbar blir din rapport för andra användare.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005:e594f5e9">Steg 1: Rapportera SPAM</h3>
+				<figure class="image">
+					<img alt="Rapportera SPAM" class="appscreen" data-tx="t0006:542e5a23" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007:e5e96702">Tryck på knappen "Rapportera SPAM" för motsvarande samtal i historiken</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008:ae2236f5">Steg 2: Välj kategori</h3>
+				<figure class="image">
+					<img alt="Välj SPAM-kategori" class="appscreen" data-tx="t0009:aeb6b06e" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010:f4766cfd">Välj lämplig kategori från listan</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:303b3a03">Steg 3: Kommentera (valfritt)</h3>
+				<figure class="image">
+					<img alt="Lägg till beskrivning" class="appscreen" data-tx="t0012:f8f221c2" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:3b71b430">Lägg eventuellt till en kommentar för att hjälpa andra användare</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014:e0d196df">Tillgängliga SPAM-kategorier</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015:b95630ea"><strong>Reklam:</strong> Obeställda reklamsamtal</li>
+					<li data-tx="t0016:f90affe7"><strong>Tävling:</strong> Felaktiga prismeddelanden</li>
+					<li data-tx="t0017:1572ca14"><strong>Kostnadsfälla:</strong> Dyra premiumnummer</li>
+					<li data-tx="t0018:8e1de0b"><strong>Bedrägerier:</strong> Bedrägliga samtal (t.ex. barnbarnsbedrägerier)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019:49f7c80a"><strong>Ping call:</strong> Kort ringsignal för att provocera fram ett återuppringningssamtal</li>
+					<li data-tx="t0020:4c84f068"><strong>Enkät:</strong> Oönskade enkäter</li>
+					<li data-tx="t0021:f8a87cb6"><strong>Andra:</strong> Andra typer av SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022:b4318350">Markera numret som legitimt</h2>
+
+		<p data-tx="t0023:54052bdf">Om ett nummer felaktigt har markerats som SPAM kan du bedöma det som legitimt. Detta hjälper till att korrigera felaktiga meddelanden och förbättra kvaliteten på databasen.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024:44477396">Markera som legitim</h3>
+				<figure class="image">
+					<img alt="Markera som legitim" class="appscreen" data-tx="t0025:62a239ad" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:ce53d1d9">Tryck på "Markera som legitim" för att ge ett positivt omdöme. Alternativt kan du också lägga till en kommentar här.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027:8a56254d">När ska jag göra det här?</h3>
+				<p class="mt-5" data-tx="t0028:251143e9">Markera ett nummer som legitimt om:</p>
+				<ul>
+					<li data-tx="t0029:2fda0631">Det är ett allvarligt samtal</li>
+					<li data-tx="t0030:da6a605f">Numret kommer från ett riktigt företag</li>
+					<li data-tx="t0031:917297e9">Du känner till siffran och den rapporterades felaktigt</li>
+					<li data-tx="t0032:5cbfb922">Samtalet efterfrågades (t.ex. läkarmottagning, hantverkare, paketutlämning)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033:8e3cddb8"><strong>Anmärkning:</strong> Legitima betyg hjälper till att ta bort numret från SPAM-databasen eller sänka SPAM-poängen.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034:d32c7bb5">Tack för din hjälp!</strong></p>
+			<p class="mt-2" data-tx="t0035:6ded6ef1">Varje rapport bidrar till att hålla PhoneBlock-databasen uppdaterad och tillförlitlig. Gemenskapen drar nytta av din erfarenhet.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

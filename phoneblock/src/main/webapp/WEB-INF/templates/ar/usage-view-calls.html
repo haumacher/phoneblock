@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">عرض المكالمات المحظورة والفائتة</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">يتحقق PhoneBlock Mobile من جميع المكالمات الواردة من أرقام مجهولة ويوضح لك المكالمات التي تم حظرها والمكالمات التي تم تمريرها.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>مهم:</strong> يتم التحقق من الأرقام غير المعروفة فقط!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">لا يتم التحقق من المكالمات الواردة من الأرقام الموجودة في قائمة جهات الاتصال الخاصة بك ولا تظهر في قائمة مكالمات PhoneBlock. يعالج التطبيق فقط الأرقام غير المحفوظة في دفتر هاتفك.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">سجل المكالمات</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">نظرة عامة على جميع المكالمات التي تم فحصها</h3>
+				<figure class="image">
+					<img alt="قائمة المكالمات التي تم التحقق منها" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">يعرض التطبيق جميع المكالمات الواردة من أرقام مجهولة مع الحالة الخاصة بكل منها</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">مكالمات الرسائل الاقتحامية المحظورة</h3>
+				<figure class="image">
+					<img alt="تم حظر مكالمة سبام" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">يتم عرض مكالمات الرسائل الاقتحامية المحظورة برمز أحمر ودرجة الرسائل الاقتحامية. ستتلقى إشعاراً بالحظر.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">ما هي الأرقام المحظورة باعتبارها رسائل اقتحامية (SPAM)؟</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">أرقام الرسائل الاقتحامية (سيتم حظرها)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">يتم حظر الرقم كرسالة غير مرغوب فيها إذا:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">لديك درجة عالية من الرسائل الاقتحامية في قاعدة بيانات PhoneBlock</li>
+						<li data-tx="t0031:bbf61b78">درجة الرسائل الاقتحامية تتجاوز قيمة العتبة التي قمت بتعيينها</li>
+						<li data-tx="t0032:496c5432">إنها على قائمتك السوداء الشخصية (بغض النظر عن النتيجة)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>النتيجة:</strong> لا يرن هاتفك، يتم رفض المكالمة تلقائيًا.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">الأرقام الشرعية (مسموح بها)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">يعتبر الرقم مشروعاً إذا:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">وهي غير متوفرة في قاعدة بيانات PhoneBlock</li>
+						<li data-tx="t0037:be800714">يحتوي على درجة منخفضة من الرسائل الاقتحامية (SPAM) أقل من الحد الذي حددته</li>
+						<li data-tx="t0038:dc6b0dd6">إنها على قائمتك البيضاء الشخصية (لن يتم حظرها أبدًا)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>النتيجة:</strong> يرن هاتفك بشكل طبيعي، وتمر المكالمة.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">كيف يعمل الحجب؟</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">يستخدم PhoneBlock Mobile خدمة CallScreeningService في نظام Android لفحص المكالمات الواردة قبل أن ترن. إذا كان الرقم موجوداً في قاعدة بيانات الرسائل الاقتحامية (SPAM) وتم تجاوز الحد الذي حددته، يتم حظر المكالمة تلقائياً.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">الإبلاغ عن أرقام الرسائل الاقتحامية من سجل المكالمات</h2>
+
+		<p data-tx="t0041:26708b3">إذا كنت قد تلقيت مكالمة من رقم غير معروف جاءك على أنه رقم شرعي ولكنه في الواقع كان رسالة مزعجة غير مرغوب فيها، يمكنك الإبلاغ عنها مباشرةً من قائمة المكالمات:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">متى يجب عليك الإبلاغ عن رقم؟</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">الرقم ليس موجودًا بعد في قاعدة بيانات PhoneBlock (درجة الرسائل الاقتحامية منخفضة أو معدومة)</li>
+					<li data-tx="t0044:e2b6f50e">من الواضح أن المكالمة كانت غير مرغوب فيها (إعلان، احتيال، إلخ)</li>
+					<li data-tx="t0045:ba58fceb">تريد تحذير المجتمع من هذا الرقم</li>
+					<li data-tx="t0046:53de68c0">سيتم حظر الرقم تلقائيًا في المستقبل</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">ماذا يحدث في حالة وجود بلاغ؟</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">تتم إضافة الرقم <strong> تلقائيًا إلى قائمتك السوداء&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">ستتم حمايتك من المكالمات المستقبلية من هذا الرقم</li>
+					<li data-tx="t0050:da8797c6">رسالتك تساهم في قاعدة بيانات PhoneBlock</li>
+					<li data-tx="t0051:1f62ed10">يستفيد المستخدمون الآخرون من تقييمك</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">إلى التعليمات: الإبلاغ عن أرقام الرسائل الاقتحامية</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">مهم:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">إذا قمت بالإبلاغ عن رقم كرسالة غير مرغوب فيها، فسيتم إضافته إلى قائمتك السوداء الشخصية وسيتم حظره دائمًا في المستقبل. هذا القرار له الأسبقية على تصنيف المجتمع.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

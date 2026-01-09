@@ -11,16 +11,16 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">Номер телефону ☎ <th:block th:text="${number.plus}"></th:block></h1>
+	<h1 data-tx="t0001:c7553dff">Номер телефону ☎ <th:block th:text="${number.plus}"></th:block></h1>
 
 	<p>
 		<th:block th:switch="${state}">
-		<span class="tag is-info is-success" data-tx="t0002" th:case="'whitelisted'"><i class="fa-solid fa-star"></i> У білому списку</span>
-		<span class="tag is-info is-success" data-tx="t0004" th:case="'legitimate'">Скарг немає</span>
-		<span class="tag is-info is-warning" data-tx="t0003" th:case="'wildcard'">Номерний блок з підозрою на спам</span>
-		<span class="tag is-info is-warning" data-tx="t0005" th:case="'suspicious'">Подано скаргу</span>
-		<span class="tag is-info is-warning" data-tx="t0034" th:case="'archived'">Старі скарги</span>
-		<span class="tag is-info is-danger" data-tx="t0006" th:case="'blocked'">Заблоковано.</span>
+		<span class="tag is-info is-success" data-tx="t0002:3353ba2e" th:case="'whitelisted'"><i class="fa-solid fa-star"></i> У білому списку</span>
+		<span class="tag is-info is-success" data-tx="t0004:dc9fcb71" th:case="'legitimate'">Скарг немає</span>
+		<span class="tag is-info is-warning" data-tx="t0003:c40e7f6a" th:case="'wildcard'">Номерний блок з підозрою на спам</span>
+		<span class="tag is-info is-warning" data-tx="t0005:76640a86" th:case="'suspicious'">Подано скаргу</span>
+		<span class="tag is-info is-warning" data-tx="t0034:9e0a3603" th:case="'archived'">Старі скарги</span>
+		<span class="tag is-info is-danger" data-tx="t0006:e79cb479" th:case="'blocked'">Заблоковано.</span>
 		</th:block>
 		
 		<span th:class="|tag is-info ${ratingCssClass}|" th:if="${info.votes &gt; 0 and rating.name != 'B_MISSED' and rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(ratingLabelKey)}"></span>
@@ -28,59 +28,66 @@
 
 <article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
-	<p data-tx="t0007">Інформація про номер виклику <th:block th:text="${number.zeroZero}"></th:block></p>
+	<p data-tx="t0007:46ce228a">Інформація про номер виклику <th:block th:text="${number.zeroZero}"></th:block></p>
   </div>
   <div class="message-body">
   	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
   	
   	<th:block th:switch="${state}">
-  	<p data-tx="t0035" th:case="'whitelisted'">Номер телефону знаходиться в білому списку і не може бути заблокований за допомогою PhoneBlock. Якщо ви все ще відчуваєте переслідування з цього номера, будь ласка, встановіть приватне блокування для цього номера.</p>
-  	<p data-tx="t0036" th:case="'legitimate'">Номер телефону не входить до бази даних <a th:href="@{/status}">PhoneBlock</a>. Поки що немає голосів за блокування ☎ <code dir="ltr" th:text="${number.shortcut}"></code>.</p>
-  	<p data-tx="t0037" th:case="'wildcard'">Сам номер телефону не міститься в базі даних <a th:href="@{/status}">PhoneBlock</a>. Однак номер ☎ <code dir="ltr" th:text="${number.shortcut}"></code> походить з блоку номерів з підозрою на спам. <th:block th:if="${info.votesWildcard == 1}"> Відбувається голосування за блокування блоку номерів. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Є <th:block th:text="${info.votesWildcard}"></th:block> голосів за блокування номерного блоку. </th:block></p>
-  	<p data-tx="t0038" th:case="'suspicious'">Вже є <th:block th:text="${info.votes}"></th:block> голосів за блокування ☎ <code dir="ltr" th:text="${number.shortcut}"></code>. Однак номер ще не заблоковано.</p>  	
-  	<p data-tx="t0039" th:case="'archived'">Існують <th:block th:text="${info.votes}"></th:block> старі голоси, які виступали за блокування ☎ <code dir="ltr" th:text="${number.shortcut}"></code>. Однак, номер більше не заблокований.</p>
-  	<p data-tx="t0040" th:case="'blocked'">Номер телефону ☎ <code dir="ltr" th:text="${number.shortcut}"></code> неодноразово повідомлявся як джерело <a th:href="@{/status}">небажаних телефонних дзвінків</a>. <th:block th:text="${info.votes}"></th:block> Голоси на користь блокування номера.</p>
+  	<p data-tx="t0035:32d87c4b" th:case="'whitelisted'">Номер телефону знаходиться в білому списку і не може бути заблокований за допомогою PhoneBlock. Якщо ви все ще відчуваєте переслідування з цього номера, будь ласка, встановіть приватне блокування для цього номера.</p>
+  	<p data-tx="t0036:90c82d46" th:case="'legitimate'">Номер телефону не входить до бази даних <a th:href="@{/status}">PhoneBlock</a>. Поки що немає голосів за блокування ☎ <code dir="ltr" th:text="${number.shortcut}"></code>.</p>
+  	<p data-tx="t0037:4645ed3" th:case="'wildcard'">Сам номер телефону не міститься в базі даних <a th:href="@{/status}">PhoneBlock</a>. Однак номер ☎ <code dir="ltr" th:text="${number.shortcut}"></code> походить з блоку номерів з підозрою на спам. <th:block th:if="${info.votesWildcard == 1}"> Відбувається голосування за блокування блоку номерів. </th:block> <th:block th:if="${info.votesWildcard &gt; 1}"> Є <th:block th:text="${info.votesWildcard}"></th:block> голосів за блокування номерного блоку. </th:block></p>
+  	<p data-tx="t0038:cf3ec3fb" th:case="'suspicious'">Вже є <th:block th:text="${info.votes}"></th:block> голосів за блокування ☎ <code dir="ltr" th:text="${number.shortcut}"></code>. Однак номер ще не заблоковано.</p>  	
+  	<p data-tx="t0039:494c3717" th:case="'archived'">Існують <th:block th:text="${info.votes}"></th:block> старі голоси, які виступали за блокування ☎ <code dir="ltr" th:text="${number.shortcut}"></code>. Однак, номер більше не заблокований.</p>
+  	<p data-tx="t0040:e314d7e8" th:case="'blocked'">Номер телефону ☎ <code dir="ltr" th:text="${number.shortcut}"></code> неодноразово повідомлявся як джерело <a th:href="@{/status}">небажаних телефонних дзвінків</a>. <th:block th:text="${info.votes}"></th:block> Голоси на користь блокування номера.</p>
   	</th:block>
 
 	<ul>
-		<li data-tx="t0008">Альтернативні варіанти написання: <th:block th:if="${number.shortcut}"> <code dir="ltr" th:text="${number.shortcut}"></code>, </th:block> <code dir="ltr" th:text="${number.plus}"></code>, <code dir="ltr" th:text="${number.zeroZero}"></code>.</li>
-		<li data-tx="t0009">Країна: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
+		<li>
+			<span data-tx="t0008:324747a0">Альтернативні варіанти написання:</span> 
+			<th:block th:if="${number.shortcut}">
+				<code dir="ltr" th:text="${number.shortcut}"></code>, 
+			</th:block>
+			<code dir="ltr" th:text="${number.plus}"></code>, 
+			<code dir="ltr" th:text="${number.zeroZero}"></code>
+		</li>
+		<li data-tx="t0009:c5632ed">Країна: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
-		<li data-tx="t0050" th:if="${number.usage}">Тип номера: <th:block th:text="${number.usage}"></th:block></li>
+		<li data-tx="t0050:24a316ca" th:if="${number.usage}">Тип номера: <th:block th:text="${number.usage}"></th:block></li>
 
-		<li data-tx="t0010" th:if="${number.city}">Місто: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
+		<li data-tx="t0010:61ab95ee" th:if="${number.city}">Місто: <th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
-		<li data-tx="t0011" th:if="${info.votes} &gt; 0">Голоси за блокування: <th:block th:text="${info.votes}"></th:block>.</li>
+		<li data-tx="t0011:886a84aa" th:if="${info.votes} &gt; 0">Голоси за блокування: <th:block th:text="${info.votes}"></th:block>.</li>
 		
-		<li data-tx="t0012" th:if="${info.votesWildcard} &gt; ${info.votes}">Голосує за блокування цифрової клавіатури: <th:block th:text="${info.votesWildcard}"></th:block>.</li>
+		<li data-tx="t0012:7fff511b" th:if="${info.votesWildcard} &gt; ${info.votes}">Голосує за блокування цифрової клавіатури: <th:block th:text="${info.votesWildcard}"></th:block>.</li>
 		
-		<li data-tx="t0013" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Остання скарга від: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
+		<li data-tx="t0013:b2e85cd7" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Остання скарга від: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
 
-		<li data-tx="t0014" th:if="${info.votes} &gt; 0 and ${info.dateAdded} &gt; 0">Номер активний з: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
+		<li data-tx="t0014:578dd8de" th:if="${info.votes} &gt; 0 and ${info.dateAdded} &gt; 0">Номер активний з: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
 	</ul>
   </div>
 </article>
 
-	<p data-tx="t0015">Ви можете блокувати небажані дзвінки <em>автоматично</em>, якщо встановите PhoneBlock:</p>
+	<p data-tx="t0015:ccaa5736">Ви можете блокувати небажані дзвінки <em>автоматично</em>, якщо встановите PhoneBlock:</p>
 	
 	<div th:replace="~{fragments/page :: buttons}"></div>
 
 <th:block th:if="${relatedNumbers.size &gt; 0}">
-	<p data-tx="t0020">Номер ☎ <th:block th:text="${number.shortcut}"></th:block> може належати до того ж з'єднання, що і наступні номери в базі даних:</p>
+	<p data-tx="t0020:965827cd">Номер ☎ <th:block th:text="${number.shortcut}"></th:block> може належати до того ж з'єднання, що і наступні номери в базі даних:</p>
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
-			<a data-onclick="showNumber" data-tx="t0021" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
+			<a data-onclick="showNumber" th:href="@{/nums/{other}(other=${relatedInfo.zeroZero})}" th:with="relatedInfo=${#converters.analyze(related)}">☎ <th:block th:text="${related}"></th:block></a>
 		</span>
 	</blockquote>
 </th:block>	
 
-	<h2 data-tx="t0022" id="writeRating"></h2>
+	<h2 data-tx="t0022:3a9d86a0" id="writeRating">Schreib eine Bewertung für <th:block th:text="${number.plus}"></th:block></h2>
 	
-	<div class="notification is-info" data-tx="t0023" id="thanks" th:if="${thanks}">Дякуємо за вашу оцінку, ви допомагаєте іншим, хто також покликаний.</div>
+	<div class="notification is-info" data-tx="t0023:d6b3050" id="thanks" th:if="${thanks}">Дякуємо за вашу оцінку, ви допомагаєте іншим, хто також покликаний.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024">Чи телефонував вам ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>? Розкажіть іншим, чого очікувати від ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Якщо вас турбують дзвінки від ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>, <a th:href="@{/setup}">встановіть PhoneBlock</a> і залиште відгук для ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024:b9a6f5c1">Чи телефонував вам ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>? Розкажіть іншим, чого очікувати від ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Якщо вас турбують дзвінки від ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>, <a th:href="@{/setup}">встановіть PhoneBlock</a> і залиште відгук для ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${number.id}" type="hidden"/>
@@ -96,19 +103,19 @@
 		</div>
 
 		<p>			
-		<textarea class="textarea is-primary" data-tx="t0042" name="comment" placeholder="Ваш звіт - без образ, без лайки!" th:text="${enteredComment}"></textarea>
+		<textarea class="textarea is-primary" data-tx="t0042:49dda1bd" name="comment" placeholder="Ваш звіт - без образ, без лайки!" th:text="${enteredComment}"></textarea>
 		</p>
 		
 		<th:block th:unless="${userName}">		
-		<p data-tx="t0025">Щоб переконатися, що ваш рейтинг має негайний вплив на ваш список блокування, <a th:href="@{/login(location=${currentPage})}">ввійдіть спочатку</a>!</p>
+		<p data-tx="t0025:92a688">Щоб переконатися, що ваш рейтинг має негайний вплив на ваш список блокування, <a th:href="@{/login(location=${currentPage})}">ввійдіть спочатку</a>!</p>
 		
 		<p>
-			<label class="label" data-tx="t0041">Код безпеки</label>
+			<label class="label" data-tx="t0041:10d7cfff">Код безпеки</label>
 
-			<img alt="Captcha" data-tx="t0043" th:src="${captchaSrc}"/>
+			<img alt="Captcha" data-tx="t0043:ccf7588c" th:src="${captchaSrc}"/>
 
 			<div class="control has-icons-left has-icons-right">
-			    <input autocomplete="off" class="input" data-tx="t0044" name="captcha" placeholder="Текст на зображенні вище" type="text"/>
+			    <input autocomplete="off" class="input" data-tx="t0044:4be67cdf" name="captcha" placeholder="Текст на зображенні вище" type="text"/>
  
 			    <span class="icon is-small is-left">
 			      <i class="fa-solid fa-key"></i>
@@ -124,7 +131,7 @@
 				<span class="icon">
 					<i class="fas fa-paper-plane"></i>
 				</span>
-				<span data-tx="t0026">Надіслати</span>
+				<span data-tx="t0026:59fa24a4">Надіслати</span>
 			</button>
 		</div>
 	</form>
@@ -133,7 +140,7 @@
 <div class="columns">
 	<div class="column is-half">
 	<div th:if="${ratings}">
-		<canvas aria-label="Кількість оцінок" data-tx="t0047" height="200" id="ratings" role="img" width="400"></canvas>
+		<canvas aria-label="Кількість оцінок" data-tx="t0047:d1aff13f" height="200" id="ratings" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="ratings-data">
 		{
 			"type": "bar",
@@ -158,12 +165,12 @@
 		</pre>
 		<script th:src="@{/assets/js/phone-info-ratings.js}" type="text/javascript"></script>
 	</div>
-	<p data-tx="t0027" th:unless="${ratings}">Ще немає жодного відгуку, будьте першим, хто поділиться ним!</p>
+	<p data-tx="t0027:b79530bf" th:unless="${ratings}">Ще немає жодного відгуку, будьте першим, хто поділиться ним!</p>
 	</div>
 
 	<div class="column is-half">
 	<div id="searches-data" th:data-data="${searchData}" th:data-labels="${searchLabels}" th:if="${searches}">
-		<canvas aria-label="Пошукові запити за останній тиждень" data-tx="t0048" dir="ltr" height="200" id="searches" role="img" width="400"></canvas>
+		<canvas aria-label="Пошукові запити за останній тиждень" data-tx="t0048:4df2ba2c" dir="ltr" height="200" id="searches" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="searches-data">
 		{
 			"type": "line",
@@ -188,12 +195,12 @@
 		</pre>
 		<script th:src="@{/assets/js/phone-info-searches.js}" type="text/javascript"></script>
 	</div>
-	<p data-tx="t0028" th:unless="${searches}">Пошукові запити за цим номером відсутні.</p>
+	<p data-tx="t0028:9bfce631" th:unless="${searches}">Пошукові запити за цим номером відсутні.</p>
 	</div>
 </div>
 
 <th:block th:if="${comments.size &gt; 0}">
-	<h2 data-tx="t0029">Коментарі до <th:block th:text="${number.plus}"></th:block></h2>
+	<h2 data-tx="t0029:3b54539d">Коментарі до <th:block th:text="${number.plus}"></th:block></h2>
 	
 	<th:block th:each="comment,commentIt : ${comments}">
 	
@@ -209,10 +216,10 @@
 	<div class="media-content">
 	  <div class="content">
 		<p class="commentHeader" th:with="phoneInfo=${#converters.analyze(comment.phone)}">
-		  <strong data-tx="t0030">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></strong>
+		  <strong>☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></strong>
 		  <small>
 		  <a target="_blank" th:href="@{/link/{service}/{phone}(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}" th:unless="${#strings.isEmpty(comment.service)}"></a>
-		  <span data-tx="t0031" th:if="${#strings.isEmpty(comment.service)}">PhoneBlock</span>
+		  <span data-tx="t0031:88251796" th:if="${#strings.isEmpty(comment.service)}">PhoneBlock</span>
 		  </small>
 		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
 		</p>
@@ -222,13 +229,13 @@
 			
 	  <nav class="level is-mobile">
 		<div class="level-left">
-		  <a aria-label="Гарна підказка." class="level-item thumbs-up commentVote" data-tx="t0045" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Гарна порада!">
+		  <a aria-label="Гарна підказка." class="level-item thumbs-up commentVote" data-tx="t0045:3079fd2d" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Гарна порада!">
 			<span class="icon">
 			  <i class="fa-solid fa-thumbs-up"></i>
 			</span>
 			<span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
 		  </a>
-		  <a aria-label="Нісенітниця." class="level-item thumbs-down commentVote" data-tx="t0046" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Нісенітниця!">
+		  <a aria-label="Нісенітниця." class="level-item thumbs-down commentVote" data-tx="t0046:7987fa19" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="Нісенітниця!">
 			<span class="icon">
 			  <i class="fa-solid fa-thumbs-down"></i>
 			</span>
@@ -243,9 +250,9 @@
 	</th:block>
 </th:block>
 
-	<nav aria-label="пагінація" class="pagination is-centered" data-tx="t0049" role="navigation">
-		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Попередній номер</a>
-		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Наступний номер</a>
+	<nav aria-label="пагінація" class="pagination is-centered" data-tx="t0049:44e35151" role="navigation">
+		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032:4b5534cb" th:href="@{/nums/{num}(num=${prevInfo.zeroZero})}" th:if="${prev}" th:with="prevInfo=${#converters.analyze(prev)}">Попередній номер</a>
+		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033:816aeabf" th:href="@{/nums/{num}(num=${nextInfo.zeroZero})}" th:if="${next}" th:with="nextInfo=${#converters.analyze(next)}">Наступний номер</a>
 	</nav>
 </div>
 </section>

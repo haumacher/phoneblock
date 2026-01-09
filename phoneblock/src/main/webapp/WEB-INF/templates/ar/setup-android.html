@@ -7,41 +7,215 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001">تثبيت أندرويد</h1>
-		
-		<p data-tx="t0002">يضيف التثبيت دفتر عناوين PhoneBlock إلى جهات الاتصال الخاصة بك. إذا تلقيت مكالمة من رقم غير مرغوب فيه، فسيتم عرض ذلك على الفور، على سبيل المثال "SPAM: 03016637169". يمكنك أيضًا أن ترى على الفور في المكالمات الفائتة أنه لا يستحق معاودة الاتصال دون الحاجة إلى البحث عن الرقم على Google أولاً.</p>
-		
-		<p data-tx="t0003">لا يمكنك استخدام هذا لحظر مكالمات الرسائل الاقتحامية (سيظل هاتفك يرن، لكنك سترى أنها مكالمة اقتحامية). يمكنك حظر مكالمات الرسائل الاقتحامية عن طريق <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/"> تثبيت SpamBlocker</a> ودمج قاعدة بيانات PhoneBlock. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> هو تطبيق مستقل، يُرجى الاتصال بالمطور مباشرةً إذا واجهتك أي مشاكل معه.</p>
-		
-		<p data-tx="t0004">لمزامنة دفتر العناوين، أنت بحاجة إلى تطبيق يمكن استخدامه لمزامنة دفاتر هواتف الإنترنت. يمكنك استخدام "<a href="https://play.google.com/store/apps/details?id=com.messageconcept.peoplesyncclient" target="_blank">PeopleSync</a>"، على سبيل المثال، أو "<a href="https://play.google.com/store/apps/details?id=at.bitfire.davdroid">DAVx⁵⁵⁵⁵". الإرشادات هنا مكتوبة ل "PeopleSync"، ولكن الإجراء مع "DAVx⁵" مشابه جدًا:</a></p>
-		
-		<h2 data-tx="t0005">الخطوة 1: افتح متجر Playstore وابحث عن "PeopleSync"</h2>
-		
-		<div class="columns">
-			<div class="column">
-	  			<img alt="افتح متجر Playstore" class="image appscreen" data-tx="t0008" th:src="@{/assets/img/peoplesync/01-home.png}"/>
-	  		</div>
-		
-			<div class="column">
-				<img alt="البحث عن PeopleSync" class="image appscreen" data-tx="t0009" th:src="@{/assets/img/peoplesync/02-playstore.png}"/>
+		<h1 data-tx="t0001:f26a19a">تثبيت أندرويد</h1>
+
+		<h2 data-tx="t0002:c8b5334b">تطبيق PhoneBlock للجوال</h2>
+
+		<p data-tx="t0003:18c4eb94">تطبيق <strong>PhoneBlock Mobile App</strong> هو التطبيق الرسمي لاكتشاف المكالمات غير المرغوب فيها وحظرها مباشرةً على هاتفك الذكي الذي يعمل بنظام Android. ويستخدم التطبيق خاصية تصفية المكالمات المدمجة في نظام Android لحظر المكالمات غير المرغوب فيها تلقائيًا قبل أن يرن هاتفك.</p>
+
+		<h3 data-tx="t0004:6989feac">الوظائف</h3>
+		<ul>
+			<li data-tx="t0005:97c7bef6"><strong>حظر الرسائل الاقتحامية التلقائية: </strong> يتم حظر المكالمات الواردة من أرقام الرسائل الاقتحامية المعروفة مباشرةً</li>
+			<li data-tx="t0006:c9f7a74d"><strong>سجل المكالمات:</strong> نظرة عامة على المكالمات المحظورة والفائتة (فقط من أرقام غير معروفة غير موجودة في قائمة جهات الاتصال الخاصة بك)</li>
+			<li data-tx="t0007:8f4cf135"><strong>الإبلاغ عن الرقم:</strong> الإبلاغ عن أرقام الرسائل الاقتحامية مباشرة من التطبيق</li>
+			<li data-tx="t0008:98030614"><strong>القوائم الشخصية:</strong> إدارة قائمتك السوداء وقائمتك البيضاء</li>
+			<li data-tx="t0009:16075224"><strong>الحماية القصوى للبيانات:</strong> بالنسبة للمكالمات الواردة، يتم إرسال تجزئة SHA-1 للرقم فقط إلى الخادم، وليس الرقم نفسه. وبالتالي، لا يكتشف PhoneBlock من المتصل إلا إذا كان رقمًا معروفًا من الرسائل الاقتحامية.</li>
+			<li data-tx="t0010:fb6f7b77"><strong> عدم الوصول إلى قائمة جهات الاتصال:</strong> لا يحتاج التطبيق إلى الوصول إلى جهات الاتصال الخاصة بك. لا تتم معالجة الأرقام من دفتر هاتفك أبدًا بواسطة PhoneBlock Mobile.</li>
+		</ul>
+
+		<h3 data-tx="t0011:bba1983">التركيب</h3>
+
+		<p data-tx="t0107:ef8f3285">قم بتنزيل تطبيق PhoneBlock Mobile من متجر Google Play وافتحه:</p>
+		<p>
+			<a class="button is-primary" href="https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile" target="_blank">
+				<span class="icon">
+					<i class="fab fa-google-play"></i>
+				</span>
+				<span data-tx="t0087:58879fc7">افتح في متجر Play</span>
+			</a>
+		</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h4 data-tx="t0012:ae3479fe">الخطوة 1: افتح التطبيق</h4>
+				<figure class="image">
+					<img alt="افتح التطبيق" class="appscreen" data-tx="t0088:1f8ed634" th:src="@{/assets/img/mobile/setup-1-connect.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0089:4d9e0575">افتح التطبيق وانقر على "الاتصال بحظر الهاتف"</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h4 data-tx="t0108:e3beb75c">الخطوة 2: تسجيل الدخول</h4>
+				<figure class="image">
+					<img alt="تسجيل الدخول باستخدام Google" class="appscreen" data-tx="t0090:4a35e254" th:src="@{/assets/img/mobile/setup-2-googleauth.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0091:3efc98a7">التسجيل مع PhoneBlock (على سبيل المثال مع Google)</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h4 data-tx="t0109:1398d1b1">الخطوة 3: تأكيد الرمز المميز</h4>
+				<figure class="image">
+					<img alt="إنشاء رمز وصول مميز" class="appscreen" data-tx="t0092:f363e39f" th:src="@{/assets/img/mobile/setup-3-link.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0093:4a4af2fc">تأكيد إنشاء الرمز المميز للتطبيق</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h4 data-tx="t0110:8c8bea84">الخطوة 4: طلب التفويض</h4>
+				<figure class="image">
+					<img alt="طلب التفويض" class="appscreen" data-tx="t0094:9d41635f" th:src="@{/assets/img/mobile/setup-4-permission.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0095:84c3b40c">انقر على "طلب تفويض"</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h4 data-tx="t0111:ab793af5">الخطوة 5: منح التفويض</h4>
+				<figure class="image">
+					<img alt="منح التفويض" class="appscreen" data-tx="t0096:c5702d20" th:src="@{/assets/img/mobile/setup-5-grant.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0097:b3804d1f">قم بتفعيل PhoneBlock Mobile في إعدادات Android</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h4 data-tx="t0112:2e9f7f92">الخطوة 6: تم!</h4>
+				<figure class="image">
+					<img alt="اكتمل الإعداد" class="appscreen" data-tx="t0098:4ae71e72" th:src="@{/assets/img/mobile/setup-6-done.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0099:24a60849">التطبيق نشط الآن</p>
 			</div>
 		</div>
-		
-		<p class="buttons is-centered">
-		  <a class="button" href="#">
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-left"></i>
-		    </span>
-		    <span data-tx="t0006">رجوع</span>
-		  </a>
-		  
-		  <a class="button is-primary" th:href="@{/setup-android/03-people-sync-install}">
-		    <span data-tx="t0007">المزيد</span>
-		    <span class="icon">
-		      <i class="fa-solid fa-caret-right"></i>
-		    </span>
-		  </a>
-		</p>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0100:44d32c35"><strong>متطلبات النظام:</strong> يتطلب PhoneBlock Mobile على الأقل نظام Android 10 (واجهة برمجة التطبيقات 29). لا تتوفر تصفية المكالمات (CallScreeningService) إلا في نظام Android بدءًا من هذا الإصدار فصاعدًا.</p>
+		</div>
+
+		<h4 data-tx="t0101:32ce4d03">ما الذي يمكنك فعله الآن؟</h4>
+		<p data-tx="t0102:111d5017">التطبيق نشط الآن ويقوم تلقائيًا بحظر المكالمات غير المرغوب فيها. في التطبيق يمكنك:</p>
+		<ul>
+			<li><a data-tx="t0103:ef920377" th:href="@{/usage-view-calls}">عرض المكالمات المحظورة والفائتة</a></li>
+			<li><a data-tx="t0104:c8a24e95" th:href="@{/usage-report-spam}">الإبلاغ عن الأرقام كرسائل غير مرغوب فيها أو شرعية</a></li>
+			<li><a data-tx="t0105:80ca55ef" th:href="@{/usage-manage-lists}">إدارة قائمتك الشخصية السوداء وقائمتك البيضاء</a></li>
+			<li><a data-tx="t0106:a392f709" th:href="@{/usage-search}">البحث عن الأرقام</a></li>
+		</ul>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0027:d2b01607">مهم لأولئك الذين يتحولون من مزامنة CardDAV:</strong></p>
+			<p data-tx="t0028:e1fdc3aa">إذا كنت قد استخدمت سابقًا طريقة CardDAV مع PeopleSync أو DAVx⁵، يجب عليك تنفيذ الخطوات التالية قبل استخدام PhoneBlock Mobile:</p>
+			<ol>
+				<li data-tx="t0029:6a42ffd0">قم بإلغاء تنشيط مزامنة CardDAV لقائمة حظر كتلة الهاتف في PeopleSync/DAVx⁵</li>
+				<li data-tx="t0030:ce6baa2a">حذف جهات اتصال الرسائل الاقتحامية المتزامنة من دفتر هاتفك</li>
+			</ol>
+			<p class="mt-2" data-tx="t0031:3c2f2f85"><strong>السبب:</strong> لأسباب تتعلق بحماية البيانات، لا يقوم PhoneBlock Mobile بمعالجة الأرقام المحفوظة في قائمة جهات الاتصال الخاصة بك. إذا ظلت أرقام الرسائل الاقتحامية محفوظة كجهات اتصال، فلا يمكن للتطبيق التعرف عليها وحظرها.</p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0032:5cbada42">البديل: أداة حظر الرسائل غير المرغوب فيها</h2>
+
+		<p data-tx="t0033:e3a6eee">بالإضافة إلى تطبيق PhoneBlock Mobile الرسمي، يمكنك أيضًا استخدام التطبيق المستقل <a href="https://github.com/aj3423/SpamBlocker" target="_blank">SpamBlocker ودمج قاعدة بيانات PhoneBlock. يمكنك العثور على التعليمات هنا: <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/" target="_blank">إعداد SpamBlocker مع PhoneBlock</a>.</a></p>
+
+		<h3 data-tx="t0034:f8b9216d">المقارنة: PhoneBlock Mobile مقابل SpamBlocker</h3>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0035:e1227814">الوظيفة</th>
+						<th data-tx="t0036:86ed9f4f">فون بلوك موبايل</th>
+						<th data-tx="t0037:6845aec7">مانع الرسائل غير المرغوب فيها</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0081:32c0e24f">التوفر</td>
+						<td data-tx="t0082:7a653fdc"><span class="icon has-text-success"><i class="fab fa-google-play"></i></span> متجر Play</td>
+						<td data-tx="t0083:9a973930"><span class="icon has-text-warning"><i class="fas fa-store"></i></span> المتاجر البديلة فقط</td>
+					</tr>
+					<tr>
+						<td data-tx="t0084:c49478ae">بساطة التركيب</td>
+						<td data-tx="t0085:c225e446"><span class="icon has-text-success"><i class="fas fa-star"></i></span> تافه</td>
+						<td data-tx="t0086:ee0ea73b"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> للخبراء فقط</td>
+					</tr>
+					<tr>
+						<td data-tx="t0038:1cf5d4c5">حظر مكالمات الرسائل الاقتحامية (SPAM)</td>
+						<td data-tx="t0039:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
+						<td data-tx="t0040:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
+					</tr>
+					<tr>
+						<td data-tx="t0041:aa7953de">سجل المكالمات</td>
+						<td data-tx="t0042:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
+						<td data-tx="t0043:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
+					</tr>
+					<tr>
+						<td data-tx="t0044:8a13f5ad">الإبلاغ عن الرسائل الاقتحامية</td>
+						<td data-tx="t0045:e6f02920"><span class="icon has-text-success"><i class="fas fa-check"></i></span> في التطبيق</td>
+						<td data-tx="t0046:879c9c57"><span class="icon has-text-warning"><i class="fas fa-globe"></i></span> حول الموقع الإلكتروني</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047:e6ae871c">القوائم الشخصية</td>
+						<td data-tx="t0048:e02cbc80"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم، متزامن</td>
+						<td data-tx="t0049:d2fa3fcc"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم، محلي</td>
+					</tr>
+					<tr>
+						<td data-tx="t0050:5f4450bc">حماية البيانات</td>
+						<td data-tx="t0051:8ad15b33"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> تجزئة SHA-1</td>
+						<td data-tx="t0052:8ad15b33"><span class="icon has-text-success"><i class="fas fa-shield-alt"></i></span> تجزئة SHA-1</td>
+					</tr>
+					<tr>
+						<td data-tx="t0053:b431cf6e">تكامل كتلة الهاتف</td>
+						<td data-tx="t0054:3b3c8bbe"><span class="icon has-text-success"><i class="fas fa-plug"></i></span> أصلي</td>
+						<td data-tx="t0055:de70c8a3"><span class="icon has-text-info"><i class="fas fa-cog"></i></span> قابل للتكوين يدويًا</td>
+					</tr>
+					<tr>
+						<td data-tx="t0056:4d93db0c">قواعد بيانات الرسائل الاقتحامية الأخرى</td>
+						<td data-tx="t0057:d0af0aa8"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> لا</td>
+						<td data-tx="t0058:8aa2f6"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم (عدة)</td>
+					</tr>
+					<tr>
+						<td data-tx="t0059:f9f6c23a">خيارات التصفية المتقدمة</td>
+						<td data-tx="t0060:ac5e8739"><span class="icon has-text-info"><i class="fas fa-minus"></i></span> القاعدة</td>
+						<td data-tx="t0061:39ada1b8"><span class="icon has-text-success"><i class="fas fa-check"></i></span> واسع النطاق</td>
+					</tr>
+					<tr>
+						<td data-tx="t0062:523acb6">تصفية الرسائل النصية القصيرة</td>
+						<td data-tx="t0063:d0af0aa8"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> لا</td>
+						<td data-tx="t0064:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
+					</tr>
+					<tr>
+						<td data-tx="t0065:4f3a7922">التطوير</td>
+						<td data-tx="t0066:3c10c0f2"><span class="icon has-text-info"><i class="fas fa-house"></i></span> فريق فون بلوك</td>
+						<td data-tx="t0067:337a9ee9"><span class="icon has-text-info"><i class="fas fa-users"></i></span> مستقل (aj3423)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p data-tx="t0068:698ac8a3"><strong>التوصية:إذا كنت تريد حلاً بسيطًا ومتكاملًا بشكل مباشر لـ PhoneBlock، استخدم <strong>PhoneBlock Mobile</strong>. إذا كنت ترغب في استخدام وظائف التصفية المتقدمة أو تصفية الرسائل النصية القصيرة أو قواعد بيانات الرسائل الاقتحامية المتعددة، فإن <strong>SpamBlocker</strong> هو الخيار الأفضل.</strong></p>
+			<p class="mt-2" data-tx="t0069:92010445"><strong>ملاحظة:</strong> SpamBlocker هو تطبيق مستقل. يرجى الاتصال بـ <a href="https://github.com/aj3423/SpamBlocker" target="_blank">المطور مباشرةً إذا واجهتك أي مشاكل.</a></p>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0070:c7bcca7e">البديل: مزامنة CardDAV (عفا عليها الزمن)</h2>
+
+		<p data-tx="t0071:3abe8ff7">لا تزال الطريقة السابقة التي تستخدم مزامنة CardDAV مع تطبيقات مثل PeopleSync أو DAVx⁵ ممكنة، ولكن <strong> لم يعد يوصى بها . تعرض هذه الطريقة أرقام الرسائل الاقتحامية فقط في جهات الاتصال الخاصة بك، ولكنها لا تحظر المكالمات.</strong></p>
+
+		<p data-tx="t0072:17c6ddab">مزايا طريقة CardDAV:</p>
+		<ul>
+			<li data-tx="t0073:f023753f">يعمل أيضًا على إصدارات Android الأقدم (قبل Android 10)</li>
+			<li data-tx="t0074:b10fd2e2">إظهار تسمية الرسائل الاقتحامية في المكالمات الفائتة</li>
+		</ul>
+
+		<p data-tx="t0075:e93bbcf">العيوب:</p>
+		<ul>
+			<li data-tx="t0076:a14da744">لا يوجد حظر تلقائي</li>
+			<li data-tx="t0077:dcfa3637">لا يزال الهاتف يرن بمكالمات الرسائل الاقتحامية</li>
+			<li data-tx="t0078:2de83a45">تطبيق إضافي مطلوب لمزامنة CardDAV</li>
+			<li data-tx="t0079:92005d34">معدات أكثر تعقيداً</li>
+		</ul>
+
+		<p data-tx="t0080:4ea3d521">إذا كنت لا تزال ترغب في استخدام طريقة CardDAV، يمكنك العثور على الإرشادات في مدونة <a href="https://news.phoneblock.net/" target="_blank"> مدونة كتلة الهاتف</a>.</p>
 	</div>
 </section>
 

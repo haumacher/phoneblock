@@ -95,7 +95,8 @@ public class TestDB {
 		assertEquals(token1.getUserName(), "user1");
 		assertEquals(createTime, token1.getCreated());
 		assertEquals(checkTime, token1.getLastAccess());
-		assertEquals("creating-browser", token1.getUserAgent());
+		// User agent is updated when it changes (even within rate limit)
+		assertEquals("other-browser", token1.getUserAgent());
 		assertTrue(token1.isImplicit());
 		assertTrue(token1.isAccessLogin());
 		
@@ -476,14 +477,15 @@ public class TestDB {
 		// Only one rating recorded.
 		assertEquals(1, _db.getVotesFor("0123456789"));
 		
-		// Both comments have been recorded.
-		assertEquals(2, getComments("0123456789").size());
-		
+		// Only one comment per user per number - second comment replaced the first.
+		assertEquals(1, getComments("0123456789").size());
+
 		addRating("user-1", "0123456789", Rating.A_LEGITIMATE, "Was my uncle.", time++);
 
 		assertEquals(0, _db.getVotesFor("0123456789"));
 
-		assertEquals(3, getComments("0123456789").size());
+		// Still only one comment - third comment replaced the second.
+		assertEquals(1, getComments("0123456789").size());
 	}
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
@@ -589,7 +591,7 @@ public class TestDB {
 			}
 		}
 			
-		_db.createAPIToken("user-2b", 5000, "SpamBlocker");
+		_db.createAPIToken("user-2b", (long) 5000, "SpamBlocker", null);
 
 		try (SqlSession tx = _db.openSession()) {
 			Users users = tx.getMapper(Users.class);

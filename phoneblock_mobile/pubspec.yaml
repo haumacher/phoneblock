@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.4+4
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -30,7 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  flutter_localizations:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -38,10 +39,16 @@ dependencies:
   jsontool: ^2.1.0
   font_awesome_flutter: ^10.2.1
   intl: ^0.20.1
-  flutter_contacts: ^1.1.7+1
+  shared_preferences: ^2.5.3
+  go_router: ^17.0.1
+  url_launcher: ^6.3.1
+  http: ^1.3.0
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
   webview_flutter: ^4.10.0
-  call_e_log: ^0.0.4
-  shared_preferences: ^2.3.5
+  package_info_plus: ^8.1.2
+  device_info_plus: ^11.2.0
+  device_region: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -52,7 +59,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -64,6 +71,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   assets:

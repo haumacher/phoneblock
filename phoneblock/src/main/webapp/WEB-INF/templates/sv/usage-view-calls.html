@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">Visa blockerade och missade samtal</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile kontrollerar alla inkommande samtal från okända nummer och visar vilka som har blockerats och vilka som har gått igenom.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Viktigt:</strong> Endast okända nummer kontrolleras!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Samtal från nummer i din kontaktlista kontrolleras aldrig och visas inte i PhoneBlocks samtalslista. Appen behandlar endast nummer som inte finns sparade i din telefonbok.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">Samtalshistorik</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Översikt över alla kontrollerade samtal</h3>
+				<figure class="image">
+					<img alt="Lista över kontrollerade samtal" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">Appen visar alla samtal från okända nummer med respektive status</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Blockerade SPAM-samtal</h3>
+				<figure class="image">
+					<img alt="SPAM-samtal blockerat" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Blockerade SPAM-samtal visas med en röd symbol och SPAM-poäng. Du kommer att få ett meddelande om blockeringen.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">Vilka nummer blockeras som SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">SPAM-nummer (kommer att blockeras)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">Ett nummer blockeras som SPAM om:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">du har en hög SPAM-poäng i PhoneBlock-databasen</li>
+						<li data-tx="t0031:bbf61b78">SPAM-poängen överskrider ditt inställda tröskelvärde</li>
+						<li data-tx="t0032:496c5432">Hon finns på din personliga svarta lista (oavsett poäng)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Resultat:</strong> Din telefon ringer inte, samtalet avvisas automatiskt.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Legitima nummer (släpps igenom)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">Ett nummer anses vara legitimt om:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">Den är inte tillgänglig i PhoneBlock-databasen</li>
+						<li data-tx="t0037:be800714">Den har en låg SPAM-poäng under ditt tröskelvärde</li>
+						<li data-tx="t0038:dc6b0dd6">Hon finns på din personliga vitlista (kommer aldrig att blockeras)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Resultat:</strong> Din telefon ringer normalt, samtalet går igenom.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">Hur fungerar blockeringen?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile använder Androids CallScreeningService för att filtrera inkommande samtal innan de ringer. Om numret finns i SPAM-databasen och ditt inställda tröskelvärde överskrids blockeras samtalet automatiskt.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">Rapportera SPAM-nummer från samtalshistoriken</h2>
+
+		<p data-tx="t0041:26708b3">Om du har fått ett samtal från ett okänt nummer som uppfattades som legitimt men som i själva verket var skräppost, kan du rapportera det direkt från samtalslistan:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">När ska du rapportera ett nummer?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">Numret finns ännu inte i PhoneBlock-databasen (låg eller ingen SPAM-poäng)</li>
+					<li data-tx="t0044:e2b6f50e">Samtalet var uppenbart oönskat (reklam, bedrägeri etc.)</li>
+					<li data-tx="t0045:ba58fceb">Du vill varna samhället för det här numret</li>
+					<li data-tx="t0046:53de68c0">Numret ska i fortsättningen blockeras automatiskt</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">Vad händer vid en eventuell anmälan?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">Numret läggs <strong>automatiskt till i din svarta lista&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">Du kommer att skyddas mot framtida samtal från detta nummer</li>
+					<li data-tx="t0050:da8797c6">Ditt meddelande bidrar till PhoneBlock-databasen</li>
+					<li data-tx="t0051:1f62ed10">Andra användare drar nytta av ditt betyg</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">Till instruktionerna: Rapportera SPAM-nummer</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Viktigt:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">Om du rapporterar ett nummer som SPAM kommer det att läggas till i din personliga svarta lista och kommer alltid att blockeras i framtiden. Detta beslut har företräde framför community-betyget.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

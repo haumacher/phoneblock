@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.3.4"
+		"version": "v1.4.0"
 	},
 	"servers": [
 		{
@@ -605,9 +605,595 @@
 				]
 			},
 			"parameters": []
+		},
+		"/account": {
+			"get": {
+				"summary": "Retrieves the current user's account settings.",
+				"description": "Returns language preference, country dial prefix, display name, and email address for the authenticated user.",
+				"responses": {
+					"200": {
+						"description": "Account settings retrieved successfully.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountSettings"
+								},
+								"example": {
+									"lang": "de-DE",
+									"dialPrefix": "+49",
+									"displayName": "John Doe",
+									"email": "john.doe@example.com"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "User settings not found.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "User settings not found"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"put": {
+				"summary": "Updates the current user's account settings.",
+				"description": "Updates language preference, country dial prefix, or display name. All fields are optional. If countryCode is provided, the server converts it to the corresponding dial prefix.",
+				"requestBody": {
+					"description": "Account settings to update. All fields are optional.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateAccountRequest"
+							},
+							"examples": {
+								"updateLanguage": {
+									"summary": "Update language preference",
+									"value": {
+										"lang": "en-US"
+									}
+								},
+								"updateCountryCode": {
+									"summary": "Update country via country code",
+									"value": {
+										"countryCode": "DE"
+									}
+								},
+								"updateDialPrefix": {
+									"summary": "Update dial prefix directly",
+									"value": {
+										"dialPrefix": "+49"
+									}
+								},
+								"updateAll": {
+									"summary": "Update all fields",
+									"value": {
+										"lang": "de-DE",
+										"countryCode": "DE",
+										"displayName": "John Doe"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Account settings updated successfully. Returns the updated settings.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountSettings"
+								},
+								"example": {
+									"lang": "de-DE",
+									"dialPrefix": "+49",
+									"displayName": "John Doe",
+									"email": "john.doe@example.com"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request. Returns error message describing the validation failure.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"examples": {
+									"invalidLang": {
+										"value": "Invalid language tag format. Expected format: 'de' or 'en-US'"
+									},
+									"invalidCountryCode": {
+										"value": "Invalid country code. Expected ISO 3166-1 alpha-2 format (e.g., 'DE', 'US', 'BR')"
+									},
+									"invalidDialPrefix": {
+										"value": "Invalid dial prefix format. Expected format: '+XX' (e.g., '+49', '+1', '+351')"
+									},
+									"emptyDisplayName": {
+										"value": "Display name must not be empty"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": []
+		},
+		"/blacklist": {
+			"get": {
+				"summary": "Retrieves the current user's personalized blacklist.",
+				"description": "Returns a list of phone numbers that the user has explicitly marked as blocked (blacklist). Numbers are added to the blacklist by rating them via the POST /api/rate endpoint with spam ratings such as E_ADVERTISING, F_GAMBLE, or G_FRAUD. This endpoint only retrieves the list; use the rating API to add numbers.",
+				"responses": {
+					"200": {
+						"description": "Blocklist retrieved successfully.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NumberList"
+								},
+								"example": {
+									"numbers": [
+										{
+											"phone": "+491234567890",
+											"comment": "Spam caller"
+										},
+										{
+											"phone": "+491234567891",
+											"comment": null
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "User not found.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "User not found"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
+		},
+		"/blacklist/{phone}": {
+			"delete": {
+				"summary": "Removes a phone number from the user's blacklist.",
+				"description": "Deletes the specified phone number from the user's personalized blacklist. To add numbers to the blacklist, use POST /api/rate.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to remove from the blacklist (e.g., +491234567890)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567890"
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Phone number removed from blacklist successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"put": {
+				"summary": "Updates the comment for a phone number in the user's blacklist.",
+				"description": "Updates the user's comment for the specified phone number in their personalized blacklist.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to update the comment for (e.g., +491234567890)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567890"
+					}
+				],
+				"requestBody": {
+					"description": "Updated comment for the phone number",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PersonalizedNumber"
+							},
+							"example": {
+								"phone": "+491234567890",
+								"comment": "Updated spam caller description"
+							}
+						}
+					}
+				},
+				"responses": {
+					"204": {
+						"description": "Comment updated successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
+		},
+		"/whitelist": {
+			"get": {
+				"summary": "Retrieves the current user's personalized whitelist.",
+				"description": "Returns a list of phone numbers that the user has explicitly marked as legitimate (whitelist). Numbers are added to the whitelist by rating them via the POST /api/rate endpoint with the A_LEGITIMATE rating. This endpoint only retrieves the list; use the rating API to add numbers.",
+				"responses": {
+					"200": {
+						"description": "Whitelist retrieved successfully.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NumberList"
+								},
+								"example": {
+									"numbers": [
+										{
+											"phone": "+491234567893",
+											"comment": "My doctor"
+										},
+										{
+											"phone": "+491234567894",
+											"comment": null
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "User not found.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "User not found"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
+		},
+		"/whitelist/{phone}": {
+			"delete": {
+				"summary": "Removes a phone number from the user's whitelist.",
+				"description": "Deletes the specified phone number from the user's personalized whitelist. To add numbers to the whitelist, use POST /api/rate.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to remove from the whitelist (e.g., +491234567893)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567893"
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Phone number removed from whitelist successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"put": {
+				"summary": "Updates the comment for a phone number in the user's whitelist.",
+				"description": "Updates the user's comment for the specified phone number in their personalized whitelist.",
+				"parameters": [
+					{
+						"name": "phone",
+						"in": "path",
+						"required": true,
+						"description": "The phone number to update the comment for (e.g., +491234567893)",
+						"schema": {
+							"type": "string"
+						},
+						"example": "+491234567893"
+					}
+				],
+				"requestBody": {
+					"description": "Updated comment for the phone number",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PersonalizedNumber"
+							},
+							"example": {
+								"phone": "+491234567893",
+								"comment": "Updated doctor's office description"
+							}
+						}
+					}
+				},
+				"responses": {
+					"204": {
+						"description": "Comment updated successfully."
+					},
+					"401": {
+						"description": "If no or invalid credentials have been provided.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Please provide login credentials."
+							}
+						}
+					},
+					"404": {
+						"description": "Phone number not found in personalization list.",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								},
+								"example": "Phone number not found in personalization list"
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			}
 		}
 	},
 	"components": {
+		"schemas": {
+			"UpdateAccountRequest": {
+				"type": "object",
+				"description": "Request to update user account settings. All fields are optional.",
+				"properties": {
+					"lang": {
+						"type": "string",
+						"description": "Preferred language tag (e.g., 'de', 'en-US', 'pt-BR')",
+						"example": "de-DE",
+						"nullable": true
+					},
+					"dialPrefix": {
+						"type": "string",
+						"description": "User's country dial prefix (e.g., '+49', '+1', '+351')",
+						"example": "+49",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string",
+						"description": "User's display name",
+						"example": "John Doe",
+						"nullable": true
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "ISO 3166-1 alpha-2 country code (e.g., 'DE', 'US', 'BR'). If provided, the server will convert it to the corresponding dial prefix.",
+						"example": "DE",
+						"nullable": true
+					}
+				}
+			},
+			"AccountSettings": {
+				"type": "object",
+				"description": "User account settings",
+				"properties": {
+					"lang": {
+						"type": "string",
+						"description": "Preferred language tag",
+						"example": "de-DE",
+						"nullable": true
+					},
+					"dialPrefix": {
+						"type": "string",
+						"description": "User's country dial prefix",
+						"example": "+49",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string",
+						"description": "User's display name",
+						"example": "John Doe",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"description": "User's email address",
+						"example": "john.doe@example.com",
+						"nullable": true
+					}
+				}
+			},
+			"NumberList": {
+				"type": "object",
+				"description": "A list of phone numbers with optional comments (used for blacklist/whitelist responses)",
+				"properties": {
+					"numbers": {
+						"type": "array",
+						"description": "List of phone numbers with optional comments",
+						"items": {
+							"$ref": "#/components/schemas/PersonalizedNumber"
+						}
+					}
+				}
+			},
+			"PersonalizedNumber": {
+				"type": "object",
+				"description": "A phone number with an optional user comment",
+				"properties": {
+					"phone": {
+						"type": "string",
+						"description": "The phone number",
+						"example": "+491234567890"
+					},
+					"comment": {
+						"type": "string",
+						"description": "User's comment for this number (may be null)",
+						"example": "Spam caller",
+						"nullable": true
+					}
+				},
+				"required": ["phone"]
+			}
+		},
 		"securitySchemes": {
 			"PhoneBlockUser": {
 				"description": "A PhoneBlock user name and its password. The method of authorization is deprecated. Better use an API key.",

@@ -7,15 +7,19 @@
 <section class="hero is-small is-primary" th:fragment="header">
 	<div class="hero-body">
 		<p class="title">
-			<img alt="PhoneBlock Logo" class="logo-image" data-tx="t0001" th:src="@{/assets/img/app-logo.svg}"/>
-			<span data-tx="t0002">PhoneBlock</span>
+			<img alt="PhoneBlock Logo" class="logo-image" data-tx="t0001:5b0e8765" th:src="@{/assets/img/app-logo.svg}"/>
+			<span data-tx="t0002:88251796">PhoneBlock</span>
 		</p>
-		<p class="subtitle" data-tx="t0003">Der Spam-Filter fürs Telefon</p>
+		<p class="subtitle" data-tx="t0003:cb9e862e">Der Spam-Filter fürs Telefon</p>
 	</div>
 
 	<div class="hero-foot">
 	</div>
 </section>
+
+<th:block th:fragment="footer">
+<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+</th:block>
 
 </body>
 </html>

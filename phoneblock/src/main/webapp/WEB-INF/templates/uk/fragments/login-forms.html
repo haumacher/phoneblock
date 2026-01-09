@@ -6,7 +6,7 @@
 <th:block th:fragment="forms(web)">
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001">Увійдіть за допомогою Google</span></a>
+			<a data-action="collapse" href="#googleLogin"><i class="fa-brands fa-google"></i> <span data-tx="t0001:33460370">Увійдіть за допомогою Google</span></a>
 		</p>
 		<div class="is-collapsible" id="googleLogin">
 			<div class="panel-block">
@@ -20,13 +20,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0002">Залишайтеся в системі на цьому пристрої (встановлює <a th:href="@{/datenschutz}">кукі</a>)</span>
+					  <span data-tx="t0002:a4820387">Залишайтеся в системі на цьому пристрої (встановлює <a th:href="@{/datenschutz}">кукі</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0003">Реєструючись, ви приймаєте <a th:href="@{/usage}">Умови використання</a>.</div>
+				  <div class="control" data-tx="t0003:d22b9755">Реєструючись, ви приймаєте <a th:href="@{/usage}">Умови використання</a>.</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -35,12 +35,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0004">Продовжуйте шукати в Google</span>
+				      <span data-tx="t0004:15fed624">Продовжуйте шукати в Google</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0005">Якщо у вас є обліковий запис Google, ви можете використовувати його для зручного входу в PhoneBlock. При першому вході через Google створюється обліковий запис PhoneBlock. Надалі ви можете входити під створеним ім'ям користувача PhoneBlock або знову через Google.</p>
+				<p class="help" data-tx="t0005:cc14ebc6">Якщо у вас є обліковий запис Google, ви можете використовувати його для зручного входу в PhoneBlock. При першому вході через Google створюється обліковий запис PhoneBlock. Надалі ви можете входити під створеним ім'ям користувача PhoneBlock або знову через Google.</p>
 				
 				</form>
 			</div>
@@ -49,16 +49,17 @@
 	</nav>
 
 	<nav class="panel">
-		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006">Увійдіть за допомогою електронної пошти</span></a></p>
+		<p class="panel-heading has-background-grey-lighter"><a data-action="collapse" href="#emailLogin"><i class="fas fa-envelope"></i> <span data-tx="t0006:b99ac6c2">Увійдіть за допомогою електронної пошти</span></a></p>
 		<div id="emailLogin" th:class="'is-collapsible' + ${!#strings.isEmpty(emailMessage) or !#strings.isEmpty(captchaMessage) ? ' is-active' : ''}">
 			<form enctype="application/x-www-form-urlencoded" method="post" th:action="${contextPath} + (${web} ? '/login-web' : '/login-mobile')">
 	  		<div class="panel-block">
 	  		<div class="content">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
-					<label class="label" data-tx="t0007">e-mail</label>
+					<label class="label" data-tx="t0007:30c9dcb9">e-mail</label>
 					<div class="control has-icons-left has-icons-right">
-					    <input data-tx="t0020" name="email" placeholder="Ваша адреса електронної пошти" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
+					    <input data-tx="t0020:460db871" name="email" placeholder="Ваша адреса електронної пошти" th:class="'input' + (${emailMessage} ? ' is-danger' : '')" th:value="${email}" type="email"/>
 					    <span class="icon is-small is-left">
 					      <i class="fas fa-envelope"></i>
 					    </span>
@@ -70,12 +71,12 @@
 				</div>
 
 				<div>
-					<label class="label" data-tx="t0019">Код безпеки</label>
+					<label class="label" data-tx="t0019:10d7cfff">Код безпеки</label>
 
-					<img alt="Captcha" data-tx="t0021" th:src="${captchaSrc}"/>
+					<img alt="Captcha" data-tx="t0021:ccf7588c" th:src="${captchaSrc}"/>
 
 					<div class="control has-icons-left has-icons-right">
-					    <input autocomplete="off" data-tx="t0022" name="captcha" placeholder="Текст на зображенні вище" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
+					    <input autocomplete="off" data-tx="t0022:4be67cdf" name="captcha" placeholder="Текст на зображенні вище" th:class="'input' + (${captchaMessage} ? ' is-danger' : '')" type="text"/>
 					    <span class="icon is-small is-left">
 					      <i class="fa-solid fa-key"></i>
 					    </span>
@@ -90,13 +91,13 @@
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0008">Залишайтеся в системі на цьому пристрої (встановлює <a th:href="@{/datenschutz}">кукі</a>)</span>
+					  <span data-tx="t0008:a4820387">Залишайтеся в системі на цьому пристрої (встановлює <a th:href="@{/datenschutz}">кукі</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0009">Реєструючись, ви приймаєте <a th:href="@{/usage}">Умови використання</a>.</div>
+				  <div class="control" data-tx="t0009:d22b9755">Реєструючись, ви приймаєте <a th:href="@{/usage}">Умови використання</a>.</div>
 				</div>
 
 				<div class="field is-grouped">
@@ -105,12 +106,12 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0010">Код запиту</span>
+				      <span data-tx="t0010:ba8e91df">Код запиту</span>
 				    </button>
 				  </p>
 				</div>
 				
-				<p class="help" data-tx="t0011">Ви отримаєте код на вказану вами адресу електронної пошти, який зможете використати для входу. При першому вході за допомогою електронної пошти створюється обліковий запис PhoneBlock. Надалі ви можете входити під згенерованим ім'ям користувача PhoneBlock або повторно надіславши одноразовий код.</p>
+				<p class="help" data-tx="t0011:8379fde">Ви отримаєте код на вказану вами адресу електронної пошти, який зможете використати для входу. При першому вході за допомогою електронної пошти створюється обліковий запис PhoneBlock. Надалі ви можете входити під згенерованим ім'ям користувача PhoneBlock або повторно надіславши одноразовий код.</p>
 			</div>
 			</div>
 			</form>
@@ -119,18 +120,19 @@
 	
 	<nav class="panel">
 		<p class="panel-heading has-background-grey-lighter">
-			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012">Увійдіть під своїм ім'ям користувача PhoneBlock</span></a>
+			<a data-action="collapse" href="#loginForm"><i class="fas fa-user"></i> <span data-tx="t0012:2a4951de">Увійдіть під своїм ім'ям користувача PhoneBlock</span></a>
 		</p>
 		<div id="loginForm" th:class="'is-collapsible' + (${loginError} ? ' is-active' : '')">
 			<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0025">Ви можете використовувати цю опцію для входу тільки після того, як ви вже зареєструвалися в PhoneBlock. Ви отримаєте ім'я користувача PhoneBlock під час реєстрації через Google або електронну пошту (див. вище).</p>
+	  			<p data-tx="t0025:27d4e511">Ви можете використовувати цю опцію для входу тільки після того, як ви вже зареєструвалися в PhoneBlock. Ви отримаєте ім'я користувача PhoneBlock під час реєстрації через Google або електронну пошту (див. вище).</p>
 	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
+			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
-				    <input class="input" data-tx="t0023" placeholder="Ім'я користувача" th:name="${userNameParam}" type="text"/>
+				    <input class="input" data-tx="t0023:2d49d98d" placeholder="Ім'я користувача" th:name="${userNameParam}" type="text"/>
 				    <span class="icon is-small is-left">
 				      <i class="fa-solid fa-user"></i>
 				    </span>
@@ -138,30 +140,30 @@
 				      <i class="fas fa-check"></i>
 				    </span>
 				  </p>
-				  <p class="help" data-tx="t0013">Використовуйте ім'я користувача, яке ви отримали при реєстрації в Google, або адресу електронної пошти.</p>
+				  <p class="help" data-tx="t0013:544c2ad9">Використовуйте ім'я користувача, яке ви отримали при реєстрації в Google, або адресу електронної пошти.</p>
 				</div>
 				<div class="field">
 				  <p class="control has-icons-left">
-				    <input class="input" data-tx="t0024" placeholder="Пароль PhoneBlock" th:name="${passwordParam}" type="password"/>
+				    <input class="input" data-tx="t0024:8f7e39e6" placeholder="Пароль PhoneBlock" th:name="${passwordParam}" type="password"/>
 				    <span class="icon is-small is-left">
 				      <i class="fas fa-lock"></i>
 				    </span>
 				  </p>
-					  <p class="help is-danger" data-tx="t0014" th:if="${loginError}">Дані для входу не збігаються, будь ласка, перевірте записи і спробуйте ще раз.</p>
-					  <p class="help" data-tx="t0015" th:unless="${loginError}">Пароль був показаний вам після першого входу. Якщо ви більше не маєте пароля під рукою, просто увійдіть за допомогою Google або вашої електронної адреси, див. вище.</p>
+					  <p class="help is-danger" data-tx="t0014:f8e64400" th:if="${loginError}">Дані для входу не збігаються, будь ласка, перевірте записи і спробуйте ще раз.</p>
+					  <p class="help" data-tx="t0015:64d4c87a" th:unless="${loginError}">Пароль був показаний вам після першого входу. Якщо ви більше не маєте пароля під рукою, просто увійдіть за допомогою Google або вашої електронної адреси, див. вище.</p>
 				</div>
 
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
 					  <input th:name="${rememberParam}" type="checkbox" value="true"/>
-					  <span data-tx="t0016">Залишайтеся в системі на цьому пристрої (встановлює <a th:href="@{/datenschutz}">кукі</a>)</span>
+					  <span data-tx="t0016:a4820387">Залишайтеся в системі на цьому пристрої (встановлює <a th:href="@{/datenschutz}">кукі</a>)</span>
 					</label>
 				  </div>
 				</div>
 
 				<div class="field">
-				  <div class="control" data-tx="t0017">Реєструючись, ви приймаєте <a th:href="@{/usage}">Умови використання</a>.</div>
+				  <div class="control" data-tx="t0017:d22b9755">Реєструючись, ви приймаєте <a th:href="@{/usage}">Умови використання</a>.</div>
 				</div>
 				
 				<div class="field is-grouped">
@@ -170,7 +172,7 @@
 			          <span class="icon">
 					      <i class="fa-solid fa-right-to-bracket"></i>
 					  </span>
-				      <span data-tx="t0018">Увійдіть в систему</span>
+				      <span data-tx="t0018:1dc205">Увійдіть в систему</span>
 				    </button>
 				  </p>
 				</div>

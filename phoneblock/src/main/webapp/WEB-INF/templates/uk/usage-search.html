@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:a392f709">Пошук номерів</h1>
+
+		<p class="subtitle" data-tx="t0002:6f434e2">Ви можете знайти будь-який номер телефону в базі даних PhoneBlock, навіть якщо дзвінок не відбувся.</p>
+
+		<h2 data-tx="t0003:dd99e8ab">Як шукати номер</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004:c8b5450c">Крок 1: Відкрийте пошук</h3>
+				<figure class="image">
+					<img alt="Відкрити пошук" class="appscreen" data-tx="t0005:bfc9750b" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006:5370f414">Натисніть на піктограму лупи вгорі праворуч, щоб відкрити функцію пошуку</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007:7fee025e">Крок 2: Введіть номер</h3>
+				<figure class="image">
+					<img alt="Введіть номер" class="appscreen" data-tx="t0008:b52055e0" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009:1d56944b">Введіть номер телефону та натисніть "Пошук"</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010:b55e0261">Що показує пошук</h2>
+
+		<p data-tx="t0011:e232fe4a">Після пошуку ви побачите наступну інформацію про номер:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012:38ad0e2c">Якщо число відоме:</h3>
+				<ul>
+					<li data-tx="t0013:7af27195"><strong>Рейтинг спаму:</strong> Кількість негативних оцінок</li>
+					<li data-tx="t0014:4089d0f2"><strong>Категорії:</strong> Тип спаму (реклама, шахрайство тощо)</li>
+					<li data-tx="t0015:af6f54d0"><strong>Коментарі:</strong> Відгуки інших користувачів</li>
+					<li data-tx="t0016:e00ef249"><strong>Огляди:</strong> Позитивні та негативні відгуки</li>
+				</ul>
+				<p class="mt-3" data-tx="t0039:4a10760e">Що ви можете зробити після обшуку:</p>
+				<ul>
+					<li data-tx="t0040:faf11002">Оцініть номер як спам або легальний<strong></strong></li>
+					<li data-tx="t0041:8f789427">Додати до чорного списку (завжди блокувати)<strong></strong></li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018:6751a8c5">Якщо номер невідомий:</h3>
+				<ul>
+					<li data-tx="t0019:ee4cd912">Додаток показує, що інформація відсутня</li>
+					<li data-tx="t0042:ba2252ec">Додати до білого списку (ніколи не блокувати)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043:e5367544">Прочитайте коментарі інших користувачів</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044:bd774b20">Рейтинг спаму додає номер до вашого <strong>чорного списку</strong>.</li>
+					<li data-tx="t0045:8c3537ba">Легальний рейтинг додає номер до вашого <strong>білого списку</strong></li>
+				</ul>
+				<p class="mt-3" data-tx="t0022:b15c494"><strong>Порада:</strong> Якщо ви отримали підозрілий дзвінок з невідомого номера, ви можете переглянути його тут і повідомити про нього як про СПАМ.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023:81ea5c6">Поради щодо пошуку</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024:86ca3d86">Формат телефонного номера</h3>
+			<p class="mt-2" data-tx="t0046:518b7b88">Ви можете вводити номери з кодом країни або без нього:</p>
+			<ul class="mt-2">
+				<li data-tx="t0047:d024b4c6"><strong>З кодом країни:</strong> +49 30 12345678 (Німеччина), +41 44 1234567 (Швейцарія), +43 1 1234567 (Австрія)</li>
+				<li data-tx="t0048:65d9fd8a"><strong>Без коду країни:</strong> Номер автоматично доповнюється кодом країни з ваших налаштувань</li>
+			</ul>
+			<p class="mt-3" data-tx="t0049:3e0a546f"><strong>Порада:</strong> Якщо ви шукаєте іноземний номер, завжди вводьте повний код країни.</p>
+		</div>
+
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050:63900750">Захист даних під час обшуку</h3>
+			<p class="mt-2" data-tx="t0051:fec83863">Під час пошуку номер <strong> передається на сервер PhoneBlock відкритим текстом</strong>. Це необхідно для того, щоб ви могли оцінити номер і додати його в базу даних.</p>
+			<p class="mt-2" data-tx="t0052:1e029ddb"><strong>Важливо:</strong> Функція захисту даних на основі хешування (SHA-1) використовується тільки для вхідних дзвінків. Для активного пошуку необхідна повна передача номера, щоб увімкнути всі функції (рейтинг, коментарі).</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033:c908016f">Коли пошук корисний?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034:f22eafac">Часті випадки використання:</h3>
+				<ul>
+					<li data-tx="t0035:3dbf84ea">Перед тим, як відповісти на дзвінок, перевірте невідомий номер на дисплеї</li>
+					<li data-tx="t0036:bbac69db">Перегляд пропущених дзвінків</li>
+					<li data-tx="t0037:fff61fd7">Перевірка номерів з SMS або електронної пошти</li>
+					<li data-tx="t0038:a4595d9f">Перш ніж передзвонити, перевірте, чи номер легальний</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0053:c8516691">Що ви можете зробити після обшуку:</h3>
+				<ul>
+					<li data-tx="t0054:d6755430"><strong>Оцінено як СПАМ</strong> (буде додано до чорного списку → завжди заблоковано)</li>
+					<li data-tx="t0055:452970dd"><strong>Оцінено як легітимний</strong> (буде додано до білого списку → ніколи не буде заблоковано)</li>
+					<li data-tx="t0056:bdc779d8">Прочитайте коментарі інших користувачів</li>
+					<li data-tx="t0057:c2d14384">За бажанням додайте власний коментар</li>
+				</ul>
+				<p class="mt-3" data-tx="t0058:e80ee25"><strong>Примітка:</strong> Оцінка і додавання до списку - це одна і та ж дія!</p>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

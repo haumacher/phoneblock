@@ -14,16 +14,17 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title" data-tx="t0001">Bekreft e-postadressen</h1>
-	        <p class="subtitle" data-tx="t0002">Skriv inn koden fra e-posten.</p>
+	        <h1 class="title" data-tx="t0001:4fcae186">Bekreft e-postadressen</h1>
+	        <p class="subtitle" data-tx="t0002:5aca0af4">Skriv inn koden fra e-posten.</p>
 	        <div class="content">
-				<p data-tx="t0003">En e-post ble sendt til adressen <code th:text="${email}"></code>.</p>
-				<p data-tx="t0004">Vennligst sjekk postkassen din, kopier koden og skriv den inn her. Dette vil bekrefte e-postadressen din.</p>
+				<p data-tx="t0003:5008487">En e-post ble sendt til adressen <code th:text="${email}"></code>.</p>
+				<p data-tx="t0004:691e4431">Vennligst sjekk postkassen din, kopier koden og skriv den inn her. Dette vil bekrefte e-postadressen din.</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 					<div class="field">
-						<label class="label" data-tx="t0005">Kode</label>
+						<label class="label" data-tx="t0005:a34add52">Kode</label>
 						<div class="control has-icons-left has-icons-right">
-							<input data-tx="t0006" name="code" placeholder="Bekreftelseskode" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<input data-tx="t0006:eba94e42" name="code" placeholder="Bekreftelseskode" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
 							<span class="icon is-small is-left">
 							  <i class="fa-solid fa-barcode"></i>
 							</span>
@@ -32,13 +33,19 @@
 							</span>
 						</div>
 
-						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">Prøv igjen</a>.</p>
+						<p class="help is-danger" th:if="${message != null}">
+							<span th:text="${message}"></span>
+							<a data-tx="t0010:668224a9" th:href="@{/mobile/login}">Prøv igjen</a>.								
+						</p>
 
-						<p class="help" data-tx="t0008" th:if="${message == null}"><span>Ingen e-post mottatt? Vennligst sjekk søppelpostmappen din!</span> <a th:href="@{/mobile/login}">Prøv igjen</a>.</p>
+						<p class="help" th:if="${message == null}">
+							<span data-tx="t0011:8db88b77">Ingen e-post mottatt? Vennligst sjekk søppelpostmappen din!</span>
+							<a data-tx="t0012:668224a9" th:href="@{/mobile/login}">Prøv igjen</a>.								
+						</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" data-tx="t0009" type="submit">Opprett konto</button>
+				    	<button class="button is-link" data-tx="t0009:c2e2ce7d" type="submit">Opprett konto</button>
 					</div>
 				</form>
 	        </div>
@@ -50,6 +57,8 @@
 
 </div>
 </section>
+
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

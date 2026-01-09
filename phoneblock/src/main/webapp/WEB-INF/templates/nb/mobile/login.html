@@ -9,25 +9,28 @@
 <section class="section">
 <div class="content">
 
-	<h1 data-tx="t0001">Koble til PhoneBlock-konto</h1>
+	<h1 data-tx="t0001:9d84fe0">Koble til PhoneBlock-konto</h1>
 	
 	<div th:if="${userName == null}">
-		<p data-tx="t0002">For å koble PhoneBlock-kontoen din til mobilenheten din, må du først logge inn eller opprette en konto. Du trenger en konto for at mobiltelefonen din skal kunne bruke PhoneBlock-databasen til å filtrere anrop.</p>
-	
-		<div th:replace="~{../fragments/login-forms :: forms(web=false,location='/mobile/login')}"></div>
+		<p data-tx="t0005:3832ca35" th:if="${!#strings.isEmpty(tokenLabel)}">For å koble PhoneBlock-kontoen din til <strong th:text="${tokenLabel}">den mobile enheten din</strong>, må du først logge inn eller opprette en konto. Du trenger en konto for at mobiltelefonen din skal kunne bruke PhoneBlock-databasen til å filtrere anrop.</p>
+		<p data-tx="t0002:e1cdad0" th:if="${#strings.isEmpty(tokenLabel)}">For å koble PhoneBlock-kontoen din til mobilenheten din, må du først logge inn eller opprette en konto. Du trenger en konto for at mobiltelefonen din skal kunne bruke PhoneBlock-databasen til å filtrere anrop.</p>
+
+		<div th:replace="~{../fragments/login-forms :: forms(web=false,location=${location})}"></div>
 	</div>
 
 	<div th:if="${userName != null}">
-		<p data-tx="t0003">Nå kan du koble PhoneBlock-kontoen din <code th:text="${userName}"></code> til mobilenheten din:</p>
-	
+		<p data-tx="t0006:f42186be" th:if="${!#strings.isEmpty(tokenLabel)}">Nå kan du koble PhoneBlock-kontoen din <code th:text="${userName}"></code> med <strong th:text="${tokenLabel}">den mobile enheten din</strong>:</p>
+		<p data-tx="t0003:7de9a863" th:if="${#strings.isEmpty(tokenLabel)}">Nå kan du koble PhoneBlock-kontoen din <code th:text="${userName}"></code> til mobilenheten din:</p>
+
 		<form method="post" th:action="@{/create-token}">
+			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">
 		          <span class="icon">
 				      <i class="fa-solid fa-link"></i>
 				  </span>
-			      <span data-tx="t0004">Koble til PhoneBlock-konto</span>
+			      <span data-tx="t0004:9d84fe0">Koble til PhoneBlock-konto</span>
 			    </button>
 			  </p>
 			</div>
@@ -37,7 +40,7 @@
 </div>
 </section>
 
-<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:c8a24e95">الإبلاغ عن الأرقام كرسائل غير مرغوب فيها أو شرعية</h1>
+
+		<p class="subtitle" data-tx="t0002:63bf7196">تساعد رسائلك مجتمع PhoneBlock بأكمله على حماية نفسه من مكالمات الرسائل الاقتحامية.</p>
+
+		<h2 data-tx="t0003:6f24859b">الإبلاغ عن رقم الرسائل الاقتحامية</h2>
+
+		<p data-tx="t0004:a8ee9c0c">إذا تلقيت اتصالاً غير مرغوب فيه، يمكنك الإبلاغ عن الرقم مباشرةً في التطبيق. كلما قدمت المزيد من التفاصيل، كلما كان تقريرك أكثر فائدة للمستخدمين الآخرين.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005:e594f5e9">الخطوة 1: الإبلاغ عن الرسائل الاقتحامية</h3>
+				<figure class="image">
+					<img alt="الإبلاغ عن الرسائل الاقتحامية" class="appscreen" data-tx="t0006:542e5a23" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007:e5e96702">اضغط على زر "الإبلاغ عن الرسائل الاقتحامية" للمكالمة المقابلة في السجل</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008:ae2236f5">الخطوة 2: اختر الفئة</h3>
+				<figure class="image">
+					<img alt="حدد فئة الرسائل الاقتحامية" class="appscreen" data-tx="t0009:aeb6b06e" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010:f4766cfd">اختر الفئة المناسبة من القائمة</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:303b3a03">الخطوة 3: التعليق (اختياري)</h3>
+				<figure class="image">
+					<img alt="إضافة وصف" class="appscreen" data-tx="t0012:f8f221c2" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:3b71b430">أضف تعليقًا اختياريًا لمساعدة المستخدمين الآخرين</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014:e0d196df">فئات الرسائل الاقتحامية المتاحة</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015:b95630ea"><strong> الإعلانات: </strong> المكالمات الإعلانية غير المرغوب فيها</li>
+					<li data-tx="t0016:f90affe7"><strong>المنافسة:</strong>إشعارات الجوائز غير صحيحة</li>
+					<li data-tx="t0017:1572ca14"><strong>فخ التكلفة:</strong>أرقام الأسعار المميزة باهظة الثمن</li>
+					<li data-tx="t0018:8e1de0b"><strong> عمليات الاحتيال:</strong> المكالمات الاحتيالية (مثل عمليات الاحتيال على الأحفاد)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019:49f7c80a"><strong> رنين قصير لاستحثاث معاودة الاتصال: </strong> رنين قصير لاستحثاث معاودة الاتصال</li>
+					<li data-tx="t0020:4c84f068"><strong> الاستطلاع:</strong> الاستطلاعات غير المرغوب فيها</li>
+					<li data-tx="t0021:f8a87cb6"><strong>أنواع أخرى:</strong> أنواع أخرى من الرسائل الاقتحامية</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022:b4318350">وضع علامة على الرقم شرعي</h2>
+
+		<p data-tx="t0023:54052bdf">إذا تم وضع علامة غير صحيحة على رقم ما على أنه رسالة غير مرغوب فيها، يمكنك تقييمه على أنه شرعي. يساعد ذلك على تصحيح الرسائل غير الصحيحة وتحسين جودة قاعدة البيانات.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024:44477396">وضع علامة كشرعية</h3>
+				<figure class="image">
+					<img alt="وضع علامة كشرعية" class="appscreen" data-tx="t0025:62a239ad" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:ce53d1d9">اضغط على "وضع علامة "شرعي" لإعطاء تقييم إيجابي. اختياريًا، يمكنك أيضًا إضافة تعليق هنا.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027:8a56254d">متى يجب أن أفعل ذلك؟</h3>
+				<p class="mt-5" data-tx="t0028:251143e9">ضع علامة على الرقم كرقم شرعي إذا:</p>
+				<ul>
+					<li data-tx="t0029:2fda0631">إنها دعوة جادة</li>
+					<li data-tx="t0030:da6a605f">الرقم يأتي من شركة حقيقية</li>
+					<li data-tx="t0031:917297e9">أنت تعرف الرقم وتم الإبلاغ عنه بشكل غير صحيح</li>
+					<li data-tx="t0032:5cbfb922">تم طلب المكالمة (على سبيل المثال جراحة طبيب، تاجر، خدمة الطرود)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033:8e3cddb8"><strong>ملاحظة:</strong> تساعد التقييمات المشروعة على إزالة الرقم من قاعدة بيانات الرسائل الاقتحامية أو خفض درجة الرسائل الاقتحامية.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034:d32c7bb5">شكراً لك على مساعدتك!</strong></p>
+			<p class="mt-2" data-tx="t0035:6ded6ef1">يساعد كل تقرير في الحفاظ على قاعدة بيانات PhoneBlock محدّثة وموثوقة. يستفيد المجتمع من خبراتك.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

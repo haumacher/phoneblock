@@ -8,31 +8,31 @@
 <section class="section">
 	<div class="content">
 		<div class="logo-animation">
-			<img alt="PhoneBlock 应答机徽标" data-tx="t0059" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
+			<img alt="PhoneBlock 应答机徽标" data-tx="t0059:c5ed6770" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/>
 		</div>
 	
-		<h1 data-tx="t0001">安装为应答机</h1>
+		<h1 data-tx="t0001:68e08dfe">安装为应答机</h1>
 		
-		<p data-tx="t0002">PhoneBlock 为您提供智能应答机，只有当来电者的号码被列入 PhoneBlock 的 <a th:href="@{/status}">SPAM 数据库</a>时，应答机才会自动接听来电。正如<a th:href="@{/setup}">拦截列表的设置</a>一样，您不需要自己的设备或计算机来完成这项工作。您可以在网站上创建 PhoneBlock 应答机，并通过互联网在 Fritz!Box 或其他支持 VOIP 的互联网路由器上注册。您可以在<a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">这里</a>了解 PhoneBlock 电话答录机的具体工作原理。</p>
+		<p data-tx="t0002:42f17d69">PhoneBlock 为您提供智能应答机，只有当来电者的号码被列入 PhoneBlock 的 <a th:href="@{/status}">SPAM 数据库</a>时，应答机才会自动接听来电。正如<a th:href="@{/setup}">拦截列表的设置</a>一样，您不需要自己的设备或计算机来完成这项工作。您可以在网站上创建 PhoneBlock 应答机，并通过互联网在 Fritz!Box 或其他支持 VOIP 的互联网路由器上注册。您可以在<a href="https://medium.com/@haui_81991/der-phoneblock-anrufbeantworter-erkl%C3%A4rt-e0c8e7a12822" target="_blank">这里</a>了解 PhoneBlock 电话答录机的具体工作原理。</p>
 		
-		<p data-tx="t0003">以下步骤将带您进入 PhoneBlock 应答机：</p>
+		<p data-tx="t0003:fd0f4a43">以下步骤将带您进入 PhoneBlock 应答机：</p>
 		
 		<ol>
-			<li><a data-tx="t0004" href="#register">注册 PhoneBlock</a></li>
-			<li><a data-tx="t0005" href="#create">创建应答机</a></li>
-			<li><a data-tx="t0006" href="#dyndns">在 Fritz!Box 中设置 DynDNS</a></li>
-			<li><a data-tx="t0007" href="#sip">在 Fritz 中设置电话设备！</a></li>
-			<li><a data-tx="t0008" href="#enable">打开 PhoneBlock 应答机</a></li>
-			<li><a data-tx="t0009" href="#test">测试答录机</a></li>
+			<li><a data-tx="t0004:5cb36b90" href="#register">注册 PhoneBlock</a></li>
+			<li><a data-tx="t0005:3942efdd" href="#create">创建应答机</a></li>
+			<li><a data-tx="t0006:a63ba47b" href="#dyndns">在 Fritz!Box 中设置 DynDNS</a></li>
+			<li><a data-tx="t0007:4cfff5b1" href="#sip">在 Fritz 中设置电话设备！</a></li>
+			<li><a data-tx="t0008:643de862" href="#enable">打开 PhoneBlock 应答机</a></li>
+			<li><a data-tx="t0009:18890e90" href="#test">测试答录机</a></li>
 		</ol>
 		
-		 <p data-tx="t0010">说明将指导您逐步完成设置。在 Fritz！Box 中进行配置并不容易，但如果您严格按照此处描述的步骤操作，就不会出错。</p>
+		 <p data-tx="t0010:c8cb5362">说明将指导您逐步完成设置。在 Fritz！Box 中进行配置并不容易，但如果您严格按照此处描述的步骤操作，就不会出错。</p>
 		 
-		<h2 data-tx="t0011" id="register">步骤 1：注册 PhoneBlock</h2>
+		<h2 data-tx="t0011:e8d5bb12" id="register">步骤 1：注册 PhoneBlock</h2>
 
-		<p data-tx="t0012">从这里开始，您需要三个浏览器窗口（或标签页）。一个用于本指南，一个用于 PhoneBlock 应答机应用程序，一个用于 Fritz 的配置界面！</p>
+		<p data-tx="t0012:d6a793c3">从这里开始，您需要三个浏览器窗口（或标签页）。一个用于本指南，一个用于 PhoneBlock 应答机应用程序，一个用于 Fritz 的配置界面！</p>
 		
-		<p data-tx="t0013" th:if="${loggedIn}">首先，你需要注册或登录 PhoneBlock 才能开始设置。</p>
+		<p data-tx="t0013:fffc269" th:if="${loggedIn}">首先，你需要注册或登录 PhoneBlock 才能开始设置。</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -40,15 +40,15 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
-				<span data-tx="t0014">登录</span>			
+				<span data-tx="t0014:1dc205">登录</span>			
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015" unless:if="${loggedIn}">您的登录名是 <code dir="ltr" th:text="${userName}"></code>，很好，让我们进入下一步！</p>
+		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">您的登录名是 <code dir="ltr" th:text="${userName}"></code>，很好，让我们进入下一步！</p>
 		
-		<h2 data-tx="t0016" id="create">步骤 2：创建应答机</h2>
+		<h2 data-tx="t0016:babb04ed" id="create">步骤 2：创建应答机</h2>
 		
-		<p data-tx="t0017">单击此处可打开<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock 电话答录机应用程序</a>窗口。第一次打开时，电话答录机列表是空的，右下方有一个按钮，可以创建一个电话答录机。按下这个加号按钮。</p>
+		<p data-tx="t0017:3e41626b">单击此处可打开<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock 电话答录机应用程序</a>窗口。第一次打开时，电话答录机列表是空的，右下方有一个按钮，可以创建一个电话答录机。按下这个加号按钮。</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -56,46 +56,46 @@
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
-				<span data-tx="t0018">打开应用程序</span>			
+				<span data-tx="t0018:c1b379ba">打开应用程序</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="设置 DynDNS" class="image appscreen" data-tx="t0060" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
+	  			<img alt="设置 DynDNS" class="image appscreen" data-tx="t0060:1f43c62e" th:src="@{/assets/img/ab/app/01-create-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0019" id="dyndns">步骤 4：设置 DynDNS</h2>
+		<h2 data-tx="t0019:66374e47" id="dyndns">步骤 4：设置 DynDNS</h2>
 		
-		<p data-tx="t0020">您的 Fritz！盒子通过 "DynDNS "告诉 PhoneBlock 它的 IP 地址。这是必要的，这样 PhoneBlock 应答机才能找到您的 Fritz！</p>
+		<p data-tx="t0020:c848fac8">您的 Fritz！盒子通过 "DynDNS "告诉 PhoneBlock 它的 IP 地址。这是必要的，这样 PhoneBlock 应答机才能找到您的 Fritz！</p>
 		
-		<h3 data-tx="t0021">激活 PhoneBlock DynDNS</h3>
+		<h3 data-tx="t0021:2a28f3c0">激活 PhoneBlock DynDNS</h3>
 		
-		<p data-tx="t0022">在<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>中激活 "使用 PhoneBlock DynDNS "开关（如果你熟悉并已使用其他 DynDNS 提供商，也可以直接输入 Fritz!Box 的主机名）。</p>
+		<p data-tx="t0022:87bebd4d">在<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>中激活 "使用 PhoneBlock DynDNS "开关（如果你熟悉并已使用其他 DynDNS 提供商，也可以直接输入 Fritz!Box 的主机名）。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="设置 DynDNS" class="image appscreen" data-tx="t0061" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
+	  			<img alt="设置 DynDNS" class="image appscreen" data-tx="t0061:1f43c62e" th:src="@{/assets/img/ab/app/02-enable-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0023">在下一页，确认 "激活 DynDNS"。</p>
+		<p data-tx="t0023:2215223d">在下一页，确认 "激活 DynDNS"。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="设置 DynDNS" class="image appscreen" data-tx="t0062" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
+	  			<img alt="设置 DynDNS" class="image appscreen" data-tx="t0062:1f43c62e" th:src="@{/assets/img/ab/app/03-create-dyndns-account.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0024">现在您将收到 PhoneBlock DynDNS 的访问数据，您可以将其输入 Fritz！Box（见下文）。</p>
+		<p data-tx="t0024:fbbe4128">现在您将收到 PhoneBlock DynDNS 的访问数据，您可以将其输入 Fritz！Box（见下文）。</p>
 
-		<h3 data-tx="t0025">在 Fritz!Box 中输入登录数据</h3>
+		<h3 data-tx="t0025:e0a9e979">在 Fritz!Box 中输入登录数据</h3>
 		
-		<p data-tx="t0026">此链接<a class="showFB" href="http://fritz.box" target="fritzbox">可为您的 Fritz！Box 打开一个窗口</a>。使用您的 Fritz！Box 密码登录。如果您以前从未这样做过，您可以在 Fritz.Box 的底部找到密码！</p>
+		<p data-tx="t0026:a1fbdc6">此链接<a class="showFB" href="http://fritz.box" target="fritzbox">可为您的 Fritz！Box 打开一个窗口</a>。使用您的 Fritz！Box 密码登录。如果您以前从未这样做过，您可以在 Fritz.Box 的底部找到密码！</p>
 		
-		<p data-tx="t0027">在<a class="showFB" href="http://fritz.box" target="fritzbox">Fritz！Box</a>中，导航到侧边栏中的 "Internet &gt; 共享"，然后选择 "DynDNS "选项卡。</p>
+		<p data-tx="t0027:acadeadb">在<a class="showFB" href="http://fritz.box" target="fritzbox">Fritz！Box</a>中，导航到侧边栏中的 "Internet &gt; 共享"，然后选择 "DynDNS "选项卡。</p>
 
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -103,161 +103,161 @@
 			    <span class="icon">
 					<i class="fa-solid fa-arrow-up-right-from-square"></i>
 			    </span>
-				<span data-tx="t0028">打开 Fritz！Box</span>			
+				<span data-tx="t0028:ca7e0236">打开 Fritz！Box</span>			
 			</a>
 		  </div>
 		</div>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="设置 DynDNS" class="image" data-tx="t0063" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
+	  			<img alt="设置 DynDNS" class="image" data-tx="t0063:1f43c62e" th:src="@{/assets/img/ab/setup/02-configure-dyndns.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0029">从<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>中复制 "更新网址"、"域名"、"用户名 "和 "密码 "数据，并将其输入到<a class="showFB" href="http://fritz.box" target="fritzbox">Fritz！Box</a>中。然后用 "应用 "确认（下图中的第 5 点）。</p>
+		<p data-tx="t0029:61e24f6c">从<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>中复制 "更新网址"、"域名"、"用户名 "和 "密码 "数据，并将其输入到<a class="showFB" href="http://fritz.box" target="fritzbox">Fritz！Box</a>中。然后用 "应用 "确认（下图中的第 5 点）。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="设置 DynDNS" class="image" data-tx="t0064" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
+	  			<img alt="设置 DynDNS" class="image" data-tx="t0064:1f43c62e" th:src="@{/assets/img/ab/app/04-copy-dyndns-settings.png}"/>
 	  		</div>
 		</div>
 		
-		<h3 data-tx="t0030">检查 DynDNS</h3>
+		<h3 data-tx="t0030:f89d6560">检查 DynDNS</h3>
 
-		<p data-tx="t0031">现在返回<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">答录机应用程序</a>并检查设置（上图中的第 6 点）。如果 PhoneBlock 找到了您的 Fritz！Box，您将进入下一页，查看实际答录机的访问数据。</p>
+		<p data-tx="t0031:ad4e12a2">现在返回<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">答录机应用程序</a>并检查设置（上图中的第 6 点）。如果 PhoneBlock 找到了您的 Fritz！Box，您将进入下一页，查看实际答录机的访问数据。</p>
 		
-		<h2 data-tx="t0032" id="sip">步骤 4：在 Fritz 中设置答录机！</h2>
+		<h2 data-tx="t0032:44450112" id="sip">步骤 4：在 Fritz 中设置答录机！</h2>
 		
-		<p data-tx="t0033">现在，答录机已在 Fritz 中设置为电话设备！为此，请再次打开<a class="showFB" href="http://fritz.box" target="fritzbox">Fritz！Box 界面</a>。</p>
+		<p data-tx="t0033:4f8f1cf0">现在，答录机已在 Fritz 中设置为电话设备！为此，请再次打开<a class="showFB" href="http://fritz.box" target="fritzbox">Fritz！Box 界面</a>。</p>
 
-		<h3 data-tx="t0034">设置电话设备</h3>
+		<h3 data-tx="t0034:7174860c">设置电话设备</h3>
 
-		<p data-tx="t0035">导航至侧边栏中的 "电话 &gt; 电话设备"，然后单击 "设置新设备 "按钮。</p>
+		<p data-tx="t0035:7625ab2c">导航至侧边栏中的 "电话 &gt; 电话设备"，然后单击 "设置新设备 "按钮。</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="设置设备" class="image" data-tx="t0065" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
+	  			<img alt="设置设备" class="image" data-tx="t0065:f09b0f6a" th:src="@{/assets/img/ab/setup/03-create-new-device.png}"/>
 	  		</div>
 		</div>
 		
-		<h3 data-tx="t0036">选择设备类型</h3>
+		<h3 data-tx="t0036:db70c215">选择设备类型</h3>
 
-		<p data-tx="t0037">选择 "电话（带和不带应答机）"选项，然后点击 "下一步"。注意：<b>不要</b>选择明显的选项 "应答机"，因为它只能用于配置永久安装在 Fritz 中的应答机！</p>
-		
-		<div class="columns">
-			<div class="column is-8 is-offset-2">
-	  			<img alt="创建设备" class="image" data-tx="t0066" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
-	  		</div>
-		</div>
-
-		<h3 data-tx="t0038">配置 IP 电话</h3>
-
-		<p data-tx="t0039">在 "连接电话 "页面，选择 "LAN/WLAN（IP 电话）"选项，并在下面的文本字段中给新设备命名为 "PhoneBlock"。然后点击 "下一步"。</p>
-
-		<div class="columns">
-			<div class="column is-8 is-offset-2">
-	  			<img alt="创建 IP 电话" class="image" data-tx="t0067" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
-	  		</div>
-		</div>
-
-		<h3 data-tx="t0040">传输访问数据</h3>
-
-		<p data-tx="t0041">在下一页 "在 IP 电话中应用设置 "中，系统会要求你输入 "用户名 "和 "密码"。在此复制<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序中显示的相应数据&lt;/x1点击 "下一步"。</a></p>
+		<p data-tx="t0037:3dd58459">选择 "电话（带和不带应答机）"选项，然后点击 "下一步"。注意：<b>不要</b>选择明显的选项 "应答机"，因为它只能用于配置永久安装在 Fritz 中的应答机！</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="用户数据" class="image" data-tx="t0068" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
+	  			<img alt="创建设备" class="image" data-tx="t0066:ff32e6e0" th:src="@{/assets/img/ab/setup/04-create-phone.png}"/>
 	  		</div>
 		</div>
-		
-		<h3 data-tx="t0042">拨出电话的设置</h3>
 
-		<p data-tx="t0043">在 "为拨出电话设置电话 "页面，只需点击 "下一步 "即可。PhoneBlock 应答机不需要用于拨出电话的电话号码，因为它从不主动拨打电话。我们将在后面的步骤中停用这个号码，这样答录机就真的不能拨打任何电话了。</p>
+		<h3 data-tx="t0038:42c8988e">配置 IP 电话</h3>
+
+		<p data-tx="t0039:fd8ae4f4">在 "连接电话 "页面，选择 "LAN/WLAN（IP 电话）"选项，并在下面的文本字段中给新设备命名为 "PhoneBlock"。然后点击 "下一步"。</p>
+
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="创建 IP 电话" class="image" data-tx="t0067:65164e9e" th:src="@{/assets/img/ab/setup/05-choose-ip-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0040:18a91842">传输访问数据</h3>
+
+		<p data-tx="t0041:ea5a4ae3">在下一页 "在 IP 电话中应用设置 "中，系统会要求你输入 "用户名 "和 "密码"。在此复制<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序中显示的相应数据&lt;/x1点击 "下一步"。</a></p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="拨出电话" class="image" data-tx="t0069" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
+	  			<img alt="用户数据" class="image" data-tx="t0068:b09238a4" th:src="@{/assets/img/ab/app/05-copy-sip-settings.png}"/>
 	  		</div>
 		</div>
+		
+		<h3 data-tx="t0042:9c3075bf">拨出电话的设置</h3>
 
-		<h3 data-tx="t0044">选择要保护的号码</h3>
-
-		<p data-tx="t0045">在 "设置来电的电话设置 "页面，应保留默认设置 "接受所有来电"。如果您只想保护某些号码不被垃圾电话骚扰，也可以选择答录机可以看到来电的号码。点击 "下一步"。</p>
+		<p data-tx="t0043:defacb75">在 "为拨出电话设置电话 "页面，只需点击 "下一步 "即可。PhoneBlock 应答机不需要用于拨出电话的电话号码，因为它从不主动拨打电话。我们将在后面的步骤中停用这个号码，这样答录机就真的不能拨打任何电话了。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="受保护号码" class="image" data-tx="t0070" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
+	  			<img alt="拨出电话" class="image" data-tx="t0069:7969a9c" th:src="@{/assets/img/ab/setup/07-choose-local-number.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0046">确认配置</h3>
+		<h3 data-tx="t0044:41335921">选择要保护的号码</h3>
 
-		<p data-tx="t0047">现在您将进入 "应用设置 "摘要页面。您可以再次检查所做的设置，并用 "应用 "确认。</p>
+		<p data-tx="t0045:d4e7d">在 "设置来电的电话设置 "页面，应保留默认设置 "接受所有来电"。如果您只想保护某些号码不被垃圾电话骚扰，也可以选择答录机可以看到来电的号码。点击 "下一步"。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="检查设置" class="image" data-tx="t0071" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
+	  			<img alt="受保护号码" class="image" data-tx="t0070:392b972a" th:src="@{/assets/img/ab/setup/08-numbers-to-protect.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0048">完成设备配置</h3>
+		<h3 data-tx="t0046:76127bee">确认配置</h3>
 
-		<p data-tx="t0049">您又回到了 "设备概览"。您现在应该可以在列表中看到新的电话答录机 "PhoneBlock"。不过，在打开电话答录机之前，您需要进行进一步设置。为此，请单击 PhoneBlock 行末尾的编辑笔。</p>
+		<p data-tx="t0047:7dba7b36">现在您将进入 "应用设置 "摘要页面。您可以再次检查所做的设置，并用 "应用 "确认。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="编辑答录机" class="image" data-tx="t0072" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  			<img alt="检查设置" class="image" data-tx="t0071:94f59104" th:src="@{/assets/img/ab/setup/10-check-settings.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0050">停止拨出电话</h3>
+		<h3 data-tx="t0048:f9c95105">完成设备配置</h3>
 
-		<p data-tx="t0051">在 "拨出电话 "选择字段中，您现在可以选择最后一个空条目，以确保答录机不能独立拨打电话。<b>不要</b>点击下面的 "应用 "按钮，而是点击第二个选项卡 "登录数据"。现在会询问您是否要保存更改。在对话框中点击 "应用"。</p>
+		<p data-tx="t0049:775725f8">您又回到了 "设备概览"。您现在应该可以在列表中看到新的电话答录机 "PhoneBlock"。不过，在打开电话答录机之前，您需要进行进一步设置。为此，请单击 PhoneBlock 行末尾的编辑笔。</p>
+		
+		<div class="columns">
+			<div class="column is-8 is-offset-2">
+	  			<img alt="编辑答录机" class="image" data-tx="t0072:c2aab27" th:src="@{/assets/img/ab/setup/09-edit-phone.png}"/>
+	  		</div>
+		</div>
+
+		<h3 data-tx="t0050:c0e2f0a0">停止拨出电话</h3>
+
+		<p data-tx="t0051:2b456b4d">在 "拨出电话 "选择字段中，您现在可以选择最后一个空条目，以确保答录机不能独立拨打电话。<b>不要</b>点击下面的 "应用 "按钮，而是点击第二个选项卡 "登录数据"。现在会询问您是否要保存更改。在对话框中点击 "应用"。</p>
 		
 		<div class="columns">
 			<div class="column">
-	  			<img alt="防止拨出电话" class="image" data-tx="t0073" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
+	  			<img alt="防止拨出电话" class="image" data-tx="t0073:332b04a6" th:src="@{/assets/img/ab/setup/11-prevent-call.png}"/>
 	  		</div>
 			<div class="column">
-	  			<img alt="确认" class="image" data-tx="t0074" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
+	  			<img alt="确认" class="image" data-tx="t0074:323f3118" th:src="@{/assets/img/ab/setup/12-confirm.png}"/>
 	  		</div>
 		</div>
 
-		<h3 data-tx="t0052">允许从互联网登录</h3>
+		<h3 data-tx="t0052:f4b608b3">允许从互联网登录</h3>
 
-		<p data-tx="t0053">现在必须在 "登录数据 "选项卡中激活 "允许从互联网登录 "选项，并再次从<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>中复制密码，然后将其输入 "密码 "字段。然后点击 "应用 "按钮。</p>
+		<p data-tx="t0053:73c1e78d">现在必须在 "登录数据 "选项卡中激活 "允许从互联网登录 "选项，并再次从<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>中复制密码，然后将其输入 "密码 "字段。然后点击 "应用 "按钮。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="从互联网访问" class="image" data-tx="t0075" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
+	  			<img alt="从互联网访问" class="image" data-tx="t0075:1287d69f" th:src="@{/assets/img/ab/setup/13-allow-internet-access.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0054" id="enable">步骤 5：打开答录机</h2>
+		<h2 data-tx="t0054:ca3d1f9d" id="enable">步骤 5：打开答录机</h2>
 		
-		<p data-tx="t0055">答录机的配置工作现已完成。切换回<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>，打开新的应答机。</p>
+		<p data-tx="t0055:9d44f6ee">答录机的配置工作现已完成。切换回<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">应答机应用程序</a>，打开新的应答机。</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="从互联网访问" class="image appscreen" data-tx="t0076" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
+	  			<img alt="从互联网访问" class="image appscreen" data-tx="t0076:1287d69f" th:src="@{/assets/img/ab/app/06-register-answerbot.png}"/>
 	  		</div>
 		</div>
 		
-		<p data-tx="t0056">恭喜您，如果一切顺利，答录机现在应该在 <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}"> 答录机应用程序</a>中以绿色显示 "已打开"。以后再有不愉快的来电，可以与 PhoneBlock 讨论。</p>
+		<p data-tx="t0056:46e348c9">恭喜您，如果一切顺利，答录机现在应该在 <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}"> 答录机应用程序</a>中以绿色显示 "已打开"。以后再有不愉快的来电，可以与 PhoneBlock 讨论。</p>
 
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="已连接应答机" class="image appscreen" data-tx="t0077" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
+	  			<img alt="已连接应答机" class="image appscreen" data-tx="t0077:7d38a51" th:src="@{/assets/img/ab/app/10-answerbot-activated.png}"/>
 	  		</div>
 		</div>
 		
-		<h2 data-tx="t0057" id="test">步骤 6：测试答录机</h2>
+		<h2 data-tx="t0057:7e3a9894" id="test">步骤 6：测试答录机</h2>
 
-		<p data-tx="t0058">如果您想体验一下并不日常使用的 PhoneBlock 电话应答机的通话效果，可以通过电话应答机的 <b>内部号码</b>从直接连接到 Fritz!Box 的电话（例如 DECT 无绳电话）拨打电话。答录机始终接受此类测试呼叫。<b>重要：</b> <b>只能</b>通过答录机的内部号码（通常以 "**"开头）进行操作。您可以在 Fritz!Box 设备概览的 "PhoneBlock "行中找到内部号码。您为什么不尝试为他估算一个光伏系统呢？玩得开心</p>
+		<p data-tx="t0058:f4aaac68">如果您想体验一下并不日常使用的 PhoneBlock 电话应答机的通话效果，可以通过电话应答机的 <b>内部号码</b>从直接连接到 Fritz!Box 的电话（例如 DECT 无绳电话）拨打电话。答录机始终接受此类测试呼叫。<b>重要：</b> <b>只能</b>通过答录机的内部号码（通常以 "**"开头）进行操作。您可以在 Fritz!Box 设备概览的 "PhoneBlock "行中找到内部号码。您为什么不尝试为他估算一个光伏系统呢？玩得开心</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">
-	  			<img alt="已连接应答机" class="image" data-tx="t0078" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
+	  			<img alt="已连接应答机" class="image" data-tx="t0078:7d38a51" th:src="@{/assets/img/ab/setup/14-answerbot-local-number.png}"/>
 	  		</div>
 		</div>
 		

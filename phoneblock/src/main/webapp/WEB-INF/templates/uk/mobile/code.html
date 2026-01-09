@@ -14,16 +14,17 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <h1 class="title" data-tx="t0001">Підтвердіть адресу електронної пошти</h1>
-	        <p class="subtitle" data-tx="t0002">Введіть код з листа.</p>
+	        <h1 class="title" data-tx="t0001:4fcae186">Підтвердіть адресу електронної пошти</h1>
+	        <p class="subtitle" data-tx="t0002:5aca0af4">Введіть код з листа.</p>
 	        <div class="content">
-				<p data-tx="t0003">На адресу <code th:text="${email}"></code> було надіслано електронного листа.</p>
-				<p data-tx="t0004">Будь ласка, перевірте свою поштову скриньку, скопіюйте код і введіть його тут. Це підтвердить вашу електронну адресу.</p>
+				<p data-tx="t0003:5008487">На адресу <code th:text="${email}"></code> було надіслано електронного листа.</p>
+				<p data-tx="t0004:691e4431">Будь ласка, перевірте свою поштову скриньку, скопіюйте код і введіть його тут. Це підтвердить вашу електронну адресу.</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
+					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 					<div class="field">
-						<label class="label" data-tx="t0005">Код</label>
+						<label class="label" data-tx="t0005:a34add52">Код</label>
 						<div class="control has-icons-left has-icons-right">
-							<input data-tx="t0006" name="code" placeholder="Код підтвердження" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<input data-tx="t0006:eba94e42" name="code" placeholder="Код підтвердження" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
 							<span class="icon is-small is-left">
 							  <i class="fa-solid fa-barcode"></i>
 							</span>
@@ -32,13 +33,19 @@
 							</span>
 						</div>
 
-						<p class="help is-danger" data-tx="t0007" th:if="${message != null}"><span th:text="${message}"></span> <a th:href="@{/mobile/login}">Спробуйте ще раз</a>.</p>
+						<p class="help is-danger" th:if="${message != null}">
+							<span th:text="${message}"></span>
+							<a data-tx="t0010:668224a9" th:href="@{/mobile/login}">Спробуйте ще раз.</a>.								
+						</p>
 
-						<p class="help" data-tx="t0008" th:if="${message == null}"><span>Не отримано листа? Будь ласка, перевірте папку "Спам"</span> <a th:href="@{/mobile/login}">Спробуйте ще раз</a>.</p>
+						<p class="help" th:if="${message == null}">
+							<span data-tx="t0011:8db88b77">Не отримали листа? Будь ласка, перевірте папку "Спам"!</span>
+							<a data-tx="t0012:668224a9" th:href="@{/mobile/login}">Спробуйте ще раз.</a>.								
+						</p>
 					</div>		
 							
 					<div class="buttons is-right">
-				    	<button class="button is-link" data-tx="t0009" type="submit">Створити обліковий запис</button>
+				    	<button class="button is-link" data-tx="t0009:c2e2ce7d" type="submit">Створити обліковий запис</button>
 					</div>
 				</form>
 	        </div>
@@ -50,6 +57,8 @@
 
 </div>
 </section>
+
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

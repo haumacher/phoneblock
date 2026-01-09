@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-report-spam.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:c8a24e95">Notificar números como SPAM o legítimos</h1>
+
+		<p class="subtitle" data-tx="t0002:63bf7196">Tus mensajes ayudan a toda la comunidad PhoneBlock a protegerse de las llamadas SPAM.</p>
+
+		<h2 data-tx="t0003:6f24859b">Informar del número de SPAM</h2>
+
+		<p data-tx="t0004:a8ee9c0c">Si recibes una llamada SPAM, puedes denunciar el número directamente en la aplicación. Cuantos más detalles proporciones, más útil será tu denuncia para otros usuarios.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0005:e594f5e9">Paso 1: Informar sobre SPAM</h3>
+				<figure class="image">
+					<img alt="Denunciar SPAM" class="appscreen" data-tx="t0006:542e5a23" th:src="@{/assets/img/mobile/usage-2-report-as-spam.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0007:e5e96702">Pulse sobre el botón "Denunciar SPAM" de la llamada correspondiente en el historial</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0008:ae2236f5">Paso 2: Seleccionar categoría</h3>
+				<figure class="image">
+					<img alt="Seleccione la categoría SPAM" class="appscreen" data-tx="t0009:aeb6b06e" th:src="@{/assets/img/mobile/usage-3-select-spam-category.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0010:f4766cfd">Seleccione la categoría adecuada de la lista</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:303b3a03">Paso 3: Comentar (opcional)</h3>
+				<figure class="image">
+					<img alt="Añadir descripción" class="appscreen" data-tx="t0012:f8f221c2" th:src="@{/assets/img/mobile/usage-4-add-description.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:3b71b430">Si lo desea, puede añadir un comentario para ayudar a otros usuarios</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0014:e0d196df">Categorías de SPAM disponibles</h3>
+		<div class="columns">
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0015:b95630ea"><strong>Publicidad:</strong> Llamadas publicitarias no solicitadas</li>
+					<li data-tx="t0016:f90affe7"><strong>Concurso:</strong> Notificaciones de premios incorrectas.</li>
+					<li data-tx="t0017:1572ca14"><strong>Trampa de costes:</strong> Números de tarificación adicional caros</li>
+					<li data-tx="t0018:8e1de0b"><strong>Estafas:</strong> Llamadas fraudulentas (por ejemplo, estafas de nietos)</li>
+				</ul>
+			</div>
+			<div class="column is-half">
+				<ul>
+					<li data-tx="t0019:49f7c80a"><strong>Ping de llamada:</strong> Timbre corto para provocar una devolución de llamada.</li>
+					<li data-tx="t0020:4c84f068"><strong>Encuesta:</strong> Encuestas no deseadas</li>
+					<li data-tx="t0021:f8a87cb6"><strong>Otros:</strong> Otros tipos de SPAM</li>
+				</ul>
+			</div>
+		</div>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0022:b4318350">Marcar número como legítimo</h2>
+
+		<p data-tx="t0023:54052bdf">Si un número ha sido marcado incorrectamente como SPAM, puedes calificarlo como legítimo. Esto ayuda a corregir los mensajes incorrectos y a mejorar la calidad de la base de datos.</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0024:44477396">Marcar como legítimo</h3>
+				<figure class="image">
+					<img alt="Marcar como legítimo" class="appscreen" data-tx="t0025:62a239ad" th:src="@{/assets/img/mobile/usage-6-mark-as-legitimate.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:ce53d1d9">Pulse sobre "Marcar como legítimo" para dar una valoración positiva. Opcionalmente, también puede añadir un comentario aquí.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0027:8a56254d">¿Cuándo debo hacerlo?</h3>
+				<p class="mt-5" data-tx="t0028:251143e9">Marca un número como legítimo si:</p>
+				<ul>
+					<li data-tx="t0029:2fda0631">Es un llamamiento serio</li>
+					<li data-tx="t0030:da6a605f">El número procede de una empresa real</li>
+					<li data-tx="t0031:917297e9">Conoces el número y se informó incorrectamente</li>
+					<li data-tx="t0032:5cbfb922">La llamada fue solicitada (por ejemplo, consulta médica, comerciante, servicio de paquetería)</li>
+				</ul>
+				<p class="mt-4" data-tx="t0033:8e3cddb8"><strong>Nota:</strong> Las valoraciones legítimas ayudan a eliminar el número de la base de datos de SPAM o a reducir la puntuación de SPAM.</p>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0034:d32c7bb5">Gracias por su ayuda.</strong></p>
+			<p class="mt-2" data-tx="t0035:6ded6ef1">Cada informe ayuda a mantener la base de datos PhoneBlock actualizada y fiable. La comunidad se beneficia de tu experiencia.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+PhoneBlock Mobile is a Flutter-based Android application that integrates with the PhoneBlock service (phoneblock.net) to identify and block spam phone calls. The app uses Android's CallScreeningService to intercept incoming calls and check them against the PhoneBlock spam database.
+
+## Development Commands
+
+### Flutter Commands
+- `flutter pub get` - Install/update dependencies
+- `flutter run` - Run the app in debug mode
+- `flutter build apk` - Build a release APK
+- `flutter build appbundle` - Build an Android App Bundle for Play Store
+- `flutter test` - Run tests
+- `flutter analyze` - Run static analysis
+
+### Internationalization (I18N)
+
+**Auto-Translation with DeepL:**
+The project uses the [auto-translate](https://github.com/haumacher/auto-translate) Gradle plugin to automatically translate ARB files from German to all other languages.
+
+**Source Language:** German (`lib/l10n/app_de.arb`)
+- **Only edit the German ARB file** - This is the ONLY source file you should modify
+- **All other language files are auto-generated** - Never manually edit `app_en.arb`, `app_es.arb`, etc.
+
+**Translation Workflow:**
+1. Edit strings in `lib/l10n/app_de.arb`
+2. Run `./gradlew translateArb` from the `phoneblock_mobile` directory
+3. The plugin will automatically translate to all target languages (ar, da, el, en, es, fr, it, nb, nl, pl, sv, uk, zh)
+4. Run `flutter gen-l10n` to regenerate Dart localization code
+
+**DeepL API Configuration:**
+- Add your DeepL API key to `gradle.properties`: `deepl.auth.key=YOUR_KEY`
+- Or store globally in `~/.gradle/gradle.properties` for security
+- Get a free API key at https://www.deepl.com/pro-api
+
+**Translation Features:**
+- Incremental translation: only translates new or modified strings
+- Preserves ICU MessageFormat placeholders (`{count}`, `{phoneNumber}`, etc.)
+- Handles plural forms and select statements automatically
+- Maintains the `x-translated` metadata for tracking
+
+### Android Build
+- Release builds require a `key.properties` file in the android directory with signing configuration
+- The app uses signing configuration for release builds defined in `android/app/build.gradle`
+
+## Architecture
+
+### Flutter/Dart Layer (lib/)
+
+**main.dart** - Main application entry point containing:
+- **Routing**: Uses `go_router` package for navigation with two main routes:
+  - Root (`/`) - Shows SetupPage
+  - Response handler (`/pb-test/mobile/response` or `/phoneblock/mobile/response`) - Handles OAuth callback with loginToken parameter
+- **Setup Flow**: SetupPage provides buttons to connect with PhoneBlock and request call screening permissions
+- **Authentication**: Mobile OAuth flow where user opens PhoneBlock web login, completes authentication, and gets redirected back to the app with a token
+- **API Integration**: Token is verified against `pbApiTest` endpoint
+- **UI Components**:
+  - MyHomePage: Main call log viewer with dismissible list items
+  - RateScreen: Spam rating interface for manual classification
+  - Call list display with icons, labels, timestamps, and action buttons
+- **Contact Management**: fetchBlocklist() manages SPAM contact groups using flutter_contacts
+
+**state.dart** - JSON-serializable data models using jsontool package:
+- `AppState`: Root application state containing call list
+- `Call`: Individual call records with type, rating, phone, label, timestamps
+- `Type` enum: MISSED, BLOCKED, INCOMING, OUTGOING
+- `Rating` enum: A_LEGITIMATE, UNKNOWN, PING, POLL, ADVERTISING, GAMBLE, FRAUD
+- `GetReports`/`Reports`/`Report`: Models for syncing blocklist from server
+- All models extend `_JsonObject` for serialization
+
+### Android Native Layer (android/app/src/main/java/)
+
+**MainActivity.java** - Flutter activity with MethodChannel bridge:
+- **Channel**: `de.haumacher.phoneblock_mobile/call_checker`
+- **Methods**:
+  - `requestPermission()` - Requests ROLE_CALL_SCREENING permission (API 29+)
+  - `setAuthToken(String)` - Stores OAuth token in SharedPreferences
+  - `getAuthToken()` - Retrieves stored auth token
+- **Storage**: Uses SharedPreferences with key "de.haumacher.phoneblock_mobile.Preferences"
+
+**CallChecker.java** - CallScreeningService implementation:
+- Intercepts incoming calls and queries PhoneBlock API for spam status
+- Uses bearer token authentication from SharedPreferences
+- Blocks calls if votes >= minVotes (default 4) and not archived
+- Query timeout: 4.5 seconds - accepts call if query doesn't complete
+- Query URL configurable via SharedPreferences (defaults to `https://phoneblock.net/phoneblock/api/num/{num}?format=json`)
+- Only screens incoming calls (API 29+)
+
+### Configuration
+
+**Environment-specific URLs**: Defined in main.dart:
+- Debug mode: Uses `/pb-test` context path
+- Production: Uses `/phoneblock` context path
+- Base URL: `https://phoneblock.net`
+
+**AndroidManifest.xml**:
+- Deep link handling for both test and production OAuth response URLs
+- CallScreeningService declaration with BIND_SCREENING_SERVICE permission
+- Requires READ_CONTACTS, WRITE_CONTACTS, and INTERNET permissions
+
+**Signing**: Release builds use key.properties file (not in repo) containing:
+- keyAlias
+- keyPassword
+- storeFile
+- storePassword
+
+## Key Dependencies
+
+- `jsontool` - JSON serialization for data models
+- `go_router` - Declarative routing
+- `flutter_contacts` - Contact and group management for SPAM blocklist
+- `url_launcher` - Opening PhoneBlock web login
+- `http` - API requests
+- `intl` - Date formatting
+- `shared_preferences` - Persistent storage (bridged from native)
+
+## Development Notes
+
+### Git Commit Messages
+**IMPORTANT**: When creating commits, always include the user's original prompt/request in the commit message. This provides context for the changes and helps track the reasoning behind implementation decisions.
+
+Example format:
+```
+Brief summary of changes
+
+[User's original request/prompt explaining what they asked for]
+
+Details about the implementation approach and any relevant notes.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### Code Documentation
+**IMPORTANT**: Always use documentation comments (`///` in Dart, `/** */` in Java) instead of regular comments when documenting:
+- Public classes, methods, and functions
+- Enum types and their values
+- Public properties and fields
+- Complex algorithms or business logic
+
+**Dart Documentation Comments:**
+```dart
+/// A brief description of what this class does.
+///
+/// More detailed explanation if needed, including usage examples.
+class MyClass {
+  /// The user's display name.
+  final String name;
+
+  /// Creates a new instance with the given [name].
+  MyClass(this.name);
+}
+
+/// Enum representing setup wizard steps.
+enum SetupStep {
+  /// Welcome screen and account connection.
+  welcome,
+
+  /// Permission request step.
+  permission,
+}
+```
+
+**Java Documentation Comments:**
+```java
+/**
+ * Checks if the call screening permission is currently granted.
+ *
+ * @return true if permission is granted, false otherwise
+ */
+public boolean checkPermission() {
+    // implementation
+}
+```
+
+Documentation comments allow IDEs to show inline help and enable dartdoc/javadoc to generate API documentation.
+
+### Async Context Usage in Flutter
+**IMPORTANT**: When using `BuildContext` after async operations (await), always check `context.mounted` before using the context:
+
+```dart
+// WRONG - checks widget state, not context state
+Future<void> _doSomething() async {
+  await someAsyncOperation();
+  if (mounted) {  // ❌ Checks widget.mounted, not context
+    ScaffoldMessenger.of(context).showSnackBar(...);
+  }
+}
+
+// CORRECT - checks context state
+Future<void> _doSomething() async {
+  await someAsyncOperation();
+  if (context.mounted) {  // ✅ Checks context.mounted
+    ScaffoldMessenger.of(context).showSnackBar(...);
+  }
+}
+```
+
+**Why this matters:**
+- `mounted` checks if the State object is still in the widget tree
+- `context.mounted` checks if the BuildContext is still valid
+- After async gaps, the context may be invalid even if the widget is still mounted
+- Using unmounted contexts can cause crashes or unexpected behavior
+- This is the proper Flutter pattern since Flutter 3.7+
+
+### Platform Channel Communication
+The app uses Flutter MethodChannel to communicate between Dart and Android native code. The channel name is `de.haumacher.phoneblock_mobile/call_checker` and is defined in both MainActivity.java and main.dart.
+
+### Call Screening Flow
+1. User grants ROLE_CALL_SCREENING permission via Android system dialog
+2. Incoming calls trigger CallChecker.onScreenCall()
+3. CallChecker queries PhoneBlock API with auth token
+4. If spam criteria met (votes >= threshold, not archived), call is rejected
+5. Query has 4.5 second timeout to avoid delaying legitimate calls
+
+### OAuth Integration
+The app uses app link deep linking (android:autoVerify="true") to handle OAuth callbacks from the PhoneBlock web service. The token is passed as a query parameter and stored locally for API authentication.

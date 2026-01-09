@@ -7,53 +7,53 @@
 
 <section class="section" th:unless="${userName}">
 	<div class="content">
-		<h1 data-tx="t0001">Налаштування</h1>
+		<h1 data-tx="t0001:1798fbdb">Налаштування</h1>
 		
-		<p data-tx="t0002">Щоб змінити свої особисті налаштування, ви повинні <a th:href="@{/login(location=${location})}">увійти</a>.</p>
+		<p data-tx="t0002:d4c49b15">Щоб змінити свої особисті налаштування, ви повинні <a th:href="@{/login(location=${location})}">увійти</a>.</p>
 	</div>
 </section>
 
 <section class="section" th:if="${userName}">
 	<div class="content">
-		<h1 data-tx="t0003">Налаштування</h1>
-			<p data-tx="t0004">Ласкаво просимо <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
+		<h1 data-tx="t0003:1798fbdb">Налаштування</h1>
+			<p data-tx="t0004:d8072a01">Ласкаво просимо <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
 			
 			<form method="post" th:action="@{/update-settings}">
 
 			<article class="message is-info" th:if="${token}">
 			  <div class="message-header">
-			    <p data-tx="t0005">Ваші дані доступу</p>
+			    <p data-tx="t0005:5df14f18">Ваші дані доступу</p>
 			  </div>
 			  
 			  <div class="message-body">
 				<div class="field">
-				  <label class="label" data-tx="t0006">Інтернет-адреса сервера CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0006:f48153ce">Інтернет-адреса сервера CardDAV</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
-				  <label class="label" data-tx="t0007">Ім'я користувача</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">Ви повинні ввести це значення як ім'я користувача для <a th:href="@{/setup}">виклику списку блоків</a>.</p>
+				  <label class="label" data-tx="t0007:548c40c1">Ім'я користувача</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008:bceeee4f">Ви повинні ввести це значення як ім'я користувача для <a th:href="@{/setup}">виклику списку блоків</a>.</p>
 				</div>
 					
 				<div class="field">
-				  <label class="label" data-tx="t0009">пароль</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">Ви повинні використовувати цей пароль для <a th:href="@{/setup}">налаштування телефонної книги</a> або для входу на цей сайт.</p>
-				  <p class="help" data-tx="t0011">Будь ласка, запишіть пароль (або збережіть його в <a href="https://keepass.info/">менеджері паролів</a>), оскільки він буде відображатися лише до того моменту, поки ви не вийдете з системи або поки не закінчиться ваш сеанс.</p>
+				  <label class="label" data-tx="t0009:e99dee32">пароль</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010:b5380dd1">Ви повинні використовувати цей пароль для <a th:href="@{/setup}">налаштування телефонної книги</a> або для входу на цей сайт.</p>
+				  <p class="help" data-tx="t0011:90026712">Будь ласка, запишіть пароль (або збережіть його в <a href="https://keepass.info/">менеджері паролів</a>), оскільки він буде відображатися лише до того моменту, поки ви не вийдете з системи або поки не закінчиться ваш сеанс.</p>
 				</div>
 			  </div>
 			</article>
 
 			<div class="field" th:unless="${token}">
-			  <label class="label" data-tx="t0012">Ім'я користувача</label>
-			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">Ви повинні ввести це значення як ім'я користувача для <a th:href="@{/setup}">отримання списку блокування</a>. Ваш пароль відображався при першому вході в систему. Якщо ви більше не пам'ятаєте його, ви можете створити <a href="#resetPassword">новий пароль</a> внизу цієї сторінки. Але будьте обережні: старий пароль стане недійсним.</p>
+			  <label class="label" data-tx="t0012:548c40c1">Ім'я користувача</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013:6f72b3a6">Ви повинні ввести це значення як ім'я користувача для <a th:href="@{/setup}">отримання списку блокування</a>. Ваш пароль відображався при першому вході в систему. Якщо ви більше не пам'ятаєте його, ви можете створити <a href="#resetPassword">новий пароль</a> внизу цієї сторінки. Але будьте обережні: старий пароль стане недійсним.</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0094">Код вашої країни</label>
+			  <label class="label" data-tx="t0094:1e57ddfa">Код вашої країни</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="myDialPrefix">
@@ -64,69 +64,69 @@
 			      <i class="fa-solid fa-earth-americas"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0091">Телефонні номери з кодом вашої країни з'являтимуться у вашому списку блокування у скороченому вигляді (як національні номери). Повідомлення про спам від вас мають особливу вагу для інших користувачів у вашій країні.</p>
+			  <p class="help" data-tx="t0091:5d390f48">Телефонні номери з кодом вашої країни з'являтимуться у вашому списку блокування у скороченому вигляді (як національні номери). Повідомлення про спам від вас мають особливу вагу для інших користувачів у вашій країні.</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0014">Максимальний розмір блоклиста</label>
+			  <label class="label" data-tx="t0014:41337e7b">Максимальний розмір блоклиста</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000 (мало для дуже старих скриньок Fritz!Box)</option>
-			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000 (рекомендовано для більшості Fritz!Box)</option>
-			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 (наприклад, все ще працює на FRITZ!Box 7590)</option>
-			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000 (див. примітки нижче)</option>
-			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000 (величезна, див. примітки нижче)</option>
-			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000 (екстремально, будьте обережні, ваш Fritz!Box може вийти з ладу)</option>
+			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (мало для дуже старих скриньок Fritz!Box)</option>
+			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (рекомендовано для більшості Fritz!Box)</option>
+			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (наприклад, все ще працює на FRITZ!Box 7590)</option>
+			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (див. примітки нижче)</option>
+			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (величезна, див. примітки нижче)</option>
+			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (екстремально, будьте обережні, ваш Fritz!Box може вийти з ладу)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-ruler-vertical"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0021">Якщо у вас виникли проблеми з оновленням списку блокування, ви можете зменшити розмір вашого списку блокування тут. AVM рекомендує заповнювати телефонні книги максимум 1000 записами. Наприклад, FRITZ!Box 7590 може обробляти до 3000 записів у телефонній книзі.</p>
+			  <p class="help" data-tx="t0021:28fc9e2c">Якщо у вас виникли проблеми з оновленням списку блокування, ви можете зменшити розмір вашого списку блокування тут. AVM рекомендує заповнювати телефонні книги максимум 1000 записами. Наприклад, FRITZ!Box 7590 може обробляти до 3000 записів у телефонній книзі.</p>
 			  
-			  <p class="help" data-tx="t0022"><b>Увага:</b> Якщо ви хочете перевірити, скільки записів ваша скринька може зберегти у телефонній книзі, виконайте такі дії: Почніть зі значення за замовчуванням 2000 записів. Синхронізуйте блок-лист і відобразіть телефонну книгу блок-листа. Прокрутіть список до самого кінця і відобразіть попередній перегляд блок-листа і зверніть увагу на кількість сторінок, які буде надруковано. Тепер збільште розмір списку на один крок, повторно синхронізуйте список і знову відобразіть попередній перегляд списку. Якщо кількість сторінок відповідно збільшилася, то ваш блок може впоратися з цим розміром, спробуйте наступний розмір. Якщо кількість сторінок у попередньому перегляді не збільшилася або збільшилася не відповідно, використовуйте останній менший розмір блоклиста. Цікаво, що Fritz!Box не повідомляє про помилку, якщо телефонна книга стає занадто великою, але або просто не синхронізується, або просто пропускає якісь номери. Я бачив, як програми просто виходили з ладу, якщо розмір телефонної книги був завеликим - тому будьте обережні.</p>
+			  <p class="help" data-tx="t0022:73c1facc"><b>Увага:</b> Якщо ви хочете перевірити, скільки записів ваша скринька може зберегти у телефонній книзі, виконайте такі дії: Почніть зі значення за замовчуванням 2000 записів. Синхронізуйте блок-лист і відобразіть телефонну книгу блок-листа. Прокрутіть список до самого кінця і відобразіть попередній перегляд блок-листа і зверніть увагу на кількість сторінок, які буде надруковано. Тепер збільште розмір списку на один крок, повторно синхронізуйте список і знову відобразіть попередній перегляд списку. Якщо кількість сторінок відповідно збільшилася, то ваш блок може впоратися з цим розміром, спробуйте наступний розмір. Якщо кількість сторінок у попередньому перегляді не збільшилася або збільшилася не відповідно, використовуйте останній менший розмір блоклиста. Цікаво, що Fritz!Box не повідомляє про помилку, якщо телефонна книга стає занадто великою, але або просто не синхронізується, або просто пропускає якісь номери. Я бачив, як програми просто виходили з ладу, якщо розмір телефонної книги був завеликим - тому будьте обережні.</p>
 			</div>
 			
 			<div class="field">
-			  <label class="label" data-tx="t0023">Мінімальна довіра</label>
+			  <label class="label" data-tx="t0023:6621f89a">Мінімальна довіра</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="minVotes">
-			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2 (негайно заблокувати)</option>	
-			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 (очікують на підтвердження)</option>	
-			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 (тільки коли це безпечно)</option>	
-			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100 (тільки для топ-спамерів)</option>	
+			    <option data-tx="t0024:a337a091" th:selected="${settings.minVotes == 2}" value="2">2 (негайно заблокувати)</option>	
+			    <option data-tx="t0025:eeb2021a" th:selected="${settings.minVotes == 4}" value="4">4 (очікують на підтвердження)</option>	
+			    <option data-tx="t0026:a8e81033" th:selected="${settings.minVotes == 10}" value="10">10 (тільки коли це безпечно)</option>	
+			    <option data-tx="t0027:10a19182" th:selected="${settings.minVotes == 100}" value="100">100 (тільки для топ-спамерів)</option>	
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-phone-volume"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0028">Чим вище вибране вами число, тим більше скарг повинен мати телефонний номер, перш ніж його буде додано до вашого персонального списку блокування, і тим більша ймовірність того, що вам також зателефонують з нового спам-номера. Кожна скарга додає 2 бали до оцінки надійності.</p>
+			  <p class="help" data-tx="t0028:6efc5ac9">Чим вище вибране вами число, тим більше скарг повинен мати телефонний номер, перш ніж його буде додано до вашого персонального списку блокування, і тим більша ймовірність того, що вам також зателефонують з нового спам-номера. Кожна скарга додає 2 бали до оцінки надійності.</p>
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Підсумовування чисел за допомогою символу "*"</label>
-			  <p class="help" data-tx="t0030">Якщо ви виберете цю опцію, сусідні номери у вашому списку блокування будуть об'єднані в один номер за допомогою символу підстановки ("*"). Багато професійних спамерів мають з'єднання з декількома пристроями і використовують цілий блок номерів як відправників. З цією опцією всі ці номери будуть автоматично заблоковані, і ваш список блокування може включати більше спам-номерів. Fritz!Box підтримує телефонні книги зі спеціальними номерами і блокує весь вказаний діапазон номерів. Однак, можливо, ви не зможете використовувати підставні номери на інших пристроях.</p>
+			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Підсумовування чисел за допомогою символу "*"</label>
+			  <p class="help" data-tx="t0030:fd1d1b6b">Якщо ви виберете цю опцію, сусідні номери у вашому списку блокування будуть об'єднані в один номер за допомогою символу підстановки ("*"). Багато професійних спамерів мають з'єднання з декількома пристроями і використовують цілий блок номерів як відправників. З цією опцією всі ці номери будуть автоматично заблоковані, і ваш список блокування може включати більше спам-номерів. Fritz!Box підтримує телефонні книги зі спеціальними номерами і блокує весь вказаний діапазон номерів. Однак, можливо, ви не зможете використовувати підставні номери на інших пристроях.</p>
 			</div>
 
 			<div class="field">
 			  <label class="checkbox">
 			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
-				<span data-tx="t0092">Тільки національні номери</span>
+				<span data-tx="t0092:781fecd1">Тільки національні номери</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093">Ця опція корисна, якщо ви заблокували всі іноземні номери у вашій скриньці Fritz! З цією опцією у вашому списку блокування з'являться тільки національні номери. Це означає, що більше номерів, які мають відношення до вас, потраплять до вашого списку блокування. Переконайтеся, що ви правильно встановили код вашої країни.</p> 
+			  <p class="help" data-tx="t0093:2f41e7b3">Ця опція корисна, якщо ви заблокували всі іноземні номери у вашій скриньці Fritz! З цією опцією у вашому списку блокування з'являться тільки національні номери. Це означає, що більше номерів, які мають відношення до вас, потраплять до вашого списку блокування. Переконайтеся, що ви правильно встановили код вашої країни.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031" type="submit">Зберегти</button>
+			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Зберегти</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings}">Викинути</a>
+			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Викинути</a>
 			  </p>
 			</div>
 		</form>
@@ -135,62 +135,79 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0033" id="myAPIKeys">Ваші ключі API</h2>
-	<p data-tx="t0034">Якщо ви використовуєте інші програми для перевірки телефонних номерів за допомогою PhoneBlock (наприклад, <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> або <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), вам потрібен ключ API. Для телефонної книги блокування у вашому Fritz!Box ви просто використовуєте своє ім'я користувача PhoneBlock і пароль PhoneBlock, тому вам не потрібен ключ API.</p>
+	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Ваші ключі API</h2>
+	<p data-tx="t0034:c7b86819">Якщо ви використовуєте інші програми для перевірки телефонних номерів за допомогою PhoneBlock (наприклад, <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> або <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), вам потрібен ключ API. Для телефонної книги блокування у вашому Fritz!Box ви просто використовуєте своє ім'я користувача PhoneBlock і пароль PhoneBlock, тому вам не потрібен ключ API.</p>
 	
-	<p data-tx="t0035" th:if="${explicitTokens.empty}">Ви ще не створили жодного ключа API.</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
+	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">Ви ще не створили жодного ключа API.</p>
+	<div th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
 			</th>
-			<th data-tx="t0036">Ім'я</th>
-			<th data-tx="t0037">Генерує</th>
-			<th data-tx="t0038">Останнє використання</th>
-			<th data-tx="t0039">Пристрій</th>
+			<th data-tx="t0036:b4d4555f">Ім'я</th>
+			<th data-tx="t0037:1e1e9f52">Генерує</th>
+			<th data-tx="t0038:46b89898">Останнє використання</th>
+			<th data-tx="t0039:9b222602">Пристрій</th>
 		</tr>
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
-			<td th:text="${authToken.label}"></td>
+			<td>
+				<span class="apikey-label" th:text="${authToken.label}"></span>
+				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Зберегти" type="button">
+						<i class="fa-solid fa-check"></i>
+					</button>
+					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Скасувати" type="button">
+						<i class="fa-solid fa-xmark"></i>
+					</button>
+					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="Перейменувати" type="button">
+						<i class="fa-solid fa-pen-to-square"></i>
+					</button>
+				</form>
+			</td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
 			<td>
-				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">Не використовувався.</th:block>
+				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">Не використовувався.</th:block>
 				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
 			</td>
 			<td th:text="${authToken.userAgent}"></td>
 		</tr>
 	</table>
-	
+
+	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041" type="submit">Видалити вибране</button>
+	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Видалити вибране</button>
 	  </p>
 	</div>
-	
 	</form>
+
+	</div>
 	</div>
 </section>
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042" id="createAPIKey">Згенеруйте ключ API</h2>
+	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">Згенеруйте ключ API</h2>
 
 	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0043">Вказівки щодо використання</label>
+	  <label class="label" data-tx="t0043:dcf4d98e">Вказівки щодо використання</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="Використовуйте для..." type="text"/>
+	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="Використовуйте для..." type="text"/>
 	  </p>
-	  <p class="help" data-tx="t0044">Тут ви можете ввести примітку про те, для чого ви згенерували API-ключ, наприклад, "SpamBlocker на мобільному телефоні бабусі".</p>
+	  <p class="help" data-tx="t0044:c40769ec">Тут ви можете ввести примітку про те, для чого ви згенерували API-ключ, наприклад, "SpamBlocker на мобільному телефоні бабусі".</p>
 	</div>
 		
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045" type="submit">Згенеруйте ключ API</button>
+	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">Згенеруйте ключ API</button>
 	  </p>
 	</div>
 
@@ -201,14 +218,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046" id="blacklist">Твій чорний список</h2>
+	<h2 data-tx="t0046:9bb283fa" id="blacklist">Твій чорний список</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:if="${blacklist.empty}">Ви не заблокували жодного номера. Щоб заблокувати номер, знайдіть його за допомогою поля пошуку вище і напишіть негативний коментар, або внесіть номер в телефонну книгу до списку заблокованих у вашому Fritz!Box</p>
+	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">Ви не заблокували жодного номера. Щоб заблокувати номер, знайдіть його за допомогою поля пошуку вище і напишіть негативний коментар, або внесіть номер в телефонну книгу до списку заблокованих у вашому Fritz!Box</p>
 
 	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048">Ви навмисно заблокували ці номери. Ви можете скасувати випадкове блокування тут:</p>
+	<p data-tx="t0048:7a2801d3">Ви навмисно заблокували ці номери. Ви можете скасувати випадкове блокування тут:</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
 			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
@@ -217,7 +234,7 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049" type="submit">Видалити</button>
+	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Видалити</button>
 	  </p>
 	</div>
 	</th:block>
@@ -229,17 +246,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0095">Номер блоку</label>
+	  <label class="label" data-tx="t0095:7309300c">Номер блоку</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096" name="add-bl" placeholder="Новий номер спаму" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="Новий номер спаму" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0098">Тут ви можете ввести один або декілька номерів телефонів для розсилки спаму через кому в довільному форматі: 07041-123456789, +49171123456789, 0034 123456789. Номери будуть додані до вашого персонального списку блокування.</p>
+	  <p class="help" data-tx="t0098:7b65bad4">Тут ви можете ввести один або декілька номерів телефонів для розсилки спаму через кому в довільному форматі: 07041-123456789, +49171123456789, 0034 123456789. Номери будуть додані до вашого персонального списку блокування.</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099" type="submit">Додати</button>
+	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Додати</button>
 	  </p>
 	</div>
 	
@@ -250,14 +267,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0050" id="whitelist">Ваш білий список</h2>
+	<h2 data-tx="t0050:4c4f40df" id="whitelist">Ваш білий список</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:if="${whitelist.empty}">Ви не виключили жодного номера з блокування.</p>
+	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">Ви не виключили жодного номера з блокування.</p>
 
 	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052">Ви явно виключили ці номери з блокування:</p>
+	<p data-tx="t0052:98b17ee4">Ви явно виключили ці номери з блокування:</p>
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
@@ -267,7 +284,7 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053" type="submit">Видалити</button>
+	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Видалити</button>
 	  </p>
 	</div>
 	</th:block>
@@ -279,17 +296,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0054">Додати виняток</label>
+	  <label class="label" data-tx="t0054:ce0c23fb">Додати виняток</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="Новий виняток" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="Новий виняток" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">Ви можете ввести один або декілька телефонних номерів через кому в довільному форматі: 07041-123456789, +49171123456789, 0034 123456789. Після цього ці номери більше не будуть заблоковані.</p>
+	  <p class="help" data-tx="t0056:edaaa5f7">Ви можете ввести один або декілька телефонних номерів через кому в довільному форматі: 07041-123456789, +49171123456789, 0034 123456789. Після цього ці номери більше не будуть заблоковані.</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057" type="submit">Додати</button>
+	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Додати</button>
 	  </p>
 	</div>
 	
@@ -299,19 +316,19 @@
 
 <section class="section">
 <div class="content">
-	<h2 data-tx="t0058" id="sec-contributions">Ваші пожертви на роботу PhoneBlock</h2>
+	<h2 data-tx="t0058:8e777536" id="sec-contributions">Ваші пожертви на роботу PhoneBlock</h2>
 	
-	<p data-tx="t0059">Якщо ви зробили <a th:href="@{/support}">пожертву на роботу PhoneBlock</a>, вона буде перерахована тут (через деякий час). Щоб це спрацювало, було б добре, якби ви могли включити перші кілька символів вашого імені користувача в повідомлення про переказ, наприклад, <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></span>. На жаль, внески через спонсорську програму GitHub не можуть бути перераховані тут.</p>
+	<p data-tx="t0059:5bf315a2">Якщо ви зробили <a th:href="@{/support}">пожертву на роботу PhoneBlock</a>, вона буде перерахована тут (через деякий час). Щоб це спрацювало, було б добре, якби ви додали перші кілька символів вашого імені користувача до повідомлення про переказ, наприклад, <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090:3f7efe41" href="#" id="purpose_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></span>. На жаль, внески через спонсорську програму GitHub не можуть бути перераховані тут.</p>
 	
-	<p data-tx="t0060" th:if="${contributions.empty}">Пожертвувань не знайдено.</p>
+	<p data-tx="t0060:5bf4088c" th:if="${contributions.empty}">Пожертвувань не знайдено.</p>
 	
 	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>
-			<th data-tx="t0061">дата</th>
-			<th data-tx="t0062">Повідомлення</th>
-			<th data-tx="t0063">Сума</th>
+			<th data-tx="t0061:73a7fbc0">дата</th>
+			<th data-tx="t0062:4944d83c">Повідомлення</th>
+			<th data-tx="t0063:151fc0c3">Сума</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -323,34 +340,34 @@
 	</tbody>
 	</table>
 	
-	<p data-tx="t0064">Щиро дякуємо вам за внесок у витрати на запуск PhoneBlock!</p>	
+	<p data-tx="t0064:9559be26">Щиро дякуємо вам за внесок у витрати на запуск PhoneBlock!</p>	
 	</th:block>
 </div>
 
 <nav class="panel is-info">
-	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">Пропустили платіж?</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065:ec12e167">Пропустили платіж?</span></a></p>
 	<div class="is-collapsible" id="contribForm">
 
 	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
 	<div class="panel-block">
 	<div class="content">
-		<p data-tx="t0066">Ви пропустили платіж? Ви можете знайти платіж тут. Введіть своє повне ім'я (яке ваш банк/PayPal використовує в якості відправника) і дату переказу:</p>
+		<p data-tx="t0066:76883029">Ви пропустили платіж? Ви можете знайти платіж тут. Введіть своє повне ім'я (яке ваш банк/PayPal використовує в якості відправника) і дату переказу:</p>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0067">Відправник</label>
+		  <label class="label" data-tx="t0067:fce43ee4">Відправник</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="Макс Мустерман" type="text"/>
+		    <input class="input" data-tx="t0089:2a2ec866" name="contrib-name" placeholder="Макс Мустерман" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
-		  <p class="help" data-tx="t0068">У разі банківського переказу - ім'я власника рахунку, який здійснив переказ. Будь ласка, вкажіть також дату переказу.</p>
+		  <p class="help" data-tx="t0068:b7f565b6">У разі банківського переказу - ім'я власника рахунку, який здійснив переказ. Будь ласка, вкажіть також дату переказу.</p>
 		</div>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0069">дата</label>
+		  <label class="label" data-tx="t0069:73a7fbc0">дата</label>
 		  <p class="control has-icons-left">
 		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
-		  <p class="help" data-tx="t0070">Дата банківського переказу. Будь ласка, введіть повне ім'я власника рахунку, який здійснив переказ вище.</p>
+		  <p class="help" data-tx="t0070:99e4757b">Дата банківського переказу. Будь ласка, введіть повне ім'я власника рахунку, який здійснив переказ вище.</p>
 		</div>
 	</div>
 	</div>
@@ -360,7 +377,7 @@
 		    <span class="icon">
 				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
-			<span data-tx="t0071">Внесок у пошук</span>
+			<span data-tx="t0071:86083faf">Внесок у пошук</span>
 		</button>
 	</div>
 
@@ -372,17 +389,17 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0072">Небезпечна зона</h2>
-	<p data-tx="t0073">Використовуйте цю функцію з обережністю. Ви можете порушити встановлення PhoneBlock!</p>
+	<h2 data-tx="t0072:47d9a31d">Небезпечна зона</h2>
+	<p data-tx="t0073:46d23ac6">Використовуйте цю функцію з обережністю. Ви можете порушити встановлення PhoneBlock!</p>
 	</div>
 		
 <nav class="panel is-warning" id="resetPassword">
-	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">Створіть новий пароль</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074:889c5574">Створіть новий пароль</span></a></p>
 	<div class="is-collapsible" id="resetForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075">Будьте обережні, це зробить ваш старий пароль PhoneBlock недійсним. Після цього ви повинні ввести новий пароль у налаштуваннях Fritz!Box або вашого мобільного телефону, щоб отримати доступ до списку блокування.</p>
+	  			<p data-tx="t0075:f48c1f2f">Будьте обережні, це зробить ваш старий пароль PhoneBlock недійсним. Після цього ви повинні ввести новий пароль у налаштуваннях Fritz!Box або вашого мобільного телефону, щоб отримати доступ до списку блокування.</p>
 	  		</div>
 	  	</div>
 	  	
@@ -391,7 +408,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-eraser"></i>
 			    </span>
-				<span data-tx="t0076">Скинути пароль</span>
+				<span data-tx="t0076:457c3a43">Скинути пароль</span>
 			</button>
   		</div>
   		</form>
@@ -399,12 +416,12 @@
 </nav>
 
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">Вийдіть з усіх пристроїв</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077:ad62bbd">Вийдіть з усіх пристроїв</span></a></p>
 	<div class="is-collapsible" id="logoutForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0078">Виходить з усіх пристроїв, для яких ви активували опцію "Залишатися в системі на цьому пристрої" під час входу. При наступному відвідуванні вам доведеться знову увійти на всіх пристроях. Використовуйте цю функцію виходу, якщо ви випадково активували функцію "Залишатися в системі" на загальнодоступному комп'ютері.</p>
+	  			<p data-tx="t0078:a1c4341c">Виходить з усіх пристроїв, для яких ви активували опцію "Залишатися в системі на цьому пристрої" під час входу. При наступному відвідуванні вам доведеться знову увійти на всіх пристроях. Використовуйте цю функцію виходу, якщо ви випадково активували функцію "Залишатися в системі" на загальнодоступному комп'ютері.</p>
 	  		</div>
 	  	</div>
 	  	
@@ -413,7 +430,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-from-bracket"></i>
 			    </span>
-				<span data-tx="t0079">Вийдіть звідусіль</span>
+				<span data-tx="t0079:4646847e">Вийдіть звідусіль</span>
 			</button>
   		</div>
   		</form>
@@ -421,12 +438,12 @@
 </nav>
 	
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">Видалити обліковий запис</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080:a95c6f94">Видалити обліковий запис</span></a></p>
 	<div class="is-collapsible" id="quitForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0081">Будьте обережні, всі ваші дані будуть видалені. Ви більше не зможете отримати список блокування або доступ до бази даних PhoneBlock з жодного з ваших пристроїв!</p>
+	  			<p data-tx="t0081:d1ddc761">Будьте обережні, всі ваші дані будуть видалені. Ви більше не зможете отримати список блокування або доступ до бази даних PhoneBlock з жодного з ваших пристроїв!</p>
 	  		</div>
 	  	</div>
 	  	
@@ -435,7 +452,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-power-off"></i>
 			    </span>
-				<span data-tx="t0082">Видалити доступ, без подальших запитів на безпеку!</span>
+				<span data-tx="t0082:4639073e">Видалити доступ, без подальших запитів на безпеку!</span>
 			</button>
   		</div>
   		</form>

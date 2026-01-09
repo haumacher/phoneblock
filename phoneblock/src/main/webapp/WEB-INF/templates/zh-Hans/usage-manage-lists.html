@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-manage-lists.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:2850f7f6">管理个人黑名单和白名单</h1>
+
+		<p class="subtitle" data-tx="t0034:9f13298f">添加重要号码（医生、学校、工作单位）</p>
+
+		<div class="notification is-info">
+			<p><strong data-tx="t0035:1d8f9c1a">防止意外阻塞</strong></p>
+			<p class="mt-2" data-tx="t0036:8685d528">优先于社区数据库<strong></strong></p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0003:f7249f5">什么是黑名单和白名单？</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0004:71e2fcb4">黑名单</h3>
+					<p class="has-text-white" data-tx="t0037:efc309c5">对重要呼叫尤为重要<strong></strong></p>
+					<p class="has-text-white mt-2" data-tx="t0038:4472eb86"><strong>注意：</strong>您的个人列表始终优先于 PhoneBlock 社区数据库。您的白名单上的号码永远不会被阻止，即使它已被成千上万的其他用户报告为垃圾邮件。</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0007:a61f3f91">白名单</h3>
+					<p class="has-text-white" data-tx="t0039:a9508e7">白名单上的号码将<strong>不会被阻止</strong>，即使它们在社区数据库中被报告为垃圾邮件。</p>
+					<p class="has-text-white mt-2" data-tx="t0040:3fc513ef"><strong>重要：</strong>您的白名单条目也会为数据库做出贡献，并有助于纠正错误的垃圾邮件。</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010:e0c7382c">管理列表</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<h3 data-tx="t0011:2e4a69bc">步骤 1：打开设置</h3>
+				<figure class="image">
+					<img alt="打开设置" class="appscreen" data-tx="t0012:bbfe3492" th:src="@{/assets/img/mobile/settings-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0013:611d6764">点击左上角的菜单图标（☰），选择 "设置</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0014:a3a9e05b">步骤 2：选择列表</h3>
+				<figure class="image">
+					<img alt="打开黑名单" class="appscreen" data-tx="t0015:be271bd3" th:src="@{/assets/img/mobile/settings-2-open-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0016:4a61fc20">从设置中选择 "黑名单 "或 "白名单</p>
+			</div>
+
+			<div class="column is-one-third">
+				<h3 data-tx="t0017:f3687544">步骤 3：显示列表</h3>
+				<figure class="image">
+					<img alt="显示黑名单" class="appscreen" data-tx="t0018:11eb4e8" th:src="@{/assets/img/mobile/settings-3-display-blacklist.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0019:763f7ae6">显示您的个人号码</p>
+			</div>
+		</div>
+
+		<h3 class="mt-5" data-tx="t0041:2fba86d1">如何将数字添加到列表中</h3>
+		<p data-tx="t0042:c45b21f8">当您对列表进行评分时，数字会<strong>自动</strong>添加到列表中：</p>
+		<ul>
+			<li data-tx="t0043:5a74afb1"><strong>垃圾邮件信息：</strong>如果您将某个号码报告为垃圾邮件，该号码将自动添加到您的黑名单中。</li>
+			<li data-tx="t0044:35bd4263"><strong>合法信息：</strong>如果您将一个号码标记为合法，它将自动添加到您的白名单中</li>
+		</ul>
+		<p class="mt-3" data-tx="t0045:d2640e6e">您可以对数字进行评级：</p>
+		<ul>
+			<li data-tx="t0046:af37ab79">通话记录</li>
+			<li data-tx="t0047:8bb9b49">使用 <a th:href="@{/usage-search}"> 搜索功能</a> 查找特定数字</li>
+		</ul>
+
+		<h3 class="mt-5" data-tx="t0022:b2c98f16">从列表中删除号码</h3>
+
+		<div class="columns">
+			<div class="column is-half">
+				<figure class="image">
+					<img alt="从列表中删除" class="appscreen" data-tx="t0023:be0a5913" th:src="@{/assets/img/mobile/settings-4-remove-from-list.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0024:9f7a8c84">向左轻扫号码，然后轻点垃圾桶图标将其删除</p>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-info mt-5">
+					<p><strong data-tx="t0048:d4ace865">服务器上的存储空间：</strong></p>
+					<p class="mt-2" data-tx="t0049:c771c2a1">您的列表将存储在 PhoneBlock 服务器上，并在垃圾邮件检查中予以考虑。<strong>您的个人列表始终优先于普通社区数据库</strong>。</p>
+					<p class="mt-2" data-tx="t0050:d3fca5e3">这意味着您的评级适用于您使用 PhoneBlock 账户登录的所有设备。</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0051:f61fe09a">摘要：名单如何运作</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0028:71e2fcb4">黑名单</h3>
+				<ul>
+					<li data-tx="t0052:75d3e969">在您将号码报告为垃圾邮件时自动创建</li>
+					<li data-tx="t0053:ae65b0">即使社区 SPAM 分数不高，也能立即拦截号码</li>
+					<li data-tx="t0054:e44462a4">您的信息会加入共享的垃圾邮件数据库</li>
+					<li data-tx="t0055:40f508ac">立即拦截顽固来电者的理想选择</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0033:a61f3f91">白名单</h3>
+				<ul>
+					<li data-tx="t0056:11118fe4">将号码标记为合法时自动创建</li>
+					<li data-tx="t0057:a73011eb">即使社区垃圾邮件得分很高，也能防止拦截</li>
+					<li data-tx="t0058:e2186719">您的好评有助于纠正错误的垃圾邮件</li>
+					<li data-tx="t0059:62343da7">在任何情况下都不想错过的重要数字</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0060:b396dba2">社区贡献：</strong></p>
+			<p class="mt-2" data-tx="t0061:e5c1e3e6">您的每一条评论--无论是垃圾邮件还是合法评论--都有助于整个 PhoneBlock 社区。您的个人列表始终优先于普通数据库，但您的评级也会被纳入社区评级。</p>
+		</div>
+
+		<div class="notification is-warning mt-5">
+			<p><strong data-tx="t0062:36376dd1">重要的是要理解：</strong></p>
+			<p class="mt-2" data-tx="t0063:284598c">白名单上的号码将<strong>永远不会被阻止</strong>，即使成千上万的其他用户将其报告为垃圾邮件。相反，您黑名单上的号码将<strong>永远被阻止</strong>，即使它在社区数据库中被认为是合法的。</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -391,5 +391,22 @@ public class NumberAnalyzer {
 	public static byte[] getPhoneHash(MessageDigest digest, PhoneNumer number) {
 		return PhoneHash.getPhoneHash(digest, number.getPlus());
 	}
+
+	public static PhoneNumer extractNumber(String query, String dialPrefix) {
+		String rawPhoneNumber = normalizeNumber(query);
+		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
+			return null;
+		}
+		
+		PhoneNumer number = analyze(rawPhoneNumber, dialPrefix);
+		if (number == null) {
+			return null;
+		}
+		return number;
+	}
+
+	public static PhoneNumer extractNumber(String query) {
+		return extractNumber(query, GERMAN_DIAL_PREFIX);
+	}
 	
 }

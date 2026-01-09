@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">Geblokkeerde en gemiste oproepen bekijken</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile controleert alle inkomende oproepen van onbekende nummers en laat je zien welke geblokkeerd zijn en welke doorgekomen zijn.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Belangrijk:</strong> Alleen onbekende nummers worden gecontroleerd!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Oproepen van nummers in uw contactenlijst worden nooit gecontroleerd en verschijnen niet in de oproeplijst van PhoneBlock. De app verwerkt alleen nummers die niet in je telefoonboek zijn opgeslagen.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">De oproepgeschiedenis</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Overzicht van alle gecontroleerde oproepen</h3>
+				<figure class="image">
+					<img alt="Lijst van geverifieerde oproepen" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">De app toont alle oproepen van onbekende nummers met hun respectieve status</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Geblokkeerde SPAM-oproepen</h3>
+				<figure class="image">
+					<img alt="SPAM-oproep geblokkeerd" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Geblokkeerde SPAM-oproepen worden weergegeven met een rood symbool en een SPAM-score. U ontvangt een melding over de blokkering.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">Welke nummers worden geblokkeerd als SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">SPAM-nummers (worden geblokkeerd)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">Een nummer wordt geblokkeerd als SPAM als:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">u een hoge SPAM-score hebt in de PhoneBlock-database</li>
+						<li data-tx="t0031:bbf61b78">De SPAM-score overschrijdt de door u ingestelde drempelwaarde</li>
+						<li data-tx="t0032:496c5432">Ze staat op je persoonlijke zwarte lijst (ongeacht de score)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Resultaat:</strong> Je telefoon gaat niet over, het gesprek wordt automatisch geweigerd.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Legitieme nummers (worden doorgelaten)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">Een nummer wordt als legitiem beschouwd als:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">Het is niet beschikbaar in de PhoneBlock-database</li>
+						<li data-tx="t0037:be800714">Het heeft een lage SPAM-score onder jouw drempel</li>
+						<li data-tx="t0038:dc6b0dd6">Ze staat op je persoonlijke witte lijst (wordt nooit geblokkeerd)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Resultaat:</strong> Je telefoon gaat normaal over, het gesprek wordt doorgezet.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">Hoe werkt de blokkering?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile gebruikt Android's CallScreeningService om inkomende oproepen te screenen voordat ze overgaan. Als het nummer in de SPAM-database staat en de door jou ingestelde drempel wordt overschreden, wordt de oproep automatisch geblokkeerd.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">SPAM-nummers uit de belgeschiedenis rapporteren</h2>
+
+		<p data-tx="t0041:26708b3">Als je een telefoontje hebt ontvangen van een onbekend nummer dat doorkwam als legitiem maar eigenlijk SPAM was, kun je dit direct melden via de bellijst:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">Wanneer moet je een nummer melden?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">Het nummer staat nog niet in de PhoneBlock database (lage of geen SPAM score)</li>
+					<li data-tx="t0044:e2b6f50e">De oproep was duidelijk ongewenst (reclame, fraude, enz.)</li>
+					<li data-tx="t0045:ba58fceb">Je wilt de gemeenschap waarschuwen voor dit nummer</li>
+					<li data-tx="t0046:53de68c0">Het nummer moet in de toekomst automatisch worden geblokkeerd</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">Wat gebeurt er bij een melding?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">Het nummer wordt <strong>automatisch toegevoegd aan je zwarte lijst&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">U bent beschermd tegen toekomstige oproepen vanaf dit nummer</li>
+					<li data-tx="t0050:da8797c6">Uw bericht draagt bij aan de PhoneBlock database</li>
+					<li data-tx="t0051:1f62ed10">Andere gebruikers profiteren van uw beoordeling</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">Naar de instructies: SPAM-nummers melden</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Belangrijk:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">Als je een nummer als SPAM rapporteert, wordt het toegevoegd aan je persoonlijke zwarte lijst en zal het in de toekomst altijd worden geblokkeerd. Deze beslissing heeft voorrang op de beoordeling van de community.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

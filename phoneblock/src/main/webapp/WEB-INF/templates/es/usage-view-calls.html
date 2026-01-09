@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">Ver llamadas bloqueadas y perdidas</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile comprueba todas las llamadas entrantes de números desconocidos y le muestra cuáles han sido bloqueadas y cuáles han pasado.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Importante:</strong> ¡Sólo se comprueban los números desconocidos!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Las llamadas de números de tu lista de contactos nunca se comprueban y no aparecen en la lista de llamadas de PhoneBlock. La aplicación solo procesa los números que no están guardados en la agenda.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">Historial de llamadas</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Resumen de todas las llamadas verificadas</h3>
+				<figure class="image">
+					<img alt="Lista de convocatorias verificadas" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">La aplicación muestra todas las llamadas de números desconocidos con sus respectivos estados</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Llamadas SPAM bloqueadas</h3>
+				<figure class="image">
+					<img alt="Llamada SPAM bloqueada" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Las llamadas de SPAM bloqueadas se muestran con un símbolo rojo y una puntuación de SPAM. Recibirá una notificación sobre el bloqueo.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">¿Qué números se bloquean como SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">Números SPAM (serán bloqueados)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">Un número se bloquea como SPAM si:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">tiene una puntuación alta de SPAM en la base de datos de PhoneBlock</li>
+						<li data-tx="t0031:bbf61b78">La puntuación de SPAM supera el valor umbral establecido</li>
+						<li data-tx="t0032:496c5432">Ella está en su lista negra personal (independientemente de la puntuación)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Resultado:</strong> Su teléfono no suena, la llamada se rechaza automáticamente.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Números legítimos (se les permite el paso)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">Un número se considera legítimo si:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">No está disponible en la base de datos PhoneBlock</li>
+						<li data-tx="t0037:be800714">Tiene una puntuación baja de SPAM por debajo de su umbral</li>
+						<li data-tx="t0038:dc6b0dd6">Está en tu lista blanca personal (nunca será bloqueada)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Resultado:</strong> Tu teléfono suena con normalidad, la llamada pasa.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">¿Cómo funciona el bloqueo?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile utiliza el CallScreeningService de Android para filtrar las llamadas entrantes antes de que suenen. Si el número está en la base de datos de SPAM y se supera el umbral establecido, la llamada se bloquea automáticamente.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">Notificar números SPAM del historial de llamadas</h2>
+
+		<p data-tx="t0041:26708b3">Si has recibido una llamada de un número desconocido que parecía legítima pero en realidad era SPAM, puedes denunciarla directamente desde la lista de llamadas:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">¿Cuándo hay que comunicar un número?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">El número aún no está en la base de datos de PhoneBlock (puntuación de SPAM baja o nula)</li>
+					<li data-tx="t0044:e2b6f50e">La llamada era claramente no deseada (publicidad, fraude, etc.)</li>
+					<li data-tx="t0045:ba58fceb">Usted quiere advertir a la comunidad acerca de este número</li>
+					<li data-tx="t0046:53de68c0">El número se bloqueará automáticamente en el futuro</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">¿Qué ocurre en caso de denuncia?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">El número se <strong>añade automáticamente a tu lista negra&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">Estarás protegido de futuras llamadas desde este número</li>
+					<li data-tx="t0050:da8797c6">Tu mensaje contribuye a la base de datos PhoneBlock</li>
+					<li data-tx="t0051:1f62ed10">Otros usuarios se benefician de tu valoración</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">A las instrucciones: Denunciar números de SPAM</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Importante:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">Si denuncias un número como SPAM, se añadirá a tu lista negra personal y se bloqueará siempre en el futuro. Esta decisión tiene prioridad sobre la valoración de la comunidad.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-search.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:a392f709">Αναζήτηση για αριθμούς</h1>
+
+		<p class="subtitle" data-tx="t0002:6f434e2">Μπορείτε να αναζητήσετε οποιονδήποτε τηλεφωνικό αριθμό στη βάση δεδομένων του PhoneBlock, ακόμη και χωρίς να έχει πραγματοποιηθεί κλήση.</p>
+
+		<h2 data-tx="t0003:dd99e8ab">Πώς να αναζητήσετε έναν αριθμό</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0004:c8b5450c">Βήμα 1: Ανοίξτε την αναζήτηση</h3>
+				<figure class="image">
+					<img alt="Ανοικτή αναζήτηση" class="appscreen" data-tx="t0005:bfc9750b" th:src="@{/assets/img/mobile/search-1-open.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0006:5370f414">Πατήστε το εικονίδιο του μεγεθυντικού φακού στην επάνω δεξιά γωνία για να ανοίξετε τη λειτουργία αναζήτησης.</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0007:7fee025e">Βήμα 2: Πληκτρολογήστε τον αριθμό</h3>
+				<figure class="image">
+					<img alt="Πληκτρολογήστε τον αριθμό" class="appscreen" data-tx="t0008:b52055e0" th:src="@{/assets/img/mobile/search-2-enter-number.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0009:1d56944b">Εισάγετε τον αριθμό τηλεφώνου και πατήστε "Αναζήτηση".</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0010:b55e0261">Τι δείχνει η αναζήτηση</h2>
+
+		<p data-tx="t0011:e232fe4a">Μετά την αναζήτηση θα δείτε τις ακόλουθες πληροφορίες σχετικά με τον αριθμό:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0012:38ad0e2c">Εάν ο αριθμός είναι γνωστός:</h3>
+				<ul>
+					<li data-tx="t0013:7af27195"><strong>Βαθμολογία SPAM:</strong> Αριθμός αρνητικών αξιολογήσεων</li>
+					<li data-tx="t0014:4089d0f2"><strong>Κατηγορίες:</strong> Τύπος SPAM (διαφήμιση, απάτη κ.λπ.)</li>
+					<li data-tx="t0015:af6f54d0"><strong>Σχόλια:</strong> Μαρτυρίες άλλων χρηστών</li>
+					<li data-tx="t0016:e00ef249"><strong>Κριτικές:</strong> Θετικές και αρνητικές αναφορές</li>
+				</ul>
+				<p class="mt-3" data-tx="t0039:4a10760e">Τι μπορείτε να κάνετε μετά την αναζήτηση:</p>
+				<ul>
+					<li data-tx="t0040:faf11002">Βαθμολογήστε τον αριθμό ως SPAM ή νόμιμο<strong></strong></li>
+					<li data-tx="t0041:8f789427">Προσθήκη στη μαύρη λίστα (πάντα αποκλεισμός)<strong></strong></li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0018:6751a8c5">Εάν ο αριθμός είναι άγνωστος:</h3>
+				<ul>
+					<li data-tx="t0019:ee4cd912">Η εφαρμογή υποδεικνύει ότι δεν υπάρχουν διαθέσιμες πληροφορίες</li>
+					<li data-tx="t0042:ba2252ec">Προσθήκη στη λευκή λίστα (ποτέ αποκλεισμός)</li>
+				</ul>
+				<p class="mt-3">
+					<strong data-tx="t0043:e5367544">Διαβάστε σχόλια από άλλους χρήστες</strong>
+				</p>
+				<ul>
+					<li data-tx="t0044:bd774b20">Η βαθμολογία SPAM προσθέτει τον αριθμό στη <strong>μαύρη λίστα</strong> σας.</li>
+					<li data-tx="t0045:8c3537ba">Μια νόμιμη βαθμολογία προσθέτει τον αριθμό στη <strong>λευκή λίστα</strong> σας.</li>
+				</ul>
+				<p class="mt-3" data-tx="t0022:b15c494"><strong>Σύμβουλος:</strong> Εάν έχετε λάβει μια ύποπτη κλήση από έναν άγνωστο αριθμό, μπορείτε να την αναζητήσετε εδώ και να την αναφέρετε ως SPAM.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0023:81ea5c6">Συμβουλές αναζήτησης</h2>
+
+		<div class="notification is-info">
+			<h3 data-tx="t0024:86ca3d86">Μορφή του τηλεφωνικού αριθμού</h3>
+			<p class="mt-2" data-tx="t0046:518b7b88">Μπορείτε να εισάγετε αριθμούς με ή χωρίς κωδικό χώρας:</p>
+			<ul class="mt-2">
+				<li data-tx="t0047:d024b4c6"><strong>Με κωδικό κλήσης χώρας:</strong> +49 30 12345678 (Γερμανία), +41 44 1234567 (Ελβετία), +43 1 1234567 (Αυστρία)</li>
+				<li data-tx="t0048:65d9fd8a"><strong>Χωρίς κωδικό χώρας:</strong> Ο αριθμός συμπληρώνεται αυτόματα με τον κωδικό χώρας από τις ρυθμίσεις σας.</li>
+			</ul>
+			<p class="mt-3" data-tx="t0049:3e0a546f"><strong>Σύμβουλος:</strong> Εάν αναζητάτε έναν ξένο αριθμό, πληκτρολογείτε πάντα τον πλήρη κωδικό της χώρας.</p>
+		</div>
+
+		<div class="notification is-warning mt-4">
+			<h3 data-tx="t0050:63900750">Προστασία δεδομένων κατά την αναζήτηση</h3>
+			<p class="mt-2" data-tx="t0051:fec83863">Κατά τη διάρκεια της αναζήτησης, ο αριθμός <strong>μεταδίδεται στον διακομιστή PhoneBlock σε απλό κείμενο</strong>. Αυτό είναι απαραίτητο για να μπορέσετε να αξιολογήσετε τον αριθμό και να τον προσθέσετε στη βάση δεδομένων.</p>
+			<p class="mt-2" data-tx="t0052:1e029ddb"><strong>Σημαντικό:</strong> Η λειτουργία προστασίας δεδομένων με βάση το κατακερματισμό (SHA-1) χρησιμοποιείται μόνο για τις εισερχόμενες κλήσεις. Για την ενεργή αναζήτηση, απαιτείται η πλήρης μετάδοση του αριθμού για την ενεργοποίηση όλων των λειτουργιών (βαθμολογία, σχόλια).</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0033:c908016f">Πότε είναι χρήσιμη η αναζήτηση;</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0034:f22eafac">Συχνές περιπτώσεις χρήσης:</h3>
+				<ul>
+					<li data-tx="t0035:3dbf84ea">Ελέγξτε τον άγνωστο αριθμό στην οθόνη πριν απαντήσετε στο τηλέφωνο.</li>
+					<li data-tx="t0036:bbac69db">Αναζήτηση αναπάντητων κλήσεων</li>
+					<li data-tx="t0037:fff61fd7">Ελέγξτε αριθμούς από SMS ή e-mail</li>
+					<li data-tx="t0038:a4595d9f">Ελέγξτε αν ο αριθμός είναι νόμιμος πριν καλέσετε ξανά</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0053:c8516691">Τι μπορείτε να κάνετε μετά την αναζήτηση:</h3>
+				<ul>
+					<li data-tx="t0054:d6755430"><strong>Κατάταξη ως SPAM</strong> (θα προστεθεί στη μαύρη λίστα → πάντα μπλοκαρισμένο)</li>
+					<li data-tx="t0055:452970dd"><strong>Κατάταξη ως νόμιμη</strong> (θα προστεθεί στη λευκή λίστα → δεν θα μπλοκαριστεί ποτέ)</li>
+					<li data-tx="t0056:bdc779d8">Διαβάστε σχόλια από άλλους χρήστες</li>
+					<li data-tx="t0057:c2d14384">Προσθέστε προαιρετικά το δικό σας σχόλιο</li>
+				</ul>
+				<p class="mt-3" data-tx="t0058:e80ee25"><strong>Σημείωση:</strong> Η βαθμολόγηση και η προσθήκη στη λίστα είναι μία και η αυτή ενέργεια!</p>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

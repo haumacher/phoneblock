@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">Se blokkerte og ubesvarte anrop</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile sjekker alle innkommende anrop fra ukjente numre og viser deg hvilke som er blokkert og hvilke som har kommet gjennom.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Viktig:</strong> Bare ukjente numre blir sjekket!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Anrop fra numre i kontaktlisten sjekkes aldri og vises ikke i PhoneBlocks anropsliste. Appen behandler bare numre som ikke er lagret i telefonboken din.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">Anropshistorikken</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Oversikt over alle kontrollerte anrop</h3>
+				<figure class="image">
+					<img alt="Liste over verifiserte samtaler" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">Appen viser alle anrop fra ukjente numre med deres respektive status</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Blokkerte SPAM-anrop</h3>
+				<figure class="image">
+					<img alt="SPAM-anrop blokkert" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Blokkerte SPAM-anrop vises med et rødt symbol og SPAM-poengsum. Du vil motta et varsel om blokkeringen.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">Hvilke numre er blokkert som SPAM?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">SPAM-numre (vil bli blokkert)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">Et nummer blokkeres som SPAM hvis:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">du har en høy SPAM-poengsum i PhoneBlock-databasen</li>
+						<li data-tx="t0031:bbf61b78">SPAM-poengsummen overskrider den innstilte terskelverdien</li>
+						<li data-tx="t0032:496c5432">Hun er på din personlige svarteliste (uavhengig av poengsummen)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Resultat:</strong> Telefonen din ringer ikke, samtalen blir automatisk avvist.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Legitime numre (slippes gjennom)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">Et nummer anses som legitimt hvis:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">Den er ikke tilgjengelig i PhoneBlock-databasen</li>
+						<li data-tx="t0037:be800714">Den har en lav SPAM-poengsum under terskelen din</li>
+						<li data-tx="t0038:dc6b0dd6">Hun er på din personlige hviteliste (vil aldri bli blokkert)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Resultat:</strong> Telefonen din ringer normalt, samtalen går gjennom.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">Hvordan fungerer blokkeringen?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile bruker Androids CallScreeningService til å screene innkommende anrop før de ringer. Hvis nummeret finnes i SPAM-databasen og den angitte terskelen overskrides, blokkeres anropet automatisk.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">Rapporter SPAM-numre fra anropsloggen</h2>
+
+		<p data-tx="t0041:26708b3">Hvis du har mottatt en oppringning fra et ukjent nummer som ble oppfattet som legitimt, men som i virkeligheten var SPAM, kan du rapportere det direkte fra anropslisten:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">Når bør du rapportere et nummer?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">Nummeret finnes ennå ikke i PhoneBlock-databasen (lav eller ingen SPAM-poengsum)</li>
+					<li data-tx="t0044:e2b6f50e">Samtalen var åpenbart uønsket (reklame, svindel osv.)</li>
+					<li data-tx="t0045:ba58fceb">Du vil advare samfunnet om dette nummeret</li>
+					<li data-tx="t0046:53de68c0">Nummeret skal blokkeres automatisk i fremtiden</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">Hva skjer ved en eventuell anmeldelse?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">Nummeret blir <strong>automatisk lagt til i svartelisten din&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">Du vil bli beskyttet mot fremtidige anrop fra dette nummeret</li>
+					<li data-tx="t0050:da8797c6">Meldingen din bidrar til PhoneBlock-databasen</li>
+					<li data-tx="t0051:1f62ed10">Andre brukere drar nytte av vurderingen din</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">Til instruksjonene: Rapporter SPAM-nummer</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Det er viktig:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">Hvis du rapporterer et nummer som SPAM, blir det lagt til i din personlige svarteliste og vil alltid bli blokkert i fremtiden. Denne avgjørelsen har forrang over fellesskapets vurdering.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

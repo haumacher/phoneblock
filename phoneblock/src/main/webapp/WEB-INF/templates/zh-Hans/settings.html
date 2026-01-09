@@ -7,53 +7,53 @@
 
 <section class="section" th:unless="${userName}">
 	<div class="content">
-		<h1 data-tx="t0001">设置</h1>
+		<h1 data-tx="t0001:1798fbdb">设置</h1>
 		
-		<p data-tx="t0002">要编辑个人设置，必须<a th:href="@{/login(location=${location})}">登录</a>。</p>
+		<p data-tx="t0002:d4c49b15">要编辑个人设置，必须<a th:href="@{/login(location=${location})}">登录</a>。</p>
 	</div>
 </section>
 
 <section class="section" th:if="${userName}">
 	<div class="content">
-		<h1 data-tx="t0003">设置</h1>
-			<p data-tx="t0004">欢迎 <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>。</p>
+		<h1 data-tx="t0003:1798fbdb">设置</h1>
+			<p data-tx="t0004:d8072a01">欢迎 <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>。</p>
 			
 			<form method="post" th:action="@{/update-settings}">
 
 			<article class="message is-info" th:if="${token}">
 			  <div class="message-header">
-			    <p data-tx="t0005">您的访问数据</p>
+			    <p data-tx="t0005:5df14f18">您的访问数据</p>
 			  </div>
 			  
 			  <div class="message-body">
 				<div class="field">
-				  <label class="label" data-tx="t0006">CardDAV 服务器的互联网地址</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0006:f48153ce">CardDAV 服务器的互联网地址</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 
 				<div class="field">
-				  <label class="label" data-tx="t0007">用户名</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008">您必须输入此值作为用户名，以便<a th:href="@{/setup}">调用拦截列表</a>。</p>
+				  <label class="label" data-tx="t0007:548c40c1">用户名</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0008:bceeee4f">您必须输入此值作为用户名，以便<a th:href="@{/setup}">调用拦截列表</a>。</p>
 				</div>
 					
 				<div class="field">
-				  <label class="label" data-tx="t0009">暗号</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010">您必须使用此密码才能<a th:href="@{/setup}">设置电话簿</a>或登录本网站。</p>
-				  <p class="help" data-tx="t0011">请记下密码（或将其保存在<a href="https://keepass.info/">密码管理器</a>中），因为密码只会在您注销或会话过期前显示。</p>
+				  <label class="label" data-tx="t0009:e99dee32">暗号</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+				  <p class="help" data-tx="t0010:b5380dd1">您必须使用此密码才能<a th:href="@{/setup}">设置电话簿</a>或登录本网站。</p>
+				  <p class="help" data-tx="t0011:90026712">请记下密码（或将其保存在<a href="https://keepass.info/">密码管理器</a>中），因为密码只会在您注销或会话过期前显示。</p>
 				</div>
 			  </div>
 			</article>
 
 			<div class="field" th:unless="${token}">
-			  <label class="label" data-tx="t0012">用户名</label>
-			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013">您必须输入此值作为用户名，以便<a th:href="@{/setup}">检索拦截列表</a>。你的密码在首次登录时就已显示。如果你不再记得它，可以在本页底部创建一个 <a href="#resetPassword">新密码</a>。但请注意：旧密码将失效。</p>
+			  <label class="label" data-tx="t0012:548c40c1">用户名</label>
+			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></div>
+			  <p class="help" data-tx="t0013:6f72b3a6">您必须输入此值作为用户名，以便<a th:href="@{/setup}">检索拦截列表</a>。你的密码在首次登录时就已显示。如果你不再记得它，可以在本页底部创建一个 <a href="#resetPassword">新密码</a>。但请注意：旧密码将失效。</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0094">您的国家代码</label>
+			  <label class="label" data-tx="t0094:1e57ddfa">您的国家代码</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="myDialPrefix">
@@ -64,69 +64,69 @@
 			      <i class="fa-solid fa-earth-americas"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0091">带有您所在国家代码的电话号码将以缩写形式（作为国家号码）出现在您的拦截列表中。对于您所在国家的其他用户来说，您的垃圾邮件报告具有特殊权重。</p>
+			  <p class="help" data-tx="t0091:5d390f48">带有您所在国家代码的电话号码将以缩写形式（作为国家号码）出现在您的拦截列表中。对于您所在国家的其他用户来说，您的垃圾邮件报告具有特殊权重。</p>
 			</div>
 
 			<div class="field">
-			  <label class="label" data-tx="t0014">最大拦截列表大小</label>
+			  <label class="label" data-tx="t0014:41337e7b">最大拦截列表大小</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015" th:selected="${settings.maxLength == 1000}" value="1000">1000（对于非常老旧的 Fritz!Box 而言是个小数字）</option>
-			    	<option data-tx="t0016" th:selected="${settings.maxLength == 2000}" value="2000">2000（建议用于大多数 Fritz！Box）</option>
-			    	<option data-tx="t0017" th:selected="${settings.maxLength == 3000}" value="3000">3000 （例如，在 FRITZ!Box 7590 上仍可使用）</option>
-			    	<option data-tx="t0018" th:selected="${settings.maxLength == 4000}" value="4000">4000（见下文注释）</option>
-			    	<option data-tx="t0019" th:selected="${settings.maxLength == 5000}" value="5000">5000（数额巨大，见下文注释）</option>
-			    	<option data-tx="t0020" th:selected="${settings.maxLength == 6000}" value="6000">6000（极端，小心，您的 Fritz！Box 可能会崩溃）</option>
+			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000（对于非常老旧的 Fritz!Box 而言是个小数字）</option>
+			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000（建议用于大多数 Fritz！Box）</option>
+			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 （例如，在 FRITZ!Box 7590 上仍可使用）</option>
+			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000（见下文注释）</option>
+			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000（数额巨大，见下文注释）</option>
+			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000（极端，小心，您的 Fritz！Box 可能会崩溃）</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-ruler-vertical"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0021">如果您在更新拦截列表时遇到问题，可以在此处缩小拦截列表的大小。AVM 建议电话簿最多包含 1000 个条目。例如，FRITZ!Box 7590 最多可处理 3000 个电话簿条目。</p>
+			  <p class="help" data-tx="t0021:28fc9e2c">如果您在更新拦截列表时遇到问题，可以在此处缩小拦截列表的大小。AVM 建议电话簿最多包含 1000 个条目。例如，FRITZ!Box 7590 最多可处理 3000 个电话簿条目。</p>
 			  
-			  <p class="help" data-tx="t0022"><b>注意：</b> 如果您想测试话匣子可以在电话簿中保存多少条目，请按以下步骤操作：从默认设置 2000 条目开始。同步 blocklist 并显示 blocklist 电话簿。滚动到最末端，显示分块列表的打印预览，并记下打印的页数。现在将分块列表的大小增加一步，重新同步分块列表并再次显示分块列表的打印预览。如果页数相应增加，则说明您的盒子可以处理这种尺寸，请尝试下一种尺寸。如果打印预览中的页数没有增加或没有相应增加，则使用上次较小尺寸的分块列表。有趣的是，如果电话簿过大，Fritz!Box如果电话簿的大小过大，我曾见过有的盒子会直接崩溃--所以一定要小心。</p>
+			  <p class="help" data-tx="t0022:73c1facc"><b>注意：</b> 如果您想测试话匣子可以在电话簿中保存多少条目，请按以下步骤操作：从默认设置 2000 条目开始。同步 blocklist 并显示 blocklist 电话簿。滚动到最末端，显示分块列表的打印预览，并记下打印的页数。现在将分块列表的大小增加一步，重新同步分块列表并再次显示分块列表的打印预览。如果页数相应增加，则说明您的盒子可以处理这种尺寸，请尝试下一种尺寸。如果打印预览中的页数没有增加或没有相应增加，则使用上次较小尺寸的分块列表。有趣的是，如果电话簿过大，Fritz!Box如果电话簿的大小过大，我曾见过有的盒子会直接崩溃--所以一定要小心。</p>
 			</div>
 			
 			<div class="field">
-			  <label class="label" data-tx="t0023">最低信心</label>
+			  <label class="label" data-tx="t0023:6621f89a">最低信心</label>
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="minVotes">
-			    <option data-tx="t0024" th:selected="${settings.minVotes == 2}" value="2">2（立即锁定）</option>	
-			    <option data-tx="t0025" th:selected="${settings.minVotes == 4}" value="4">4 （等待确认）</option>	
-			    <option data-tx="t0026" th:selected="${settings.minVotes == 10}" value="10">10 （仅在安全情况下）</option>	
-			    <option data-tx="t0027" th:selected="${settings.minVotes == 100}" value="100">100（仅限顶级垃圾邮件发送者）</option>	
+			    <option data-tx="t0024:a337a091" th:selected="${settings.minVotes == 2}" value="2">2（立即锁定）</option>	
+			    <option data-tx="t0025:eeb2021a" th:selected="${settings.minVotes == 4}" value="4">4 （等待确认）</option>	
+			    <option data-tx="t0026:a8e81033" th:selected="${settings.minVotes == 10}" value="10">10 （仅在安全情况下）</option>	
+			    <option data-tx="t0027:10a19182" th:selected="${settings.minVotes == 100}" value="100">100（仅限顶级垃圾邮件发送者）</option>	
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
 			      <i class="fas fa-phone-volume"></i>
 			    </span>
 			  </div>
-			  <p class="help" data-tx="t0028">您选择的号码越高，电话号码在被添加到您的个人拦截名单之前必须收到的投诉就越多，您也就越有可能收到来自新垃圾邮件号码的电话。每投诉一次，置信度就增加 2 分。</p>
+			  <p class="help" data-tx="t0028:6efc5ac9">您选择的号码越高，电话号码在被添加到您的个人拦截名单之前必须收到的投诉就越多，您也就越有可能收到来自新垃圾邮件号码的电话。每投诉一次，置信度就增加 2 分。</p>
 			</div>
 			
 			<div class="field">
-			  <label class="checkbox" data-tx="t0029"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> 用 "*"来概括数字</label>
-			  <p class="help" data-tx="t0030">如果选择此选项，您的拦截列表中的相邻号码将合并为一个带通配符（"*"）的号码。许多专业垃圾邮件发送者拥有多设备连接，并使用整个号码块作为发送者。有了这个选项，所有这些号码都会被自动拦截，您的拦截列表也可以包含更多的垃圾邮件号码。Fritz!Box 支持带有通配符号码的电话簿，然后会阻止整个指定的号码范围。但是，您可能无法在其他设备上使用通配符号码。</p>
+			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> 用 "*"来概括数字</label>
+			  <p class="help" data-tx="t0030:fd1d1b6b">如果选择此选项，您的拦截列表中的相邻号码将合并为一个带通配符（"*"）的号码。许多专业垃圾邮件发送者拥有多设备连接，并使用整个号码块作为发送者。有了这个选项，所有这些号码都会被自动拦截，您的拦截列表也可以包含更多的垃圾邮件号码。Fritz!Box 支持带有通配符号码的电话簿，然后会阻止整个指定的号码范围。但是，您可能无法在其他设备上使用通配符号码。</p>
 			</div>
 
 			<div class="field">
 			  <label class="checkbox">
 			    <input name="nationalOnly" th:checked="${settings.nationalOnly}" type="checkbox"/>
-				<span data-tx="t0092">仅限本国号码</span>
+				<span data-tx="t0092:781fecd1">仅限本国号码</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093">如果您已经在 Fritz!使用此选项，只有本国号码会出现在您的拦截列表中。这意味着更多与您相关的号码将出现在您的拦截列表中。请确保您在上面正确设置了国家代码。</p> 
+			  <p class="help" data-tx="t0093:2f41e7b3">如果您已经在 Fritz!使用此选项，只有本国号码会出现在您的拦截列表中。这意味着更多与您相关的号码将出现在您的拦截列表中。请确保您在上面正确设置了国家代码。</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031" type="submit">节省</button>
+			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">节省</button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032" th:href="@{/settings}">丢弃</a>
+			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">丢弃</a>
 			  </p>
 			</div>
 		</form>
@@ -135,62 +135,79 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0033" id="myAPIKeys">您的应用程序接口密钥</h2>
-	<p data-tx="t0034">如果您使用其他应用程序通过 PhoneBlock 检查电话号码（例如 <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> 或 <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>），则需要一个 API 密钥。对于 Fritz!Box 中的 blocklist 电话簿，您只需使用 PhoneBlock 用户名和 PhoneBlock 密码即可，因此不需要 API 密钥。</p>
+	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">您的应用程序接口密钥</h2>
+	<p data-tx="t0034:c7b86819">如果您使用其他应用程序通过 PhoneBlock 检查电话号码（例如 <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> 或 <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>），则需要一个 API 密钥。对于 Fritz!Box 中的 blocklist 电话簿，您只需使用 PhoneBlock 用户名和 PhoneBlock 密码即可，因此不需要 API 密钥。</p>
 	
-	<p data-tx="t0035" th:if="${explicitTokens.empty}">您尚未创建任何 API 密钥。</p>
-	<form method="post" th:action="@{/update-settings(action='deleteAPIKeys')}" th:unless="${explicitTokens.empty}">
+	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">您尚未创建任何 API 密钥。</p>
+	<div th:unless="${explicitTokens.empty}">
 	<table>
 		<tr>
 			<th>
 			</th>
-			<th data-tx="t0036">名称</th>
-			<th data-tx="t0037">生成</th>
-			<th data-tx="t0038">最后一次使用</th>
-			<th data-tx="t0039">设备</th>
+			<th data-tx="t0036:b4d4555f">名称</th>
+			<th data-tx="t0037:1e1e9f52">生成</th>
+			<th data-tx="t0038:46b89898">最后一次使用</th>
+			<th data-tx="t0039:9b222602">设备</th>
 		</tr>
 
 		<tr th:each="authToken : ${explicitTokens}">
 			<td>
-				<input th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
 			</td>
-			<td th:text="${authToken.label}"></td>
+			<td>
+				<span class="apikey-label" th:text="${authToken.label}"></span>
+				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="节省" type="button">
+						<i class="fa-solid fa-check"></i>
+					</button>
+					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="取消" type="button">
+						<i class="fa-solid fa-xmark"></i>
+					</button>
+					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="重新命名" type="button">
+						<i class="fa-solid fa-pen-to-square"></i>
+					</button>
+				</form>
+			</td>
 			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
 			<td>
-				<th:block data-tx="t0040" th:unless="${authToken.lastAccess}">未使用。</th:block>
+				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">未使用。</th:block>
 				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
 			</td>
 			<td th:text="${authToken.userAgent}"></td>
 		</tr>
 	</table>
-	
+
+	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041" type="submit">删除所选</button>
+	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">删除所选</button>
 	  </p>
 	</div>
-	
 	</form>
+
+	</div>
 	</div>
 </section>
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042" id="createAPIKey">生成应用程序接口密钥</h2>
+	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">生成应用程序接口密钥</h2>
 
 	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0043">使用说明</label>
+	  <label class="label" data-tx="t0043:dcf4d98e">使用说明</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087" name="apikey-label" placeholder="用于..." type="text"/>
+	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="用于..." type="text"/>
 	  </p>
-	  <p class="help" data-tx="t0044">您可以在此处输入备注，说明生成 API 密钥的用途，例如 "奶奶手机上的垃圾邮件拦截器"。</p>
+	  <p class="help" data-tx="t0044:c40769ec">您可以在此处输入备注，说明生成 API 密钥的用途，例如 "奶奶手机上的垃圾邮件拦截器"。</p>
 	</div>
 		
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045" type="submit">生成应用程序接口密钥</button>
+	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">生成应用程序接口密钥</button>
 	  </p>
 	</div>
 
@@ -201,14 +218,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046" id="blacklist">您的黑名单</h2>
+	<h2 data-tx="t0046:9bb283fa" id="blacklist">您的黑名单</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047" th:if="${blacklist.empty}">您尚未明确阻止任何号码。要阻止一个号码，请使用上面的搜索栏搜索该号码并写下负面评论，或者在 Fritz 的阻止列表中为该号码建立一个电话簿条目！</p>
+	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">您尚未明确阻止任何号码。要阻止一个号码，请使用上面的搜索栏搜索该号码并写下负面评论，或者在 Fritz 的阻止列表中为该号码建立一个电话簿条目！</p>
 
 	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048">您已明确阻止了这些号码。您可以在此取消意外阻止：</p>
+	<p data-tx="t0048:7a2801d3">您已明确阻止了这些号码。您可以在此取消意外阻止：</p>
 	<div class="field" th:each="number : ${blacklist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
 			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
@@ -217,7 +234,7 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049" type="submit">删除</button>
+	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">删除</button>
 	  </p>
 	</div>
 	</th:block>
@@ -229,17 +246,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0095">区块编号</label>
+	  <label class="label" data-tx="t0095:7309300c">区块编号</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096" name="add-bl" placeholder="新的垃圾邮件编号" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0097">☎</span>
+	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="新的垃圾邮件编号" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0098">您可以在此输入一个或多个垃圾邮件电话号码，中间用逗号隔开，格式不限：07041-123456789、+49171123456789、0034 123456789。 这些号码将被添加到您的个人拦截列表中。</p>
+	  <p class="help" data-tx="t0098:7b65bad4">您可以在此输入一个或多个垃圾邮件电话号码，中间用逗号隔开，格式不限：07041-123456789、+49171123456789、0034 123456789。 这些号码将被添加到您的个人拦截列表中。</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099" type="submit">添加</button>
+	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">添加</button>
 	  </p>
 	</div>
 	
@@ -250,14 +267,14 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0050" id="whitelist">您的白名单</h2>
+	<h2 data-tx="t0050:4c4f40df" id="whitelist">您的白名单</h2>
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0051" th:if="${whitelist.empty}">您没有将任何数字排除在屏蔽范围之外。</p>
+	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">您没有将任何数字排除在屏蔽范围之外。</p>
 
 	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052">您已明确将这些数字排除在拦截范围之外：</p>
+	<p data-tx="t0052:98b17ee4">您已明确将这些数字排除在拦截范围之外：</p>
 
 	<div class="field" th:each="number : ${whitelist}">
 		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
@@ -267,7 +284,7 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053" type="submit">删除</button>
+	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">删除</button>
 	  </p>
 	</div>
 	</th:block>
@@ -279,17 +296,17 @@
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
 	<div class="field">
-	  <label class="label" data-tx="t0054">添加例外情况</label>
+	  <label class="label" data-tx="t0054:ce0c23fb">添加例外情况</label>
 	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088" name="add-wl" placeholder="新例外" type="tel"/>
-	    <span class="icon is-small is-left" data-tx="t0055">☎</span>
+	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="新例外" type="tel"/>
+	    <span class="icon is-small is-left">☎</span>
 	  </p>
-	  <p class="help" data-tx="t0056">您可以输入一个或多个以逗号分隔的电话号码，格式不限：07041-123456789、+49171123456789、0034 123456789。 这些号码将不再被屏蔽。</p>
+	  <p class="help" data-tx="t0056:edaaa5f7">您可以输入一个或多个以逗号分隔的电话号码，格式不限：07041-123456789、+49171123456789、0034 123456789。 这些号码将不再被屏蔽。</p>
 	</div>
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057" type="submit">添加</button>
+	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">添加</button>
 	  </p>
 	</div>
 	
@@ -299,19 +316,19 @@
 
 <section class="section">
 <div class="content">
-	<h2 data-tx="t0058" id="sec-contributions">您为 PhoneBlock 运营所做的捐赠</h2>
+	<h2 data-tx="t0058:8e777536" id="sec-contributions">您为 PhoneBlock 运营所做的捐赠</h2>
 	
-	<p data-tx="t0059">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090" href="#" id="purpose_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献无法在此列出。</p>
+	<p data-tx="t0059:5bf315a2">如果您为 PhoneBlock 的运行进行了 <a th:href="@{/support}"> 捐助</a>，它将在这里列出（一段时间后）。如果您能在转账信息中包含您的用户名的前几个字符，例如 <code dir="ltr" id="purpose" th:text="${supporterId}"></code><span class="copyToClipboard" data-tx="t0090:3f7efe41" href="#" id="purpose_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></span>，这将会更有效。遗憾的是，通过 GitHub 赞助计划做出的贡献不能在此列出。</p>
 	
-	<p data-tx="t0060" th:if="${contributions.empty}">未找到捐赠。</p>
+	<p data-tx="t0060:5bf4088c" th:if="${contributions.empty}">未找到捐赠。</p>
 	
 	<th:block th:unless="${contributions.empty}">
 	<table class="table">
 	<thead>
 		<tr>
-			<th data-tx="t0061">日期</th>
-			<th data-tx="t0062">留言</th>
-			<th data-tx="t0063">金额</th>
+			<th data-tx="t0061:73a7fbc0">日期</th>
+			<th data-tx="t0062:4944d83c">留言</th>
+			<th data-tx="t0063:151fc0c3">金额</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -323,34 +340,34 @@
 	</tbody>
 	</table>
 	
-	<p data-tx="t0064">非常感谢你们为 PhoneBlock 的运营提供资金支持！</p>	
+	<p data-tx="t0064:9559be26">非常感谢你们为 PhoneBlock 的运营提供资金支持！</p>	
 	</th:block>
 </div>
 
 <nav class="panel is-info">
-	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065">错过付款？</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#contribForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0065:ec12e167">错过付款？</span></a></p>
 	<div class="is-collapsible" id="contribForm">
 
 	<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/assign-contribution}">
 	<div class="panel-block">
 	<div class="content">
-		<p data-tx="t0066">您是否遗漏了一笔付款？您可以在这里搜索付款。输入您的全名（您的银行/贝宝将您作为发件人）和转账日期：</p>
+		<p data-tx="t0066:76883029">您是否遗漏了一笔付款？您可以在这里搜索付款。输入您的全名（您的银行/贝宝将您作为发件人）和转账日期：</p>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0067">发件人</label>
+		  <label class="label" data-tx="t0067:fce43ee4">发件人</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0089" name="contrib-name" placeholder="马克斯-穆斯特曼" type="text"/>
+		    <input class="input" data-tx="t0089:2a2ec866" name="contrib-name" placeholder="马克斯-穆斯特曼" type="text"/>
 		    <span class="icon is-small is-left"><i class="fa-regular fa-user"></i></span>
 		  </p>
-		  <p class="help" data-tx="t0068">如果是银行转账，请注明转账账户持有人的姓名。还请在下方注明转账日期。</p>
+		  <p class="help" data-tx="t0068:b7f565b6">如果是银行转账，请注明转账账户持有人的姓名。还请在下方注明转账日期。</p>
 		</div>
 	
 		<div class="field">
-		  <label class="label" data-tx="t0069">日期</label>
+		  <label class="label" data-tx="t0069:73a7fbc0">日期</label>
 		  <p class="control has-icons-left">
 		    <input class="input" name="contrib-date" type="date"/>
 		  </p>
-		  <p class="help" data-tx="t0070">银行转账日期。还请输入转账账户持有人的全名。</p>
+		  <p class="help" data-tx="t0070:99e4757b">银行转账日期。还请输入转账账户持有人的全名。</p>
 		</div>
 	</div>
 	</div>
@@ -360,7 +377,7 @@
 		    <span class="icon">
 				<i class="fa-solid fa-magnifying-glass-dollar"></i>
 		    </span>
-			<span data-tx="t0071">搜索贡献</span>
+			<span data-tx="t0071:86083faf">搜索贡献</span>
 		</button>
 	</div>
 
@@ -372,17 +389,17 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0072">危险区</h2>
-	<p data-tx="t0073">谨慎使用此功能。使用它可能会破坏你的 PhoneBlock 安装！</p>
+	<h2 data-tx="t0072:47d9a31d">危险区</h2>
+	<p data-tx="t0073:46d23ac6">谨慎使用此功能。使用它可能会破坏你的 PhoneBlock 安装！</p>
 	</div>
 		
 <nav class="panel is-warning" id="resetPassword">
-	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074">创建新密码</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#resetForm"><i class="fa-solid fa-eraser"></i> <span data-tx="t0074:889c5574">创建新密码</span></a></p>
 	<div class="is-collapsible" id="resetForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075">请注意，这将使您的旧 PhoneBlock 密码失效。然后，您必须在 Fritz！Box 或手机的设置中输入新密码，以便仍然可以访问拦截列表。</p>
+	  			<p data-tx="t0075:f48c1f2f">请注意，这将使您的旧 PhoneBlock 密码失效。然后，您必须在 Fritz！Box 或手机的设置中输入新密码，以便仍然可以访问拦截列表。</p>
 	  		</div>
 	  	</div>
 	  	
@@ -391,7 +408,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-eraser"></i>
 			    </span>
-				<span data-tx="t0076">重置密码</span>
+				<span data-tx="t0076:457c3a43">重置密码</span>
 			</button>
   		</div>
   		</form>
@@ -399,12 +416,12 @@
 </nav>
 
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077">注销所有设备</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#logoutForm"><i class="fa-solid fa-right-from-bracket"></i> <span data-tx="t0077:ad62bbd">注销所有设备</span></a></p>
 	<div class="is-collapsible" id="logoutForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/logout(url=${contextPath + '/'},all=true)}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0078">退出登录时激活了 "在此设备上保持登录 "选项的所有设备。下次访问时，您必须在所有设备上重新登录。如果您不小心在公共 PC 上激活了 "在此设备上保持登录 "功能，请使用此注销功能。</p>
+	  			<p data-tx="t0078:a1c4341c">退出登录时激活了 "在此设备上保持登录 "选项的所有设备。下次访问时，您必须在所有设备上重新登录。如果您不小心在公共 PC 上激活了 "在此设备上保持登录 "功能，请使用此注销功能。</p>
 	  		</div>
 	  	</div>
 	  	
@@ -413,7 +430,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-right-from-bracket"></i>
 			    </span>
-				<span data-tx="t0079">随时随地退出登录</span>
+				<span data-tx="t0079:4646847e">随时随地退出登录</span>
 			</button>
   		</div>
   		</form>
@@ -421,12 +438,12 @@
 </nav>
 	
 <nav class="panel is-warning">
-	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080">删除帐户</span></a></p>
+	<p class="panel-heading"><a data-action="collapse" href="#quitForm"><i class="fa-solid fa-power-off"></i> <span data-tx="t0080:a95c6f94">删除帐户</span></a></p>
 	<div class="is-collapsible" id="quitForm">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/delete-account}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0081">请注意，您的所有数据都将被删除。您将无法再从任何设备上检索封锁列表或访问 PhoneBlock 数据库！</p>
+	  			<p data-tx="t0081:d1ddc761">请注意，您的所有数据都将被删除。您将无法再从任何设备上检索封锁列表或访问 PhoneBlock 数据库！</p>
 	  		</div>
 	  	</div>
 	  	
@@ -435,7 +452,7 @@
 			    <span class="icon">
 					<i class="fa-solid fa-power-off"></i>
 			    </span>
-				<span data-tx="t0082">删除访问权限，不再进行安全查询！</span>
+				<span data-tx="t0082:4639073e">删除访问权限，不再进行安全查询！</span>
 			</button>
   		</div>
   		</form>

@@ -9,16 +9,22 @@
 <section class="section">
 <div class="content">
 
-<h1 data-tx="t0001">You are successfully logged in</h1>
+<h1 data-tx="t0001:1bd232b9">Complete link</h1>
 
-<p data-tx="t0002">Your authorization token: <code id="token" th:text="${loginToken}"></code></p>
+<p data-tx="t0002:73beecd2">If you see this page, then your browser has not forwarded the link to your PhoneBlock app. You must do this manually by opening this page "in the app". Open the menu at the bottom:</p>
 
-<p data-tx="t0003">Your login to PhoneBlock was successful. This page should close automatically and your mobile device should connect to PhoneBlock. If this does not happen, then there may be something wrong with your mobile application.</p>
+<img alt="Open menu" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>
+	
+<p data-tx="t0004:2210ca0d">And select the "Open with app" option:</p>
+
+<img alt="Option 'Open with app'" data-tx="t0005:7971c7c3" th:src="@{/assets/img/mobile/connect-2.png}"/>
+
+<p data-tx="t0006:4da0a1ad">Your authorization token: <code id="loginToken" th:text="${loginToken}"></code><a class="copyToClipboard" data-tx="t0007:3f7efe41" id="loginToken_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></p>
 
 </div>
 </section>
 
-<script th:src="@{/assets/js/mobile-response.js}" type="text/javascript"></script>
+<div th:replace="~{../fragments/mobile :: footer}"></div>
 
 </body>
 </html>

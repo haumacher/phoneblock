@@ -32,7 +32,7 @@
 	<link rel="stylesheet" th:href="|${contextPath}${deps.fontawesome}/css/all.min.css|"/>
 	<link rel="stylesheet" th:href="|${contextPath}${deps.flags}/css/flag-icons.min.css|"/>
 	
-	<link data-tx="t0042" href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"/>
+	<link data-tx="t0042:3e5d77fa" href="https://news.phoneblock.net/feed" rel="alternate" title="PhoneBlock Updates" type="application/rss+xml"/>
 	
 	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"/>
 	
@@ -44,11 +44,11 @@
 </head>
 
 <body th:dir="${currentLang.direction}">
-<section class="hero is-small is-primary" th:fragment="header">
+<section class="hero is-small is-primary" th:fragment="header" th:unless="${inMobileApp}">
 	<div class="hero-body">
 		<div class="title">
-			<img alt="PhoneBlock Logo" class="logo-image" data-tx="t0043" th:src="@{/assets/img/app-logo.svg}"/>
-			<a data-tx="t0001" th:href="@{/}">PhoneBlock</a>
+			<img alt="PhoneBlock Logo" class="logo-image" data-tx="t0043:5b0e8765" th:src="@{/assets/img/app-logo.svg}"/>
+			<a data-tx="t0001:88251796" th:href="@{/}">PhoneBlock</a>
 			
 			<div class="dropdown is-hoverable">
 			  <div class="dropdown-trigger">
@@ -66,21 +66,21 @@
 			  </div>
 			</div>			
 		</div>
-		<div class="subtitle" data-tx="t0002">The spam filter for your phone</div>
+		<div class="subtitle" data-tx="t0002:cb9e862e">The spam filter for your phone</div>
 		<a target="_blank" th:href="@{/link/github}">
-			<img alt="Fork me on GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044" height="149" th:src="@{/assets/forkme.png}" width="149"/>
+			<img alt="Fork me on GitHub" class="github-image ltr is-hidden-touch" data-tx="t0044:9c6e94b" height="149" th:src="@{/assets/forkme.png}" width="149"/>
 			<img alt="" class="github-image ltr is-hidden-desktop" data-tx="t0049" height="45" th:src="@{/assets/forkme.png}" width="45"/>
-			<img alt="Fork me on GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
+			<img alt="Fork me on GitHub" class="github-image rtl is-hidden-touch" data-tx="t0054:9c6e94b" height="149" th:src="@{/assets/forkme_rtl.png}" width="149"/>
 			<img alt="" class="github-image rtl is-hidden-desktop" data-tx="t0055" height="45" th:src="@{/assets/forkme_rtl.png}" width="45"/>
 		</a>
 	</div>
   <div class="hero-foot">
-  <nav aria-label="main navigation" class="navbar" data-tx="t0056" role="navigation">
+  <nav aria-label="main navigation" class="navbar" data-tx="t0056:d188b03" role="navigation">
 	<div class="navbar-brand">
 		<div class="navbar-item">
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/nums}">
 		<div class="control has-icons-left has-icons-right">
-		  <input class="input is-rounded" data-tx="t0045" name="num" placeholder="Check telephone number" type="tel"/>
+		  <input class="input is-rounded" data-tx="t0045:954976dd" name="num" placeholder="Check telephone number" type="tel"/>
 		  <span class="icon is-small is-left">
 		    <i class="fas fa-phone"></i>
 		  </span>
@@ -91,52 +91,52 @@
 		</form>
 		</div>
 
-		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+		<a aria-expanded="false" aria-label="menu" class="navbar-burger" data-target="navbarBasicExample" data-tx="t0057:4531fd3e" role="button"> <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
 		</a>
 	</div>
 	<div class="navbar-menu" id="navbarBasicExample">
 		<div class="navbar-start">
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0003" href="#">Installation</a>
+				<a class="navbar-link prevent-default" data-tx="t0003:bba1983" href="#">Installation</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004" th:href="@{/anrufbeantworter}">Answering machine</a>
-					<a class="navbar-item" data-tx="t0005" th:href="@{/setup}">Blocklist phonebook</a>
-					<a class="navbar-item" data-tx="t0006" th:href="@{/setup-android}">Android</a>
-					<a class="navbar-item" data-tx="t0007" th:href="@{/setup-iphone}">iPhone</a>
-					<a class="navbar-item" data-tx="t0060" th:href="@{/setup-switchboard}">Telephone systems</a>
+					<a class="navbar-item" data-tx="t0004:b64ed532" th:href="@{/anrufbeantworter}">Answering machine</a>
+					<a class="navbar-item" data-tx="t0005:b7a22f37" th:href="@{/setup}">Blocklist phonebook</a>
+					<a class="navbar-item" data-tx="t0006:aecec7cb" th:href="@{/setup-android}">Android</a>
+					<a class="navbar-item" data-tx="t0007:b21bebc5" th:href="@{/setup-iphone}">iPhone</a>
+					<a class="navbar-item" data-tx="t0060:2303782b" th:href="@{/setup-switchboard}">Telephone systems</a>
 				</div>
 			</div>
 
-			<a class="navbar-item" data-tx="t0008" th:href="@{/faq}">FAQ</a>
-			<a class="navbar-item" data-tx="t0009" th:href="@{/status}">Status</a>
+			<a class="navbar-item" data-tx="t0008:838673e9" th:href="@{/faq}">FAQ</a>
+			<a class="navbar-item" data-tx="t0009:a4d61d50" th:href="@{/status}">Status</a>
 
 			<div class="navbar-item has-dropdown is-hoverable">
-				<a class="navbar-link prevent-default" data-tx="t0010">More</a>
+				<a class="navbar-link prevent-default" data-tx="t0010:4d1bcf1">More</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0011" th:href="@{/support}">Donate to PhoneBlock</a>
+					<a class="navbar-item" data-tx="t0011:f69e31a1" th:href="@{/support}">Donate to PhoneBlock</a>
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0012" th:href="@{/api}">API for developers</a>
-					<a class="navbar-item" data-tx="t0013" target="_blank" th:href="@{/link/github}">GitHub Project</a>
-					<a class="navbar-item" data-tx="t0014" th:href="@{/block}">Add call barring</a>
+					<a class="navbar-item" data-tx="t0012:c5ba5dfc" th:href="@{/api}">API for developers</a>
+					<a class="navbar-item" data-tx="t0013:e63dea7a" target="_blank" th:href="@{/link/github}">GitHub Project</a>
+					<a class="navbar-item" data-tx="t0014:26f04851" th:href="@{/block}">Add call barring</a>
 					
 					<hr class="navbar-divider"/>
-					<a class="navbar-item" data-tx="t0015" target="_blank" th:href="@{/link/new-issue}">Report error</a>
+					<a class="navbar-item" data-tx="t0015:905b157b" target="_blank" th:href="@{/link/new-issue}">Report error</a>
 				</div>
 			</div>
 		</div>
 
 		<div class="navbar-end">
-			<a class="navbar-item" data-tx="t0046" target="_blank" th:href="@{/ab/}" title="Answerbot app">
+			<a class="navbar-item" data-tx="t0046:2fbd1fd3" target="_blank" th:href="@{/ab/}" title="Answerbot app">
 				<img height="20px" th:src="@{/assets/img/ab/logo/ab-logo-appbar.svg}" width="20px"/>
 		    </a>
 
-			<a class="navbar-item" data-tx="t0047" href="https://news.phoneblock.net" target="_blank" title="To the news page">
+			<a class="navbar-item" data-tx="t0047:610040e2" href="https://news.phoneblock.net" target="_blank" title="To the news page">
 				<img height="20px" th:src="@{/assets/no-facebook.svg}" width="20px"/>
 		    </a>
       			
-			<a class="navbar-item" data-tx="t0048" href="https://news.phoneblock.net/feed" target="_blank" title="RSS feed">
+			<a class="navbar-item" data-tx="t0048:c8f25491" href="https://news.phoneblock.net/feed" target="_blank" title="RSS feed">
 				<span class="icon">
 			    	<i class="fa-solid fa-rss"></i>
 		        </span>
@@ -148,19 +148,19 @@
 						<span class="icon">
 							<i class="fa-solid fa-right-to-bracket"></i>
           				</span>
-						<strong data-tx="t0016">Log in</strong>
+						<strong data-tx="t0016:7d2e5872">Log in</strong>
 					</a>
 					<a class="button is-info" th:href="@{/settings}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-user"></i>
           				</span>
-						<strong data-tx="t0017">Settings</strong>
+						<strong data-tx="t0017:be386be1">Settings</strong>
 					</a>
 					<a class="button is-light" th:href="@{/logout(url=${contextPath + currentPage})}" th:if="${loggedIn}">
 						<span class="icon">
 							<i class="fa-solid fa-right-from-bracket"></i>
           				</span>
-						<strong data-tx="t0018">Log out</strong>
+						<strong data-tx="t0018:8057fee">Log out</strong>
 					</a>
 				</div>
 			</div>
@@ -176,7 +176,7 @@
 	    <span class="icon">
 			<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
 	    </span>
-		<span data-tx="t0061">Answering machine</span>			
+		<span data-tx="t0061:b64ed532">Answering machine</span>			
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -184,7 +184,7 @@
 	    <span class="icon">
 			<i class="fa-solid fa-phone"></i>
 	    </span>
-		<span data-tx="t0062">Block list</span>			
+		<span data-tx="t0062:d40d3f00">Block list</span>			
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -192,7 +192,7 @@
 	    <span class="icon">
 			<i class="fa-solid fa-mobile-screen"></i>
 	    </span>
-		<span data-tx="t0063">Android</span>
+		<span data-tx="t0063:aecec7cb">Android</span>
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -200,7 +200,7 @@
 	    <span class="icon">
 			<i class="fa-brands fa-apple"></i>
 	    </span>
-		<span data-tx="t0064">iPhone</span>
+		<span data-tx="t0064:b21bebc5">iPhone</span>
 	</a>
   </div>
   <div class="column is-one-fifth">
@@ -208,7 +208,7 @@
 	    <span class="icon">
 			<i class="fa-solid fa-asterisk"></i>
 	    </span>
-		<span data-tx="t0065">Telephone system</span>
+		<span data-tx="t0065:9faa419a">Telephone system</span>
 	</a>
   </div>
 </div>
@@ -218,8 +218,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0034">PhoneBlock for Android</p>
-				<p class="subtitle" data-tx="t0035">Not installed yet? Then go for it!</p>
+				<p class="title" data-tx="t0034:9908b98c">PhoneBlock for Android</p>
+				<p class="subtitle" data-tx="t0035:94e91b90">Not installed yet? Then go for it!</p>
 			  </div>
 			</a>
 		</div>
@@ -227,8 +227,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/anrufbeantworter}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0036">PhoneBlock for Fritz!Box</p>
-				<p class="subtitle" data-tx="t0037">Switch off landline advertising calls!</p>
+				<p class="title" data-tx="t0036:c341be06">PhoneBlock for Fritz!Box</p>
+				<p class="subtitle" data-tx="t0037:1287f042">Switch off landline advertising calls!</p>
 			  </div>
 			</a>
 		</div>
@@ -238,8 +238,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/setup-ipone/}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0038">PhoneBlock for iPhone</p>
-				<p class="subtitle" data-tx="t0039">Not installed yet? Then go for it!</p>
+				<p class="title" data-tx="t0038:ac5e5c2e">PhoneBlock for iPhone</p>
+				<p class="subtitle" data-tx="t0039:94e91b90">Not installed yet? Then go for it!</p>
 			  </div>
 			</a>
 		</div>
@@ -247,8 +247,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/anrufbeantworter}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0040">PhoneBlock for Fritz!Box</p>
-				<p class="subtitle" data-tx="t0041">Switch off landline advertising calls!</p>
+				<p class="title" data-tx="t0040:c341be06">PhoneBlock for Fritz!Box</p>
+				<p class="subtitle" data-tx="t0041:1287f042">Switch off landline advertising calls!</p>
 			  </div>
 			</a>
 		</div>
@@ -258,8 +258,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/anrufbeantworter}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0050">PhoneBlock for Fritz!Box</p>
-				<p class="subtitle" data-tx="t0051">Switch off landline advertising calls!</p>
+				<p class="title" data-tx="t0050:c341be06">PhoneBlock for Fritz!Box</p>
+				<p class="subtitle" data-tx="t0051:1287f042">Switch off landline advertising calls!</p>
 			  </div>
 			</a>
 		</div>
@@ -267,8 +267,8 @@
 		<div class="cell">
 			<a class="card" th:href="@{/setup-android}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0052">PhoneBlock for Android</p>
-				<p class="subtitle" data-tx="t0053">Not installed yet? Then go for it!</p>
+				<p class="title" data-tx="t0052:9908b98c">PhoneBlock for Android</p>
+				<p class="subtitle" data-tx="t0053:94e91b90">Not installed yet? Then go for it!</p>
 			  </div>
 			</a>
 		</div>
@@ -277,34 +277,76 @@
 
 
 <th:block th:fragment="footer">
+
+<th:block th:unless="${inMobileApp}">
 <section class="section">
 	<div class="content">
-		<h2 data-tx="t0019">Get involved!</h2>
-		
-		<p data-tx="t0020">If you like PhoneBlock, please help spread the word and share it with your friends. The more people who take part, the less chance there is that you will still receive an advertising call!</p>
+		<h2 data-tx="t0019:65a3e5b0">Get involved!</h2>
+
+		<p data-tx="t0020:8fcfa323">If you like PhoneBlock, please help spread the word and share it with your friends. The more people who take part, the less chance there is that you will still receive an advertising call!</p>
 	</div>
 </section>
-  
+
 <footer class="footer">
 	<div class="content has-text-centered">
-		<p data-tx="t0021"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. The source code is licensed under <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. The website content is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
-		
-		<p data-tx="t0022"><strong>FRITZ!Box</strong> and <strong>FRITZ!OS</strong> are registered trademarks of <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> has no relation to this.</p>
+		<p data-tx="t0021:34a82d9d"><strong th:text="|PhoneBlock ${props.project.version}|" th:title="${props.maven.build.timestamp}"></strong> © 2025 by <a href="https://haumacher.de" target="_blank">Bernhard Haumacher</a>. The source code is licensed under <a href="https://opensource.org/licenses/GPL-3.0" target="_blank">GPL-3.0</a>. The website content is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY NC SA 4.0</a>.</p>
+
+		<p data-tx="t0022:a2362eaf"><strong>FRITZ!Box</strong> and <strong>FRITZ!OS</strong> are registered trademarks of <a target="_blank" th:href="@{/link/avm}">AVM</a>. <strong>PhoneBlock</strong> has no relation to this.</p>
 
 		<p>
-			<strong><a data-tx="t0023" th:href="@{/datenschutz}">Data protection - no tracking, no advertising, no cookies</a></strong><br/>
+			<strong><a data-tx="t0023:b2b65883" th:href="@{/datenschutz}">Data protection - no tracking, no advertising, no cookies</a></strong><br/>
 			<th:block th:unless="${#strings.equals(currentLang.tag, 'de')}">
-			<strong><a data-tx="t0058" th:href="@{link/deepl}">Translations from deepl.com, thank you!</a></strong><br/>
-			<strong><a data-tx="t0059" th:href="|${contextPath}/link/translations${template}|">Edit translations of this page</a></strong><br/>
+			<strong><a data-tx="t0058:9698970a" th:href="@{link/deepl}">Translations from deepl.com, thank you!</a></strong><br/>
+			<strong><a data-tx="t0059:99006217" th:href="|${contextPath}/link/translations${template}|">Edit translations of this page</a></strong><br/>
 			</th:block>
-			<strong><a data-tx="t0024" th:href="@{/usage}">Terms of use</a></strong><br/>
-			<strong><a data-tx="t0025" th:href="@{/impressum}">Imprint</a></strong>
+			<strong><a data-tx="t0024:95905892" th:href="@{/usage}">Terms of use</a></strong><br/>
+			<strong><a data-tx="t0025:9752b6bd" th:href="@{/impressum}">Imprint</a></strong>
 		</p>
 	</div>
 </footer>
+</th:block>
 
 <script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
 </th:block>
+
+<div th:fragment="mobileUsageNav">
+	<h2 class="mt-5" data-tx="t9001:7a902c3f">Further functions</h2>
+	<div class="buttons">
+		<a class="button is-link" th:href="@{/usage-view-calls}">
+			<span class="icon">
+				<i class="fas fa-phone"></i>
+			</span>
+			<span data-tx="t9002:d564f2b1">View call history</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-report-spam}">
+			<span class="icon">
+				<i class="fas fa-flag"></i>
+			</span>
+			<span data-tx="t9003:6045153a">Report SPAM numbers</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-manage-lists}">
+			<span class="icon">
+				<i class="fas fa-list"></i>
+			</span>
+			<span data-tx="t9004:fd642441">Manage blacklist/whitelist</span>
+		</a>
+		<a class="button is-link" th:href="@{/usage-search}">
+			<span class="icon">
+				<i class="fas fa-search"></i>
+			</span>
+			<span data-tx="t9005:a392f709">Search by number</span>
+		</a>
+	</div>
+
+	<div class="buttons mt-3">
+		<a class="button" th:href="@{/setup-android}">
+			<span class="icon">
+				<i class="fas fa-arrow-left"></i>
+			</span>
+			<span data-tx="t9006:d6954d15">Back to the installation</span>
+		</a>
+	</div>
+</div>
 
 </body>
 </html>

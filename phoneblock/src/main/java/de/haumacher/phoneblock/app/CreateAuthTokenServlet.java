@@ -1,6 +1,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
@@ -13,16 +15,38 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Servlet for requesting a fresh authorization token to use for API access.
+ * Servlet for requesting a fresh authorization token to use for API access from a mobile application.
+ *
+ * <p>
+ * Upon success, control flow is redirected to {@value #MOBILE_RESPONSE} with the token passed as
+ * {@value #TOKEN_PARAM} parameter. This URL should be redirected to the native app running on the
+ * mobile device.
+ * </p>
+ *
+ * <p>
+ * An optional {@value #TOKEN_LABEL} parameter can be provided to give the token a user-visible label that will
+ * be displayed in the settings pages.
+ * </p>
  */
 @WebServlet(urlPatterns = CreateAuthTokenServlet.CREATE_TOKEN)
 public class CreateAuthTokenServlet extends HttpServlet {
 
 	public static final String CREATE_TOKEN = "/create-token";
-	
+
+	public static final String MOBILE_LOGIN = "/mobile/login";
+
+	private static final String MOBILE_RESPONSE = "/mobile/response";
+
+	private static final String TOKEN_PARAM = "loginToken";
+
+	/**
+	 * Request/session parameter for device label in mobile token creation flow.
+	 */
+	public static final String TOKEN_LABEL = "tokenLabel";
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.sendRedirect(req.getContextPath() + "/mobile/login");
+		resp.sendRedirect(req.getContextPath() + MOBILE_LOGIN);
 	}
 	
 	@Override
@@ -30,15 +54,15 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		String user = LoginFilter.getAuthenticatedUser(req.getSession(false));
 		if (user == null) {
 			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			TemplateRenderer.getInstance(req).process("/mobile/login", req, resp);
+			TemplateRenderer.getInstance(req).process(MOBILE_LOGIN, req, resp);
 			return;
 		}
 
 		long now = System.currentTimeMillis();
 		DB db = DBService.getInstance();
-		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"));
-		
-		req.setAttribute("loginToken", loginToken.getToken());
-		TemplateRenderer.getInstance(req).process("/mobile/response", req, resp);
+		String label = req.getParameter(TOKEN_LABEL);
+		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"), label);
+
+		resp.sendRedirect(req.getContextPath() + MOBILE_RESPONSE + "?" + TOKEN_PARAM + "=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));
 	}
 }

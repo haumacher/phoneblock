@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.usage-view-calls.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:ef920377">Перегляд заблокованих та пропущених дзвінків</h1>
+
+		<p class="subtitle" data-tx="t0017:b712a2d2">PhoneBlock Mobile перевіряє всі вхідні дзвінки з невідомих номерів і показує, які з них були заблоковані, а які пройшли.</p>
+
+		<div class="notification is-info">
+			<p data-tx="t0018:adaa7b70"><strong>Важливо:</strong> Перевіряються тільки невідомі числа!</p>
+			<p class="mt-2" data-tx="t0019:bc97e5db">Дзвінки з номерів зі списку контактів ніколи не перевіряються і не з'являються у списку дзвінків PhoneBlock. Додаток обробляє лише номери, які не збережені у вашій телефонній книзі.</p>
+		</div>
+
+		<h2 data-tx="t0020:e57784a9">Історія дзвінків</h2>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<h3 data-tx="t0021:421afe63">Огляд усіх перевірених дзвінків</h3>
+				<figure class="image">
+					<img alt="Список підтверджених дзвінків" class="appscreen" data-tx="t0022:ac0eff7a" th:src="@{/assets/img/mobile/usage-1a-screened-calls.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0023:92689e13">Додаток показує всі дзвінки з невідомих номерів з відповідним статусом</p>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0024:9e00cfdd">Заблоковані спам-дзвінки</h3>
+				<figure class="image">
+					<img alt="Спам-дзвінок заблоковано" class="appscreen" data-tx="t0025:17a9c008" th:src="@{/assets/img/mobile/usage-1-spam-call-blocked.png}"/>
+				</figure>
+				<p class="has-text-centered mt-2" data-tx="t0026:945a4bfa">Заблоковані СПАМ-дзвінки відображаються з червоним символом та оцінкою СПАМ. Ви отримаєте повідомлення про блокування.</p>
+			</div>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0027:b69bb82">Які номери блокуються як спам?</h2>
+
+		<div class="columns">
+			<div class="column is-half">
+				<div class="notification is-danger">
+					<h3 class="has-text-white" data-tx="t0028:dcf71ac">СПАМ-номера (будуть заблоковані)</h3>
+					<p class="has-text-white mt-2" data-tx="t0029:c14f758e">Номер блокується як спам, якщо:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0030:b5992c16">у вас високий показник спаму в базі даних PhoneBlock</li>
+						<li data-tx="t0031:bbf61b78">Показник спаму перевищує встановлене вами порогове значення</li>
+						<li data-tx="t0032:496c5432">Вона у вашому особистому чорному списку (незалежно від оцінки)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0033:c8685fe7"><strong>Результат:</strong> Ваш телефон не дзвонить, дзвінок автоматично відхилено.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="notification is-success">
+					<h3 class="has-text-white" data-tx="t0034:541d506f">Легальні номери (пропускаються)</h3>
+					<p class="has-text-white mt-2" data-tx="t0035:1897773c">Число вважається легітимним, якщо:</p>
+					<ul class="has-text-white">
+						<li data-tx="t0036:3778d702">Відсутній у базі даних PhoneBlock</li>
+						<li data-tx="t0037:be800714">Він має низький показник спаму, нижчий за ваш поріг</li>
+						<li data-tx="t0038:dc6b0dd6">Вона у вашому особистому білому списку (ніколи не буде заблокована)</li>
+					</ul>
+					<p class="has-text-white mt-3" data-tx="t0039:17ec057c"><strong>Результат:</strong> Ваш телефон дзвонить нормально, дзвінок проходить.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="notification is-success mt-5">
+			<p><strong data-tx="t0015:4e725605">Як працює блокування?</strong></p>
+			<p class="mt-2" data-tx="t0016:e60d6bf3">PhoneBlock Mobile використовує службу CallScreeningService в Android для перевірки вхідних дзвінків до того, як вони надійдуть. Якщо номер знаходиться в базі даних спаму і перевищує встановлений вами поріг, дзвінок автоматично блокується.</p>
+		</div>
+
+		<h2 class="mt-5" data-tx="t0040:6ceaad40">Повідомлення про спам-номера з журналу дзвінків</h2>
+
+		<p data-tx="t0041:26708b3">Якщо ви отримали дзвінок з невідомого номера, який надійшов як легальний, але насправді виявився спамом, ви можете повідомити про це безпосередньо зі списку дзвінків:</p>
+
+		<div class="columns">
+			<div class="column is-half">
+				<h3 data-tx="t0042:3a12bdc6">Коли ви повинні повідомити номер?</h3>
+				<ul>
+					<li data-tx="t0043:b45d6f16">Номер ще не знаходиться в базі даних PhoneBlock (низький або відсутній показник спаму)</li>
+					<li data-tx="t0044:e2b6f50e">Дзвінок був явно небажаним (реклама, шахрайство тощо).</li>
+					<li data-tx="t0045:ba58fceb">Ви хочете попередити громаду про цей номер</li>
+					<li data-tx="t0046:53de68c0">Надалі номер буде заблоковано автоматично</li>
+				</ul>
+			</div>
+
+			<div class="column is-half">
+				<h3 data-tx="t0047:e06c49c2">Що відбувається у випадку повідомлення?</h3>
+				<ul>
+					<li data-tx="t0048:de129a8b">Номер <strong>автоматично додається до вашого чорного списку&lt;/x1</strong></li>
+					<li data-tx="t0049:57fadd54">Ви будете захищені від майбутніх дзвінків з цього номера</li>
+					<li data-tx="t0050:da8797c6">Ваше повідомлення поповнює базу даних PhoneBlock</li>
+					<li data-tx="t0051:1f62ed10">Інші користувачі отримують вигоду від вашого рейтингу</li>
+				</ul>
+			</div>
+		</div>
+
+		<p class="mt-4">
+			<a class="button is-link" th:href="@{/usage-report-spam}">
+				<span class="icon">
+					<i class="fas fa-flag"></i>
+				</span>
+				<span data-tx="t0052:b92c8498">До інструкції: Повідомляти про номери спаму</span>
+			</a>
+		</p>
+
+		<div class="notification is-warning mt-4">
+			<p><strong data-tx="t0053:460ad0c4">Це важливо:</strong></p>
+			<p class="mt-2" data-tx="t0054:7b4b4fa0">Якщо ви повідомляєте про номер як про СПАМ, він буде доданий до вашого особистого чорного списку і в майбутньому буде заблокований назавжди. Це рішення має пріоритет над рейтингом спільноти.</p>
+		</div>
+
+		<div th:replace="~{fragments/page :: mobileUsageNav}"></div>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -57,16 +57,20 @@ public class SettingsServlet extends HttpServlet {
 				case "lists":
 					updateLists(req, resp, userName);
 					return;
-					
+
 				case "deleteAPIKeys":
 					deleteAPIKeys(req, resp, userName);
 					return;
-					
+
 				case "createAPIKey":
 					createAPIKey(req, resp, userName);
 					return;
-					
-				default: 
+
+				case "renameAPIKey":
+					renameAPIKey(req, resp, userName);
+					return;
+
+				default:
 				forwardToSettings(req, resp, null);
 			}
 		}
@@ -108,11 +112,32 @@ public class SettingsServlet extends HttpServlet {
 					String key = entry.getKey();
 					if (key.startsWith(KEY_ID_PREFIX)) {
 						String id = key.substring(KEY_ID_PREFIX.length());
-						
+
 						users.deleteAuthToken(userId.longValue(), Long.parseLong(id));
 					}
 				}
-				
+
+				session.commit();
+			}
+		}
+		forwardToSettings(req, resp, "myAPIKeys");
+	}
+
+	private void renameAPIKey(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
+		String keyId = req.getParameter("keyId");
+		String newLabel = req.getParameter("newLabel");
+
+		if (keyId == null || newLabel == null || newLabel.isBlank()) {
+			forwardToSettings(req, resp, "myAPIKeys");
+			return;
+		}
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(userName);
+			if (userId != null) {
+				users.renameAuthToken(userId.longValue(), Long.parseLong(keyId), newLabel.trim());
 				session.commit();
 			}
 		}

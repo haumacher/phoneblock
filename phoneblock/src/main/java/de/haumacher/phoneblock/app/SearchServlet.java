@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,6 +43,7 @@ import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.I18N;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -214,8 +214,6 @@ public class SearchServlet extends HttpServlet {
 	 */
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req);
-
 		String query = req.getParameter("num");
 		if (query == null || query.isBlank()) {
 			req.setAttribute(NUMBER_ATTR, query);
@@ -223,18 +221,8 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 		
-		String dialPrefix;
-		if (userName == null) {
-			dialPrefix = LocationService.getInstance().getDialPrefix(req);
-		} else {
-			DB db = DBService.getInstance();
-			try (SqlSession session = db.openSession()) {
-				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
-				dialPrefix = settings.getDialPrefix();
-			}
-		}
-		
-		PhoneNumer number = extractNumber(query, dialPrefix);
+		String dialPrefix = lookupDialPrefix(req);
+		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
@@ -244,6 +232,21 @@ public class SearchServlet extends HttpServlet {
 		// Send to display page.
 		String phone = NumberAnalyzer.getPhoneId(number);
 		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+	}
+
+	private String lookupDialPrefix(HttpServletRequest req) {
+		String dialPrefix;
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			dialPrefix = LocationService.getInstance().getDialPrefix(req);
+		} else {
+			DB db = DBService.getInstance();
+			try (SqlSession session = db.openSession()) {
+				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
+				dialPrefix = settings.getDialPrefix();
+			}
+		}
+		return dialPrefix;
 	}
 	
 	@Override
@@ -260,18 +263,18 @@ public class SearchServlet extends HttpServlet {
 		boolean bot = isBot(req);
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
 
-		PhoneNumer number = extractNumber(query);
+		String dialPrefix = lookupDialPrefix(req);
+		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
 		
-		String phone = NumberAnalyzer.getPhoneId(number);
-		
-		if (!phone.equals(query)) {
+		String canonicalPhone = number.getZeroZero();
+		if (!canonicalPhone.equals(query)) {
 			// Normalize the URL in the browser.
-			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+			resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + canonicalPhone);
 			return;
 		}
 
@@ -282,14 +285,11 @@ public class SearchServlet extends HttpServlet {
 		try (SqlSession session = db.openSession()) {
 			String userName = LoginFilter.getAuthenticatedUser(req);
 			
-			String dialPrefix;
 			if (userName == null) {
 				minVotes = DB.MIN_VOTES;
-				dialPrefix = LocationService.getInstance().getDialPrefix(req);
 			} else {
 				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
 				minVotes = settings.getMinVotes();
-				dialPrefix = settings.getDialPrefix();
 			}
 			
 			Set<String> langs = new HashSet<>();
@@ -307,7 +307,7 @@ public class SearchServlet extends HttpServlet {
 	}
 
 	public static SearchResult analyze(String query, String userName, String dialPrefix) {
-		PhoneNumer number = extractNumber(query);
+		PhoneNumer number = NumberAnalyzer.extractNumber(query);
 		if (number == null) {
 			return null;
 		}
@@ -318,30 +318,13 @@ public class SearchServlet extends HttpServlet {
 				langs = Collections.singleton(Language.getDefault().tag);
 			} else {
 				Users users = session.getMapper(Users.class);
-				String lang = users.getLocale(userName);
+				String lang = users.getLang(userName);
 				dialPrefix = users.getDialPrefix(userName);
 				langs = Collections.singleton(lang);
 			}
 
 			return analyzeDb(db, session, number, dialPrefix, true, langs);
 		}
-	}
-
-	private static PhoneNumer extractNumber(String query) {
-		return extractNumber(query, NumberAnalyzer.GERMAN_DIAL_PREFIX);
-	}
-	
-	private static PhoneNumer extractNumber(String query, String dialPrefix) {
-		String rawPhoneNumber = NumberAnalyzer.normalizeNumber(query);
-		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
-			return null;
-		}
-		
-		PhoneNumer number = NumberAnalyzer.analyze(rawPhoneNumber, dialPrefix);
-		if (number == null) {
-			return null;
-		}
-		return number;
 	}
 
 	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
@@ -525,8 +508,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
 		
         Language lang = DefaultController.selectLanguage(req);
-		ResourceBundle bundle = ResourceBundle.getBundle("Messages", lang.locale);
-		
+
 		StringBuilder keywords = new StringBuilder();
 		keywords.append("Anrufe, Bewertung");
 		if (searchResult.getNumber().getShortcut() != null) {
@@ -541,7 +523,7 @@ public class SearchServlet extends HttpServlet {
 		
 		if (searchResult.getTopRating() != Rating.B_MISSED) {
 			keywords.append(", ");
-			keywords.append(bundle.getString(Ratings.getLabelKey(searchResult.getTopRating())));
+			keywords.append(I18N.getMessage(lang.locale, Ratings.getLabelKey(searchResult.getTopRating())));
 		}
 		
 		keywords.append(", ");
@@ -601,7 +583,7 @@ public class SearchServlet extends HttpServlet {
 				ratingBackground.append(',');
 				ratingBorder.append(',');
 			}
-			jsString(ratingLabels, bundle.getString(Ratings.getLabelKey(r)));
+			jsString(ratingLabels, I18N.getMessage(lang.locale, Ratings.getLabelKey(r)));
 
 			ratingData.append(ratings.getOrDefault(r, 0));
 

@@ -1,6 +1,8 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -104,20 +107,20 @@ public abstract class LoginFilter implements Filter {
 		if (authHeader != null) {
 			if (authHeader.startsWith(BEARER_AUTH)) {
 				String token = authHeader.substring(BEARER_AUTH.length());
-				
+
 				AuthToken authorization = db.checkAuthToken(token, System.currentTimeMillis(), req.getHeader("User-Agent"), false);
 				if (authorization != null) {
 					String userName = authorization.getUserName();
-					
+
 					if (checkTokenAuthorization(req, authorization)) {
 						LOG.info("Accepted bearer token {}...({}) for user {}.", token.substring(0, 16), token, authorization.getId(), userName);
-						
+
 						setUser(req, userName);
-						
+
 						loggedIn(req, resp, userName, chain);
 						return;
 					} else {
-						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.", 
+						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.",
 								req.getServletPath(), token.substring(0, 16), userName);
 					}
 				}
@@ -130,7 +133,31 @@ public abstract class LoginFilter implements Filter {
 				}
 			}
 		}
-		
+
+		// Check for token in URL parameter (for browser links from mobile app)
+		String tokenParam = req.getParameter("token");
+		if (tokenParam != null && !tokenParam.trim().isEmpty()) {
+			AuthToken authorization = db.checkAuthToken(tokenParam, System.currentTimeMillis(), req.getHeader("User-Agent"), false);
+			if (authorization != null) {
+				String userName = authorization.getUserName();
+
+				if (checkTokenAuthorization(req, authorization)) {
+					LOG.info("Accepted token parameter {}...({}) for user {}.", tokenParam.substring(0, 16), tokenParam, authorization.getId(), userName);
+
+					// Create session to avoid keeping token in URL
+					setSessionUser(req, userName);
+
+					// Redirect to same URL without token parameter to remove it from browser history
+					String redirectUrl = buildUrlWithoutTokenParameter(req);
+					resp.sendRedirect(redirectUrl);
+					return;
+				} else {
+					LOG.info("Access to {} with token parameter {}... rejected due to privilege mismatch for user {}.",
+							req.getServletPath(), tokenParam.substring(0, 16), userName);
+				}
+			}
+		}
+
 		requestLogin(req, resp, chain);
 	}
 
@@ -244,20 +271,59 @@ public abstract class LoginFilter implements Filter {
 
 	private static void setSessionUser(HttpSession session, String userName) {
 		session.setAttribute(AUTHENTICATED_USER_ATTR, userName);
-		
+
 		DB db = DBService.getInstance();
 		try (SqlSession tx = db.openSession()) {
 			Users users = tx.getMapper(Users.class);
-			String lang = users.getLocale(userName);
-			session.setAttribute(DefaultController.LANG_ATTR, DefaultController.selectLanguage(lang));
+			String lang = users.getLang(userName);
+			Language selectedLang = DefaultController.selectLanguage(lang);
+			session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
+			
+			LOG.debug("Initialized user session for '{}' in language '{}'.", userName, selectedLang);
 		}
 	}
 
-	/** 
+	/**
 	 * Adds the given user name to the current request.
 	 */
 	public static void setRequestUser(HttpServletRequest req, String userName) {
 		req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+	}
+
+	/**
+	 * Builds a redirect URL from the request without the token parameter.
+	 * Preserves all other query parameters and the request path.
+	 */
+	private static String buildUrlWithoutTokenParameter(HttpServletRequest req) {
+		StringBuilder url = new StringBuilder();
+		url.append(req.getContextPath());
+		url.append(req.getServletPath());
+
+		if (req.getPathInfo() != null) {
+			url.append(req.getPathInfo());
+		}
+
+		// Iterate through parameters and filter out the token
+		StringBuilder query = new StringBuilder();
+		for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+			String name = entry.getKey();
+			if (!"token".equals(name)) {
+				for (String value : entry.getValue()) {
+					if (query.length() > 0) {
+						query.append("&");
+					}
+					query.append(java.net.URLEncoder.encode(name, StandardCharsets.UTF_8))
+						 .append("=")
+						 .append(java.net.URLEncoder.encode(value, StandardCharsets.UTF_8));
+				}
+			}
+		}
+
+		if (query.length() > 0) {
+			url.append("?").append(query);
+		}
+
+		return url.toString();
 	}
 
 }

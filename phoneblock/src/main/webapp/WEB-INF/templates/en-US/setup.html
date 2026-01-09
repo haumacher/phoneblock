@@ -7,21 +7,21 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001">Installation as a telephone book</h1>
+		<h1 data-tx="t0001:3dfe1d89">Installation as a telephone book</h1>
 
 <th:block th:unless="${token}">
-		<p data-tx="t0002">To install the blocklist, you need a <a th:href="@{/link/fritzbox}">"FRITZ!Box" Internet router from AVM</a> and a PhoneBlock account. It does not necessarily have to be the latest model, but you should check whether the latest FRITZ!OS is installed on it (07.29 or newer). If this is not the case, use the following installation instructions to check whether your version already offers the necessary options.</p>
+		<p data-tx="t0002:10d70c8f">To install the blocklist, you need a <a th:href="@{/link/fritzbox}">"FRITZ!Box" Internet router from AVM</a> and a PhoneBlock account. It does not necessarily have to be the latest model, but you should check whether the latest FRITZ!OS is installed on it (07.29 or newer). If this is not the case, use the following installation instructions to check whether your version already offers the necessary options.</p>
 		
-		<p data-tx="t0003">Note: Due to technical limitations of the Fritz!Box, the entire block list cannot be loaded into a phone book. Therefore, setting up a <a th:href="@{/anrufbeantworter}">PhoneBlock answering machine</a> offers better protection against SPAM calls.</p>
+		<p data-tx="t0003:d62d702f">Note: Due to technical limitations of the Fritz!Box, the entire block list cannot be loaded into a phone book. Therefore, setting up a <a th:href="@{/anrufbeantworter}">PhoneBlock answering machine</a> offers better protection against SPAM calls.</p>
 		
 		<div class="columns" th:unless="${login}">
 		  <div class="column is-half is-offset-one-quarter">
 			<a th:href="@{/login(location='/setup')}">
-				<button class="button is-medium is-info is-fullwidth" data-tx="t0004">Create a PhoneBlock account</button>
+				<button class="button is-medium is-info is-fullwidth" data-tx="t0004:e5f7ac3b">Create a PhoneBlock account</button>
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0005" th:if="${login}">You are already logged in as <code dir="ltr" th:text="${userName}"></code>, great! You can get started right away.</p>
+		<p data-tx="t0005:d432c618" th:if="${login}">You are already logged in as <code dir="ltr" th:text="${userName}"></code>, great! You can get started right away.</p>
 </th:block>
 
 <div class="columns" th:if="${token}">
@@ -29,23 +29,23 @@
 	<div class="tile is-ancestor">
       <div class="tile is-parent">
       	<article class="tile is-child notification">
-	        <p class="title" data-tx="t0006">Your login details</p>
-	        <p class="subtitle" data-tx="t0007">You will need the following data for the installation.</p>
+	        <p class="title" data-tx="t0006:3c8661fc">Your login details</p>
+	        <p class="subtitle" data-tx="t0007:da814461">You will need the following data for the installation.</p>
 	        <div class="content">
 		
 				<div class="field">
-				  <label class="label" data-tx="t0008">Internet address of the CardDAV server</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0008:f48153ce">Internet address of the CardDAV server</label>
+				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034:3f7efe41" href="#" id="url_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
-				  <label class="label" data-tx="t0009">User name</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0009:548c40c1">User name</label>
+				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035:3f7efe41" id="login_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 				
 				<div class="field">
-				  <label class="label" data-tx="t0010">password</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
+				  <label class="label" data-tx="t0010:e99dee32">password</label>
+				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036:3f7efe41" href="#" id="passwd_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></div>
 				</div>
 			</div>
 		</article>
@@ -54,97 +54,104 @@
   </div>
 </div>
 		
-		<h2 data-tx="t0011">Log in to your FRITZ!Box</h2>
+		<h2 data-tx="t0011:68345496">Log in to your FRITZ!Box</h2>
 		
-		<p data-tx="t0012">For this to work, you must be connected to your WLAN at home or your computer must be connected directly to the FRITZ! The FRITZ!Box will first ask you for your password. If you have never logged in before, you will find this password on the bottom of the device.</p>
+		<p data-tx="t0012:2354f60">For this to work, you must be connected to your WLAN at home or your computer must be connected directly to the FRITZ! The FRITZ!Box will first ask you for your password. If you have never logged in before, you will find this password on the bottom of the device.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="http://fritz.box" target="_blank">
-				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013">Log in to FRITZ!Box</button>
+				<button class="button is-medium is-primary is-fullwidth" data-tx="t0013:d44f7d1">Log in to FRITZ!Box</button>
 			</a>
 		  </div>
 		</div>
 		
-		<h2 data-tx="t0014">Create a new "Blocklist" phone book</h2>
+		<h2 data-tx="t0014:1462db79">Create a new "Blocklist" phone book</h2>
 		
-		<p data-tx="t0015">In order for your FRITZ!Box to block spam calls, it needs its own phone book in which all numbers of unwanted callers are entered. Call this phone book "Blocklist". For this</p>
+		<p data-tx="t0015:60de307b">In order for your FRITZ!Box to block spam calls, it needs its own phone book in which all numbers of unwanted callers are entered. Call this phone book "Blocklist". For this</p>
 		
 		<ol>
-			<li data-tx="t0016">First navigate to the "Telephony" section,</li>
-			<li data-tx="t0017">select the "Phone book" menu item and</li>
-			<li data-tx="t0018">then click on the "New phone book" link.</li>
+			<li data-tx="t0016:ee677f2e">First navigate to the "Telephony" section,</li>
+			<li data-tx="t0017:bf3c833">select the "Phone book" menu item and</li>
+			<li data-tx="t0018:9545daeb">then click on the "New phone book" link.</li>
 		</ol>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Fritz!Box call list" class="image" data-tx="t0037" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
+			<img alt="Fritz!Box call list" class="image" data-tx="t0037:b9f34dc9" th:src="@{/assets/img/setup/02-navigate-to-addressbooks.png}"/>
 		  </div>
 		</div>
 		
-		<h2 data-tx="t0019">Enter the login details of your PhoneBlock account</h2>
+		<h2 data-tx="t0019:1d99d84a">Enter the login details of your PhoneBlock account</h2>
 		
-		<p data-tx="t0020">Now you need the login data of your PhoneBlock account.</p>
+		<p data-tx="t0020:9d799fdb">Now you need the login data of your PhoneBlock account.</p>
 
 		<ul>
-			<li data-tx="t0021"><span class="tag is-danger">1</span> give the phone book that is to be used as a blocklist the name <code dir="ltr">Blocklist</code>. You will need this name again for the next step.</li>
+			<li data-tx="t0021:4fe53af5"><span class="tag is-danger">11</span> give the phone book that is to be used as a blocklist the name <code dir="ltr">Blocklist</code>. You will need this name again for the next step.</li>
 
-			<li data-tx="t0022">Now select <span class="tag is-danger">2</span> the option <i>Use phone book of an online provider</i>.</li>
+			<li data-tx="t0022:fceb3cd7">Now select <span class="tag is-danger">22</span> the option <i>Use phone book of an online provider</i>.</li>
 
-			<li data-tx="t0023">Then you can select <span class="tag is-danger">3</span> the provider <i>CardDAV provider</i>.</li>
+			<li data-tx="t0023:1f3cec2">Then you can select <span class="tag is-danger">33</span> the provider <i>CardDAV provider</i>.</li>
 
-			<li data-tx="t0024">Almost done, now come the login data <span class="tag is-danger">4</span>. It is best to transfer them with Cut&amp;Paste to avoid typing errors! <ul>
-					<li> Enter the URL of the PhoneBlock address book in the field <i>Internet address of the CardDAV server</i>: <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042" href="#" id="url2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a> </li>
+			<li>
+				<div data-tx="t0045:bf8e4ca8">Almost done, now come the login data <span class="tag is-danger">44</span>. It is best to transfer them with Cut&amp;Paste to avoid typing errors!</div>
+				
+				<ul>
+					<li>
+						<span data-tx="t0046:73e19fbb">Enter the URL of the PhoneBlock address book in the <i>Internet address of the CardDAV server</i> field:</span>
+						<code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>
+					</li>
 
-					<li> Enter the user name <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043" href="#" id="login2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></th:block> that you received during <a th:href="@{/login(location='/settings')}">registration</a> in the field <i>Username</i>. </li>
+					<li data-tx="t0047:a4773f13">Enter the user name <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></th:block> that you received during <a th:href="@{/login(location='/settings')}">registration</a> in the <i>username</i> field.</li>
 
-					<li>The password<th:block th:unless="${token}"> that you received during <a th:href="@{/login(location='/settings')}">registration</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044" href="#" id="passwd2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>,</th:block> must now be entered in the <i>Password</i> field. </li>
-				    </ul></li>
+					<li data-tx="t0048:151291e0">The password<th:block th:unless="${token}"> that you received during <a th:href="@{/login(location='/settings')}">registration</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>,</th:block> must now be entered in the <i>password</i> field.</li>
+				</ul>
+			</li>
 
-			<li data-tx="t0025">Now you can confirm <span class="tag is-danger">5</span> the creation of the new phone book. Please note: Select <b>none of your phones</b> under "Phone assignment"! Otherwise you will only find SPAM callers in the contacts on your phone.</li>
+			<li data-tx="t0025:4dc0b0c8">Now you can confirm <span class="tag is-danger">55</span> the creation of the new phone book. Please note: Select <b>none of your phones</b> under "Phone assignment"! Otherwise you will only find SPAM callers in the contacts on your phone.</li>
 		</ul>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Create new address book" class="image" data-tx="t0038" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
+			<img alt="Create new address book" class="image" data-tx="t0038:50de9d04" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0026">Check whether your "Blocklist" has been created</h2>
+		<h2 data-tx="t0026:688d3d5a">Check whether your "Blocklist" has been created</h2>
 		
-		<p data-tx="t0027">If everything went well, then your FRITZ!Box has loaded all the numbers from the PhoneBlock blocklist. You should now have a new "Blocklist" phonebook in the "Telephony / Phonebook" section. If you select the "Blocklist" tab, you can see all the numbers of current spam callers.</p>
+		<p data-tx="t0027:6bd9c881">If everything went well, then your FRITZ!Box has loaded all the numbers from the PhoneBlock blocklist. You should now have a new "Blocklist" phonebook in the "Telephony / Phonebook" section. If you select the "Blocklist" tab, you can see all the numbers of current spam callers.</p>
 		
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Show retrieved blocklist" class="image" data-tx="t0039" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
+			<img alt="Show retrieved blocklist" class="image" data-tx="t0039:3d7cbd9f" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0028">Let the FRITZ!Box reject calls from the "Blocklist"</h2>
+		<h2 data-tx="t0028:7a66db10">Let the FRITZ!Box reject calls from the "Blocklist"</h2>
 		
-		<p data-tx="t0029">In the "Telephony / Call handling" section, you can now specify the new "Blocklist" phone book as the number range to be blocked.</p>			
+		<p data-tx="t0029:ffbbaf55">In the "Telephony / Call handling" section, you can now specify the new "Blocklist" phone book as the number range to be blocked.</p>			
 		
-		<p data-tx="t0030">Scroll down to the sub-item "Block number ranges" and click the "Add range" button.</p>
-
-		<div class="columns">
-		  <div class="column is-8 is-offset-2">
-			<img alt="Add new call barring" class="image" data-tx="t0040" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
-		  </div>
-		</div>
-		
-		<p data-tx="t0031">In the new screen, select the option "Phone book" in the selection for "Area" and select the newly created phone book "Blocklist" as the "Phone book" to be blocked.</p>
+		<p data-tx="t0030:2d9a1437">Scroll down to the sub-item "Block number ranges" and click the "Add range" button.</p>
 
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
-			<img alt="Block callers with a phone number in the blocklist" class="image" data-tx="t0041" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
+			<img alt="Add new call barring" class="image" data-tx="t0040:e5649829" th:src="@{/assets/img/setup/05-add-blocklist.png}"/>
 		  </div>
 		</div>
 		
-		<p data-tx="t0032">Perfect! You've completed the setup. Your phone should now ring much less frequently because of an unwanted caller. And if it does, you can easily silence the troublemaker for yourself and the entire PhoneBlock community:</p>
+		<p data-tx="t0031:56b8a409">In the new screen, select the option "Phone book" in the selection for "Area" and select the newly created phone book "Blocklist" as the "Phone book" to be blocked.</p>
+
+		<div class="columns">
+		  <div class="column is-8 is-offset-2">
+			<img alt="Block callers with a phone number in the blocklist" class="image" data-tx="t0041:a8687137" th:src="@{/assets/img/setup/06-create-blocklist.png}"/>
+		  </div>
+		</div>
+		
+		<p data-tx="t0032:8943dc0d">Perfect! You've completed the setup. Your phone should now ring much less frequently because of an unwanted caller. And if it does, you can easily silence the troublemaker for yourself and the entire PhoneBlock community:</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033">Block phone number</button></a>
+			<a th:href="@{/block}"><button class="button is-medium is-primary is-fullwidth" data-tx="t0033:fcebb7bf">Block phone number</button></a>
 		  </div>
 		</div>
 	</div>

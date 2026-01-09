@@ -10,4 +10,9 @@ other supported languages and then synthesizing language-specific templates from
 and the original German templates. 
 
 The tooling for automatic translation of templates and properties can be found here:
-https://github.com/haumacher/web-translate
+https://github.com/haumacher/auto-translate
+
+To trigger the translation, call the following target:
+
+```
+mvn 

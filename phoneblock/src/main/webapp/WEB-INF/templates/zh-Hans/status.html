@@ -7,30 +7,30 @@
 
 <section class="section">
 <div class="content">
-	<h1 data-tx="t0001">当前关于骚扰电话的报告</h1>
+	<h1 data-tx="t0001:54233bf1">当前关于骚扰电话的报告</h1>
 	
-	<p data-tx="t0002">如果安装了 PhoneBlock，您可以自动阻止不需要的电话<em></em>。</p>
+	<p data-tx="t0002:e2048063">如果安装了 PhoneBlock，您可以自动阻止不需要的电话<em></em>。</p>
 	
 	<div th:replace="~{fragments/page :: buttons}"></div>
 
-	<p data-tx="t0007">使用 PhoneBlock，您的手机在接到此类电话时会保持静音。每天都会增加几个号码。例如，在 FaceBook 上分享<a th:href="@{/}">PhoneBlock 页面</a>，让尽可能多的人加入进来，结束电话恐怖。</p>
+	<p data-tx="t0007:97c2301c">使用 PhoneBlock，您的手机在接到此类电话时会保持静音。每天都会增加几个号码。例如，在 FaceBook 上分享<a th:href="@{/}">PhoneBlock 页面</a>，让尽可能多的人加入进来，结束电话恐怖。</p>
 	
 	<th:block th:if="${searches.size &gt; 0}">
-		<h2 data-tx="t0008">当前搜索查询</h2> 
+		<h2 data-tx="t0008:3b3c411a">当前搜索查询</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0009">电话号码</th>
-					<th data-tx="t0010" title="自昨天起该号码的搜索次数">今天和昨天</th>
-					<th data-tx="t0011" title="该号码的搜索查询总数">总计</th>
-					<th data-tx="t0012">最后一次查询</th>
+					<th data-tx="t0009:f81244e7">电话号码</th>
+					<th data-tx="t0010:f517d764" title="自昨天起该号码的搜索次数">今天和昨天</th>
+					<th data-tx="t0011:85004b33" title="该号码的搜索查询总数">总计</th>
+					<th data-tx="t0012:753ee794">最后一次查询</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${searches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0013" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.count}"></td>
@@ -42,25 +42,25 @@
 	</th:block>
 
 	<th:block th:if="${reports.size &gt; 0}">
-		<h2 data-tx="t0014">过去一小时的垃圾邮件报告</h2> 
+		<h2 data-tx="t0014:2af91ce">过去一小时的垃圾邮件报告</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0015">电话号码</th>
-					<th data-tx="t0016" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
-					<th data-tx="t0017">已报告</th>
-					<th data-tx="t0018" title="首次报告号码的日期。">活跃至今</th>
+					<th data-tx="t0015:f81244e7">电话号码</th>
+					<th data-tx="t0016:f2d569ff" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
+					<th data-tx="t0017:280e5744">已报告</th>
+					<th data-tx="t0018:5417b564" title="首次报告号码的日期。">活跃至今</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${reports}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0019" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
-					<td data-tx="t0020"><th:block th:text="${(now - report.updated) / 1000 / 60}"></th:block>分钟前</td>
+					<td data-tx="t0020:4c93f3fb"><th:block th:text="${(now - report.updated) / 1000 / 60}"></th:block>分钟前</td>
 					
 					<td th:text="${report.added &gt; 0 ? #dates.format(#converters.fromEpoch(report.added)) : '-'}"></td>
 				</tr>
@@ -69,21 +69,21 @@
 	</th:block>
 
 	<th:block th:if="${newlyBlocked.size &gt; 0}">
-		<h2 data-tx="t0021">拦截列表中的最新条目</h2> 
+		<h2 data-tx="t0021:e093f8cf">拦截列表中的最新条目</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0022">电话号码</th>
-					<th data-tx="t0023" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
-					<th data-tx="t0024">最后投诉</th>
-					<th data-tx="t0025" title="首次报告号码的日期。">活跃至今</th>
+					<th data-tx="t0022:f81244e7">电话号码</th>
+					<th data-tx="t0023:f2d569ff" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
+					<th data-tx="t0024:eb93493c">最后投诉</th>
+					<th data-tx="t0025:5417b564" title="首次报告号码的日期。">活跃至今</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${newlyBlocked}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0026" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -95,21 +95,21 @@
 	</th:block>
 
 	<th:block th:if="${topSpammers.size &gt; 0}">
-		<h2 data-tx="t0027">当前的顶级垃圾邮件发送者</h2> 
+		<h2 data-tx="t0027:34e46216">当前的顶级垃圾邮件发送者</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0028">电话号码</th>
-					<th data-tx="t0029" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
-					<th data-tx="t0030">最后投诉</th>
-					<th data-tx="t0031" title="首次报告号码的日期。">活跃至今</th>
+					<th data-tx="t0028:f81244e7">电话号码</th>
+					<th data-tx="t0029:f2d569ff" title="号码越大，PhoneBlock 就越确定该号码是骚扰电话的来源。">信心</th>
+					<th data-tx="t0030:eb93493c">最后投诉</th>
+					<th data-tx="t0031:5417b564" title="首次报告号码的日期。">活跃至今</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${topSpammers}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0032" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.votes}"></td>
@@ -121,21 +121,21 @@
 	</th:block>
 
 	<th:block th:if="${topSearches.size &gt; 0}">
-		<h2 data-tx="t0033">搜索次数最多的号码</h2> 
+		<h2 data-tx="t0033:af2ec8f4">搜索次数最多的号码</h2> 
 
 		<table class="table">
 			<thead>
 				<tr>
-					<th data-tx="t0034">电话号码</th>
-					<th data-tx="t0035" title="该号码的搜索次数">搜索查询</th>
-					<th data-tx="t0036" title="该号码的垃圾邮件投票数">投票</th>
-					<th data-tx="t0037">最后一次查询</th>
+					<th data-tx="t0034:f81244e7">电话号码</th>
+					<th data-tx="t0035:80360dbb" title="该号码的搜索次数">搜索查询</th>
+					<th data-tx="t0036:993374fa" title="该号码的垃圾邮件投票数">投票</th>
+					<th data-tx="t0037:753ee794">最后一次查询</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="report : ${topSearches}">
 					<td>
-						<a data-onclick="showNumber" data-tx="t0038" th:href="@{/nums/{num}(num=${report.phone})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
+						<a data-onclick="showNumber" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" th:with="phoneInfo=${#converters.analyze(report.phone)}">☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></a>
 					</td>
 					
 					<td th:text="${report.searches}"></td>
@@ -146,9 +146,9 @@
 		</table>
 	</th:block>
 
-	<h2 data-tx="t0039">PhoneBlock 数据库</h2>
+	<h2 data-tx="t0039:198844bf">PhoneBlock 数据库</h2>
 
-	<p data-tx="t0040">已知垃圾邮件号码：<th:block th:text="${statistics['02-blocked']}"></th:block> blocklist 上的活动号码，<th:block th:text="${statistics['01-reported']}"></th:block>有投诉的号码。总计<th:block th:text="${status.totalVotes}"></th:block>用户报告，<th:block th:text="${status.archivedReports}"></th:block>疑似垃圾邮件的非活动号码。</p>
+	<p data-tx="t0040:99927fb8">已知垃圾邮件号码：<th:block th:text="${statistics['02-blocked']}"></th:block> blocklist 上的活动号码，<th:block th:text="${statistics['01-reported']}"></th:block>有投诉的号码。总计<th:block th:text="${status.totalVotes}"></th:block>用户报告，<th:block th:text="${status.archivedReports}"></th:block>疑似垃圾邮件的非活动号码。</p>
 </div>
 
 </section>
