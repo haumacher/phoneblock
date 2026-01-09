@@ -121,6 +121,7 @@ GPL-3.0
 
 ## Links
 
+- **PlayStore**: https://play.google.com/store/apps/details?id=de.haumacher.phoneblock_mobile
 - **PhoneBlock Website**: https://phoneblock.net
 - **Source Code**: https://github.com/haumacher/phoneblock
 - **Issues**: https://github.com/haumacher/phoneblock/issues
