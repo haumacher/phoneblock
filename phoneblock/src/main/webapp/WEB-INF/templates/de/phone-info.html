@@ -117,7 +117,7 @@
 	
 	<blockquote class="related-numbers">
 		<span th:each="related : ${relatedNumbers}">
-			<a data-onclick="showNumber" th:href="@{/nums/{other}(other=${related})}">☎ <th:block th:text="${related}"></th:block></a>
+			<a data-onclick="showNumber" th:href="@{/nums/{other}(other=${relatedInfo.zeroZero})}" th:with="relatedInfo=${#converters.analyze(related)}">☎ <th:block th:text="${related}"></th:block></a>
 		</span>
 	</blockquote>
 </th:block>	
@@ -303,8 +303,8 @@
 </th:block>
 
 	<nav aria-label="pagination" class="pagination is-centered" data-tx="t0049:44e35151" role="navigation">
-		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032:4b5534cb" th:href="@{/nums/{num}(num=${prev})}" th:if="${prev}">Vorherige Nummer</a>
-		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033:816aeabf" th:href="@{/nums/{num}(num=${next})}" th:if="${next}">Nächste Nummer</a>
+		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032:4b5534cb" th:href="@{/nums/{num}(num=${prevInfo.zeroZero})}" th:if="${prev}" th:with="prevInfo=${#converters.analyze(prev)}">Vorherige Nummer</a>
+		<a class="pagination-next" data-onclick="showNumber" data-tx="t0033:816aeabf" th:href="@{/nums/{num}(num=${nextInfo.zeroZero})}" th:if="${next}" th:with="nextInfo=${#converters.analyze(next)}">Nächste Nummer</a>
 	</nav>
 </div>
 </section>
