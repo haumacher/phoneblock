@@ -137,5 +137,11 @@
   "commentHint": "Voeg een notitie toe aan dit nummer",
   "save": "Sla",
   "commentUpdated": "Commentaar bijgewerkt",
-  "errorUpdatingComment": "Fout bij het bijwerken van de opmerking"
+  "errorUpdatingComment": "Fout bij het bijwerken van de opmerking",
+  "appearance": "Uiterlijk",
+  "themeMode": "Ontwerp",
+  "themeModeDescription": "Kies een licht of donker ontwerp",
+  "themeModeSystem": "Systeemstandaard",
+  "themeModeLight": "Licht",
+  "themeModeDark": "Donker"
 }

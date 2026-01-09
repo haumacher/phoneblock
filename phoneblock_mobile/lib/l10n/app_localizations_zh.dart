@@ -30,7 +30,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accepted => '已接受';
 
   @override
-  String votes(Object count) {
+  String votes(int count) {
     return '$count票数';
   }
 
@@ -59,7 +59,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get minSpamReports => '尽量减少垃圾邮件';
 
   @override
-  String minSpamReportsDescription(Object count) {
+  String minSpamReportsDescription(int count) {
     return '从 $count 信息开始，号码将被屏蔽';
   }
 
@@ -73,7 +73,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get minSpamReportsInRange => '在以下领域尽量减少垃圾邮件';
 
   @override
-  String minSpamReportsInRangeDescription(Object count) {
+  String minSpamReportsInRangeDescription(int count) {
     return '从$count信息开始，区域将被封锁';
   }
 
@@ -108,7 +108,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get donate => '捐赠';
 
   @override
-  String pendingCallsNotification(num count) {
+  String pendingCallsNotification(int count) {
     return '<x1>计数</x1';
   }
 
@@ -164,17 +164,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notLoggedIn => '尚未注册。请登录。';
 
   @override
-  String reportedAsLegitimate(Object phoneNumber) {
+  String reportedAsLegitimate(String phoneNumber) {
     return '$phoneNumber被报告为合法号码';
   }
 
   @override
-  String reportError(Object error) {
+  String reportError(String error) {
     return '报告时出错：<x1>错误</x1';
   }
 
   @override
-  String reportedAsSpam(Object phoneNumber) {
+  String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber被报告为垃圾邮件';
   }
 
@@ -221,12 +221,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get minReportsCount => '最少信息数量';
 
   @override
-  String callsBlockedAfterReports(Object count) {
+  String callsBlockedAfterReports(int count) {
     return '阻止来自 $count 信息的呼叫';
   }
 
   @override
-  String rangesBlockedAfterReports(Object count) {
+  String rangesBlockedAfterReports(int count) {
     return '从$count信息开始，区域将被封锁';
   }
 
@@ -267,7 +267,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get redirectingToSetup => '转发到设施...';
 
   @override
-  String tokenVerificationFailed(Object error) {
+  String tokenVerificationFailed(String error) {
     return '令牌验证失败：<x1>错误</x1';
   }
 
@@ -311,17 +311,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorSaving => '保存时出错';
 
   @override
-  String ratePhoneNumber(Object phoneNumber) {
+  String ratePhoneNumber(String phoneNumber) {
     return '费率 <x1> 电话号码</x1';
   }
 
   @override
-  String reportsCount(num count) {
+  String reportsCount(int count) {
     return '<x1>计数</x1';
   }
 
   @override
-  String legitimateReportsCount(num count) {
+  String legitimateReportsCount(int count) {
     return '<x1>计数</x1';
   }
 
@@ -329,12 +329,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noReports => '无信息';
 
   @override
-  String todayTime(Object time) {
+  String todayTime(String time) {
     return '今天，<x1>时间</x1';
   }
 
   @override
-  String yesterdayTime(Object time) {
+  String yesterdayTime(String time) {
     return '昨天，<x1>时间</x1';
   }
 
@@ -342,7 +342,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get callHistoryRetention => '通话记录存储';
 
   @override
-  String retentionPeriodDescription(num days) {
+  String retentionPeriodDescription(int days) {
     return '<x1>天数</x1';
   }
 
@@ -350,7 +350,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retentionInfinite => '保留所有通话';
 
   @override
-  String retentionDays(num days) {
+  String retentionDays(int days) {
     return '<x1>天数</x1';
   }
 
@@ -462,4 +462,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorUpdatingComment => '更新注释时出错';
+
+  @override
+  String get appearance => '外观';
+
+  @override
+  String get themeMode => '设计';
+
+  @override
+  String get themeModeDescription => '选择浅色或深色设计';
+
+  @override
+  String get themeModeSystem => '系统标准';
+
+  @override
+  String get themeModeLight => '灯光';
+
+  @override
+  String get themeModeDark => '黑暗';
 }

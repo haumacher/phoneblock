@@ -137,5 +137,11 @@
   "commentHint": "Tilføj en note til dette nummer",
   "save": "Gemme",
   "commentUpdated": "Kommentar opdateret",
-  "errorUpdatingComment": "Fejl ved opdatering af kommentar"
+  "errorUpdatingComment": "Fejl ved opdatering af kommentar",
+  "appearance": "Udseende",
+  "themeMode": "Design",
+  "themeModeDescription": "Vælg et lyst eller mørkt design",
+  "themeModeSystem": "Systemets standard",
+  "themeModeLight": "Lys",
+  "themeModeDark": "Mørk"
 }

@@ -137,5 +137,11 @@
   "commentHint": "Προσθέστε μια σημείωση σε αυτόν τον αριθμό",
   "save": "Αποθήκευση",
   "commentUpdated": "Σχόλιο ενημερωμένο",
-  "errorUpdatingComment": "Σφάλμα κατά την ενημέρωση του σχολίου"
+  "errorUpdatingComment": "Σφάλμα κατά την ενημέρωση του σχολίου",
+  "appearance": "Εμφάνιση",
+  "themeMode": "Σχεδιασμός",
+  "themeModeDescription": "Επιλέξτε ένα ανοιχτό ή σκούρο σχέδιο",
+  "themeModeSystem": "Πρότυπο συστήματος",
+  "themeModeLight": "Φως",
+  "themeModeDark": "Σκούρο"
 }

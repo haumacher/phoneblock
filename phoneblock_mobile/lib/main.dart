@@ -196,6 +196,18 @@ Future<int> getRetentionDays() async {
   return await platform.invokeMethod<int>("getRetentionDays") ?? retentionDefault;
 }
 
+/// Gets the theme mode preference.
+/// Returns 'system', 'light', or 'dark'. Defaults to 'system' if not set.
+Future<String> getThemeMode() async {
+  return await platform.invokeMethod<String>("getThemeMode") ?? 'system';
+}
+
+/// Sets the theme mode preference.
+/// Valid values are 'system', 'light', or 'dark'.
+Future<void> setThemeMode(String mode) async {
+  await platform.invokeMethod("setThemeMode", mode);
+}
+
 /// Makes an HTTP GET request to the PhoneBlock API with proper User-Agent header.
 /// Includes the Authorization header if a token is provided.
 Future<http.Response> callPhoneBlockApi(String url, {String? authToken}) async {
@@ -434,7 +446,59 @@ void main() async {
   final retentionDays = await getRetentionDays();
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
-  runApp(MaterialApp.router(
+  runApp(const PhoneBlockApp());
+}
+
+/// Main application widget with theme support.
+class PhoneBlockApp extends StatefulWidget {
+  const PhoneBlockApp({super.key});
+
+  @override
+  State<PhoneBlockApp> createState() => _PhoneBlockAppState();
+}
+
+class _PhoneBlockAppState extends State<PhoneBlockApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  /// Loads the theme mode from preferences.
+  Future<void> _loadThemeMode() async {
+    final mode = await getThemeMode();
+    if (!mounted) return;
+    setState(() {
+      _themeMode = _themeModeFromString(mode);
+    });
+  }
+
+  /// Updates the theme mode and saves it to preferences.
+  Future<void> updateThemeMode(String mode) async {
+    await setThemeMode(mode);
+    if (!mounted) return;
+    setState(() {
+      _themeMode = _themeModeFromString(mode);
+    });
+  }
+
+  /// Converts string to ThemeMode enum.
+  ThemeMode _themeModeFromString(String mode) {
+    switch (mode) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
       routerConfig: router,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -446,13 +510,27 @@ void main() async {
         Locale('de'),
         Locale('en'),
       ],
+      themeMode: _themeMode,
       theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          backgroundColor: const Color.fromARGB(255, 0, 209, 178),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 209, 178),
+          brightness: Brightness.light,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 0, 209, 178),
           foregroundColor: Colors.white,
         ),
       ),
-  ));
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 209, 178),
+          brightness: Brightness.dark,
+        ),
+      ),
+    );
+  }
 }
 
 /// Syncs screening results stored in SharedPreferences to the SQLite database.
@@ -2107,6 +2185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _blockRanges = true;
   int _minRangeVotes = 10;
   int _retentionDays = retentionDefault;
+  String _themeMode = 'system';
   bool _isLoading = true;
 
   @override
@@ -2127,9 +2206,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final blockRangesResult = await platform.invokeMethod("getBlockRanges");
       final minRangeVotesResult = await platform.invokeMethod("getMinRangeVotes");
       final retentionDaysResult = await platform.invokeMethod("getRetentionDays");
+      final themeModeResult = await getThemeMode();
 
       if (kDebugMode) {
-        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult");
+        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult");
       }
 
       setState(() {
@@ -2137,11 +2217,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _blockRanges = blockRangesResult ?? true;
         _minRangeVotes = minRangeVotesResult ?? 10;
         _retentionDays = retentionDaysResult ?? retentionDefault;
+        _themeMode = themeModeResult;
         _isLoading = false;
       });
 
       if (kDebugMode) {
-        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes");
+        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode");
       }
     } catch (e) {
       if (kDebugMode) {
@@ -2283,6 +2364,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
         print("Error saving retention days: $e");
       }
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorSaving),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Save theme mode setting.
+  Future<void> _saveThemeMode(String value) async {
+    if (kDebugMode) {
+      print("Saving themeMode: $value");
+    }
+    try {
+      await setThemeMode(value);
+      if (kDebugMode) {
+        print("Successfully saved themeMode to SharedPreferences: $value");
+      }
+      setState(() {
+        _themeMode = value;
+      });
+
+      // Update the app's theme mode
+      if (context.mounted) {
+        final appState = context.findAncestorStateOfType<_PhoneBlockAppState>();
+        appState?.updateThemeMode(value);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.settingSaved),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving theme mode: $e");
+      }
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.errorSaving),
@@ -2485,6 +2607,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     );
                   },
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.appearance,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  title: Text(context.l10n.themeMode),
+                  subtitle: Text(context.l10n.themeModeDescription),
+                  trailing: DropdownButton<String>(
+                    value: _themeMode,
+                    items: [
+                      DropdownMenuItem(
+                        value: 'system',
+                        child: Text(context.l10n.themeModeSystem),
+                      ),
+                      DropdownMenuItem(
+                        value: 'light',
+                        child: Text(context.l10n.themeModeLight),
+                      ),
+                      DropdownMenuItem(
+                        value: 'dark',
+                        child: Text(context.l10n.themeModeDark),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        _saveThemeMode(value);
+                      }
+                    },
+                  ),
                 ),
                 const Divider(),
                 Padding(

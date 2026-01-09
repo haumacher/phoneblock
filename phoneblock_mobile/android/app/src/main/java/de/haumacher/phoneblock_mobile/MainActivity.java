@@ -264,6 +264,15 @@ public class MainActivity extends FlutterActivity {
                 setAppVersion((String) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "getThemeMode":
+                result.success(getThemeMode());
+                break;
+
+            case "setThemeMode":
+                setThemeMode((String) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -386,6 +395,27 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("app_version", appVersion).apply();
         Log.d(MainActivity.class.getName(), "setAppVersion: " + appVersion);
+    }
+
+    /**
+     * Gets the theme mode preference.
+     * @return The theme mode: "system", "light", or "dark". Defaults to "system".
+     */
+    private String getThemeMode() {
+        SharedPreferences prefs = getPreferences(this);
+        String value = prefs.getString("theme_mode", "system");
+        Log.d(MainActivity.class.getName(), "getThemeMode: " + value);
+        return value;
+    }
+
+    /**
+     * Sets the theme mode preference.
+     * @param themeMode The theme mode to set: "system", "light", or "dark".
+     */
+    private void setThemeMode(String themeMode) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putString("theme_mode", themeMode).apply();
+        Log.d(MainActivity.class.getName(), "setThemeMode: " + themeMode);
     }
 
     public static SharedPreferences getPreferences(Context context) {

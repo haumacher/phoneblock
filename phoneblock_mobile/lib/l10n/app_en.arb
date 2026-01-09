@@ -137,5 +137,11 @@
   "commentHint": "Add a note about this number",
   "save": "Save",
   "commentUpdated": "Comment updated",
-  "errorUpdatingComment": "Error updating comment"
+  "errorUpdatingComment": "Error updating comment",
+  "appearance": "Appearance",
+  "themeMode": "Design",
+  "themeModeDescription": "Choose light or dark design",
+  "themeModeSystem": "System standard",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark"
 }

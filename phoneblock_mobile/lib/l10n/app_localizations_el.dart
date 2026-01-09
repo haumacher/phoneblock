@@ -31,7 +31,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get accepted => 'Αποδεκτό';
 
   @override
-  String votes(Object count) {
+  String votes(int count) {
     return '$count ψήφων';
   }
 
@@ -61,7 +61,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get minSpamReports => 'Ελάχιστα μηνύματα SPAM';
 
   @override
-  String minSpamReportsDescription(Object count) {
+  String minSpamReportsDescription(int count) {
     return 'Οι αριθμοί μπλοκάρονται από τα μηνύματα $count και μετά';
   }
 
@@ -76,7 +76,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get minSpamReportsInRange => 'Ελάχιστα μηνύματα SPAM στην περιοχή';
 
   @override
-  String minSpamReportsInRangeDescription(Object count) {
+  String minSpamReportsInRangeDescription(int count) {
     return 'Οι περιοχές μπλοκάρονται από τα μηνύματα $count και μετά';
   }
 
@@ -112,7 +112,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get donate => 'Δωρεές';
 
   @override
-  String pendingCallsNotification(num count) {
+  String pendingCallsNotification(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -174,17 +174,17 @@ class AppLocalizationsEl extends AppLocalizations {
   String get notLoggedIn => 'Δεν έχει καταχωρηθεί. Παρακαλώ συνδεθείτε.';
 
   @override
-  String reportedAsLegitimate(Object phoneNumber) {
+  String reportedAsLegitimate(String phoneNumber) {
     return '$phoneNumber αναφέρθηκε ως νόμιμος';
   }
 
   @override
-  String reportError(Object error) {
+  String reportError(String error) {
     return 'Σφάλμα κατά την αναφορά: $error';
   }
 
   @override
-  String reportedAsSpam(Object phoneNumber) {
+  String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber αναφέρθηκε ως SPAM';
   }
 
@@ -232,12 +232,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get minReportsCount => 'Ελάχιστος αριθμός μηνυμάτων';
 
   @override
-  String callsBlockedAfterReports(Object count) {
+  String callsBlockedAfterReports(int count) {
     return 'Οι κλήσεις μπλοκάρονται από $count μηνύματα';
   }
 
   @override
-  String rangesBlockedAfterReports(Object count) {
+  String rangesBlockedAfterReports(int count) {
     return 'Οι περιοχές μπλοκάρονται από τα μηνύματα $count και μετά';
   }
 
@@ -279,7 +279,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get redirectingToSetup => 'Προώθηση στην εγκατάσταση...';
 
   @override
-  String tokenVerificationFailed(Object error) {
+  String tokenVerificationFailed(String error) {
     return 'Η επαλήθευση του Token απέτυχε: $error';
   }
 
@@ -323,12 +323,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get errorSaving => 'Σφάλμα κατά την αποθήκευση';
 
   @override
-  String ratePhoneNumber(Object phoneNumber) {
+  String ratePhoneNumber(String phoneNumber) {
     return 'Βαθμολογία $phoneNumber';
   }
 
   @override
-  String reportsCount(num count) {
+  String reportsCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -339,7 +339,7 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String legitimateReportsCount(num count) {
+  String legitimateReportsCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -353,12 +353,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get noReports => 'Δεν υπάρχουν μηνύματα';
 
   @override
-  String todayTime(Object time) {
+  String todayTime(String time) {
     return 'Σήμερα, $time';
   }
 
   @override
-  String yesterdayTime(Object time) {
+  String yesterdayTime(String time) {
     return 'Χθες, $time';
   }
 
@@ -366,7 +366,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get callHistoryRetention => 'Αποθήκευση ιστορικού κλήσεων';
 
   @override
-  String retentionPeriodDescription(num days) {
+  String retentionPeriodDescription(int days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -380,7 +380,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get retentionInfinite => 'Κρατήστε όλες τις κλήσεις';
 
   @override
-  String retentionDays(num days) {
+  String retentionDays(int days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
       locale: localeName,
@@ -504,4 +504,22 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get errorUpdatingComment => 'Σφάλμα κατά την ενημέρωση του σχολίου';
+
+  @override
+  String get appearance => 'Εμφάνιση';
+
+  @override
+  String get themeMode => 'Σχεδιασμός';
+
+  @override
+  String get themeModeDescription => 'Επιλέξτε ένα ανοιχτό ή σκούρο σχέδιο';
+
+  @override
+  String get themeModeSystem => 'Πρότυπο συστήματος';
+
+  @override
+  String get themeModeLight => 'Φως';
+
+  @override
+  String get themeModeDark => 'Σκούρο';
 }

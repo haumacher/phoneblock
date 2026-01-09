@@ -137,5 +137,11 @@
   "commentHint": "Dodaj notatkę do tego numeru",
   "save": "Zapisz",
   "commentUpdated": "Komentarz zaktualizowany",
-  "errorUpdatingComment": "Błąd podczas aktualizacji komentarza"
+  "errorUpdatingComment": "Błąd podczas aktualizacji komentarza",
+  "appearance": "Wygląd",
+  "themeMode": "Projekt",
+  "themeModeDescription": "Wybierz jasny lub ciemny wzór",
+  "themeModeSystem": "Standard systemu",
+  "themeModeLight": "Światło",
+  "themeModeDark": "Ciemny"
 }

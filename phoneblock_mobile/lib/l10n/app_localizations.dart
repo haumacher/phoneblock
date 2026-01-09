@@ -168,7 +168,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{count} Stimmen'**
-  String votes(Object count);
+  String votes(int count);
 
   /// Menu item to view number on PhoneBlock website
   ///
@@ -222,7 +222,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Nummern werden ab {count} Meldungen blockiert'**
-  String minSpamReportsDescription(Object count);
+  String minSpamReportsDescription(int count);
 
   /// Block number ranges toggle
   ///
@@ -246,7 +246,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Bereiche werden ab {count} Meldungen blockiert'**
-  String minSpamReportsInRangeDescription(Object count);
+  String minSpamReportsInRangeDescription(int count);
 
   /// About section header
   ///
@@ -312,7 +312,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 neuer gefilterter Anruf} other{{count} neue gefilterte Anrufe}}'**
-  String pendingCallsNotification(num count);
+  String pendingCallsNotification(int count);
 
   /// Notification text to tap to open
   ///
@@ -420,19 +420,19 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{phoneNumber} als legitim gemeldet'**
-  String reportedAsLegitimate(Object phoneNumber);
+  String reportedAsLegitimate(String phoneNumber);
 
   /// Error reporting number
   ///
   /// In de, this message translates to:
   /// **'Fehler beim Melden: {error}'**
-  String reportError(Object error);
+  String reportError(String error);
 
   /// Successfully reported as spam
   ///
   /// In de, this message translates to:
   /// **'{phoneNumber} als SPAM gemeldet'**
-  String reportedAsSpam(Object phoneNumber);
+  String reportedAsSpam(String phoneNumber);
 
   /// Select spam category dialog title
   ///
@@ -522,13 +522,13 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Anrufe werden ab {count} Meldungen blockiert'**
-  String callsBlockedAfterReports(Object count);
+  String callsBlockedAfterReports(int count);
 
   /// Description for ranges blocked after reports
   ///
   /// In de, this message translates to:
   /// **'Bereiche werden ab {count} Meldungen blockiert'**
-  String rangesBlockedAfterReports(Object count);
+  String rangesBlockedAfterReports(int count);
 
   /// Welcome message in setup wizard
   ///
@@ -600,7 +600,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Token-Überprüfung fehlgeschlagen: {error}'**
-  String tokenVerificationFailed(Object error);
+  String tokenVerificationFailed(String error);
 
   /// Back to setup button
   ///
@@ -684,19 +684,19 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{phoneNumber} bewerten'**
-  String ratePhoneNumber(Object phoneNumber);
+  String ratePhoneNumber(String phoneNumber);
 
   /// Number of reports for a phone number
   ///
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Meldung} other{{count} Meldungen}}'**
-  String reportsCount(num count);
+  String reportsCount(int count);
 
   /// Number of legitimate reports for a phone number
   ///
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Legitim-Meldung} other{{count} Legitim-Meldungen}}'**
-  String legitimateReportsCount(num count);
+  String legitimateReportsCount(int count);
 
   /// No reports available for this number
   ///
@@ -708,13 +708,13 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Heute, {time}'**
-  String todayTime(Object time);
+  String todayTime(String time);
 
   /// Yesterday with time
   ///
   /// In de, this message translates to:
   /// **'Gestern, {time}'**
-  String yesterdayTime(Object time);
+  String yesterdayTime(String time);
 
   /// Call history retention setting title
   ///
@@ -726,7 +726,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{days, plural, =1{Anrufe 1 Tag behalten} other{Anrufe {days} Tage behalten}}'**
-  String retentionPeriodDescription(num days);
+  String retentionPeriodDescription(int days);
 
   /// Keep all calls option
   ///
@@ -738,7 +738,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{days, plural, =1{1 Tag} other{{days} Tage}}'**
-  String retentionDays(num days);
+  String retentionDays(int days);
 
   /// Infinite retention option
   ///
@@ -949,6 +949,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fehler beim Aktualisieren des Kommentars'**
   String get errorUpdatingComment;
+
+  /// Appearance section header
+  ///
+  /// In de, this message translates to:
+  /// **'Erscheinungsbild'**
+  String get appearance;
+
+  /// Theme mode setting label
+  ///
+  /// In de, this message translates to:
+  /// **'Design'**
+  String get themeMode;
+
+  /// Theme mode description
+  ///
+  /// In de, this message translates to:
+  /// **'Helles oder dunkles Design wählen'**
+  String get themeModeDescription;
+
+  /// System theme mode option
+  ///
+  /// In de, this message translates to:
+  /// **'Systemstandard'**
+  String get themeModeSystem;
+
+  /// Light theme mode option
+  ///
+  /// In de, this message translates to:
+  /// **'Hell'**
+  String get themeModeLight;
+
+  /// Dark theme mode option
+  ///
+  /// In de, this message translates to:
+  /// **'Dunkel'**
+  String get themeModeDark;
 }
 
 class _AppLocalizationsDelegate

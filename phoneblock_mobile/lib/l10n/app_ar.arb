@@ -137,5 +137,11 @@
   "commentHint": "أضف ملاحظة إلى هذا الرقم",
   "save": "الحفظ",
   "commentUpdated": "تم تحديث التعليق",
-  "errorUpdatingComment": "خطأ عند تحديث التعليق"
+  "errorUpdatingComment": "خطأ عند تحديث التعليق",
+  "appearance": "المظهر",
+  "themeMode": "التصميم",
+  "themeModeDescription": "اختر تصميماً فاتحاً أو غامقاً",
+  "themeModeSystem": "معيار النظام",
+  "themeModeLight": "خفيف",
+  "themeModeDark": "داكن"
 }

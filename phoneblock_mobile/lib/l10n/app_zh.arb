@@ -137,5 +137,11 @@
   "commentHint": "为该号码添加备注",
   "save": "节省",
   "commentUpdated": "评论已更新",
-  "errorUpdatingComment": "更新注释时出错"
+  "errorUpdatingComment": "更新注释时出错",
+  "appearance": "外观",
+  "themeMode": "设计",
+  "themeModeDescription": "选择浅色或深色设计",
+  "themeModeSystem": "系统标准",
+  "themeModeLight": "灯光",
+  "themeModeDark": "黑暗"
 }

@@ -768,5 +768,35 @@
   "errorUpdatingComment": "Fehler beim Aktualisieren des Kommentars",
   "@errorUpdatingComment": {
     "x-translated": "266a309b"
+  },
+  "appearance": "Erscheinungsbild",
+  "@appearance": {
+    "description": "Appearance section header",
+    "x-translated": "44fb3df6"
+  },
+  "themeMode": "Design",
+  "@themeMode": {
+    "description": "Theme mode setting label",
+    "x-translated": "cae35f06"
+  },
+  "themeModeDescription": "Helles oder dunkles Design wählen",
+  "@themeModeDescription": {
+    "description": "Theme mode description",
+    "x-translated": "37d6dcb2"
+  },
+  "themeModeSystem": "Systemstandard",
+  "@themeModeSystem": {
+    "description": "System theme mode option",
+    "x-translated": "45a832b1"
+  },
+  "themeModeLight": "Hell",
+  "@themeModeLight": {
+    "description": "Light theme mode option",
+    "x-translated": "bcb4afdd"
+  },
+  "themeModeDark": "Dunkel",
+  "@themeModeDark": {
+    "description": "Dark theme mode option",
+    "x-translated": "d7cc9006"
   }
 }

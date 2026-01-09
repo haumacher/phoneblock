@@ -137,5 +137,11 @@
   "commentHint": "Додайте примітку до цього номера",
   "save": "Зберегти",
   "commentUpdated": "Коментар оновлено",
-  "errorUpdatingComment": "Помилка при оновленні коментаря"
+  "errorUpdatingComment": "Помилка при оновленні коментаря",
+  "appearance": "Зовнішній вигляд",
+  "themeMode": "Дизайн",
+  "themeModeDescription": "Виберіть світлий або темний дизайн",
+  "themeModeSystem": "Системний стандарт",
+  "themeModeLight": "Світло",
+  "themeModeDark": "Темнота."
 }

@@ -137,5 +137,11 @@
   "commentHint": "Lägg till en anteckning till detta nummer",
   "save": "Spara",
   "commentUpdated": "Kommentar uppdaterad",
-  "errorUpdatingComment": "Fel vid uppdatering av kommentaren"
+  "errorUpdatingComment": "Fel vid uppdatering av kommentaren",
+  "appearance": "Utseende",
+  "themeMode": "Design",
+  "themeModeDescription": "Välj en ljus eller mörk design",
+  "themeModeSystem": "Systemstandard",
+  "themeModeLight": "Ljus",
+  "themeModeDark": "Mörk"
 }

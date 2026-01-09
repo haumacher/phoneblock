@@ -137,5 +137,11 @@
   "commentHint": "Añadir una nota a este número",
   "save": "Guardar",
   "commentUpdated": "Comentario actualizado",
-  "errorUpdatingComment": "Error al actualizar el comentario"
+  "errorUpdatingComment": "Error al actualizar el comentario",
+  "appearance": "Apariencia",
+  "themeMode": "Diseño",
+  "themeModeDescription": "Elige un diseño claro u oscuro",
+  "themeModeSystem": "Sistema estándar",
+  "themeModeLight": "Luz",
+  "themeModeDark": "Oscuro"
 }

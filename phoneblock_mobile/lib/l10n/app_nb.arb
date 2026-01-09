@@ -137,5 +137,11 @@
   "commentHint": "Legg til en merknad til dette nummeret",
   "save": "Spar",
   "commentUpdated": "Kommentar oppdatert",
-  "errorUpdatingComment": "Feil ved oppdatering av kommentaren"
+  "errorUpdatingComment": "Feil ved oppdatering av kommentaren",
+  "appearance": "Utseende",
+  "themeMode": "Design",
+  "themeModeDescription": "Velg et lyst eller mørkt design",
+  "themeModeSystem": "Systemstandard",
+  "themeModeLight": "Lys",
+  "themeModeDark": "Mørk"
 }
