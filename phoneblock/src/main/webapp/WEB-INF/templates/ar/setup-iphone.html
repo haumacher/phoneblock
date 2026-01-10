@@ -8,7 +8,20 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001:ab611ecc">تثبيت الآيفون</h1>
-		
+
+		<div class="notification is-info">
+			<p class="is-size-5"><strong data-tx="t0025:944f7a03">جديد: تطبيق PhoneBlock iPhone</strong></p>
+			<p class="mt-2" data-tx="t0026:41efd170">يجري حاليًا تطوير تطبيق PhoneBlock أصلي لـ iPhone! سيقدم التطبيق وظائف أكثر بكثير من تكامل CardDAV. يمكنك بالفعل المشاركة في الاختبار التجريبي:</p>
+			<p class="mt-3">
+				<a class="button is-primary" href="https://testflight.apple.com/join/Xb2kpjDs" rel="noopener" target="_blank">
+					<span class="icon">
+						<i class="fa-brands fa-apple"></i>
+					</span>
+					<span data-tx="t0027:6c59829">إلى تسجيل الاختبار التجريبي (TestFlight)</span>
+				</a>
+			</p>
+		</div>
+
 		<p data-tx="t0002:2b88b172">يضيف التثبيت دفتر عناوين PhoneBlock إلى جهات الاتصال الخاصة بك. إذا تلقيت مكالمة من رقم غير مرغوب فيه، فسيتم عرض ذلك على الفور، على سبيل المثال "SPAM: 03016637169". يمكنك أيضًا أن ترى على الفور في المكالمات الفائتة أنه لا يستحق معاودة الاتصال دون الحاجة إلى البحث عن الرقم على Google أولاً.</p>
 
 		<div class="notification is-warning">
@@ -17,7 +30,7 @@
 		</div>
 
 		<p data-tx="t0003:85b28045">يتم التثبيت في الخطوات التالية:</p>
-		
+
    		<ol>
    		<li><a data-tx="t0004:61875b8b" th:href="@{/login(location=${currentPage})}">قم بالتسجيل في PhoneBlock.</a></li>
    		<li data-tx="t0005:a31aa698">افتح "الإعدادات"&gt; "جهات الاتصال"&gt; "الحسابات".</li>
@@ -25,23 +38,23 @@
    		<li>
    			<div data-tx="t0007:77f669c0">أدخل بيانات الوصول الخاصة بك واضغط على "متابعة".</div>
    			<dl>
-				<dt><b data-tx="t0016:e4287b86">الخادم</b></dt>
-				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
+			<dt><b data-tx="t0016:e4287b86">الخادم</b></dt>
+			<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b data-tx="t0017:548c40c1">اسم المستخدم</b></dt>
-				<dd>
-				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}"> تسجيل الدخول</a> لمعرفة اسم المستخدم الخاص بك.</span>
-				</dd>
+			<dt><b data-tx="t0017:548c40c1">اسم المستخدم</b></dt>
+			<dd>
+			<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}"> تسجيل الدخول</a> لمعرفة اسم المستخدم الخاص بك.</span>
+			</dd>
 
-				<dt><b data-tx="t0019:e99dee32">كلمة السر</b></dt>
-				<dd>
-				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0020:aa45285a" th:unless="${token}">تم عرضها لك مباشرةً بعد تسجيل الدخول الأول، يمكنك إنشاء واحدة جديدة <a th:href="@{/settings}"> في الإعدادات.</a></span>
-				</dd>
+			<dt><b data-tx="t0019:e99dee32">كلمة السر</b></dt>
+			<dd>
+			<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0020:aa45285a" th:unless="${token}">تم عرضها لك مباشرةً بعد تسجيل الدخول الأول، يمكنك إنشاء واحدة جديدة <a th:href="@{/settings}"> في الإعدادات.</a></span>
+			</dd>
 
-				<dt><b data-tx="t0021:c1a59138">وصف</b></dt>
-				<dd data-tx="t0022:88251796">فون بلوك</dd>		
+			<dt><b data-tx="t0021:c1a59138">وصف</b></dt>
+			<dd data-tx="t0022:88251796">فون بلوك</dd>
    			</dl>
    		</li>
    		<li data-tx="t0008:e822af69">قم بتنشيط "جهات الاتصال" وانقر على "حفظ".</li>
@@ -49,9 +62,7 @@
    		</ol>
 
 		<p data-tx="t0010:943e8468">لم يعد لديك بيانات الوصول الخاصة بك في متناول اليد؟ لا يهم، ما عليك سوى <a th:href="@{/settings}"> إعادة تعيين كلمة المرور</a> في الإعدادات.</p>
-   		
-   		<p data-tx="t0011:e1cc12a8">يمكنك أيضًا العثور على <a th:href="@{/link/carddav-install}"> تعليمات مع الصور</a> في مكان آخر. في هذا الدليل، تحتاج فقط إلى استخدام بيانات الوصول إلى PhoneBlock في الخطوة التي يتم فيها إدخال الخادم واسم المستخدم وكلمة المرور (انظر أعلاه).</p>
-   		
+
    		<p data-tx="t0012:707461f9">إذا كنت تستخدم PhoneBlock فقط على جهاز iPhone، يمكنك أيضًا زيادة عدد الإدخالات <a th:href="@{/settings}"> في الإعدادات . إذا كانت هناك أي مشاكل في ذلك، يُرجى إعلامنا (انظر <a th:href="@{/faq}"> سؤال ).</a></a></p>
 	</div>
 </section>

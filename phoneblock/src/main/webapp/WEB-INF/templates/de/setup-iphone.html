@@ -8,7 +8,24 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001:ab611ecc">iPhone-Installation</h1>
-		
+
+		<div class="notification is-info">
+			<p class="is-size-5"><strong data-tx="t0025:944f7a03">Neu: PhoneBlock iPhone App</strong></p>
+			<p class="mt-2" data-tx="t0026:41efd170">
+				Es wird gerade eine native PhoneBlock App für iPhone entwickelt!
+				Die App wird deutlich mehr Funktionen bieten als die CardDAV-Integration.
+				Du kannst jetzt schon am Beta-Test teilnehmen:
+			</p>
+			<p class="mt-3">
+				<a class="button is-primary" href="https://testflight.apple.com/join/Xb2kpjDs" rel="noopener" target="_blank">
+					<span class="icon">
+						<i class="fa-brands fa-apple"></i>
+					</span>
+					<span data-tx="t0027:6c59829">Zur Beta-Test Anmeldung (TestFlight)</span>
+				</a>
+			</p>
+		</div>
+
 		<p data-tx="t0002:2b88b172">
 			Die Installation fügt das PhoneBlock-Adressbuch zu Deinen Kontakten hinzu. Wenn Du einen Anruf von einer
 			Spam-Nummer erhältst, wird dir das dann sofort angezeigt, z.B. "SPAM: 03016637169". Auch in den verpassten
@@ -28,7 +45,7 @@
 		<p data-tx="t0003:85b28045">
 			Die Installation läuft in den folgenden Schritten:
 		</p>
-		
+
    		<ol>
    		<li><a data-tx="t0004:61875b8b" th:href="@{/login(location=${currentPage})}">Melde Dich bei PhoneBlock an.</a></li>
    		<li data-tx="t0005:a31aa698">Öffne "Einstellungen" &gt; "Kontakte" &gt; "Accounts".</li>
@@ -36,42 +53,36 @@
    		<li>
    			<div data-tx="t0007:77f669c0">Gib deine Zugangsdaten ein und tippe auf "Weiter".</div>
    			<dl>
-				<dt><b data-tx="t0016:e4287b86">Server</b></dt>
-				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
+			<dt><b data-tx="t0016:e4287b86">Server</b></dt>
+			<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b data-tx="t0017:548c40c1">Benutzername</b></dt>
-				<dd>
-				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Melde Dich an</a>, um Deinen Benutzernamen zu sehen.</span>
-				</dd>
+			<dt><b data-tx="t0017:548c40c1">Benutzername</b></dt>
+			<dd>
+			<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Melde Dich an</a>, um Deinen Benutzernamen zu sehen.</span>
+			</dd>
 
-				<dt><b data-tx="t0019:e99dee32">Passwort</b></dt>
-				<dd>
-				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0020:aa45285a" th:unless="${token}">Wurde Dir direkt nach der ersten Anmeldung angezeigt, Du kannst <a th:href="@{/settings}">in den Einstellungen</a> ein neues generieren.</span>
-				</dd>
+			<dt><b data-tx="t0019:e99dee32">Passwort</b></dt>
+			<dd>
+			<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0020:aa45285a" th:unless="${token}">Wurde Dir direkt nach der ersten Anmeldung angezeigt, Du kannst <a th:href="@{/settings}">in den Einstellungen</a> ein neues generieren.</span>
+			</dd>
 
-				<dt><b data-tx="t0021:c1a59138">Beschreibung</b></dt>
-				<dd data-tx="t0022:88251796">PhoneBlock</dd>		
+			<dt><b data-tx="t0021:c1a59138">Beschreibung</b></dt>
+			<dd data-tx="t0022:88251796">PhoneBlock</dd>
    			</dl>
    		</li>
    		<li data-tx="t0008:e822af69">Aktiviere "Kontakte" und tippe auf "Sichern".</li>
 		<li data-tx="t0009:257d1868">Nun siehst du Anrufe mit "SPAM: ..." in deinem Kontaktbuch und beim Klingeln. Du siehst dann gleich, ob es sich lohn ran zu gehen oder zurück zu rufen.</li>
    		</ol>
 
-		<p data-tx="t0010:943e8468">			
-			Du hast die Zugangsdaten nicht mehr zur Hand? Macht nichts, einfach 
+		<p data-tx="t0010:943e8468">
+			Du hast die Zugangsdaten nicht mehr zur Hand? Macht nichts, einfach
 			<a th:href="@{/settings}">in den Einstellungen das Passwort zurücksetzen</a>.
 		</p>
-   		
-   		<p data-tx="t0011:e1cc12a8">
-   			Anderswo findest Du auch <a th:href="@{/link/carddav-install}">eine Anleitung mit Bildern</a>. 
-   			Bei dieser Anleitung musst Du lediglich in dem Schritt, in dem Server, Benutzername und Passwort eingegeben werden, 
-   			die PhoneBlock-Zugangsdaten benutzen (siehe oben).
-   		</p>
-   		
+
    		<p data-tx="t0012:707461f9">
-    		Wenn du PhoneBlock nur auf dem iPhone benutzt kannst du auch die Anzahl der Einträge <a th:href="@{/settings}">in den Einstellungen</a> höher stellen. 
+    		Wenn du PhoneBlock nur auf dem iPhone benutzt kannst du auch die Anzahl der Einträge <a th:href="@{/settings}">in den Einstellungen</a> höher stellen.
 			Sollte es damit Probleme geben, dann melde Dich bitte (siehe <a th:href="@{/faq}">FAQ</a>).
    		</p>
 	</div>

@@ -8,7 +8,20 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001:ab611ecc">Installation af iPhone</h1>
-		
+
+		<div class="notification is-info">
+			<p class="is-size-5"><strong data-tx="t0025:944f7a03">Nyt: PhoneBlock iPhone-app</strong></p>
+			<p class="mt-2" data-tx="t0026:41efd170">En indbygget PhoneBlock-app til iPhone er i øjeblikket under udvikling! Appen vil tilbyde betydeligt flere funktioner end CardDAV-integrationen. Du kan allerede nu deltage i betatesten:</p>
+			<p class="mt-3">
+				<a class="button is-primary" href="https://testflight.apple.com/join/Xb2kpjDs" rel="noopener" target="_blank">
+					<span class="icon">
+						<i class="fa-brands fa-apple"></i>
+					</span>
+					<span data-tx="t0027:6c59829">Til betatest-registreringen (TestFlight)</span>
+				</a>
+			</p>
+		</div>
+
 		<p data-tx="t0002:2b88b172">Installationen tilføjer PhoneBlock-adressebogen til dine kontakter. Hvis du modtager et opkald fra et spamnummer, vises det med det samme, f.eks. "SPAM: 03016637169". Du kan også straks se i de ubesvarede opkald, at det ikke er værd at ringe tilbage uden at skulle google nummeret først.</p>
 
 		<div class="notification is-warning">
@@ -17,7 +30,7 @@
 		</div>
 
 		<p data-tx="t0003:85b28045">Installationen foregår i følgende trin:</p>
-		
+
    		<ol>
    		<li><a data-tx="t0004:61875b8b" th:href="@{/login(location=${currentPage})}">Registrer dig hos PhoneBlock.</a></li>
    		<li data-tx="t0005:a31aa698">Åbn "Indstillinger" &gt; "Kontakter" &gt; "Konti".</li>
@@ -25,23 +38,23 @@
    		<li>
    			<div data-tx="t0007:77f669c0">Indtast dine adgangsdata, og tryk på "Fortsæt".</div>
    			<dl>
-				<dt><b data-tx="t0016:e4287b86">Server</b></dt>
-				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></dd>
+			<dt><b data-tx="t0016:e4287b86">Server</b></dt>
+			<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b data-tx="t0017:548c40c1">Brugernavn</b></dt>
-				<dd>
-				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
-				</dd>
+			<dt><b data-tx="t0017:548c40c1">Brugernavn</b></dt>
+			<dd>
+			<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Log ind</a> for at se dit brugernavn.</span>
+			</dd>
 
-				<dt><b data-tx="t0019:e99dee32">adgangskode</b></dt>
-				<dd>
-				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0020:aa45285a" th:unless="${token}">blev vist for dig direkte efter det første login, kan du generere en ny <a th:href="@{/settings}">i indstillingerne</a>.</span>
-				</dd>
+			<dt><b data-tx="t0019:e99dee32">adgangskode</b></dt>
+			<dd>
+			<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Kopier til udklipsholderen."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0020:aa45285a" th:unless="${token}">blev vist for dig direkte efter det første login, kan du generere en ny <a th:href="@{/settings}">i indstillingerne</a>.</span>
+			</dd>
 
-				<dt><b data-tx="t0021:c1a59138">Beskrivelse af</b></dt>
-				<dd data-tx="t0022:88251796">PhoneBlock</dd>		
+			<dt><b data-tx="t0021:c1a59138">Beskrivelse af</b></dt>
+			<dd data-tx="t0022:88251796">PhoneBlock</dd>
    			</dl>
    		</li>
    		<li data-tx="t0008:e822af69">Aktivér "Kontakter", og tryk på "Gem".</li>
@@ -49,9 +62,7 @@
    		</ol>
 
 		<p data-tx="t0010:943e8468">Har du ikke længere dine adgangsdata ved hånden? Det gør ikke noget, du skal bare <a th:href="@{/settings}">genindstille adgangskoden</a> i indstillingerne.</p>
-   		
-   		<p data-tx="t0011:e1cc12a8">Du kan også finde <a th:href="@{/link/carddav-install}">instruktioner med billeder</a> andre steder. I denne vejledning skal du kun bruge PhoneBlock-adgangsdataene i det trin, hvor serveren, brugernavnet og adgangskoden indtastes (se ovenfor).</p>
-   		
+
    		<p data-tx="t0012:707461f9">Hvis du kun bruger PhoneBlock på iPhone, kan du også øge antallet af poster <a th:href="@{/settings}">i indstillingerne</a>. Hvis der er problemer med dette, så lad os det vide (se <a th:href="@{/faq}">FAQ</a>).</p>
 	</div>
 </section>

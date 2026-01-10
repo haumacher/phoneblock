@@ -8,7 +8,20 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001:ab611ecc">Встановлення iPhone</h1>
-		
+
+		<div class="notification is-info">
+			<p class="is-size-5"><strong data-tx="t0025:944f7a03">Новинка: додаток PhoneBlock для iPhone</strong></p>
+			<p class="mt-2" data-tx="t0026:41efd170">Наразі розробляється нативний додаток PhoneBlock для iPhone! Додаток буде пропонувати значно більше функцій, ніж інтеграція з CardDAV. Ви вже можете взяти участь у бета-тестуванні:</p>
+			<p class="mt-3">
+				<a class="button is-primary" href="https://testflight.apple.com/join/Xb2kpjDs" rel="noopener" target="_blank">
+					<span class="icon">
+						<i class="fa-brands fa-apple"></i>
+					</span>
+					<span data-tx="t0027:6c59829">До реєстрації на бета-тест (TestFlight)</span>
+				</a>
+			</p>
+		</div>
+
 		<p data-tx="t0002:2b88b172">Під час встановлення адресна книга PhoneBlock буде додана до ваших контактів. Якщо вам зателефонують зі спам-номера, це одразу ж відобразиться на екрані, наприклад, "СПАМ: 03016637169". Також у пропущених дзвінках можна одразу побачити, що не варто передзвонювати, не погугливши номер.</p>
 
 		<div class="notification is-warning">
@@ -17,7 +30,7 @@
 		</div>
 
 		<p data-tx="t0003:85b28045">Встановлення виконується у наступні етапи:</p>
-		
+
    		<ol>
    		<li><a data-tx="t0004:61875b8b" th:href="@{/login(location=${currentPage})}">Зареєструйтеся в PhoneBlock.</a></li>
    		<li data-tx="t0005:a31aa698">Відкрийте "Налаштування" &gt; "Контакти" &gt; "Акаунти".</li>
@@ -25,23 +38,23 @@
    		<li>
    			<div data-tx="t0007:77f669c0">Введіть дані доступу та натисніть "Продовжити".</div>
    			<dl>
-				<dt><b data-tx="t0016:e4287b86">Сервер</b></dt>
-				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></dd>
+			<dt><b data-tx="t0016:e4287b86">Сервер</b></dt>
+			<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b data-tx="t0017:548c40c1">Ім'я користувача</b></dt>
-				<dd>
-				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Увійдіть</a>, щоб побачити своє ім'я користувача.</span>
-				</dd>
+			<dt><b data-tx="t0017:548c40c1">Ім'я користувача</b></dt>
+			<dd>
+			<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Увійдіть</a>, щоб побачити своє ім'я користувача.</span>
+			</dd>
 
-				<dt><b data-tx="t0019:e99dee32">пароль</b></dt>
-				<dd>
-				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0020:aa45285a" th:unless="${token}">Був показаний вам одразу після першого входу, ви можете згенерувати новий <a th:href="@{/settings}">в налаштуваннях</a>.</span>
-				</dd>
+			<dt><b data-tx="t0019:e99dee32">пароль</b></dt>
+			<dd>
+			<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0020:aa45285a" th:unless="${token}">Був показаний вам одразу після першого входу, ви можете згенерувати новий <a th:href="@{/settings}">в налаштуваннях</a>.</span>
+			</dd>
 
-				<dt><b data-tx="t0021:c1a59138">Опис проекту</b></dt>
-				<dd data-tx="t0022:88251796">PhoneBlock</dd>		
+			<dt><b data-tx="t0021:c1a59138">Опис проекту</b></dt>
+			<dd data-tx="t0022:88251796">PhoneBlock</dd>
    			</dl>
    		</li>
    		<li data-tx="t0008:e822af69">Активуйте "Контакти" і натисніть "Зберегти".</li>
@@ -49,9 +62,7 @@
    		</ol>
 
 		<p data-tx="t0010:943e8468">Ви більше не маєте під рукою своїх даних доступу? Не біда, просто <a th:href="@{/settings}">змініть пароль</a> у налаштуваннях.</p>
-   		
-   		<p data-tx="t0011:e1cc12a8">Ви також можете знайти <a th:href="@{/link/carddav-install}">інструкції з малюнками</a> деінде. У цьому посібнику вам потрібно використовувати дані доступу до PhoneBlock лише на етапі введення сервера, імені користувача та пароля (див. вище).</p>
-   		
+
    		<p data-tx="t0012:707461f9">Якщо ви використовуєте PhoneBlock тільки на iPhone, ви також можете збільшити кількість записів <a th:href="@{/settings}">в налаштуваннях</a>. Якщо з цим виникають проблеми, будь ласка, повідомте нам про це (див. <a th:href="@{/faq}">Запитання і відповіді</a>).</p>
 	</div>
 </section>

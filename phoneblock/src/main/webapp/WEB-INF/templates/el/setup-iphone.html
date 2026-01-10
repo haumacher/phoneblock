@@ -8,7 +8,20 @@
 <section class="section">
 	<div class="content">
 		<h1 data-tx="t0001:ab611ecc">Εγκατάσταση iPhone</h1>
-		
+
+		<div class="notification is-info">
+			<p class="is-size-5"><strong data-tx="t0025:944f7a03">Νέο: Εφαρμογή iPhone PhoneBlock</strong></p>
+			<p class="mt-2" data-tx="t0026:41efd170">Αυτή τη στιγμή αναπτύσσεται μια εγγενής εφαρμογή PhoneBlock για iPhone! Η εφαρμογή θα προσφέρει σημαντικά περισσότερες λειτουργίες από την ενσωμάτωση CardDAV. Μπορείτε ήδη να συμμετάσχετε στη δοκιμή beta:</p>
+			<p class="mt-3">
+				<a class="button is-primary" href="https://testflight.apple.com/join/Xb2kpjDs" rel="noopener" target="_blank">
+					<span class="icon">
+						<i class="fa-brands fa-apple"></i>
+					</span>
+					<span data-tx="t0027:6c59829">Στην εγγραφή για τη δοκιμή beta (TestFlight)</span>
+				</a>
+			</p>
+		</div>
+
 		<p data-tx="t0002:2b88b172">Η εγκατάσταση προσθέτει το βιβλίο διευθύνσεων του PhoneBlock στις επαφές σας. Εάν λάβετε μια κλήση από έναν αριθμό ανεπιθύμητης αλληλογραφίας, αυτό θα εμφανίζεται αμέσως, π.χ. "SPAM: 03016637169". Μπορείτε επίσης να δείτε αμέσως στις αναπάντητες κλήσεις ότι δεν αξίζει να καλέσετε ξανά, χωρίς να χρειαστεί να γκουγκλάρετε πρώτα τον αριθμό.</p>
 
 		<div class="notification is-warning">
@@ -17,7 +30,7 @@
 		</div>
 
 		<p data-tx="t0003:85b28045">Η εγκατάσταση εκτελείται με τα ακόλουθα βήματα:</p>
-		
+
    		<ol>
    		<li><a data-tx="t0004:61875b8b" th:href="@{/login(location=${currentPage})}">Εγγραφείτε στο PhoneBlock.</a></li>
    		<li data-tx="t0005:a31aa698">Ανοίξτε τις "Ρυθμίσεις" &gt; "Επαφές" &gt; "Λογαριασμοί".</li>
@@ -25,23 +38,23 @@
    		<li>
    			<div data-tx="t0007:77f669c0">Εισάγετε τα δεδομένα πρόσβασης και πατήστε "Συνέχεια".</div>
    			<dl>
-				<dt><b data-tx="t0016:e4287b86">Διακομιστής</b></dt>
-				<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></dd>
+			<dt><b data-tx="t0016:e4287b86">Διακομιστής</b></dt>
+			<dd><code dir="ltr" id="url">https://phoneblock.net<th:block th:text="${contextPath}"></th:block>/contacts/</code><a class="copyToClipboard" data-tx="t0013:3f7efe41" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></dd>
 
-				<dt><b data-tx="t0017:548c40c1">Όνομα χρήστη</b></dt>
-				<dd>
-				<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Συνδεθείτε</a> για να δείτε το όνομα χρήστη σας.</span>
-				</dd>
+			<dt><b data-tx="t0017:548c40c1">Όνομα χρήστη</b></dt>
+			<dd>
+			<th:block th:if="${userName}"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0014:3f7efe41" href="#" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0018:ae0111da" th:unless="${userName}"><a th:href="@{/login(location=${currentPage})}">Συνδεθείτε</a> για να δείτε το όνομα χρήστη σας.</span>
+			</dd>
 
-				<dt><b data-tx="t0019:e99dee32">κωδικός πρόσβασης</b></dt>
-				<dd>
-				<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
-				<span data-tx="t0020:aa45285a" th:unless="${token}">Εμφανίστηκε σε εσάς αμέσως μετά την πρώτη σύνδεση, μπορείτε να δημιουργήσετε ένα νέο <a th:href="@{/settings}">στις ρυθμίσεις</a>.</span>
-				</dd>
+			<dt><b data-tx="t0019:e99dee32">κωδικός πρόσβασης</b></dt>
+			<dd>
+			<th:block th:if="${token}"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0015:3f7efe41" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></th:block>
+			<span data-tx="t0020:aa45285a" th:unless="${token}">Εμφανίστηκε σε εσάς αμέσως μετά την πρώτη σύνδεση, μπορείτε να δημιουργήσετε ένα νέο <a th:href="@{/settings}">στις ρυθμίσεις</a>.</span>
+			</dd>
 
-				<dt><b data-tx="t0021:c1a59138">Περιγραφή του</b></dt>
-				<dd data-tx="t0022:88251796">PhoneBlock</dd>		
+			<dt><b data-tx="t0021:c1a59138">Περιγραφή του</b></dt>
+			<dd data-tx="t0022:88251796">PhoneBlock</dd>
    			</dl>
    		</li>
    		<li data-tx="t0008:e822af69">Ενεργοποιήστε την επιλογή "Επαφές" και πατήστε "Αποθήκευση".</li>
@@ -49,9 +62,7 @@
    		</ol>
 
 		<p data-tx="t0010:943e8468">Δεν έχετε πλέον τα δεδομένα πρόσβασής σας στο χέρι; Δεν πειράζει, απλά <a th:href="@{/settings}">επαναφέρετε τον κωδικό πρόσβασης</a> στις ρυθμίσεις.</p>
-   		
-   		<p data-tx="t0011:e1cc12a8">Μπορείτε επίσης να βρείτε <a th:href="@{/link/carddav-install}">οδηγίες με εικόνες</a> αλλού. Σε αυτόν τον οδηγό, χρειάζεται να χρησιμοποιήσετε τα δεδομένα πρόσβασης PhoneBlock μόνο στο βήμα όπου εισάγονται ο διακομιστής, το όνομα χρήστη και ο κωδικός πρόσβασης (βλ. παραπάνω).</p>
-   		
+
    		<p data-tx="t0012:707461f9">Εάν χρησιμοποιείτε το PhoneBlock μόνο στο iPhone, μπορείτε επίσης να αυξήσετε τον αριθμό των καταχωρήσεων <a th:href="@{/settings}">στις ρυθμίσεις</a>. Εάν υπάρχουν προβλήματα με αυτό, παρακαλούμε ενημερώστε μας (βλ. <a th:href="@{/faq}">FAQ</a>).</p>
 	</div>
 </section>
