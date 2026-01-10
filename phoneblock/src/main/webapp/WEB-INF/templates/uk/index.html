@@ -19,37 +19,80 @@
 
 		<h2 data-tx="t0007:20eeb709">Як працює PhoneBlock?</h2>
 
+		<h3 data-tx="t0029:e557e16d">Чорний список спільноти</h3>
+
 		<p data-tx="t0008:62e0be42">PhoneBlock - це список телефонних номерів, що підтримується спільнотою PhoneBlock, які підозрюються як спам. Автовідповідач <a th:href="@{/anrufbeantworter}">PhoneBlock</a> приймає дзвінки від абонентів зі списку блокування, так що ваш телефон буде мовчати під час цих дзвінків.</p>
-		
+
+		<h3 data-tx="t0030:397ca321">Альтернатива: телефонна книга FRITZ!Box</h3>
+
 		<p data-tx="t0009:149bd771">Крім того, ви також можете імпортувати чорний список у вигляді телефонної книги в інтернет-маршрутизатор "FRITZ!Box" і блокувати дзвінки з номерів з цієї <a th:href="@{/setup}">спеціальної телефонної книги</a>. Вам більше не потрібно вручну блокувати діапазони номерів, оскільки ваш Fritz!Box автоматично оновлює список заблокованих номерів щовечора. Як тільки номер додається до цього чорного списку, ваш FRITZ!Box автоматично відхиляє дзвінки з цього номера. Однак <a th:href="@{/anrufbeantworter}"> автовідповідач</a> є кращим рішенням, оскільки телефонна книга має обмежений розмір і не може вмістити всі номери в списку блокування.</p>
 
-		<p data-tx="t0010:c0b8328d">Якщо ви все ще отримуєте небажаний дзвінок, тому що номер ще не додано до списку заблокованих, ви можете легко заблокувати <a th:href="@{/block}">номер у вашій FRITZ!Box</a>. Для цього внесіть запис про небажаного абонента в адресну книгу PhoneBlock безпосередньо у вашому Fritz!Box Щойно ви це зробите, ваш FritzBox оновить список блокування для всіх членів спільноти PhoneBlock, і дзвінки з цього нового номера також будуть негайно заблоковані для всіх інших. Це трохи довше, ніж блокування номера безпосередньо у вашому Fritz!BoxТелефоні, але має перевагу в тому, що ви захищаєте всю спільноту PhoneBlock від <a th:href="@{/status}">подальших спам-дзвінків</a>.</p>
+		<h3 data-tx="t0031:6045153a">Повідомляти про номери спаму</h3>
+
+		<p data-tx="t0010:34e8fe06">Якщо ви все ще отримуєте небажаний дзвінок через те, що номер ще не додано до списку блокування, ви можете повідомити про нього і таким чином захистити всю спільноту PhoneBlock від <a th:href="@{/status}">подальших спам-дзвінків</a>. У вас є кілька варіантів: Повідомити про спам безпосередньо з програми PhoneBlock, знайти і оцінити номер на сайті або <a th:href="@{/block}">заблокувати номер у своїй FRITZ!Box</a>, зробивши запис в адресній книзі PhoneBlock. Як тільки ви повідомляєте про номер, він додається до списку заблокованих, і всі інші користувачі PhoneBlock автоматично отримують захист.</p>
 
 		<h2 data-tx="t0011:db4a3206">Які вимоги?</h2>
 
-		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016:778ea20f" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
-			</a>
-		</div>
-		
-		<p data-tx="t0012:21ca43c">PhoneBlock може блокувати небажані дзвінки або на <a th:href="@{/setup}">"стаціонарному телефоні"</a> у поєднанні з <a th:href="@{/link/fritzbox}">"інтернет-роутером FRITZ!Box" від AVM</a>, або показувати безпосередньо на вашому <a th:href="@{/setup-android}">мобільному телефоні</a>, чи є абонент потенційно небажаним.</p>
-		
-		<div class="columns">
-		  <div class="column is-half is-offset-one-quarter">
-			  <input id="context-path" th:value="${contextPath}" type="hidden"/>
-			<a class="button is-medium is-info is-fullwidth state-initial" href="#" id="search-fritzbox">
-				<span class="icon is-small is-left">
-					<i class="fa-solid fa-magnifying-glass"></i>
-				</span>
-				<span class="display-initial" data-tx="t0013:f1e2844f">Шукай Fritz!Box</span>
-				<span class="display-searching" data-tx="t0017:afb59ec0">Зачекай хвилинку...</span>
-				<span class="display-success" data-tx="t0018:a0e3f5f5">Знайшли, починайте!</span>
-				<span class="display-failed" data-tx="t0019:ab0e4be2">Не знайдено, що робити?</span>
-			</a>
-		  </div>
+		<p data-tx="t0020:537ee553">PhoneBlock підтримує різні платформи для блокування небажаних дзвінків:</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-router"></i>
+							</span>
+							<span data-tx="t0021:7852d066">ФРІЦ! Коробка!</span>
+						</span>
+					</h3>
+					<p data-tx="t0022:342d09aa">Блокуйте дзвінки на стаціонарний телефон у поєднанні з інтернет-роутером <a th:href="@{/link/fritzbox}">FRITZ!Box від AVM</a>. Або встановіть автовідповідач <a th:href="@{/anrufbeantworter}">PhoneBlock</a>, або імпортуйте список блокування як <a th:href="@{/setup}">телефонну книгу</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
+							</span>
+							<span data-tx="t0023:aecec7cb">Android</span>
+						</span>
+					</h3>
+					<p data-tx="t0024:b6746620">Блокуйте спам-дзвінки безпосередньо на своєму мобільному телефоні Android за допомогою програми <a th:href="@{/setup-android}">PhoneBlock</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
+							</span>
+							<span data-tx="t0025:b21bebc5">iPhone</span>
+						</span>
+					</h3>
+					<p data-tx="t0026:f5b65b16">Увімкніть список блокування PhoneBlock на вашому <a th:href="@{/setup-iphone}">iPhone</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-phone-office"></i>
+							</span>
+							<span data-tx="t0027:9faa419a">Телефонна система</span>
+						</span>
+					</h3>
+					<p data-tx="t0028:c76080b9">Інтегруйте PhoneBlock у вашу <a th:href="@{/setup-pbx}">телефонну систему</a> як список блоків.</p>
+				</div>
+			</div>
 		</div>
 
-		<p data-tx="t0014:d5f9ffe8">Не знаєте, чи є у вас Fritz!Box box? Якщо ви зараз перебуваєте вдома в бездротовій мережі, натисніть кнопку пошуку вище. PhoneBlock спробує знайти Fritz!Box box у вашому районі.</p>
 	</div>
 </section>
 

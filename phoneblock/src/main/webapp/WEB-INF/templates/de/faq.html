@@ -101,27 +101,50 @@
 		</p>
 
 		<h2 data-tx="t0017:95587c60">Kann ich PhoneBlock auf einem Android Mobiltelefon nutzen?</h2>
-		<p data-tx="t0018:2e86fd9d">
-			Ja, hier hast Du sogar zwei Optionen: (a) Das PhoneBlock-Adressbuch abonieren, oder (b) SpamBlocker 
-			einrichten und dort die PhoneBlock-Datenbank einbinden.
+		<p data-tx="t0057:bfbacbfb">
+			Ja, hier hast Du sogar drei Optionen: (a) Die <a th:href="@{/setup-android}">PhoneBlock Mobile App</a> installieren,
+			(b) das PhoneBlock-Adressbuch abonieren, oder (c) SpamBlocker einrichten und dort die PhoneBlock-Datenbank einbinden.
 		</p>
-		<p data-tx="t0019:dfe23488">
-			Wenn Du das <a th:href="@{/setup-android}">PhoneBlock-Adressbuch abonierst</a>, 
-			siehst Du einem Anruf direkt an, ob es sich lohnt, den Anruf anzunehmen oder bei einem verpassten Anruf 
+		<p data-tx="t0058:eaaf706b">
+			Die <a th:href="@{/setup-android}">PhoneBlock Mobile App</a> ist die einfachste Lösung: Sie blockiert
+			Spam-Anrufe automatisch direkt auf Deinem Android-Telefon. Die App nutzt die PhoneBlock-Datenbank, um
+			eingehende Anrufe zu prüfen und unerwünschte Anrufer basierend auf einem einstellbaren Schwellwert automatisch
+			abzuweisen. Du kannst alle blockierten und zugelassenen Anrufe in der App nachvollziehen.
+		</p>
+		<p data-tx="t0059:d1ef3c0b">
+			Wenn Du das PhoneBlock-Adressbuch abonierst,
+			siehst Du einem Anruf direkt an, ob es sich lohnt, den Anruf anzunehmen oder bei einem verpassten Anruf
 			zurückzurufen. Spam-Anrufe direkt abweisen ist darüber allerdings nicht möglich.
 		</p>
-		<p data-tx="t0020:f7ad0c77">
-			Wenn Du <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker installierst</a>, 
-			dann kannst Du dort die PhoneBlock-Datenbank einbinden. SpamBlocker kann dann bei einem Anruf die Nummer mit 
-			der PhoneBlock-Datenbank abgleichen und bei einem Treffer den Anruf direkt abweisen. 
-			<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> ist eine unabhängige App, bitte wende dich bei 
+		<p data-tx="t0060:f7ad0c77">
+			Wenn Du <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker installierst</a>,
+			dann kannst Du dort die PhoneBlock-Datenbank einbinden. SpamBlocker kann dann bei einem Anruf die Nummer mit
+			der PhoneBlock-Datenbank abgleichen und bei einem Treffer den Anruf direkt abweisen.
+			<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> ist eine unabhängige App, bitte wende dich bei
 			Problemen damit direkt an den Entwickler.
 		</p>
 		
 		<h2 data-tx="t0021:d7604318">Kann ich PhoneBlock auf einem iPhone nutzen?</h2>
-		<p data-tx="t0022:b923b50e"> 
-			Ja, mit dem iPhone geht das sogar ganz ohne Installation zusätzlicher Apps. Schau Dir hier die 
+		<p data-tx="t0022:b923b50e">
+			Ja, mit dem iPhone geht das sogar ganz ohne Installation zusätzlicher Apps. Schau Dir hier die
 			<a th:href="@{/setup-iphone}">Installationsanleitung</a> an.
+		</p>
+
+		<h2 data-tx="t0061:75b3a777">Wie oft wird die Blockliste auf dem iPhone aktualisiert?</h2>
+		<p data-tx="t0062:dc8ad532">
+			Die Aktualisierungshäufigkeit der PhoneBlock-Blockliste auf dem iPhone hängt vom Betriebssystem ab.
+			iOS synchronisiert CardDAV-Kontakte in der Regel automatisch, typischerweise etwa einmal pro Tag.
+			Der genaue Zeitpunkt und die Häufigkeit werden von iOS selbst bestimmt und können nicht direkt
+			beeinflusst werden.
+		</p>
+		<p data-tx="t0063:1d01cf50">
+			Du kannst die Synchronisation manuell anstoßen, indem Du in der Kontakte-App nach unten ziehst
+			("Pull-to-Refresh"). Dadurch wird eine sofortige Aktualisierung der PhoneBlock-Kontakte ausgelöst.
+		</p>
+		<p data-tx="t0064:3364db66">
+			Beachte: Im Gegensatz zur Fritz!Box, die jede Nacht zu einem zufälligen Zeitpunkt zwischen 0 und 6 Uhr
+			aktualisiert, hat iOS keine feste Aktualisierungszeit. Die Blockliste kann daher einige Stunden weniger
+			aktuell sein als bei anderen PhoneBlock-Installationsmethoden.
 		</p>
 
 		<h2 data-tx="t0023:f843a1a7" id="Error26">Meine FritzBox! meldet "Fehler 26" bei der Einrichtung</h2>

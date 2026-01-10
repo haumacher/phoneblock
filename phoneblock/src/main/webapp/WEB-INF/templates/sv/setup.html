@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">Ange det användarnamn <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a></th:block> som du fick vid <a th:href="@{/login(location='/settings')}">registreringen</a> i fältet <i>användarnamn</i>.</li>
 
-					<li data-tx="t0048:151291e0">Det lösenord<th:block th:unless="${token}"> som du fick vid <a th:href="@{/login(location='/settings')}">registreringen</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>,</th:block> måste nu anges i fältet <i>lösenord</i>.</li>
+					<li data-tx="t0048:fa88d639">Det lösenord<th:block th:unless="${token}"> som du fick vid <a th:href="@{/login(location='/settings')}">registreringen</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Kopiera till urklipp."><i class="fa-solid fa-copy"></i></a>,</th:block> måste nu anges i fältet <i>Lösenord</i>. Om du inte längre hittar ditt lösenord kan du återställa det i <a th:href="@{/settings/#password}">inställningar</a>.</li>
 				</ul>
 			</li>
 

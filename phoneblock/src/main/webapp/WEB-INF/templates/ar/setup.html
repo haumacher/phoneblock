@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">أدخل اسم المستخدم <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"> الذي تلقيته أثناء <a th:href="@{/login(location='/settings')}">التسجيل في الحقل <i>اسم المستخدم.</i></a></i></a></th:block></li>
 
-					<li data-tx="t0048:151291e0">يجب الآن إدخال كلمة المرور <th:block th:unless="${token}"> التي تلقيتها أثناء <a th:href="@{/login(location='/settings')}"> التسجيل، ، ، <th:block th:if="${token}">، ، ، ، <code dir="ltr" id="passwd2" th:text="${token}">، <a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="نسخ إلى الحافظة.">، ، ، <i class="fa-solid fa-copy"> في الحقل <i> كلمة المرور .</i></i></a></code></th:block></a></th:block></li>
+					<li data-tx="t0048:fa88d639">يجب الآن إدخال كلمة المرور<th:block th:unless="${token}"> التي تلقيتها أثناء <a th:href="@{/login(location='/settings')}"> التسجيل، <th:block th:if="${token}">، <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>، في الحقل <i>كلمة المرور. إذا لم يعد بإمكانك العثور على كلمة المرور الخاصة بك، يمكنك إعادة تعيينها في <a th:href="@{/settings/#password}"> الإعدادات.</a></i></th:block></a></th:block></li>
 				</ul>
 			</li>
 

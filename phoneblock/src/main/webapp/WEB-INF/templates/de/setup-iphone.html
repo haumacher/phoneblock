@@ -10,10 +10,20 @@
 		<h1 data-tx="t0001:ab611ecc">iPhone-Installation</h1>
 		
 		<p data-tx="t0002:2b88b172">
-			Die Installation fügt das PhoneBlock-Adressbuch zu Deinen Kontakten hinzu. Wenn Du einen Anruf von einer 
-			Spam-Nummer erhältst, wird dir das dann sofort angezeigt, z.B. "SPAM: 03016637169". Auch in den verpassten 
-			Anrufen siehst Du gleich, dass sich hier ein Rückruf nicht lohnt, ohne erst die Nummer zu googlen. 
+			Die Installation fügt das PhoneBlock-Adressbuch zu Deinen Kontakten hinzu. Wenn Du einen Anruf von einer
+			Spam-Nummer erhältst, wird dir das dann sofort angezeigt, z.B. "SPAM: 03016637169". Auch in den verpassten
+			Anrufen siehst Du gleich, dass sich hier ein Rückruf nicht lohnt, ohne erst die Nummer zu googlen.
 		</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0023:f940709d"><strong>Hinweis:</strong> Bei dieser Methode werden alle SPAM-Nummern der Blocklist (mehrere tausend Einträge)
+			als Kontakte in Dein iPhone-Adressbuch synchronisiert. Das ist normal und notwendig, damit die SPAM-Kennzeichnung
+			beim Anruf funktioniert. Die SPAM-Einträge erscheinen in Deiner Kontaktliste, können aber nicht einzeln gelöscht
+			werden, ohne die gesamte PhoneBlock-Synchronisation zu entfernen.</p>
+			<p class="mt-2" data-tx="t0024:f5b69b15">Falls Dich die vielen SPAM-Einträge in Deinem Adressbuch stören, kannst Du in den
+			<a th:href="@{/settings}">Einstellungen</a> die Anzahl der synchronisierten Einträge reduzieren.
+			Beachte aber, dass damit auch der Schutz vor SPAM-Anrufen eingeschränkt wird.</p>
+		</div>
 
 		<p data-tx="t0003:85b28045">
 			Die Installation läuft in den folgenden Schritten:

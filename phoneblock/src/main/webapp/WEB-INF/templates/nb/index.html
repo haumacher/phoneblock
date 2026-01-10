@@ -19,37 +19,80 @@
 
 		<h2 data-tx="t0007:20eeb709">Hvordan fungerer PhoneBlock?</h2>
 
+		<h3 data-tx="t0029:e557e16d">Fellesskapets svarteliste</h3>
+
 		<p data-tx="t0008:62e0be42">PhoneBlock er en liste som vedlikeholdes av PhoneBlock-fellesskapet over telefonnumre som mistenkes for å være spam. <a th:href="@{/anrufbeantworter}">PhoneBlock-telefonsvareren</a> aksepterer deretter anrop fra innringere på blokkeringslisten, slik at telefonen din forblir lydløs for disse anropene.</p>
-		
+
+		<h3 data-tx="t0030:397ca321">Alternativ: FRITZ!Box telefonkatalog</h3>
+
 		<p data-tx="t0009:149bd771">Alternativt kan du også importere svartelisten som en telefonbok til internettruteren "FRITZ!Box" og blokkere anrop fra numre i denne <a th:href="@{/setup}">spesielle telefonboken</a>. Du trenger ikke lenger å blokkere nummerserier manuelt, fordi Fritz!Boxen automatisk oppdaterer den blokkerte listen hver kveld. Så snart et nummer legges til i denne svartelisten, avviser FRITZ!Boxen automatisk anrop med dette nummeret. <a th:href="@{/anrufbeantworter}">Telefonsvareren</a> er imidlertid en bedre løsning fordi en telefonbok er begrenset i størrelse og ikke kan inneholde alle numrene i blokkeringslisten.</p>
 
-		<p data-tx="t0010:c0b8328d">Hvis du likevel mottar et uønsket anrop fordi nummeret ennå ikke er lagt til i den blokkerte listen, kan du enkelt blokkere <a th:href="@{/block}">nummeret i FRITZ!Box</a>. Dette gjør du ved å legge inn den uønskede innringeren i PhoneBlock-adresseboken direkte i Fritz!Box Så snart du har gjort dette, vil FrizBoxen din oppdatere blokkeringslisten for alle medlemmer av PhoneBlock-fellesskapet, og anrop fra dette nye nummeret vil også bli blokkert umiddelbart for alle andre. Dette er litt mer tidkrevende enn å blokkere nummeret direkte i Fritz!BoxPhone, men har den fordelen at du beskytter hele PhoneBlock-fellesskapet mot <a th:href="@{/status}">flere spam-anrop</a>.</p>
+		<h3 data-tx="t0031:6045153a">Rapporter SPAM-nummer</h3>
+
+		<p data-tx="t0010:34e8fe06">Hvis du likevel mottar et uønsket anrop fordi nummeret ennå ikke er lagt til i blokkeringslisten, kan du rapportere nummeret og dermed beskytte hele PhoneBlock-fellesskapet mot <a th:href="@{/status}">flere spam-anrop</a>. Du har flere alternativer: Rapporter SPAM direkte fra PhoneBlock-appen, søk og vurder nummeret på nettstedet, eller <a th:href="@{/block}">blokker nummeret i FRITZ!Box</a> ved å opprette en oppføring i PhoneBlock-adresseboken. Så snart et nummer rapporteres, legges det til i den blokkerte listen, og alle andre PhoneBlock-brukere blir automatisk beskyttet.</p>
 
 		<h2 data-tx="t0011:db4a3206">Hva er kravene?</h2>
 
-		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz!Box 7590" data-tx="t0016:778ea20f" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
-			</a>
-		</div>
-		
-		<p data-tx="t0012:21ca43c">PhoneBlock kan blokkere uønskede anrop enten på <a th:href="@{/setup}">"fasttelefonen"</a> i forbindelse med en <a th:href="@{/link/fritzbox}">"FRITZ!Box" Internett-ruter fra AVM</a>, eller vise direkte på <a th:href="@{/setup-android}">mobiltelefonen</a> om en innringer er potensielt uønsket.</p>
-		
-		<div class="columns">
-		  <div class="column is-half is-offset-one-quarter">
-			  <input id="context-path" th:value="${contextPath}" type="hidden"/>
-			<a class="button is-medium is-info is-fullwidth state-initial" href="#" id="search-fritzbox">
-				<span class="icon is-small is-left">
-					<i class="fa-solid fa-magnifying-glass"></i>
-				</span>
-				<span class="display-initial" data-tx="t0013:f1e2844f">Søk i Fritz!Box</span>
-				<span class="display-searching" data-tx="t0017:afb59ec0">Vent nå litt...</span>
-				<span class="display-success" data-tx="t0018:a0e3f5f5">Fant den, sett i gang!</span>
-				<span class="display-failed" data-tx="t0019:ab0e4be2">Ikke funnet, hva skal jeg gjøre?</span>
-			</a>
-		  </div>
+		<p data-tx="t0020:537ee553">PhoneBlock støtter ulike plattformer for blokkering av uønskede anrop:</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-router"></i>
+							</span>
+							<span data-tx="t0021:7852d066">FRITZ!Box</span>
+						</span>
+					</h3>
+					<p data-tx="t0022:342d09aa">Blokker anrop på fasttelefonen i forbindelse med en <a th:href="@{/link/fritzbox}">FRITZ!Box Internett-ruter fra AVM</a>. Installer enten <a th:href="@{/anrufbeantworter}">PhoneBlock-telefonsvareren</a> eller importer blokkeringslisten som en <a th:href="@{/setup}">telefonbok</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
+							</span>
+							<span data-tx="t0023:aecec7cb">Android</span>
+						</span>
+					</h3>
+					<p data-tx="t0024:b6746620">Blokker spam-anrop direkte på Android-mobiltelefonen din med <a th:href="@{/setup-android}">PhoneBlock-appen</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
+							</span>
+							<span data-tx="t0025:b21bebc5">iPhone</span>
+						</span>
+					</h3>
+					<p data-tx="t0026:f5b65b16">Inkluder PhoneBlock-blokklisten på din <a th:href="@{/setup-iphone}">iPhone</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-phone-office"></i>
+							</span>
+							<span data-tx="t0027:9faa419a">Telefonsystem</span>
+						</span>
+					</h3>
+					<p data-tx="t0028:c76080b9">Integrer PhoneBlock i ditt <a th:href="@{/setup-pbx}">telefonsystem</a> som en blokkeringsliste.</p>
+				</div>
+			</div>
 		</div>
 
-		<p data-tx="t0014:d5f9ffe8">Er du usikker på om du har en Fritz!Box-boks? Hvis du for øyeblikket er hjemme i WLan, kan du trykke på søkeknappen ovenfor. PhoneBlock vil da prøve å finne en Fritz!Box boks i ditt nabolag.</p>
 	</div>
 </section>
 

@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">Inscris le nom d'utilisateur <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></th:block> que tu as reçu lors de ton <a th:href="@{/login(location='/settings')}">enregistrement</a> dans le champ <i>nom d'utilisateur</i>.</li>
 
-					<li data-tx="t0048:151291e0">Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de <a th:href="@{/login(location='/settings')}">l'inscription</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>,</th:block> tu dois maintenant encore le saisir dans le champ <i>mot de passe</i>.</li>
+					<li data-tx="t0048:fa88d639">Le mot de passe<th:block th:unless="${token}"> que tu as reçu lors de <a th:href="@{/login(location='/settings')}">l'inscription</a>, </th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a>,</th:block> doit maintenant encore être saisi dans le champ <i>mot de passe</i>. Si tu ne trouves plus ton mot de passe, tu peux le réinitialiser dans <a th:href="@{/settings/#password}">Paramètres</a>.</li>
 				</ul>
 			</li>
 

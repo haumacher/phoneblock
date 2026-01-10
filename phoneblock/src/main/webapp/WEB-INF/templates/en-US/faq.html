@@ -37,12 +37,18 @@
 		<p data-tx="t0016:42a88385">In order to import the block list as a phone book, your Internet router/telephone system must be able to subscribe to a phone book via the <code dir="ltr">CardDAV</code> protocol and automatically reject all calls from a number in a specific phone book (or forward them to the answering machine). To find out whether this is possible with your telephone system, please refer to the manual or ask your telephone provider. If you have successfully installed the blocklist in another router, please let us know so that the installation instructions can be adapted.</p>
 
 		<h2 data-tx="t0017:95587c60">Can I use PhoneBlock on an Android cell phone?</h2>
-		<p data-tx="t0018:2e86fd9d">Yes, you even have two options here: (a) subscribe to the PhoneBlock address book, or (b) set up SpamBlocker and integrate the PhoneBlock database there.</p>
-		<p data-tx="t0019:dfe23488">If you subscribe to the <a th:href="@{/setup-android}">PhoneBlock address book</a>, you can see directly from a call whether it is worth answering the call or calling back if you miss a call. However, it is not possible to reject spam calls directly.</p>
-		<p data-tx="t0020:f7ad0c77">If you install <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, you can integrate the PhoneBlock database there. SpamBlocker can then compare the number with the PhoneBlock database when a call is received and reject the call directly if it is a match. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is an independent app, please contact the developer directly if you have any problems with it.</p>
+		<p data-tx="t0057:bfbacbfb">Yes, you actually have three options here: (a) install the <a th:href="@{/setup-android}">PhoneBlock Mobile App</a>, (b) subscribe to the PhoneBlock address book, or (c) set up SpamBlocker and integrate the PhoneBlock database there.</p>
+		<p data-tx="t0058:eaaf706b">The <a th:href="@{/setup-android}">PhoneBlock Mobile App</a> is the simplest solution: it automatically blocks spam calls directly on your Android phone. The app uses the PhoneBlock database to screen incoming calls and automatically reject unwanted callers based on an adjustable threshold. You can track all blocked and allowed calls in the app.</p>
+		<p data-tx="t0059:d1ef3c0b">If you subscribe to the PhoneBlock address book, you can see directly from a call whether it is worth taking the call or calling back if you miss a call. However, it is not possible to reject spam calls directly.</p>
+		<p data-tx="t0060:f7ad0c77">If you install <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, you can integrate the PhoneBlock database there. SpamBlocker can then compare the number with the PhoneBlock database when a call is received and reject the call directly if it is a match. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is an independent app, please contact the developer directly if you have any problems with it.</p>
 		
 		<h2 data-tx="t0021:d7604318">Can I use PhoneBlock on an iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Yes, with the iPhone you can even do this without installing any additional apps. Take a look at the <a th:href="@{/setup-iphone}">installation instructions</a> here.</p>
+
+		<h2 data-tx="t0061:75b3a777">How often is the block list on the iPhone updated?</h2>
+		<p data-tx="t0062:dc8ad532">The update frequency of the PhoneBlock block list on the iPhone depends on the operating system. iOS usually synchronizes CardDAV contacts automatically, typically about once a day. The exact time and frequency are determined by iOS itself and cannot be influenced directly.</p>
+		<p data-tx="t0063:1d01cf50">You can trigger synchronization manually by pulling down in the Contacts app ("Pull-to-Refresh"). This will trigger an immediate update of the PhoneBlock contacts.</p>
+		<p data-tx="t0064:3364db66">Please note: In contrast to the Fritz!Box, which updates every night at a random time between 0 and 6 am, iOS does not have a fixed update time. The block list may therefore be a few hours less up-to-date than with other PhoneBlock installation methods.</p>
 
 		<h2 data-tx="t0023:f843a1a7" id="Error26">My FritzBox! reports "Error 26" during setup</h2>
 		

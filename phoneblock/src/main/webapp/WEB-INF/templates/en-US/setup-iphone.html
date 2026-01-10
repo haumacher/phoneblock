@@ -11,6 +11,11 @@
 		
 		<p data-tx="t0002:2b88b172">The installation adds the PhoneBlock address book to your contacts. If you receive a call from a spam number, this will be displayed immediately, e.g. "SPAM: 03016637169". You can also see immediately in the missed calls that it is not worth calling back without first googling the number.</p>
 
+		<div class="notification is-warning">
+			<p data-tx="t0023:f940709d"><strong>Note:</strong> With this method, all SPAM numbers in the blocklist (several thousand entries) are synchronized as contacts in your iPhone address book. This is normal and necessary for the SPAM identification to work when calling. The SPAM entries appear in your contact list, but cannot be deleted individually without removing the entire PhoneBlock synchronization.</p>
+			<p class="mt-2" data-tx="t0024:f5b69b15">If you are bothered by the many SPAM entries in your address book, you can reduce the number of synchronized entries in the <a th:href="@{/settings}">settings</a>. Please note, however, that this will also limit the protection against SPAM calls.</p>
+		</div>
+
 		<p data-tx="t0003:85b28045">The installation runs in the following steps:</p>
 		
    		<ol>

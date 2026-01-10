@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">Skriv inn brukernavnet <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a></th:block> som du mottok under <a th:href="@{/login(location='/settings')}">registreringen</a> i feltet <i>brukernavn</i>.</li>
 
-					<li data-tx="t0048:151291e0">Passordet<th:block th:unless="${token}"> som du fikk under <a th:href="@{/login(location='/settings')}">registreringen</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a>,</th:block> må nå skrives inn i feltet <i>passord</i>.</li>
+					<li data-tx="t0048:fa88d639">Passordet<th:block th:unless="${token}"> som du fikk under <a th:href="@{/login(location='/settings')}">registreringen</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Kopier til utklippstavlen."><i class="fa-solid fa-copy"></i></a>,</th:block> må nå oppgis i feltet <i>Passord</i>. Hvis du ikke lenger finner passordet ditt, kan du tilbakestille det i <a th:href="@{/settings/#password}">innstillinger</a>.</li>
 				</ul>
 			</li>
 

@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">Enter the user name <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a></th:block> that you received during <a th:href="@{/login(location='/settings')}">registration</a> in the <i>username</i> field.</li>
 
-					<li data-tx="t0048:151291e0">The password<th:block th:unless="${token}"> that you received during <a th:href="@{/login(location='/settings')}">registration</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>,</th:block> must now be entered in the <i>password</i> field.</li>
+					<li data-tx="t0048:fa88d639">The password<th:block th:unless="${token}"> that you received during <a th:href="@{/login(location='/settings')}">registration</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copy to the clipboard."><i class="fa-solid fa-copy"></i></a>,</th:block> must now be entered in the <i>Password</i> field. If you can no longer find your password, you can reset it in the <a th:href="@{/settings/#password}">settings</a>.</li>
 				</ul>
 			</li>
 

@@ -19,37 +19,80 @@
 
 		<h2 data-tx="t0007:20eeb709">كيف يعمل PhoneBlock PhoneBlock؟</h2>
 
+		<h3 data-tx="t0029:e557e16d">القائمة السوداء للمجتمع</h3>
+
 		<p data-tx="t0008:62e0be42">PhoneBlock عبارة عن قائمة يحتفظ بها مجتمع PhoneBlock لأرقام الهواتف التي يشتبه في كونها غير مرغوب فيها. ثم يقبل جهاز الرد الآلي <a th:href="@{/anrufbeantworter}"> PhoneBlock المكالمات الواردة من المتصلين المدرجين في قائمة الحظر بحيث يبقى هاتفك صامتاً لهذه المكالمات.</a></p>
-		
+
+		<h3 data-tx="t0030:397ca321">البديل: دليل الهاتف FRITZ!</h3>
+
 		<p data-tx="t0009:149bd771">بدلاً من ذلك، يمكنك أيضًا استيراد القائمة السوداء كدفتر هاتف إلى جهاز توجيه الإنترنت "FRITZ!Box" الخاص بك وحظر المكالمات من الأرقام الموجودة في دفتر الهاتف الخاص هذا. لم تعد مضطرًا لحظر نطاقات الأرقام يدويًا، لأن جهاز "فريتز!بوكس" الخاص بك يقوم تلقائيًا بتحديث القائمة المحظورة كل ليلة. بمجرد إضافة رقم ما إلى هذه القائمة السوداء، يرفض جهاز FRITZ!Box تلقائيًا المتصلين بهذا الرقم. ومع ذلك، فإن <a th:href="@{/setup}"> جهاز الرد الآلي هو الحل الأفضل لأن دفتر الهاتف محدود الحجم ولا يمكنه استيعاب جميع الأرقام في قائمة الحظر.</a><a th:href="@{/anrufbeantworter}"></a></p>
 
-		<p data-tx="t0010:c0b8328d">إذا كنت لا تزال تتلقى مكالمة غير مرغوب فيها لأن الرقم لم تتم إضافته بعد إلى قائمة الحظر، يمكنك بسهولة حظر الرقم في فريتز! للقيام بذلك، قم بعمل إدخال للمتصل غير المرغوب فيه في دفتر عناوين PhoneBlock مباشرةً في فريتز! بمجرد قيامك بذلك، سيقوم فريتز بوكس الخاص بك بتحديث قائمة الحظر لجميع أعضاء مجتمع فون بلوك وسيتم حظر المكالمات من هذا الرقم الجديد على الفور أيضًا لأي شخص آخر. هذا يستغرق وقتًا أطول بقليل من حظر الرقم في فريتز! هاتفك مباشرة، ولكن لديه ميزة أنك تحمي مجتمع PhoneBlock بأكمله من <a th:href="@{/block}"> مكالمات أخرى غير مرغوب فيها.</a><a th:href="@{/status}"></a></p>
+		<h3 data-tx="t0031:6045153a">الإبلاغ عن أرقام الرسائل الاقتحامية</h3>
+
+		<p data-tx="t0010:34e8fe06">إذا كنت لا تزال تتلقى مكالمة غير مرغوب فيها لأن الرقم لم تتم إضافته بعد إلى قائمة الحظر، يمكنك الإبلاغ عن الرقم وبالتالي حماية مجتمع PhoneBlock بأكمله من <a th:href="@{/status}"> مكالمات أخرى غير مرغوب فيها. لديك عدة خيارات: الإبلاغ عن الرسائل الاقتحامية مباشرةً من تطبيق PhoneBlock، أو البحث عن الرقم وتقييمه على الموقع الإلكتروني، أو <a th:href="@{/block}"> حظر الرقم في صندوق FRITZ!</a> عن طريق إدخال إدخال في دفتر عناوين PhoneBlock. بمجرد الإبلاغ عن رقم ما، تتم إضافته إلى القائمة المحظورة وتتم حماية جميع مستخدمي PhoneBlock الآخرين تلقائيًا.</a></p>
 
 		<h2 data-tx="t0011:db4a3206">ما هي المتطلبات؟</h2>
 
-		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="فريتز AVM فريتز! صندوق 7590" data-tx="t0016:778ea20f" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
-			</a>
-		</div>
-		
-		<p data-tx="t0012:21ca43c">يمكن ل PhoneBlock حظر المكالمات غير المرغوب فيها إما على <a th:href="@{/setup}"> "الخط الأرضي" بالاقتران مع <a th:href="@{/link/fritzbox}"> "FRITZ!Box" جهاز توجيه الإنترنت من AVM</a>، أو عرض مباشرةً على <a th:href="@{/setup-android}"> هاتفك المحمول ما إذا كان المتصل غير مرغوب فيه.</a></a></p>
-		
-		<div class="columns">
-		  <div class="column is-half is-offset-one-quarter">
-			  <input id="context-path" th:value="${contextPath}" type="hidden"/>
-			<a class="button is-medium is-info is-fullwidth state-initial" href="#" id="search-fritzbox">
-				<span class="icon is-small is-left">
-					<i class="fa-solid fa-magnifying-glass"></i>
-				</span>
-				<span class="display-initial" data-tx="t0013:f1e2844f">بحث فريتز!بوكس</span>
-				<span class="display-searching" data-tx="t0017:afb59ec0">انتظر لحظة...</span>
-				<span class="display-success" data-tx="t0018:a0e3f5f5">وجدتها، ابدأ!</span>
-				<span class="display-failed" data-tx="t0019:ab0e4be2">غير موجود، ماذا أفعل؟</span>
-			</a>
-		  </div>
+		<p data-tx="t0020:537ee553">يدعم PhoneBlock العديد من المنصات لحظر المكالمات غير المرغوب فيها:</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-router"></i>
+							</span>
+							<span data-tx="t0021:7852d066">صندوق فريتز!</span>
+						</span>
+					</h3>
+					<p data-tx="t0022:342d09aa">حظر المكالمات على الخط الأرضي بالاقتران مع <a th:href="@{/link/fritzbox}"> جهاز توجيه الإنترنت من AVM. إما أن تقوم بتثبيت <a th:href="@{/anrufbeantworter}"> جهاز الرد على المكالمات الهاتفي أو استيراد قائمة الحظر كـ <a th:href="@{/setup}"> دفتر هاتف .</a></a></a></p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
+							</span>
+							<span data-tx="t0023:aecec7cb">أندرويد</span>
+						</span>
+					</h3>
+					<p data-tx="t0024:b6746620">قم بحظر المكالمات غير المرغوب فيها مباشرةً على هاتفك المحمول الذي يعمل بنظام Android باستخدام تطبيق <a th:href="@{/setup-android}">PhoneBlock</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
+							</span>
+							<span data-tx="t0025:b21bebc5">آيفون</span>
+						</span>
+					</h3>
+					<p data-tx="t0026:f5b65b16">قم بتضمين قائمة حظر الهاتف على هاتفك <a th:href="@{/setup-iphone}"> iPhone</a>.</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-phone-office"></i>
+							</span>
+							<span data-tx="t0027:9faa419a">نظام الهاتف</span>
+						</span>
+					</h3>
+					<p data-tx="t0028:c76080b9">قم بدمج PhoneBlock في نظام الهاتف الخاص بك كقائمة حظر.<a th:href="@{/setup-pbx}"></a></p>
+				</div>
+			</div>
 		</div>
 
-		<p data-tx="t0014:d5f9ffe8">لست متأكداً مما إذا كان لديك صندوق فريتز! إذا كنت حاليًا في المنزل في WLAN، فاضغط على زر البحث أعلاه. سيحاول PhoneBlock بعد ذلك العثور على صندوق Fritz!Box box في منطقتك.</p>
 	</div>
 </section>
 

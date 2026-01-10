@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">Wprowadź nazwę użytkownika <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a></th:block> otrzymaną podczas <a th:href="@{/login(location='/settings')}">rejestracji</a> w polu <i>username</i>.</li>
 
-					<li data-tx="t0048:151291e0">Hasło<th:block th:unless="${token}"> otrzymane podczas <a th:href="@{/login(location='/settings')}">rejestracji</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a>,</th:block> należy teraz wprowadzić w polu <i>hasło</i>.</li>
+					<li data-tx="t0048:fa88d639">Hasło<th:block th:unless="${token}"> otrzymane podczas <a th:href="@{/login(location='/settings')}">rejestracji</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Kopiuj do schowka."><i class="fa-solid fa-copy"></i></a>,</th:block> należy teraz wprowadzić w polu <i>Hasło</i>. Jeśli nie możesz znaleźć hasła, możesz je zresetować w <a th:href="@{/settings/#password}">ustawieniach</a>.</li>
 				</ul>
 			</li>
 

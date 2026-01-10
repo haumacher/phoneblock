@@ -19,37 +19,80 @@
 
 		<h2 data-tx="t0007:20eeb709">PhoneBlock 如何工作？</h2>
 
+		<h3 data-tx="t0029:e557e16d">社区黑名单</h3>
+
 		<p data-tx="t0008:62e0be42">PhoneBlock 是由 PhoneBlock 社区维护的一份涉嫌垃圾邮件的电话号码列表。<a th:href="@{/anrufbeantworter}">PhoneBlock应答机</a>会接受来自阻止列表上的来电者的呼叫，因此您的电话在接到这些呼叫时会保持静音。</p>
-		
+
+		<h3 data-tx="t0030:397ca321">替代品：FRITZ!Box 电话簿</h3>
+
 		<p data-tx="t0009:149bd771">或者，您也可以将黑名单作为电话簿导入 "FRITZ！Box "互联网路由器，并阻止来自<a th:href="@{/setup}">专用电话簿</a>中号码的呼叫。您不必再手动阻止号码范围，因为您的 "Fritz！Box "每晚都会自动更新阻止列表。一旦某个号码被添加到黑名单中，FRITZ！Box 就会自动拒绝该号码的来电。不过，<a th:href="@{/anrufbeantworter}">应答机</a>是更好的解决方案，因为电话簿的容量有限，无法容纳阻止列表中的所有号码。</p>
 
-		<p data-tx="t0010:c0b8328d">如果由于该号码尚未添加到拦截列表中而仍然收到骚扰电话，您可以在 FRITZ！Box 中轻松拦截该<a th:href="@{/block}">号码</a>。为此，请直接在您的 Fritz 中的 PhoneBlock 通讯录中为不受欢迎的来电者创建一个条目！一旦您这样做了，您的FrizBox就会更新PhoneBlock社区所有成员的拦截列表，来自这个新号码的来电也会立即被拦截。这比直接在您的Fritz！Phone中封堵该号码要费时一些，但其优点是您可以保护整个PhoneBlock社区免受<a th:href="@{/status}">更多垃圾电话的骚扰</a>。</p>
+		<h3 data-tx="t0031:6045153a">报告垃圾邮件号码</h3>
+
+		<p data-tx="t0010:34e8fe06">如果由于该号码尚未被添加到拦截列表中，您仍然会接到不需要的电话，您可以报告该号码，从而保护整个 PhoneBlock 社区免受 <a th:href="@{/status}">更多垃圾电话的骚扰</a>。您有几种选择：直接从 PhoneBlock 应用程序报告垃圾邮件，在网站上搜索号码并对其进行评分，或者通过在 PhoneBlock 地址簿中创建条目<a th:href="@{/block}">在您的 FRITZ!Box</a> 中阻止该号码。一旦号码被举报，它就会被添加到拦截列表中，所有其他 PhoneBlock 用户都会受到自动保护。</p>
 
 		<h2 data-tx="t0011:db4a3206">有哪些要求？</h2>
 
-		<div class="fritzbox-position">
-			<a th:href="@{/link/fritzbox}"> <img alt="AVM Fritz！信箱 7590" data-tx="t0016:778ea20f" id="fritzbox" th:src="@{/assets/img/fritzbox.png}" width="200"/>
-			</a>
-		</div>
-		
-		<p data-tx="t0012:21ca43c">PhoneBlock 可以与 AVM 的 <a th:href="@{/setup}">"FRITZ!Box" 互联网路由器</a>结合使用，在 <a th:href="@{/link/fritzbox}">"座机"</a>上阻止骚扰电话，或者直接在您的 <a th:href="@{/setup-android}">移动电话</a>上显示来电者是否可能是骚扰电话。</p>
-		
-		<div class="columns">
-		  <div class="column is-half is-offset-one-quarter">
-			  <input id="context-path" th:value="${contextPath}" type="hidden"/>
-			<a class="button is-medium is-info is-fullwidth state-initial" href="#" id="search-fritzbox">
-				<span class="icon is-small is-left">
-					<i class="fa-solid fa-magnifying-glass"></i>
-				</span>
-				<span class="display-initial" data-tx="t0013:f1e2844f">搜索 Fritz!Box</span>
-				<span class="display-searching" data-tx="t0017:afb59ec0">等等...</span>
-				<span class="display-success" data-tx="t0018:a0e3f5f5">找到了，开始吧！</span>
-				<span class="display-failed" data-tx="t0019:ab0e4be2">未找到，怎么办？</span>
-			</a>
-		  </div>
+		<p data-tx="t0020:537ee553">PhoneBlock 支持多种平台，可拦截骚扰电话：</p>
+
+		<div class="columns is-multiline">
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-router"></i>
+							</span>
+							<span data-tx="t0021:7852d066">FRITZ!Box</span>
+						</span>
+					</h3>
+					<p data-tx="t0022:342d09aa">使用 AVM 的 <a th:href="@{/link/fritzbox}">FRITZ!Box Internet 路由器</a>阻止座机来电。或者安装 <a th:href="@{/anrufbeantworter}">PhoneBlock 应答机</a>，或者将拦截列表导入 <a th:href="@{/setup}"> 电话簿</a>。</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
+							</span>
+							<span data-tx="t0023:aecec7cb">安卓</span>
+						</span>
+					</h3>
+					<p data-tx="t0024:b6746620">使用 <a th:href="@{/setup-android}">PhoneBlock 应用程序</a>直接在您的 Android 手机上阻止垃圾电话。</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
+							</span>
+							<span data-tx="t0025:b21bebc5">iPhone</span>
+						</span>
+					</h3>
+					<p data-tx="t0026:f5b65b16">在您的 <a th:href="@{/setup-iphone}">iPhone</a> 中加入 PhoneBlock 封锁列表。</p>
+				</div>
+			</div>
+
+			<div class="column is-half">
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-phone-office"></i>
+							</span>
+							<span data-tx="t0027:9faa419a">电话系统</span>
+						</span>
+					</h3>
+					<p data-tx="t0028:c76080b9">将 PhoneBlock 集成到您的 <a th:href="@{/setup-pbx}"> 电话系统</a>中，作为屏蔽列表。</p>
+				</div>
+			</div>
 		</div>
 
-		<p data-tx="t0014:d5f9ffe8">不确定您是否拥有 Fritz!Box如果您目前在 WLan 的家中，请按上面的搜索按钮。然后，PhoneBlock 将尝试查找您附近的 Fritz!Box</p>
 	</div>
 </section>
 

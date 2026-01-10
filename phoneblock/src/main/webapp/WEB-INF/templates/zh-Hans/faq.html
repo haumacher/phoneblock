@@ -37,12 +37,18 @@
 		<p data-tx="t0016:42a88385">为了将拦截列表导入电话簿，您的互联网路由器/电话系统必须能够通过 <code dir="ltr">CardDAV</code> 协议订阅电话簿，并自动拒绝来自特定电话簿中号码的所有来电（或将其转发到答录机）。如需了解您的电话系统是否可以这样做，请参阅手册或咨询电话供应商。如果您已经在其他路由器上成功安装了拦截列表，请告知我们，以便修改安装说明。</p>
 
 		<h2 data-tx="t0017:95587c60">我可以在安卓手机上使用 PhoneBlock 吗？</h2>
-		<p data-tx="t0018:2e86fd9d">是的，你甚至有两个选择：(a) 订阅 PhoneBlock 地址簿，或 (b) 设置 SpamBlocker 并在其中集成 PhoneBlock 数据库。</p>
-		<p data-tx="t0019:dfe23488">如果您订阅了 <a th:href="@{/setup-android}">PhoneBlock 地址簿</a>，您就可以直接从通话中了解是否值得接听来电，或者在错过来电时回拨。但是，无法直接拒绝垃圾电话。</p>
-		<p data-tx="t0020:f7ad0c77">如果您安装了 <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>，就可以在其中集成 PhoneBlock 数据库。这样，当接到来电时，SpamBlocker 就可以将号码与 PhoneBlock 数据库进行比较，如果匹配，则直接拒绝来电。<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> 是一款独立应用程序，如果您在使用过程中遇到任何问题，请直接联系开发人员。</p>
+		<p data-tx="t0057:bfbacbfb">是的，您实际上有三种选择：(a) 安装 <a th:href="@{/setup-android}">PhoneBlock 移动应用程序</a>，(b) 订阅 PhoneBlock 地址簿，或 (c) 设置 SpamBlocker 并将 PhoneBlock 数据库整合到其中。</p>
+		<p data-tx="t0058:eaaf706b"><a th:href="@{/setup-android}">PhoneBlock移动应用程序</a>是最简单的解决方案：它可以直接在您的Android手机上自动阻止垃圾电话。该应用程序使用 PhoneBlock 数据库筛选来电，并根据可调整的阈值自动拒绝不受欢迎的来电。您可以在应用程序中跟踪所有被阻止和授权的来电。</p>
+		<p data-tx="t0059:d1ef3c0b">如果您订阅了 PhoneBlock 地址簿，就可以直接查看是否值得接听来电或在错过来电时回拨。但是，无法直接拒接垃圾电话。</p>
+		<p data-tx="t0060:f7ad0c77">如果您安装了 <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>，就可以在其中集成 PhoneBlock 数据库。这样，当接到来电时，SpamBlocker 就可以将电话号码与 PhoneBlock 数据库进行比较，如果匹配，则直接拒接来电。<a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> 是一款独立应用程序，如果您在使用过程中遇到任何问题，请直接联系开发人员。</p>
 		
 		<h2 data-tx="t0021:d7604318">我可以在 iPhone 上使用 PhoneBlock 吗？</h2>
 		<p data-tx="t0022:b923b50e">是的，在 iPhone 上，您甚至可以在不安装任何其他应用程序的情况下做到这一点。请点击此处查看<a th:href="@{/setup-iphone}">安装说明</a>。</p>
+
+		<h2 data-tx="t0061:75b3a777">iPhone 上的拦截列表多久更新一次？</h2>
+		<p data-tx="t0062:dc8ad532">iPhone 上 PhoneBlock 封锁列表的更新频率取决于操作系统。iOS 通常会自动同步 CardDAV 联系人，一般大约每天一次。具体时间和频率由 iOS 本身决定，无法直接影响。</p>
+		<p data-tx="t0063:1d01cf50">您可以通过在通讯录应用程序中向下拉动（"Pull-to-Refresh"）来手动触发同步。这将触发 PhoneBlock 联系人的即时更新。</p>
+		<p data-tx="t0064:3364db66">请注意与每晚在凌晨 0 点到 6 点之间随机更新的 Fritz!Box 不同，iOS 没有固定的更新时间。因此，与其他 PhoneBlock 安装方法相比，封堵列表的更新时间可能会少几个小时。</p>
 
 		<h2 data-tx="t0023:f843a1a7" id="Error26">我的 FritzBox 在设置过程中报告 "错误 26</h2>
 		

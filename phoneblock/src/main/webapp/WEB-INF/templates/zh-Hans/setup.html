@@ -104,7 +104,7 @@
 
 					<li data-tx="t0047:a4773f13">在 <th:block th:if="${userName}">username</th:block> 字段中输入您在<code dir="ltr" id="login2" th:text="${userName}">注册</code>时收到的用户名<a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i><a th:href="@{/login(location='/settings')}"><i></i></a></a>。</li>
 
-					<li data-tx="t0048:151291e0">现在必须在 <th:block th:unless="${token}"> 密码</th:block>字段中输入您在<a th:href="@{/login(location='/settings')}">注册</a><th:block th:if="${token}"><code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a></th:block>时收到的密码<i>。</i></li>
+					<li data-tx="t0048:fa88d639">现在必须在 <th:block th:unless="${token}">Password</th:block> 字段中输入您在 <a th:href="@{/login(location='/settings')}">registration</a>,<th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="复制到剪贴板"><i class="fa-solid fa-copy"></i></a>,</th:block> 时收到的密码<i>。如果找不到密码，可以在<a th:href="@{/settings/#password}">设置</a>中重新设置。</i></li>
 				</ul>
 			</li>
 
