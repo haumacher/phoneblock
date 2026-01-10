@@ -17,23 +17,105 @@
 
 		<div th:replace="~{fragments/page :: buttons}"></div>
 
-		<h2 data-tx="t0007:20eeb709">Hur fungerar PhoneBlock?</h2>
+		<h2 data-tx="t0016:855ca724">Varför PhoneBlock?</h2>
 
-		<h3 data-tx="t0029:e557e16d">Gemenskapens svarta lista</h3>
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-shield-alt fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0017:372c266b">Automatiskt skydd</h3>
+					<p data-tx="t0018:d97ade9c">Din FRITZ!Box eller smartphone blockerar automatiskt spam-samtal - utan att du behöver göra någonting.</p>
+				</div>
+			</div>
 
-		<p data-tx="t0008:62e0be42">PhoneBlock är en lista som upprätthålls av PhoneBlock-gruppen med telefonnummer som misstänks vara skräppost. <a th:href="@{/anrufbeantworter}">PhoneBlocks telefonsvarare</a> tar sedan emot samtal från personer som finns på blockeringslistan så att din telefon förblir tyst för dessa samtal.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-users fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0019:e1e1d3fb">Gemenskapens makt</h3>
+					<p data-tx="t0020:c0dea87">Tusentals användare rapporterar nya spamnummer varje dag. Tillsammans kan vi skydda oss mot irriterande reklamsamtal.</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0030:397ca321">Alternativ: FRITZ!Box telefonbok</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-sync fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0021:403225f8">Alltid uppdaterad</h3>
+					<p data-tx="t0022:77377622">Blockeringslistan uppdateras automatiskt. Nya skräppostnummer blockeras omedelbart.</p>
+				</div>
+			</div>
 
-		<p data-tx="t0009:149bd771">Alternativt kan du också importera den svarta listan som en telefonbok till din "FRITZ!Box"-internetrouter och blockera samtal från nummer i denna <a th:href="@{/setup}">specialiserade telefonbok</a>. Du behöver inte längre blockera nummerserier manuellt, eftersom din Fritz!Box automatiskt uppdaterar den blockerade listan varje kväll. Så snart ett nummer läggs till i den svarta listan avvisar din FRITZ!Box automatiskt samtal från detta nummer. <a th:href="@{/anrufbeantworter}">Svarsmaskinen</a> är dock en bättre lösning eftersom en telefonbok har begränsad storlek och inte kan innehålla alla nummer i blockeringslistan.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-lock fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0023:5f4450bc">Skydd av personuppgifter</h3>
+					<p data-tx="t0024:6b49a98"><a th:href="@{/link/github}">Öppen källkod</a> och självhostad. Dina telefonnummer är hashade - ingen kan se vem som ringer dig.</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0031:6045153a">Rapportera SPAM-nummer</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-gift fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0025:5f4715c">Kostnadsfritt</h3>
+					<p data-tx="t0026:a55c86e4">PhoneBlock är helt gratis och reklamfritt. Av samhället, för samhället (du kan <a th:href="@{/support}">donera</a> för driften).</p>
+				</div>
+			</div>
 
-		<p data-tx="t0010:34e8fe06">Om du ändå får ett oönskat samtal på grund av att numret ännu inte har lagts till i blockeringslistan kan du rapportera numret och på så sätt skydda hela PhoneBlock-gruppen från <a th:href="@{/status}">ytterligare spam-samtal</a>. Du har flera alternativ: Rapportera SPAM direkt från PhoneBlock-appen, sök efter och betygsätt numret på webbplatsen eller <a th:href="@{/block}">blockera numret i din FRITZ!Box</a> genom att göra en post i PhoneBlocks adressbok. Så snart ett nummer rapporteras läggs det till i den blockerade listan och alla andra PhoneBlock-användare skyddas automatiskt.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-cogs fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0027:754345bd">Flexibel</h3>
+					<p data-tx="t0028:d6e69698">Fungerar på <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> och <a th:href="@{/setup-switchboard}">telefonsystem</a> - du bestämmer hur.</p>
+				</div>
+			</div>
+		</div>
 
-		<h2 data-tx="t0011:db4a3206">Vilka är kraven?</h2>
+		<h2 data-tx="t0029:f316c4f9">Så enkelt är det</h2>
 
-		<p data-tx="t0020:537ee553">PhoneBlock stöder olika plattformar för blockering av oönskade samtal:</p>
+		<div class="columns">
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-download fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0030:365b45bb">1. Installation</h3>
+					<p data-tx="t0031:ca7700fd">Välj din plattform och följ installationsanvisningarna. Det tar bara några minuter.</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-check-circle fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0032:3226e470">2. sätta upp</h3>
+					<p data-tx="t0033:d28ccabb">PhoneBlock laddar den aktuella svarta listan och ställer in den automatiska uppdateringen.</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-phone-slash fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0034:39c4cb5e">3. Skyddad!</h3>
+					<p data-tx="t0035:460bd8e6">Från och med nu kommer spam-samtal att blockeras automatiskt. Din telefon kommer äntligen att vara tyst.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 data-tx="t0036:7f1ed01c">Välj din plattform</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
@@ -43,10 +125,11 @@
 							<span class="icon">
 								<i class="fa-solid fa-router"></i>
 							</span>
-							<span data-tx="t0021:7852d066">FRITZ!Box</span>
+							<span data-tx="t0037:7852d066">FRITZ!Box</span>
 						</span>
 					</h3>
-					<p data-tx="t0022:342d09aa">Blockera samtal på den fasta telefonen i kombination med en <a th:href="@{/link/fritzbox}">FRITZ!Box Internet-router från AVM</a>. Installera antingen telefonsvararen <a th:href="@{/anrufbeantworter}">PhoneBlock</a> eller importera spärrlistan som en <a th:href="@{/setup}">telefonbok</a>.</p>
+					<p data-tx="t0038:160340"><strong>Rekommenderas:</strong> Installera <a th:href="@{/anrufbeantworter}">PhoneBlocks telefonsvarare</a> som en VoIP-enhet. Telefonsvararen accepterar automatiskt spam-samtal och engagerar uppringare i meningslösa konversationer - din telefon kommer inte ens att ringa.</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternativ:</strong> Importera den blockerade listan som en <a th:href="@{/setup}">telefonbok</a> till din <a th:href="@{/link/fritzbox}">FRITZ!Box från AVM</a>. Uppringare avvisas direkt (Obs: telefonbokens storlek är begränsad, därför registreras inte alla nummer).</p>
 				</div>
 			</div>
 
@@ -57,10 +140,11 @@
 							<span class="icon">
 								<i class="fa-brands fa-android"></i>
 							</span>
-							<span data-tx="t0023:aecec7cb">Android</span>
+							<span data-tx="t0040:aecec7cb">Android</span>
 						</span>
 					</h3>
-					<p data-tx="t0024:b6746620">Blockera spam-samtal direkt på din Android-mobiltelefon med <a th:href="@{/setup-android}">PhoneBlock-appen</a>.</p>
+					<p data-tx="t0041:cee8e47c">Blockera spam-samtal direkt på din Android-mobiltelefon med <a th:href="@{/setup-android}">PhoneBlock-appen</a>. Appen kontrollerar inkommande samtal i realtid och blockerar automatiskt kända spamnummer. Du kan själv ställa in hur många negativa meddelanden ett nummer ska blockeras för.</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>Funktioner:</strong> Samtalshistorik, rapportera och taxera nummer, egen spärrlista, ingen behörighet krävs för att läsa dina kontakter.</p>
 				</div>
 			</div>
 
@@ -71,10 +155,10 @@
 							<span class="icon">
 								<i class="fa-brands fa-apple"></i>
 							</span>
-							<span data-tx="t0025:b21bebc5">iPhone</span>
+							<span data-tx="t0043:b21bebc5">iPhone</span>
 						</span>
 					</h3>
-					<p data-tx="t0026:f5b65b16">Inkludera blockeringslistan PhoneBlock på din <a th:href="@{/setup-iphone}">iPhone</a>.</p>
+					<p data-tx="t0044:b45f7cac">Inkludera PhoneBlock-blockeringslistan i dina iPhone-kontakter. iOS visar dig sedan automatiskt när en uppringare finns på blockeringslistan. <a th:href="@{/setup-iphone}">Inställningen</a> görs via CardDAV - din iPhone håller automatiskt listan uppdaterad.</p>
 				</div>
 			</div>
 
@@ -85,12 +169,43 @@
 							<span class="icon">
 								<i class="fa-solid fa-phone-office"></i>
 							</span>
-							<span data-tx="t0027:9faa419a">Telefonsystem</span>
+							<span data-tx="t0045:9faa419a">Telefonsystem</span>
 						</span>
 					</h3>
-					<p data-tx="t0028:c76080b9">Integrera PhoneBlock i ditt <a th:href="@{/setup-pbx}">telefonsystem</a> som en blocklista.</p>
+					<p data-tx="t0046:99335f28">Integrera PhoneBlock i ditt <a th:href="@{/setup-switchboard}">telefonsystem</a> eller PBX. Blocklistan kan laddas ner i olika format eller hämtas via API. Idealisk för företag och professionella telefonsystem.</p>
 				</div>
 			</div>
+		</div>
+
+		<h2 data-tx="t0047:5f8f8581">Samhället gör skillnad</h2>
+
+		<div class="columns">
+			<div class="column">
+				<div class="notification is-info is-light">
+					<p class="is-size-4 has-text-centered">
+						<span class="icon">
+							<i class="fas fa-database"></i>
+						</span>
+						<strong data-tx="t0048:1c6af23e">Starka tillsammans:</strong>
+					</p>
+					<p class="has-text-centered mt-3" data-tx="t0049:efb85add">Vem som helst kan vara med! Rapportera spamnummer direkt i appen, på webbplatsen eller genom att <a th:href="@{/block}">blockera i din FRITZ!Box</a>. Så snart ett nummer rapporteras läggs det till i blockeringslistan för alla användare. Ju fler användare som deltar, desto bättre kan vi alla skydda oss mot skräppostsamtal.</p>
+					<p class="has-text-centered mt-3">
+						<a class="button is-info" th:href="@{/status}">
+							<span class="icon">
+								<i class="fas fa-chart-bar"></i>
+							</span>
+							<span data-tx="t0050:eb8d6186">Visa aktuell statistik</span>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="has-text-centered mt-5">
+			<h2 class="title is-3" data-tx="t0051:fc3cb6b6">Är du redo att blockera spam-samtal?</h2>
+			<p class="subtitle" data-tx="t0052:3fb05228">Välj din plattform och kom igång på bara några minuter:</p>
+
+			<div th:replace="~{fragments/page :: buttons}"></div>
 		</div>
 
 	</div>

@@ -17,23 +17,105 @@
 
 		<div th:replace="~{fragments/page :: buttons}"></div>
 
-		<h2 data-tx="t0007:20eeb709">PhoneBlock 如何工作？</h2>
+		<h2 data-tx="t0016:855ca724">为什么选择 PhoneBlock？</h2>
 
-		<h3 data-tx="t0029:e557e16d">社区黑名单</h3>
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-shield-alt fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0017:372c266b">自动保护</h3>
+					<p data-tx="t0018:d97ade9c">您的 FRITZ！Box 或智能手机会自动阻止垃圾电话，而您无需做任何事情。</p>
+				</div>
+			</div>
 
-		<p data-tx="t0008:62e0be42">PhoneBlock 是由 PhoneBlock 社区维护的一份涉嫌垃圾邮件的电话号码列表。<a th:href="@{/anrufbeantworter}">PhoneBlock应答机</a>会接受来自阻止列表上的来电者的呼叫，因此您的电话在接到这些呼叫时会保持静音。</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-users fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0019:e1e1d3fb">社区力量</h3>
+					<p data-tx="t0020:c0dea87">每天都有成千上万的用户报告新的垃圾号码。只要我们齐心协力，就能保护自己免受恼人广告电话的骚扰。</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0030:397ca321">替代品：FRITZ!Box 电话簿</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-sync fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0021:403225f8">始终保持最新</h3>
+					<p data-tx="t0022:77377622">拦截列表会自动更新。新的垃圾邮件号码会立即被拦截。</p>
+				</div>
+			</div>
 
-		<p data-tx="t0009:149bd771">或者，您也可以将黑名单作为电话簿导入 "FRITZ！Box "互联网路由器，并阻止来自<a th:href="@{/setup}">专用电话簿</a>中号码的呼叫。您不必再手动阻止号码范围，因为您的 "Fritz！Box "每晚都会自动更新阻止列表。一旦某个号码被添加到黑名单中，FRITZ！Box 就会自动拒绝该号码的来电。不过，<a th:href="@{/anrufbeantworter}">应答机</a>是更好的解决方案，因为电话簿的容量有限，无法容纳阻止列表中的所有号码。</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-lock fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0023:5f4450bc">数据保护</h3>
+					<p data-tx="t0024:6b49a98"><a th:href="@{/link/github}">开源</a>和自托管。您的电话号码是散列的，没有人知道是谁在给您打电话。</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0031:6045153a">报告垃圾邮件号码</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-gift fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0025:5f4715c">免费</h3>
+					<p data-tx="t0026:a55c86e4">PhoneBlock 完全免费且无广告。由社区提供，为社区服务（您可以<a th:href="@{/support}">为运行捐款</a>）。</p>
+				</div>
+			</div>
 
-		<p data-tx="t0010:34e8fe06">如果由于该号码尚未被添加到拦截列表中，您仍然会接到不需要的电话，您可以报告该号码，从而保护整个 PhoneBlock 社区免受 <a th:href="@{/status}">更多垃圾电话的骚扰</a>。您有几种选择：直接从 PhoneBlock 应用程序报告垃圾邮件，在网站上搜索号码并对其进行评分，或者通过在 PhoneBlock 地址簿中创建条目<a th:href="@{/block}">在您的 FRITZ!Box</a> 中阻止该号码。一旦号码被举报，它就会被添加到拦截列表中，所有其他 PhoneBlock 用户都会受到自动保护。</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-cogs fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0027:754345bd">灵活</h3>
+					<p data-tx="t0028:d6e69698">可在<a th:href="@{/anrufbeantworter}">FRITZ！Box</a>、<a th:href="@{/setup-android}">Android</a>、<a th:href="@{/setup-iphone}">iPhone</a>和<a th:href="@{/setup-switchboard}">电话系统</a>上使用，具体方式由您决定。</p>
+				</div>
+			</div>
+		</div>
 
-		<h2 data-tx="t0011:db4a3206">有哪些要求？</h2>
+		<h2 data-tx="t0029:f316c4f9">就这么简单</h2>
 
-		<p data-tx="t0020:537ee553">PhoneBlock 支持多种平台，可拦截骚扰电话：</p>
+		<div class="columns">
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-download fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0030:365b45bb">1. 安装</h3>
+					<p data-tx="t0031:ca7700fd">选择你的平台，然后按照安装说明进行操作。只需几分钟。</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-check-circle fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0032:3226e470">2. 设置</h3>
+					<p data-tx="t0033:d28ccabb">PhoneBlock 会加载当前黑名单并设置自动更新。</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-phone-slash fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0034:39c4cb5e">3. 受保护！</h3>
+					<p data-tx="t0035:460bd8e6">从现在起，垃圾电话将被自动拦截。您的手机终于可以保持安静了。</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 data-tx="t0036:7f1ed01c">选择您的平台</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
@@ -43,10 +125,11 @@
 							<span class="icon">
 								<i class="fa-solid fa-router"></i>
 							</span>
-							<span data-tx="t0021:7852d066">FRITZ!Box</span>
+							<span data-tx="t0037:7852d066">盒子</span>
 						</span>
 					</h3>
-					<p data-tx="t0022:342d09aa">使用 AVM 的 <a th:href="@{/link/fritzbox}">FRITZ!Box Internet 路由器</a>阻止座机来电。或者安装 <a th:href="@{/anrufbeantworter}">PhoneBlock 应答机</a>，或者将拦截列表导入 <a th:href="@{/setup}"> 电话簿</a>。</p>
+					<p data-tx="t0038:160340"><strong>建议：</strong>安装 <a th:href="@{/anrufbeantworter}">PhoneBlock 应答机</a>作为 VoIP 设备。电话答录机会自动接受垃圾电话，并与来电者进行毫无意义的对话，您的电话甚至不会响起。</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>替代方法：</strong>将被阻止的列表作为 <a th:href="@{/setup}"> 电话簿</a>导入您的 <a th:href="@{/link/fritzbox}">FRITZ!Box from AVM</a>。来电者将被直接拒接（注意：电话簿大小有限，因此不会记录所有号码）。</p>
 				</div>
 			</div>
 
@@ -57,10 +140,11 @@
 							<span class="icon">
 								<i class="fa-brands fa-android"></i>
 							</span>
-							<span data-tx="t0023:aecec7cb">安卓</span>
+							<span data-tx="t0040:aecec7cb">安卓</span>
 						</span>
 					</h3>
-					<p data-tx="t0024:b6746620">使用 <a th:href="@{/setup-android}">PhoneBlock 应用程序</a>直接在您的 Android 手机上阻止垃圾电话。</p>
+					<p data-tx="t0041:cee8e47c">使用 <a th:href="@{/setup-android}">PhoneBlock 应用程序</a>直接在您的 Android 手机上阻止垃圾电话。该应用程序会实时检查来电，并自动阻止已知的垃圾号码。您可以自行设置一个号码应阻止多少负面信息。</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>功能：</strong>通话记录、号码报告和评级、自有拦截列表、无需授权即可读取联系人信息。</p>
 				</div>
 			</div>
 
@@ -71,10 +155,10 @@
 							<span class="icon">
 								<i class="fa-brands fa-apple"></i>
 							</span>
-							<span data-tx="t0025:b21bebc5">iPhone</span>
+							<span data-tx="t0043:b21bebc5">iPhone</span>
 						</span>
 					</h3>
-					<p data-tx="t0026:f5b65b16">在您的 <a th:href="@{/setup-iphone}">iPhone</a> 中加入 PhoneBlock 封锁列表。</p>
+					<p data-tx="t0044:b45f7cac">将 PhoneBlock blocklist 包含在 iPhone 通讯录中，当来电者出现在 blocklist 中时，iOS 会自动显示出来。<a th:href="@{/setup-iphone}">设置</a>通过 CardDAV 完成，iPhone 会自动更新列表。</p>
 				</div>
 			</div>
 
@@ -85,12 +169,43 @@
 							<span class="icon">
 								<i class="fa-solid fa-phone-office"></i>
 							</span>
-							<span data-tx="t0027:9faa419a">电话系统</span>
+							<span data-tx="t0045:9faa419a">电话系统</span>
 						</span>
 					</h3>
-					<p data-tx="t0028:c76080b9">将 PhoneBlock 集成到您的 <a th:href="@{/setup-pbx}"> 电话系统</a>中，作为屏蔽列表。</p>
+					<p data-tx="t0046:99335f28">将 PhoneBlock 集成到您的<a th:href="@{/setup-switchboard}">电话系统</a>或 PBX 中。可下载各种格式的区块列表，或通过 API 进行查询。是公司和专业电话系统的理想之选。</p>
 				</div>
 			</div>
+		</div>
+
+		<h2 data-tx="t0047:5f8f8581">社区带来不同</h2>
+
+		<div class="columns">
+			<div class="column">
+				<div class="notification is-info is-light">
+					<p class="is-size-4 has-text-centered">
+						<span class="icon">
+							<i class="fas fa-database"></i>
+						</span>
+						<strong data-tx="t0048:1c6af23e">强强联手：</strong>
+					</p>
+					<p class="has-text-centered mt-3" data-tx="t0049:efb85add">任何人都可以加入！直接在应用程序中、网站上或通过<a th:href="@{/block}">在您的 FRITZ！Box</a>中拦截来举报垃圾号码。一旦号码被举报，它就会被添加到所有用户的拦截列表中。参与的用户越多，我们就能更好地保护自己免受垃圾电话的侵害。</p>
+					<p class="has-text-centered mt-3">
+						<a class="button is-info" th:href="@{/status}">
+							<span class="icon">
+								<i class="fas fa-chart-bar"></i>
+							</span>
+							<span data-tx="t0050:eb8d6186">查看当前统计数据</span>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="has-text-centered mt-5">
+			<h2 class="title is-3" data-tx="t0051:fc3cb6b6">准备好阻止垃圾电话了吗？</h2>
+			<p class="subtitle" data-tx="t0052:3fb05228">选择您的平台，只需几分钟即可开始使用：</p>
+
+			<div th:replace="~{fragments/page :: buttons}"></div>
 		</div>
 
 	</div>

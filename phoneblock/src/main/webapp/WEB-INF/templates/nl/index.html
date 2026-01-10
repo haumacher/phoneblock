@@ -17,23 +17,105 @@
 
 		<div th:replace="~{fragments/page :: buttons}"></div>
 
-		<h2 data-tx="t0007:20eeb709">Hoe werkt PhoneBlock?</h2>
+		<h2 data-tx="t0016:855ca724">Waarom PhoneBlock?</h2>
 
-		<h3 data-tx="t0029:e557e16d">De zwarte lijst van de gemeenschap</h3>
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-shield-alt fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0017:372c266b">Automatische bescherming</h3>
+					<p data-tx="t0018:d97ade9c">Je FRITZ!Box of smartphone blokkeert automatisch spamoproepen - zonder dat je iets hoeft te doen.</p>
+				</div>
+			</div>
 
-		<p data-tx="t0008:62e0be42">PhoneBlock is een door de PhoneBlock-gemeenschap bijgehouden lijst met telefoonnummers waarvan vermoed wordt dat het spam is. Het antwoordapparaat <a th:href="@{/anrufbeantworter}">PhoneBlock</a> accepteert vervolgens oproepen van bellers op de blokkadelijst, zodat je telefoon stil blijft voor deze oproepen.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-users fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0019:e1e1d3fb">Macht van de gemeenschap</h3>
+					<p data-tx="t0020:c0dea87">Duizenden gebruikers melden elke dag nieuwe spornummers. Samen kunnen we ons beschermen tegen vervelende reclameoproepen.</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0030:397ca321">Alternatief: FRITZ!Box telefoonboek</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-sync fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0021:403225f8">Altijd up-to-date</h3>
+					<p data-tx="t0022:77377622">De blokkadelijst wordt automatisch bijgewerkt. Nieuwe spornummers worden onmiddellijk geblokkeerd.</p>
+				</div>
+			</div>
 
-		<p data-tx="t0009:149bd771">Je kunt de zwarte lijst ook als telefoonboek in je "FRITZ!Box" internetrouter importeren en oproepen van nummers in dit <a th:href="@{/setup}">speciale telefoonboek</a> blokkeren. Je hoeft niet langer handmatig nummerreeksen te blokkeren, want je Fritz!Box werkt de geblokkeerde lijst elke nacht automatisch bij. Zodra een nummer aan deze zwarte lijst wordt toegevoegd, weigert je FRITZ!Box automatisch bellers met dit nummer. Het <a th:href="@{/anrufbeantworter}">antwoordapparaat</a> is echter de betere oplossing omdat een telefoonboek beperkt is in omvang en niet alle nummers in de blokkadelijst kan bevatten.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-lock fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0023:5f4450bc">Gegevensbescherming</h3>
+					<p data-tx="t0024:6b49a98"><a th:href="@{/link/github}">Open Source</a> en zelf gehost. Je telefoonnummers zijn gehasht - niemand kan zien wie je belt.</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0031:6045153a">SPAM-nummers melden</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-gift fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0025:5f4715c">Gratis</h3>
+					<p data-tx="t0026:a55c86e4">PhoneBlock is volledig gratis en reclamevrij. Door de gemeenschap, voor de gemeenschap (u kunt <a th:href="@{/support}">doneren</a> voor de werking).</p>
+				</div>
+			</div>
 
-		<p data-tx="t0010:34e8fe06">Als u nog steeds ongewenste oproepen ontvangt omdat het nummer nog niet is toegevoegd aan de blokkadelijst, kunt u het nummer rapporteren en zo de hele PhoneBlock-gemeenschap beschermen tegen <a th:href="@{/status}">nóg meer spamberichten</a>. U hebt verschillende opties: Rapporteer SPAM rechtstreeks vanuit de PhoneBlock-app, zoek en beoordeel het nummer op de website of <a th:href="@{/block}">blokkeer het nummer in uw FRITZ!Box</a> door een vermelding in het PhoneBlock-adresboek te maken. Zodra een nummer is gemeld, wordt het toegevoegd aan de geblokkeerde lijst en zijn alle andere PhoneBlock-gebruikers automatisch beschermd.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-cogs fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0027:754345bd">Flexibel</h3>
+					<p data-tx="t0028:d6e69698">Werkt op <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> en <a th:href="@{/setup-switchboard}">telefoonsystemen</a> - jij bepaalt hoe.</p>
+				</div>
+			</div>
+		</div>
 
-		<h2 data-tx="t0011:db4a3206">Wat zijn de vereisten?</h2>
+		<h2 data-tx="t0029:f316c4f9">Zo eenvoudig is het</h2>
 
-		<p data-tx="t0020:537ee553">PhoneBlock ondersteunt verschillende platforms voor het blokkeren van ongewenste oproepen:</p>
+		<div class="columns">
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-download fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0030:365b45bb">1. installatie</h3>
+					<p data-tx="t0031:ca7700fd">Kies je platform en volg de installatie-instructies. Het duurt maar een paar minuten.</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-check-circle fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0032:3226e470">2. instellen</h3>
+					<p data-tx="t0033:d28ccabb">PhoneBlock laadt de huidige blacklist en stelt de automatische update in.</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-phone-slash fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0034:39c4cb5e">3. beschermd!</h3>
+					<p data-tx="t0035:460bd8e6">Vanaf nu worden spamoproepen automatisch geblokkeerd. Je telefoon blijft eindelijk stil.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 data-tx="t0036:7f1ed01c">Kies uw platform</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
@@ -43,10 +125,11 @@
 							<span class="icon">
 								<i class="fa-solid fa-router"></i>
 							</span>
-							<span data-tx="t0021:7852d066">FRITZ!Box</span>
+							<span data-tx="t0037:7852d066">FRITZ!Box</span>
 						</span>
 					</h3>
-					<p data-tx="t0022:342d09aa">Blokkeer oproepen op de vaste lijn in combinatie met een <a th:href="@{/link/fritzbox}">FRITZ!Box-internetrouter van AVM</a>. Installeer het antwoordapparaat <a th:href="@{/anrufbeantworter}">PhoneBlock</a> of importeer de blokkadelijst als een <a th:href="@{/setup}">telefoonboek</a>.</p>
+					<p data-tx="t0038:160340"><strong>Aanbevolen:</strong> Installeer het <a th:href="@{/anrufbeantworter}">PhoneBlock antwoordapparaat</a> als een VoIP-apparaat. Het antwoordapparaat accepteert automatisch spamoproepen en neemt bellers op in zinloze gesprekken - je telefoon gaat niet eens over.</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternatief:</strong> Importeer de geblokkeerde lijst als een <a th:href="@{/setup}">telefoonboek</a> in je <a th:href="@{/link/fritzbox}">FRITZ!Box van AVM</a>. Bellers worden direct geweigerd (let op: de grootte van het telefoonboek is beperkt, daarom worden niet alle nummers opgenomen).</p>
 				</div>
 			</div>
 
@@ -57,10 +140,11 @@
 							<span class="icon">
 								<i class="fa-brands fa-android"></i>
 							</span>
-							<span data-tx="t0023:aecec7cb">Android</span>
+							<span data-tx="t0040:aecec7cb">Android</span>
 						</span>
 					</h3>
-					<p data-tx="t0024:b6746620">Blokkeer spamoproepen rechtstreeks op je Android mobiele telefoon met de <a th:href="@{/setup-android}">PhoneBlock app</a>.</p>
+					<p data-tx="t0041:cee8e47c">Blokkeer spamoproepen direct op je Android mobiele telefoon met de <a th:href="@{/setup-android}">PhoneBlock app</a>. De app controleert inkomende gesprekken in realtime en blokkeert automatisch bekende spornummers. Je kunt zelf instellen voor hoeveel negatieve berichten een nummer moet worden geblokkeerd.</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>Functies:</strong> Oproepgeschiedenis, nummers rapporteren en beoordelen, eigen blokkadelijst, geen autorisatie nodig om je contacten te lezen.</p>
 				</div>
 			</div>
 
@@ -71,10 +155,10 @@
 							<span class="icon">
 								<i class="fa-brands fa-apple"></i>
 							</span>
-							<span data-tx="t0025:b21bebc5">iPhone</span>
+							<span data-tx="t0043:b21bebc5">iPhone</span>
 						</span>
 					</h3>
-					<p data-tx="t0026:f5b65b16">Neem de PhoneBlock-blokkeringslijst op in je <a th:href="@{/setup-iphone}">iPhone</a>.</p>
+					<p data-tx="t0044:b45f7cac">Neem de PhoneBlock-blokkeringslijst op in je iPhone-contactpersonen. iOS laat je dan automatisch zien wanneer een beller op de blokkeringslijst staat. De <a th:href="@{/setup-iphone}">instelling</a> gebeurt via CardDAV - je iPhone houdt de lijst automatisch bij.</p>
 				</div>
 			</div>
 
@@ -85,12 +169,43 @@
 							<span class="icon">
 								<i class="fa-solid fa-phone-office"></i>
 							</span>
-							<span data-tx="t0027:9faa419a">Telefoonsysteem</span>
+							<span data-tx="t0045:9faa419a">Telefoonsysteem</span>
 						</span>
 					</h3>
-					<p data-tx="t0028:c76080b9">Integreer PhoneBlock in je <a th:href="@{/setup-pbx}">telefoonsysteem</a> als een blokkadelijst.</p>
+					<p data-tx="t0046:99335f28">Integreer PhoneBlock in je <a th:href="@{/setup-switchboard}">telefoonsysteem</a> of PBX. De blokkadelijst kan worden gedownload in verschillende formaten of worden opgevraagd via API. Ideaal voor bedrijven en professionele telefoonsystemen.</p>
 				</div>
 			</div>
+		</div>
+
+		<h2 data-tx="t0047:5f8f8581">De gemeenschap maakt het verschil</h2>
+
+		<div class="columns">
+			<div class="column">
+				<div class="notification is-info is-light">
+					<p class="is-size-4 has-text-centered">
+						<span class="icon">
+							<i class="fas fa-database"></i>
+						</span>
+						<strong data-tx="t0048:1c6af23e">Samen sterk:</strong>
+					</p>
+					<p class="has-text-centered mt-3" data-tx="t0049:efb85add">Iedereen kan meedoen! Meld spamnummers direct in de app, op de website of door <a th:href="@{/block}">blokkeren in je FRITZ!Box</a>. Zodra een nummer is gemeld, wordt het toegevoegd aan de blokkadelijst voor alle gebruikers. Hoe meer gebruikers meedoen, hoe beter we ons allemaal kunnen beschermen tegen spamberichten.</p>
+					<p class="has-text-centered mt-3">
+						<a class="button is-info" th:href="@{/status}">
+							<span class="icon">
+								<i class="fas fa-chart-bar"></i>
+							</span>
+							<span data-tx="t0050:eb8d6186">Bekijk huidige statistieken</span>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="has-text-centered mt-5">
+			<h2 class="title is-3" data-tx="t0051:fc3cb6b6">Klaar om spamoproepen te blokkeren?</h2>
+			<p class="subtitle" data-tx="t0052:3fb05228">Kies je platform en ga aan de slag in slechts een paar minuten:</p>
+
+			<div th:replace="~{fragments/page :: buttons}"></div>
 		</div>
 
 	</div>

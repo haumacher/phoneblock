@@ -17,23 +17,105 @@
 
 		<div th:replace="~{fragments/page :: buttons}"></div>
 
-		<h2 data-tx="t0007:20eeb709">¿Cómo funciona PhoneBlock?</h2>
+		<h2 data-tx="t0016:855ca724">¿Por qué PhoneBlock?</h2>
 
-		<h3 data-tx="t0029:e557e16d">La lista negra comunitaria</h3>
+		<div class="columns is-multiline">
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-shield-alt fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0017:372c266b">Protección automática</h3>
+					<p data-tx="t0018:d97ade9c">Su FRITZ!Box o smartphone bloquea automáticamente las llamadas de spam, sin que usted tenga que hacer nada.</p>
+				</div>
+			</div>
 
-		<p data-tx="t0008:62e0be42">PhoneBlock es una lista mantenida por la comunidad PhoneBlock de números de teléfono sospechosos de ser spam. El <a th:href="@{/anrufbeantworter}">contestador automático PhoneBlock</a> acepta entonces las llamadas de las personas incluidas en la lista de bloqueo, de modo que su teléfono permanece en silencio para estas llamadas.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-users fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0019:e1e1d3fb">Poder comunitario</h3>
+					<p data-tx="t0020:c0dea87">Miles de usuarios denuncian cada día nuevos números de spam. Juntos podemos protegernos de las molestas llamadas publicitarias.</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0030:397ca321">Alternativa: Guía telefónica FRITZ Box</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-sync fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0021:403225f8">Siempre al día</h3>
+					<p data-tx="t0022:77377622">La lista de bloqueo se actualiza automáticamente. Los nuevos números de spam se bloquean inmediatamente.</p>
+				</div>
+			</div>
 
-		<p data-tx="t0009:149bd771">Alternativamente, también puede importar la lista negra como una guía telefónica en su router de Internet "FRITZ!Box" y bloquear las llamadas de los números de esta <a th:href="@{/setup}">guía telefónica especial</a>. Ya no tendrá que bloquear manualmente rangos de números, porque su "FRITZ!Box" actualiza automáticamente la lista de bloqueados cada noche. En cuanto se añada un número a esta lista negra, su FRITZ!Box rechazará automáticamente las llamadas con este número. Sin embargo, el <a th:href="@{/anrufbeantworter}">contestador automático</a> es la mejor solución porque una agenda telefónica tiene un tamaño limitado y no puede contener todos los números de la lista de bloqueados.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-lock fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0023:5f4450bc">Protección de datos</h3>
+					<p data-tx="t0024:6b49a98"><a th:href="@{/link/github}">Código abierto</a> y autoalojado. Tus números de teléfono están cifrados: nadie puede ver quién te llama.</p>
+				</div>
+			</div>
 
-		<h3 data-tx="t0031:6045153a">Informar sobre números SPAM</h3>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-gift fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0025:5f4715c">Gratuito</h3>
+					<p data-tx="t0026:a55c86e4">PhoneBlock es completamente gratuito y sin publicidad. Por la comunidad, para la comunidad (puedes <a th:href="@{/support}">donar</a> para la operación).</p>
+				</div>
+			</div>
 
-		<p data-tx="t0010:34e8fe06">Si sigues recibiendo una llamada no deseada porque el número aún no ha sido añadido a la lista de bloqueados, puedes denunciar el número y proteger así a toda la comunidad PhoneBlock de <a th:href="@{/status}">más llamadas spam</a>. Tiene varias opciones: Reportar SPAM directamente desde la app PhoneBlock, buscar y valorar el número en la web, o <a th:href="@{/block}">bloquear el número en tu FRITZ!Box</a> haciendo una entrada en la agenda de PhoneBlock. En cuanto se denuncia un número, se añade a la lista de bloqueados y todos los demás usuarios de PhoneBlock quedan automáticamente protegidos.</p>
+			<div class="column is-one-third">
+				<div class="has-text-centered">
+					<span class="icon is-large has-text-primary">
+						<i class="fas fa-cogs fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0027:754345bd">Flexible</h3>
+					<p data-tx="t0028:d6e69698">Funciona en <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> y <a th:href="@{/setup-switchboard}">sistemas de telefonía</a> - tú decides cómo.</p>
+				</div>
+			</div>
+		</div>
 
-		<h2 data-tx="t0011:db4a3206">¿Cuáles son los requisitos?</h2>
+		<h2 data-tx="t0029:f316c4f9">Así de sencillo</h2>
 
-		<p data-tx="t0020:537ee553">PhoneBlock soporta varias plataformas para bloquear llamadas no deseadas:</p>
+		<div class="columns">
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-download fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0030:365b45bb">1. instalación</h3>
+					<p data-tx="t0031:ca7700fd">Selecciona tu plataforma y sigue las instrucciones de instalación. Sólo te llevará unos minutos.</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-check-circle fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0032:3226e470">2. establecer</h3>
+					<p data-tx="t0033:d28ccabb">PhoneBlock carga la lista negra actual y configura la actualización automática.</p>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="box has-text-centered">
+					<span class="icon is-large has-text-info">
+						<i class="fas fa-phone-slash fa-3x"></i>
+					</span>
+					<h3 class="title is-5" data-tx="t0034:39c4cb5e">3. ¡Protegido!</h3>
+					<p data-tx="t0035:460bd8e6">A partir de ahora, las llamadas de spam se bloquearán automáticamente. Por fin tu teléfono permanecerá en silencio.</p>
+				</div>
+			</div>
+		</div>
+
+		<h2 data-tx="t0036:7f1ed01c">Elija su plataforma</h2>
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
@@ -43,10 +125,11 @@
 							<span class="icon">
 								<i class="fa-solid fa-router"></i>
 							</span>
-							<span data-tx="t0021:7852d066">Caja FRITZ</span>
+							<span data-tx="t0037:7852d066">Caja FRITZ</span>
 						</span>
 					</h3>
-					<p data-tx="t0022:342d09aa">Bloquee las llamadas en el teléfono fijo junto con un router de Internet <a th:href="@{/link/fritzbox}">FRITZ!Box de AVM</a>. Instale el contestador automático <a th:href="@{/anrufbeantworter}">PhoneBlock</a> o importe la lista de bloqueo como <a th:href="@{/setup}">listín telefónico</a>.</p>
+					<p data-tx="t0038:160340"><strong>Recomendado:</strong> Instale el <a th:href="@{/anrufbeantworter}">contestador automático PhoneBlock</a> como un dispositivo VoIP. El contestador acepta automáticamente las llamadas de spam y entabla conversaciones sin sentido con las personas que llaman; su teléfono ni siquiera sonará.</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternativa:</strong> Importe la lista de bloqueados como <a th:href="@{/setup}">listín telefónico</a> en su <a th:href="@{/link/fritzbox}">FRITZ!Box de AVM</a>. Las personas que llaman son rechazadas directamente (nota: el tamaño de la agenda telefónica es limitado, por lo que no se registran todos los números).</p>
 				</div>
 			</div>
 
@@ -57,10 +140,11 @@
 							<span class="icon">
 								<i class="fa-brands fa-android"></i>
 							</span>
-							<span data-tx="t0023:aecec7cb">Android</span>
+							<span data-tx="t0040:aecec7cb">Android</span>
 						</span>
 					</h3>
-					<p data-tx="t0024:b6746620">Bloquee las llamadas de spam directamente en su teléfono móvil Android con la aplicación <a th:href="@{/setup-android}">PhoneBlock</a>.</p>
+					<p data-tx="t0041:cee8e47c">Bloquee las llamadas de spam directamente en su teléfono móvil Android con la aplicación <a th:href="@{/setup-android}">PhoneBlock</a>. La aplicación comprueba las llamadas entrantes en tiempo real y bloquea automáticamente los números de spam conocidos. Puedes configurar tú mismo cuántos mensajes negativos debe bloquear un número.</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>Características:</strong> Historial de llamadas, denuncia y tarificación de números, lista de bloqueos propia, sin necesidad de autorización para leer tus contactos.</p>
 				</div>
 			</div>
 
@@ -71,10 +155,10 @@
 							<span class="icon">
 								<i class="fa-brands fa-apple"></i>
 							</span>
-							<span data-tx="t0025:b21bebc5">iPhone</span>
+							<span data-tx="t0043:b21bebc5">iPhone</span>
 						</span>
 					</h3>
-					<p data-tx="t0026:f5b65b16">Incluye la lista de bloqueo PhoneBlock en tu <a th:href="@{/setup-iphone}">iPhone</a>.</p>
+					<p data-tx="t0044:b45f7cac">Incluye la lista de bloqueo PhoneBlock en los contactos de tu iPhone. iOS te mostrará automáticamente cuándo una persona está en la lista de bloqueo. La <a th:href="@{/setup-iphone}">configuración</a> se realiza a través de CardDAV - tu iPhone mantiene la lista actualizada automáticamente.</p>
 				</div>
 			</div>
 
@@ -85,12 +169,43 @@
 							<span class="icon">
 								<i class="fa-solid fa-phone-office"></i>
 							</span>
-							<span data-tx="t0027:9faa419a">Sistema telefónico</span>
+							<span data-tx="t0045:9faa419a">Sistema telefónico</span>
 						</span>
 					</h3>
-					<p data-tx="t0028:c76080b9">Integra PhoneBlock en tu <a th:href="@{/setup-pbx}">sistema telefónico</a> como una lista de bloqueo.</p>
+					<p data-tx="t0046:99335f28">Integre PhoneBlock en su <a th:href="@{/setup-switchboard}">sistema telefónico</a> o centralita. La lista de bloqueos se puede descargar en varios formatos o consultar vía API. Ideal para empresas y sistemas telefónicos profesionales.</p>
 				</div>
 			</div>
+		</div>
+
+		<h2 data-tx="t0047:5f8f8581">La comunidad marca la diferencia</h2>
+
+		<div class="columns">
+			<div class="column">
+				<div class="notification is-info is-light">
+					<p class="is-size-4 has-text-centered">
+						<span class="icon">
+							<i class="fas fa-database"></i>
+						</span>
+						<strong data-tx="t0048:1c6af23e">Juntos fuertes:</strong>
+					</p>
+					<p class="has-text-centered mt-3" data-tx="t0049:efb85add">¡Cualquiera puede participar! Denuncie los números de spam directamente en la aplicación, en el sitio web o <a th:href="@{/block}">bloqueando en su FRITZ!Box</a>. En cuanto se denuncia un número, se añade a la lista de bloqueados para todos los usuarios. Cuantos más usuarios participen, mejor podremos protegernos todos de las llamadas spam.</p>
+					<p class="has-text-centered mt-3">
+						<a class="button is-info" th:href="@{/status}">
+							<span class="icon">
+								<i class="fas fa-chart-bar"></i>
+							</span>
+							<span data-tx="t0050:eb8d6186">Ver las estadísticas actuales</span>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="has-text-centered mt-5">
+			<h2 class="title is-3" data-tx="t0051:fc3cb6b6">¿Listo para bloquear las llamadas de spam?</h2>
+			<p class="subtitle" data-tx="t0052:3fb05228">Elija su plataforma y empiece en unos minutos:</p>
+
+			<div th:replace="~{fragments/page :: buttons}"></div>
 		</div>
 
 	</div>
