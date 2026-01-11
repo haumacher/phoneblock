@@ -138,45 +138,54 @@
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">مفاتيح API الخاصة بك</h2>
 	<p data-tx="t0034:c7b86819">إذا كنت تستخدم تطبيقات أخرى للتحقق من أرقام الهواتف مع PhoneBlock (على سبيل المثال: <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> أو <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>)، فأنت بحاجة إلى مفتاح API. بالنسبة لدليل هاتف قائمة الحظر في Fritz!Box، يمكنك ببساطة استخدام اسم مستخدم PhoneBlock وكلمة مرور PhoneBlock، لذلك لا تحتاج إلى مفتاح API لهذا الغرض.</p>
 	
-	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">لم تقم بعد بإنشاء أي مفاتيح API.</p>
+	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">لم تقم بعد بإنشاء أي مفاتيح API أو رموز CardDAV المميزة.</p>
 	<div th:unless="${explicitTokens.empty}">
-	<table>
-		<tr>
-			<th>
-			</th>
-			<th data-tx="t0036:b4d4555f">الاسم</th>
-			<th data-tx="t0037:1e1e9f52">يولد</th>
-			<th data-tx="t0038:46b89898">آخر استخدام</th>
-			<th data-tx="t0039:9b222602">الجهاز</th>
-		</tr>
+	<table class="table is-fullwidth">
+		<thead>
+			<tr>
+				<th style="width: 40px;"></th>
+				<th data-tx="t0103:df714d36" style="width: 100px;">النوع</th>
+				<th data-tx="t0036:b4d4555f">الاسم</th>
+				<th data-tx="t0037:1e1e9f52">يولد</th>
+				<th data-tx="t0038:46b89898">آخر استخدام</th>
+				<th data-tx="t0039:9b222602">الجهاز</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="authToken : ${explicitTokens}">
+				<td>
+					<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				</td>
 
-		<tr th:each="authToken : ${explicitTokens}">
-			<td>
-				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
-			</td>
-			<td>
-				<span class="apikey-label" th:text="${authToken.label}"></span>
-				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
-					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
-					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
-					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="الحفظ" type="button">
-						<i class="fa-solid fa-check"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="إلغاء" type="button">
-						<i class="fa-solid fa-xmark"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="إعادة التسمية" type="button">
-						<i class="fa-solid fa-pen-to-square"></i>
-					</button>
-				</form>
-			</td>
-			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
-			<td>
-				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">غير مستخدمة.</th:block>
-				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
-			</td>
-			<td th:text="${authToken.userAgent}"></td>
-		</tr>
+				
+				<td>
+					<span class="tag" th:classappend="${authToken.purposeBadgeClass}" th:text="${authToken.purposeLabel}"></span>
+				</td>
+
+				<td>
+					<span class="apikey-label" th:text="${authToken.label}"></span>
+					<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+						<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+						<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+						<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="الحفظ" type="button">
+							<i class="fa-solid fa-check"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="إلغاء" type="button">
+							<i class="fa-solid fa-xmark"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="إعادة التسمية" type="button">
+							<i class="fa-solid fa-pen-to-square"></i>
+						</button>
+					</form>
+				</td>
+				<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+				<td>
+					<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">غير مستخدمة.</th:block>
+					<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+				</td>
+				<td th:text="${authToken.userAgent}"></td>
+			</tr>
+		</tbody>
 	</table>
 
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
@@ -193,24 +202,43 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">إنشاء مفتاح API</h2>
+	<h2 data-tx="t0104:8aa69c2" id="createToken">إنشاء رمز مميز</h2>
 
-	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+	<p data-tx="t0105:ae49ea3d">أنشئ رمزًا مميزًا لاستخدامه مع التطبيقات أو لإعداد قائمة الحظر كدليل هاتف في فريتز!</p>
 
-	<div class="field">
-	  <label class="label" data-tx="t0043:dcf4d98e">ملاحظة للاستخدام</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="يُستخدم لـ..." type="text"/>
-	  </p>
-	  <p class="help" data-tx="t0044:c40769ec">يمكنك إدخال ملاحظة هنا حول الغرض الذي أنشأت مفتاح واجهة برمجة التطبيقات من أجله، على سبيل المثال "مانع البريد العشوائي على هاتف الجدة المحمول."</p>
-	</div>
-		
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">إنشاء مفتاح API</button>
-	  </p>
-	</div>
+	<form method="post" th:action="@{/update-settings(action='createToken')}">
+		<div class="field">
+		  <label class="label" data-tx="t0106:ce2b98c8">نوع الرمز المميز</label>
+		  <div class="control has-icons-left">
+		    <div class="select is-fullwidth">
+		      <select name="token-type">
+		        <option data-tx="t0107:b2896f37" value="API">واجهة برمجة التطبيقات - لتطبيقات مثل SpamBlocker أو SpamBlockUp</option>
+		        <option data-tx="t0108:60699194" value="CARDDAV">كارد ديف - لدليل هاتف فريتز!</option>
+		      </select>
+		    </div>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-tag"></i>
+		    </span>
+		  </div>
+		  <p class="help" data-tx="t0109:f6acf0fc">حدد الاستخدام المقصود لهذا الرمز المميز.</p>
+		</div>
 
+		<div class="field">
+		  <label class="label" data-tx="t0110:dcf4d98e">ملاحظة للاستخدام</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="على سبيل المثال &quot;مانع الرسائل غير المرغوب فيها على هاتف الجدة المحمول&quot; أو &quot;فريتز! صندوق غرفة المعيشة" type="text"/>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-pen"></i>
+		    </span>
+		  </p>
+		  <p class="help" data-tx="t0112:e1254c4">إشارة إلى ما قمت بإنشاء هذا الرمز المميز من أجله.</p>
+		</div>
+
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> إنشاء رمز مميز</button>
+		  </p>
+		</div>
 	</form>
 
 	</div>

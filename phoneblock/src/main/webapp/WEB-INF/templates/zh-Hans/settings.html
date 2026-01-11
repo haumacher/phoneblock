@@ -138,45 +138,54 @@
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">您的应用程序接口密钥</h2>
 	<p data-tx="t0034:c7b86819">如果您使用其他应用程序通过 PhoneBlock 检查电话号码（例如 <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> 或 <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>），则需要一个 API 密钥。对于 Fritz!Box 中的 blocklist 电话簿，您只需使用 PhoneBlock 用户名和 PhoneBlock 密码即可，因此不需要 API 密钥。</p>
 	
-	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">您尚未创建任何 API 密钥。</p>
+	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">您尚未创建任何 API 密钥或 CardDAV 标记。</p>
 	<div th:unless="${explicitTokens.empty}">
-	<table>
-		<tr>
-			<th>
-			</th>
-			<th data-tx="t0036:b4d4555f">名称</th>
-			<th data-tx="t0037:1e1e9f52">生成</th>
-			<th data-tx="t0038:46b89898">最后一次使用</th>
-			<th data-tx="t0039:9b222602">设备</th>
-		</tr>
+	<table class="table is-fullwidth">
+		<thead>
+			<tr>
+				<th style="width: 40px;"></th>
+				<th data-tx="t0103:df714d36" style="width: 100px;">类型</th>
+				<th data-tx="t0036:b4d4555f">名称</th>
+				<th data-tx="t0037:1e1e9f52">生成</th>
+				<th data-tx="t0038:46b89898">最后一次使用</th>
+				<th data-tx="t0039:9b222602">设备</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="authToken : ${explicitTokens}">
+				<td>
+					<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				</td>
 
-		<tr th:each="authToken : ${explicitTokens}">
-			<td>
-				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
-			</td>
-			<td>
-				<span class="apikey-label" th:text="${authToken.label}"></span>
-				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
-					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
-					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
-					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="节省" type="button">
-						<i class="fa-solid fa-check"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="取消" type="button">
-						<i class="fa-solid fa-xmark"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="重新命名" type="button">
-						<i class="fa-solid fa-pen-to-square"></i>
-					</button>
-				</form>
-			</td>
-			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
-			<td>
-				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">未使用。</th:block>
-				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
-			</td>
-			<td th:text="${authToken.userAgent}"></td>
-		</tr>
+				
+				<td>
+					<span class="tag" th:classappend="${authToken.purposeBadgeClass}" th:text="${authToken.purposeLabel}"></span>
+				</td>
+
+				<td>
+					<span class="apikey-label" th:text="${authToken.label}"></span>
+					<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+						<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+						<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+						<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="节省" type="button">
+							<i class="fa-solid fa-check"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="取消" type="button">
+							<i class="fa-solid fa-xmark"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="重新命名" type="button">
+							<i class="fa-solid fa-pen-to-square"></i>
+						</button>
+					</form>
+				</td>
+				<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+				<td>
+					<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">未使用。</th:block>
+					<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+				</td>
+				<td th:text="${authToken.userAgent}"></td>
+			</tr>
+		</tbody>
 	</table>
 
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
@@ -193,24 +202,43 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">生成应用程序接口密钥</h2>
+	<h2 data-tx="t0104:8aa69c2" id="createToken">创建令牌</h2>
 
-	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+	<p data-tx="t0105:ae49ea3d">创建一个令牌，用于应用程序或在 Fritz 中将阻止列表设置为电话簿！</p>
 
-	<div class="field">
-	  <label class="label" data-tx="t0043:dcf4d98e">使用说明</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="用于..." type="text"/>
-	  </p>
-	  <p class="help" data-tx="t0044:c40769ec">您可以在此处输入备注，说明生成 API 密钥的用途，例如 "奶奶手机上的垃圾邮件拦截器"。</p>
-	</div>
-		
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">生成应用程序接口密钥</button>
-	  </p>
-	</div>
+	<form method="post" th:action="@{/update-settings(action='createToken')}">
+		<div class="field">
+		  <label class="label" data-tx="t0106:ce2b98c8">令牌类型</label>
+		  <div class="control has-icons-left">
+		    <div class="select is-fullwidth">
+		      <select name="token-type">
+		        <option data-tx="t0107:b2896f37" value="API">应用程序接口 - 用于垃圾邮件拦截器或 SpamBlockUp 等应用程序</option>
+		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - 用于 Fritz!Box 电话簿</option>
+		      </select>
+		    </div>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-tag"></i>
+		    </span>
+		  </div>
+		  <p class="help" data-tx="t0109:f6acf0fc">选择此令牌的预期用途。</p>
+		</div>
 
+		<div class="field">
+		  <label class="label" data-tx="t0110:dcf4d98e">使用说明</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="例如，&quot;奶奶手机上的垃圾邮件拦截器 &quot;或 &quot;Fritz!Box 起居室&quot;。" type="text"/>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-pen"></i>
+		    </span>
+		  </p>
+		  <p class="help" data-tx="t0112:e1254c4">说明创建此标记的目的。</p>
+		</div>
+
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> 创建标记</button>
+		  </p>
+		</div>
 	</form>
 
 	</div>

@@ -24,11 +24,13 @@ import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.Countries;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet updating user settings.
@@ -62,8 +64,8 @@ public class SettingsServlet extends HttpServlet {
 					deleteAPIKeys(req, resp, userName);
 					return;
 
-				case "createAPIKey":
-					createAPIKey(req, resp, userName);
+				case "createToken":
+					createToken(req, resp, userName);
 					return;
 
 				case "renameAPIKey":
@@ -76,26 +78,52 @@ public class SettingsServlet extends HttpServlet {
 		}
 	}
 
-	private void createAPIKey(HttpServletRequest req, HttpServletResponse resp, String userName) throws ServletException, IOException {
+	private void createToken(HttpServletRequest req, HttpServletResponse resp, String userName) throws ServletException, IOException {
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			Long userId = users.getUserId(userName);
 			if (userId != null) {
 				long now = System.currentTimeMillis();
-				AuthToken apiKey = DB.createAuthorizationTemplate(userName, now, null);
-				apiKey.setLastAccess(0);
-				apiKey.setAccessDownload(true).setAccessQuery(true).setAccessRate(true);
-				String label = req.getParameter(API_KEY_LABEL_PARAM);
-				if (label == null || label.isBlank()) {
-					label = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(now));
+				String tokenType = req.getParameter("token-type");
+				String label = req.getParameter("token-label");
+
+				// Validate and normalize token type - only accept well-defined values
+				boolean isCardDav;
+				if ("CARDDAV".equals(tokenType)) {
+					isCardDav = true;
+				} else {
+					// Default to API for any other value (including null, invalid values, etc.)
+					isCardDav = false;
 				}
-				apiKey.setLabel(label);
-				db.createAuthToken(apiKey);
+
+				// Generate default label if not provided
+				if (label == null || label.isBlank()) {
+					String typeLabel = isCardDav ? "CardDAV" : "API";
+					label = typeLabel + " " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(now));
+				}
+
+				AuthToken token;
+				if (isCardDav) {
+					token = db.createCardDavToken(userName, now, req.getHeader("User-Agent"), label);
+				} else {
+					token = db.createAPIToken(userName, now, req.getHeader("User-Agent"), label);
+				}
 				session.commit();
+
+				String location = req.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+				if (location == null || location.isEmpty()) {
+					location = "/show-api-key";
+				}
+
+				HttpSession httpSession = req.getSession();
+				httpSession.setAttribute("apiKey", token);
+				if (isCardDav) {
+					// Remember at least until setup is complete.
+					httpSession.setAttribute("cardDavToken", token);
+				} 
 				
-				req.setAttribute("apiKey", apiKey);
-				TemplateRenderer.getInstance(req).process("/show-api-key", req, resp);
+				resp.sendRedirect(req.getContextPath() + location);
 			} else {
 				forwardToSettings(req, resp, "myAPIKeys");
 			}

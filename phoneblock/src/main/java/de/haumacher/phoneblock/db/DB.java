@@ -598,17 +598,30 @@ public class DB {
 
 	public AuthToken createAPIToken(String login, long now, String userAgent, String label) {
 		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
-				.setAccessLogin(true)
 				.setAccessDownload(true)
 				.setAccessQuery(true)
 				.setAccessRate(true);
+		return createToken(label, authorization);
+	}
+
+	/**
+	 * Creates a token with only CardDAV access permission.
+	 * This is intended for Fritz!Box installations.
+	 */
+	public AuthToken createCardDavToken(String login, long now, String userAgent, String label) {
+		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
+			.setAccessCarddav(true);  // ONLY CardDAV permission
+		return createToken(label, authorization);
+	}
+
+	private AuthToken createToken(String label, AuthToken authorization) {
 		if (label != null && !label.trim().isEmpty()) {
 			authorization.setLabel(label.trim());
 		}
 		createAuthToken(authorization);
 		return authorization;
 	}
-	
+
 	public static AuthToken createAuthorizationTemplate(String login, long now, String userAgent) {
 		return AuthToken.create()
 			.setUserName(login)
@@ -1606,10 +1619,11 @@ public class DB {
 	/**
 	 * Checks credentials in the given authorization header.
 	 * Ignores whitespaces surrounding username or password.
+	 * @param userAgent 
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String basicAuth(String authHeader) throws IOException {
+	public String basicAuth(String authHeader, String userAgent) throws IOException {
 		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
 			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
@@ -1618,10 +1632,25 @@ public class DB {
 			if (sepIndex >= 0) {
 				String login = decoded.substring(0, sepIndex).trim();
 				String passwd = decoded.substring(sepIndex + 1).trim();
-				return login(login, passwd);
+				
+				if (passwd.startsWith(TOKEN_VERSION)) {
+					// Compatibility - FRITZ!Box cannot send bearer tokens.
+					AuthToken authToken = checkAuthToken(passwd, System.currentTimeMillis(), userAgent, false);
+					if (authToken == null) {
+						LOG.warn("Invalid token received from {}.", login);
+						return null;
+					}
+					if (!login.equals(authToken.getUserName())) {
+						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authToken.getUserName());
+						return null;
+					}
+					return authToken.getUserName();
+				} else {
+					return login(login, passwd);
+				}
 			}
 		}
-		LOG.warn("Invalid authentication received: " + authHeader);
+		LOG.warn("Invalid authentication received: {}", authHeader);
 		return null;
 	}
 

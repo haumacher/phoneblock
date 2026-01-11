@@ -276,9 +276,9 @@ public class TestDB {
 		_db.addUser("foo@bar.com", "Mr. X", "de", "+49", "012300000");
 		_db.addUser("baz@bar.com", "Mr. Y", "de", "+49", "012300000");
 		
-		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000")));
-        assertNull(_db.basicAuth(header("foo@bar.com", "0321")));
-        assertNull(_db.basicAuth(header("xxx@bar.com", "012300000")));
+		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000"), "none"));
+        assertNull(_db.basicAuth(header("foo@bar.com", "0321"), "none"));
+        assertNull(_db.basicAuth(header("xxx@bar.com", "012300000"), "none"));
 		
 		try (SqlSession session = _db.openSession()) {
 			long userA = session.getMapper(Users.class).getUserId("foo@bar.com");

@@ -138,45 +138,54 @@
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Sus claves API</h2>
 	<p data-tx="t0034:c7b86819">Si utiliza otras aplicaciones para comprobar números de teléfono con PhoneBlock (por ejemplo <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> o <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), entonces necesita una clave API. Para la lista de teléfonos bloqueados en su Fritz!Box, simplemente use su nombre de usuario PhoneBlock y contraseña PhoneBlock, así que no necesita una clave API para esto.</p>
 	
-	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">Aún no ha creado ninguna clave API.</p>
+	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Aún no has creado ninguna clave API o token CardDAV.</p>
 	<div th:unless="${explicitTokens.empty}">
-	<table>
-		<tr>
-			<th>
-			</th>
-			<th data-tx="t0036:b4d4555f">Nombre</th>
-			<th data-tx="t0037:1e1e9f52">Genera</th>
-			<th data-tx="t0038:46b89898">Último uso</th>
-			<th data-tx="t0039:9b222602">Dispositivo</th>
-		</tr>
+	<table class="table is-fullwidth">
+		<thead>
+			<tr>
+				<th style="width: 40px;"></th>
+				<th data-tx="t0103:df714d36" style="width: 100px;">Tipo</th>
+				<th data-tx="t0036:b4d4555f">Nombre</th>
+				<th data-tx="t0037:1e1e9f52">Genera</th>
+				<th data-tx="t0038:46b89898">Último uso</th>
+				<th data-tx="t0039:9b222602">Dispositivo</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="authToken : ${explicitTokens}">
+				<td>
+					<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				</td>
 
-		<tr th:each="authToken : ${explicitTokens}">
-			<td>
-				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
-			</td>
-			<td>
-				<span class="apikey-label" th:text="${authToken.label}"></span>
-				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
-					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
-					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
-					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Guardar" type="button">
-						<i class="fa-solid fa-check"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Cancelar" type="button">
-						<i class="fa-solid fa-xmark"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="Cambie el nombre de" type="button">
-						<i class="fa-solid fa-pen-to-square"></i>
-					</button>
-				</form>
-			</td>
-			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
-			<td>
-				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">No utilizados.</th:block>
-				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
-			</td>
-			<td th:text="${authToken.userAgent}"></td>
-		</tr>
+				
+				<td>
+					<span class="tag" th:classappend="${authToken.purposeBadgeClass}" th:text="${authToken.purposeLabel}"></span>
+				</td>
+
+				<td>
+					<span class="apikey-label" th:text="${authToken.label}"></span>
+					<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+						<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+						<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+						<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Guardar" type="button">
+							<i class="fa-solid fa-check"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Cancelar" type="button">
+							<i class="fa-solid fa-xmark"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="Cambie el nombre de" type="button">
+							<i class="fa-solid fa-pen-to-square"></i>
+						</button>
+					</form>
+				</td>
+				<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+				<td>
+					<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">No utilizados.</th:block>
+					<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+				</td>
+				<td th:text="${authToken.userAgent}"></td>
+			</tr>
+		</tbody>
 	</table>
 
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
@@ -193,24 +202,43 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">Generar clave API</h2>
+	<h2 data-tx="t0104:8aa69c2" id="createToken">Crear ficha</h2>
 
-	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+	<p data-tx="t0105:ae49ea3d">¡Crea un token para utilizarlo con aplicaciones o para configurar la lista de bloqueos como una agenda telefónica en tu Fritz!</p>
 
-	<div class="field">
-	  <label class="label" data-tx="t0043:dcf4d98e">Observación de uso</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="Uso para..." type="text"/>
-	  </p>
-	  <p class="help" data-tx="t0044:c40769ec">Aquí puede introducir una nota sobre para qué ha generado la clave API, por ejemplo, "SpamBlocker en el teléfono móvil de la abuela".</p>
-	</div>
-		
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">Generar clave API</button>
-	  </p>
-	</div>
+	<form method="post" th:action="@{/update-settings(action='createToken')}">
+		<div class="field">
+		  <label class="label" data-tx="t0106:ce2b98c8">Tipo de ficha</label>
+		  <div class="control has-icons-left">
+		    <div class="select is-fullwidth">
+		      <select name="token-type">
+		        <option data-tx="t0107:b2896f37" value="API">API - para aplicaciones como SpamBlocker o SpamBlockUp</option>
+		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - para la guía telefónica de Fritz Box</option>
+		      </select>
+		    </div>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-tag"></i>
+		    </span>
+		  </div>
+		  <p class="help" data-tx="t0109:f6acf0fc">Seleccione el uso previsto para esta ficha.</p>
+		</div>
 
+		<div class="field">
+		  <label class="label" data-tx="t0110:dcf4d98e">Observación de uso</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="por ejemplo, &quot;SpamBlocker en el teléfono móvil de la abuela&quot; o &quot;Salón Fritz Box&quot;." type="text"/>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-pen"></i>
+		    </span>
+		  </p>
+		  <p class="help" data-tx="t0112:e1254c4">Indica para qué has creado este token.</p>
+		</div>
+
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Crear ficha</button>
+		  </p>
+		</div>
 	</form>
 
 	</div>

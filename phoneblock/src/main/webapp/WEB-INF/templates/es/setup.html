@@ -9,55 +9,44 @@
 	<div class="content">
 		<h1 data-tx="t0001:3dfe1d89">Instalación como guía telefónica</h1>
 
-<th:block th:unless="${token}">
-		<p data-tx="t0002:10d70c8f">Para instalar la lista de bloqueo, necesita un router de Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" de AVM</a> y una cuenta PhoneBlock. No tiene que ser necesariamente el último modelo, pero debe comprobar si el último FRITZ!OS está instalado en él (07.29 o más reciente). Si no es el caso, utilice las siguientes instrucciones de instalación para comprobar si su versión ya ofrece las opciones necesarias.</p>
-		
-		<p data-tx="t0003:d62d702f">Nota: Debido a limitaciones técnicas del Fritz!Box, no es posible cargar toda la lista de bloqueo en una agenda telefónica. Por lo tanto, la configuración de un <a th:href="@{/anrufbeantworter}">contestador de bloqueo telefónico</a> ofrece una mejor protección contra las llamadas de SPAM.</p>
-		
-		<div class="columns" th:unless="${login}">
-		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login(location='/setup')}">
-				<button class="button is-medium is-info is-fullwidth" data-tx="t0004:e5f7ac3b">Crear una cuenta PhoneBlock</button>
-			</a>
-		  </div>
-		</div>
-		<p data-tx="t0005:d432c618" th:if="${login}">Ya estás registrado como <code dir="ltr" th:text="${userName}"></code>, ¡genial! Puedes empezar ahora mismo.</p>
-</th:block>
+<p data-tx="t0002:10d70c8f">Para instalar la lista de bloqueo, necesita un router de Internet <a th:href="@{/link/fritzbox}">"FRITZ!Box" de AVM</a> y una cuenta PhoneBlock. No tiene que ser necesariamente el último modelo, pero debe comprobar si el último FRITZ!OS está instalado en él (07.29 o más reciente). Si no es el caso, utilice las siguientes instrucciones de instalación para comprobar si su versión ya ofrece las opciones necesarias.</p>
 
-<div class="columns" th:if="${token}">
-  <div class="column">
-	<div class="tile is-ancestor">
-      <div class="tile is-parent">
-      	<article class="tile is-child notification">
-	        <p class="title" data-tx="t0006:3c8661fc">Sus datos de acceso</p>
-	        <p class="subtitle" data-tx="t0007:da814461">Necesitará los siguientes datos para la instalación.</p>
-	        <div class="content">
-		
-				<div class="field">
-				  <label class="label" data-tx="t0008:f48153ce">Dirección de Internet del servidor CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034:3f7efe41" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-				
-				<div class="field">
-				  <label class="label" data-tx="t0009:548c40c1">Nombre de usuario</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035:3f7efe41" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-				
-				<div class="field">
-				  <label class="label" data-tx="t0010:e99dee32">contraseña</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036:3f7efe41" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-			</div>
-		</article>
-	  </div>
-    </div>
+<p data-tx="t0003:d62d702f">Nota: Debido a limitaciones técnicas del Fritz!Box, no es posible cargar toda la lista de bloqueo en una agenda telefónica. Por lo tanto, la configuración de un <a th:href="@{/anrufbeantworter}">contestador de bloqueo telefónico</a> ofrece una mejor protección contra las llamadas de SPAM.</p>
+
+<p data-tx="t0052:818cc317">Siga los siguientes pasos para configurar la lista de bloqueo:</p>
+
+<ol>
+	<li><a data-tx="t0053:5cb36b90" href="#register">Registrarse en PhoneBlock</a> <span class="tag is-success" data-tx="t0054:3378b39d" th:if="${userName}">✓ Hecho</span></li>
+	<li><a data-tx="t0055:d44f7d1" href="#fritzbox">Iniciar sesión en FRITZ!Box</a></li>
+	<li><a data-tx="t0056:d6fa7b4e" href="#phonebook">Crear una nueva guía telefónica "Blocklist</a></li>
+	<li><a data-tx="t0070:958ad5cf" href="#create-token">Generar token CardDAV</a> <span class="tag is-success" data-tx="t0058:3378b39d" th:if="${cardDavToken}">✓ Hecho</span></li>
+	<li><a data-tx="t0071:9e1ea08e" href="#credentials">Introduzca los datos de acceso en Fritz Box</a></li>
+	<li><a data-tx="t0059:4f985acc" href="#verify">Comprobar la instalación</a></li>
+	<li><a data-tx="t0060:91946e2c" href="#block">Activar la restricción de llamadas</a></li>
+</ol>
+
+<h2 data-tx="t0061:e8d5bb12" id="register">Paso 1: Registrarse en PhoneBlock</h2>
+
+<p data-tx="t0062:fffc269" th:unless="${userName}">En primer lugar, es necesario registrarse o iniciar sesión en PhoneBlock para iniciar la configuración.</p>
+
+<div class="columns" th:unless="${userName}">
+  <div class="column is-half is-offset-one-quarter">
+	<a th:href="@{/login(location='/setup')}">
+		<button class="button is-medium is-info is-fullwidth">
+			<span class="icon">
+				<i class="fa-solid fa-right-to-bracket"></i>
+			</span>
+			<span data-tx="t0063:1dc205">Conectarse</span>
+		</button>
+	</a>
   </div>
 </div>
+<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Ya has iniciado sesión como <code dir="ltr" th:text="${userName}"></code>, ¡genial! Continúa con el siguiente paso.</p>
 		
-		<h2 data-tx="t0011:68345496">Conéctese a su FRITZ Box</h2>
-		
+		<h2 data-tx="t0065:8bf85697" id="fritzbox">Paso 2: Inicie sesión en el FRITZ!Box</h2>
+
 		<p data-tx="t0012:2354f60">Para que esto funcione, debe estar en casa en su WLAN o su ordenador debe estar conectado directamente al FRITZ!Box por cable. El FRITZ!Box le pedirá primero su contraseña. Si nunca se ha conectado antes, encontrará esta contraseña en la parte inferior del aparato.</p>
-		
+
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="http://fritz.box" target="_blank">
@@ -65,8 +54,8 @@
 			</a>
 		  </div>
 		</div>
-		
-		<h2 data-tx="t0014:1462db79">Crear una nueva guía telefónica "Blocklist</h2>
+
+		<h2 data-tx="t0066:502b2c97" id="phonebook">Paso 3: Crear una nueva agenda telefónica "Blocklist</h2>
 		
 		<p data-tx="t0015:60de307b">Para que su FRITZ!Box bloquee las llamadas spam, necesita su propia agenda telefónica en la que se introducen todos los números de los llamantes no deseados. Llame a esta agenda telefónica "Blocklist". Para ello</p>
 		
@@ -82,52 +71,91 @@
 		  </div>
 		</div>
 		
-		<h2 data-tx="t0019:1d99d84a">Introduzca los datos de acceso de su cuenta PhoneBlock</h2>
-		
-		<p data-tx="t0020:9d799fdb">Ahora necesitas los datos de acceso de tu cuenta PhoneBlock.</p>
+		<h2 data-tx="t0072:356d507a" id="create-token">Paso 4: Crear token CardDAV</h2>
 
-		<ul>
-			<li data-tx="t0021:4fe53af5"><span class="tag is-danger">11</span> Asigne a la guía telefónica que se va a utilizar como lista de bloqueo el nombre <code dir="ltr">Lista de bloqueo</code>. Necesitará este nombre de nuevo para el siguiente paso.</li>
+		<p data-tx="t0073:5843bc02">Para la configuración en su Fritz!Box necesita un token CardDAV especial como contraseña. Este token sólo se utiliza para la conexión entre su Fritz!Box y PhoneBlock y puede ser revocado en cualquier momento en la configuración.</p>
 
-			<li data-tx="t0022:fceb3cd7">Ahora selecciona <span class="tag is-danger">22</span> la opción <i>Utilizar agenda telefónica de un proveedor online</i>.</li>
+		<th:block th:if="${cardDavToken}">
+			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> ¡Ya has creado un token! Continúa con el siguiente paso.</p>
+		</th:block>
 
-			<li data-tx="t0023:1f3cec2">A continuación puede seleccionar <span class="tag is-danger">33</span> el proveedor <i>CardDAV provider</i>.</li>
+		<th:block th:if="${userName} and ${!cardDavToken}">
+			<p data-tx="t0075:ca529190">¡Ahora cree un token para el Fritz! Opcionalmente, puedes añadir un comentario para saber más tarde para qué se utiliza el token (por ejemplo, "Sala de estar de Fritz!Box").</p>
+
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+				<input name="token-type" type="hidden" value="CARDDAV"/>
+				<div class="field has-addons">
+					<div class="control is-expanded">
+						<input class="input" data-tx="t0049:fe053998" name="token-label" placeholder="Opcional: Comentario (por ejemplo, &quot;Sala de estar de Fritz Box&quot;)" type="text"/>
+					</div>
+					<div class="control">
+						<button class="button is-primary" data-tx="t0050:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Crear ficha</button>
+					</div>
+				</div>
+			</form>
+		</th:block>
+
+		<p data-tx="t0051:9fe447a" th:unless="${userName}">Primero debes <a th:href="@{/login(location='/setup')}">iniciar sesión</a> para crear un token.</p>
+
+		<h2 data-tx="t0076:35997409" id="credentials">Paso 5: Introducir los datos de acceso en Fritz Box</h2>
+
+		<p data-tx="t0020:e4a227b8">¡Ahora tienes que introducir los datos de acceso en el FRITZ!</p>
+
+		<ol>
+			<li>
+				<div data-tx="t0021:d5b1f48a">Introduzca el nombre <code dir="ltr">Lista de bloqueo</code> para la guía telefónica que se va a utilizar como lista de bloqueo. Necesitará este nombre de nuevo para el siguiente paso.</div>
+			</li>
+
+			<li data-tx="t0022:32f6ec7">Seleccione la opción <i>Utilizar agenda telefónica de un proveedor online</i>.</li>
+
+			<li data-tx="t0023:d59c1b48">Seleccione el proveedor <i>ProveedorCardDAV</i>.</li>
 
 			<li>
-				<div data-tx="t0045:bf8e4ca8">Casi listo, ahora los datos de acceso <span class="tag is-danger">44</span>. ¡Es mejor transferirlos usando Cut&amp;Paste para evitar errores de escritura!</div>
-				
+				<div data-tx="t0079:c5926e14">Transfiera los datos de acceso (preferiblemente utilizando Cortar y Pegar para evitar errores de escritura).</div>
+
 				<ul>
+					<li data-tx="t0080:d646341e"><span><i>Dirección de Internet del servidor CardDAV</i>:</span> <code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a> (URL de la libreta de direcciones de PhoneBlock).</li>
+
 					<li>
-						<span data-tx="t0046:73e19fbb">Introduzca la URL de la libreta de direcciones de PhoneBlock en el campo <i>Dirección de Internet del servidor CardDAV</i>:</span>
-						<code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>
+						<i data-tx="t0081:548c40c1">Nombre de usuario</i>: 
+						
+						<th:block data-tx="t0082:baafe4ec" th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a> (Tu nombre de usuario PhoneBlock)</th:block>
+
+						<th:block data-tx="t0083:c9c6fa56" th:unless="${userName}">Primero debe iniciar sesión (véase <a href="#register">Paso 1</a>).</th:block>
 					</li>
 
-					<li data-tx="t0047:a4773f13">Introduzca el nombre de usuario <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></th:block> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a> en el campo <i>nombre de usuario</i>.</li>
-
-					<li data-tx="t0048:fa88d639">La contraseña<th:block th:unless="${token}"> que recibió durante el <a th:href="@{/login(location='/settings')}">registro</a>,</th:block><th:block th:if="${token}"> <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a>,</th:block> debe introducirse ahora en el campo <i>Contraseña</i>. Si ya no encuentra su contraseña, puede restablecerla en la <a th:href="@{/settings/#password}">configuración</a>.</li>
+					<li>
+						<span>
+							<i data-tx="t0084:e99dee32">contraseña</i>:
+						</span>
+						
+						<th:block data-tx="t0085:1d7c0447" th:if="${cardDavToken}"><code dir="ltr" id="passwd2" th:text="${cardDavToken.token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a> (la ficha del paso 4)</th:block>
+						
+						<th:block data-tx="t0078:c657e130" th:unless="${cardDavToken}">Primero debe crear un token (véase <a href="#create-token">Paso 4</a>).</th:block>
+					</li>
 				</ul>
 			</li>
 
-			<li data-tx="t0025:4dc0b0c8">Ahora puede confirmar <span class="tag is-danger">55</span> la creación de la nueva agenda telefónica. Tenga en cuenta: ¡Seleccione <b>ninguno de sus teléfonos</b> en "Asignación de teléfonos"! De lo contrario, sólo encontrará las llamadas SPAM en los contactos de su teléfono.</li>
-		</ul>
-		
+			<li data-tx="t0025:a4fb7bb8">Ahora puede confirmar la creación de la nueva agenda telefónica. Tenga en cuenta: ¡Seleccione <b>ninguno de sus teléfonos</b> en "Asignación de teléfonos"! De lo contrario, sólo encontrará llamadas SPAM en los contactos de su teléfono.</li>
+		</ol>
+
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
 			<img alt="Crear una nueva libreta de direcciones" class="image" data-tx="t0038:50de9d04" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0026:688d3d5a">Compruebe si se ha creado su "Lista de bloqueo</h2>
-		
+		<h2 data-tx="t0068:49ed5643" id="verify">Paso 6: Comprobar la instalación</h2>
+
 		<p data-tx="t0027:6bd9c881">Si todo ha ido bien, entonces su FRITZ!Box ha cargado todos los números de la lista de bloqueo PhoneBlock. Ahora debería tener una nueva agenda "Lista de bloqueo" en la sección "Telefonía / Agenda". Si selecciona la pestaña "Lista de Bloqueo", podrá ver todos los números de las personas que actualmente realizan llamadas spam.</p>
-		
+
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
 			<img alt="Mostrar la lista de bloqueos recuperada" class="image" data-tx="t0039:3d7cbd9f" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0028:7a66db10">Deje que el FRITZ!Box rechace las llamadas de la "Lista de Bloqueo".</h2>
+		<h2 data-tx="t0069:16c40784" id="block">Paso 7: Activar la restricción de llamadas</h2>
 		
 		<p data-tx="t0029:ffbbaf55">En la sección "Telefonía / Gestión de llamadas", ahora puede especificar la nueva guía telefónica "Lista de bloqueo" como rango de números de teléfono a bloquear.</p>			
 		

@@ -125,7 +125,7 @@ public abstract class LoginFilter implements Filter {
 					}
 				}
 			} else if (allowBasicAuth(req)) {
-				String userName = db.basicAuth(authHeader);
+				String userName = db.basicAuth(authHeader, req.getHeader("User-Agent"));
 				if (userName != null) {
 					setUser(req, userName);
 					loggedIn(req, resp, userName, chain);

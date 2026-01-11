@@ -138,45 +138,54 @@
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Τα κλειδιά σας API</h2>
 	<p data-tx="t0034:c7b86819">Εάν χρησιμοποιείτε άλλες εφαρμογές για τον έλεγχο τηλεφωνικών αριθμών με το PhoneBlock (π.χ. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> ή <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), τότε χρειάζεστε ένα κλειδί API. Για τον τηλεφωνικό κατάλογο μπλοκαρίσματος στο Fritz!Box σας, χρησιμοποιείτε απλώς το όνομα χρήστη PhoneBlock και τον κωδικό πρόσβασης PhoneBlock, οπότε δεν χρειάζεστε κλειδί API για αυτό.</p>
 	
-	<p data-tx="t0035:c72f2c1f" th:if="${explicitTokens.empty}">Δεν έχετε δημιουργήσει ακόμη κανένα κλειδί API.</p>
+	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Δεν έχετε ακόμη δημιουργήσει κλειδιά API ή κουπόνια CardDAV.</p>
 	<div th:unless="${explicitTokens.empty}">
-	<table>
-		<tr>
-			<th>
-			</th>
-			<th data-tx="t0036:b4d4555f">Όνομα</th>
-			<th data-tx="t0037:1e1e9f52">Δημιουργεί</th>
-			<th data-tx="t0038:46b89898">Τελευταία χρήση</th>
-			<th data-tx="t0039:9b222602">Συσκευή</th>
-		</tr>
+	<table class="table is-fullwidth">
+		<thead>
+			<tr>
+				<th style="width: 40px;"></th>
+				<th data-tx="t0103:df714d36" style="width: 100px;">Τύπος</th>
+				<th data-tx="t0036:b4d4555f">Όνομα</th>
+				<th data-tx="t0037:1e1e9f52">Δημιουργεί</th>
+				<th data-tx="t0038:46b89898">Τελευταία χρήση</th>
+				<th data-tx="t0039:9b222602">Συσκευή</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="authToken : ${explicitTokens}">
+				<td>
+					<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
+				</td>
 
-		<tr th:each="authToken : ${explicitTokens}">
-			<td>
-				<input class="apikey-delete-checkbox" form="deleteAPIKeysForm" th:name="'key-' + ${authToken.id}" type="checkbox"/>
-			</td>
-			<td>
-				<span class="apikey-label" th:text="${authToken.label}"></span>
-				<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
-					<input name="keyId" th:value="${authToken.id}" type="hidden"/>
-					<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
-					<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Αποθήκευση" type="button">
-						<i class="fa-solid fa-check"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Ακύρωση" type="button">
-						<i class="fa-solid fa-xmark"></i>
-					</button>
-					<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="Μετονομασία" type="button">
-						<i class="fa-solid fa-pen-to-square"></i>
-					</button>
-				</form>
-			</td>
-			<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
-			<td>
-				<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">Δεν χρησιμοποιήθηκε.</th:block>
-				<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
-			</td>
-			<td th:text="${authToken.userAgent}"></td>
-		</tr>
+				
+				<td>
+					<span class="tag" th:classappend="${authToken.purposeBadgeClass}" th:text="${authToken.purposeLabel}"></span>
+				</td>
+
+				<td>
+					<span class="apikey-label" th:text="${authToken.label}"></span>
+					<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+						<input name="keyId" th:value="${authToken.id}" type="hidden"/>
+						<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
+						<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Αποθήκευση" type="button">
+							<i class="fa-solid fa-check"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Ακύρωση" type="button">
+							<i class="fa-solid fa-xmark"></i>
+						</button>
+						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="Μετονομασία" type="button">
+							<i class="fa-solid fa-pen-to-square"></i>
+						</button>
+					</form>
+				</td>
+				<td th:text="${#dates.format(#converters.fromEpoch(authToken.created))}"></td>
+				<td>
+					<th:block data-tx="t0040:64914f4f" th:unless="${authToken.lastAccess}">Δεν χρησιμοποιήθηκε.</th:block>
+					<th:block th:if="${authToken.lastAccess}" th:text="${#dates.format(#converters.fromEpoch(authToken.lastAccess))}"></th:block>
+				</td>
+				<td th:text="${authToken.userAgent}"></td>
+			</tr>
+		</tbody>
 	</table>
 
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
@@ -193,24 +202,43 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0042:a606e0a8" id="createAPIKey">Δημιουργία κλειδιού API</h2>
+	<h2 data-tx="t0104:8aa69c2" id="createToken">Δημιουργία token</h2>
 
-	<form method="post" th:action="@{/update-settings(action='createAPIKey')}">
+	<p data-tx="t0105:ae49ea3d">Δημιουργήστε ένα κουπόνι για χρήση με εφαρμογές ή για να ρυθμίσετε τη λίστα αποκλεισμού ως τηλεφωνικό κατάλογο στο Fritz!</p>
 
-	<div class="field">
-	  <label class="label" data-tx="t0043:dcf4d98e">Παρατήρηση για τη χρήση</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0087:1a1a057b" name="apikey-label" placeholder="Χρήση για..." type="text"/>
-	  </p>
-	  <p class="help" data-tx="t0044:c40769ec">Μπορείτε να καταχωρήσετε εδώ μια σημείωση σχετικά με το για ποιο λόγο δημιουργήσατε το κλειδί API, π.χ. "SpamBlocker στο κινητό τηλέφωνο της γιαγιάς.".</p>
-	</div>
-		
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" data-tx="t0045:a606e0a8" type="submit">Δημιουργία κλειδιού API</button>
-	  </p>
-	</div>
+	<form method="post" th:action="@{/update-settings(action='createToken')}">
+		<div class="field">
+		  <label class="label" data-tx="t0106:ce2b98c8">Τύπος Token</label>
+		  <div class="control has-icons-left">
+		    <div class="select is-fullwidth">
+		      <select name="token-type">
+		        <option data-tx="t0107:b2896f37" value="API">API - για εφαρμογές όπως το SpamBlocker ή το SpamBlockUp</option>
+		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - για τον τηλεφωνικό κατάλογο Fritz!Box</option>
+		      </select>
+		    </div>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-tag"></i>
+		    </span>
+		  </div>
+		  <p class="help" data-tx="t0109:f6acf0fc">Επιλέξτε την προβλεπόμενη χρήση αυτού του κουπονιού.</p>
+		</div>
 
+		<div class="field">
+		  <label class="label" data-tx="t0110:dcf4d98e">Παρατήρηση για τη χρήση</label>
+		  <p class="control has-icons-left">
+		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="π.χ. 'SpamBlocker στο κινητό τηλέφωνο της γιαγιάς' ή 'Fritz!Box σαλόνι'" type="text"/>
+		    <span class="icon is-small is-left">
+		      <i class="fa-solid fa-pen"></i>
+		    </span>
+		  </p>
+		  <p class="help" data-tx="t0112:e1254c4">Μια ένδειξη για ποιο λόγο δημιουργήσατε αυτό το token.</p>
+		</div>
+
+		<div class="field is-grouped">
+		  <p class="control">
+		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Δημιουργία κουπονιού</button>
+		  </p>
+		</div>
 	</form>
 
 	</div>

@@ -273,13 +273,26 @@ public class DefaultController implements WebController {
 		}
 		
 		HttpSession session = request.getSession(false);
-		String userName = LoginFilter.getAuthenticatedUser(session);
-  		String token = RegistrationServlet.getPassword(session);
+		if (session != null) {
+			String userName = LoginFilter.getAuthenticatedUser(session);
+			String token = RegistrationServlet.getPassword(session);
+			Object cardDavToken = session.getAttribute("cardDavToken");
+			Object apiKey = session.getAttribute("apiKey");
+			
+			// Show this only once.
+			session.removeAttribute("cardDavToken");
+			session.removeAttribute("apiKey");
+
+			ctx.setVariable("userName", userName);
+			ctx.setVariable("token", token);
+			ctx.setVariable("cardDavToken", cardDavToken);
+			ctx.setVariable("apiKey", apiKey);
+			ctx.setVariable("supporterId", userName == null ? null : "PhoneBlock-" + userName.substring(0, 13));
+			ctx.setVariable("loggedIn", Boolean.valueOf(userName != null));
+		} else {
+			ctx.setVariable("loggedIn", Boolean.FALSE);
+		}
 		
-        ctx.setVariable("userName", userName);
-        ctx.setVariable("token", token);
-        ctx.setVariable("supporterId", userName == null ? null : "PhoneBlock-" + userName.substring(0, 13));
-        ctx.setVariable("loggedIn", Boolean.valueOf(userName != null));
         ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, LoginServlet.location(request));
         ctx.setVariable("currentPage", ServletUtil.currentPage(request));
         

@@ -9,55 +9,44 @@
 	<div class="content">
 		<h1 data-tx="t0001:3dfe1d89">التثبيت كدليل الهاتف</h1>
 
-<th:block th:unless="${token}">
-		<p data-tx="t0002:10d70c8f">لتثبيت قائمة الحظر، أنت بحاجة إلى جهاز توجيه إنترنت <a th:href="@{/link/fritzbox}"> "FRITZ!Box" من AVM وحساب PhoneBlock. لا يجب بالضرورة أن يكون أحدث طراز، ولكن يجب عليك التحقق مما إذا كان أحدث نظام تشغيل FRITZ!OS مثبتًا عليه (07.29 أو أحدث). إذا لم تكن هذه هي الحالة، استخدم إرشادات التثبيت التالية للتحقق مما إذا كان الإصدار الخاص بك يوفر بالفعل الخيارات الضرورية.</a></p>
-		
-		<p data-tx="t0003:d62d702f">ملاحظة: نظرًا للقيود التقنية الخاصة بـ Fritz!Box، لا يمكن تحميل قائمة الحظر بأكملها في دفتر الهاتف. ولذلك، فإن إعداد <a th:href="@{/anrufbeantworter}"> جهاز الرد على المكالمات الهاتفية المحظورة يوفر حماية أفضل ضد المكالمات غير المرغوب فيها.</a></p>
-		
-		<div class="columns" th:unless="${login}">
-		  <div class="column is-half is-offset-one-quarter">
-			<a th:href="@{/login(location='/setup')}">
-				<button class="button is-medium is-info is-fullwidth" data-tx="t0004:e5f7ac3b">إنشاء حساب "حظر الهاتف</button>
-			</a>
-		  </div>
-		</div>
-		<p data-tx="t0005:d432c618" th:if="${login}">أنت مسجل بالفعل باسم <code dir="ltr" th:text="${userName}"></code>، رائع! يمكنك البدء على الفور.</p>
-</th:block>
+<p data-tx="t0002:10d70c8f">لتثبيت قائمة الحظر، أنت بحاجة إلى جهاز توجيه إنترنت <a th:href="@{/link/fritzbox}"> "FRITZ!Box" من AVM وحساب PhoneBlock. لا يجب بالضرورة أن يكون أحدث طراز، ولكن يجب عليك التحقق مما إذا كان أحدث نظام تشغيل FRITZ!OS مثبتًا عليه (07.29 أو أحدث). إذا لم تكن هذه هي الحالة، استخدم إرشادات التثبيت التالية للتحقق مما إذا كان الإصدار الخاص بك يوفر بالفعل الخيارات الضرورية.</a></p>
 
-<div class="columns" th:if="${token}">
-  <div class="column">
-	<div class="tile is-ancestor">
-      <div class="tile is-parent">
-      	<article class="tile is-child notification">
-	        <p class="title" data-tx="t0006:3c8661fc">تفاصيل تسجيل الدخول الخاصة بك</p>
-	        <p class="subtitle" data-tx="t0007:da814461">ستحتاج إلى البيانات التالية للتثبيت.</p>
-	        <div class="content">
-		
-				<div class="field">
-				  <label class="label" data-tx="t0008:f48153ce">عنوان الإنترنت الخاص بخادم CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0034:3f7efe41" href="#" id="url_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-				
-				<div class="field">
-				  <label class="label" data-tx="t0009:548c40c1">اسم المستخدم</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0035:3f7efe41" id="login_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-				
-				<div class="field">
-				  <label class="label" data-tx="t0010:e99dee32">كلمة السر</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0036:3f7efe41" href="#" id="passwd_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-			</div>
-		</article>
-	  </div>
-    </div>
+<p data-tx="t0003:d62d702f">ملاحظة: نظرًا للقيود التقنية الخاصة بـ Fritz!Box، لا يمكن تحميل قائمة الحظر بأكملها في دفتر الهاتف. ولذلك، فإن إعداد <a th:href="@{/anrufbeantworter}"> جهاز الرد على المكالمات الهاتفية المحظورة يوفر حماية أفضل ضد المكالمات غير المرغوب فيها.</a></p>
+
+<p data-tx="t0052:818cc317">استخدم الخطوات التالية لإعداد قائمة الحظر:</p>
+
+<ol>
+	<li><a data-tx="t0053:5cb36b90" href="#register">التسجيل مع PhoneBlock</a> <span class="tag is-success" data-tx="t0054:3378b39d" th:if="${userName}">✓ تم</span></li>
+	<li><a data-tx="t0055:d44f7d1" href="#fritzbox">تسجيل الدخول إلى FRITZ!Box</a></li>
+	<li><a data-tx="t0056:d6fa7b4e" href="#phonebook">إنشاء دفتر هاتف جديد "قائمة الحظر"</a></li>
+	<li><a data-tx="t0070:958ad5cf" href="#create-token">إنشاء رمز CardDAV المميز</a> <span class="tag is-success" data-tx="t0058:3378b39d" th:if="${cardDavToken}">✓ تم</span></li>
+	<li><a data-tx="t0071:9e1ea08e" href="#credentials">أدخل بيانات تسجيل الدخول في Fritz!Box</a></li>
+	<li><a data-tx="t0059:4f985acc" href="#verify">تحقق من التثبيت</a></li>
+	<li><a data-tx="t0060:91946e2c" href="#block">تنشيط حظر المكالمات</a></li>
+</ol>
+
+<h2 data-tx="t0061:e8d5bb12" id="register">الخطوة 1: التسجيل في PhoneBlock</h2>
+
+<p data-tx="t0062:fffc269" th:unless="${userName}">أولاً، تحتاج أولاً إلى التسجيل أو تسجيل الدخول إلى PhoneBlock لبدء الإعداد.</p>
+
+<div class="columns" th:unless="${userName}">
+  <div class="column is-half is-offset-one-quarter">
+	<a th:href="@{/login(location='/setup')}">
+		<button class="button is-medium is-info is-fullwidth">
+			<span class="icon">
+				<i class="fa-solid fa-right-to-bracket"></i>
+			</span>
+			<span data-tx="t0063:1dc205">تسجيل الدخول</span>
+		</button>
+	</a>
   </div>
 </div>
+<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> لقد قمت بتسجيل الدخول بالفعل باسم <code dir="ltr" th:text="${userName}"></code>، رائع! تابع إلى الخطوة التالية.</p>
 		
-		<h2 data-tx="t0011:68345496">تسجيل الدخول إلى صندوق FRITZ!Box الخاص بك</h2>
-		
+		<h2 data-tx="t0065:8bf85697" id="fritzbox">الخطوة 2: تسجيل الدخول إلى FRITZ!Box</h2>
+
 		<p data-tx="t0012:2354f60">لكي يعمل هذا، يجب أن تكون في المنزل في شبكة WLAN الخاصة بك أو يجب أن يكون جهاز الكمبيوتر الخاص بك متصلاً مباشرةً بشبكة FRITZ!Box عبر الكابل. سيطلب منك FRITZ!Box أولاً كلمة المرور الخاصة بك. إذا لم تقم بتسجيل الدخول من قبل، فستجد كلمة المرور هذه في الجزء السفلي من الجهاز.</p>
-		
+
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
 			<a href="http://fritz.box" target="_blank">
@@ -65,8 +54,8 @@
 			</a>
 		  </div>
 		</div>
-		
-		<h2 data-tx="t0014:1462db79">إنشاء دفتر هاتف جديد "قائمة الحظر"</h2>
+
+		<h2 data-tx="t0066:502b2c97" id="phonebook">الخطوة 3: إنشاء دفتر هاتف جديد "قائمة الحظر"</h2>
 		
 		<p data-tx="t0015:60de307b">لكي يتمكن صندوق FRITZ!Box الخاص بك من حظر المكالمات غير المرغوب فيها، فإنه يحتاج إلى دفتر الهاتف الخاص به والذي يتم فيه إدخال جميع أرقام المتصلين غير المرغوب فيهم. أطلق على دفتر الهاتف هذا اسم "قائمة الحظر". لهذا</p>
 		
@@ -82,52 +71,91 @@
 		  </div>
 		</div>
 		
-		<h2 data-tx="t0019:1d99d84a">أدخل تفاصيل تسجيل الدخول لحساب PhoneBlock الخاص بك</h2>
-		
-		<p data-tx="t0020:9d799fdb">أنت الآن بحاجة إلى تفاصيل تسجيل الدخول لحساب PhoneBlock الخاص بك.</p>
+		<h2 data-tx="t0072:356d507a" id="create-token">الخطوة 4: إنشاء رمز CardDAV المميز</h2>
 
-		<ul>
-			<li data-tx="t0021:4fe53af5"><span class="tag is-danger">11</span> امنح دفتر الهاتف الذي سيتم استخدامه كقائمة حظر الاسم <code dir="ltr">قائمة الحظر</code>. ستحتاج إلى هذا الاسم مرة أخرى في الخطوة التالية.</li>
+		<p data-tx="t0073:5843bc02">للإعداد في Fritz!Box الخاص بك، تحتاج إلى رمز CardDAV مميز ككلمة مرور. يُستخدم هذا الرمز المميز فقط للاتصال بين Fritz!Box و PhoneBlock ويمكن إبطاله في أي وقت في الإعدادات.</p>
 
-			<li data-tx="t0022:fceb3cd7">حدد الآن الخيار <span class="tag is-danger">22</span> الخيار <i>استخدام دليل الهاتف الخاص بمزود خدمة عبر الإنترنت</i>.</li>
+		<th:block th:if="${cardDavToken}">
+			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> لقد قمت بالفعل بإنشاء رمز مميز! تابع إلى الخطوة التالية.</p>
+		</th:block>
 
-			<li data-tx="t0023:1f3cec2">بعد ذلك يمكنك تحديد <span class="tag is-danger">33</span> الموفر <i>موفر بطاقة كارد ديف</i>.</li>
+		<th:block th:if="${userName} and ${!cardDavToken}">
+			<p data-tx="t0075:ca529190">الآن أنشئ رمزًا مميزًا لـ Fritz! يمكنك إضافة تعليق اختياريًا حتى تعرف لاحقًا الغرض من استخدام الرمز المميز (على سبيل المثال "غرفة معيشة فريتز! صندوق فريتز!").</p>
+
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+				<input name="token-type" type="hidden" value="CARDDAV"/>
+				<div class="field has-addons">
+					<div class="control is-expanded">
+						<input class="input" data-tx="t0049:fe053998" name="token-label" placeholder="اختياري: تعليق (على سبيل المثال &quot;غرفة معيشة فريتز! صندوق فريتز&quot;)" type="text"/>
+					</div>
+					<div class="control">
+						<button class="button is-primary" data-tx="t0050:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> إنشاء رمز مميز</button>
+					</div>
+				</div>
+			</form>
+		</th:block>
+
+		<p data-tx="t0051:9fe447a" th:unless="${userName}">يجب عليك أولاً <a th:href="@{/login(location='/setup')}"> تسجيل الدخول</a> لإنشاء رمز مميز.</p>
+
+		<h2 data-tx="t0076:35997409" id="credentials">الخطوة 5: أدخل بيانات تسجيل الدخول في Fritz!Box</h2>
+
+		<p data-tx="t0020:e4a227b8">الآن عليك إدخال بيانات تسجيل الدخول في FRITZ!</p>
+
+		<ol>
+			<li>
+				<div data-tx="t0021:d5b1f48a">أدخل الاسم <code dir="ltr"> قائمة الحظر</code> لدليل الهاتف الذي سيتم استخدامه كقائمة حظر. ستحتاج إلى هذا الاسم مرة أخرى في الخطوة التالية.</div>
+			</li>
+
+			<li data-tx="t0022:32f6ec7">حدد الخيار <i>استخدام دفتر الهاتف الخاص بموفر عبر الإنترنت</i>.</li>
+
+			<li data-tx="t0023:d59c1b48">اختر الموفر <i> موفر بطاقة كارد ديف</i>.</li>
 
 			<li>
-				<div data-tx="t0045:bf8e4ca8">أوشكت على الانتهاء، والآن بيانات تسجيل الدخول <span class="tag is-danger">44</span>. من الأفضل نقلها باستخدام القص واللصق لتجنب أخطاء الكتابة!</div>
-				
+				<div data-tx="t0079:c5926e14">نقل بيانات تسجيل الدخول (يفضل استخدام القص واللصق لتجنب أخطاء الكتابة).</div>
+
 				<ul>
+					<li data-tx="t0080:d646341e"><span>عنوان الإنترنت لخادم CardDAV:</span>: (عنوان URL لدفتر عناوين PhoneBlock)<i></i><code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="نسخ إلى الحافظة."></a><i class="fa-solid fa-copy"></i></li>
+
 					<li>
-						<span data-tx="t0046:73e19fbb">أدخل عنوان URL لدفتر عناوين PhoneBlock في الحقل <i> عنوان الإنترنت لخادم CardDAV:</i></span>
-						<code dir="ltr" id="url2" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0042:3f7efe41" href="#" id="url2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>
+						<i data-tx="t0081:548c40c1">اسم المستخدم</i>: 
+						
+						<th:block data-tx="t0082:baafe4ec" th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a> (اسم المستخدم الخاص بك في "كتلة الهاتف")</th:block>
+
+						<th:block data-tx="t0083:c9c6fa56" th:unless="${userName}">يجب عليك أولاً تسجيل الدخول (انظر <a href="#register">الخطوة 1</a>).</th:block>
 					</li>
 
-					<li data-tx="t0047:a4773f13">أدخل اسم المستخدم <th:block th:if="${userName}"><code dir="ltr" id="login2" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0043:3f7efe41" href="#" id="login2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"> الذي تلقيته أثناء <a th:href="@{/login(location='/settings')}">التسجيل في الحقل <i>اسم المستخدم.</i></a></i></a></th:block></li>
-
-					<li data-tx="t0048:fa88d639">يجب الآن إدخال كلمة المرور<th:block th:unless="${token}"> التي تلقيتها أثناء <a th:href="@{/login(location='/settings')}"> التسجيل، <th:block th:if="${token}">، <code dir="ltr" id="passwd2" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a>، في الحقل <i>كلمة المرور. إذا لم يعد بإمكانك العثور على كلمة المرور الخاصة بك، يمكنك إعادة تعيينها في <a th:href="@{/settings/#password}"> الإعدادات.</a></i></th:block></a></th:block></li>
+					<li>
+						<span>
+							<i data-tx="t0084:e99dee32">كلمة السر</i>:
+						</span>
+						
+						<th:block data-tx="t0085:1d7c0447" th:if="${cardDavToken}"><code dir="ltr" id="passwd2" th:text="${cardDavToken.token}"></code><a class="copyToClipboard" data-tx="t0044:3f7efe41" href="#" id="passwd2_" title="نسخ إلى الحافظة."><i class="fa-solid fa-copy"></i></a> (الرمز المميز من الخطوة 4)</th:block>
+						
+						<th:block data-tx="t0078:c657e130" th:unless="${cardDavToken}">يجب عليك أولاً إنشاء رمز مميز (انظر <a href="#create-token"> الخطوة 4</a>).</th:block>
+					</li>
 				</ul>
 			</li>
 
-			<li data-tx="t0025:4dc0b0c8">يمكنك الآن تأكيد <span class="tag is-danger">55</span> إنشاء دفتر الهاتف الجديد. يرجى الملاحظة: حدد <b> لا شيء من هواتفك تحت "تعيين الهاتف"! وإلا ستجد فقط المتصلين غير المرغوب فيهم في جهات الاتصال على هاتفك.</b></li>
-		</ul>
-		
+			<li data-tx="t0025:a4fb7bb8">يمكنك الآن تأكيد إنشاء دفتر الهاتف الجديد. يرجى الملاحظة: حدد <b> لا شيء من هواتفك تحت "تعيين الهاتف"! وإلا ستجد فقط المتصلين غير المرغوب فيهم في جهات الاتصال على هاتفك.</b></li>
+		</ol>
+
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
 			<img alt="إنشاء دفتر عناوين جديد" class="image" data-tx="t0038:50de9d04" th:src="@{/assets/img/setup/03-add-address-book.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0026:688d3d5a">تحقق مما إذا كانت "قائمة الحظر" قد تم إنشاؤها أم لا</h2>
-		
+		<h2 data-tx="t0068:49ed5643" id="verify">الخطوة 6: التحقق من التثبيت</h2>
+
 		<p data-tx="t0027:6bd9c881">إذا سار كل شيء على ما يرام، فإن جهاز FRITZ!Box الخاص بك قد قام بتحميل جميع الأرقام من قائمة حظر الهاتف. يجب أن يكون لديك الآن دليل هاتف جديد "قائمة الحظر" في قسم "الهاتف / دليل الهاتف". إذا حددت علامة التبويب "قائمة الحظر"، يمكنك رؤية جميع أرقام المتصلين الحاليين غير المرغوب فيهم.</p>
-		
+
 		<div class="columns">
 		  <div class="column is-8 is-offset-2">
 			<img alt="إظهار قائمة الحظر المسترجعة" class="image" data-tx="t0039:3d7cbd9f" th:src="@{/assets/img/setup/04-check-blocklist.png}"/>
 		  </div>
 		</div>
 
-		<h2 data-tx="t0028:7a66db10">دع FRITZ!Box يرفض المكالمات من "قائمة الحظر"</h2>
+		<h2 data-tx="t0069:16c40784" id="block">الخطوة 7: تفعيل حظر المكالمات</h2>
 		
 		<p data-tx="t0029:ffbbaf55">في قسم "الاتصالات الهاتفية/معالجة المكالمات"، يمكنك الآن تحديد دفتر الهاتف الجديد "Blocklist" كنطاق الأرقام المراد حظرها.</p>			
 		
