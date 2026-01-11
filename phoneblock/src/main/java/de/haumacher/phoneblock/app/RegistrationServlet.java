@@ -105,7 +105,7 @@ public class RegistrationServlet extends HttpServlet {
 	}
 
 	/**
-	 * Displays the setup page.
+	 * Displays the setup page or credentials page for new accounts.
 	 */
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
@@ -124,11 +124,18 @@ public class RegistrationServlet extends HttpServlet {
 		case REGISTER_WEB:
 		default:
 			if (passwd != null) {
+				// For new accounts, redirect to credentials page first.
 				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+
+				// Use the answer bot setup page as default target location after login. 
+				String targetLocation = LoginServlet.location(req, "/anrufbeantworter");
+				String credentialsUrl = req.getContextPath() + "/show-credentials" + LoginServlet.locationParam(targetLocation, true);
+				resp.sendRedirect(credentialsUrl);
+			} else {
+				// For existing accounts, go directly to target location
+				String location = LoginServlet.location(req, SettingsServlet.PATH);
+				resp.sendRedirect(req.getContextPath() + location);
 			}
-			
-			String location = LoginServlet.location(req, passwd == null ? SettingsServlet.PATH : "/setup");
-			resp.sendRedirect(req.getContextPath() + location);
 			break;
 		}
 	}
