@@ -28,13 +28,16 @@ The API supports both anonymous access and authenticated access using bearer tok
 To create an authentication token for your app, redirect the user to PhoneBlock's mobile login page:
 
 ```
-https://phoneblock.net/phoneblock/mobile/login?label=YourAppName%20on%20Device
+https://phoneblock.net/phoneblock/mobile/login?appId=YourAppId&label=YourAppName%20on%20Device
 ```
 
 **URL Parameters:**
+- `appId` (required): Your registered app identifier (obtained through registration)
 - `label` (optional): A user-visible label for the token that will appear in the user's settings page
   - Example: `"MyApp SMS Blocker on Samsung S23"`
   - Will be URL-encoded: `MyApp%20SMS%20Blocker%20on%20Samsung%20S23`
+
+**Important:** You must register your app with PhoneBlock before integration (see Step 4 below for registration process).
 
 ### Step 2: User Authentication
 
@@ -57,41 +60,94 @@ POST /phoneblock/create-token HTTP/1.1
 Host: phoneblock.net
 Content-Type: application/x-www-form-urlencoded
 
-tokenLabel=YourAppName+on+Device
+appId=YourAppId&tokenLabel=YourAppName+on+Device
 ```
+
+**Parameters:**
+- `appId` (required): Your registered app identifier (e.g., "PhoneSpamBlocker")
+- `tokenLabel` (optional): User-visible label for the token in settings
 
 **Response:**
 ```http
 HTTP/1.1 302 Found
-Location: /phoneblock/mobile/response?loginToken=<generated-token>
+Location: YourAppScheme://auth?loginToken=<generated-token>
 ```
 
-### Step 4: Token Reception
+The redirect URL is determined by your registered `appId`. Each registered app has a configured redirect URI that PhoneBlock uses after token creation.
 
-Your app should intercept the redirect to `/mobile/response` and extract the `loginToken` parameter:
+### Step 4: Register Your App with PhoneBlock
+
+Before integrating, you need to register your app with PhoneBlock to receive an `appId` and configure your redirect URI.
+
+**Registration Process:**
+
+1. **Contact PhoneBlock** via GitHub issues (https://github.com/haumacher/phoneblock/issues)
+2. **Provide the following information:**
+   - App name (user-visible)
+   - App identifier/package name (e.g., `com.yourcompany.yourapp`)
+   - Proposed `appId` (short identifier, e.g., "YourAppName")
+   - Redirect URI scheme (e.g., `yourapp://auth`)
+   - Brief description of your app's purpose
+   - Contact information for support
+
+3. **Receive your credentials:**
+   - `appId`: Your registered app identifier
+   - Configured redirect URI that PhoneBlock will use
+
+**Current Registered Apps:**
+- `PhoneBlockMobile` → Redirects to `PhoneBlockMobile://auth`
+- `PhoneSpamBlocker` → Redirects to `PhoneSpamBlocker://auth`
+
+### Step 5: Token Reception
+
+After token creation, PhoneBlock redirects to your registered redirect URI with the token:
 
 ```
-/phoneblock/mobile/response?loginToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+YourAppScheme://auth?loginToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**Implementation Options:**
+**Implement Custom URL Scheme in Your App:**
 
-#### Option A: Custom URL Scheme (Recommended for Native Apps)
+For Android, declare the intent filter in your `AndroidManifest.xml`:
 
-TODO: Not available, the redirection URL currently cannot be configured.
-
-Register a custom URL scheme in your app (e.g., `yourapp://`) and configure PhoneBlock to redirect there:
-
+```xml
+<activity android:name=".AuthCallbackActivity">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="yourapp" android:host="auth" />
+    </intent-filter>
+</activity>
 ```
-yourapp://auth?loginToken=<token>
+
+Then handle the intent in your activity:
+
+```java
+public class AuthCallbackActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+
+        if (data != null && "auth".equals(data.getHost())) {
+            String loginToken = data.getQueryParameter("loginToken");
+            if (loginToken != null) {
+                // Store token securely
+                storeToken(loginToken);
+                // Navigate to main app
+                startMainActivity();
+            }
+        }
+
+        finish();
+    }
+}
 ```
 
-#### Option B: Deep Link
-Configure your app to handle `https://phoneblock.net/phoneblock/mobile/response` as a deep link.
-
-TODO: This URL is reserved for PhoneBlock Mobile. Ask for a custom integration URL.
-
-### Step 5: Store Token Securely
+### Step 6: Store Token Securely
 
 Store the token in your app's secure storage:
 
@@ -899,8 +955,9 @@ private boolean testConnection() {
 private void showAuthenticationPrompt() {
     // Redirect user to login page to get new token
     Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.setData(Uri.parse("https://phoneblock.net/phoneblock/mobile/login?label=" +
-        Uri.encode("MyApp on " + android.os.Build.MODEL)));
+    String label = "MyApp on " + android.os.Build.MODEL;
+    intent.setData(Uri.parse("https://phoneblock.net/phoneblock/mobile/login?appId=YourAppId&label=" +
+        Uri.encode(label)));
     context.startActivity(intent);
 }
 ```
