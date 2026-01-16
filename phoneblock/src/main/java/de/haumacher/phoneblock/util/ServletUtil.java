@@ -4,6 +4,8 @@
 package de.haumacher.phoneblock.util;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -86,6 +88,33 @@ public class ServletUtil {
 			currentPage = requestURI.substring(req.getContextPath().length());
 		}
 		return currentPage;
+	}
+
+	public static String forwardParam(String url, HttpServletRequest req, String ...params) {
+		for (String param : params) {
+			url = forwardParam(url, req, param);
+		}
+		return url;
+	}
+	
+	public static String forwardParam(String url, HttpServletRequest req, String param) {
+		String value = req.getParameter(param);
+		return withParam(url, param, value);
+	}
+	
+	public static String withParam(String url, String param, String tokenLabel) {
+		if (tokenLabel == null || tokenLabel.trim().isEmpty()) {
+			return url;
+		}
+		String separator = url.indexOf('?') < 0 ? "?" : "&";
+		return url += separator + param + "=" + URLEncoder.encode(tokenLabel, StandardCharsets.UTF_8);
+	}
+
+	public static void declareAttribute(HttpServletRequest req, String param) {
+		String tokenLabel = req.getParameter(param);
+		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
+			req.setAttribute(param, tokenLabel);
+		}
 	}
 
 }

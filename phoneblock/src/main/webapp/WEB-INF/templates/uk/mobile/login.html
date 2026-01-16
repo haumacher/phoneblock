@@ -23,6 +23,7 @@
 		<p data-tx="t0003:7de9a863" th:if="${#strings.isEmpty(tokenLabel)}">Тепер ви можете підключити свій обліковий запис PhoneBlock <code th:text="${userName}"></code> до свого мобільного пристрою:</p>
 
 		<form method="post" th:action="@{/create-token}">
+			<input name="appId" th:value="${appId}" type="hidden"/>
 			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">

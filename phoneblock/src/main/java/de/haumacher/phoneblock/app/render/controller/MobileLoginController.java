@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class MobileLoginController extends AbstractLoginController {
@@ -15,13 +16,18 @@ public class MobileLoginController extends AbstractLoginController {
 		super.fillContext(ctx, request);
 
 		// Preserve token label for mobile token creation
-		String tokenLabel = request.getParameter(CreateAuthTokenServlet.TOKEN_LABEL);
-		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
-			ctx.setVariable(CreateAuthTokenServlet.TOKEN_LABEL, tokenLabel);
-			ctx.setVariable("location", "/mobile/login?" + CreateAuthTokenServlet.TOKEN_LABEL + "=" + URLEncoder.encode(tokenLabel, StandardCharsets.UTF_8));
+		declareVariable(ctx, request, CreateAuthTokenServlet.APP_ID);
+		declareVariable(ctx, request, CreateAuthTokenServlet.TOKEN_LABEL);
+		
+		ctx.setVariable("location", ServletUtil.forwardParam("/mobile/login?", request, CreateAuthTokenServlet.APP_ID, CreateAuthTokenServlet.TOKEN_LABEL));
+	}
+
+	private void declareVariable(WebContext ctx, HttpServletRequest request, String fromParam) {
+		String tokenLabel = request.getParameter(fromParam);
+		if (tokenLabel != null) {
+			ctx.setVariable(fromParam, tokenLabel);
 		} else {
-			ctx.setVariable(CreateAuthTokenServlet.TOKEN_LABEL, "");
-			ctx.setVariable("location", "/mobile/login");
+			ctx.setVariable(fromParam, "");
 		}
 	}
 	

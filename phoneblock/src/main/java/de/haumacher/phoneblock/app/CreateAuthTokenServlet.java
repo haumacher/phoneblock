@@ -8,6 +8,7 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -44,6 +45,11 @@ public class CreateAuthTokenServlet extends HttpServlet {
 	 */
 	public static final String TOKEN_LABEL = "tokenLabel";
 
+	/**
+	 * Request/session parameter for identifying the app for which a token is issued.
+	 */
+	public static final String APP_ID = "appId";
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.sendRedirect(req.getContextPath() + MOBILE_LOGIN);
@@ -63,6 +69,18 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		String label = req.getParameter(TOKEN_LABEL);
 		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"), label);
 
-		resp.sendRedirect(req.getContextPath() + MOBILE_RESPONSE + "?" + TOKEN_PARAM + "=" + URLEncoder.encode(loginToken.getToken(), StandardCharsets.UTF_8));
+		String appId = req.getParameter(APP_ID);
+		if (appId == null) {
+			appId = "PhoneBlockMobile";
+		}
+		
+		// TODO: This might better come from a DB table (registered integrations):
+		String baseUrl = switch (appId) {
+			case "PhoneSpamBlocker" -> "PhoneSpamBlocker://auth";
+			case "PhoneBlockMobile" -> "PhoneBlockMobile://auth";
+			default -> req.getContextPath() + MOBILE_RESPONSE;
+		};
+		
+		resp.sendRedirect(ServletUtil.withParam(baseUrl, TOKEN_PARAM, loginToken.getToken()));
 	}
 }

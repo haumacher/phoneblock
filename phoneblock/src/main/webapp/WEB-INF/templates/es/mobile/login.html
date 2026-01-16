@@ -23,6 +23,7 @@
 		<p data-tx="t0003:7de9a863" th:if="${#strings.isEmpty(tokenLabel)}">Ahora puedes conectar tu cuenta PhoneBlock <code th:text="${userName}"></code> a tu dispositivo móvil:</p>
 
 		<form method="post" th:action="@{/create-token}">
+			<input name="appId" th:value="${appId}" type="hidden"/>
 			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">

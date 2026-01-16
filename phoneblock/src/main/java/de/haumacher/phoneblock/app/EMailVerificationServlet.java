@@ -19,6 +19,7 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.APP_ID;
 import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.TOKEN_LABEL;
 
 /**
@@ -65,13 +67,11 @@ public class EMailVerificationServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String redirectUrl = req.getContextPath() + failurePage(req);
 
-		// Preserve token label for mobile login
-		String tokenLabel = req.getParameter(TOKEN_LABEL);
-		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
-			redirectUrl += "?" + TOKEN_LABEL + "=" + URLEncoder.encode(tokenLabel, StandardCharsets.UTF_8);
-		}
+		resp.sendRedirect(forwardTokenParams(redirectUrl, req));
+	}
 
-		resp.sendRedirect(redirectUrl);
+	public static String forwardTokenParams(String redirectUrl, HttpServletRequest req) {
+		return ServletUtil.forwardParam(redirectUrl, req, APP_ID, TOKEN_LABEL);
 	}
 
 	@Override
@@ -156,43 +156,35 @@ public class EMailVerificationServlet extends HttpServlet {
 		session.setAttribute("email", email);
 		session.setAttribute("code", code);
 
-		// Preserve token label for template rendering (will be forwarded via form)
-		String tokenLabel = req.getParameter(TOKEN_LABEL);
-		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
-			req.setAttribute(TOKEN_LABEL, tokenLabel);
-		}
-
 		req.setAttribute(RESTART_PAGE_ATTR, failurePage(req));
-
+		preserveTokenParamsForRendering(req);
 		TemplateRenderer.getInstance(req).process(successPage(req), req, resp);
 	}
 
 	private void sendEmailFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
 		req.setAttribute(EMAIL_MESSAGE_ATTR, message);
-		preserveLabelForRendering(req);
+		preserveTokenParamsForRendering(req);
 		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
 	}
 
 	private void sendCaptchaFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
 		req.setAttribute(CAPTCHA_MESSAGE_ATTR, message);
-		preserveLabelForRendering(req);
+		preserveTokenParamsForRendering(req);
 		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
 	}
 
 	/**
 	 * Ensures token label is available for template rendering.
 	 */
-	private void preserveLabelForRendering(HttpServletRequest req) {
+	private void preserveTokenParamsForRendering(HttpServletRequest req) {
 		// Token label might come from form submission, ensure it's in request parameters
 		// for MobileLoginController to pick up
-		String tokenLabel = req.getParameter(TOKEN_LABEL);
-		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
-			req.setAttribute(TOKEN_LABEL, tokenLabel);
-		}
+		ServletUtil.declareAttribute(req, APP_ID);
+		ServletUtil.declareAttribute(req, TOKEN_LABEL);
 	}
-	
+
 	/**
 	 * The page to redirect, if something went wrong.
 	 */

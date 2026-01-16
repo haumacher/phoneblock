@@ -35,6 +35,7 @@
 		</p>
 
 		<form method="post" th:action="@{/create-token}">
+			<input name="appId" th:value="${appId}" type="hidden"/>
 			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">

@@ -4,8 +4,6 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -16,6 +14,7 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.ServletUtil;
 import de.haumacher.phoneblock.util.UserAgentType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.APP_ID;
 import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.TOKEN_LABEL;
 
 /**
@@ -115,12 +115,7 @@ public class RegistrationServlet extends HttpServlet {
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:
 			// Preserve token label parameter for mobile token creation
-			String tokenLabel = req.getParameter(TOKEN_LABEL);
-			String redirectUrl = req.getContextPath() + "/mobile/login";
-			if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
-				redirectUrl += "?" + TOKEN_LABEL + "=" + URLEncoder.encode(tokenLabel, StandardCharsets.UTF_8);
-			}
-			resp.sendRedirect(redirectUrl);
+			resp.sendRedirect(ServletUtil.forwardParam(req.getContextPath() + "/mobile/login", req, APP_ID, TOKEN_LABEL));
 			break;
 		case REGISTER_WEB:
 		default:
