@@ -31,7 +31,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -41,7 +41,7 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Du er allerede logget ind som <code dir="ltr" th:text="${userName}"></code>, godt! Fortsæt til næste trin.</p>
+<p data-tx="t0064:c41dd734" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Du er logget ind som <code dir="ltr" th:text="${userName}"></code>, godt! Fortsæt til næste trin.</p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">Trin 2: Log ind på FRITZ!Box</h2>
 
@@ -76,13 +76,13 @@
 		<p data-tx="t0073:5843bc02">Til opsætningen i din Fritz!Box skal du bruge et særligt CardDAV-token som adgangskode. Dette token bruges kun til forbindelsen mellem din Fritz!Box og PhoneBlock og kan til enhver tid tilbagekaldes i indstillingerne.</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Du har allerede oprettet et token! Fortsæt til næste trin.</p>
+			<p data-tx="t0074:f786328e"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Du har oprettet et token! Fortsæt til næste trin.</p>
 		</th:block>
 
 		<th:block th:if="${userName} and ${!cardDavToken}">
 			<p data-tx="t0075:ca529190">Opret nu et token til Fritz! Du kan eventuelt tilføje en kommentar, så du senere ved, hvad tokenet skal bruges til (f.eks. "Fritz!Box stue").</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -135,8 +135,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">Du kan nu bekræfte oprettelsen af den nye telefonbog. Vær opmærksom på dette: Vælg <b>ingen af dine telefoner</b> under "Telefontildeling"! Ellers vil du kun finde SPAM-opkald i kontakterne på din telefon.</li>
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>Opmærksomhed</b>: Vælg <b>ingen af dine telefoner</b> under "Telefontildeling"! Ellers vil du kun finde SPAM-opkald i kontakterne på din telefon.</p>
+				<p data-tx="t0087:79f2e6a0">Du kan nu bekræfte oprettelsen af den nye telefonbog.</p>
+			</li>
 		</ol>
 
 		<div class="columns">

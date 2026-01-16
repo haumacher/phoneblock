@@ -31,7 +31,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -41,7 +41,7 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Ya has iniciado sesión como <code dir="ltr" th:text="${userName}"></code>, ¡genial! Continúa con el siguiente paso.</p>
+<p data-tx="t0064:c41dd734" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Has iniciado sesión como <code dir="ltr" th:text="${userName}"></code>, ¡genial! Continúa con el siguiente paso.</p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">Paso 2: Inicie sesión en el FRITZ!Box</h2>
 
@@ -76,13 +76,13 @@
 		<p data-tx="t0073:5843bc02">Para la configuración en su Fritz!Box necesita un token CardDAV especial como contraseña. Este token sólo se utiliza para la conexión entre su Fritz!Box y PhoneBlock y puede ser revocado en cualquier momento en la configuración.</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> ¡Ya has creado un token! Continúa con el siguiente paso.</p>
+			<p data-tx="t0074:f786328e"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> ¡Has creado un token! Continúa con el siguiente paso.</p>
 		</th:block>
 
 		<th:block th:if="${userName} and ${!cardDavToken}">
 			<p data-tx="t0075:ca529190">¡Ahora cree un token para el Fritz! Opcionalmente, puedes añadir un comentario para saber más tarde para qué se utiliza el token (por ejemplo, "Sala de estar de Fritz!Box").</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -135,8 +135,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">Ahora puede confirmar la creación de la nueva agenda telefónica. Tenga en cuenta: ¡Seleccione <b>ninguno de sus teléfonos</b> en "Asignación de teléfonos"! De lo contrario, sólo encontrará llamadas SPAM en los contactos de su teléfono.</li>
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>Atención</b>: ¡Seleccione <b>ninguno de sus teléfonos</b> en "Asignación de teléfonos"! De lo contrario, sólo encontrará las llamadas SPAM en los contactos de su teléfono.</p>
+				<p data-tx="t0087:79f2e6a0">Ahora puede confirmar la creación de la nueva agenda telefónica.</p>
+			</li>
 		</ol>
 
 		<div class="columns">

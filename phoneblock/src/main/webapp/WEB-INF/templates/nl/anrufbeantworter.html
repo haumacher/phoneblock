@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">Vanaf hier hebt u drie browservensters (of tabbladen) nodig. Eén voor deze handleiding, één voor de PhoneBlock-beantwoorderapp en één voor de configuratie-interface van uw Fritz!Box</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Eerst moet u zich registreren of aanmelden bij PhoneBlock om de installatie te starten.</p>
+		<p data-tx="t0013:fffc269">Eerst moet u zich registreren of aanmelden bij PhoneBlock om de installatie te starten.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Je bent ingelogd als <code dir="ltr" th:text="${userName}"></code>, geweldig, laten we naar de volgende stap gaan!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Je bent ingelogd als <code dir="ltr" th:text="${userName}"></code>, geweldig, laten we naar de volgende stap gaan!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Stap 2: Antwoordapparaat maken</h2>
 		
-		<p data-tx="t0017:3e41626b">Als je hier klikt, wordt er een venster geopend met de <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock antwoordapparaat app</a>. Als je deze voor de eerste keer opent, is de lijst met je antwoordapparaten leeg en is er rechtsonder een knop waarmee je een antwoordapparaat kunt maken. Druk op deze plusknop.</p>
+		<p data-tx="t0017:fe9f55e3">Open de PhoneBlock antwoordapparaat app in een nieuw venster. Als je hem voor de eerste keer opent, is de lijst met je antwoordapparaten nog leeg en staat er rechtsonder een knop waarmee je een antwoordapparaat kunt maken.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Druk nu op de plusknop om je antwoordapparaat te maken:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

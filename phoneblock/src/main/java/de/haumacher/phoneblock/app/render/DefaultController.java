@@ -33,6 +33,7 @@ import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.ServletUtil;
+import de.haumacher.phoneblock.util.UserAgentType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -293,7 +294,7 @@ public class DefaultController implements WebController {
 			ctx.setVariable("loggedIn", Boolean.FALSE);
 		}
 		
-        ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, LoginServlet.location(request));
+        ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, LoginServlet.location(request, null));
         ctx.setVariable("currentPage", ServletUtil.currentPage(request));
         
         ctx.setVariable("titleKey", "app.defaultTitle");
@@ -305,16 +306,13 @@ public class DefaultController implements WebController {
         ctx.setVariable("deps", DEPS);
         ctx.setVariable("contextPath", request.getContextPath());
         
-    	String userAgent = request.getHeader("User-Agent");
-    	userAgent = userAgent == null ? "" : userAgent.toLowerCase();
-    	boolean android = userAgent.contains("android");
-    	boolean iphone = userAgent.contains("iphone");
-    	boolean inMobileApp = userAgent.startsWith("phoneblockmobile/");
+    	UserAgentType userAgentType = UserAgentType.detect(request);
 
-    	ctx.setVariable("android", Boolean.valueOf(android));
-		ctx.setVariable("iphone", Boolean.valueOf(iphone));
-		ctx.setVariable("fritzbox", Boolean.valueOf(!android && !iphone));
-		ctx.setVariable("inMobileApp", Boolean.valueOf(inMobileApp));
+    	ctx.setVariable("android", Boolean.valueOf(userAgentType.isAndroid()));
+		ctx.setVariable("iphone", Boolean.valueOf(userAgentType.isIPhone()));
+		ctx.setVariable("fritzbox", Boolean.valueOf(userAgentType.isFritzBox()));
+		ctx.setVariable("inMobileApp", Boolean.valueOf(userAgentType.isMobileApp()));
+		ctx.setVariable("userAgentType", userAgentType);
 		
 		ctx.setVariable("ratings", RATINGS);
 		ctx.setVariable("languages", Language.all());

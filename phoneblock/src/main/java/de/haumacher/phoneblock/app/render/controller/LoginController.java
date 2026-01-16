@@ -2,15 +2,13 @@ package de.haumacher.phoneblock.app.render.controller;
 
 import java.io.IOException;
 
-import org.thymeleaf.context.WebContext;
-
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class LoginController extends MobileLoginController {
+public class LoginController extends AbstractLoginController {
 
 	private String _defaultLocation;
 
@@ -28,19 +26,6 @@ public class LoginController extends MobileLoginController {
 		}
 
 		return super.process(renderer, request, response);
-	}
-
-	@Override
-	protected void fillContext(WebContext ctx, HttpServletRequest request) {
-		super.fillContext(ctx, request);
-
-		// Override location for regular login (not mobile login)
-		// Use location parameter from request, or default to settings page
-		String location = request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
-		if (location == null || location.trim().isEmpty()) {
-			location = _defaultLocation;
-		}
-		ctx.setVariable(LoginServlet.LOCATION_ATTRIBUTE, location);
 	}
 
 }

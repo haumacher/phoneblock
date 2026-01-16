@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">Από εδώ και πέρα, θα χρειαστείτε τρία παράθυρα (ή καρτέλες) του προγράμματος περιήγησης. Ένα για αυτόν τον οδηγό, ένα για την εφαρμογή του τηλεφωνητή PhoneBlock και ένα για το περιβάλλον διαμόρφωσης του Fritz!Box</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Πρώτον, πρέπει να εγγραφείτε ή να συνδεθείτε στο PhoneBlock για να ξεκινήσετε τη ρύθμιση.</p>
+		<p data-tx="t0013:fffc269">Πρώτον, πρέπει να εγγραφείτε ή να συνδεθείτε στο PhoneBlock για να ξεκινήσετε τη ρύθμιση.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Έχετε συνδεθεί ως <code dir="ltr" th:text="${userName}"></code>, υπέροχα, ας προχωρήσουμε στο επόμενο βήμα!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Έχετε συνδεθεί ως <code dir="ltr" th:text="${userName}"></code>, υπέροχα, ας προχωρήσουμε στο επόμενο βήμα!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Βήμα 2: Δημιουργία τηλεφωνητή</h2>
 		
-		<p data-tx="t0017:3e41626b">Κάνοντας κλικ εδώ ανοίγει ένα παράθυρο με την εφαρμογή <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock answering machine app</a>. Όταν το ανοίγετε για πρώτη φορά, η λίστα με τους τηλεφωνητές σας είναι άδεια και υπάρχει ένα κουμπί κάτω δεξιά με το οποίο μπορείτε να δημιουργήσετε έναν τηλεφωνητή. Πατήστε αυτό το κουμπί συν.</p>
+		<p data-tx="t0017:fe9f55e3">Ανοίξτε την εφαρμογή του τηλεφωνητή PhoneBlock σε ένα νέο παράθυρο. Όταν την ανοίγετε για πρώτη φορά, η λίστα με τους τηλεφωνητές σας είναι ακόμα άδεια και υπάρχει ένα κουμπί κάτω δεξιά με το οποίο μπορείτε να δημιουργήσετε έναν τηλεφωνητή.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Τώρα πατήστε το κουμπί συν για να δημιουργήσετε τον τηλεφωνητή σας:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

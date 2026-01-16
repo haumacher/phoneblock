@@ -174,7 +174,7 @@ public class LoginServlet extends HttpServlet {
 	
 	public static String locationParam(String location, boolean first) {
 		String locationParam;
-		if (location != null) {
+		if (location != null && !location.isEmpty()) {
 			locationParam = (first ? "?" : "&") + LoginServlet.LOCATION_ATTRIBUTE + "=" + URLEncoder.encode(location, StandardCharsets.UTF_8);
 		} else {
 			locationParam = "";
@@ -194,12 +194,12 @@ public class LoginServlet extends HttpServlet {
 	 */
 	public static String location(HttpServletRequest request, String defaultLocation) {
 		String locationAttribute = (String) request.getAttribute(LoginServlet.LOCATION_ATTRIBUTE);
-		if (locationAttribute != null) {
+		if (locationAttribute != null && !locationAttribute.isEmpty()) {
 			return locationAttribute;
 		}
 		
 		String locationParam = (String) request.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
-		if (locationParam != null) {
+		if (locationParam != null && !locationParam.isEmpty()) {
 			return locationParam;
 		}
 		
@@ -211,7 +211,7 @@ public class LoginServlet extends HttpServlet {
 			return ServletUtil.currentPage(request);
 		}
 		
-		return SettingsServlet.PATH;
+		return null;
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class LoginServlet extends HttpServlet {
 	 */
 	public static void forwardLocation(HttpServletRequest request) {
 		String location = location(request);
-		if (location != null) {
+		if (location != null && !location.isEmpty()) {
 			request.setAttribute(LOCATION_ATTRIBUTE, location);
 		}
 	}

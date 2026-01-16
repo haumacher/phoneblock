@@ -31,7 +31,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -41,7 +41,7 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> لقد قمت بتسجيل الدخول بالفعل باسم <code dir="ltr" th:text="${userName}"></code>، رائع! تابع إلى الخطوة التالية.</p>
+<p data-tx="t0064:c41dd734" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> لقد قمت بتسجيل الدخول باسم <code dir="ltr" th:text="${userName}"></code>، رائع! تابع إلى الخطوة التالية.</p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">الخطوة 2: تسجيل الدخول إلى FRITZ!Box</h2>
 
@@ -76,13 +76,13 @@
 		<p data-tx="t0073:5843bc02">للإعداد في Fritz!Box الخاص بك، تحتاج إلى رمز CardDAV مميز ككلمة مرور. يُستخدم هذا الرمز المميز فقط للاتصال بين Fritz!Box و PhoneBlock ويمكن إبطاله في أي وقت في الإعدادات.</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> لقد قمت بالفعل بإنشاء رمز مميز! تابع إلى الخطوة التالية.</p>
+			<p data-tx="t0074:f786328e"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> لقد قمت بإنشاء رمز مميز! تابع إلى الخطوة التالية.</p>
 		</th:block>
 
 		<th:block th:if="${userName} and ${!cardDavToken}">
 			<p data-tx="t0075:ca529190">الآن أنشئ رمزًا مميزًا لـ Fritz! يمكنك إضافة تعليق اختياريًا حتى تعرف لاحقًا الغرض من استخدام الرمز المميز (على سبيل المثال "غرفة معيشة فريتز! صندوق فريتز!").</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -135,8 +135,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">يمكنك الآن تأكيد إنشاء دفتر الهاتف الجديد. يرجى الملاحظة: حدد <b> لا شيء من هواتفك تحت "تعيين الهاتف"! وإلا ستجد فقط المتصلين غير المرغوب فيهم في جهات الاتصال على هاتفك.</b></li>
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>انتباه: حدد <b>لا أحد من هواتفك</b> تحت "تعيين الهاتف"! وإلا ستجد فقط المتصلين غير المرغوب فيهم في جهات الاتصال على هاتفك.</b></p>
+				<p data-tx="t0087:79f2e6a0">يمكنك الآن تأكيد إنشاء دفتر الهاتف الجديد.</p>
+			</li>
 		</ol>
 
 		<div class="columns">

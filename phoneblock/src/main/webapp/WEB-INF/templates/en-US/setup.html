@@ -31,7 +31,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -41,7 +41,7 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> You are already logged in as <code dir="ltr" th:text="${userName}"></code>, great! Continue to the next step.</p>
+<p data-tx="t0064:c41dd734" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> You are logged in as <code dir="ltr" th:text="${userName}"></code>, great! Continue to the next step.</p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">Step 2: Log in to FRITZ!Box</h2>
 
@@ -76,13 +76,13 @@
 		<p data-tx="t0073:5843bc02">For the setup in your Fritz!Box you need a special CardDAV token as password. This token is only used for the connection between your Fritz!Box and PhoneBlock and can be revoked at any time in the settings.</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> You have already created a token! Continue to the next step.</p>
+			<p data-tx="t0074:f786328e"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> You have created a token! Continue to the next step.</p>
 		</th:block>
 
 		<th:block th:if="${userName} and ${!cardDavToken}">
 			<p data-tx="t0075:ca529190">Now create a token for the Fritz! You can optionally add a comment so that you know later what the token is used for (e.g. "Fritz!Box living room").</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -135,8 +135,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">You can now confirm the creation of the new phone book. Please note: Select <b>none of your phones</b> under "Phone assignment"! Otherwise you will only find SPAM callers in the contacts on your phone.</li>
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>Attention</b>: Select <b>none of your phones</b> under "Phone assignment"! Otherwise you will only find SPAM callers in the contacts on your phone.</p>
+				<p data-tx="t0087:79f2e6a0">You can now confirm the creation of the new phone book.</p>
+			</li>
 		</ol>
 
 		<div class="columns">

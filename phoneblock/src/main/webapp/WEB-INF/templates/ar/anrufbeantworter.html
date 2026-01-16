@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">من هنا، ستحتاج إلى ثلاث نوافذ متصفح (أو علامات تبويب). واحدة لهذا الدليل، وواحدة لتطبيق PhoneBlock للرد على المكالمات الهاتفية وواحدة لواجهة تهيئة فريتز!</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">أولاً، تحتاج أولاً إلى التسجيل أو تسجيل الدخول إلى PhoneBlock لبدء الإعداد.</p>
+		<p data-tx="t0013:fffc269">أولاً، تحتاج أولاً إلى التسجيل أو تسجيل الدخول إلى PhoneBlock لبدء الإعداد.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">لقد قمت بتسجيل الدخول باسم <code dir="ltr" th:text="${userName}"></code>، رائع، دعنا ننتقل إلى الخطوة التالية!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">لقد قمت بتسجيل الدخول باسم <code dir="ltr" th:text="${userName}"></code>، رائع، دعنا ننتقل إلى الخطوة التالية!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">الخطوة 2: إنشاء جهاز الرد على المكالمات</h2>
 		
-		<p data-tx="t0017:3e41626b">يؤدي النقر هنا إلى فتح نافذة تحتوي على تطبيق <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}"> تطبيق جهاز الرد الآلي على المكالمات الهاتفية. عند فتحه للمرة الأولى، تكون قائمة أجهزة الرد الآلي فارغة ويوجد زر في أسفل اليمين يمكنك من خلاله إنشاء جهاز رد آلي. اضغط على زر الإضافة هذا.</a></p>
+		<p data-tx="t0017:fe9f55e3">افتح تطبيق PhoneBlock للرد الآلي على الهاتف في نافذة جديدة. عند فتحه للمرة الأولى، ستجد قائمة أجهزة الرد على المكالمات الهاتفية فارغة ويوجد زر في أسفل اليمين يمكنك من خلاله إنشاء جهاز رد آلي.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">اضغط الآن على زر زائد لإنشاء جهاز الرد الآلي الخاص بك:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

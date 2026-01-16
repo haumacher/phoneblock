@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">A partir d'ici, tu as besoin de trois fenêtres de navigateur (ou onglets). Une pour ce mode d'emploi, une pour l'application de répondeur téléphonique PhoneBlock et une pour l'interface de configuration de ta Fritz!Box.</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Tout d'abord, tu dois t'inscrire ou te connecter à PhoneBlock pour commencer la configuration.</p>
+		<p data-tx="t0013:fffc269">Tout d'abord, tu dois t'inscrire ou te connecter à PhoneBlock pour commencer la configuration.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Tu es connecté en tant que <code dir="ltr" th:text="${userName}"></code>, super, passons directement à l'étape suivante!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Tu es connecté en tant que <code dir="ltr" th:text="${userName}"></code>, super, passons directement à l'étape suivante!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Étape 2 : Créer un répondeur téléphonique</h2>
 		
-		<p data-tx="t0017:3e41626b">Si tu cliques ici, une fenêtre s'ouvre avec l'application de répondeur téléphonique <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock</a>. Lors de la première ouverture, la liste de tes répondeurs est vide et en bas à droite se trouve un bouton avec lequel tu peux te créer un répondeur. Appuie sur ce bouton plus.</p>
+		<p data-tx="t0017:fe9f55e3">Ouvre l'application de répondeur téléphonique PhoneBlock dans une nouvelle fenêtre. Lors de la première ouverture, la liste de tes répondeurs est encore vide et en bas à droite se trouve un bouton avec lequel tu peux créer un répondeur.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Appuie maintenant sur le bouton plus pour créer ton répondeur :</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

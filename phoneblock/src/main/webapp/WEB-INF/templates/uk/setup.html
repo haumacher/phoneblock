@@ -31,7 +31,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -41,7 +41,7 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Ви вже увійшли як <code dir="ltr" th:text="${userName}"></code>, чудово! Перейдіть до наступного кроку.</p>
+<p data-tx="t0064:c41dd734" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Ви увійшли як <code dir="ltr" th:text="${userName}"></code>, чудово! Перейдіть до наступного кроку.</p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">Крок 2: Увійдіть до FRITZ!Box</h2>
 
@@ -76,13 +76,13 @@
 		<p data-tx="t0073:5843bc02">Для налаштування у вашому Fritz!Box вам знадобиться спеціальний токен CardDAV як пароль. Цей токен використовується тільки для з'єднання між Fritz!Box і PhoneBlock і може бути відкликаний у будь-який момент у налаштуваннях.</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Ви вже створили токен! Перейдіть до наступного кроку.</p>
+			<p data-tx="t0074:f786328e"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> Ви створили токен! Перейдіть до наступного кроку.</p>
 		</th:block>
 
 		<th:block th:if="${userName} and ${!cardDavToken}">
 			<p data-tx="t0075:ca529190">Тепер створіть токен для Fritz! За бажанням ви можете додати коментар, щоб пізніше знати, для чого використовується токен (наприклад, "Вітальня Fritz!Box").</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -135,8 +135,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">Тепер ви можете підтвердити створення нової телефонної книги. Зверніть увагу: Виберіть <b>ні один з ваших телефонів</b> в розділі "Призначення телефону"! Інакше в контактах на вашому телефоні ви побачите лише абонентів зі спамом.</li>
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>Увага</b>: Виберіть <b>ні один з ваших телефонів</b> в розділі "Призначення телефону"! В іншому випадку ви побачите лише абонентів зі спаму в контактах на вашому телефоні.</p>
+				<p data-tx="t0087:79f2e6a0">Тепер ви можете підтвердити створення нової телефонної книги.</p>
+			</li>
 		</ol>
 
 		<div class="columns">

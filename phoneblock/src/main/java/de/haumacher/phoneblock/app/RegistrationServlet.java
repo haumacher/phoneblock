@@ -16,6 +16,7 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.UserAgentType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -128,7 +129,11 @@ public class RegistrationServlet extends HttpServlet {
 				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
 
 				// Use the answer bot setup page as default target location after login. 
-				String targetLocation = LoginServlet.location(req, "/anrufbeantworter");
+				String targetLocation = LoginServlet.location(req, switch (UserAgentType.detect(req)) {
+					case ANDROID -> "/setup-android";
+					case IPHONE -> "/setup-iphone";
+					default -> "/anrufbeantworter";
+				});
 				String credentialsUrl = req.getContextPath() + "/show-credentials" + LoginServlet.locationParam(targetLocation, true);
 				resp.sendRedirect(credentialsUrl);
 			} else {

@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">Herfra trenger du tre nettleservinduer (eller faner). Ett for denne veiledningen, ett for PhoneBlock-telefonsvarer-appen og ett for konfigurasjonsgrensesnittet til Fritz!Box</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Først må du registrere deg eller logge inn på PhoneBlock for å starte oppsettet.</p>
+		<p data-tx="t0013:fffc269">Først må du registrere deg eller logge inn på PhoneBlock for å starte oppsettet.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Du er logget inn som <code dir="ltr" th:text="${userName}"></code>, flott, la oss gå videre til neste trinn!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Du er logget inn som <code dir="ltr" th:text="${userName}"></code>, flott, la oss gå videre til neste trinn!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Trinn 2: Opprett telefonsvarer</h2>
 		
-		<p data-tx="t0017:3e41626b">Når du klikker her, åpnes et vindu med appen <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock telefonsvarer</a>. Når du åpner den for første gang, er listen over telefonsvarerne dine tom, og det er en knapp nederst til høyre som du kan bruke til å opprette en telefonsvarer. Trykk på denne plussknappen.</p>
+		<p data-tx="t0017:fe9f55e3">Åpne PhoneBlock-appen for telefonsvarere i et nytt vindu. Når du åpner den for første gang, er listen over telefonsvarerne dine fortsatt tom, og nederst til høyre er det en knapp som du kan bruke til å opprette en telefonsvarer.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Trykk nå på plussknappen for å opprette telefonsvareren:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

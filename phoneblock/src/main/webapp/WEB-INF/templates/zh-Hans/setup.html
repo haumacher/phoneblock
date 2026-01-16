@@ -31,7 +31,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -41,7 +41,7 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> 您已经以 <code dir="ltr" th:text="${userName}"></code> 的身份登录，很好！继续下一步。</p>
+<p data-tx="t0064:c41dd734" th:if="${userName}"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> 您以 <code dir="ltr" th:text="${userName}"></code> 的身份登录，很好！继续下一步。</p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">步骤 2：登录 FRITZ!Box</h2>
 
@@ -76,13 +76,13 @@
 		<p data-tx="t0073:5843bc02">在您的Fritz！Box中进行设置时，您需要一个特殊的CardDAV令牌作为密码。该令牌仅用于 Fritz！Box 和 PhoneBlock 之间的连接，并可随时在设置中撤销。</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> 您已经创建了一个令牌！继续下一步。</p>
+			<p data-tx="t0074:f786328e"><span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span> 您已创建了一个标记！继续下一步。</p>
 		</th:block>
 
 		<th:block th:if="${userName} and ${!cardDavToken}">
 			<p data-tx="t0075:ca529190">现在为 Fritz 创建一个标记！您可以选择添加注释，以便日后知道标记的用途（例如 "Fritz!Box 起居室"）。</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -135,8 +135,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">现在您可以确认新电话簿的创建。请注意在 "电话分配 "下选择 <b>"无电话"</b>！否则，您只能在手机联系人中找到垃圾邮件呼叫者。</li>
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>注意</b>：在 "电话分配 "下选择<b>不选择您的电话</b>！否则，您只能在手机联系人中找到垃圾邮件来电者。</p>
+				<p data-tx="t0087:79f2e6a0">现在您可以确认新电话簿的创建。</p>
+			</li>
 		</ol>
 
 		<div class="columns">

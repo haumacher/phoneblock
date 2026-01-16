@@ -51,13 +51,13 @@
 			und eines für die Konfigurationsoberfläche Deiner Fritz!Box. 
 		</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">
+		<p data-tx="t0013:fffc269">
 		Als erstes musst Du Dich bei PhoneBlock registrieren bzw. anmelden, um mit der Einrichtung zu beginnen.
 		</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -65,16 +65,17 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">
 		Du bist als <code dir="ltr" th:text="${userName}"></code> angemeldet, prima, gleich zum nächsten Schritt! 
 		</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Schritt 2: Anrufbeantworter erstellen</h2>
 		
-		<p data-tx="t0017:3e41626b">
-			Wenn Du hier klickst öffnet sich Fenster mit der <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock-Anrufbeantworter-App</a>.
-			Beim ersten Öffnen ist die Liste Deiner Anrufbeantworter leer und unten rechts befindet sich ein Knopf, 
-			mit dem Du Dir einen Anrufbeantworter erstellen kannst. Drücke diesen Plus-Knopf.
+		<p data-tx="t0017:fe9f55e3">
+			Öffne die PhoneBlock-Anrufbeantworter-App in einem neuen Fenster.
+			Beim ersten Öffnen ist die Liste Deiner Anrufbeantworter noch leer und unten rechts befindet sich ein Knopf, 
+			mit dem Du Dir einen Anrufbeantworter erstellen kannst.
 		</p>
 		
 		<div class="columns">
@@ -87,6 +88,10 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">
+		Drücke jetzt den Plus-Knopf, um Deinen Anrufbeantworter zu erstellen:
+		</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">从这里开始，您需要三个浏览器窗口（或标签页）。一个用于本指南，一个用于 PhoneBlock 应答机应用程序，一个用于 Fritz 的配置界面！</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">首先，你需要注册或登录 PhoneBlock 才能开始设置。</p>
+		<p data-tx="t0013:fffc269">首先，你需要注册或登录 PhoneBlock 才能开始设置。</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">您的登录名是 <code dir="ltr" th:text="${userName}"></code>，很好，让我们进入下一步！</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">您的登录名是 <code dir="ltr" th:text="${userName}"></code>，很好，让我们进入下一步！</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">步骤 2：创建应答机</h2>
 		
-		<p data-tx="t0017:3e41626b">单击此处可打开<a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock 电话答录机应用程序</a>窗口。第一次打开时，电话答录机列表是空的，右下方有一个按钮，可以创建一个电话答录机。按下这个加号按钮。</p>
+		<p data-tx="t0017:fe9f55e3">在新窗口中打开 PhoneBlock 电话答录机应用程序。第一次打开时，电话答录机列表还是空的，右下角有一个按钮，您可以用它创建一个电话答录机。</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">现在按 "加号 "按钮创建您的答录机：</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

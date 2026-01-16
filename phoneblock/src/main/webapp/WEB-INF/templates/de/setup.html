@@ -47,7 +47,7 @@
 
 <div class="columns" th:unless="${userName}">
   <div class="column is-half is-offset-one-quarter">
-	<a th:href="@{/login(location='/setup')}">
+	<a th:href="@{/login(location='/setup#register')}">
 		<button class="button is-medium is-info is-fullwidth">
 			<span class="icon">
 				<i class="fa-solid fa-right-to-bracket"></i>
@@ -57,9 +57,9 @@
 	</a>
   </div>
 </div>
-<p data-tx="t0064:1a4e19e4" th:if="${userName}">
+<p data-tx="t0064:c41dd734" th:if="${userName}">
 	<span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span>
-	Du bist bereits als <code dir="ltr" th:text="${userName}"></code> angemeldet, prima! Weiter zum nächsten Schritt.
+	Du bist als <code dir="ltr" th:text="${userName}"></code> angemeldet, prima! Weiter zum nächsten Schritt.
 </p>
 		
 		<h2 data-tx="t0065:8bf85697" id="fritzbox">Schritt 2: An FRITZ!Box anmelden</h2>
@@ -108,9 +108,9 @@
 		</p>
 
 		<th:block th:if="${cardDavToken}">
-			<p data-tx="t0074:9b72e482">
+			<p data-tx="t0074:f786328e">
 				<span class="tag is-success is-large"><i class="fa-solid fa-check"></i></span>
-				Du hast bereits ein Token erstellt! Weiter zum nächsten Schritt.
+				Du hast ein Token erstellt! Weiter zum nächsten Schritt.
 			</p>
 		</th:block>
 
@@ -120,7 +120,7 @@
 				um später zu wissen, wofür das Token verwendet wird (z.B. "Fritz!Box Wohnzimmer").
 			</p>
 
-			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#credentials')}">
+			<form method="post" th:action="@{/update-settings(action='createToken', location='/setup#create-token')}">
 				<input name="token-type" type="hidden" value="CARDDAV"/>
 				<div class="field has-addons">
 					<div class="control is-expanded">
@@ -200,10 +200,11 @@
 					</li>
 				</ul>
 			</li>
-
-			<li data-tx="t0025:a4fb7bb8">
-				Jetzt kannst Du die Anlage des neuen Telefonbuchs bestätigen. Bitte beachte: Wähle <b>keines Deiner Telefone</b>
-				bei dem Punkt "Telefon-Zuordnung" aus! Ansonsten findest Du auf Deinem Telefon nur noch SPAM-Anrufer in den Kontakten.
+			
+			<li>
+				<p data-tx="t0086:95ea1a24"><b>Achtung</b>: Wähle <b>keines Deiner Telefone</b> bei dem Punkt "Telefon-Zuordnung" aus! 
+					Ansonsten findest Du auf Deinem Telefon nur noch SPAM-Anrufer in den Kontakten.</p>
+				<p data-tx="t0087:79f2e6a0">Jetzt kannst Du die Anlage des neuen Telefonbuchs bestätigen.</p>
 			</li>
 		</ol>
 

@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">Da qui, avrete bisogno di tre finestre (o schede) del browser. Una per questa guida, una per l'applicazione della segreteria telefonica PhoneBlock e una per l'interfaccia di configurazione del Fritz!Box</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">Innanzitutto, è necessario registrarsi o accedere a PhoneBlock per iniziare la configurazione.</p>
+		<p data-tx="t0013:fffc269">Innanzitutto, è necessario registrarsi o accedere a PhoneBlock per iniziare la configurazione.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Hai effettuato l'accesso come <code dir="ltr" th:text="${userName}"></code>, bene, passiamo alla fase successiva!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Hai effettuato l'accesso come <code dir="ltr" th:text="${userName}"></code>, bene, passiamo alla fase successiva!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Fase 2: Creare la segreteria telefonica</h2>
 		
-		<p data-tx="t0017:3e41626b">Facendo clic qui si apre una finestra con l'applicazione <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">Segreteria telefonica di PhoneBlock</a>. Quando la si apre per la prima volta, l'elenco delle segreterie telefoniche è vuoto e c'è un pulsante in basso a destra con il quale è possibile creare una segreteria telefonica. Premere questo pulsante più.</p>
+		<p data-tx="t0017:fe9f55e3">Aprite l'applicazione Segreteria telefonica di PhoneBlock in una nuova finestra. Quando si apre per la prima volta, l'elenco delle segreterie telefoniche è ancora vuoto e c'è un pulsante in basso a destra con il quale è possibile creare una segreteria telefonica.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Ora premete il pulsante più per creare la segreteria telefonica:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

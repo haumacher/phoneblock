@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">Звідси вам знадобляться три вікна (або вкладки) браузера. Одне для цього посібника, одне для програми автовідповідача PhoneBlock і одне для інтерфейсу налаштування вашого Fritz!Box</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">По-перше, вам потрібно зареєструватися або увійти в PhoneBlock, щоб почати налаштування.</p>
+		<p data-tx="t0013:fffc269">По-перше, вам потрібно зареєструватися або увійти в PhoneBlock, щоб почати налаштування.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Ви увійшли як <code dir="ltr" th:text="${userName}"></code>, чудово, переходимо до наступного кроку!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Ви увійшли як <code dir="ltr" th:text="${userName}"></code>, чудово, переходимо до наступного кроку!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Крок 2: Створіть автовідповідач</h2>
 		
-		<p data-tx="t0017:3e41626b">Натиснувши тут, відкриється вікно з програмою автовідповідача <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock</a>. Коли ви відкриваєте його вперше, список ваших автовідповідачів порожній, а внизу праворуч є кнопка, за допомогою якої ви можете створити автовідповідач. Натисніть цю кнопку з плюсом.</p>
+		<p data-tx="t0017:fe9f55e3">Відкрийте програму автовідповідача PhoneBlock у новому вікні. Коли ви відкриваєте його вперше, список ваших автовідповідачів ще порожній, а внизу праворуч є кнопка, за допомогою якої ви можете створити автовідповідач.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Тепер натисніть кнопку "плюс", щоб створити автовідповідач:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

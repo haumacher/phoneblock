@@ -33,11 +33,11 @@
 
 		<p data-tx="t0012:d6a793c3">A partir de aquí, necesitará tres ventanas (o pestañas) del navegador. ¡Una para esta guía, otra para la aplicación del contestador automático PhoneBlock y otra para la interfaz de configuración de su Fritz!Box</p>
 		
-		<p data-tx="t0013:fffc269" th:if="${loggedIn}">En primer lugar, es necesario registrarse o iniciar sesión en PhoneBlock para iniciar la configuración.</p>
+		<p data-tx="t0013:fffc269">En primer lugar, es necesario registrarse o iniciar sesión en PhoneBlock para iniciar la configuración.</p>
 		
-		<div class="columns">
+		<div class="columns" th:unless="${loggedIn}">
 		  <div class="column is-half is-offset-one-quarter">
-			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#create')}">
+			<a class="button is-medium is-info is-fullwidth" th:href="@{/login(location='/anrufbeantworter/#register')}">
 			    <span class="icon">
 					<i class="fa-solid fa-right-to-bracket"></i>
 			    </span>
@@ -45,11 +45,12 @@
 			</a>
 		  </div>
 		</div>
-		<p data-tx="t0015:2db12974" unless:if="${loggedIn}">Has iniciado sesión como <code dir="ltr" th:text="${userName}"></code>, genial, ¡vamos al siguiente paso!</p>
+
+		<p data-tx="t0015:2db12974" th:if="${loggedIn}">Has iniciado sesión como <code dir="ltr" th:text="${userName}"></code>, genial, ¡vamos al siguiente paso!</p>
 		
 		<h2 data-tx="t0016:babb04ed" id="create">Paso 2: Crear contestador automático</h2>
 		
-		<p data-tx="t0017:3e41626b">Al hacer clic aquí se abre una ventana con la aplicación <a class="showAB" target="phoneblock-ab" th:href="@{/ab/}">PhoneBlock contestador automático</a>. Cuando la abres por primera vez, la lista de tus contestadores automáticos está vacía y hay un botón en la parte inferior derecha con el que puedes crear un contestador automático. Pulsa este botón.</p>
+		<p data-tx="t0017:fe9f55e3">Abra la aplicación PhoneBlock contestador automático en una nueva ventana. Al abrirla por primera vez, la lista de sus contestadores automáticos sigue vacía y en la parte inferior derecha hay un botón con el que puede crear un contestador automático.</p>
 		
 		<div class="columns">
 		  <div class="column is-half is-offset-one-quarter">
@@ -61,6 +62,8 @@
 			</a>
 		  </div>
 		</div>
+		
+		<p data-tx="t0082:9cb823dc">Ahora pulsa el botón más para crear tu contestador automático:</p>
 		
 		<div class="columns">
 			<div class="column is-8 is-offset-2">

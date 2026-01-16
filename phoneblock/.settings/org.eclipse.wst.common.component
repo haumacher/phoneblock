@@ -1,20 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-        
+            
+    
     <wb-module deploy-name="phoneblock-1.5.0-SNAPSHOT">
-                
+                        
+        
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
-                
+                        
+        
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
-                
+                        
+        
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="phoneblock-shared-1.7.16-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/phoneblock-shared/phoneblock-shared">
+        <dependent-module archiveName="phoneblock-shared-1.8.2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/phoneblock-shared/phoneblock-shared">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-                
+        <dependent-module archiveName="phoneblock-ab-1.8.2-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/phoneblock-ab/phoneblock-ab">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+                        
+        
         <property name="context-root" value="phoneblock"/>
-                
+                        
+        
         <property name="java-output-path" value="/phoneblock/target/classes"/>
-            
-    </wb-module>
+                    
     
+    </wb-module>
+        
+
 </project-modules>
