@@ -20,36 +20,10 @@
 			
 			<form method="post" th:action="@{/update-settings}">
 
-			<article class="message is-info" th:if="${token}">
-			  <div class="message-header">
-			    <p data-tx="t0005:5df14f18">Τα δεδομένα πρόσβασής σας</p>
-			  </div>
-			  
-			  <div class="message-body">
-				<div class="field">
-				  <label class="label" data-tx="t0006:f48153ce">Διεύθυνση Internet του διακομιστή CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-
-				<div class="field">
-				  <label class="label" data-tx="t0007:548c40c1">Όνομα χρήστη</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008:bceeee4f">Πρέπει να εισαγάγετε αυτή την τιμή ως όνομα χρήστη για την <a th:href="@{/setup}">ανάκληση της λίστας αποκλεισμού</a>.</p>
-				</div>
-					
-				<div class="field">
-				  <label class="label" data-tx="t0009:e99dee32">κωδικός πρόσβασης</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010:b5380dd1">Πρέπει να χρησιμοποιήσετε αυτόν τον κωδικό πρόσβασης για να <a th:href="@{/setup}">ρυθμίσετε τον τηλεφωνικό κατάλογο</a> ή για να συνδεθείτε σε αυτόν τον ιστότοπο.</p>
-				  <p class="help" data-tx="t0011:90026712">Σημειώστε τον κωδικό πρόσβασης (ή αποθηκεύστε τον σε ένα <a href="https://keepass.info/">διαχειριστή κωδικών πρόσβασης</a>), καθώς θα εμφανίζεται μόνο μέχρι να αποσυνδεθείτε ή να λήξει η συνεδρία σας.</p>
-				</div>
-			  </div>
-			</article>
-
-			<div class="field" th:unless="${token}">
+			<div class="field">
 			  <label class="label" data-tx="t0012:548c40c1">Όνομα χρήστη</label>
 			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Αντιγραφή στο πρόχειρο."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013:a797ac0f">Ο κωδικός πρόσβασής σας εμφανίστηκε όταν συνδεθήκατε για πρώτη φορά. Εάν δεν τον γνωρίζετε πλέον, μπορείτε να δημιουργήσετε έναν <a href="#resetPassword">νέο κωδικό πρόσβασης</a> στο κάτω μέρος αυτής της σελίδας.</p>
+			  <p class="help" data-tx="t0013:bf5599db">Μπορείτε να χρησιμοποιήσετε αυτό το όνομα χρήστη για να συνδεθείτε στον ιστότοπο PhoneBlock χωρίς e-mail. Ο αντίστοιχος κωδικός πρόσβασης εμφανίστηκε όταν συνδεθήκατε για πρώτη φορά. Εάν δεν τον θυμάστε πλέον, μπορείτε να δημιουργήσετε έναν <a href="#resetPassword">νέο κωδικό πρόσβασης</a> στο κάτω μέρος αυτής της σελίδας.</p>
 			</div>
 
 			<div class="field">
@@ -72,12 +46,12 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (μικρό για πολύ παλιά Fritz!Boxes)</option>
-			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (συνιστάται για τα περισσότερα Fritz!Box)</option>
+			    	<option data-tx="t0015:692f1dda" th:selected="${settings.maxLength == 1000}" value="1000">1000 (μικρό για πολύ παλιά FRITZ!Boxes)</option>
+			    	<option data-tx="t0016:76efddbf" th:selected="${settings.maxLength == 2000}" value="2000">2000 (συνιστάται για τα περισσότερα FRITZ!Boxes)</option>
 			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (π.χ. εξακολουθεί να λειτουργεί στο FRITZ!Box 7590)</option>
 			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (βλέπε σημειώσεις παρακάτω)</option>
 			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (τεράστια, βλ. σημειώσεις παρακάτω)</option>
-			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (ακραία, προσέξτε, το Fritz!Box σας μπορεί να καταρρεύσει)</option>
+			    	<option data-tx="t0020:654afa95" th:selected="${settings.maxLength == 6000}" value="6000">6000 (ακραία, προσέξτε, το FRITZ!Box σας μπορεί να καταρρεύσει)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
@@ -86,7 +60,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021:28fc9e2c">Αν έχετε προβλήματα με την ενημέρωση της λίστας αποκλεισμού, μπορείτε να μειώσετε το μέγεθος της λίστας αποκλεισμού εδώ. Η AVM συνιστά να γεμίζετε τους τηλεφωνικούς καταλόγους με το πολύ 1000 καταχωρήσεις. Το FRITZ!Box 7590, για παράδειγμα, μπορεί να διαχειριστεί έως και 3000 καταχωρήσεις σε έναν τηλεφωνικό κατάλογο.</p>
 			  
-			  <p class="help" data-tx="t0022:73c1facc"><b>Προσοχή:</b> Εάν θέλετε να δοκιμάσετε πόσες καταχωρήσεις μπορεί να αποθηκεύσει το κουτί σας σε έναν τηλεφωνικό κατάλογο, προχωρήστε ως εξής: Ξεκινήστε με την προεπιλεγμένη ρύθμιση των 2000 καταχωρήσεων. Συγχρονίστε τη λίστα μπλοκ και εμφανίστε τον τηλεφωνικό κατάλογο της λίστας μπλοκ. Μετακινηθείτε στο τέλος και εμφανίστε την προεπισκόπηση εκτύπωσης της λίστας μπλοκ και σημειώστε τον αριθμό των σελίδων που θα εκτυπωθούν. Τώρα αυξήστε το μέγεθος της λίστας μπλοκ κατά ένα βήμα, συγχρονίστε εκ νέου τη λίστα μπλοκ και εμφανίστε ξανά την προεπισκόπηση εκτύπωσης της λίστας μπλοκ. Εάν ο αριθμός των σελίδων έχει αυξηθεί ανάλογα, τότε το κουτί σας μπορεί να χειριστεί αυτό το μέγεθος, δοκιμάστε το επόμενο μέγεθος. Εάν ο αριθμός των σελίδων στην προεπισκόπηση εκτύπωσης δεν έχει αυξηθεί ή δεν έχει αυξηθεί ανάλογα, τότε χρησιμοποιήστε το τελευταίο μικρότερο μέγεθος της λίστας μπλοκ. Είναι ενδιαφέρον ότι το πλαίσιο Fritz!Box δεν αναφέρει σφάλμα εάν ένας τηλεφωνικός κατάλογος γίνει πολύ μεγάλος, αλλά είτε απλώς δεν συγχρονίζεται είτε απλώς παραλείπει αριθμούς. Έχω δει κουτιά να καταρρέουν απλά αν το μέγεθος του τηλεφωνικού καταλόγου είναι πολύ μεγάλο - γι' αυτό να είστε προσεκτικοί.</p>
+			  <p class="help" data-tx="t0022:930f3ae3"><b>Προσοχή:</b> Εάν θέλετε να δοκιμάσετε πόσες καταχωρήσεις μπορεί να αποθηκεύσει το κουτί σας σε έναν τηλεφωνικό κατάλογο, προχωρήστε ως εξής: Ξεκινήστε με την προεπιλεγμένη ρύθμιση των 2000 καταχωρήσεων. Συγχρονίστε τη λίστα μπλοκ και εμφανίστε τον τηλεφωνικό κατάλογο της λίστας μπλοκ. Μετακινηθείτε στο τέλος και εμφανίστε την προεπισκόπηση εκτύπωσης της λίστας μπλοκ και σημειώστε τον αριθμό των σελίδων που θα εκτυπωθούν. Τώρα αυξήστε το μέγεθος της λίστας μπλοκ κατά ένα βήμα, συγχρονίστε εκ νέου τη λίστα μπλοκ και εμφανίστε ξανά την προεπισκόπηση εκτύπωσης της λίστας μπλοκ. Εάν ο αριθμός των σελίδων έχει αυξηθεί ανάλογα, τότε το κουτί σας μπορεί να χειριστεί αυτό το μέγεθος, δοκιμάστε το επόμενο μέγεθος. Εάν ο αριθμός των σελίδων στην προεπισκόπηση εκτύπωσης δεν έχει αυξηθεί ή δεν έχει αυξηθεί ανάλογα, τότε χρησιμοποιήστε το τελευταίο μικρότερο μέγεθος της λίστας μπλοκ. Είναι ενδιαφέρον ότι το FRITZ!Box δεν αναφέρει σφάλμα εάν ένας τηλεφωνικός κατάλογος γίνει πολύ μεγάλος, αλλά είτε απλά δεν συγχρονίζεται είτε απλά παραλείπει αριθμούς. Έχω δει κουτιά να καταρρέουν απλά αν το μέγεθος του τηλεφωνικού καταλόγου είναι πολύ μεγάλο - γι' αυτό να είστε προσεκτικοί.</p>
 			</div>
 			
 			<div class="field">
@@ -109,7 +83,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Συνοψίστε τους αριθμούς με "*"</label>
-			  <p class="help" data-tx="t0030:fd1d1b6b">Εάν επιλέξετε αυτή την επιλογή, οι γειτονικοί αριθμοί στη λίστα αποκλεισμού σας θα συνδυαστούν σε έναν αριθμό με ένα μπαλαντέρ ("*"). Πολλοί επαγγελματίες spammers έχουν σύνδεση πολλών συσκευών και χρησιμοποιούν ένα ολόκληρο μπλοκ αριθμών ως αποστολείς. Με αυτήν την επιλογή, όλοι αυτοί οι αριθμοί αποκλείονται αυτόματα και η λίστα μπλοκ σας μπορεί να περιλαμβάνει περισσότερους αριθμούς ανεπιθύμητης αλληλογραφίας. Το Fritz!Box υποστηρίζει τηλεφωνικούς καταλόγους με αριθμούς μπαλαντέρ και στη συνέχεια μπλοκάρει ολόκληρο το καθορισμένο εύρος αριθμών. Ωστόσο, ενδέχεται να μην μπορείτε να χρησιμοποιήσετε αριθμούς μπαλαντέρ σε άλλες συσκευές.</p>
+			  <p class="help" data-tx="t0030:6bc4aa6a">Εάν επιλέξετε αυτή την επιλογή, οι γειτονικοί αριθμοί στη λίστα αποκλεισμού σας θα συνδυαστούν σε έναν αριθμό με ένα μπαλαντέρ ("*"). Πολλοί επαγγελματίες spammers έχουν σύνδεση με πολλές συσκευές και χρησιμοποιούν ένα ολόκληρο μπλοκ αριθμών ως αποστολείς. Με αυτή την επιλογή, όλοι αυτοί οι αριθμοί αποκλείονται αυτόματα και η λίστα μπλοκ σας μπορεί να περιλαμβάνει περισσότερους αριθμούς ανεπιθύμητης αλληλογραφίας. Το FRITZ!Box υποστηρίζει τηλεφωνικούς καταλόγους με αριθμούς μπαλαντέρ και στη συνέχεια μπλοκάρει ολόκληρο το καθορισμένο εύρος αριθμών. Ωστόσο, ενδέχεται να μην μπορείτε να χρησιμοποιήσετε αριθμούς μπαλαντέρ σε άλλες συσκευές.</p>
 			</div>
 
 			<div class="field">
@@ -118,15 +92,21 @@
 				<span data-tx="t0092:781fecd1">Μόνο εθνικοί αριθμοί</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093:2f41e7b3">Αυτή η επιλογή είναι χρήσιμη εάν έχετε αποκλείσει όλους τους ξένους αριθμούς στο Fritz! Με αυτή την επιλογή, μόνο εθνικοί αριθμοί θα εμφανίζονται στη λίστα αποκλεισμού σας. Αυτό σημαίνει ότι περισσότεροι αριθμοί που αφορούν εσάς θα χωρέσουν στη λίστα αποκλεισμού σας. Βεβαιωθείτε ότι έχετε ορίσει σωστά τον κωδικό χώρας σας παραπάνω.</p> 
+			  <p class="help" data-tx="t0093:9e52b947">Αυτή η επιλογή είναι χρήσιμη εάν έχετε μπλοκάρει όλους τους ξένους αριθμούς στο FRITZ! Με αυτή την επιλογή, μόνο εθνικοί αριθμοί θα εμφανίζονται στη λίστα αποκλεισμού σας. Αυτό σημαίνει ότι περισσότεροι αριθμοί που σας αφορούν θα χωρέσουν στη λίστα αποκλεισμού σας. Βεβαιωθείτε ότι έχετε ορίσει σωστά τον κωδικό χώρας σας παραπάνω.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Αποθήκευση</button>
+			    <button class="button is-primary" type="submit">
+			      <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+			      <span data-tx="t0114:31aafd4a">Αποθήκευση</span>
+			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Απορρίψτε το</a>
+			    <a class="button " th:href="@{/settings}">
+			      <span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+			      <span data-tx="t0115:879e98b4">Απορρίψτε το</span>
+			    </a>
 			  </p>
 			</div>
 		</form>
@@ -136,7 +116,7 @@
 <section class="section">
 	<div class="content">
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Τα κλειδιά σας API</h2>
-	<p data-tx="t0034:c7b86819">Εάν χρησιμοποιείτε άλλες εφαρμογές για τον έλεγχο τηλεφωνικών αριθμών με το PhoneBlock (π.χ. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> ή <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), τότε χρειάζεστε ένα κλειδί API. Για τον τηλεφωνικό κατάλογο μπλοκαρίσματος στο Fritz!Box σας, χρησιμοποιείτε απλώς το όνομα χρήστη PhoneBlock και τον κωδικό πρόσβασης PhoneBlock, οπότε δεν χρειάζεστε κλειδί API για αυτό.</p>
+	<p data-tx="t0034:58e9ff35">Εάν χρησιμοποιείτε άλλες εφαρμογές για τον έλεγχο τηλεφωνικών αριθμών με το PhoneBlock (π.χ. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> ή <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), τότε χρειάζεστε ένα κλειδί API. Για τον τηλεφωνικό κατάλογο μπλοκαρίσματος στο FRITZ!Box σας, χρησιμοποιείτε απλώς το όνομα χρήστη PhoneBlock και τον κωδικό πρόσβασης PhoneBlock, οπότε δεν χρειάζεστε κλειδί API για αυτό.</p>
 	
 	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Δεν έχετε ακόμη δημιουργήσει κλειδιά API ή κουπόνια CardDAV.</p>
 	<div th:unless="${explicitTokens.empty}">
@@ -191,7 +171,10 @@
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Διαγραφή επιλεγμένου</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0116:6bb39cda">Διαγραφή επιλεγμένου</span>
+	    </button>
 	  </p>
 	</div>
 	</form>
@@ -204,7 +187,7 @@
 	<div class="content">
 	<h2 data-tx="t0104:8aa69c2" id="createToken">Δημιουργία token</h2>
 
-	<p data-tx="t0105:ae49ea3d">Δημιουργήστε ένα κουπόνι για χρήση με εφαρμογές ή για να ρυθμίσετε τη λίστα αποκλεισμού ως τηλεφωνικό κατάλογο στο Fritz!</p>
+	<p data-tx="t0105:dfdefec">Δημιουργήστε ένα token για χρήση με εφαρμογές (API) ή για τη δημιουργία της λίστας αποκλεισμού ως τηλεφωνικού καταλόγου στο FRITZ!Box (CARDDAV).</p>
 
 	<form method="post" th:action="@{/update-settings(action='createToken')}">
 		<div class="field">
@@ -213,7 +196,7 @@
 		    <div class="select is-fullwidth">
 		      <select name="token-type">
 		        <option data-tx="t0107:b2896f37" value="API">API - για εφαρμογές όπως το SpamBlocker ή το SpamBlockUp</option>
-		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - για τον τηλεφωνικό κατάλογο Fritz!Box</option>
+		        <option data-tx="t0108:969f2a63" value="CARDDAV">CardDAV - για τον τηλεφωνικό κατάλογο FRITZ!Box</option>
 		      </select>
 		    </div>
 		    <span class="icon is-small is-left">
@@ -226,7 +209,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0110:dcf4d98e">Παρατήρηση για τη χρήση</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="π.χ. 'SpamBlocker στο κινητό τηλέφωνο της γιαγιάς' ή 'Fritz!Box σαλόνι'" type="text"/>
+		    <input class="input" data-tx="t0111:68dc02ac" name="token-label" placeholder="π.χ. 'SpamBlocker στο κινητό τηλέφωνο της γιαγιάς' ή 'FRITZ!Box σαλόνι'" type="text"/>
 		    <span class="icon is-small is-left">
 		      <i class="fa-solid fa-pen"></i>
 		    </span>
@@ -236,7 +219,10 @@
 
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Δημιουργία κουπονιού</button>
+		    <button class="button is-primary" type="submit">
+		      <span class="icon"><i class="fa-solid fa-key"></i></span>
+		      <span data-tx="t0113:8aa69c2">Δημιουργία token</span>
+		    </button>
 		  </p>
 		</div>
 	</form>
@@ -250,7 +236,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">Δεν έχετε αποκλείσει ρητά κανέναν αριθμό. Για να μπλοκάρετε έναν αριθμό, αναζητήστε τον αριθμό χρησιμοποιώντας το παραπάνω πεδίο αναζήτησης και γράψτε ένα αρνητικό σχόλιο ή κάντε μια καταχώρηση στον τηλεφωνικό κατάλογο για τον αριθμό στη λίστα μπλοκαρίσματος στο Fritz!Box</p>
+	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Δεν έχετε αποκλείσει ρητά κανέναν αριθμό. Για να μπλοκάρετε έναν αριθμό, αναζητήστε τον αριθμό χρησιμοποιώντας το παραπάνω πεδίο αναζήτησης και γράψτε ένα αρνητικό σχόλιο ή κάντε μια καταχώρηση στον τηλεφωνικό κατάλογο για τον αριθμό στη λίστα μπλοκαρίσματος στο FRITZ!</p>
 
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048:7a2801d3">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς. Μπορείτε να ακυρώσετε έναν τυχαίο αποκλεισμό εδώ:</p>
@@ -262,7 +248,10 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Διαγραφή</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0117:74d7495f">Διαγραφή</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -284,13 +273,16 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Προσθέστε</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
+	      <span data-tx="t0118:6464e726">Προσθήκη κλειδαριάς</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
-	
+
 </section>
 
 <section class="section">
@@ -312,7 +304,10 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Διαγραφή</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0119:74d7495f">Διαγραφή</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -334,10 +329,13 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Προσθέστε</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+	      <span data-tx="t0120:d63df803">Προσθήκη εξαίρεσης</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
 </section>
@@ -427,7 +425,7 @@
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075:f48c1f2f">Προσοχή, αυτό θα ακυρώσει τον παλιό σας κωδικό πρόσβασης PhoneBlock. Στη συνέχεια, πρέπει να εισαγάγετε τον νέο κωδικό πρόσβασης στις ρυθμίσεις του Fritz!Box ή του κινητού σας τηλεφώνου, ώστε να είναι δυνατή η πρόσβαση στη λίστα αποκλεισμού.</p>
+	  			<p data-tx="t0075:5c042e35">Προσοχή, αυτό θα ακυρώσει τον παλιό σας κωδικό πρόσβασης PhoneBlock. Εάν δεν χρησιμοποιείτε ακόμα ένα token για να έχετε πρόσβαση στη λίστα αποκλεισμού σας, θα πρέπει στη συνέχεια να εισαγάγετε τον νέο κωδικό πρόσβασης στις ρυθμίσεις του FRITZ!Box ή του κινητού σας τηλεφώνου, ώστε να είναι δυνατή η πρόσβαση στη λίστα αποκλεισμού. Σε αυτή την περίπτωση, είναι προτιμότερο να διαγράψετε τον τηλεφωνικό κατάλογο στο FRITZ!Box και να τον ρυθμίσετε ξανά, διότι η ενημέρωση του κωδικού πρόσβασης δεν λειτουργεί αξιόπιστα.</p>
 	  		</div>
 	  	</div>
 	  	

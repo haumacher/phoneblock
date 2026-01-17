@@ -20,36 +20,10 @@
 			
 			<form method="post" th:action="@{/update-settings}">
 
-			<article class="message is-info" th:if="${token}">
-			  <div class="message-header">
-			    <p data-tx="t0005:5df14f18">Tes données d'accès</p>
-			  </div>
-			  
-			  <div class="message-body">
-				<div class="field">
-				  <label class="label" data-tx="t0006:f48153ce">Adresse Internet du serveur CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-
-				<div class="field">
-				  <label class="label" data-tx="t0007:548c40c1">Nom d'utilisateur</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008:bceeee4f">Tu dois saisir cette valeur comme nom d'utilisateur pour <a th:href="@{/setup}">l'appel de la blocklist</a>.</p>
-				</div>
-					
-				<div class="field">
-				  <label class="label" data-tx="t0009:e99dee32">Mot de passe</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010:b5380dd1">Tu dois utiliser ce mot de passe pour <a th:href="@{/setup}">configurer l'annuaire</a> ou pour te connecter à ce site.</p>
-				  <p class="help" data-tx="t0011:90026712">Veuillez noter votre mot de passe (ou enregistrez-le dans un <a href="https://keepass.info/">gestionnaire de mots de passe</a>), car il ne sera affiché que jusqu'à ce que vous vous déconnectiez ou que votre session expire.</p>
-				</div>
-			  </div>
-			</article>
-
-			<div class="field" th:unless="${token}">
+			<div class="field">
 			  <label class="label" data-tx="t0012:548c40c1">Nom d'utilisateur</label>
 			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Copier dans le presse-papiers."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013:a797ac0f">Ton mot de passe t'a été indiqué lors de ta première connexion. Si tu ne le connais plus, tu peux demander la création d'un <a href="#resetPassword">nouveau mot de passe</a> en bas de cette page.</p>
+			  <p class="help" data-tx="t0013:bf5599db">Ce nom d'utilisateur te permet de te connecter au site web de PhoneBlock sans avoir besoin d'un e-mail. Le mot de passe correspondant t'a été indiqué lors de ta première connexion. Si tu ne le connais plus, tu peux faire créer un <a href="#resetPassword">nouveau mot de passe</a> en bas de cette page.</p>
 			</div>
 
 			<div class="field">
@@ -72,12 +46,12 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (petit pour les très anciennes Fritz!Box)</option>
-			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recommandé pour la plupart des Fritz!Boxes)</option>
+			    	<option data-tx="t0015:692f1dda" th:selected="${settings.maxLength == 1000}" value="1000">1000 (petit pour les très anciennes FRITZ!Box)</option>
+			    	<option data-tx="t0016:76efddbf" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recommandé pour la plupart des FRITZ!Box)</option>
 			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (fonctionne encore sur FRITZ!Box 7590 par exemple)</option>
 			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (voir les remarques ci-dessous)</option>
 			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (énorme, notez les indications ci-dessous)</option>
-			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extrême, attention, ta Fritz!Box peut se bloquer)</option>
+			    	<option data-tx="t0020:654afa95" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extrême, attention, ta FRITZ!Box peut se bloquer)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
@@ -86,7 +60,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021:28fc9e2c">Si tu as des problèmes lors de la mise à jour de la Blocklist, tu peux réduire ici la taille de ta Blocklist. AVM recommande de remplir les répertoires téléphoniques avec un maximum de 1000 entrées. La FRITZ!Box 7590 supporte par exemple jusqu'à 3000 entrées dans un répertoire.</p>
 			  
-			  <p class="help" data-tx="t0022:73c1facc"><b>Attention:</b> Si tu veux tester le nombre d'entrées que ta boîte peut stocker dans un annuaire téléphonique, procède comme suit : Commence avec le réglage par défaut de 2000 entrées. Synchronise la Blocklist et affiche le répertoire de la Blocklist. Fais défiler jusqu'à la fin et fais-toi afficher l'aperçu avant impression de la Blocklist et note le nombre de pages qui seraient imprimées. Augmente maintenant la taille de la liste de blocage d'un cran, resynchronise la liste de blocage et affiche à nouveau l'aperçu avant impression de la liste de blocage. Si le nombre de pages a augmenté en conséquence, ta boîte peut gérer cette taille, essaie la taille suivante. Si le nombre de pages de l'aperçu avant impression n'a pas augmenté ou n'a pas augmenté en conséquence, utilise la dernière taille plus petite de la Blocklist. Il est intéressant de noter que la Fritz!Box ne signale pas d'erreur lorsqu'un annuaire téléphonique devient trop grand, mais ne synchronise tout simplement pas ou laisse simplement de côté certains numéros. J'ai déjà vu des boxes se bloquer lorsque la taille de l'annuaire est trop grande - sois donc prudent.</p>
+			  <p class="help" data-tx="t0022:930f3ae3"><b>Attention:</b> Si tu veux tester le nombre d'entrées que ta boîte peut stocker dans un annuaire téléphonique, procède comme suit : Commence avec le réglage par défaut de 2000 entrées. Synchronise la Blocklist et affiche le répertoire de la Blocklist. Fais défiler jusqu'à la fin et fais-toi afficher l'aperçu avant impression de la Blocklist et note le nombre de pages qui seraient imprimées. Augmente maintenant la taille de la liste de blocage d'un cran, resynchronise la liste de blocage et affiche à nouveau l'aperçu avant impression de la liste de blocage. Si le nombre de pages a augmenté en conséquence, ta boîte peut gérer cette taille, essaie la taille suivante. Si le nombre de pages de l'aperçu avant impression n'a pas augmenté ou n'a pas augmenté en conséquence, utilise la dernière taille plus petite de la Blocklist. Il est intéressant de noter que la FRITZ!Box ne signale pas d'erreur lorsqu'un annuaire téléphonique devient trop grand, mais ne synchronise tout simplement pas ou laisse simplement de côté certains numéros. J'ai déjà vu des boxes se bloquer lorsque la taille de l'annuaire est trop grande - sois donc prudent.</p>
 			</div>
 			
 			<div class="field">
@@ -109,7 +83,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Combiner les numéros avec "*".</label>
-			  <p class="help" data-tx="t0030:fd1d1b6b">Si tu sélectionnes cette option, les numéros adjacents dans ta liste de blocage seront regroupés en un seul numéro avec un joker ("*"). De nombreux spammeurs professionnels ont une connexion multi-appareils et utilisent tout un bloc de numéros comme expéditeur. Avec cette option, tous ces numéros sont automatiquement bloqués et ta liste de blocage peut accueillir davantage de numéros de spam. La Fritz!Box supporte les répertoires téléphoniques avec des numéros Wildcard et bloque alors toute la plage de numéros indiquée. Cependant, sur d'autres appareils, il se peut que tu ne puisses pas utiliser les numéros Wildcard.</p>
+			  <p class="help" data-tx="t0030:6bc4aa6a">Si tu sélectionnes cette option, les numéros juxtaposés dans ta liste de blocage seront regroupés en un seul numéro avec un joker ("*"). De nombreux spammeurs professionnels ont une connexion multi-appareils et utilisent tout un bloc de numéros comme expéditeur. Avec cette option, tous ces numéros sont automatiquement bloqués et ta liste de blocage peut accueillir davantage de numéros de spam. La FRITZ!Box supporte les répertoires téléphoniques avec des numéros Wildcard et bloque alors toute la plage de numéros indiquée. Cependant, sur d'autres appareils, il se peut que tu ne puisses pas utiliser les numéros Wildcard.</p>
 			</div>
 
 			<div class="field">
@@ -118,15 +92,21 @@
 				<span data-tx="t0092:781fecd1">Numéros nationaux uniquement</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093:2f41e7b3">Cette option est utile si tu as bloqué globalement tous les numéros étrangers dans ta Fritz!Box. Avec cette option, seuls les numéros nationaux apparaissent dans ta liste de blocage. Ainsi, davantage de numéros pertinents pour toi peuvent figurer dans ta liste de blocage. Assure-toi que tu as correctement configuré ton indicatif de pays ci-dessus.</p> 
+			  <p class="help" data-tx="t0093:9e52b947">Cette option est utile si tu as bloqué globalement tous les numéros étrangers dans ta FRITZ!Box. Avec cette option, seuls les numéros nationaux apparaissent dans ta liste de blocage. Ainsi, davantage de numéros pertinents pour toi peuvent figurer dans ta liste de blocage. Assure-toi que tu as correctement configuré ton indicatif de pays ci-dessus.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Enregistrer</button>
+			    <button class="button is-primary" type="submit">
+			      <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+			      <span data-tx="t0114:31aafd4a">Enregistrer</span>
+			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Rejeter</a>
+			    <a class="button " th:href="@{/settings}">
+			      <span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+			      <span data-tx="t0115:879e98b4">Rejeter</span>
+			    </a>
 			  </p>
 			</div>
 		</form>
@@ -136,7 +116,7 @@
 <section class="section">
 	<div class="content">
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Tes clés API</h2>
-	<p data-tx="t0034:c7b86819">Si tu utilises d'autres applications pour vérifier les numéros de téléphone avec PhoneBlock (par exemple <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> ou <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), tu as besoin d'une clé API. Pour le répertoire téléphonique Blocklist dans ta Fritz!Box, tu utilises simplement ton nom d'utilisateur PhoneBlock et ton mot de passe PhoneBlock, tu n'as donc pas besoin d'une clé API pour cela.</p>
+	<p data-tx="t0034:58e9ff35">Si tu utilises d'autres applications pour vérifier les numéros de téléphone avec PhoneBlock (par ex. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> ou <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), tu as besoin d'une clé API. Pour le répertoire téléphonique Blocklist dans ta FRITZ!Box, tu utilises simplement ton nom d'utilisateur PhoneBlock et ton mot de passe PhoneBlock, tu n'as donc pas besoin d'une clé API pour cela.</p>
 	
 	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Tu n'as pas encore généré de clés API ou de jetons CardDAV.</p>
 	<div th:unless="${explicitTokens.empty}">
@@ -191,7 +171,10 @@
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Supprimer les personnes sélectionnées</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0116:6bb39cda">Supprimer les personnes sélectionnées</span>
+	    </button>
 	  </p>
 	</div>
 	</form>
@@ -204,7 +187,7 @@
 	<div class="content">
 	<h2 data-tx="t0104:8aa69c2" id="createToken">Créer un jeton</h2>
 
-	<p data-tx="t0105:ae49ea3d">Crée un token pour l'utiliser avec des apps ou pour configurer la liste de blocage comme annuaire téléphonique dans ta Fritz!Box.</p>
+	<p data-tx="t0105:dfdefec">Crée un token pour l'utiliser avec des apps (API) ou pour configurer la liste de blocage comme annuaire téléphonique dans ta FRITZ!Box (CARDDAV).</p>
 
 	<form method="post" th:action="@{/update-settings(action='createToken')}">
 		<div class="field">
@@ -213,7 +196,7 @@
 		    <div class="select is-fullwidth">
 		      <select name="token-type">
 		        <option data-tx="t0107:b2896f37" value="API">API - pour les applications comme SpamBlocker ou SpamBlockUp</option>
-		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - pour Fritz!Box Annuaire téléphonique</option>
+		        <option data-tx="t0108:969f2a63" value="CARDDAV">CardDAV - pour FRITZ!Box Annuaire téléphonique</option>
 		      </select>
 		    </div>
 		    <span class="icon is-small is-left">
@@ -226,7 +209,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0110:dcf4d98e">Remarque sur l'utilisation</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="par ex. 'SpamBlocker sur le portable de grand-mère' ou 'Fritz!Box Salon" type="text"/>
+		    <input class="input" data-tx="t0111:68dc02ac" name="token-label" placeholder="par ex. 'SpamBlocker sur le portable de grand-mère' ou 'FRITZ!Box Salon" type="text"/>
 		    <span class="icon is-small is-left">
 		      <i class="fa-solid fa-pen"></i>
 		    </span>
@@ -236,7 +219,10 @@
 
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Créer un jeton</button>
+		    <button class="button is-primary" type="submit">
+		      <span class="icon"><i class="fa-solid fa-key"></i></span>
+		      <span data-tx="t0113:8aa69c2">Créer un jeton</span>
+		    </button>
 		  </p>
 		</div>
 	</form>
@@ -250,7 +236,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">Tu n'as pas explicitement bloqué de numéros. Pour bloquer un numéro, cherche-le dans le champ de recherche ci-dessus et écris un commentaire négatif, ou fais une entrée dans le répertoire de ta Fritz!Box pour ce numéro dans la liste de blocage.</p>
+	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Tu n'as pas explicitement bloqué de numéros. Pour bloquer un numéro, cherche-le dans le champ de recherche ci-dessus et écris un commentaire négatif, ou fais une entrée dans le répertoire de ta FRITZ!Box pour ce numéro dans la liste de blocage.</p>
 
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048:7a2801d3">Tu as explicitement bloqué ces numéros. Tu peux annuler ici un blocage accidentel :</p>
@@ -262,7 +248,10 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Supprimer</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0117:74d7495f">Supprimer</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -284,13 +273,16 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Ajouter</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
+	      <span data-tx="t0118:6464e726">Ajouter un verrou</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
-	
+
 </section>
 
 <section class="section">
@@ -312,7 +304,10 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Supprimer</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0119:74d7495f">Supprimer</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -334,10 +329,13 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Ajouter</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+	      <span data-tx="t0120:d63df803">Exception Ajouter</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
 </section>
@@ -427,7 +425,7 @@
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075:f48c1f2f">Attention, ton ancien mot de passe PhoneBlock n'est plus valable. Tu dois ensuite entrer le nouveau mot de passe dans les paramètres de ta Fritz!Box ou de ton téléphone portable pour que la consultation de la liste de blocage continue de fonctionner.</p>
+	  			<p data-tx="t0075:5c042e35">Attention, ton ancien mot de passe PhoneBlock n'est plus valable. Si tu n'utilises pas encore de token pour la consultation de ta liste de blocage, tu dois ensuite saisir le nouveau mot de passe dans les paramètres de ta FRITZ!Box ou de ton téléphone portable pour que la consultation de la liste de blocage continue de fonctionner. Dans le cas de la FRITZ!Box, il est préférable de supprimer le répertoire téléphonique et de le configurer à nouveau, car la mise à jour du mot de passe ne fonctionne pas de manière fiable.</p>
 	  		</div>
 	  	</div>
 	  	

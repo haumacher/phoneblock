@@ -20,36 +20,10 @@
 			
 			<form method="post" th:action="@{/update-settings}">
 
-			<article class="message is-info" th:if="${token}">
-			  <div class="message-header">
-			    <p data-tx="t0005:5df14f18">Sus datos de acceso</p>
-			  </div>
-			  
-			  <div class="message-body">
-				<div class="field">
-				  <label class="label" data-tx="t0006:f48153ce">Dirección de Internet del servidor CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-
-				<div class="field">
-				  <label class="label" data-tx="t0007:548c40c1">Nombre de usuario</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008:bceeee4f">Debe introducir este valor como nombre de usuario para <a th:href="@{/setup}">llamar a la lista de bloqueo</a>.</p>
-				</div>
-					
-				<div class="field">
-				  <label class="label" data-tx="t0009:e99dee32">contraseña</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010:b5380dd1">Debe utilizar esta contraseña para <a th:href="@{/setup}">configurar la agenda telefónica</a> o para iniciar sesión en este sitio web.</p>
-				  <p class="help" data-tx="t0011:90026712">Anote la contraseña (o guárdela en un <a href="https://keepass.info/">gestor de contraseñas</a>), ya que sólo se mostrará hasta que cierre la sesión o ésta expire.</p>
-				</div>
-			  </div>
-			</article>
-
-			<div class="field" th:unless="${token}">
+			<div class="field">
 			  <label class="label" data-tx="t0012:548c40c1">Nombre de usuario</label>
 			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Copiar en el portapapeles."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013:a797ac0f">Su contraseña se mostró cuando se conectó por primera vez. Si ya no la conoce, puede crear una <a href="#resetPassword">nueva contraseña</a> en la parte inferior de esta página.</p>
+			  <p class="help" data-tx="t0013:bf5599db">Puede utilizar este nombre de usuario para iniciar sesión en el sitio web de PhoneBlock sin correo electrónico. La contraseña correspondiente se mostró cuando se conectó por primera vez. Si ya no la recuerda, puede crear una <a href="#resetPassword">nueva contraseña</a> en la parte inferior de esta página.</p>
 			</div>
 
 			<div class="field">
@@ -72,12 +46,12 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (pequeño para cajas Fritz muy antiguas)</option>
-			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recomendado para la mayoría de las cajas Fritz)</option>
+			    	<option data-tx="t0015:692f1dda" th:selected="${settings.maxLength == 1000}" value="1000">1000 (pequeño para FRITZ!Boxes muy antiguos)</option>
+			    	<option data-tx="t0016:76efddbf" th:selected="${settings.maxLength == 2000}" value="2000">2000 (recomendado para la mayoría de FRITZ!Boxes)</option>
 			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (por ejemplo, sigue funcionando en el FRITZ!Box 7590)</option>
 			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (ver notas más abajo)</option>
 			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (enorme, véanse las notas a continuación)</option>
-			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extremo, ten cuidado, tu Fritz!Box puede bloquearse)</option>
+			    	<option data-tx="t0020:654afa95" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extremo, tenga cuidado, su FRITZ!Box puede bloquearse)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
@@ -86,7 +60,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021:28fc9e2c">Si tiene problemas para actualizar la lista de bloqueo, puede reducir el tamaño de la misma aquí. AVM recomienda llenar las agendas telefónicas con un máximo de 1000 entradas. El FRITZ!Box 7590, por ejemplo, puede manejar hasta 3000 entradas en una agenda telefónica.</p>
 			  
-			  <p class="help" data-tx="t0022:73c1facc"><b>Atención:</b> Si desea probar cuántas entradas puede guardar su buzón en una agenda telefónica, proceda de la siguiente manera: Comience con el ajuste predeterminado de 2000 entradas. Sincronice la lista de bloqueo y visualice la agenda de la lista de bloqueo. Desplácese hasta el final y visualice la vista previa de impresión de la lista de bloqueo y anote el número de páginas que se imprimirían. Aumente ahora el tamaño de la lista de bloqueo en un paso, vuelva a sincronizar la lista de bloqueo y visualice de nuevo la vista previa de impresión de la lista de bloqueo. Si el número de páginas ha aumentado en consecuencia, entonces su caja puede manejar este tamaño, pruebe con el siguiente tamaño. Si el número de páginas de la vista previa de impresión no ha aumentado o no lo ha hecho en consecuencia, utilice el último tamaño más pequeño de la lista de bloques. Curiosamente, el buzón de Fritz!Box no informa de un error si la guía telefónica es demasiado grande, sino que simplemente no se sincroniza o simplemente omite algún número. He visto cajas que simplemente se bloquean si el tamaño de la guía telefónica es demasiado grande - así que ten cuidado.</p>
+			  <p class="help" data-tx="t0022:930f3ae3"><b>Atención:</b> Si desea probar cuántas entradas puede guardar su buzón en una agenda telefónica, proceda de la siguiente manera: Comience con el ajuste predeterminado de 2000 entradas. Sincronice la lista de bloqueo y visualice la agenda de la lista de bloqueo. Desplácese hasta el final y visualice la vista previa de impresión de la lista de bloqueo y anote el número de páginas que se imprimirían. Aumente ahora el tamaño de la lista de bloqueo en un paso, vuelva a sincronizar la lista de bloqueo y visualice de nuevo la vista previa de impresión de la lista de bloqueo. Si el número de páginas ha aumentado en consecuencia, entonces su caja puede manejar este tamaño, pruebe con el siguiente tamaño. Si el número de páginas en la vista previa de impresión no ha aumentado o no lo ha hecho en consecuencia, utilice el último tamaño más pequeño de la lista de bloques. Curiosamente, el FRITZ!Box no informa de un error si una agenda telefónica se hace demasiado grande, sino que simplemente no se sincroniza o simplemente omite algún número. He visto cajas que simplemente se bloquean si el tamaño de la guía telefónica es demasiado grande - así que tenga cuidado.</p>
 			</div>
 			
 			<div class="field">
@@ -109,7 +83,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Resumir números con "*"</label>
-			  <p class="help" data-tx="t0030:fd1d1b6b">Si selecciona esta opción, los números vecinos de su lista de bloqueo se combinarán en un solo número con un comodín ("*"). Muchos spammers profesionales tienen una conexión multidispositivo y utilizan un bloque entero de números como remitentes. Con esta opción, todos estos números se bloquean automáticamente y su lista de bloqueo puede incluir más números de spam. Fritz!Box admite guías telefónicas con números comodín y bloquea todo el rango de números especificado. Sin embargo, es posible que no pueda utilizar números comodín en otros dispositivos.</p>
+			  <p class="help" data-tx="t0030:6bc4aa6a">Si selecciona esta opción, los números vecinos de su lista de bloqueo se combinarán en un solo número con un comodín ("*"). Muchos spammers profesionales tienen una conexión multidispositivo y utilizan un bloque entero de números como remitentes. Con esta opción, todos estos números se bloquean automáticamente y su lista de bloqueo puede incluir más números de spam. El FRITZ!Box admite agendas telefónicas con números comodín y, a continuación, bloquea todo el rango de números especificado. Sin embargo, es posible que no pueda utilizar números comodín en otros dispositivos.</p>
 			</div>
 
 			<div class="field">
@@ -118,15 +92,21 @@
 				<span data-tx="t0092:781fecd1">Sólo números nacionales</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093:2f41e7b3">¡Esta opción es útil si has bloqueado todos los números extranjeros en tu buzón de Fritz! Con esta opción, sólo los números nacionales aparecerán en su lista de bloqueo. Esto significa que más números relevantes para ti cabrán en tu lista de bloqueo. Asegúrate de que has configurado correctamente tu código de país.</p> 
+			  <p class="help" data-tx="t0093:9e52b947">¡Esta opción es útil si ha bloqueado todos los números extranjeros en su FRITZ! Con esta opción, sólo los números nacionales aparecerán en su lista de bloqueo. Esto significa que más números relevantes para usted cabrán en su lista de bloqueo. Asegúrese de que ha configurado correctamente el código de su país.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Guardar</button>
+			    <button class="button is-primary" type="submit">
+			      <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+			      <span data-tx="t0114:31aafd4a">Guardar</span>
+			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Descartar</a>
+			    <a class="button " th:href="@{/settings}">
+			      <span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+			      <span data-tx="t0115:879e98b4">Descartar</span>
+			    </a>
 			  </p>
 			</div>
 		</form>
@@ -136,7 +116,7 @@
 <section class="section">
 	<div class="content">
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Sus claves API</h2>
-	<p data-tx="t0034:c7b86819">Si utiliza otras aplicaciones para comprobar números de teléfono con PhoneBlock (por ejemplo <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> o <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), entonces necesita una clave API. Para la lista de teléfonos bloqueados en su Fritz!Box, simplemente use su nombre de usuario PhoneBlock y contraseña PhoneBlock, así que no necesita una clave API para esto.</p>
+	<p data-tx="t0034:58e9ff35">Si utiliza otras aplicaciones para comprobar números de teléfono con PhoneBlock (por ejemplo <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> o <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), entonces necesita una clave API. Para la lista de teléfonos bloqueados en su FRITZ!Box, simplemente utilice su nombre de usuario PhoneBlock y contraseña PhoneBlock, por lo que no necesita una clave API para esto.</p>
 	
 	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Aún no has creado ninguna clave API o token CardDAV.</p>
 	<div th:unless="${explicitTokens.empty}">
@@ -191,7 +171,10 @@
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Borrar seleccionados</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0116:6bb39cda">Borrar seleccionados</span>
+	    </button>
 	  </p>
 	</div>
 	</form>
@@ -204,7 +187,7 @@
 	<div class="content">
 	<h2 data-tx="t0104:8aa69c2" id="createToken">Crear ficha</h2>
 
-	<p data-tx="t0105:ae49ea3d">¡Crea un token para utilizarlo con aplicaciones o para configurar la lista de bloqueos como una agenda telefónica en tu Fritz!</p>
+	<p data-tx="t0105:dfdefec">Cree un token para utilizarlo con aplicaciones (API) o para configurar la lista de bloqueos como agenda telefónica en su FRITZ!Box (CARDDAV).</p>
 
 	<form method="post" th:action="@{/update-settings(action='createToken')}">
 		<div class="field">
@@ -213,7 +196,7 @@
 		    <div class="select is-fullwidth">
 		      <select name="token-type">
 		        <option data-tx="t0107:b2896f37" value="API">API - para aplicaciones como SpamBlocker o SpamBlockUp</option>
-		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - para la guía telefónica de Fritz Box</option>
+		        <option data-tx="t0108:969f2a63" value="CARDDAV">CardDAV - para la guía telefónica del FRITZ!Box</option>
 		      </select>
 		    </div>
 		    <span class="icon is-small is-left">
@@ -226,7 +209,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0110:dcf4d98e">Observación de uso</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="por ejemplo, &quot;SpamBlocker en el teléfono móvil de la abuela&quot; o &quot;Salón Fritz Box&quot;." type="text"/>
+		    <input class="input" data-tx="t0111:68dc02ac" name="token-label" placeholder="Por ejemplo, &quot;SpamBlocker en el móvil de la abuela&quot; o &quot;FRITZ!Box en el salón&quot;." type="text"/>
 		    <span class="icon is-small is-left">
 		      <i class="fa-solid fa-pen"></i>
 		    </span>
@@ -236,7 +219,10 @@
 
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Crear ficha</button>
+		    <button class="button is-primary" type="submit">
+		      <span class="icon"><i class="fa-solid fa-key"></i></span>
+		      <span data-tx="t0113:8aa69c2">Crear ficha</span>
+		    </button>
 		  </p>
 		</div>
 	</form>
@@ -250,7 +236,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">No has bloqueado explícitamente ningún número. ¡Para bloquear un número, búscalo utilizando el campo de búsqueda de arriba y escribe un comentario negativo, o haz una entrada para el número en la lista de bloqueados de tu Fritz!Box</p>
+	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">No ha bloqueado explícitamente ningún número. ¡Para bloquear un número, búsquelo utilizando el campo de búsqueda de arriba y escriba un comentario negativo, o haga una entrada para el número en la lista de bloqueados de su FRITZ!</p>
 
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048:7a2801d3">Ha bloqueado explícitamente estos números. Puedes cancelar un bloqueo accidental aquí:</p>
@@ -262,7 +248,10 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Borrar</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0117:74d7495f">Borrar</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -284,13 +273,16 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Añadir</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
+	      <span data-tx="t0118:6464e726">Añadir cerradura</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
-	
+
 </section>
 
 <section class="section">
@@ -312,7 +304,10 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Borrar</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0119:74d7495f">Borrar</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -334,10 +329,13 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Añadir</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+	      <span data-tx="t0120:d63df803">Añadir excepción</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
 </section>
@@ -427,7 +425,7 @@
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075:f48c1f2f">Tenga cuidado, esto invalidará su antigua contraseña de PhoneBlock. A continuación, deberá introducir la nueva contraseña en los ajustes de su FritzBox o de su teléfono móvil para poder seguir accediendo a la lista de bloqueo.</p>
+	  			<p data-tx="t0075:5c042e35">Tenga cuidado, esto invalidará su antigua contraseña de PhoneBlock. Si todavía no utiliza un token para acceder a su lista de bloqueo, deberá introducir la nueva contraseña en los ajustes de su FRITZ!Box o de su teléfono móvil para que se pueda seguir accediendo a la lista de bloqueo. En este caso, lo mejor es borrar la agenda telefónica del FRITZ!Box y configurarla de nuevo, ya que la actualización de la contraseña no funciona de forma fiable.</p>
 	  		</div>
 	  	</div>
 	  	

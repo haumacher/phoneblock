@@ -20,36 +20,10 @@
 			
 			<form method="post" th:action="@{/update-settings}">
 
-			<article class="message is-info" th:if="${token}">
-			  <div class="message-header">
-			    <p data-tx="t0005:5df14f18">Uw toegangsgegevens</p>
-			  </div>
-			  
-			  <div class="message-body">
-				<div class="field">
-				  <label class="label" data-tx="t0006:f48153ce">Internetadres van de CardDAV-server</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-
-				<div class="field">
-				  <label class="label" data-tx="t0007:548c40c1">Gebruikersnaam</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008:bceeee4f">Je moet deze waarde invoeren als de gebruikersnaam voor <a th:href="@{/setup}">het oproepen van de blokkadelijst</a>.</p>
-				</div>
-					
-				<div class="field">
-				  <label class="label" data-tx="t0009:e99dee32">wachtwoord</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010:b5380dd1">Je moet dit wachtwoord gebruiken om <a th:href="@{/setup}">het telefoonboek in te stellen</a> of om in te loggen op deze website.</p>
-				  <p class="help" data-tx="t0011:90026712">Noteer het wachtwoord (of sla het op in een <a href="https://keepass.info/">wachtwoordmanager</a>), want het wordt alleen weergegeven totdat je uitlogt of je sessie verloopt.</p>
-				</div>
-			  </div>
-			</article>
-
-			<div class="field" th:unless="${token}">
+			<div class="field">
 			  <label class="label" data-tx="t0012:548c40c1">Gebruikersnaam</label>
 			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013:a797ac0f">Je wachtwoord werd weergegeven toen je voor het eerst inlogde. Als je het niet meer weet, kun je onderaan deze pagina een <a href="#resetPassword">nieuw wachtwoord</a> aanmaken.</p>
+			  <p class="help" data-tx="t0013:bf5599db">U kunt deze gebruikersnaam gebruiken om zonder e-mail in te loggen op de PhoneBlock-website. Het bijbehorende wachtwoord werd weergegeven toen u voor het eerst inlogde. Als u het niet meer weet, kunt u onderaan deze pagina een <a href="#resetPassword">nieuw wachtwoord</a> aanmaken.</p>
 			</div>
 
 			<div class="field">
@@ -72,12 +46,12 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (klein voor zeer oude Fritz!Boxes)</option>
-			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (aanbevolen voor de meeste Fritz!Boxes)</option>
+			    	<option data-tx="t0015:692f1dda" th:selected="${settings.maxLength == 1000}" value="1000">1000 (klein voor zeer oude FRITZ!Boxen)</option>
+			    	<option data-tx="t0016:76efddbf" th:selected="${settings.maxLength == 2000}" value="2000">2000 (aanbevolen voor de meeste FRITZ!Boxen)</option>
 			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (werkt bijvoorbeeld nog steeds op FRITZ!Box 7590)</option>
 			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (zie opmerkingen hieronder)</option>
 			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (enorm, zie opmerkingen hieronder)</option>
-			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extreem, wees voorzichtig, je Fritz!Box kan crashen)</option>
+			    	<option data-tx="t0020:654afa95" th:selected="${settings.maxLength == 6000}" value="6000">6000 (extreem, wees voorzichtig, je FRITZ!Box kan crashen)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
@@ -86,7 +60,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021:28fc9e2c">Als je problemen hebt met het bijwerken van de blokkadelijst, kun je hier de grootte van je blokkadelijst verkleinen. AVM raadt aan om telefoonboeken te vullen met maximaal 1000 vermeldingen. De FRITZ!Box 7590 kan bijvoorbeeld tot 3000 vermeldingen in een telefoonboek verwerken.</p>
 			  
-			  <p class="help" data-tx="t0022:73c1facc"><b>Attentie:</b> Als je wilt testen hoeveel vermeldingen je box in een telefoonboek kan opslaan, ga dan als volgt te werk: Begin met de standaardinstelling van 2000 vermeldingen. Synchroniseer de blokkadelijst en geef het telefoonboek van de blokkadelijst weer. Scroll helemaal naar het einde en geef het afdrukvoorbeeld van de blocklist weer en noteer het aantal pagina's dat zou worden afgedrukt. Verhoog nu de grootte van de blokkadelijst met één stap, synchroniseer de blokkadelijst opnieuw en geef het afdrukvoorbeeld van de blokkadelijst opnieuw weer. Als het aantal pagina's overeenkomstig is toegenomen, dan kan je box deze grootte aan, probeer de volgende grootte. Als het aantal pagina's in het afdrukvoorbeeld niet is toegenomen of niet overeenkomstig is toegenomen, gebruik dan het laatste kleinere formaat van de bloklijst. Interessant is dat de Fritz!Box box geen fout meldt als een telefoonboek te groot wordt, maar gewoon niet synchroniseert of gewoon nummers weglaat. Ik heb boxen zien crashen als het telefoonboek te groot werd - wees dus voorzichtig.</p>
+			  <p class="help" data-tx="t0022:930f3ae3"><b>Attentie:</b> Als je wilt testen hoeveel vermeldingen je box in een telefoonboek kan opslaan, ga dan als volgt te werk: Begin met de standaardinstelling van 2000 vermeldingen. Synchroniseer de blokkadelijst en geef het telefoonboek van de blokkadelijst weer. Scroll helemaal naar het einde en geef het afdrukvoorbeeld van de blocklist weer en noteer het aantal pagina's dat zou worden afgedrukt. Verhoog nu de grootte van de blokkadelijst met één stap, synchroniseer de blokkadelijst opnieuw en geef het afdrukvoorbeeld van de blokkadelijst opnieuw weer. Als het aantal pagina's overeenkomstig is toegenomen, dan kan je box deze grootte aan, probeer de volgende grootte. Als het aantal pagina's in het afdrukvoorbeeld niet is toegenomen of niet overeenkomstig is toegenomen, gebruik dan het laatste kleinere formaat van de bloklijst. Interessant is dat de FRITZ!Box geen fout meldt als een telefoonboek te groot wordt, maar gewoon niet synchroniseert of gewoon nummers weglaat. Ik heb boxen zien crashen als het telefoonboek te groot werd - dus wees voorzichtig.</p>
 			</div>
 			
 			<div class="field">
@@ -109,7 +83,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Nummers samenvatten met "*"</label>
-			  <p class="help" data-tx="t0030:fd1d1b6b">Als je deze optie selecteert, worden naburige nummers in je blokkadelijst gecombineerd tot één nummer met een jokerteken ("*"). Veel professionele spammers hebben een verbinding met meerdere apparaten en gebruiken een heel blok nummers als afzenders. Met deze optie worden al deze nummers automatisch geblokkeerd en kan je blocklist meer spamnummers bevatten. De Fritz!Box ondersteunt telefoonboeken met wildcardnummers en blokkeert dan het hele opgegeven nummerbereik. Het is echter mogelijk dat je wildcardnummers niet kunt gebruiken op andere apparaten.</p>
+			  <p class="help" data-tx="t0030:6bc4aa6a">Als je deze optie selecteert, worden naburige nummers in je blokkadelijst gecombineerd tot één nummer met een jokerteken ("*"). Veel professionele spammers hebben een verbinding met meerdere apparaten en gebruiken een heel blok nummers als afzenders. Met deze optie worden al deze nummers automatisch geblokkeerd en kan je blocklist meer spornummers bevatten. De FRITZ!Box ondersteunt telefoonboeken met wildcardnummers en blokkeert dan het hele opgegeven nummerbereik. Op andere apparaten kunt u echter mogelijk geen jokertekens gebruiken.</p>
 			</div>
 
 			<div class="field">
@@ -118,15 +92,21 @@
 				<span data-tx="t0092:781fecd1">Alleen nationale nummers</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093:2f41e7b3">Deze optie is handig als je alle buitenlandse nummers hebt geblokkeerd in je Fritz! box. Met deze optie verschijnen alleen nationale nummers in je blokkadelijst. Dit betekent dat er meer nummers die relevant zijn voor jou in je blokkadelijst passen. Zorg ervoor dat je hierboven je landcode correct hebt ingesteld.</p> 
+			  <p class="help" data-tx="t0093:9e52b947">Deze optie is handig als u alle buitenlandse nummers hebt geblokkeerd in uw FRITZ! Met deze optie verschijnen alleen nationale nummers in je blokkadelijst. Dit betekent dat er meer nummers die relevant zijn voor u in uw blokkadelijst passen. Zorg ervoor dat u hierboven uw landcode correct hebt ingesteld.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Sla</button>
+			    <button class="button is-primary" type="submit">
+			      <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+			      <span data-tx="t0114:31aafd4a">Sla</span>
+			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Gooi weg</a>
+			    <a class="button " th:href="@{/settings}">
+			      <span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+			      <span data-tx="t0115:879e98b4">Gooi weg</span>
+			    </a>
 			  </p>
 			</div>
 		</form>
@@ -136,7 +116,7 @@
 <section class="section">
 	<div class="content">
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Uw API-sleutels</h2>
-	<p data-tx="t0034:c7b86819">Als je andere applicaties gebruikt om telefoonnummers te controleren met PhoneBlock (bijv. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> of <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), dan heb je een API-sleutel nodig. Voor het telefoonboek van de blokkadelijst in je Fritz!Box gebruik je gewoon je PhoneBlock-gebruikersnaam en PhoneBlock-wachtwoord, dus hiervoor heb je geen API-sleutel nodig.</p>
+	<p data-tx="t0034:58e9ff35">Als u andere applicaties gebruikt om telefoonnummers te controleren met PhoneBlock (bijv. <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> of <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), dan hebt u een API-sleutel nodig. Voor het telefoonboek van de blokkadelijst in uw FRITZ!Box gebruikt u gewoon uw PhoneBlock-gebruikersnaam en PhoneBlock-wachtwoord, dus hiervoor hebt u geen API-sleutel nodig.</p>
 	
 	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Je hebt nog geen API-sleutels of CardDAV-tokens aangemaakt.</p>
 	<div th:unless="${explicitTokens.empty}">
@@ -191,7 +171,10 @@
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Geselecteerde verwijderen</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0116:6bb39cda">Geselecteerde verwijderen</span>
+	    </button>
 	  </p>
 	</div>
 	</form>
@@ -204,7 +187,7 @@
 	<div class="content">
 	<h2 data-tx="t0104:8aa69c2" id="createToken">Token aanmaken</h2>
 
-	<p data-tx="t0105:ae49ea3d">Maak een token aan voor gebruik met apps of om de blokkadelijst in te stellen als telefoonboek in je Fritz!</p>
+	<p data-tx="t0105:dfdefec">Maak een token aan voor gebruik met apps (API) of voor het instellen van de blokkadelijst als telefoonboek in je FRITZ!Box (CARDDAV).</p>
 
 	<form method="post" th:action="@{/update-settings(action='createToken')}">
 		<div class="field">
@@ -213,7 +196,7 @@
 		    <div class="select is-fullwidth">
 		      <select name="token-type">
 		        <option data-tx="t0107:b2896f37" value="API">API - voor apps zoals SpamBlocker of SpamBlockUp</option>
-		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - voor Fritz!Box telefoonboek</option>
+		        <option data-tx="t0108:969f2a63" value="CARDDAV">CardDAV - voor FRITZ!Box telefoonboek</option>
 		      </select>
 		    </div>
 		    <span class="icon is-small is-left">
@@ -226,7 +209,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0110:dcf4d98e">Opmerking voor gebruik</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="Bijvoorbeeld 'SpamBlocker op oma's mobiele telefoon' of 'Fritz!Box woonkamer'." type="text"/>
+		    <input class="input" data-tx="t0111:68dc02ac" name="token-label" placeholder="Bijvoorbeeld 'SpamBlocker op oma's mobiele telefoon' of 'FRITZ!Box woonkamer'." type="text"/>
 		    <span class="icon is-small is-left">
 		      <i class="fa-solid fa-pen"></i>
 		    </span>
@@ -236,7 +219,10 @@
 
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Token aanmaken</button>
+		    <button class="button is-primary" type="submit">
+		      <span class="icon"><i class="fa-solid fa-key"></i></span>
+		      <span data-tx="t0113:8aa69c2">Token aanmaken</span>
+		    </button>
 		  </p>
 		</div>
 	</form>
@@ -250,7 +236,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoek je naar het nummer via het zoekveld hierboven en schrijf je een negatieve opmerking, of maak je een telefoonboekvermelding voor het nummer in de blokkadelijst in je Fritz!Box</p>
+	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoekt u naar het nummer met behulp van het zoekveld hierboven en schrijft u een negatieve opmerking, of maakt u een telefoonboekvermelding voor het nummer in de blokkadelijst in uw FRITZ!</p>
 
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048:7a2801d3">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
@@ -262,7 +248,10 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Verwijder</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0117:74d7495f">Verwijder</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -284,13 +273,16 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Voeg toe</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
+	      <span data-tx="t0118:6464e726">Slot toevoegen</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
-	
+
 </section>
 
 <section class="section">
@@ -312,7 +304,10 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Verwijder</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0119:74d7495f">Verwijder</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -334,10 +329,13 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Voeg toe</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+	      <span data-tx="t0120:d63df803">Uitzondering toevoegen</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
 </section>
@@ -427,7 +425,7 @@
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075:f48c1f2f">Let op, hierdoor wordt uw oude PhoneBlock-wachtwoord ongeldig. U moet dan het nieuwe wachtwoord invoeren in de instellingen van uw Fritz!Box of uw mobiele telefoon, zodat de blokkadelijst nog steeds toegankelijk is.</p>
+	  			<p data-tx="t0075:5c042e35">Let op, hierdoor wordt uw oude PhoneBlock-wachtwoord ongeldig. Als u nog geen token gebruikt om toegang te krijgen tot uw blokkadelijst, moet u vervolgens het nieuwe wachtwoord invoeren in de instellingen van uw FRITZ!Box of uw mobiele telefoon, zodat de blokkadelijst nog steeds toegankelijk is. In dit geval kunt u het beste het telefoonboek op de FRITZ!Box wissen en opnieuw instellen, omdat het bijwerken van het wachtwoord niet betrouwbaar werkt.</p>
 	  		</div>
 	  	</div>
 	  	

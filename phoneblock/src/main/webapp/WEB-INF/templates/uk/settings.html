@@ -20,36 +20,10 @@
 			
 			<form method="post" th:action="@{/update-settings}">
 
-			<article class="message is-info" th:if="${token}">
-			  <div class="message-header">
-			    <p data-tx="t0005:5df14f18">Ваші дані доступу</p>
-			  </div>
-			  
-			  <div class="message-body">
-				<div class="field">
-				  <label class="label" data-tx="t0006:f48153ce">Інтернет-адреса сервера CardDAV</label>
-				  <div class="control"><code dir="ltr" id="url" th:text="|https://phoneblock.net${contextPath}/contacts/|"></code><a class="copyToClipboard" data-tx="t0083:3f7efe41" href="#" id="url_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-				</div>
-
-				<div class="field">
-				  <label class="label" data-tx="t0007:548c40c1">Ім'я користувача</label>
-				  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0084:3f7efe41" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0008:bceeee4f">Ви повинні ввести це значення як ім'я користувача для <a th:href="@{/setup}">виклику списку блоків</a>.</p>
-				</div>
-					
-				<div class="field">
-				  <label class="label" data-tx="t0009:e99dee32">пароль</label>
-				  <div class="control"><code dir="ltr" id="passwd" th:text="${token}"></code><a class="copyToClipboard" data-tx="t0085:3f7efe41" href="#" id="passwd_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-				  <p class="help" data-tx="t0010:b5380dd1">Ви повинні використовувати цей пароль для <a th:href="@{/setup}">налаштування телефонної книги</a> або для входу на цей сайт.</p>
-				  <p class="help" data-tx="t0011:90026712">Будь ласка, запишіть пароль (або збережіть його в <a href="https://keepass.info/">менеджері паролів</a>), оскільки він буде відображатися лише до того моменту, поки ви не вийдете з системи або поки не закінчиться ваш сеанс.</p>
-				</div>
-			  </div>
-			</article>
-
-			<div class="field" th:unless="${token}">
+			<div class="field">
 			  <label class="label" data-tx="t0012:548c40c1">Ім'я користувача</label>
 			  <div class="control"><code dir="ltr" id="login" th:text="${userName}"></code><a class="copyToClipboard" data-tx="t0086:3f7efe41" id="login_" title="Скопіювати в буфер обміну."><i class="fa-solid fa-copy"></i></a></div>
-			  <p class="help" data-tx="t0013:a797ac0f">Ваш пароль відображався при першому вході в систему. Якщо ви більше не знаєте його, ви можете створити <a href="#resetPassword">новий пароль</a> внизу цієї сторінки.</p>
+			  <p class="help" data-tx="t0013:bf5599db">Ви можете використовувати це ім'я користувача для входу на сайт PhoneBlock без електронної пошти. Відповідний пароль відображався під час вашого першого входу. Якщо ви більше не пам'ятаєте його, ви можете створити <a href="#resetPassword">новий пароль</a> внизу цієї сторінки.</p>
 			</div>
 
 			<div class="field">
@@ -72,12 +46,12 @@
 			  <div class="control has-icons-left">
 				<div class="select">			  
 			    <select class="input" name="maxLength">
-			    	<option data-tx="t0015:3a2ec886" th:selected="${settings.maxLength == 1000}" value="1000">1000 (мало для дуже старих скриньок Fritz!Box)</option>
-			    	<option data-tx="t0016:25ee08e3" th:selected="${settings.maxLength == 2000}" value="2000">2000 (рекомендовано для більшості Fritz!Box)</option>
+			    	<option data-tx="t0015:692f1dda" th:selected="${settings.maxLength == 1000}" value="1000">1000 (мало для дуже старих коробок FRITZ!Box)</option>
+			    	<option data-tx="t0016:76efddbf" th:selected="${settings.maxLength == 2000}" value="2000">2000 (рекомендовано для більшості FRITZ!Box)</option>
 			    	<option data-tx="t0017:b72a8194" th:selected="${settings.maxLength == 3000}" value="3000">3000 (наприклад, все ще працює на FRITZ!Box 7590)</option>
 			    	<option data-tx="t0018:a45cbdd9" th:selected="${settings.maxLength == 4000}" value="4000">4000 (див. примітки нижче)</option>
 			    	<option data-tx="t0019:27e7dbdd" th:selected="${settings.maxLength == 5000}" value="5000">5000 (величезна, див. примітки нижче)</option>
-			    	<option data-tx="t0020:a682f61a" th:selected="${settings.maxLength == 6000}" value="6000">6000 (екстремально, будьте обережні, ваш Fritz!Box може вийти з ладу)</option>
+			    	<option data-tx="t0020:654afa95" th:selected="${settings.maxLength == 6000}" value="6000">6000 (екстремально, будьте обережні, ваш FRITZ!Box може розбитися)</option>
 			    </select>
 			    </div>
 			    <span class="icon is-small is-left">
@@ -86,7 +60,7 @@
 			  </div>
 			  <p class="help" data-tx="t0021:28fc9e2c">Якщо у вас виникли проблеми з оновленням списку блокування, ви можете зменшити розмір вашого списку блокування тут. AVM рекомендує заповнювати телефонні книги максимум 1000 записами. Наприклад, FRITZ!Box 7590 може обробляти до 3000 записів у телефонній книзі.</p>
 			  
-			  <p class="help" data-tx="t0022:73c1facc"><b>Увага:</b> Якщо ви хочете перевірити, скільки записів ваша скринька може зберегти у телефонній книзі, виконайте такі дії: Почніть зі значення за замовчуванням 2000 записів. Синхронізуйте блок-лист і відобразіть телефонну книгу блок-листа. Прокрутіть список до самого кінця і відобразіть попередній перегляд блок-листа і зверніть увагу на кількість сторінок, які буде надруковано. Тепер збільште розмір списку на один крок, повторно синхронізуйте список і знову відобразіть попередній перегляд списку. Якщо кількість сторінок відповідно збільшилася, то ваш блок може впоратися з цим розміром, спробуйте наступний розмір. Якщо кількість сторінок у попередньому перегляді не збільшилася або збільшилася не відповідно, використовуйте останній менший розмір блоклиста. Цікаво, що Fritz!Box не повідомляє про помилку, якщо телефонна книга стає занадто великою, але або просто не синхронізується, або просто пропускає якісь номери. Я бачив, як програми просто виходили з ладу, якщо розмір телефонної книги був завеликим - тому будьте обережні.</p>
+			  <p class="help" data-tx="t0022:930f3ae3"><b>Увага:</b> Якщо ви хочете перевірити, скільки записів ваша скринька може зберегти у телефонній книзі, виконайте такі дії: Почніть зі значення за замовчуванням 2000 записів. Синхронізуйте блок-лист і відобразіть телефонну книгу блок-листа. Прокрутіть список до самого кінця і відобразіть попередній перегляд блок-листа і зверніть увагу на кількість сторінок, які буде надруковано. Тепер збільште розмір списку на один крок, повторно синхронізуйте список і знову відобразіть попередній перегляд списку. Якщо кількість сторінок відповідно збільшилася, то ваш блок може впоратися з цим розміром, спробуйте наступний розмір. Якщо кількість сторінок у попередньому перегляді для друку не збільшилася або збільшилася незначно, використовуйте останній менший розмір блок-листа. Цікаво, що FRITZ!Box не повідомляє про помилку, якщо телефонна книга стає занадто великою, але або просто не синхронізується, або просто пропускає якісь номери. Я бачив, як скриньки просто виходили з ладу, якщо розмір телефонної книги був занадто великим - тому будьте обережні.</p>
 			</div>
 			
 			<div class="field">
@@ -109,7 +83,7 @@
 			
 			<div class="field">
 			  <label class="checkbox" data-tx="t0029:1346525e"><input name="wildcards" th:checked="${settings.wildcards}" type="checkbox"/> Підсумовування чисел за допомогою символу "*"</label>
-			  <p class="help" data-tx="t0030:fd1d1b6b">Якщо ви виберете цю опцію, сусідні номери у вашому списку блокування будуть об'єднані в один номер за допомогою символу підстановки ("*"). Багато професійних спамерів мають з'єднання з декількома пристроями і використовують цілий блок номерів як відправників. З цією опцією всі ці номери будуть автоматично заблоковані, і ваш список блокування може включати більше спам-номерів. Fritz!Box підтримує телефонні книги зі спеціальними номерами і блокує весь вказаний діапазон номерів. Однак, можливо, ви не зможете використовувати підставні номери на інших пристроях.</p>
+			  <p class="help" data-tx="t0030:6bc4aa6a">Якщо ви виберете цю опцію, сусідні номери у вашому списку блокування будуть об'єднані в один номер за допомогою символу підстановки ("*"). Багато професійних спамерів мають з'єднання з декількома пристроями і використовують цілий блок номерів як відправників. З цією опцією всі ці номери автоматично блокуються, і ваш список блокування може включати більше спам-номерів. FRITZ!Box підтримує телефонні книги зі спеціальними номерами і блокує весь вказаний діапазон номерів. Однак, можливо, ви не зможете використовувати підставні номери на інших пристроях.</p>
 			</div>
 
 			<div class="field">
@@ -118,15 +92,21 @@
 				<span data-tx="t0092:781fecd1">Тільки національні номери</span>
 			  </label>
 			
-			  <p class="help" data-tx="t0093:2f41e7b3">Ця опція корисна, якщо ви заблокували всі іноземні номери у вашій скриньці Fritz! З цією опцією у вашому списку блокування з'являться тільки національні номери. Це означає, що більше номерів, які мають відношення до вас, потраплять до вашого списку блокування. Переконайтеся, що ви правильно встановили код вашої країни.</p> 
+			  <p class="help" data-tx="t0093:9e52b947">Ця опція корисна, якщо ви заблокували всі іноземні номери у вашому FRITZ! З цією опцією у вашому списку блокування з'являться лише національні номери. Це означає, що більше номерів, які мають відношення до вас, потраплять до вашого списку блокування. Переконайтеся, що ви правильно встановили код вашої країни вище.</p> 
 			</div>
 			
 			<div class="field is-grouped">
 			  <p class="control">
-			    <button class="button is-primary" data-tx="t0031:31aafd4a" type="submit">Зберегти</button>
+			    <button class="button is-primary" type="submit">
+			      <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+			      <span data-tx="t0114:31aafd4a">Зберегти</span>
+			    </button>
 			  </p>
 			  <p class="control">
-			    <a class="button " data-tx="t0032:879e98b4" th:href="@{/settings}">Викинути</a>
+			    <a class="button " th:href="@{/settings}">
+			      <span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+			      <span data-tx="t0115:879e98b4">Викинути</span>
+			    </a>
 			  </p>
 			</div>
 		</form>
@@ -136,7 +116,7 @@
 <section class="section">
 	<div class="content">
 	<h2 data-tx="t0033:ec96c339" id="myAPIKeys">Ваші ключі API</h2>
-	<p data-tx="t0034:c7b86819">Якщо ви використовуєте інші програми для перевірки телефонних номерів за допомогою PhoneBlock (наприклад, <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> або <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), вам потрібен ключ API. Для телефонної книги блокування у вашому Fritz!Box ви просто використовуєте своє ім'я користувача PhoneBlock і пароль PhoneBlock, тому вам не потрібен ключ API.</p>
+	<p data-tx="t0034:58e9ff35">Якщо ви використовуєте інші програми для перевірки телефонних номерів за допомогою PhoneBlock (наприклад, <a href="https://f-droid.org/packages/spam.blocker/">SpamBlocker</a> або <a href="https://spamblockup.jimdofree.com/">SpamBlockUp</a>), вам потрібен ключ API. Для телефонної книги блокування у вашому FRITZ!Box ви просто використовуєте своє ім'я користувача PhoneBlock і пароль PhoneBlock, тому вам не потрібен API-ключ.</p>
 	
 	<p data-tx="t0035:46fe9aee" th:if="${explicitTokens.empty}">Ви ще не створили жодних ключів API або токенів CardDAV.</p>
 	<div th:unless="${explicitTokens.empty}">
@@ -191,7 +171,10 @@
 	<form id="deleteAPIKeysForm" method="post" th:action="@{/update-settings(action='deleteAPIKeys')}">
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0041:6bb39cda" type="submit">Видалити вибране</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0116:6bb39cda">Видалити вибране</span>
+	    </button>
 	  </p>
 	</div>
 	</form>
@@ -204,7 +187,7 @@
 	<div class="content">
 	<h2 data-tx="t0104:8aa69c2" id="createToken">Створіть токен</h2>
 
-	<p data-tx="t0105:ae49ea3d">Створіть токен для використання в додатках або для налаштування списку блокування як телефонної книги у вашому Fritz!</p>
+	<p data-tx="t0105:dfdefec">Створіть токен для використання з додатками (API) або для налаштування списку блокування як телефонної книги у вашому FRITZ!Box (CARDDAV).</p>
 
 	<form method="post" th:action="@{/update-settings(action='createToken')}">
 		<div class="field">
@@ -213,7 +196,7 @@
 		    <div class="select is-fullwidth">
 		      <select name="token-type">
 		        <option data-tx="t0107:b2896f37" value="API">API - для таких програм, як SpamBlocker або SpamBlockUp</option>
-		        <option data-tx="t0108:60699194" value="CARDDAV">CardDAV - для телефонної книги Fritz!Box</option>
+		        <option data-tx="t0108:969f2a63" value="CARDDAV">CardDAV - для телефонної книги FRITZ!Box</option>
 		      </select>
 		    </div>
 		    <span class="icon is-small is-left">
@@ -226,7 +209,7 @@
 		<div class="field">
 		  <label class="label" data-tx="t0110:dcf4d98e">Вказівки щодо використання</label>
 		  <p class="control has-icons-left">
-		    <input class="input" data-tx="t0111:9e2ab95b" name="token-label" placeholder="Наприклад, &quot;SpamBlocker на мобільному телефоні бабусі&quot; або &quot;Вітальня Fritz!Box" type="text"/>
+		    <input class="input" data-tx="t0111:68dc02ac" name="token-label" placeholder="Наприклад, &quot;SpamBlocker на мобільному телефоні бабусі&quot; або &quot;Вітальня FRITZ!Box" type="text"/>
 		    <span class="icon is-small is-left">
 		      <i class="fa-solid fa-pen"></i>
 		    </span>
@@ -236,7 +219,10 @@
 
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" data-tx="t0113:21ce66dd" type="submit"><i class="fa-solid fa-key"></i> Створити токен</button>
+		    <button class="button is-primary" type="submit">
+		      <span class="icon"><i class="fa-solid fa-key"></i></span>
+		      <span data-tx="t0113:8aa69c2">Створіть токен</span>
+		    </button>
 		  </p>
 		</div>
 	</form>
@@ -250,7 +236,7 @@
 	
 	<form method="post" th:action="@{/update-settings(action='lists')}">
 
-	<p data-tx="t0047:b910f0c7" th:if="${blacklist.empty}">Ви не заблокували жодного номера. Щоб заблокувати номер, знайдіть його за допомогою поля пошуку вище і напишіть негативний коментар, або внесіть номер в телефонну книгу до списку заблокованих у вашому Fritz!Box</p>
+	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Ви не заблокували жодного номера. Щоб заблокувати номер, знайдіть його за допомогою поля пошуку вище і напишіть негативний коментар, або внесіть номер в телефонну книгу для блокування у вашому FRITZ!</p>
 
 	<th:block th:unless="${blacklist.empty}">
 	<p data-tx="t0048:7a2801d3">Ви навмисно заблокували ці номери. Ви можете скасувати випадкове блокування тут:</p>
@@ -262,7 +248,10 @@
 
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0049:74d7495f" type="submit">Видалити</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0117:74d7495f">Видалити</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -284,13 +273,16 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0099:1b7cb79c" type="submit">Додати</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
+	      <span data-tx="t0118:6464e726">Додати блокування</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
-	
+
 </section>
 
 <section class="section">
@@ -312,7 +304,10 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-danger" data-tx="t0053:74d7495f" type="submit">Видалити</button>
+	    <button class="button is-danger" type="submit">
+	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+	      <span data-tx="t0119:74d7495f">Видалити</span>
+	    </button>
 	  </p>
 	</div>
 	</th:block>
@@ -334,10 +329,13 @@
 	
 	<div class="field is-grouped">
 	  <p class="control">
-	    <button class="button is-primary" data-tx="t0057:1b7cb79c" type="submit">Додати</button>
+	    <button class="button is-primary" type="submit">
+	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+	      <span data-tx="t0120:d63df803">Додати виняток</span>
+	    </button>
 	  </p>
 	</div>
-	
+
 	</form>
 	</div>
 </section>
@@ -427,7 +425,7 @@
 		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/reset-password}">
   		<div class="panel-block">
 	  		<div class="content">
-	  			<p data-tx="t0075:f48c1f2f">Будьте обережні, це зробить ваш старий пароль PhoneBlock недійсним. Після цього ви повинні ввести новий пароль у налаштуваннях Fritz!Box або вашого мобільного телефону, щоб отримати доступ до списку блокування.</p>
+	  			<p data-tx="t0075:5c042e35">Будьте обережні, це призведе до анулювання вашого старого пароля PhoneBlock. Якщо ви ще не використовуєте токен для доступу до списку блокування, вам необхідно ввести новий пароль у налаштуваннях вашого FRITZ!Box або мобільного телефону, щоб отримати доступ до списку блокування. У цьому випадку найкраще видалити телефонну книгу на FRITZ!Box і налаштувати її заново, оскільки оновлення пароля працює ненадійно.</p>
 	  		</div>
 	  	</div>
 	  	
