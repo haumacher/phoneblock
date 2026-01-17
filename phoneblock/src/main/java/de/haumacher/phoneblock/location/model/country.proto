@@ -171,4 +171,7 @@ message Country {
 	@Name("wikidata_id")
 	string wikidata_id;
 
+	@Name("TrunkPrefix")
+	string trunkPrefix;
+
 }

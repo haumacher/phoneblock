@@ -183,6 +183,9 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/** @see #getWikidataId() */
 	String WIKIDATA_ID__PROP = "wikidata_id";
 
+	/** @see #getTrunkPrefix() */
+	String TRUNK_PREFIX__PROP = "TrunkPrefix";
+
 	/** Identifier for the property {@link #getFIFA()} in binary format. */
 	static final int FIFA__ID = 1;
 
@@ -350,6 +353,9 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 
 	/** Identifier for the property {@link #getWikidataId()} in binary format. */
 	static final int WIKIDATA_ID__ID = 56;
+
+	/** Identifier for the property {@link #getTrunkPrefix()} in binary format. */
+	static final int TRUNK_PREFIX__ID = 57;
 
 	String getFIFA();
 
@@ -762,6 +768,13 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	 * @see #getWikidataId()
 	 */
 	de.haumacher.phoneblock.location.model.Country setWikidataId(String value);
+
+	String getTrunkPrefix();
+
+	/**
+	 * @see #getTrunkPrefix()
+	 */
+	de.haumacher.phoneblock.location.model.Country setTrunkPrefix(String value);
 
 	@Override
 	public de.haumacher.phoneblock.location.model.Country registerListener(de.haumacher.msgbuf.observer.Listener l);
