@@ -116,9 +116,22 @@ public class NumberAnalyzer {
 		PrefixInfo info = findInfo(plus);
 		
 		String countryCode = info.getCountryCode();
-		if (countryCode == null || plus.charAt(countryCode.length()) == '0') {
-			// A city code cannot start with a zero.
+		if (countryCode == null) {
 			return null;
+		}
+
+		// Validate that the local part doesn't start with any trunk prefix
+		// The international form should never contain trunk prefixes - they should have been removed during normalization
+		// For example: Germany uses "0" as trunk prefix, so +49 0... is invalid (should be +49 ...)
+		// But for Italy (trunk prefix is empty), +39 0... is valid because 0 is part of the area code
+		if (trunkPrefixes != null && !trunkPrefixes.isEmpty()) {
+			String localPart = plus.substring(countryCode.length());
+			for (String trunkPrefix : trunkPrefixes) {
+				if (!trunkPrefix.isEmpty() && localPart.startsWith(trunkPrefix)) {
+					// The local part must not start with a trunk prefix
+					return null;
+				}
+			}
 		}
 
 		// Numbers seen in real live seem to exceed the maximum digit size in the numbering plan. 

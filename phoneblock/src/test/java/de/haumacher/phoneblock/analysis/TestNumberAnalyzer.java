@@ -147,4 +147,47 @@ class TestNumberAnalyzer {
 		assertEquals(expectedPlus, result.getPlus());
 	}
 
+	@ParameterizedTest
+	@CsvSource({
+		// Italian numbers with "0" after country code should be ACCEPTED (0 is part of area code)
+		// Italy has empty trunk prefix, so 0 in international format is valid
+		"+390123456789, +39, Italy",  // Genoa area
+		"+39010123456, +39, Italy",   // Genoa
+		"+39011123456, +39, Italy",   // Turin
+		"+3902123456, +39, Italy",    // Milan
+		"00390123456789, +39, Italy",
+		"+390612345678, +39, Holy See", // Rome (Vatican)
+
+		// Same numbers entered from Italian dial prefix
+		"0123456789, +39, Italy",
+		"010123456, +39, Italy",
+		"011123456, +39, Italy",
+		"02123456, +39, Italy",
+	})
+	void testItalianNumbersWithLeadingZero(String input, String dialPrefix, String expectedCountry) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, dialPrefix);
+		assertNotNull(result, "Italian number " + input + " should be valid");
+		assertEquals(expectedCountry, result.getCountry());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		// German numbers with "0" after country code should be REJECTED (trunk prefix was not stripped)
+		// Germany has "0" as trunk prefix, so +49 0... is invalid
+		"+490123456789, +49",
+		"00490123456789, +49",
+
+		// Hungarian numbers with "06" after country code should be REJECTED
+		"+36061234567, +36",
+		"003606123456, +36",
+
+		// Russian numbers with "8" after country code should be REJECTED
+		"+784951234567, +7",
+		"00784951234567, +7",
+	})
+	void testInternationalNumbersWithTrunkPrefixShouldBeRejected(String input, String dialPrefix) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, dialPrefix);
+		assertNull(result, "Number " + input + " should be invalid (trunk prefix in international format)");
+	}
+
 }
