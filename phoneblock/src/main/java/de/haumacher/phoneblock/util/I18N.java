@@ -7,6 +7,14 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.apache.ibatis.session.SqlSession;
+
+import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Users;
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * Utility for internationalization (I18N) message lookup.
  *
@@ -69,6 +77,51 @@ public class I18N {
 	 */
 	public static String getMessage(String locale, String key, Object... messageParameters) {
 		return getMessage(Locale.forLanguageTag(locale), key, messageParameters);
+	}
+
+	/**
+	 * Get a localized message by key for the request's user locale.
+	 *
+	 * @param req The HTTP request (used to determine user's locale)
+	 * @param key The message key
+	 * @return The localized message
+	 */
+	public static String getMessage(HttpServletRequest req, String key) {
+		return getMessage(getUserLocale(req), key);
+	}
+
+	/**
+	 * Get a localized message by key for the request's user locale with parameters.
+	 *
+	 * @param req The HTTP request (used to determine user's locale)
+	 * @param key The message key
+	 * @param messageParameters The parameters to format into the message
+	 * @return The localized and formatted message
+	 */
+	public static String getMessage(HttpServletRequest req, String key, Object... messageParameters) {
+		return getMessage(getUserLocale(req), key, messageParameters);
+	}
+
+	/**
+	 * Gets the user's preferred locale from their database settings, with fallback to browser locale.
+	 *
+	 * @param req The HTTP request
+	 * @return The user's locale language tag (e.g., "de", "en-US")
+	 */
+	public static String getUserLocale(HttpServletRequest req) {
+		String userName = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		if (userName != null) {
+			DB db = DBService.getInstance();
+			try (SqlSession sqlSession = db.openSession()) {
+				Users users = sqlSession.getMapper(Users.class);
+				String lang = users.getLang(userName);
+				if (lang != null && !lang.isEmpty()) {
+					return lang;
+				}
+			}
+		}
+		// Fallback to browser locale or default
+		return req.getLocale().toLanguageTag();
 	}
 
 	private I18N() {

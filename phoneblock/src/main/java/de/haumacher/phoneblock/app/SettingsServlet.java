@@ -24,6 +24,7 @@ import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.Countries;
+import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -305,7 +306,7 @@ public class SettingsServlet extends HttpServlet {
 	}
 
 	private void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.setAttribute("error", "Anmeldung fehlgeschlagen.");
+		req.setAttribute("error", I18N.getMessage(req, "error.login.failed"));
 		TemplateRenderer.getInstance(req).process("/login", req, resp);
 	}
 

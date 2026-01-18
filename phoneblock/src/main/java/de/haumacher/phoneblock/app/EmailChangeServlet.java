@@ -279,7 +279,7 @@ public class EmailChangeServlet extends HttpServlet {
 			clearSessionAttributes(session);
 
 			// Redirect to settings with success message
-			session.setAttribute("settingsMessage", "Deine E-Mail-Adresse wurde erfolgreich geändert.");
+			session.setAttribute("settingsMessage", I18N.getMessage(req, "success.email-change.complete"));
 			resp.sendRedirect(req.getContextPath() + SettingsServlet.PATH);
 
 		} catch (Exception ex) {
@@ -298,25 +298,7 @@ public class EmailChangeServlet extends HttpServlet {
 
 	private void showError(HttpServletRequest req, HttpServletResponse resp, String template, String messageKey, Object... params)
 			throws ServletException, IOException {
-		String locale = getUserLocale(req);
-		String message = I18N.getMessage(locale, messageKey, params);
-		req.setAttribute(ERROR_MESSAGE_ATTR, message);
+		req.setAttribute(ERROR_MESSAGE_ATTR, I18N.getMessage(req, messageKey, params));
 		TemplateRenderer.getInstance(req).process(template, req, resp);
-	}
-
-	private String getUserLocale(HttpServletRequest req) {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession(false));
-		if (userName != null) {
-			DB db = DBService.getInstance();
-			try (SqlSession sqlSession = db.openSession()) {
-				Users users = sqlSession.getMapper(Users.class);
-				String lang = users.getLang(userName);
-				if (lang != null && !lang.isEmpty()) {
-					return lang;
-				}
-			}
-		}
-		// Fallback to browser locale or default
-		return req.getLocale().toLanguageTag();
 	}
 }

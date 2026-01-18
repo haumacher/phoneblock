@@ -81,7 +81,7 @@ public class EMailVerificationServlet extends HttpServlet {
 
 		String email = req.getParameter("email");
 		if (email == null || email.trim().isEmpty()) {
-			sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.empty"));
+			sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.empty"));
 			return;
 		}
 
@@ -89,7 +89,7 @@ public class EMailVerificationServlet extends HttpServlet {
 
 		String captcha = req.getParameter("captcha");
 		if (captcha == null || captcha.trim().isEmpty()) {
-			sendCaptchaFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.captcha-empty"));
+			sendCaptchaFailure(req, resp, I18N.getMessage(req, "error.email.verification.captcha-empty"));
 			return;
 		}
 
@@ -97,7 +97,7 @@ public class EMailVerificationServlet extends HttpServlet {
 		String captchaExpected = (String) session.getAttribute("captcha");
 		session.removeAttribute("captcha");
 		if (!captcha.trim().equals(captchaExpected)) {
-			sendCaptchaFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.captcha-mismatch"));
+			sendCaptchaFailure(req, resp, I18N.getMessage(req, "error.email.verification.captcha-mismatch"));
 			return;
 		}
 		
@@ -108,14 +108,14 @@ public class EMailVerificationServlet extends HttpServlet {
 			int atIndex = plainAddress.indexOf('@');
 			if (atIndex <= 0) {
 				req.removeAttribute("email");
-				sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.no-username"));
+				sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.no-username"));
 				return;
 			}
 			String domain = plainAddress.substring(atIndex + 1);
 			Record[] result = new Lookup(domain, Type.MX, DClass.IN).run();
 			if (result == null || result.length == 0) {
 				req.removeAttribute("email");
-				sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.invalid-domain", domain));
+				sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.invalid-domain", domain));
 				return;
 			}
 
@@ -123,12 +123,12 @@ public class EMailVerificationServlet extends HttpServlet {
 			String mxHost = mx.getTarget().toString(true);
 			if (".".equals(mxHost)) {
 				req.removeAttribute("email");
-				sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.domain-no-email", domain));
+				sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.domain-no-email", domain));
 				return;
 			}
 		} catch (AddressException ex) {
 			req.removeAttribute("email");
-			sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.invalid", ex.getMessage()));
+			sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.invalid", ex.getMessage()));
 			return;
 		}
     	
@@ -139,18 +139,18 @@ public class EMailVerificationServlet extends HttpServlet {
 			MailService mailService = MailServiceStarter.getInstance();
 			if (mailService == null) {
 				LOG.error("Mail service not active!");
-				sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.service-unavailable"));
+				sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.service-unavailable"));
 				return;
 			}
 
 			mailService.sendActivationMail(email, code);
 		} catch (AddressException ex) {
 			LOG.warn("Failed to send message: " + ex.getMessage());
-			sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.send-failed", ex.getMessage()));
+			sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.send-failed", ex.getMessage()));
 			return;
 		} catch (Exception ex) {
 			LOG.error("Failed to send message.", ex);
-			sendEmailFailure(req, resp, I18N.getMessage(getUserLocale(req), "error.email.verification.send-failed", ex.getMessage()));
+			sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.send-failed", ex.getMessage()));
 			return;
 		}
 		
@@ -207,11 +207,6 @@ public class EMailVerificationServlet extends HttpServlet {
 			default:
 				return "/signup-code";
 		}
-	}
-
-	private String getUserLocale(HttpServletRequest req) {
-		// For login/signup flows, user is not yet authenticated, so fallback to browser locale
-		return req.getLocale().toLanguageTag();
 	}
 
 }

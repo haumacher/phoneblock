@@ -18,6 +18,7 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.I18N;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -58,7 +59,7 @@ public class RatingServlet extends HttpServlet {
         if (userName == null) {
     		String captcha = req.getParameter("captcha");
     		if (captcha == null || captcha.trim().isEmpty()) {
-    			sendFailure(req, resp, phoneId, ratingName, comment, "Du musst den Sicherheitscode eingeben.");
+    			sendFailure(req, resp, phoneId, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-required"));
     			return;
     		}
 
@@ -66,7 +67,7 @@ public class RatingServlet extends HttpServlet {
     		String captchaExpected = (String) session.getAttribute("captcha");
     		session.removeAttribute("captcha");
     		if (!captcha.trim().equals(captchaExpected)) {
-    			sendFailure(req, resp, phoneId, ratingName, comment, "Der Sicherheitscode stimmt nicht überein.");
+    			sendFailure(req, resp, phoneId, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-mismatch"));
     			return;
     		}
     		

@@ -14,6 +14,7 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
+import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.util.ServletUtil;
 import de.haumacher.phoneblock.util.UserAgentType;
 import jakarta.servlet.ServletException;
@@ -60,13 +61,13 @@ public class RegistrationServlet extends HttpServlet {
 
 		Object expectedCode = req.getSession().getAttribute("code");
 		if (expectedCode == null) {
-			sendError(req, resp, "Der Bestätigungscode ist abgelaufen. Bitte starte die Registrierung erneut.");
+			sendError(req, resp, I18N.getMessage(req, "error.registration.code-expired"));
 			return;
 		}
 
 		String code = req.getParameter("code");
 		if (code == null || code.trim().isEmpty() || !code.equals(expectedCode)) {
-			sendError(req, resp, "Der Bestätigungscode stimmt nicht überein.");
+			sendError(req, resp, I18N.getMessage(req, "error.registration.code-mismatch"));
 			return;
 		}
 
@@ -100,7 +101,7 @@ public class RegistrationServlet extends HttpServlet {
 		} catch (Exception ex) {
 			LOG.error("Failed to create user: " + email, ex);
 
-			sendError(req, resp, "Bei der Erstellung des Accounts ist ein Fehler aufgetreten: " + ex.getMessage());
+			sendError(req, resp, I18N.getMessage(req, "error.registration.account-creation-failed", ex.getMessage()));
 			return;
 		}
 	}
