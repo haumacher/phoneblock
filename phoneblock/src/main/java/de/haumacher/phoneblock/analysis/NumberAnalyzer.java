@@ -168,7 +168,20 @@ public class NumberAnalyzer {
 			result.setId(zeroZero);
 		} else {
 			result.setCountry(countries.stream().map(c -> c.getOfficialNameEn()).collect(Collectors.joining(", ")));
-			String national = "0" + plus.substring(countryCode.length());
+
+			// Build national format by prepending the trunk prefix
+			// For most countries (e.g., Germany), trunk prefix is "0"
+			// For Italy, trunk prefix is empty, so the local part already contains any leading zeros
+			String localPart = plus.substring(countryCode.length());
+			String national;
+			if (trunkPrefixes != null && !trunkPrefixes.isEmpty() && !trunkPrefixes.get(0).isEmpty()) {
+				// Country has a non-empty trunk prefix, prepend it
+				national = trunkPrefixes.get(0) + localPart;
+			} else {
+				// Country has no trunk prefix (or empty trunk prefix), use local part as-is
+				national = localPart;
+			}
+
 			result.setShortcut("(" + countries.stream().map(c -> c.getISO31661Alpha2()).collect(Collectors.joining(", ")) + ") " + national);
 			if (GERMAN_DIAL_PREFIX.equals(countryCode)) {
 				result.setId(national);

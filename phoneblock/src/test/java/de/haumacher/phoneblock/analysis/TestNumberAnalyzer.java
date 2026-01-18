@@ -190,4 +190,33 @@ class TestNumberAnalyzer {
 		assertNull(result, "Number " + input + " should be invalid (trunk prefix in international format)");
 	}
 
+	@ParameterizedTest
+	@CsvSource({
+		// Italian numbers should display with single leading 0 (not double 0)
+		// Italy has empty trunk prefix, so national format = local part (no prefix added)
+		"+390123456789, +39, '(IT) 0123456789'",
+		"+39010123456, +39, '(IT) 010123456'",
+		"+39011123456, +39, '(IT) 011123456'",
+		"+3902123456, +39, '(IT) 02123456'",
+		"0123456789, +39, '(IT) 0123456789'",
+
+		// German numbers should have trunk prefix "0" added
+		"+49891234567, +49, '(DE) 0891234567'",
+		"+4930123456, +49, '(DE) 030123456'",
+		"0891234567, +49, '(DE) 0891234567'",
+
+		// Hungarian numbers should have trunk prefix "06" added
+		"+36123456789, +36, '(HU) 06123456789'",
+		"06123456789, +36, '(HU) 06123456789'",
+
+		// Russia should have trunk prefix "8" added
+		"+74951234567, +7, '(KZ, RU) 84951234567'",
+		"84951234567, +7, '(KZ, RU) 84951234567'",
+	})
+	void testNationalFormatDisplay(String input, String dialPrefix, String expectedShortcut) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, dialPrefix);
+		assertNotNull(result, "Number " + input + " should be valid");
+		assertEquals(expectedShortcut, result.getShortcut());
+	}
+
 }
