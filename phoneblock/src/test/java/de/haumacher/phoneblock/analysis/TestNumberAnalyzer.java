@@ -219,4 +219,32 @@ class TestNumberAnalyzer {
 		assertEquals(expectedShortcut, result.getShortcut());
 	}
 
+	@ParameterizedTest
+	@CsvSource({
+		// Cross-country searches: User's dial prefix different from number's country
+		// German user searching for Italian number should work
+		"+390123456789, +49, Italy, '(IT) 0123456789'",
+		"+39010123456, +49, Italy, '(IT) 010123456'",
+
+		// Italian user searching for German number should work
+		"+49891234567, +39, Germany, '(DE) 0891234567'",
+		"+4930123456, +39, Germany, '(DE) 030123456'",
+
+		// German user searching for Hungarian number should work
+		"+36123456789, +49, Hungary, '(HU) 06123456789'",
+
+		// Hungarian user searching for Russian number should work
+		"+74951234567, +36, 'Kazakhstan, Russian Federation', '(KZ, RU) 84951234567'",
+
+		// Any user can search for numbers in international format
+		"00390123456789, +49, Italy, '(IT) 0123456789'",
+		"0049891234567, +39, Germany, '(DE) 0891234567'",
+	})
+	void testCrossCountrySearch(String input, String userDialPrefix, String expectedCountry, String expectedShortcut) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, userDialPrefix);
+		assertNotNull(result, "Cross-country search for " + input + " with user dial prefix " + userDialPrefix + " should work");
+		assertEquals(expectedCountry, result.getCountry());
+		assertEquals(expectedShortcut, result.getShortcut());
+	}
+
 }

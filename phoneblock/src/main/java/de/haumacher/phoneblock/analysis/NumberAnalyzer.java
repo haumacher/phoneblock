@@ -95,16 +95,17 @@ public class NumberAnalyzer {
 	public static PhoneNumer analyze(String phone, String dialPrefix) {
 		PhoneNumer result = PhoneNumer.create();
 
-		// Look up country by dial prefix to get trunk prefix information
-		List<String> trunkPrefixes = null;
+		// Look up country by dial prefix to get trunk prefix information for parsing
+		// This is used by PhoneHash.toInternationalForm() to convert national format to international
+		List<String> userTrunkPrefixes = null;
 		List<Country> countriesForDialPrefix = Countries.BY_DIAL_PREFIX.get(dialPrefix);
 		if (countriesForDialPrefix != null && !countriesForDialPrefix.isEmpty()) {
 			// Use the first country's trunk prefixes
 			// (Multiple countries can share the same dial prefix, e.g., USA/Canada with +1)
-			trunkPrefixes = countriesForDialPrefix.get(0).getTrunkPrefixes();
+			userTrunkPrefixes = countriesForDialPrefix.get(0).getTrunkPrefixes();
 		}
 
-		String plus = PhoneHash.toInternationalForm(phone, dialPrefix, trunkPrefixes);
+		String plus = PhoneHash.toInternationalForm(phone, dialPrefix, userTrunkPrefixes);
 		if (plus == null) {
 			// Not a valid number.
 			return null;
@@ -112,21 +113,29 @@ public class NumberAnalyzer {
 		result.setPlus(plus);
 		String zeroZero = "00" + plus.substring(1);
 		result.setZeroZero(zeroZero);
-		
+
 		PrefixInfo info = findInfo(plus);
-		
+
 		String countryCode = info.getCountryCode();
 		if (countryCode == null) {
 			return null;
 		}
 
 		// Validate that the local part doesn't start with any trunk prefix
+		// IMPORTANT: Use trunk prefixes from the NUMBER'S country, not the user's country
+		// For example: German user searching for Italian number +390123456789 should use Italian trunk prefixes
 		// The international form should never contain trunk prefixes - they should have been removed during normalization
 		// For example: Germany uses "0" as trunk prefix, so +49 0... is invalid (should be +49 ...)
 		// But for Italy (trunk prefix is empty), +39 0... is valid because 0 is part of the area code
-		if (trunkPrefixes != null && !trunkPrefixes.isEmpty()) {
+		List<String> numberTrunkPrefixes = null;
+		List<Country> countriesForNumber = Countries.BY_DIAL_PREFIX.get(countryCode);
+		if (countriesForNumber != null && !countriesForNumber.isEmpty()) {
+			numberTrunkPrefixes = countriesForNumber.get(0).getTrunkPrefixes();
+		}
+
+		if (numberTrunkPrefixes != null && !numberTrunkPrefixes.isEmpty()) {
 			String localPart = plus.substring(countryCode.length());
-			for (String trunkPrefix : trunkPrefixes) {
+			for (String trunkPrefix : numberTrunkPrefixes) {
 				if (!trunkPrefix.isEmpty() && localPart.startsWith(trunkPrefix)) {
 					// The local part must not start with a trunk prefix
 					return null;
@@ -170,13 +179,14 @@ public class NumberAnalyzer {
 			result.setCountry(countries.stream().map(c -> c.getOfficialNameEn()).collect(Collectors.joining(", ")));
 
 			// Build national format by prepending the trunk prefix
+			// Use trunk prefixes from the NUMBER'S country (not the user's country)
 			// For most countries (e.g., Germany), trunk prefix is "0"
 			// For Italy, trunk prefix is empty, so the local part already contains any leading zeros
 			String localPart = plus.substring(countryCode.length());
 			String national;
-			if (trunkPrefixes != null && !trunkPrefixes.isEmpty() && !trunkPrefixes.get(0).isEmpty()) {
+			if (numberTrunkPrefixes != null && !numberTrunkPrefixes.isEmpty() && !numberTrunkPrefixes.get(0).isEmpty()) {
 				// Country has a non-empty trunk prefix, prepend it
-				national = trunkPrefixes.get(0) + localPart;
+				national = numberTrunkPrefixes.get(0) + localPart;
 			} else {
 				// Country has no trunk prefix (or empty trunk prefix), use local part as-is
 				national = localPart;
