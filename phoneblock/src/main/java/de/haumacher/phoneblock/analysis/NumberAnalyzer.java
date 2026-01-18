@@ -94,8 +94,17 @@ public class NumberAnalyzer {
 	 */
 	public static PhoneNumer analyze(String phone, String dialPrefix) {
 		PhoneNumer result = PhoneNumer.create();
-		
-		String plus = PhoneHash.toInternationalForm(phone, dialPrefix);
+
+		// Look up country by dial prefix to get trunk prefix information
+		List<String> trunkPrefixes = null;
+		List<Country> countriesForDialPrefix = Countries.BY_DIAL_PREFIX.get(dialPrefix);
+		if (countriesForDialPrefix != null && !countriesForDialPrefix.isEmpty()) {
+			// Use the first country's trunk prefixes
+			// (Multiple countries can share the same dial prefix, e.g., USA/Canada with +1)
+			trunkPrefixes = countriesForDialPrefix.get(0).getTrunkPrefixes();
+		}
+
+		String plus = PhoneHash.toInternationalForm(phone, dialPrefix, trunkPrefixes);
 		if (plus == null) {
 			// Not a valid number.
 			return null;
@@ -403,10 +412,6 @@ public class NumberAnalyzer {
 			return null;
 		}
 		return number;
-	}
-
-	public static PhoneNumer extractNumber(String query) {
-		return extractNumber(query, GERMAN_DIAL_PREFIX);
 	}
 	
 }

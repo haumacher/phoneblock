@@ -28,10 +28,11 @@ public class CountriesTest {
 		assertEquals("0", germany.getTrunkPrefixes().get(0), "Germany trunk prefix should be 0");
 		assertEquals("Germany", germany.getOfficialNameEn(), "Germany official name");
 
-		// Italy - no trunk prefix in CSV (empty)
+		// Italy - no trunk prefix in CSV (empty string means no trunk prefix)
 		Country italy = Countries.get("IT");
 		assertNotNull(italy, "Italy should be found");
-		assertTrue(italy.getTrunkPrefixes().isEmpty(), "Italy should have no trunk prefix");
+		assertEquals(1, italy.getTrunkPrefixes().size(), "Italy should have 1 trunk prefix entry");
+		assertEquals("", italy.getTrunkPrefixes().get(0), "Italy trunk prefix should be empty string (no trunk prefix)");
 		assertEquals("Italy", italy.getOfficialNameEn(), "Italy official name");
 
 		// Russia - non-standard trunk prefix "8"
@@ -41,10 +42,11 @@ public class CountriesTest {
 		assertEquals("8", russia.getTrunkPrefixes().get(0), "Russia trunk prefix should be 8");
 		assertEquals("Russian Federation", russia.getOfficialNameEn(), "Russia official name");
 
-		// Greece - no trunk prefix in CSV (empty)
+		// Greece - no trunk prefix in CSV (empty string means no trunk prefix)
 		Country greece = Countries.get("GR");
 		assertNotNull(greece, "Greece should be found");
-		assertTrue(greece.getTrunkPrefixes().isEmpty(), "Greece should have no trunk prefix");
+		assertEquals(1, greece.getTrunkPrefixes().size(), "Greece should have 1 trunk prefix entry");
+		assertEquals("", greece.getTrunkPrefixes().get(0), "Greece trunk prefix should be empty string (no trunk prefix)");
 		assertEquals("Greece", greece.getOfficialNameEn(), "Greece official name");
 	}
 

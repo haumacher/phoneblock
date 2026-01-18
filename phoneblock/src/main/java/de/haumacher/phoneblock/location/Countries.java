@@ -80,6 +80,10 @@ public class Countries {
 									.map(String::strip)
 									.filter(p -> !p.isEmpty())
 									.toList();
+						} else if (trunkPrefix != null) {
+							// Empty trunk prefix means country doesn't use trunk prefixes
+							// Create a list with one empty string to distinguish from "no data"
+							tPrefixes = Collections.singletonList("");
 						}
 
 						// Map each country code to the prefixes

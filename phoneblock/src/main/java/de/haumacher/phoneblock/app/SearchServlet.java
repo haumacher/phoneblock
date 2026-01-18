@@ -307,10 +307,6 @@ public class SearchServlet extends HttpServlet {
 	}
 
 	public static SearchResult analyze(String query, String userName, String dialPrefix) {
-		PhoneNumer number = NumberAnalyzer.extractNumber(query);
-		if (number == null) {
-			return null;
-		}
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Set<String> langs;
@@ -323,6 +319,11 @@ public class SearchServlet extends HttpServlet {
 				langs = Collections.singleton(lang);
 			}
 
+			PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
+			if (number == null) {
+				return null;
+			}
+			
 			return analyzeDb(db, session, number, dialPrefix, true, langs);
 		}
 	}
