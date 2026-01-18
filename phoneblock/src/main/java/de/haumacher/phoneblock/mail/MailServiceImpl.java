@@ -114,7 +114,7 @@ public class MailServiceImpl implements MailService {
 
 
 	@Override
-	public void sendActivationMail(String receiver, String code)
+	public void sendActivationMail(String receiver, String code, String locale)
 			throws MessagingException, IOException, AddressException {
 
 		if (receiver == null || receiver.isBlank()) {
@@ -129,8 +129,10 @@ public class MailServiceImpl implements MailService {
     		throw new AddressException("Please do not use disposable e-mail addresses.");
     	}
 
-		// For activation mails, we don't have user settings yet, so default to German
-		String locale = "de";
+		// Use provided locale (from request/browser or user settings)
+		if (locale == null || locale.isEmpty()) {
+			locale = "de"; // Fallback to German
+		}
 		LOG.info("Sending activation mail to '{}' in locale '{}'.", receiver, locale);
 
 		Map<String, String> variables = new HashMap<>();
@@ -142,7 +144,7 @@ public class MailServiceImpl implements MailService {
 	}
 
 	@Override
-	public void sendEmailChangeMail(String receiver, String code)
+	public void sendEmailChangeMail(String receiver, String code, String locale)
 			throws MessagingException, IOException, AddressException {
 
 		if (receiver == null || receiver.isBlank()) {
@@ -157,8 +159,10 @@ public class MailServiceImpl implements MailService {
 			throw new AddressException("Please do not use disposable e-mail addresses.");
 		}
 
-		// For email change mails, default to German (could be enhanced to use user's locale)
-		String locale = "de";
+		// Use provided locale (from request/browser or user settings)
+		if (locale == null || locale.isEmpty()) {
+			locale = "de"; // Fallback to German
+		}
 		LOG.info("Sending email change verification mail to '{}' in locale '{}'.", receiver, locale);
 
 		Map<String, String> variables = new HashMap<>();

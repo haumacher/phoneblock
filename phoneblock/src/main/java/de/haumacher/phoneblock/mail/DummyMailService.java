@@ -25,15 +25,15 @@ public class DummyMailService implements MailService {
 	}
 
 	@Override
-	public void sendActivationMail(String receiver, String code)
+	public void sendActivationMail(String receiver, String code, String locale)
 			throws MessagingException, IOException, AddressException {
-		LOG.info("Send activation to {}: {}", receiver, code);
+		LOG.info("Send activation to {} in locale {}: {}", receiver, locale, code);
 	}
 
 	@Override
-	public void sendEmailChangeMail(String receiver, String code)
+	public void sendEmailChangeMail(String receiver, String code, String locale)
 			throws MessagingException, IOException, AddressException {
-		LOG.info("Send email change verification to {}: {}", receiver, code);
+		LOG.info("Send email change verification to {} in locale {}: {}", receiver, locale, code);
 	}
 
 	@Override
