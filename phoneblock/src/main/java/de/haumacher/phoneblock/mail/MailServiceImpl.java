@@ -116,19 +116,19 @@ public class MailServiceImpl implements MailService {
 	@Override
 	public void sendActivationMail(String receiver, String code)
 			throws MessagingException, IOException, AddressException {
-		
+
 		if (receiver == null || receiver.isBlank()) {
 			LOG.info("Rejected emtpy e-mail address..");
 			throw new AddressException("Address must not be empty.");
 		}
-		
+
     	InternetAddress address = new InternetAddress(receiver);
-    	
+
     	if (EMailCheckService.getInstance().isDisposable(address)) {
 			LOG.warn("Rejected disposable e-mail address: " + receiver);
     		throw new AddressException("Please do not use disposable e-mail addresses.");
     	}
-    	
+
 		// For activation mails, we don't have user settings yet, so default to German
 		String locale = "de";
 		LOG.info("Sending activation mail to '{}' in locale '{}'.", receiver, locale);
@@ -139,6 +139,34 @@ public class MailServiceImpl implements MailService {
     	variables.put("{image}", _appLogoSvg);
 
 		sendMail("mail.subject.activation", address, locale, "mail-template", variables);
+	}
+
+	@Override
+	public void sendEmailChangeMail(String receiver, String code)
+			throws MessagingException, IOException, AddressException {
+
+		if (receiver == null || receiver.isBlank()) {
+			LOG.info("Rejected empty e-mail address.");
+			throw new AddressException("Address must not be empty.");
+		}
+
+		InternetAddress address = new InternetAddress(receiver);
+
+		if (EMailCheckService.getInstance().isDisposable(address)) {
+			LOG.warn("Rejected disposable e-mail address: " + receiver);
+			throw new AddressException("Please do not use disposable e-mail addresses.");
+		}
+
+		// For email change mails, default to German (could be enhanced to use user's locale)
+		String locale = "de";
+		LOG.info("Sending email change verification mail to '{}' in locale '{}'.", receiver, locale);
+
+		Map<String, String> variables = new HashMap<>();
+		variables.put("{name}", DB.toDisplayName(address.getAddress()));
+		variables.put("{code}", code);
+		variables.put("{image}", _appLogoSvg);
+
+		sendMail("mail.subject.email-change", address, locale, "email-change-mail", variables);
 	}
 
 	public boolean sendHelpMail(UserSettings userSettings) {

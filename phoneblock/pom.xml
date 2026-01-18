@@ -372,7 +372,7 @@
 				</executions>
 			</plugin>
 
-			<!-- To trigger manually: mvn auto-translate:translate@translate-templates -->
+			<!-- To trigger manually: mvn auto-translate:translate@translate-web-templates -->
 			<plugin>
 				<groupId>de.haumacher</groupId>
 				<artifactId>auto-translate-maven-plugin</artifactId>
@@ -380,7 +380,7 @@
 				
 				<executions>
 					<execution>
-						<id>translate-templates</id>
+						<id>translate-web-templates</id>
 						<goals>
 							<goal>translate</goal>
 						</goals>
@@ -389,6 +389,18 @@
 							<sourceLang>de</sourceLang>
 							<targetLangs>ar,da,el,en-US,es,fr,it,nb,nl,pl,sv,uk,zh-Hans</targetLangs>
 							<templateDirectory>${project.basedir}/src/main/webapp/WEB-INF/templates</templateDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>translate-mail-templates</id>
+						<goals>
+							<goal>translate</goal>
+						</goals>
+						
+						<configuration>
+							<sourceLang>de</sourceLang>
+							<targetLangs>ar,da,el,en-US,es,fr,it,nb,nl,pl,sv,uk,zh-Hans</targetLangs>
+							<templateDirectory>${project.basedir}/src/main/java/de/haumacher/phoneblock/mail/templates</templateDirectory>
 						</configuration>
 					</execution>
 				</executions>

@@ -254,11 +254,20 @@ public interface Users {
 	@Select("select LOGIN from USERS where GOOGLEID=#{googleId}")
 	String getGoogleLogin(String googleId);
 	
-	/** 
+	/**
 	 * Retrieves the user ID for the user with the given e-mail.
 	 */
 	@Select("select LOGIN from USERS where EMAIL=#{email}")
 	String getEmailLogin(String email);
+
+	/**
+	 * Checks if an email address is already in use by any user.
+	 *
+	 * @param email The email address to check.
+	 * @return The number of users with this email address (0 if not in use, >0 if already in use).
+	 */
+	@Select("select count(1) from USERS where EMAIL=#{email}")
+	int isEmailInUse(String email);
 
 	@Select("select ID, LOGIN, DISPLAYNAME, LOCALE, DIAL, NATIONAL, EMAIL, MIN_VOTES, MAX_LENGTH, WILDCARDS, LASTACCESS, CREDIT from USERS where LOGIN=#{login}")
 	DBUserSettings getSettingsRaw(String login);

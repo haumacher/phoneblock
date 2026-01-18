@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.change-email.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001:f41f7b25">تغيير عنوان البريد الإلكتروني</h1>
+	        <p class="subtitle" data-tx="t0002:bd5a170a">أدخل عنوان البريد الإلكتروني الجديد.</p>
+	        <div class="content">
+				<p data-tx="t0003:a0793aa5">يرجى إدخال عنوان بريدك الإلكتروني الجديد. سوف تتلقى رمز تأكيد على العنوان الجديد.</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/change-email}">
+					<input name="action" type="hidden" value="request"/>
+
+					<div class="field">
+					  <label class="label" data-tx="t0004:8011c1f1">عنوان بريد إلكتروني جديد</label>
+					  <div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0005:b911007e" name="newEmail" placeholder="new@email.de" th:class="${errorMessage != null ? 'input is-danger' : 'input'}" th:value="${email}" type="email" value=""/>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-envelope"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${errorMessage != null}">
+					      <i class="fas fa-exclamation-triangle"></i>
+						</span>
+					  </div>
+						<p class="help is-danger" th:if="${errorMessage != null}">
+							<span th:text="${errorMessage}"></span>
+						</p>
+					</div>
+
+					<div class="buttons is-right">
+						<a class="button" data-tx="t0006:b551b861" th:href="@{/settings}">إلغاء</a>
+				    	<button class="button is-link" data-tx="t0007:78b84b62" type="submit">إرسال رمز التأكيد</button>
+					</div>
+				</form>
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

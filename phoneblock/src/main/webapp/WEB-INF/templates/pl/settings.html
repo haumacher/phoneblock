@@ -17,6 +17,22 @@
 	<div class="content">
 		<h1 data-tx="t0003:1798fbdb">Ustawienia</h1>
 			<p data-tx="t0004:d8072a01">Witamy <th:block th:text="${settings.displayName}"></th:block> <th:block th:if="${settings.email}"> (<th:block th:text="${settings.email}"></th:block>)</th:block>.</p>
+
+			<div class="notification is-success" th:if="${settingsMessage}">
+				<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+				<span th:text="${settingsMessage}"></span>
+			</div>
+
+			<div class="field" th:if="${settings.email}">
+				<label class="label" data-tx="t0121:eb3a32b1">Adres e-mail</label>
+				<div class="control">
+					<code dir="ltr" th:text="${settings.email}"></code>
+					<a class="button is-small is-text" th:href="@{/change-email}">
+						<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
+						<span data-tx="t0122:d31ab90e">Zmiana</span>
+					</a>
+				</div>
+			</div>
 			
 			<form method="post" th:action="@{/update-settings}">
 

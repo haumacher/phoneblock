@@ -29,7 +29,13 @@ public class DummyMailService implements MailService {
 			throws MessagingException, IOException, AddressException {
 		LOG.info("Send activation to {}: {}", receiver, code);
 	}
-	
+
+	@Override
+	public void sendEmailChangeMail(String receiver, String code)
+			throws MessagingException, IOException, AddressException {
+		LOG.info("Send email change verification to {}: {}", receiver, code);
+	}
+
 	@Override
 	public void sendWelcomeMail(UserSettings userSettings) {
 		LOG.info("Send welcome to {}.", userSettings.getEmail());

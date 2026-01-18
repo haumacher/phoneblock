@@ -64,7 +64,16 @@ public class SettingsController extends RequireLoginController {
 		HttpSession httpSession = request.getSession(false);
 		String userName = LoginFilter.getAuthenticatedUser(httpSession);
 		UserSettings settings = DBService.getInstance().getSettings(userName);
-		
+
+		// Check for success message from session and move to request scope
+		if (httpSession != null) {
+			String settingsMessage = (String) httpSession.getAttribute("settingsMessage");
+			if (settingsMessage != null) {
+				request.setAttribute("settingsMessage", settingsMessage);
+				httpSession.removeAttribute("settingsMessage");
+			}
+		}
+
 		request.setAttribute("settings", settings);
 		request.setAttribute("dialPrefixes", DIAL_PREFIXES);
 		

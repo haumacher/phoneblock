@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.change-email-verify.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+<div class="columns">
+  <div class="column">
+	<div class="tile is-ancestor">
+      <div class="tile is-parent">
+      	<article class="tile is-child notification">
+	        <h1 class="title" data-tx="t0001:825bd295">Inserire il codice</h1>
+	        <p class="subtitle" data-tx="t0002:8f4d4f2a">Confermare la modifica dell'e-mail.</p>
+	        <div class="content">
+				<p>
+					<div data-tx="t0003:7b169a76">È stato inviato un codice di conferma all'indirizzo <code dir="ltr" th:text="${newEmail}"></code>.</div>
+					<div data-tx="t0004:56f23cd3">Controllate la vostra casella di posta elettronica e inserite il codice qui.</div>
+				</p>
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/change-email}">
+					<input name="action" type="hidden" value="verify"/>
+
+					<div class="field">
+					  <label class="label" data-tx="t0005:df7bc330">Codice di conferma</label>
+					  <div class="control has-icons-left has-icons-right">
+					    <input data-tx="t0006:eba94e42" name="code" placeholder="Codice di conferma" th:class="${errorMessage ? 'input is-danger' : 'input'}" type="text" value=""/>
+					    <span class="icon is-small is-left">
+					      <i class="fa-solid fa-barcode"></i>
+					    </span>
+					    <span class="icon is-small is-right" th:if="${errorMessage}">
+					      <i class="fas fa-exclamation-triangle"></i>
+						</span>
+					  </div>
+						<p class="help is-danger" th:if="${errorMessage}">
+							<span th:text="${errorMessage}"></span>
+						</p>
+						<p class="help is-info" data-tx="t0007:8db88b77" th:unless="${errorMessage}">Nessuna e-mail ricevuta? Controllare la cartella spam!</p>
+					</div>
+
+					<div class="buttons is-right">
+						<a class="button" data-tx="t0008:b551b861" th:href="@{/settings}">Annullamento</a>
+				    	<button class="button is-link" data-tx="t0009:9f91c595" type="submit">Confermare e modificare</button>
+					</div>
+				</form>
+
+				<hr/>
+
+				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/change-email}">
+					<input name="action" type="hidden" value="request"/>
+					<input name="newEmail" th:value="${newEmail}" type="hidden"/>
+					<div class="buttons">
+						<button class="button is-small is-text" data-tx="t0010:90348cd0" type="submit">Inviare nuovamente il codice</button>
+					</div>
+				</form>
+
+	        </div>
+	  	</article>
+	  </div>
+	</div>
+   </div>
+</div>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

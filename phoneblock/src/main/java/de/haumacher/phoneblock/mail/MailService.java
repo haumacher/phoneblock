@@ -12,6 +12,7 @@ public interface MailService {
 	void startUp();
 
 	void sendActivationMail(String receiver, String code) throws MessagingException, IOException, AddressException;
+	void sendEmailChangeMail(String receiver, String code) throws MessagingException, IOException, AddressException;
 	void sendWelcomeMail(UserSettings userSettings);
 
 	/**
