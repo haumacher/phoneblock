@@ -63,7 +63,7 @@ public class WebCSVTable {
 	private static void printHelp() {
 		System.err.println("WebCSVTable - Extract table data from web pages to CSV format");
 		System.err.println();
-		System.err.println("Usage: java " + WebCSVTable.class.getName() + " <headers> <url> [-rCOLUMN=s/PATTERN/REPLACEMENT/[FLAGS]]...");
+		System.err.println("Usage: java " + WebCSVTable.class.getName() + " <headers> <url> [OPTIONS]");
 		System.err.println();
 		System.err.println("Arguments:");
 		System.err.println("  <headers>  Comma-separated list of table columns");
@@ -73,6 +73,9 @@ public class WebCSVTable {
 		System.err.println("  <url>      URL of the web page to download");
 		System.err.println();
 		System.err.println("Options:");
+		System.err.println("  -o FILE, --output FILE");
+		System.err.println("             Output file name (default: out.csv)");
+		System.err.println();
 		System.err.println("  -rCOLUMN=s/PATTERN/REPLACEMENT/[FLAGS]");
 		System.err.println("             Apply regex replacement to specified column");
 		System.err.println("             The delimiter after 's' can be any character (/, |, #, etc.)");
@@ -80,7 +83,7 @@ public class WebCSVTable {
 		System.err.println("             Flags: g (global replace), i (case-insensitive)");
 		System.err.println();
 		System.err.println("Output:");
-		System.err.println("  Writes matching table data to 'out.csv'");
+		System.err.println("  Writes matching table data to specified file (default: out.csv)");
 		System.err.println();
 		System.err.println("Examples:");
 		System.err.println("  Basic usage:");
@@ -102,6 +105,12 @@ public class WebCSVTable {
 		System.err.println("      \"https://example.com/countries.html\"");
 		System.err.println("    (Extracts 'Country Name' and 'Population' from page,");
 		System.err.println("     writes as 'Country' and 'Pop' in CSV)");
+		System.err.println();
+		System.err.println("  With custom output file:");
+		System.err.println("    java " + WebCSVTable.class.getName() + " \\");
+		System.err.println("      \"Country,Population\" \\");
+		System.err.println("      \"https://example.com/countries.html\" \\");
+		System.err.println("      -o countries.csv");
 	}
 
 	/**
@@ -131,13 +140,21 @@ public class WebCSVTable {
 			.map(m -> m.csvColumnName)
 			.toList();
 
-		// Parse -r options for column replacements
+		// Parse options
 		// Map of CSV column name -> list of replacements to apply in order
 		Map<String, List<Replacement>> columnReplacements = new HashMap<>();
+		String outputFile = "out.csv";
 
 		for (int i = 2; i < args.length; i++) {
 			String arg = args[i];
-			if (arg.startsWith("-r")) {
+			if (arg.equals("-o") || arg.equals("--output")) {
+				// Output file option
+				if (i + 1 >= args.length) {
+					System.err.println("Missing filename after " + arg);
+					System.exit(1);
+				}
+				outputFile = args[++i];
+			} else if (arg.startsWith("-r")) {
 				// Format: -rColumnName=s/pattern/replacement/flags
 				String spec = arg.substring(2); // Remove "-r"
 				int equalsPos = spec.indexOf('=');
@@ -164,8 +181,8 @@ public class WebCSVTable {
 			}
 		}
 		
-		try (ICSVWriter csv = 
-			new CSVWriterBuilder(new FileWriter(new File("out.csv"), StandardCharsets.UTF_8)).withEscapeChar('\\').withLineEnd("\n").withQuoteChar('"').withSeparator(';').build()) {
+		try (ICSVWriter csv =
+			new CSVWriterBuilder(new FileWriter(new File(outputFile), StandardCharsets.UTF_8)).withEscapeChar('\\').withLineEnd("\n").withQuoteChar('"').withSeparator(';').build()) {
 			
 			URL url = new URL(baseUri);
 			URLConnection connection = url.openConnection();
