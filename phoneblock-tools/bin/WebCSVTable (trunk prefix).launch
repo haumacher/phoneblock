@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/phoneblock-tools/src/main/java/de/haumacher/phoneblock/analysis/WebCSVTable.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.haumacher.phoneblock.analysis.WebCSVTable"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="de.haumacher.phoneblock"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="&quot;Country Code=Country_Code,Trunk Code=Trunk_Prefix,Exit Code=International_Prefix,Country=Comment&quot;&#10;https://www.thegamesteward.com/pages/trunk-code&#10;&quot;-rInternational_Prefix=s|[^0-9]+|/|g&quot;&#10;&quot;-rInternational_Prefix=s|^/+||g&quot;&#10;&quot;-rInternational_Prefix=s|/+$||g&quot;&#10;&quot;-rTrunk_Prefix=s|\s*,\s*|/|g&quot;&#10;&quot;-rTrunk_Prefix=s|-||&quot;&#10;&quot;-rCountry_Code=s|\s+||g&quot;&#10;&quot;-rCountry_Code=s|,|/|g&quot;"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="phoneblock-tools"/>
+    <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+</launchConfiguration>
