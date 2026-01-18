@@ -239,14 +239,14 @@ public class NumberAnalyzer {
 			}
 		}
 		
-		loadNumberingPlan(root, GERMAN_DIAL_PREFIX, "numbering-plan-49-germany.csv");
-		loadNumberingPlan(root, "+43", "numbering-plan-43-austria.csv");
-		loadNumberingPlan(root, "+39", "numbering-plan-39-italy.csv");
+		loadNumberingPlan(root, GERMAN_DIAL_PREFIX, "numbering-plan-49-germany.csv", "", "0");
+		loadNumberingPlan(root, "+43", "numbering-plan-43-austria.csv", "", "0");
+		loadNumberingPlan(root, "+39", "numbering-plan-39-italy.csv", "0", "");
 		
 		return root;
 	}
 
-	private static void loadNumberingPlan(Node root, String dialPrefix, String resource) {
+	private static void loadNumberingPlan(Node root, String dialPrefix, String resource, String cityCodePrefix, String cityCodeDisplayPrefix) {
 		// See https://www.itu.int/oth/T0202.aspx?lang=en&parent=T0202
 		// See https://www.bundesnetzagentur.de/SharedDocs/Downloads/DE/Sachgebiete/Telekommunikation/Unternehmen_Institutionen/Nummerierung/Rufnummern/ONRufnr/Vorwahlverzeichnis_ONB.zip.html
 		try (InputStream in = NumberAnalyzer.class.getResourceAsStream(resource)) {
@@ -263,7 +263,7 @@ public class NumberAnalyzer {
 		        			break;
 		        		}
 		        		
-		        		String prefix = line[0].replaceAll("[^0-9]", "");
+		        		String prefix = cityCodePrefix + line[0].replaceAll("[^0-9]", "");
 		        		int maxDigits = line[1].isBlank() ? -1 : Integer.parseInt(line[1]);
 		        		int minDigits = line[2].isBlank() ? -1 : Integer.parseInt(line[2]);
 		        		String usage = line[3];
@@ -283,7 +283,7 @@ public class NumberAnalyzer {
 		        			node._info.setUsage(join(node._info.getUsage(), usage));
 		        			node._info.setInfo(join(node._info.getInfo(), info));
 		        		} else {
-		        			node._cityCode = "0" + prefix;
+		        			node._cityCode = cityCodeDisplayPrefix + prefix;
 		        			
 		        			node._contryCode = countryNode.getCountryCode();
 		        			node._countries = countryNode.getCountries();

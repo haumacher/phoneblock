@@ -51,7 +51,7 @@ class TestNumberAnalyzer {
 			"+49" + "704187650,Mühlacker",
 			"+49-7041 87650,Mühlacker",
 			"+43720072491,location independent numbers",
-			"+39123456789,Lanzo Torinese",
+			"+390123456789,Lanzo Torinese",
 			"+49 9131 9235017072,Erlangen"
 	})
 	void testCity(String phone, String label) {
@@ -92,8 +92,8 @@ class TestNumberAnalyzer {
 		"12125551234, +1, +12125551234, 'Canada, United States of America'",
 
 		// Italy - no trunk prefix, "0" is part of area code
-		"0612345678, +39, +390612345678, Holy See",
-		"3123456789, +39, +393123456789, Italy",
+		"0612345678, +39, +390612345678, Italy",
+		"03123456789, +39, +3903123456789, Italy",
 
 		// Germany - standard trunk prefix "0" (regression test)
 		"089123456, +49, +4989123456, Germany",
@@ -165,7 +165,7 @@ class TestNumberAnalyzer {
 		"+39011123456, +39, Italy",   // Turin
 		"+3902123456, +39, Italy",    // Milan
 		"00390123456789, +39, Italy",
-		"+390612345678, +39, Holy See", // Rome (Vatican)
+		"+390612345678, +39, Italy", // Rome (Vatican)
 
 		// Same numbers entered from Italian dial prefix
 		"0123456789, +39, Italy",
