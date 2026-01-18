@@ -230,8 +230,7 @@ public class SearchServlet extends HttpServlet {
 		}
 		
 		// Send to display page.
-		String phone = NumberAnalyzer.getPhoneId(number);
-		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + phone);
+		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + number.getZeroZero());
 	}
 
 	private String lookupDialPrefix(HttpServletRequest req) {
