@@ -5,14 +5,14 @@ services:
     container_name: phoneblock
     network_mode: host
     environment:
-      - PHONEBLOCK_API_KEY=<your API key, create one from https://phoneblock.net/phoneblock/settings>
-      - SIP_USER=phoneblock
-      - SIP_PASSWD=<VOIP-phone-password>
+      - PHONEBLOCK_API_KEY=<your API key, create one at https://phoneblock.net/phoneblock/settings>   <==== ADJUST HERE!
+      - SIP_USER=<your VOIP-Phone-User as configured in FRITZ!Box>         <==== ADJUST HERE!
+      - SIP_PASSWD=<your VOIP-phone-password as configured in FRITZ!Box>   <==== ADJUST HERE!
       - VIA_ADDR=auto-configuration
       - VIA_ADDR_V6=auto-configuration
       - HOST_PORT=50060
       - REGISTRAR=fritz.box
-      - ROUTE=fritz.box;lr
+      - ROUTE=<fritz.box or IP-Address of your FRITZ!Box>;lr               <==== ADJUST HERE!
       - REALM=fritz.box
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - MIN_SILENCE_TIME=1500
