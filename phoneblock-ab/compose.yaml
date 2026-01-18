@@ -11,7 +11,7 @@ services:
       - VIA_ADDR=auto-configuration
       - VIA_ADDR_V6=auto-configuration
       - HOST_PORT=50060
-      - REGISTRAR=fritz.box
+      - REGISTRAR=<fritz.box or IP-Address of your FRITZ!Box>              <==== ADJUST HERE!
       - ROUTE=<fritz.box or IP-Address of your FRITZ!Box>;lr               <==== ADJUST HERE!
       - REALM=fritz.box
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
