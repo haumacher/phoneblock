@@ -5,6 +5,8 @@ package de.haumacher.phoneblock.location;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.location.model.Country;
@@ -39,11 +41,10 @@ public class CountriesTest {
 		assertEquals("8", russia.getTrunkPrefixes().get(0), "Russia trunk prefix should be 8");
 		assertEquals("Russian Federation", russia.getOfficialNameEn(), "Russia official name");
 
-		// Greece - standard trunk prefix "0"
+		// Greece - no trunk prefix in CSV (empty)
 		Country greece = Countries.get("GR");
 		assertNotNull(greece, "Greece should be found");
-		assertEquals(1, greece.getTrunkPrefixes().size(), "Greece should have 1 trunk prefix");
-		assertEquals("0", greece.getTrunkPrefixes().get(0), "Greece trunk prefix should be 0");
+		assertTrue(greece.getTrunkPrefixes().isEmpty(), "Greece should have no trunk prefix");
 		assertEquals("Greece", greece.getOfficialNameEn(), "Greece official name");
 	}
 
@@ -55,34 +56,26 @@ public class CountriesTest {
 		// United States - trunk prefix "1", international prefix "011"
 		Country usa = Countries.get("US");
 		assertNotNull(usa, "USA should be found");
-		assertEquals(1, usa.getTrunkPrefixes().size(), "USA should have 1 trunk prefix");
-		assertEquals("1", usa.getTrunkPrefixes().get(0), "USA trunk prefix should be 1");
-		assertEquals(1, usa.getInternationalPrefixes().size(), "USA should have 1 international prefix");
-		assertEquals("011", usa.getInternationalPrefixes().get(0), "USA international prefix should be 011");
+		assertEquals(Set.of("1"), Set.copyOf(usa.getTrunkPrefixes()), "USA trunk prefixes");
+		assertEquals(Set.of("011"), Set.copyOf(usa.getInternationalPrefixes()), "USA international prefixes");
 
 		// Canada - trunk prefix "1", international prefix "011"
 		Country canada = Countries.get("CA");
 		assertNotNull(canada, "Canada should be found");
-		assertEquals(1, canada.getTrunkPrefixes().size(), "Canada should have 1 trunk prefix");
-		assertEquals("1", canada.getTrunkPrefixes().get(0), "Canada trunk prefix should be 1");
-		assertEquals(1, canada.getInternationalPrefixes().size(), "Canada should have 1 international prefix");
-		assertEquals("011", canada.getInternationalPrefixes().get(0), "Canada international prefix should be 011");
+		assertEquals(Set.of("1"), Set.copyOf(canada.getTrunkPrefixes()), "Canada trunk prefixes");
+		assertEquals(Set.of("011"), Set.copyOf(canada.getInternationalPrefixes()), "Canada international prefixes");
 
 		// Hungary - trunk prefix "06", international prefix "00"
 		Country hungary = Countries.get("HU");
 		assertNotNull(hungary, "Hungary should be found");
-		assertEquals(1, hungary.getTrunkPrefixes().size(), "Hungary should have 1 trunk prefix");
-		assertEquals("06", hungary.getTrunkPrefixes().get(0), "Hungary trunk prefix should be 06");
-		assertEquals(1, hungary.getInternationalPrefixes().size(), "Hungary should have 1 international prefix");
-		assertEquals("00", hungary.getInternationalPrefixes().get(0), "Hungary international prefix should be 00");
+		assertEquals(Set.of("06"), Set.copyOf(hungary.getTrunkPrefixes()), "Hungary trunk prefixes");
+		assertEquals(Set.of("00"), Set.copyOf(hungary.getInternationalPrefixes()), "Hungary international prefixes");
 
-		// Mexico - trunk prefix "01", international prefix "00"
+		// Mexico - has multiple trunk prefixes: 01, 044, 045
 		Country mexico = Countries.get("MX");
 		assertNotNull(mexico, "Mexico should be found");
-		assertEquals(1, mexico.getTrunkPrefixes().size(), "Mexico should have 1 trunk prefix");
-		assertEquals("01", mexico.getTrunkPrefixes().get(0), "Mexico trunk prefix should be 01");
-		assertEquals(1, mexico.getInternationalPrefixes().size(), "Mexico should have 1 international prefix");
-		assertEquals("00", mexico.getInternationalPrefixes().get(0), "Mexico international prefix should be 00");
+		assertEquals(Set.of("01", "044", "045"), Set.copyOf(mexico.getTrunkPrefixes()), "Mexico trunk prefixes");
+		assertEquals(Set.of("00"), Set.copyOf(mexico.getInternationalPrefixes()), "Mexico international prefixes");
 	}
 
 	/**
@@ -90,24 +83,45 @@ public class CountriesTest {
 	 */
 	@Test
 	public void testMultiplePrefixes() {
-		// Colombia has multiple trunk prefixes: 09, 07, 05
+		// Colombia has multiple international prefixes based on trunk-prefixes.csv
 		Country colombia = Countries.get("CO");
 		assertNotNull(colombia, "Colombia should be found");
-		assertEquals(3, colombia.getTrunkPrefixes().size(), "Colombia should have 3 trunk prefixes");
-		assertTrue(colombia.getTrunkPrefixes().contains("09"), "Colombia should have trunk prefix 09");
-		assertTrue(colombia.getTrunkPrefixes().contains("07"), "Colombia should have trunk prefix 07");
-		assertTrue(colombia.getTrunkPrefixes().contains("05"), "Colombia should have trunk prefix 05");
-
-		// Colombia has multiple international prefixes: 009, 007, 005
-		assertEquals(3, colombia.getInternationalPrefixes().size(), "Colombia should have 3 international prefixes");
-		assertTrue(colombia.getInternationalPrefixes().contains("009"), "Colombia should have international prefix 009");
-		assertTrue(colombia.getInternationalPrefixes().contains("007"), "Colombia should have international prefix 007");
-		assertTrue(colombia.getInternationalPrefixes().contains("005"), "Colombia should have international prefix 005");
+		assertEquals(Set.of("0"), Set.copyOf(colombia.getTrunkPrefixes()), "Colombia trunk prefixes");
+		assertEquals(Set.of("005", "007", "009", "00414", "00468", "00456", "00444"),
+				Set.copyOf(colombia.getInternationalPrefixes()), "Colombia international prefixes");
 
 		// Israel has multiple international prefixes
 		Country israel = Countries.get("IL");
 		assertNotNull(israel, "Israel should be found");
 		assertTrue(israel.getInternationalPrefixes().size() >= 2, "Israel should have multiple international prefixes");
 		assertTrue(israel.getInternationalPrefixes().contains("00"), "Israel should have international prefix 00");
+	}
+
+	/**
+	 * Test that data from trunk-prefixes.csv is loaded correctly with semicolon delimiter.
+	 */
+	@Test
+	public void testTrunkPrefixCsvLoading() {
+		// Verify Germany data is loaded
+		Country germany = Countries.get("DE");
+		assertNotNull(germany, "Germany should be found");
+		assertEquals(Set.of("+49"), Set.copyOf(germany.getDialPrefixes()), "Germany dial prefixes");
+		assertEquals(Set.of("0"), Set.copyOf(germany.getTrunkPrefixes()), "Germany trunk prefixes");
+		assertEquals(Set.of("00"), Set.copyOf(germany.getInternationalPrefixes()), "Germany international prefixes");
+
+		// Verify USA data is loaded
+		Country usa = Countries.get("US");
+		assertNotNull(usa, "USA should be found");
+		assertEquals(Set.of("+1"), Set.copyOf(usa.getDialPrefixes()), "USA dial prefixes");
+		assertEquals(Set.of("1"), Set.copyOf(usa.getTrunkPrefixes()), "USA trunk prefixes");
+		assertEquals(Set.of("011"), Set.copyOf(usa.getInternationalPrefixes()), "USA international prefixes");
+
+		// Verify Colombia data is loaded (has multiple international prefixes)
+		Country colombia = Countries.get("CO");
+		assertNotNull(colombia, "Colombia should be found");
+		assertEquals(Set.of("+57"), Set.copyOf(colombia.getDialPrefixes()), "Colombia dial prefixes");
+		assertEquals(Set.of("0"), Set.copyOf(colombia.getTrunkPrefixes()), "Colombia trunk prefixes");
+		assertEquals(Set.of("005", "007", "009", "00414", "00468", "00456", "00444"),
+				Set.copyOf(colombia.getInternationalPrefixes()), "Colombia international prefixes");
 	}
 }

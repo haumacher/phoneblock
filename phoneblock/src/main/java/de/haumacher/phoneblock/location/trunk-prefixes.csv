@@ -1,227 +1,239 @@
-ISO_Code,International_Prefix,Trunk_Prefix,Comment
-AF,00,0,Afghanistan
-AL,00,0,Albania
-DZ,00,0,Algeria
-AS,011,1,American Samoa
-AD,00,,Andorra - no trunk prefix
-AO,00,0,Angola
-AI,011,1,Anguilla
-AG,011,1,Antigua and Barbuda
-AR,00,0,Argentina
-AM,00,0,Armenia
-AW,00,,Aruba - no trunk prefix
-AU,0011,0,Australia
-AT,00,0,Austria
-AZ,00,0,Azerbaijan
-BS,011,1,Bahamas
-BH,00,,Bahrain - no trunk prefix
-BD,00,0,Bangladesh
-BB,011,1,Barbados
-BY,810,8,Belarus
-BE,00,0,Belgium
-BZ,00,,Belize - no trunk prefix
-BJ,00,,Benin - no trunk prefix
-BM,011,1,Bermuda
-BT,00,,Bhutan - no trunk prefix
-BO,00,0,Bolivia
-BQ,00,0,Bonaire Sint Eustatius and Saba
-BA,00,0,Bosnia and Herzegovina
-BW,00,,Botswana - no trunk prefix
-BR,00,0,Brazil
-VG,011,1,British Virgin Islands
-BN,00,,Brunei Darussalam - no trunk prefix
-BG,00,0,Bulgaria
-BF,00,,Burkina Faso - no trunk prefix
-BI,00,,Burundi - no trunk prefix
-KH,001/007,0,Cambodia - multiple international prefixes
-CM,00,,Cameroon - no trunk prefix
-CA,011,1,Canada
-CV,00,,Cape Verde - no trunk prefix
-KY,011,1,Cayman Islands
-CF,00,,Central African Rep. - no trunk prefix
-TD,00,,Chad - no trunk prefix
-CL,1YZ0,1YZ,Chile - YZ=long-distance operator code
-CN,00,0,China
-CO,009/007/005,09/07/05,Colombia - multiple prefixes
-KM,00,,Comoros - no trunk prefix
-CG,00,,Congo - no trunk prefix
-CK,00,,Cook Islands - no trunk prefix
-CR,00,,Costa Rica - no trunk prefix
-CI,00,,Côte d'Ivoire - no trunk prefix
-HR,00,0,Croatia
-CU,119,0,Cuba
-CW,00,0,Curaçao
-CY,00,,Cyprus - no trunk prefix
-CZ,00,,Czech Rep. - no trunk prefix
-KP,00,0,Dem. People's Rep. of Korea
-CD,00,0,Dem. Rep. of the Congo
-DK,00,,Denmark - no trunk prefix
-DJ,00,,Djibouti - no trunk prefix
-DM,011,1,Dominica
-DO,011,1,Dominican Rep.
-EC,00,0,Ecuador
-EG,00,0,Egypt
-SV,00,,El Salvador - no trunk prefix
-GQ,00,,Equatorial Guinea - no trunk prefix
-ER,00,0,Eritrea
-EE,00,,Estonia - no trunk prefix
-ET,00,0,Ethiopia
-FK,00,,Falkland Islands - no trunk prefix
-FO,00,,Faroe Islands - no trunk prefix
-FJ,00,,Fiji - no trunk prefix
-FI,00/99X,0,Finland - multiple international prefixes
-FR,00,0,France
-GF,00,,French Guiana - no trunk prefix
-PF,00,,French Polynesia - no trunk prefix
-GA,00,,Gabon - no trunk prefix
-GM,00,,Gambia - no trunk prefix
-GE,00,0,Georgia
-DE,00,0,Germany
-GH,00,0,Ghana
-GI,00,,Gibraltar - no trunk prefix
-GR,00,0,Greece
-GL,00,,Greenland - no trunk prefix
-GD,011,1,Grenada
-GP,00,,Guadeloupe - no trunk prefix
-GU,011,1,Guam
-GT,00,,Guatemala - no trunk prefix
-GN,00,,Guinea - no trunk prefix
-GW,00,,Guinea-Bissau - no trunk prefix
-GY,001,,Guyana - no trunk prefix
-HT,00,,Haiti - no trunk prefix
-HN,00,,Honduras - no trunk prefix
-HK,001,,Hong Kong China - no trunk prefix
-HU,00,06,Hungary
-IS,00,,Iceland - no trunk prefix
-IN,00,0,India
-ID,001/008,0,Indonesia - multiple international prefixes
-IR,00,0,Iran
-IQ,00,0,Iraq
-IE,00,0,Ireland
-IL,00/012/013/014,0,Israel - multiple international prefixes
-IT,00,,Italy - no trunk prefix in table but Note 2 says 0 is used domestically
-JM,011,1,Jamaica
-JP,010,0,Japan
-JO,00,0,Jordan
-KZ,810,8,Kazakhstan
-KE,000,0,Kenya
-KI,00,,Kiribati - no trunk prefix
-KR,001/002,0,Korea (Rep. of) - can also use 082 as trunk prefix
-KW,00,,Kuwait - no trunk prefix
-KG,00,0,Kyrgyzstan
-LA,00,0,Lao P.D.R.
-LV,00,,Latvia - no trunk prefix
-LB,00,0,Lebanon
-LS,00,,Lesotho - no trunk prefix
-LR,00,,Liberia - no trunk prefix
-LY,00,0,Libya
-LI,00,,Liechtenstein - no trunk prefix
-LT,00,0,Lithuania
-LU,00,,Luxembourg - no trunk prefix
-MO,00,,Macao China - no trunk prefix
-MG,00,,Madagascar - no trunk prefix
-MW,00,,Malawi - no trunk prefix
-MY,00,0,Malaysia
-MV,00,,Maldives - no trunk prefix
-ML,00,,Mali - no trunk prefix
-MT,00,,Malta - no trunk prefix
-MH,011,1,Marshall Islands
-MQ,00,,Martinique - no trunk prefix
-MR,00,,Mauritania - no trunk prefix
-MU,00,,Mauritius - no trunk prefix (see Note 22 about carrier selection)
-MX,00,01,Mexico
-FM,011,1,Micronesia
-MD,00,0,Moldova
-MC,00,,Monaco - no trunk prefix
-MN,001,0,Mongolia
-ME,00,0,Montenegro
-MS,011,1,Montserrat
-MA,00,0,Morocco
-MZ,00,,Mozambique - no trunk prefix
-MM,00,0,Myanmar
-NA,00,0,Namibia
-NR,00,,Nauru - no trunk prefix
-NP,00,0,Nepal
-NL,00,0,Netherlands
-NC,00,,New Caledonia - no trunk prefix
-NZ,00,0,New Zealand
-NI,00,,Nicaragua - no trunk prefix
-NE,00,,Niger - no trunk prefix
-NG,009,0,Nigeria
-NU,00,,Niue - no trunk prefix
-MP,011,1,Northern Marianas
-NO,00,,Norway - no trunk prefix
-OM,00,,Oman - no trunk prefix
-PK,00,0,Pakistan
-PW,011,,Palau - no trunk prefix
-PA,00,,Panama - no trunk prefix
-PG,00,,Papua New Guinea - no trunk prefix
-PY,00,0,Paraguay
-PE,00,0,Peru
-PH,00,0,Philippines
-PL,00,0,Poland
-PT,00,,Portugal - no trunk prefix
-PR,011,1,Puerto Rico
-QA,00,,Qatar - no trunk prefix
-RO,00,0,Romania
-RU,810,8,Russian Federation
-RW,00,,Rwanda - no trunk prefix
-KN,011,1,Saint Kitts and Nevis
-LC,011,1,Saint Lucia
-PM,00,,Saint Pierre and Miquelon - no trunk prefix
-VC,011,1,Saint Vincent and the Grenadines
-WS,0,,Samoa - no trunk prefix
-SM,00,,San Marino - no trunk prefix
-ST,00,,Sao Tome and Principe - no trunk prefix
-SA,00,0,Saudi Arabia
-SN,00,,Senegal - no trunk prefix
-RS,00,0,Serbia
-SC,00,,Seychelles - no trunk prefix
-SL,00,0,Sierra Leone
-SG,001/008,,Singapore - no trunk prefix (see Note 9)
-SX,011,1,Sint Maarten (Dutch part)
-SK,00,0,Slovakia
-SI,00,0,Slovenia
-SB,00,,Solomon Islands - no trunk prefix
-SO,00,,Somalia - no trunk prefix
-ZA,00,0,South Africa
-SS,00,0,South Sudan
-ES,00,,Spain - no trunk prefix
-LK,00,0,Sri Lanka
-SD,00,0,Sudan
-SR,00,0,Suriname
-SZ,00,,Swaziland - no trunk prefix
-SE,00,0,Sweden
-CH,00,0,Switzerland
-SY,00,0,Syrian Arab Republic
-TW,002,0,Taiwan China
-TJ,810,8,Tajikistan
-TZ,000,0,Tanzania
-TH,001,0,Thailand
-MK,00,0,The Former Yugoslav Republic of Macedonia
-TL,00,,Timor-Leste - no trunk prefix
-TG,00,,Togo - no trunk prefix
-TK,00,,Tokelau - no trunk prefix
-TO,00,,Tonga - no trunk prefix
-TT,011,1,Trinidad and Tobago
-TN,00,,Tunisia - no trunk prefix
-TR,00,0,Turkey
-TM,810,8,Turkmenistan
-TC,0,1,Turks and Caicos Islands
-TV,00,,Tuvalu - no trunk prefix
-UG,000,0,Uganda
-UA,00,0,Ukraine
-AE,00,0,United Arab Emirates
-GB,00,0,United Kingdom
-US,011,1,United States
-VI,011,1,United States Virgin Islands
-UY,00,0,Uruguay
-UZ,810,8,Uzbekistan
-VU,00,,Vanuatu - no trunk prefix
-VA,,,Vatican - no international prefix and no trunk prefix
-VE,00,0,Venezuela
-VN,00,0,Viet Nam
-WF,00,,Wallis and Futuna - no trunk prefix
-YE,00,0,Yemen
-ZM,00,0,Zambia
-ZW,00,0,Zimbabwe
+"Country_Code";"Trunk_Prefix";"International_Prefix";"Comment"
+"93";"0";"00";"Afghanistan"
+"355";"0";"00";"Albania"
+"213";"0";"00";"Algeria"
+"1";"1";"011";"American Samoa"
+"376";"";"00";"Andorra"
+"244";"";"00";"Angola"
+"1";"1";"011";"Anguilla"
+"1";"1";"011";"Antigua and Barbuda"
+"54";"0";"00";"Argentina"
+"374";"0";"00";"Armenia"
+"297";"";"00";"Aruba"
+"247";"";"00";"Ascension"
+"61";"0";"0011";"Australia"
+"43";"0";"00";"Austria"
+"994";"0";"00";"Azerbaijan"
+"1";"1";"011";"Bahamas"
+"973";"";"00";"Bahrain"
+"880";"0";"00";"Bangladesh"
+"1";"1";"011";"Barbados"
+"375";"80";"810";"Belarus"
+"32";"0";"00";"Belgium"
+"501";"";"00";"Belize"
+"229";"";"00";"Benin"
+"1";"1";"011";"Bermuda"
+"975";"";"00";"Bhutan"
+"591";"0";"00";"Bolivia"
+"387";"0";"00";"Bosnia and Herzegovina"
+"267";"";"00";"Botswana"
+"55";"0";"0014/0015/0021/0023/0031";"Brazil"
+"1";"1";"011";"British Virgin Islands"
+"673";"";"00";"Brunei"
+"359";"0";"00";"Bulgaria"
+"226";"";"00";"Burkina Faso"
+"257";"";"00";"Burundi"
+"855";"0";"001/007/008";"Cambodia"
+"237";"";"00";"Cameroon"
+"1";"1";"011";"Canada"
+"238";"";"00";"Cape Verde"
+"1";"1";"011";"Cayman Islands"
+"236";"";"00";"Central African Republic"
+"235";"";"00";"Chad"
+"56";"";"1230/1200/1220/1810/1690/1710";"Chile"
+"86";"0";"00";"China"
+"57";"0";"005/007/009/00414/00468/00456/00444";"Colombia"
+"269";"";"00";"Comoros"
+"242";"";"00";"Congo"
+"682";"";"00";"Cook Islands"
+"506";"";"00";"Costa Rica"
+"385";"0";"00";"Croatia"
+"53";"0";"119";"Cuba"
+"599";"0";"00";"Curacao"
+"357";"";"00";"Cyprus"
+"420";"";"00";"Czech Republic"
+"243";"0";"00";"Democratic Republic of Congo"
+"45";"";"00";"Denmark"
+"246";"";"00";"Diego Garcia"
+"253";"";"00";"Djibouti"
+"1";"1";"011";"Dominica"
+"1";"1";"011";"Dominican Republic"
+"670";"";"00";"East Timor"
+"593";"0";"00";"Ecuador"
+"20";"0";"00";"Egypt"
+"503";"";"00";"El Salvador"
+"240";"";"00";"Equatorial Guinea"
+"291";"0";"00";"Eritrea"
+"372";"";"00";"Estonia"
+"251";"0";"00";"Ethiopia"
+"500";"";"00";"Falkland (Malvinas) Islands"
+"298";"";"00";"Faroe Islands"
+"679";"";"00";"Fiji"
+"358";"0";"00/990/994/999";"Finland"
+"33";"0";"00";"France"
+"594";"0";"00";"French Guiana"
+"689";"";"00";"French Polynesia"
+"241";"";"00";"Gabon"
+"220";"";"00";"Gambia"
+"995";"0";"00";"Georgia"
+"49";"0";"00";"Germany"
+"233";"0";"00";"Ghana"
+"350";"";"00";"Gibraltar"
+"30";"";"00";"Greece"
+"299";"";"00";"Greenland"
+"1";"1";"011";"Grenada"
+"590";"0";"00";"Guadeloupe"
+"1";"1";"011";"Guam"
+"502";"";"00";"Guatemala"
+"224";"";"00";"Guinea"
+"245";"";"00";"Guinea-Bissau"
+"592";"";"001";"Guyana"
+"509";"";"00";"Haiti"
+"504";"";"00";"Honduras"
+"852";"";"001";"Hong Kong"
+"36";"06";"00";"Hungary"
+"354";"";"00";"Iceland"
+"91";"0";"00";"India"
+"62";"0";"001/008/007/009";"Indonesia"
+"870";"";"00";"Inmarsat Satellite"
+"98";"0";"00";"Iran"
+"964";"";"00";"Iraq"
+"353";"0";"00";"Ireland"
+"8816/8817";"";"00";"Iridium Satellite"
+"972";"0";"00/012/013/014/018";"Israel"
+"39";"";"00";"Italy"
+"225";"";"00";"Ivory Coast"
+"1";"1";"011";"Jamaica"
+"81";"0";"010";"Japan"
+"962";"0";"00";"Jordan"
+"7";"8";"8/10";"Kazakhstan"
+"254";"0";"000/006/007";"Kenya"
+"686";"";"00";"Kiribati"
+"965";"";"00";"Kuwait"
+"996";"0";"00";"Kyrgyzstan"
+"856";"0";"00";"Laos"
+"371";"";"00";"Latvia"
+"961";"0";"00";"Lebanon"
+"266";"";"00";"Lesotho"
+"231";"";"00";"Liberia"
+"218";"0";"00";"Libya"
+"423";"";"00";"Liechtenstein"
+"370";"8";"00";"Lithuania"
+"352";"";"00";"Luxembourg"
+"853";"";"00";"Macau"
+"389";"0";"00";"Macedonia"
+"261";"0";"00";"Madagascar"
+"265";"";"00";"Malawi"
+"60";"0";"00";"Malaysia"
+"960";"";"00";"Maldives"
+"223";"";"00";"Mali"
+"356";"";"00";"Malta"
+"692";"1";"011";"Marshall Islands"
+"596";"0";"00";"Martinique"
+"222";"";"00";"Mauritania"
+"230";"";"00";"Mauritius"
+"262";"0";"00";"Mayotte"
+"52";"01/044/045";"00";"Mexico"
+"691";"1";"011";"Micronesia"
+"373";"0";"00";"Moldova"
+"377";"";"00";"Monaco"
+"976";"0";"001";"Mongolia"
+"382";"0";"00";"Montenegro"
+"1";"1";"011";"Montserrat"
+"212";"0";"00";"Morocco"
+"258";"";"00";"Mozambique"
+"95";"0";"00";"Myanmar"
+"264";"0";"00";"Namibia"
+"674";"";"00";"Nauru"
+"977";"0";"00";"Nepal"
+"31";"0";"00";"Netherlands"
+"599";"0";"00";"Netherlands Antilles"
+"687";"";"00";"New Caledonia"
+"64";"0";"00";"New Zealand"
+"505";"";"00";"Nicaragua"
+"227";"";"00";"Niger"
+"234";"0";"009";"Nigeria"
+"683";"";"00";"Niue"
+"6723";"";"00";"Norfolk Island"
+"850";"";"99";"North Korea"
+"1";"1";"011";"Northern Marianas"
+"47";"";"00";"Norway"
+"968";"";"00";"Oman"
+"92";"0";"00";"Pakistan"
+"680";"";"011";"Palau"
+"970";"0";"00";"Palestine"
+"507";"";"00";"Panama"
+"675";"";"00";"Papua New Guinea"
+"595";"0";"00";"Paraguay"
+"51";"0";"00";"Peru"
+"63";"0";"00";"Philippines"
+"48";"";"00";"Poland"
+"351";"";"00";"Portugal"
+"1";"1";"011";"Puerto Rico"
+"974";"";"00";"Qatar"
+"262";"0";"00";"Reunion"
+"40";"0";"00";"Romania"
+"7";"8";"8/10";"Russian Federation"
+"250";"";"00";"Rwanda"
+"290";"";"00";"Saint Helena"
+"1";"1";"011";"Saint Kitts and Nevis"
+"1";"1";"011";"Saint Lucia"
+"590";"0";"00";"Saint Barthelemy"
+"590";"0";"00";"Saint Martin (French part)"
+"508";"";"00";"Saint Pierre and Miquelon"
+"1";"1";"011";"Saint Vincent and the Grenadines"
+"685";"";"0";"Samoa"
+"378";"";"00";"San Marino"
+"239";"";"00";"Sao Tome and Principe"
+"966";"0";"00";"Saudi Arabia"
+"221";"";"00";"Senegal"
+"381";"0";"00";"Serbia"
+"248";"";"00";"Seychelles"
+"232";"0";"00";"Sierra Leone"
+"65";"";"001/008";"Singapore"
+"1";"1";"00";"Sint Maarten"
+"421";"0";"00";"Slovakia"
+"386";"0";"00";"Slovenia"
+"677";"";"00";"Solomon Islands"
+"252";"";"00";"Somalia"
+"27";"0";"00";"South Africa"
+"82";"0";"001/002";"South Korea"
+"211";"";"00";"South Sudan"
+"34";"";"00";"Spain"
+"94";"0";"00";"Sri Lanka"
+"249";"0";"00";"Sudan"
+"597";"0";"00";"Suriname"
+"268";"";"00";"Swaziland"
+"46";"0";"00";"Sweden"
+"41";"0";"00";"Switzerland"
+"963";"0";"00";"Syria"
+"886";"0";"002";"Taiwan"
+"992";"8";"8/10";"Tajikistan"
+"255";"0";"000";"Tanzania"
+"66";"0";"001";"Thailand"
+"88216";"";"00";"Thuraya Satellite"
+"228";"";"00";"Togo"
+"690";"";"00";"Tokelau"
+"676";"";"00";"Tonga"
+"1";"1";"011";"Trinidad and Tobago"
+"216";"";"00";"Tunisia"
+"90";"0";"00";"Turkey"
+"993";"8";"8/10";"Turkmenistan"
+"1";"1";"0";"Turks and Caicos Islands"
+"688";"";"00";"Tuvalu"
+"256";"0";"000";"Uganda"
+"380";"0";"00";"Ukraine"
+"971";"0";"00";"United Arab Emirates"
+"44";"0";"00";"United Kingdom"
+"1";"1";"011";"United States of America"
+"1";"1";"011";"U.S. Virgin Islands"
+"598";"0";"00";"Uruguay"
+"998";"0";"00";"Uzbekistan"
+"678";"";"00";"Vanuatu"
+"379/39";"";"00";"Vatican City"
+"58";"0";"00";"Venezuela"
+"84";"0";"00";"Vietnam"
+"681";"";"00";"Wallis and Futuna"
+"967";"0";"00";"Yemen"
+"260";"0";"00";"Zambia"
+"263";"0";"00";"Zimbabwe"
