@@ -14,7 +14,7 @@
     <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.haumacher.phoneblock.analysis.WebCSVTable"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="de.haumacher.phoneblock"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="&quot;Country Code=Country_Code,Trunk Code=Trunk_Prefix,Exit Code=International_Prefix,Country=Comment&quot;&#10;https://www.thegamesteward.com/pages/trunk-code&#10;&quot;-rInternational_Prefix=s|[^0-9]+|/|g&quot;&#10;&quot;-rInternational_Prefix=s|^/+||g&quot;&#10;&quot;-rInternational_Prefix=s|/+$||g&quot;&#10;&quot;-rTrunk_Prefix=s|\s*,\s*|/|g&quot;&#10;&quot;-rTrunk_Prefix=s|-||&quot;&#10;&quot;-rCountry_Code=s|\s+||g&quot;&#10;&quot;-rCountry_Code=s|,|/|g&quot;"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="&quot;Country Code=Country_Code,Trunk Code=Trunk_Prefix,Exit Code=International_Prefix,Country=Comment&quot;&#10;https://www.thegamesteward.com/pages/trunk-code&#10;&quot;-rInternational_Prefix=s|[^0-9]+|/|g&quot;&#10;&quot;-rInternational_Prefix=s|^/+||g&quot;&#10;&quot;-rInternational_Prefix=s|/+$||g&quot;&#10;&quot;-rTrunk_Prefix=s|\s*,\s*|/|g&quot;&#10;&quot;-rTrunk_Prefix=s|-||&quot;&#10;&quot;-rCountry_Code=s|\s+||g&quot;&#10;&quot;-rCountry_Code=s|,|/|g&quot;&#10;-o trunk-prefixes.csv"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="phoneblock-tools"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 </launchConfiguration>
