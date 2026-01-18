@@ -28,14 +28,48 @@ import com.opencsv.ICSVWriter;
  */
 public class WebCSVTable {
 
+	/**
+	 * Represents a mapping from a page column name to a CSV column name.
+	 */
+	static class ColumnMapping {
+		final String pageColumnName;
+		final String csvColumnName;
+
+		ColumnMapping(String pageColumnName, String csvColumnName) {
+			this.pageColumnName = pageColumnName;
+			this.csvColumnName = csvColumnName;
+		}
+	}
+
+	/**
+	 * Parses a column specification which can be either "ColumnName" or "PageColumn=CSVColumn".
+	 *
+	 * @param spec The column specification
+	 * @return A ColumnMapping object
+	 */
+	static ColumnMapping parseColumnSpec(String spec) {
+		int equalsPos = spec.indexOf('=');
+		if (equalsPos == -1) {
+			// No mapping, use same name for both
+			return new ColumnMapping(spec, spec);
+		} else {
+			// Mapping specified
+			String pageCol = spec.substring(0, equalsPos).trim();
+			String csvCol = spec.substring(equalsPos + 1).trim();
+			return new ColumnMapping(pageCol, csvCol);
+		}
+	}
+
 	private static void printHelp() {
 		System.err.println("WebCSVTable - Extract table data from web pages to CSV format");
 		System.err.println();
 		System.err.println("Usage: java " + WebCSVTable.class.getName() + " <headers> <url> [-rCOLUMN=s/PATTERN/REPLACEMENT/[FLAGS]]...");
 		System.err.println();
 		System.err.println("Arguments:");
-		System.err.println("  <headers>  Comma-separated list of expected table headers");
-		System.err.println("             (can be a subset and in any order)");
+		System.err.println("  <headers>  Comma-separated list of table columns");
+		System.err.println("             Format: PageCol1=CSVCol1,PageCol2=CSVCol2,...");
+		System.err.println("             The =CSVCol suffix is optional (uses PageCol as CSV name)");
+		System.err.println("             Can be a subset and in any order");
 		System.err.println("  <url>      URL of the web page to download");
 		System.err.println();
 		System.err.println("Options:");
@@ -61,6 +95,13 @@ public class WebCSVTable {
 		System.err.println("      -rCountry=s/Republic/Rep./g \\");
 		System.err.println("      -rCountry=s|United States|USA| \\");
 		System.err.println("      -rPopulation=s/,//g");
+		System.err.println();
+		System.err.println("  With column mapping:");
+		System.err.println("    java " + WebCSVTable.class.getName() + " \\");
+		System.err.println("      \"Country Name=Country,Population=Pop\" \\");
+		System.err.println("      \"https://example.com/countries.html\"");
+		System.err.println("    (Extracts 'Country Name' and 'Population' from page,");
+		System.err.println("     writes as 'Country' and 'Pop' in CSV)");
 	}
 
 	/**
@@ -77,8 +118,21 @@ public class WebCSVTable {
 		String headersArg = args[0];
 		String baseUri = args[1];
 
+		// Parse column specifications (PageCol=CSVCol or just ColumnName)
+		List<ColumnMapping> columnMappings = Arrays.stream(headersArg.split(","))
+			.map(s -> parseColumnSpec(s.trim()))
+			.toList();
+
+		// Extract page column names (for matching tables) and CSV column names (for output)
+		List<String> pageColumnNames = columnMappings.stream()
+			.map(m -> m.pageColumnName)
+			.toList();
+		List<String> csvColumnNames = columnMappings.stream()
+			.map(m -> m.csvColumnName)
+			.toList();
+
 		// Parse -r options for column replacements
-		// Map of column name -> list of replacements to apply in order
+		// Map of CSV column name -> list of replacements to apply in order
 		Map<String, List<Replacement>> columnReplacements = new HashMap<>();
 
 		for (int i = 2; i < args.length; i++) {
@@ -109,8 +163,6 @@ public class WebCSVTable {
 				System.exit(1);
 			}
 		}
-
-		List<String> expectedHeader = Arrays.stream(headersArg.split(",")).map(s -> s.trim()).toList();
 		
 		try (ICSVWriter csv = 
 			new CSVWriterBuilder(new FileWriter(new File("out.csv"), StandardCharsets.UTF_8)).withEscapeChar('\\').withLineEnd("\n").withQuoteChar('"').withSeparator(';').build()) {
@@ -130,19 +182,19 @@ public class WebCSVTable {
 
 					List<String> header  = rows.get(0).select("th").stream().map(h -> h.text()).toList();
 
-					// Check if all expected headers are present in the table
-					if (!header.containsAll(expectedHeader)) {
+					// Check if all expected page column names are present in the table
+					if (!header.containsAll(pageColumnNames)) {
 						continue;
 					}
 
-					// Map expected headers to their column indices in the table
-					int[] columnIndices = new int[expectedHeader.size()];
-					for (int i = 0; i < expectedHeader.size(); i++) {
-						columnIndices[i] = header.indexOf(expectedHeader.get(i));
+					// Map page column names to their column indices in the table
+					int[] columnIndices = new int[pageColumnNames.size()];
+					for (int i = 0; i < pageColumnNames.size(); i++) {
+						columnIndices[i] = header.indexOf(pageColumnNames.get(i));
 					}
 
-					// Write CSV header with expected column order
-					csv.writeNext(expectedHeader.toArray(new String[0]));
+					// Write CSV header with CSV column names
+					csv.writeNext(csvColumnNames.toArray(new String[0]));
 
 					for (Element row : rows.subList(1, rows.size())) {
 						List<String> allColumns = row.select("td").stream().map(h -> h.text()).toList();
@@ -162,9 +214,9 @@ public class WebCSVTable {
 								value = "";
 							}
 
-							// Apply replacements for this column
-							String columnName = expectedHeader.get(i);
-							List<Replacement> replacements = columnReplacements.get(columnName);
+							// Apply replacements for this column (using CSV column name)
+							String csvColumnName = csvColumnNames.get(i);
+							List<Replacement> replacements = columnReplacements.get(csvColumnName);
 							if (replacements != null) {
 								for (Replacement replacement : replacements) {
 									value = replacement.apply(value);

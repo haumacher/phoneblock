@@ -4,12 +4,42 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import de.haumacher.phoneblock.analysis.WebCSVTable.ColumnMapping;
 import de.haumacher.phoneblock.analysis.WebCSVTable.Replacement;
 
 /**
  * Test cases for {@link WebCSVTable} replacement functionality.
  */
 public class WebCSVTableTest {
+
+	@Test
+	public void testParseColumnSpecWithoutMapping() {
+		ColumnMapping mapping = WebCSVTable.parseColumnSpec("Country");
+		assertEquals("Country", mapping.pageColumnName);
+		assertEquals("Country", mapping.csvColumnName);
+	}
+
+	@Test
+	public void testParseColumnSpecWithMapping() {
+		ColumnMapping mapping = WebCSVTable.parseColumnSpec("Country Name=Country");
+		assertEquals("Country Name", mapping.pageColumnName);
+		assertEquals("Country", mapping.csvColumnName);
+	}
+
+	@Test
+	public void testParseColumnSpecWithMappingAndSpaces() {
+		ColumnMapping mapping = WebCSVTable.parseColumnSpec(" Country Name = Country ");
+		assertEquals("Country Name", mapping.pageColumnName);
+		assertEquals("Country", mapping.csvColumnName);
+	}
+
+	@Test
+	public void testParseColumnSpecWithEmptyCSVName() {
+		ColumnMapping mapping = WebCSVTable.parseColumnSpec("PageCol=");
+		assertEquals("PageCol", mapping.pageColumnName);
+		assertEquals("", mapping.csvColumnName);
+	}
+
 
 	@Test
 	public void testBasicReplacement() {
