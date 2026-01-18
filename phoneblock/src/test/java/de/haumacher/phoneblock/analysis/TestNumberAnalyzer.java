@@ -21,8 +21,17 @@ class TestNumberAnalyzer {
 		PhoneNumer numberDe = NumberAnalyzer.extractNumber("+49123456789", "+49");
 		assertEquals("0123456789", numberDe.getId());
 
+		PhoneNumer numberDeIt = NumberAnalyzer.extractNumber("+49123456789", "+39");
+		assertEquals("0123456789", numberDeIt.getId());
+		
 		PhoneNumer numberUs = NumberAnalyzer.extractNumber("+49123456789", "+1");
 		assertEquals("0123456789", numberUs.getId());
+
+		PhoneNumer numberIt = NumberAnalyzer.extractNumber("+390123456789", "+39");
+		assertEquals("00390123456789", numberIt.getId());
+		
+		PhoneNumer numberItDe = NumberAnalyzer.extractNumber("+390123456789", "+49");
+		assertEquals("00390123456789", numberItDe.getId());
 	}
 	
 	@ParameterizedTest
@@ -245,6 +254,29 @@ class TestNumberAnalyzer {
 		assertNotNull(result, "Cross-country search for " + input + " with user dial prefix " + userDialPrefix + " should work");
 		assertEquals(expectedCountry, result.getCountry());
 		assertEquals(expectedShortcut, result.getShortcut());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		// CRITICAL: Italian user searching for German number starting with +49 should get GERMAN number
+		// NOT Italian number by prepending +39 to "49123456789"
+		"+49123456789, +39, +49123456789",
+		"+49891234567, +39, +49891234567",
+		"+4930123456, +39, +4930123456",
+
+		// German user searching for Italian number starting with +39
+		"+390123456789, +49, +390123456789",
+		"+39010123456, +49, +39010123456",
+
+		// Numbers already in + format should NEVER be modified
+		"+1234567890, +49, +1234567890",
+		"+1234567890, +39, +1234567890",
+		"+36123456789, +39, +36123456789",
+	})
+	void testInternationalFormatNotModified(String input, String userDialPrefix, String expectedPlus) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, userDialPrefix);
+		assertNotNull(result, "Number " + input + " should be valid regardless of user dial prefix");
+		assertEquals(expectedPlus, result.getPlus(), "International format should not be modified by user's dial prefix");
 	}
 
 }
