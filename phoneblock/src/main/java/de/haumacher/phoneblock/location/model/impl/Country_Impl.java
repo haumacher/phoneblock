@@ -137,7 +137,29 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private String _wikidataId = "";
 
-	private String _trunkPrefix = "";
+	private final java.util.List<String> _trunkPrefixes = new de.haumacher.msgbuf.util.ReferenceList<>() {
+		@Override
+		protected void beforeAdd(int index, String element) {
+			_listener.beforeAdd(Country_Impl.this, TRUNK_PREFIXES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterRemove(int index, String element) {
+			_listener.afterRemove(Country_Impl.this, TRUNK_PREFIXES__PROP, index, element);
+		}
+	};
+
+	private final java.util.List<String> _internationalPrefixes = new de.haumacher.msgbuf.util.ReferenceList<>() {
+		@Override
+		protected void beforeAdd(int index, String element) {
+			_listener.beforeAdd(Country_Impl.this, INTERNATIONAL_PREFIXES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterRemove(int index, String element) {
+			_listener.afterRemove(Country_Impl.this, INTERNATIONAL_PREFIXES__PROP, index, element);
+		}
+	};
 
 	/**
 	 * Creates a {@link Country_Impl} instance.
@@ -1133,20 +1155,69 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	@Override
-	public final String getTrunkPrefix() {
-		return _trunkPrefix;
+	public final java.util.List<String> getTrunkPrefixes() {
+		return _trunkPrefixes;
 	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country setTrunkPrefix(String value) {
-		internalSetTrunkPrefix(value);
+	public de.haumacher.phoneblock.location.model.Country setTrunkPrefixes(java.util.List<? extends String> value) {
+		internalSetTrunkPrefixes(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getTrunkPrefix()} without chain call utility. */
-	protected final void internalSetTrunkPrefix(String value) {
-		_listener.beforeSet(this, TRUNK_PREFIX__PROP, value);
-		_trunkPrefix = value;
+	/** Internal setter for {@link #getTrunkPrefixes()} without chain call utility. */
+	protected final void internalSetTrunkPrefixes(java.util.List<? extends String> value) {
+		_trunkPrefixes.clear();
+		_trunkPrefixes.addAll(value);
+	}
+
+	@Override
+	public de.haumacher.phoneblock.location.model.Country addTrunkPrefixe(String value) {
+		internalAddTrunkPrefixe(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addTrunkPrefixe(String)} without chain call utility. */
+	protected final void internalAddTrunkPrefixe(String value) {
+		_trunkPrefixes.add(value);
+	}
+
+	@Override
+	public final void removeTrunkPrefixe(String value) {
+		_trunkPrefixes.remove(value);
+	}
+
+	@Override
+	public final java.util.List<String> getInternationalPrefixes() {
+		return _internationalPrefixes;
+	}
+
+	@Override
+	public de.haumacher.phoneblock.location.model.Country setInternationalPrefixes(java.util.List<? extends String> value) {
+		internalSetInternationalPrefixes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getInternationalPrefixes()} without chain call utility. */
+	protected final void internalSetInternationalPrefixes(java.util.List<? extends String> value) {
+		_internationalPrefixes.clear();
+		_internationalPrefixes.addAll(value);
+	}
+
+	@Override
+	public de.haumacher.phoneblock.location.model.Country addInternationalPrefixe(String value) {
+		internalAddInternationalPrefixe(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addInternationalPrefixe(String)} without chain call utility. */
+	protected final void internalAddInternationalPrefixe(String value) {
+		_internationalPrefixes.add(value);
+	}
+
+	@Override
+	public final void removeInternationalPrefixe(String value) {
+		_internationalPrefixes.remove(value);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -1234,7 +1305,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			CLDR_DISPLAY_NAME__PROP, 
 			EDGAR__PROP, 
 			WIKIDATA_ID__PROP, 
-			TRUNK_PREFIX__PROP));
+			TRUNK_PREFIXES__PROP, 
+			INTERNATIONAL_PREFIXES__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -1300,7 +1372,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case CLDR_DISPLAY_NAME__PROP: return getCLDRDisplayName();
 			case EDGAR__PROP: return getEDGAR();
 			case WIKIDATA_ID__PROP: return getWikidataId();
-			case TRUNK_PREFIX__PROP: return getTrunkPrefix();
+			case TRUNK_PREFIXES__PROP: return getTrunkPrefixes();
+			case INTERNATIONAL_PREFIXES__PROP: return getInternationalPrefixes();
 			default: return de.haumacher.phoneblock.location.model.Country.super.get(field);
 		}
 	}
@@ -1364,7 +1437,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case CLDR_DISPLAY_NAME__PROP: internalSetCLDRDisplayName((String) value); break;
 			case EDGAR__PROP: internalSetEDGAR((String) value); break;
 			case WIKIDATA_ID__PROP: internalSetWikidataId((String) value); break;
-			case TRUNK_PREFIX__PROP: internalSetTrunkPrefix((String) value); break;
+			case TRUNK_PREFIXES__PROP: internalSetTrunkPrefixes(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
+			case INTERNATIONAL_PREFIXES__PROP: internalSetInternationalPrefixes(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
 		}
 	}
 
@@ -1496,8 +1570,18 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getEDGAR());
 		out.name(WIKIDATA_ID__PROP);
 		out.value(getWikidataId());
-		out.name(TRUNK_PREFIX__PROP);
-		out.value(getTrunkPrefix());
+		out.name(TRUNK_PREFIXES__PROP);
+		out.beginArray();
+		for (String x : getTrunkPrefixes()) {
+			out.value(x);
+		}
+		out.endArray();
+		out.name(INTERNATIONAL_PREFIXES__PROP);
+		out.beginArray();
+		for (String x : getInternationalPrefixes()) {
+			out.value(x);
+		}
+		out.endArray();
 	}
 
 	@Override
@@ -1573,7 +1657,22 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case CLDR_DISPLAY_NAME__PROP: setCLDRDisplayName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case EDGAR__PROP: setEDGAR(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case WIKIDATA_ID__PROP: setWikidataId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case TRUNK_PREFIX__PROP: setTrunkPrefix(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case TRUNK_PREFIXES__PROP: {
+				in.beginArray();
+				while (in.hasNext()) {
+					addTrunkPrefixe(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+				}
+				in.endArray();
+			}
+			break;
+			case INTERNATIONAL_PREFIXES__PROP: {
+				in.beginArray();
+				while (in.hasNext()) {
+					addInternationalPrefixe(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+				}
+				in.endArray();
+			}
+			break;
 			default: super.readField(in, field);
 		}
 	}
@@ -1719,8 +1818,24 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.value(getEDGAR());
 		out.name(WIKIDATA_ID__ID);
 		out.value(getWikidataId());
-		out.name(TRUNK_PREFIX__ID);
-		out.value(getTrunkPrefix());
+		out.name(TRUNK_PREFIXES__ID);
+		{
+			java.util.List<String> values = getTrunkPrefixes();
+			out.beginArray(de.haumacher.msgbuf.binary.DataType.STRING, values.size());
+			for (String x : values) {
+				out.value(x);
+			}
+			out.endArray();
+		}
+		out.name(INTERNATIONAL_PREFIXES__ID);
+		{
+			java.util.List<String> values = getInternationalPrefixes();
+			out.beginArray(de.haumacher.msgbuf.binary.DataType.STRING, values.size());
+			for (String x : values) {
+				out.value(x);
+			}
+			out.endArray();
+		}
 	}
 
 	/** Helper for creating an object of type {@link de.haumacher.phoneblock.location.model.Country} from a polymorphic composition. */
@@ -1811,7 +1926,22 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case CLDR_DISPLAY_NAME__ID: setCLDRDisplayName(in.nextString()); break;
 			case EDGAR__ID: setEDGAR(in.nextString()); break;
 			case WIKIDATA_ID__ID: setWikidataId(in.nextString()); break;
-			case TRUNK_PREFIX__ID: setTrunkPrefix(in.nextString()); break;
+			case TRUNK_PREFIXES__ID: {
+				in.beginArray();
+				while (in.hasNext()) {
+					addTrunkPrefixe(in.nextString());
+				}
+				in.endArray();
+			}
+			break;
+			case INTERNATIONAL_PREFIXES__ID: {
+				in.beginArray();
+				while (in.hasNext()) {
+					addInternationalPrefixe(in.nextString());
+				}
+				in.endArray();
+			}
+			break;
 			default: in.skipValue(); 
 		}
 	}
@@ -1987,8 +2117,11 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** XML attribute or element name of a {@link #getWikidataId} property. */
 	private static final String WIKIDATA_ID__XML_ATTR = "wikidata_id";
 
-	/** XML attribute or element name of a {@link #getTrunkPrefix} property. */
-	private static final String TRUNK_PREFIX__XML_ATTR = "TrunkPrefix";
+	/** XML attribute or element name of a {@link #getTrunkPrefixes} property. */
+	private static final String TRUNK_PREFIXES__XML_ATTR = "TrunkPrefix";
+
+	/** XML attribute or element name of a {@link #getInternationalPrefixes} property. */
+	private static final String INTERNATIONAL_PREFIXES__XML_ATTR = "InternationalPrefix";
 
 	@Override
 	public String getXmlTagName() {
@@ -2059,7 +2192,8 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		out.writeAttribute(CLDR_DISPLAY_NAME__XML_ATTR, getCLDRDisplayName());
 		out.writeAttribute(EDGAR__XML_ATTR, getEDGAR());
 		out.writeAttribute(WIKIDATA_ID__XML_ATTR, getWikidataId());
-		out.writeAttribute(TRUNK_PREFIX__XML_ATTR, getTrunkPrefix());
+		out.writeAttribute(TRUNK_PREFIXES__XML_ATTR, getTrunkPrefixes().stream().map(x -> x).collect(java.util.stream.Collectors.joining(", ")));
+		out.writeAttribute(INTERNATIONAL_PREFIXES__XML_ATTR, getInternationalPrefixes().stream().map(x -> x).collect(java.util.stream.Collectors.joining(", ")));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -2321,8 +2455,12 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 				setWikidataId(value);
 				break;
 			}
-			case TRUNK_PREFIX__XML_ATTR: {
-				setTrunkPrefix(value);
+			case TRUNK_PREFIXES__XML_ATTR: {
+				setTrunkPrefixes(java.util.Arrays.stream(value.split("\\s*,\\s*")).map(x -> x).collect(java.util.stream.Collectors.toList()));
+				break;
+			}
+			case INTERNATIONAL_PREFIXES__XML_ATTR: {
+				setInternationalPrefixes(java.util.Arrays.stream(value.split("\\s*,\\s*")).map(x -> x).collect(java.util.stream.Collectors.toList()));
 				break;
 			}
 			default: {
@@ -2558,8 +2696,12 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 				setWikidataId(in.getElementText());
 				break;
 			}
-			case TRUNK_PREFIX__XML_ATTR: {
-				setTrunkPrefix(in.getElementText());
+			case TRUNK_PREFIXES__XML_ATTR: {
+				setTrunkPrefixes(java.util.Arrays.stream(in.getElementText().split("\\s*,\\s*")).map(x -> x).collect(java.util.stream.Collectors.toList()));
+				break;
+			}
+			case INTERNATIONAL_PREFIXES__XML_ATTR: {
+				setInternationalPrefixes(java.util.Arrays.stream(in.getElementText().split("\\s*,\\s*")).map(x -> x).collect(java.util.stream.Collectors.toList()));
 				break;
 			}
 			default: {

@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 import com.opencsv.CSVReaderHeaderAware;
 import com.opencsv.exceptions.CsvValidationException;
 
-import de.haumacher.msgbuf.json.JsonReader;
-import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.location.model.Country;
 
 /**
@@ -39,29 +37,44 @@ public class Countries {
 		Map<String, List<Country>> byDialPrefix = new LinkedHashMap<>();
 		Map<String, List<Country>> byLang = new LinkedHashMap<>();
 
-		// Load trunk prefix mapping
-		Map<String, String> trunkPrefixes = new HashMap<>();
-		String defaultTrunkPrefix = "0";
-		try (InputStream in = Countries.class.getResourceAsStream("trunk-prefixes.json")) {
-			if (in != null) {
-				JsonReader reader = new JsonReader(new ReaderAdapter(new InputStreamReader(in, StandardCharsets.UTF_8)));
-				reader.beginObject();
-				while (reader.hasNext()) {
-					String key = reader.nextName();
-					String value = reader.nextString();
-					if ("_default".equals(key)) {
-						defaultTrunkPrefix = value;
-					} else if (!key.startsWith("_")) {
-						trunkPrefixes.put(key, value);
+		// Load trunk and international prefixes from CSV
+		Map<String, List<String>> trunkPrefixMap = new HashMap<>();
+		Map<String, List<String>> internationalPrefixMap = new HashMap<>();
+
+		try (InputStream csvIn = Countries.class.getResourceAsStream("trunk-prefixes.csv")) {
+			if (csvIn != null) {
+				CSVReaderHeaderAware csvReader = new CSVReaderHeaderAware(new InputStreamReader(csvIn, StandardCharsets.UTF_8));
+				Map<String, String> csvLine;
+				while ((csvLine = csvReader.readMap()) != null) {
+					String isoCode = csvLine.get("ISO_Code");
+					String internationalPrefix = csvLine.get("International_Prefix");
+					String trunkPrefix = csvLine.get("Trunk_Prefix");
+
+					if (isoCode != null && !isoCode.isEmpty()) {
+						// Parse international prefix (may contain multiple values separated by /)
+						if (internationalPrefix != null && !internationalPrefix.isEmpty()) {
+							List<String> intPrefixes = Arrays.stream(internationalPrefix.split("/"))
+									.map(String::strip)
+									.filter(p -> !p.isEmpty())
+									.toList();
+							internationalPrefixMap.put(isoCode, intPrefixes);
+						}
+
+						// Parse trunk prefix (may contain multiple values separated by /)
+						if (trunkPrefix != null && !trunkPrefix.isEmpty()) {
+							List<String> tPrefixes = Arrays.stream(trunkPrefix.split("/"))
+									.map(String::strip)
+									.filter(p -> !p.isEmpty())
+									.toList();
+							trunkPrefixMap.put(isoCode, tPrefixes);
+						}
 					}
 				}
-				reader.endObject();
 			}
-		} catch (IOException e) {
-			System.err.println("Warning: Could not load trunk-prefixes.json: " + e.getMessage());
+		} catch (IOException | CsvValidationException e) {
+			System.err.println("Warning: Could not load trunk-prefixes.csv: " + e.getMessage());
+			e.printStackTrace();
 		}
-
-		final String finalDefaultTrunkPrefix = defaultTrunkPrefix;
 
         try (InputStream in = Countries.class.getResourceAsStream("country-codes.csv")) {
 			CSVReaderHeaderAware reader = new CSVReaderHeaderAware(new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -94,11 +107,18 @@ public class Countries {
 	        		}
 	        	}
 
-	        	// Set trunk prefix from JSON mapping
+	        	// Set trunk and international prefixes from CSV mapping
 	        	String iso2 = country.getISO31661Alpha2();
 	        	if (iso2 != null && !iso2.isEmpty()) {
-	        		String trunkPrefix = trunkPrefixes.getOrDefault(iso2, finalDefaultTrunkPrefix);
-	        		country.setTrunkPrefix(trunkPrefix);
+	        		List<String> trunkPrefixes = trunkPrefixMap.get(iso2);
+	        		if (trunkPrefixes != null && !trunkPrefixes.isEmpty()) {
+	        			country.setTrunkPrefixes(trunkPrefixes);
+	        		}
+
+	        		List<String> internationalPrefixes = internationalPrefixMap.get(iso2);
+	        		if (internationalPrefixes != null && !internationalPrefixes.isEmpty()) {
+	        			country.setInternationalPrefixes(internationalPrefixes);
+	        		}
 	        	}
 
 	        	byISO31661Alpha2.put(country.getISO31661Alpha2(), country);
@@ -133,7 +153,7 @@ public class Countries {
 	public static void main(String[] args) {
 		List<Country> codes = new ArrayList<>(BY_ISO_31661_ALPHA_2.values());
 		for (Country code : codes) {
-			System.out.println(code.getISO31661Alpha2() + " - " + code.getDialPrefixes() + " - " + code.getTrunkPrefix() + " - " + code.getOfficialNameEn());
+			System.out.println(code.getISO31661Alpha2() + " - " + code.getDialPrefixes() + " - Trunk:" + code.getTrunkPrefixes() + " - Intl:" + code.getInternationalPrefixes() + " - " + code.getOfficialNameEn());
 		}
 
 		List<String> langs= new ArrayList<>(BY_LANG.keySet());

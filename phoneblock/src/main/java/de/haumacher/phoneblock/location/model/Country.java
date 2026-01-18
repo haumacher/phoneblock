@@ -183,8 +183,11 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/** @see #getWikidataId() */
 	String WIKIDATA_ID__PROP = "wikidata_id";
 
-	/** @see #getTrunkPrefix() */
-	String TRUNK_PREFIX__PROP = "TrunkPrefix";
+	/** @see #getTrunkPrefixes() */
+	String TRUNK_PREFIXES__PROP = "TrunkPrefix";
+
+	/** @see #getInternationalPrefixes() */
+	String INTERNATIONAL_PREFIXES__PROP = "InternationalPrefix";
 
 	/** Identifier for the property {@link #getFIFA()} in binary format. */
 	static final int FIFA__ID = 1;
@@ -354,8 +357,11 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/** Identifier for the property {@link #getWikidataId()} in binary format. */
 	static final int WIKIDATA_ID__ID = 56;
 
-	/** Identifier for the property {@link #getTrunkPrefix()} in binary format. */
-	static final int TRUNK_PREFIX__ID = 57;
+	/** Identifier for the property {@link #getTrunkPrefixes()} in binary format. */
+	static final int TRUNK_PREFIXES__ID = 57;
+
+	/** Identifier for the property {@link #getInternationalPrefixes()} in binary format. */
+	static final int INTERNATIONAL_PREFIXES__ID = 58;
 
 	String getFIFA();
 
@@ -769,12 +775,39 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	 */
 	de.haumacher.phoneblock.location.model.Country setWikidataId(String value);
 
-	String getTrunkPrefix();
+	java.util.List<String> getTrunkPrefixes();
 
 	/**
-	 * @see #getTrunkPrefix()
+	 * @see #getTrunkPrefixes()
 	 */
-	de.haumacher.phoneblock.location.model.Country setTrunkPrefix(String value);
+	de.haumacher.phoneblock.location.model.Country setTrunkPrefixes(java.util.List<? extends String> value);
+
+	/**
+	 * Adds a value to the {@link #getTrunkPrefixes()} list.
+	 */
+	de.haumacher.phoneblock.location.model.Country addTrunkPrefixe(String value);
+
+	/**
+	 * Removes a value from the {@link #getTrunkPrefixes()} list.
+	 */
+	void removeTrunkPrefixe(String value);
+
+	java.util.List<String> getInternationalPrefixes();
+
+	/**
+	 * @see #getInternationalPrefixes()
+	 */
+	de.haumacher.phoneblock.location.model.Country setInternationalPrefixes(java.util.List<? extends String> value);
+
+	/**
+	 * Adds a value to the {@link #getInternationalPrefixes()} list.
+	 */
+	de.haumacher.phoneblock.location.model.Country addInternationalPrefixe(String value);
+
+	/**
+	 * Removes a value from the {@link #getInternationalPrefixes()} list.
+	 */
+	void removeInternationalPrefixe(String value);
 
 	@Override
 	public de.haumacher.phoneblock.location.model.Country registerListener(de.haumacher.msgbuf.observer.Listener l);
