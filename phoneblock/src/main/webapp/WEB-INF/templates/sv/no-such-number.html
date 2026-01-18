@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Telefonnumret ☎ <span th:text="${number}"></span> finns inte</h1>
 
 	<p data-tx="t0002:d5692a3b">Det nummer du söker är inte ett telefonnummer. Vänligen korrigera din sökning och försök igen!</p>
+
+	<h2 data-tx="t0003:379d2439">Sökformat som stöds</h2>
+
+	<p data-tx="t0004:c262e767">Du kan ange telefonnummer i olika format:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Internationell stavning med +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Internationell notation med <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Nationell stavning:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (baserat på ditt aktuella riktnummer)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Ditt nuvarande riktnummer:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 Om du är <a th:href="@{/login}">inloggad</a> kan du permanent konfigurera ditt riktnummer i <a th:href="@{/settings}">inställningar</a>. På så sätt säkerställs att nationella telefonnummer tolkas korrekt.</p>
+	</div>
 </div>
 </section>
 

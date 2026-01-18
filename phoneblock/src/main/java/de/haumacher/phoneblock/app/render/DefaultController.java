@@ -200,6 +200,24 @@ public class DefaultController implements WebController {
 	private static void resolveDialPrefix(HttpServletRequest request, Language lang) {
 		String dialPrefix = selectDialPrefix(request, lang);
 		request.setAttribute("currentDialPrefix", dialPrefix);
+
+		// Also set the international prefix and trunk prefix for the user's country
+		List<Country> countries = Countries.fromDialPrefix(dialPrefix);
+		String internationalPrefix = "00"; // Default fallback
+		String trunkPrefix = "0"; // Default fallback
+		if (countries != null && !countries.isEmpty()) {
+			Country country = countries.get(0);
+			List<String> intPrefixes = country.getInternationalPrefixes();
+			if (intPrefixes != null && !intPrefixes.isEmpty()) {
+				internationalPrefix = intPrefixes.get(0);
+			}
+			List<String> trunkPrefixes = country.getTrunkPrefixes();
+			if (trunkPrefixes != null && !trunkPrefixes.isEmpty()) {
+				trunkPrefix = trunkPrefixes.get(0);
+			}
+		}
+		request.setAttribute("internationalPrefix", internationalPrefix);
+		request.setAttribute("trunkPrefix", trunkPrefix);
 	}
 	
 	public static String selectDialPrefix(HttpServletRequest request, Language lang) {
@@ -214,11 +232,21 @@ public class DefaultController implements WebController {
 				}
 			}
 			
-			// Detect from address.
-			Country country = LocationService.getInstance().getCountry(request);
-			if (country != null) {
-				List<String> dialPrefixes = country.getDialPrefixes();
-				dialPrefix = dialPrefixes.size() > 0 ? dialPrefixes.get(0) : null;
+			// Load from settings.
+			String login = LoginFilter.getAuthenticatedUser(request);
+			if (login != null) {
+				DB db = DBService.getInstance();
+				try (SqlSession tx = db.openSession()) {
+					Users users = tx.getMapper(Users.class);
+					dialPrefix = users.getDialPrefix(login);
+				}
+			} else {
+				// Detect from address.
+				Country country = LocationService.getInstance().getCountry(request);
+				if (country != null) {
+					List<String> dialPrefixes = country.getDialPrefixes();
+					dialPrefix = dialPrefixes.size() > 0 ? dialPrefixes.get(0) : null;
+				}
 			}
 			
 			if (session != null) {

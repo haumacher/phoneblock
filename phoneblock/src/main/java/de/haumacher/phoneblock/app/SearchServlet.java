@@ -220,7 +220,7 @@ public class SearchServlet extends HttpServlet {
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
-		
+
 		String dialPrefix = lookupDialPrefix(req);
 		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
@@ -228,7 +228,7 @@ public class SearchServlet extends HttpServlet {
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
-		
+
 		// Send to display page.
 		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + number.getZeroZero());
 	}
@@ -247,7 +247,7 @@ public class SearchServlet extends HttpServlet {
 		}
 		return dialPrefix;
 	}
-	
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String pathInfo = req.getPathInfo();
@@ -256,9 +256,9 @@ public class SearchServlet extends HttpServlet {
 			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 			return;
 		}
-		
+
 		String query = pathInfo.substring(1);
-		
+
 		boolean bot = isBot(req);
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
 

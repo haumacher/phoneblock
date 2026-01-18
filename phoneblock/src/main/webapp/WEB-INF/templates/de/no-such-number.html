@@ -10,9 +10,36 @@
 	<h1 data-tx="t0001:657a0bf2">Die Rufnummer ☎ <span th:text="${number}"></span> existiert nicht</h1>
 
 	<p data-tx="t0002:d5692a3b">
-		Bei der von Dir gesuchten Nummer handelt es sich nicht um eine Telefonnummer. 
+		Bei der von Dir gesuchten Nummer handelt es sich nicht um eine Telefonnummer.
 		Bitte korrigiere Deine Sucheingabe und versuche es noch einmal!
 	</p>
+
+	<h2 data-tx="t0003:379d2439">Unterstützte Suchformate</h2>
+
+	<p data-tx="t0004:c262e767">Du kannst Telefonnummern in verschiedenen Formaten eingeben:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Internationale Schreibweise mit +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Internationale Schreibweise mit <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5">
+			<strong>Nationale Schreibweise:</strong>
+			<code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (basierend auf Deinem aktuellen Vorwahlbereich)
+		</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Dein aktueller Vorwahlbereich:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">
+			💡 Wenn Du <a th:href="@{/login}">angemeldet</a> bist, kannst Du Deinen Vorwahlbereich in den
+			<a th:href="@{/settings}">Einstellungen</a> dauerhaft konfigurieren. Dadurch werden nationale
+			Telefonnummern korrekt interpretiert.
+		</p>
+	</div>
 </div>
 </section>
 

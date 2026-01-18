@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Le numéro d'appel ☎ <span th:text="${number}"></span> n'existe pas</h1>
 
 	<p data-tx="t0002:d5692a3b">Le numéro que tu recherches n'est pas un numéro de téléphone. Veuillez corriger votre recherche et réessayer!</p>
+
+	<h2 data-tx="t0003:379d2439">Formats de recherche pris en charge</h2>
+
+	<p data-tx="t0004:c262e767">Tu peux saisir des numéros de téléphone dans différents formats :</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Orthographe internationale avec + :</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Écriture internationale avec <span th:text="${internationalPrefix}">00</span> :</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Ecriture nationale:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (basé sur ton indicatif régional actuel)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Ton indicatif régional actuel :</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 Si tu es <a th:href="@{/login}">connecté</a>, tu peux configurer ton indicatif de manière permanente dans les <a th:href="@{/settings}">paramètres</a>. Ainsi, les numéros de téléphone nationaux seront correctement interprétés.</p>
+	</div>
 </div>
 </section>
 

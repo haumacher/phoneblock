@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Telefonnummeret ☎ <span th:text="${number}"></span> findes ikke</h1>
 
 	<p data-tx="t0002:d5692a3b">Det nummer, du leder efter, er ikke et telefonnummer. Ret venligst din søgning og prøv igen!</p>
+
+	<h2 data-tx="t0003:379d2439">Understøttede søgeformater</h2>
+
+	<p data-tx="t0004:c262e767">Du kan indtaste telefonnumre i forskellige formater:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">International stavning med +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">International notation med <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>National stavning:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (baseret på dit nuværende områdenummer)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Dit nuværende områdenummer:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 Hvis du er <a th:href="@{/login}">logget ind</a>, kan du permanent konfigurere dit områdenummer i <a th:href="@{/settings}">indstillingerne</a>. Dette sikrer, at nationale telefonnumre fortolkes korrekt.</p>
+	</div>
 </div>
 </section>
 

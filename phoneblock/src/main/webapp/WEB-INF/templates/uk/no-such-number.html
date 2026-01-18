@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Номер телефону ☎ <span th:text="${number}"></span> не існує</h1>
 
 	<p data-tx="t0002:d5692a3b">Номер, який ви шукаєте, не є номером телефону. Будь ласка, виправте пошук і спробуйте ще раз!</p>
+
+	<h2 data-tx="t0003:379d2439">Підтримувані формати пошуку</h2>
+
+	<p data-tx="t0004:c262e767">Ви можете вводити номери телефонів у різних форматах:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Міжнародне написання з +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Міжнародне позначення з <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Національний правопис:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (на основі вашого поточного телефонного коду)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Ваш поточний код міста:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">Якщо ви <a th:href="@{/login}">ввійшли в систему</a>, ви можете назавжди налаштувати свій код міста в <a th:href="@{/settings}">налаштуваннях</a>. Це гарантує правильну інтерпретацію національних телефонних номерів.</p>
+	</div>
 </div>
 </section>
 

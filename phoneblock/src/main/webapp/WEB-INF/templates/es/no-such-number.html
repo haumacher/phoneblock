@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">El número de teléfono ☎ <span th:text="${number}"></span> no existe.</h1>
 
 	<p data-tx="t0002:d5692a3b">El número que busca no es un número de teléfono. Por favor, corrija su búsqueda e inténtelo de nuevo.</p>
+
+	<h2 data-tx="t0003:379d2439">Formatos de búsqueda admitidos</h2>
+
+	<p data-tx="t0004:c262e767">Puede introducir números de teléfono en varios formatos:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Ortografía internacional con +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Notación internacional con <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Deletreo nacional:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (según su prefijo actual)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Tu prefijo actual:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 Si está <a th:href="@{/login}">conectado</a>, puede configurar permanentemente su prefijo telefónico en la <a th:href="@{/settings}">configuración</a>. De este modo se garantiza la correcta interpretación de los números de teléfono nacionales.</p>
+	</div>
 </div>
 </section>
 

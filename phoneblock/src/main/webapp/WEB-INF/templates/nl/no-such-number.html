@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Het telefoonnummer ☎ <span th:text="${number}"></span> bestaat niet</h1>
 
 	<p data-tx="t0002:d5692a3b">Het nummer dat je zoekt is geen telefoonnummer. Corrigeer je zoekopdracht en probeer het opnieuw!</p>
+
+	<h2 data-tx="t0003:379d2439">Ondersteunde zoekformaten</h2>
+
+	<p data-tx="t0004:c262e767">Je kunt telefoonnummers in verschillende formaten invoeren:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Internationale spelling met +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Internationale notatie met <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Nationale spelling:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (gebaseerd op uw huidige netnummer)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Je huidige netnummer:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 Als u <a th:href="@{/login}">aanmeldt</a>, kunt u uw netnummer permanent configureren in de <a th:href="@{/settings}">instellingen</a>. Dit zorgt ervoor dat nationale telefoonnummers correct worden geïnterpreteerd.</p>
+	</div>
 </div>
 </section>
 

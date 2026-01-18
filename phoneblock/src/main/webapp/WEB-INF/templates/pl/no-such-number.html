@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Numer telefonu ☎ <span th:text="${number}"></span> nie istnieje</h1>
 
 	<p data-tx="t0002:d5692a3b">Szukany numer nie jest numerem telefonu. Popraw wyszukiwanie i spróbuj ponownie!</p>
+
+	<h2 data-tx="t0003:379d2439">Obsługiwane formaty wyszukiwania</h2>
+
+	<p data-tx="t0004:c262e767">Numery telefonów można wprowadzać w różnych formatach:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Międzynarodowa pisownia z +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Notacja międzynarodowa z <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Krajowa pisownia:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (na podstawie aktualnego numeru kierunkowego)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Aktualny numer kierunkowy:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">Jeśli jesteś <a th:href="@{/login}">zalogowany</a>, możesz na stałe skonfigurować swój numer kierunkowy w <a th:href="@{/settings}">ustawieniach</a>. Zapewnia to prawidłową interpretację krajowych numerów telefonów.</p>
+	</div>
 </div>
 </section>
 

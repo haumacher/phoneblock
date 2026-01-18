@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">Ο αριθμός τηλεφώνου ☎ <span th:text="${number}"></span> δεν υπάρχει</h1>
 
 	<p data-tx="t0002:d5692a3b">Ο αριθμός που αναζητάτε δεν είναι αριθμός τηλεφώνου. Παρακαλώ διορθώστε την αναζήτησή σας και προσπαθήστε ξανά!</p>
+
+	<h2 data-tx="t0003:379d2439">Υποστηριζόμενες μορφές αναζήτησης</h2>
+
+	<p data-tx="t0004:c262e767">Μπορείτε να εισάγετε τηλεφωνικούς αριθμούς σε διάφορες μορφές:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">Διεθνής ορθογραφία με +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">Διεθνής συμβολισμός με <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>Εθνική ορθογραφία:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (με βάση τον τρέχοντα κωδικό περιοχής σας)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Ο τρέχων κωδικός περιοχής σας:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 Εάν είστε <a th:href="@{/login}">συνδεδεμένοι</a>, μπορείτε να ρυθμίσετε μόνιμα τον κωδικό περιοχής κλήσης σας στις <a th:href="@{/settings}">ρυθμίσεις</a>. Αυτό διασφαλίζει ότι οι εθνικοί τηλεφωνικοί αριθμοί ερμηνεύονται σωστά.</p>
+	</div>
 </div>
 </section>
 

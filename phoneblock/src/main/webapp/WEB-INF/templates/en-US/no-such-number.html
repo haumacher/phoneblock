@@ -10,6 +10,26 @@
 	<h1 data-tx="t0001:657a0bf2">The phone number ☎ <span th:text="${number}"></span> does not exist</h1>
 
 	<p data-tx="t0002:d5692a3b">The number you are looking for is not a telephone number. Please correct your search and try again!</p>
+
+	<h2 data-tx="t0003:379d2439">Supported search formats</h2>
+
+	<p data-tx="t0004:c262e767">You can enter phone numbers in different formats:</p>
+
+	<ul>
+		<li><strong data-tx="t0005:6c2339bd">International spelling with +:</strong> <code>+49 30 12345678</code></li>
+		<li>
+			<strong data-tx="t0010:11db8a31">International notation with <span th:text="${internationalPrefix}">00</span>:</strong>
+			<code><span th:text="${internationalPrefix}">00</span>49 30 12345678</code>
+		</li>
+		<li data-tx="t0011:ddfb97e5"><strong>National spelling:</strong> <code><span th:text="${trunkPrefix}">0</span>30 12345678</code> (based on your current area code)</li>
+	</ul>
+
+	<div class="notification is-info">
+		<p>
+			<strong data-tx="t0008:3be3cc00">Your current area code:</strong> <span th:text="${currentDialPrefix}">+49</span>
+		</p>
+		<p data-tx="t0009:369b0717">💡 If you are <a th:href="@{/login}">logged in</a>, you can permanently configure your area code in the <a th:href="@{/settings}">settings</a>. This ensures that national phone numbers are interpreted correctly.</p>
+	</div>
 </div>
 </section>
 
