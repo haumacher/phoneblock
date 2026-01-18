@@ -24,6 +24,9 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getZeroZero() */
 	public static final String ZERO_ZERO__PROP = "zeroZero";
 
+	/** @see #getDial() */
+	public static final String DIAL__PROP = "dial";
+
 	/** @see #getCountryCode() */
 	public static final String COUNTRY_CODE__PROP = "countryCode";
 
@@ -46,6 +49,8 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	private String _plus = "";
 
 	private String _zeroZero = "";
+
+	private String _dial = "";
 
 	private String _countryCode = "";
 
@@ -126,6 +131,9 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		_plus = value;
 	}
 
+	/**
+	 * International format with "00" prefix (legacy, for backward compatibility and DB operations).
+	 */
 	public final String getZeroZero() {
 		return _zeroZero;
 	}
@@ -142,6 +150,27 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetZeroZero(String value) {
 		_listener.beforeSet(this, ZERO_ZERO__PROP, value);
 		_zeroZero = value;
+	}
+
+	/**
+	 * International format with the user's country-specific international prefix. This is the format a user would actually dial from their country (e.g., "011" for USA, "00" for most European countries, "810" for Russia).
+	 */
+	public final String getDial() {
+		return _dial;
+	}
+
+	/**
+	 * @see #getDial()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneNumer setDial(String value) {
+		internalSetDial(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getDial()} without chain call utility. */
+	protected final void internalSetDial(String value) {
+		_listener.beforeSet(this, DIAL__PROP, value);
+		_dial = value;
 	}
 
 	public final String getCountryCode() {
@@ -291,6 +320,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			SHORTCUT__PROP, 
 			PLUS__PROP, 
 			ZERO_ZERO__PROP, 
+			DIAL__PROP, 
 			COUNTRY_CODE__PROP, 
 			COUNTRY__PROP, 
 			CITY_CODE__PROP, 
@@ -309,6 +339,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case SHORTCUT__PROP: return getShortcut();
 			case PLUS__PROP: return getPlus();
 			case ZERO_ZERO__PROP: return getZeroZero();
+			case DIAL__PROP: return getDial();
 			case COUNTRY_CODE__PROP: return getCountryCode();
 			case COUNTRY__PROP: return getCountry();
 			case CITY_CODE__PROP: return getCityCode();
@@ -325,6 +356,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case SHORTCUT__PROP: internalSetShortcut((String) value); break;
 			case PLUS__PROP: internalSetPlus((String) value); break;
 			case ZERO_ZERO__PROP: internalSetZeroZero((String) value); break;
+			case DIAL__PROP: internalSetDial((String) value); break;
 			case COUNTRY_CODE__PROP: internalSetCountryCode((String) value); break;
 			case COUNTRY__PROP: internalSetCountry((String) value); break;
 			case CITY_CODE__PROP: internalSetCityCode((String) value); break;
@@ -356,6 +388,8 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.value(getPlus());
 		out.name(ZERO_ZERO__PROP);
 		out.value(getZeroZero());
+		out.name(DIAL__PROP);
+		out.value(getDial());
 		out.name(COUNTRY_CODE__PROP);
 		out.value(getCountryCode());
 		out.name(COUNTRY__PROP);
@@ -381,6 +415,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case SHORTCUT__PROP: setShortcut(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case PLUS__PROP: setPlus(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case ZERO_ZERO__PROP: setZeroZero(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case DIAL__PROP: setDial(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case COUNTRY_CODE__PROP: setCountryCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case COUNTRY__PROP: setCountry(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CITY_CODE__PROP: setCityCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -404,6 +439,9 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** XML attribute or element name of a {@link #getZeroZero} property. */
 	private static final String ZERO_ZERO__XML_ATTR = "zero-zero";
+
+	/** XML attribute or element name of a {@link #getDial} property. */
+	private static final String DIAL__XML_ATTR = "dial";
 
 	/** XML attribute or element name of a {@link #getCountryCode} property. */
 	private static final String COUNTRY_CODE__XML_ATTR = "country-code";
@@ -437,6 +475,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.writeAttribute(SHORTCUT__XML_ATTR, getShortcut());
 		out.writeAttribute(PLUS__XML_ATTR, getPlus());
 		out.writeAttribute(ZERO_ZERO__XML_ATTR, getZeroZero());
+		out.writeAttribute(DIAL__XML_ATTR, getDial());
 		out.writeAttribute(COUNTRY_CODE__XML_ATTR, getCountryCode());
 		out.writeAttribute(COUNTRY__XML_ATTR, getCountry());
 		out.writeAttribute(CITY_CODE__XML_ATTR, getCityCode());
@@ -495,6 +534,10 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 				setZeroZero(value);
 				break;
 			}
+			case DIAL__XML_ATTR: {
+				setDial(value);
+				break;
+			}
 			case COUNTRY_CODE__XML_ATTR: {
 				setCountryCode(value);
 				break;
@@ -538,6 +581,10 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			}
 			case ZERO_ZERO__XML_ATTR: {
 				setZeroZero(in.getElementText());
+				break;
+			}
+			case DIAL__XML_ATTR: {
+				setDial(in.getElementText());
 				break;
 			}
 			case COUNTRY_CODE__XML_ATTR: {

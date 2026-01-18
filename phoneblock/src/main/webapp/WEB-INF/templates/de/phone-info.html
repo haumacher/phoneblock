@@ -28,7 +28,7 @@
 
 <article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
-	<p data-tx="t0007:46ce228a">Information zur Rufnummer <th:block th:text="${number.zeroZero}"></th:block></p>
+	<p data-tx="t0007:46ce228a">Information zur Rufnummer <th:block th:text="${number.dial}"></th:block></p>
   </div>
   <div class="message-body">
   	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
@@ -68,12 +68,12 @@
 
 	<ul>
 		<li>
-			<span data-tx="t0008:324747a0">Alternative Schreibweisen:</span> 
+			<span data-tx="t0008:324747a0">Alternative Schreibweisen:</span>
 			<th:block th:if="${number.shortcut}">
-				<code dir="ltr" th:text="${number.shortcut}"></code>, 
+				<code dir="ltr" th:text="${number.shortcut}"></code>,
 			</th:block>
-			<code dir="ltr" th:text="${number.plus}"></code>, 
-			<code dir="ltr" th:text="${number.zeroZero}"></code>
+			<code dir="ltr" th:text="${number.plus}"></code>,
+			<code dir="ltr" th:text="${number.dial}"></code>
 		</li>
 		<li data-tx="t0009:c5632ed">
 			Land: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)
@@ -132,9 +132,9 @@
 	<p data-tx="t0024:b9a6f5c1">
 		Du wurdest von ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code> angerufen? 
 		Sag anderen, was sie von ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code> zu erwarten haben.
-		Wenn Du Dich von Anrufen von ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code> belästigt fühlst, 
-		<a th:href="@{/setup}">installiere PhoneBlock</a> 
-		und gibt eine Bewertung für ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code> ab:
+		Wenn Du Dich von Anrufen von ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code> belästigt fühlst,
+		<a th:href="@{/setup}">installiere PhoneBlock</a>
+		und gibt eine Bewertung für ☎ <code dir="ltr"><th:block th:text="${number.dial}"></th:block></code> ab:
 	</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">

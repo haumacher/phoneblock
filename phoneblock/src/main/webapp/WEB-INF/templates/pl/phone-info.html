@@ -28,7 +28,7 @@
 
 <article th:class="|message ${state == 'whitelisted' or state == 'legitimate' ? 'is-success' : (state == 'blocked' ? 'is-danger' : 'is-warning')}|">
   <div class="message-header">
-	<p data-tx="t0007:46ce228a">Informacje o numerze połączenia <th:block th:text="${number.zeroZero}"></th:block></p>
+	<p data-tx="t0007:46ce228a">Informacje o numerze połączenia <th:block th:text="${number.dial}"></th:block></p>
   </div>
   <div class="message-body">
   	<p dir="ltr" lang="de" th:if="${searchResult.aiSummary}" th:text="${searchResult.aiSummary}"></p>
@@ -44,12 +44,12 @@
 
 	<ul>
 		<li>
-			<span data-tx="t0008:324747a0">Alternatywne pisownie:</span> 
+			<span data-tx="t0008:324747a0">Alternatywne pisownie:</span>
 			<th:block th:if="${number.shortcut}">
-				<code dir="ltr" th:text="${number.shortcut}"></code>, 
+				<code dir="ltr" th:text="${number.shortcut}"></code>,
 			</th:block>
-			<code dir="ltr" th:text="${number.plus}"></code>, 
-			<code dir="ltr" th:text="${number.zeroZero}"></code>
+			<code dir="ltr" th:text="${number.plus}"></code>,
+			<code dir="ltr" th:text="${number.dial}"></code>
 		</li>
 		<li data-tx="t0009:c5632ed">Kraj: <th:block th:text="${number.country}"></th:block> (<code dir="ltr" th:text="${number.countryCode}"></code>)</li>
 
@@ -87,7 +87,7 @@
 	<div class="notification is-info" data-tx="t0023:d6b3050" id="thanks" th:if="${thanks}">Dziękuję za ocenę, pomagasz innym, którzy również są powołani.</div>
 	
 <th:block th:unless="${thanks}">
-	<p data-tx="t0024:b9a6f5c1">Czy zostałeś wezwany przez ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>? Powiedz innym, czego mogą oczekiwać od ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Jeśli przeszkadzają Ci połączenia z ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>, <a th:href="@{/setup}">zainstaluj PhoneBlock</a> i zostaw opinię o ☎ <code dir="ltr"><th:block th:text="${number.zeroZero}"></th:block></code>:</p>
+	<p data-tx="t0024:b9a6f5c1">Czy zostałeś wezwany przez ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>? Powiedz innym, czego mogą oczekiwać od ☎ <code dir="ltr"><th:block th:text="${number.plus}"></th:block></code>. Jeśli przeszkadzają Ci połączenia z ☎ <code dir="ltr"><th:block th:text="${number.shortcut}"></th:block></code>, <a th:href="@{/setup}">zainstaluj PhoneBlock</a> i zostaw opinię o ☎ <code dir="ltr"><th:block th:text="${number.dial}"></th:block></code>:</p>
 
 	<form accept-charset="utf-8" enctype="application/x-www-form-urlencoded" method="post" spellcheck="true" th:action="@{/rating}">
 		<input name="phone" th:value="${number.id}" type="hidden"/>

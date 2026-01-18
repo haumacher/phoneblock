@@ -332,22 +332,27 @@ message SpamReport {
 message PhoneNumer {
 	/** The representation stored in the database. */
 	string id;
-	
+
 	/** The local number with country ID prefx. */
 	string shortcut;
-	
+
 	string plus;
+
+	/** International format with "00" prefix (legacy, for backward compatibility and DB operations). */
 	string zeroZero;
-	
+
+	/** International format with the user's country-specific international prefix. This is the format a user would actually dial from their country (e.g., "011" for USA, "00" for most European countries, "810" for Russia). */
+	string dial;
+
 	string countryCode;
 	string country;
-	
+
 	@Nullable
 	string cityCode;
-	
+
 	@Nullable
 	string city;
-	
+
 	/** The kind of number */
 	@Nullable
 	string usage;

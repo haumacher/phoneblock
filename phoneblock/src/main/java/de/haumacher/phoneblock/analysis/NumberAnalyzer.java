@@ -114,6 +114,18 @@ public class NumberAnalyzer {
 		String zeroZero = "00" + plus.substring(1);
 		result.setZeroZero(zeroZero);
 
+		// Compute dial format using the user's country-specific international prefix
+		// Get user's international prefix from their country
+		List<String> userInternationalPrefixes = null;
+		if (countriesForDialPrefix != null && !countriesForDialPrefix.isEmpty()) {
+			userInternationalPrefixes = countriesForDialPrefix.get(0).getInternationalPrefixes();
+		}
+		String internationalPrefix = (userInternationalPrefixes != null && !userInternationalPrefixes.isEmpty())
+			? userInternationalPrefixes.get(0)
+			: "00";  // fallback to "00" if no data available
+		String dial = internationalPrefix + plus.substring(1);
+		result.setDial(dial);
+
 		PrefixInfo info = findInfo(plus);
 
 		String countryCode = info.getCountryCode();

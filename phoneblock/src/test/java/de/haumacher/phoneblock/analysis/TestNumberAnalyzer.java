@@ -279,4 +279,63 @@ class TestNumberAnalyzer {
 		assertEquals(expectedPlus, result.getPlus(), "International format should not be modified by user's dial prefix");
 	}
 
+	@ParameterizedTest
+	@CsvSource({
+		// German user (uses "00" international prefix) looking at various numbers
+		"+49891234567, +49, 0049891234567",      // German number
+		"+390123456789, +49, 00390123456789",    // Italian number
+		"+12125551234, +49, 0012125551234",      // US number
+		"+36123456789, +49, 0036123456789",      // Hungarian number
+		"+74951234567, +49, 0074951234567",      // Russian number
+
+		// US user (uses "011" international prefix) looking at various numbers
+		"+49891234567, +1, 01149891234567",      // German number
+		"+390123456789, +1, 011390123456789",    // Italian number
+		"+12125551234, +1, 01112125551234",      // US number (same country)
+		"+36123456789, +1, 01136123456789",      // Hungarian number
+
+		// Russian user (uses "810" international prefix) looking at various numbers
+		"+49891234567, +7, 81049891234567",      // German number
+		"+390123456789, +7, 810390123456789",    // Italian number
+		"+74951234567, +7, 81074951234567",      // Russian number (same country)
+
+		// Japanese user (uses "010" international prefix)
+		"+49891234567, +81, 01049891234567",     // German number
+		"+12125551234, +81, 01012125551234",     // US number
+	})
+	void testDialFormatWithDifferentInternationalPrefixes(String input, String userDialPrefix, String expectedDial) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, userDialPrefix);
+		assertNotNull(result, "Number " + input + " should be valid");
+		assertEquals(expectedDial, result.getDial(), "Dial format should use user's international prefix");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		// Test that dial format always has a value (never null)
+		"+49891234567, +49",
+		"+390123456789, +49",
+		"+12125551234, +1",
+		"089123456, +49",      // national format
+		"0123456789, +39",     // Italian national
+	})
+	void testDialFormatAlwaysSet(String input, String userDialPrefix) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, userDialPrefix);
+		assertNotNull(result, "Number " + input + " should be valid");
+		assertNotNull(result.getDial(), "Dial format should never be null");
+		assertNotNull(result.getZeroZero(), "ZeroZero format should never be null");
+		assertNotNull(result.getPlus(), "Plus format should never be null");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		// Verify dial format defaults to "00" when country data is missing
+		// This tests the fallback behavior
+		"+49891234567, +999, 0049891234567",  // Unknown dial prefix should default to "00"
+	})
+	void testDialFormatFallbackToDefaultPrefix(String input, String userDialPrefix, String expectedDial) {
+		PhoneNumer result = NumberAnalyzer.analyze(input, userDialPrefix);
+		assertNotNull(result, "Number " + input + " should be valid even with unknown dial prefix");
+		assertEquals(expectedDial, result.getDial(), "Dial format should fall back to '00' prefix");
+	}
+
 }
