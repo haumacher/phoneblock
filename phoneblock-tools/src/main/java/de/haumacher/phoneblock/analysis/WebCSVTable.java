@@ -24,12 +24,35 @@ import com.opencsv.ICSVWriter;
  */
 public class WebCSVTable {
 
+	private static void printHelp() {
+		System.err.println("WebCSVTable - Extract table data from web pages to CSV format");
+		System.err.println();
+		System.err.println("Usage: java " + WebCSVTable.class.getName() + " <headers> <url>");
+		System.err.println();
+		System.err.println("Arguments:");
+		System.err.println("  <headers>  Comma-separated list of expected table headers");
+		System.err.println("  <url>      URL of the web page to download");
+		System.err.println();
+		System.err.println("Output:");
+		System.err.println("  Writes matching table data to 'out.csv'");
+		System.err.println();
+		System.err.println("Example:");
+		System.err.println("  java " + WebCSVTable.class.getName() + " \\");
+		System.err.println("    \"Country,Population,Area\" \\");
+		System.err.println("    \"https://example.com/countries.html\"");
+	}
+
 	/**
 	 * Expects two arguments. First a comma-separated list of expected table headers, second an URL to download.
 	 */
 	public static void main(String[] args) throws IOException {
+		if (args.length != 2) {
+			printHelp();
+			System.exit(1);
+		}
+
 		String baseUri = args[1];
-		
+
 		List<String> expectedHeader = Arrays.stream(args[0].split(",")).map(s -> s.trim()).toList();
 		
 		try (ICSVWriter csv = 
