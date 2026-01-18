@@ -299,9 +299,7 @@ public class EmailChangeServlet extends HttpServlet {
 	private void showError(HttpServletRequest req, HttpServletResponse resp, String template, String messageKey, Object... params)
 			throws ServletException, IOException {
 		String locale = getUserLocale(req);
-		String message = params.length > 0
-				? I18N.getMessage(locale, messageKey, params)
-				: I18N.getMessage(locale, messageKey);
+		String message = I18N.getMessage(locale, messageKey, params);
 		req.setAttribute(ERROR_MESSAGE_ATTR, message);
 		TemplateRenderer.getInstance(req).process(template, req, resp);
 	}

@@ -51,7 +51,7 @@ public class I18N {
 	 * @param messageParameters The parameters to format into the message
 	 * @return The localized and formatted message
 	 */
-	public static String getMessage(Locale locale, String key, Object[] messageParameters) {
+	public static String getMessage(Locale locale, String key, Object... messageParameters) {
 		String message = getMessage(locale, key);
 		if (messageParameters != null && messageParameters.length > 0) {
 			return new MessageFormat(message).format(messageParameters);
@@ -67,7 +67,7 @@ public class I18N {
 	 * @param messageParameters The parameters to format into the message
 	 * @return The localized and formatted message
 	 */
-	public static String getMessage(String locale, String key, Object[] messageParameters) {
+	public static String getMessage(String locale, String key, Object... messageParameters) {
 		return getMessage(Locale.forLanguageTag(locale), key, messageParameters);
 	}
 
