@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class WebCSVTable {
 		System.err.println();
 		System.err.println("Arguments:");
 		System.err.println("  <headers>  Comma-separated list of expected table headers");
+		System.err.println("             (can be a subset and in any order)");
 		System.err.println("  <url>      URL of the web page to download");
 		System.err.println();
 		System.err.println("Output:");
@@ -70,22 +72,43 @@ public class WebCSVTable {
 					if (rows.isEmpty()) {
 						continue;
 					}
-					
+
 					List<String> header  = rows.get(0).select("th").stream().map(h -> h.text()).toList();
-					if (!expectedHeader.equals(header)) {
+
+					// Check if all expected headers are present in the table
+					if (!header.containsAll(expectedHeader)) {
 						continue;
 					}
-					
+
+					// Map expected headers to their column indices in the table
+					int[] columnIndices = new int[expectedHeader.size()];
+					for (int i = 0; i < expectedHeader.size(); i++) {
+						columnIndices[i] = header.indexOf(expectedHeader.get(i));
+					}
+
+					// Write CSV header with expected column order
+					csv.writeNext(expectedHeader.toArray(new String[0]));
+
 					for (Element row : rows.subList(1, rows.size())) {
-						List<String> content = row.select("td").stream().map(h -> h.text()).toList();
-						
-						if (content.stream().filter(c -> !c.isBlank()).findAny().isEmpty()) {
+						List<String> allColumns = row.select("td").stream().map(h -> h.text()).toList();
+
+						if (allColumns.stream().filter(c -> !c.isBlank()).findAny().isEmpty()) {
 							continue;
 						}
-						
-						System.out.println(content.stream().collect(Collectors.joining("\t")));
-						
-						csv.writeNext(content.toArray(new String[0]));
+
+						// Extract only the requested columns in the specified order
+						List<String> selectedColumns = new ArrayList<>();
+						for (int index : columnIndices) {
+							if (index < allColumns.size()) {
+								selectedColumns.add(allColumns.get(index));
+							} else {
+								selectedColumns.add("");
+							}
+						}
+
+						System.out.println(selectedColumns.stream().collect(Collectors.joining("\t")));
+
+						csv.writeNext(selectedColumns.toArray(new String[0]));
 					}
 				}
 			}
