@@ -73,8 +73,12 @@ public class SettingsServlet extends HttpServlet {
 					renameAPIKey(req, resp, userName);
 					return;
 
+				case "renameDisplayName":
+					renameDisplayName(req, resp, userName);
+					return;
+
 				default:
-				forwardToSettings(req, resp, null);
+					forwardToSettings(req, resp, null);
 			}
 		}
 	}
@@ -171,6 +175,23 @@ public class SettingsServlet extends HttpServlet {
 			}
 		}
 		forwardToSettings(req, resp, "myAPIKeys");
+	}
+
+	private void renameDisplayName(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
+		String newDisplayName = req.getParameter("newDisplayName");
+
+		if (newDisplayName == null || newDisplayName.isBlank()) {
+			forwardToSettings(req, resp, null);
+			return;
+		}
+
+		DB db = DBService.getInstance();
+		try (SqlSession session = db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			users.setDisplayName(userName, newDisplayName.trim());
+			session.commit();
+		}
+		forwardToSettings(req, resp, null);
 	}
 
 	private void updateLists(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {

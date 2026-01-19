@@ -16,7 +16,9 @@
 <section class="section" th:if="${userName}">
 	<div class="content">
 		<h1 data-tx="t0003:1798fbdb">设置</h1>
-			<p data-tx="t0004:f6942650">欢迎 <th:block th:text="${settings.displayName}"></th:block>！</p>
+			<form class="welcomename-rename-form" method="post" th:action="@{/update-settings(action='renameDisplayName')}">
+				<p data-tx="t0004:8ea3fa93">欢迎 <span><th:block th:text="${settings.displayName}"> 用户</th:block> <button class="button is-small is-ghost welcomename-edit-btn" data-tx="t0100:65a9dbde" title="重命名" type="button"> <i class="fa-solid fa-pen-to-square"></i> </button> </span> <span> <input class="input is-small welcomename-input" name="newDisplayName" style="display: none; width: 200px;" th:value="${settings.displayName}" type="text"/> <button class="button is-small is-success welcomename-save-btn" data-tx="t0101:a484a888" style="display: none;" title="节省" type="button"> <i class="fa-solid fa-check"></i> </button> <button class="button is-small is-ghost welcomename-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="取消" type="button"> <i class="fa-solid fa-xmark"></i> </button> </span> ！</p>
+			</form>
 
 			<div class="notification is-success" th:if="${settingsMessage}">
 				<button class="delete" onclick="this.parentElement.style.display='none';"></button>
@@ -163,13 +165,13 @@
 					<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
 						<input name="keyId" th:value="${authToken.id}" type="hidden"/>
 						<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
-						<button class="button is-small is-success apikey-save-btn" data-tx="t0101:a484a888" style="display: none;" title="节省" type="button">
+						<button class="button is-small is-success apikey-save-btn" data-tx="t0123:a484a888" style="display: none;" title="节省" type="button">
 							<i class="fa-solid fa-check"></i>
 						</button>
-						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="取消" type="button">
+						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0124:207feda3" style="display: none;" title="取消" type="button">
 							<i class="fa-solid fa-xmark"></i>
 						</button>
-						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0100:65a9dbde" title="重新命名" type="button">
+						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0125:65a9dbde" title="重命名" type="button">
 							<i class="fa-solid fa-pen-to-square"></i>
 						</button>
 					</form>
