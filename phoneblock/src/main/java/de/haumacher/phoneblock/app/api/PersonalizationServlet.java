@@ -112,15 +112,15 @@ public class PersonalizationServlet extends HttpServlet {
 			}
 
 			BlockList blockList = session.getMapper(BlockList.class);
-			List<String> phoneNumbers;
+			List<String> phoneIds;
 
 			String servletPath = req.getServletPath();
 			if (BLACKLIST_PATH.equals(servletPath)) {
-				phoneNumbers = blockList.getPersonalizations(userId);
-				LOG.debug("Retrieved {} blocked numbers for user '{}'", phoneNumbers.size(), userName);
+				phoneIds = blockList.getPersonalizations(userId);
+				LOG.debug("Retrieved {} blocked numbers for user '{}'", phoneIds.size(), userName);
 			} else if (WHITELIST_PATH.equals(servletPath)) {
-				phoneNumbers = blockList.getWhiteList(userId);
-				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", phoneNumbers.size(), userName);
+				phoneIds = blockList.getWhiteList(userId);
+				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", phoneIds.size(), userName);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown endpoint");
 				return;
@@ -129,8 +129,8 @@ public class PersonalizationServlet extends HttpServlet {
 			// Fetch comments and ratings for the numbers
 			SpamReports spamReports = session.getMapper(SpamReports.class);
 			Map<String, DBPhoneComment> commentsMap = new HashMap<>();
-			if (!phoneNumbers.isEmpty()) {
-				List<DBPhoneComment> userComments = spamReports.getUserComments(userId, phoneNumbers);
+			if (!phoneIds.isEmpty()) {
+				List<DBPhoneComment> userComments = spamReports.getUserComments(userId, phoneIds);
 				for (DBPhoneComment entry : userComments) {
 					commentsMap.put(entry.getPhone(), entry);
 				}
@@ -138,16 +138,16 @@ public class PersonalizationServlet extends HttpServlet {
 
 			// Build PersonalizedNumber list with comments, ratings, and locale-formatted labels
 			List<PersonalizedNumber> numbers = new ArrayList<>();
-			for (String rawPhone : phoneNumbers) {
+			for (String phoneId : phoneIds) {
 				// Parse and format the phone number according to the locale they are stored in the DB.
-				de.haumacher.phoneblock.app.api.model.PhoneNumer phoneInfo = NumberAnalyzer.parsePhoneNumber(rawPhone);
+				de.haumacher.phoneblock.app.api.model.PhoneNumer phoneInfo = NumberAnalyzer.parsePhoneId(phoneId);
 				if (phoneInfo == null) {
 					continue;
 				}
 				String phoneInternational = phoneInfo.getPlus();
 				String label = phoneInfo.getShortcut();
 
-				DBPhoneComment commentRating = commentsMap.get(rawPhone);
+				DBPhoneComment commentRating = commentsMap.get(phoneId);
 				PersonalizedNumber pn = PersonalizedNumber.create()
 					.setPhone(phoneInternational)
 					.setLabel(label)

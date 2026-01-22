@@ -62,7 +62,7 @@ public class CrawlerService implements ServletContextListener {
 				public void reportCaller(String phoneText, int rating, long time) {
 					LOG.info(fmt(20, phoneText) + " " + "x*****".substring(rating));
 					
-					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, NumberAnalyzer.GERMAN_DIAL_PREFIX);
 					if (number == null) {
 						return;
 					}

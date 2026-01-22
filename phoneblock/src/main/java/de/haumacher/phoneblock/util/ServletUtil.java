@@ -10,10 +10,17 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.ibatis.session.SqlSession;
+
 import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.msgbuf.xml.XmlSerializable;
+import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.location.LocationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -115,6 +122,21 @@ public class ServletUtil {
 		if (tokenLabel != null && !tokenLabel.trim().isEmpty()) {
 			req.setAttribute(param, tokenLabel);
 		}
+	}
+
+	public static String lookupDialPrefix(HttpServletRequest req) {
+		String dialPrefix;
+		String userName = LoginFilter.getAuthenticatedUser(req);
+		if (userName == null) {
+			dialPrefix = LocationService.getInstance().getDialPrefix(req);
+		} else {
+			DB db = DBService.getInstance();
+			try (SqlSession session = db.openSession()) {
+				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
+				dialPrefix = settings.getDialPrefix();
+			}
+		}
+		return dialPrefix;
 	}
 
 }

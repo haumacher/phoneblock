@@ -40,7 +40,8 @@ public class RateServlet extends HttpServlet {
 
 		String phoneText = rateRequest.getPhone();
 		
-		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
 		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;

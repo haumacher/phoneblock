@@ -25,6 +25,7 @@ import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
 import de.haumacher.phoneblock.analysis.model.NationalDestinationCode;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.location.model.Country;
@@ -57,8 +58,8 @@ public class NumberAnalyzer {
 		return number == null ? null : getPhoneId(number);
 	}
 
-	public static PhoneNumer parsePhoneNumber(String phoneText) {
-		return parsePhoneNumber(phoneText, GERMAN_DIAL_PREFIX);
+	public static PhoneNumer parsePhoneId(String phoneId) {
+		return parsePhoneNumber(phoneId, GERMAN_DIAL_PREFIX);
 	}
 	
 	public static PhoneNumer parsePhoneNumber(String phoneText, String dialPrefix) {
@@ -84,10 +85,19 @@ public class NumberAnalyzer {
 		return NORMALIZE_PATTERN.matcher(phoneNumber).replaceAll("");
 	}
 
-	public static PhoneNumer analyze(String phone) {
+	public static PhoneNumer analyzePhoneID(String phone) {
 		return analyze(phone, GERMAN_DIAL_PREFIX);
 	}
 	
+	public static PhoneInfo phoneInfoFromId(String phoneId) {
+		return phoneInfoFromNumber(analyzePhoneID(phoneId));
+	}
+
+	public static PhoneInfo phoneInfoFromNumber(PhoneNumer number) {
+		return PhoneInfo.create()
+			.setPhone(number.getPlus());
+	}
+
 	/**
 	 * Analyzes the given (normalized) phone number.
 	 * @param dialPrefix The users local dial prefix.

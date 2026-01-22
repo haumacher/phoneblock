@@ -411,11 +411,11 @@ public class DB {
 	        		""", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 						try (ResultSet result = stmt.executeQuery()) {
 							while (result.next()) {
-								String phone = result.getString(1);
+								String phoneId = result.getString(1);
 								
-								PhoneNumer analyzed = NumberAnalyzer.analyze(phone);
+								PhoneNumer analyzed = NumberAnalyzer.analyzePhoneID(phoneId);
 								if (analyzed == null) {
-									LOG.error("Invalid phone number in DB: " + phone);
+									LOG.error("Invalid phone number in DB: " + phoneId);
 									continue;
 								}
 
@@ -1203,7 +1203,7 @@ public class DB {
 	
 	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
 		return BlockListEntry.create()
-				.setPhone(n.getPhone())
+				.setPhone(NumberAnalyzer.analyzePhoneID(n.getPhone()).getPlus())
 				.setVotes(n.getVotes())
 				.setRating(rating(n));
 	}
@@ -1370,21 +1370,22 @@ public class DB {
 		}
 	}
 
-	public PhoneInfo getPhoneApiInfo(SpamReports reports, String phone) {
-		if (reports.isWhiteListed(phone)) {
-			return PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
+	public PhoneInfo getPhoneApiInfo(SpamReports reports, String phoneId) {
+		if (reports.isWhiteListed(phoneId)) {
+			return NumberAnalyzer.phoneInfoFromId(phoneId)
+				.setWhiteListed(true)
+				.setRating(Rating.A_LEGITIMATE);
 		}
 
-		NumberInfo info = getPhoneInfo(reports, phone);
-		AggregationInfo aggregation10 = getAggregation10(reports, phone);
-		AggregationInfo aggregation100 = getAggregation100(reports, phone);
+		NumberInfo info = getPhoneInfo(reports, phoneId);
+		AggregationInfo aggregation10 = getAggregation10(reports, phoneId);
+		AggregationInfo aggregation100 = getAggregation100(reports, phoneId);
 		
 		return getPhoneInfo(info, aggregation10, aggregation100);
 	}
 
 	public PhoneInfo getPhoneInfo(NumberInfo info, AggregationInfo aggregation10, AggregationInfo aggregation100) {
-		PhoneInfo result = PhoneInfo.create()
-			.setPhone(info.getPhone())
+		PhoneInfo result = NumberAnalyzer.phoneInfoFromId(info.getPhone())
 			.setDateAdded(info.getAdded())
 			.setLastUpdate(info.getUpdated());
 		
@@ -1972,7 +1973,7 @@ public class DB {
 			}
 			
 			for (String phoneText : callReport.getCallers()) {
-				PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+				PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
 				if (number == null) {
 					continue;
 				}

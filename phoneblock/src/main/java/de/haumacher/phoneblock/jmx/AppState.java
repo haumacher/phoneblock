@@ -88,7 +88,7 @@ public class AppState implements AppStateMBean {
 	@Override
 	public void triggerSummaryCreation(String phoneNumbers) {
 		for (String phoneText : phoneNumbers.split(",")) {
-			PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+			PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, NumberAnalyzer.GERMAN_DIAL_PREFIX);
 			if (number == null) {
 				LOG.info("Invalid number received: " + phoneText);
 				continue;

@@ -40,10 +40,10 @@ import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
-import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.I18N;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -221,7 +221,7 @@ public class SearchServlet extends HttpServlet {
 			return;
 		}
 
-		String dialPrefix = lookupDialPrefix(req);
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
 		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
@@ -231,21 +231,6 @@ public class SearchServlet extends HttpServlet {
 
 		// Send to display page.
 		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + number.getZeroZero());
-	}
-
-	private String lookupDialPrefix(HttpServletRequest req) {
-		String dialPrefix;
-		String userName = LoginFilter.getAuthenticatedUser(req);
-		if (userName == null) {
-			dialPrefix = LocationService.getInstance().getDialPrefix(req);
-		} else {
-			DB db = DBService.getInstance();
-			try (SqlSession session = db.openSession()) {
-				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
-				dialPrefix = settings.getDialPrefix();
-			}
-		}
-		return dialPrefix;
 	}
 
 	@Override
@@ -262,7 +247,7 @@ public class SearchServlet extends HttpServlet {
 		boolean bot = isBot(req);
 		boolean isSeachHit = !bot && req.getParameter("link") == null;
 
-		String dialPrefix = lookupDialPrefix(req);
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
 		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
 			req.setAttribute(NUMBER_ATTR, query);
@@ -330,7 +315,7 @@ public class SearchServlet extends HttpServlet {
 	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
 		SpamReports reports = session.getMapper(SpamReports.class);
 		
-		String phone = NumberAnalyzer.getPhoneId(number);
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		NumberInfo numberInfo;
 		PhoneInfo info;
@@ -347,7 +332,7 @@ public class SearchServlet extends HttpServlet {
 		if (isSeachHit) {
 			comments = MetaSearchService.getInstance().fetchComments(number, dialPrefix).stream().filter(c -> langs.contains(c.getLang())).toList();
 		} else {
-			comments = reports.getComments(phone, langs);
+			comments = reports.getComments(phoneId, langs);
 		}
 		
 		boolean commit = false;
@@ -361,10 +346,12 @@ public class SearchServlet extends HttpServlet {
 			commit = true;
 		}
 		
-		numberInfo = db.getPhoneInfo(reports, phone);
+		numberInfo = db.getPhoneInfo(reports, phoneId);
 		
-		if (reports.isWhiteListed(phone)) {
-			info = PhoneInfo.create().setPhone(phone).setWhiteListed(true).setRating(Rating.A_LEGITIMATE);
+		if (reports.isWhiteListed(phoneId)) {
+			info = NumberAnalyzer.phoneInfoFromNumber(number)
+				.setWhiteListed(true)
+				.setRating(Rating.A_LEGITIMATE);
 			
 			numberInfo.setCalls(0);
 			numberInfo.setVotes(0);
@@ -376,32 +363,32 @@ public class SearchServlet extends HttpServlet {
 			
 			relatedNumbers = Collections.emptyList();
 		} else {
-			AggregationInfo aggregation10 = db.getAggregation10(reports, phone);
-			AggregationInfo aggregation100 = db.getAggregation100(reports, phone);
+			AggregationInfo aggregation10 = db.getAggregation10(reports, phoneId);
+			AggregationInfo aggregation100 = db.getAggregation100(reports, phoneId);
 			
 			info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
 			
 			if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
-				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phone.length());
+				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phoneId.length());
 				
 				if (comments.isEmpty()) {
-					comments = reports.getAllComments(aggregation100.getPrefix(), phone.length(), langs);
+					comments = reports.getAllComments(aggregation100.getPrefix(), phoneId.length(), langs);
 				}
 				
 				if (info.getRating() == Rating.B_MISSED) {
-					DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix(), phone.length());
+					DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation100.getPrefix(), phoneId.length());
 					info.setRating(DB.rating(aggregateInfo));
 				}
 			} else {
 				if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
-					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phone.length());
+					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phoneId.length());
 
 					if (comments.isEmpty()) {
-						comments = reports.getAllComments(aggregation10.getPrefix(), phone.length(), langs);
+						comments = reports.getAllComments(aggregation10.getPrefix(), phoneId.length(), langs);
 					}
 
 					if (info.getRating() == Rating.B_MISSED) {
-						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix(), phone.length());
+						DBNumberInfo aggregateInfo = reports.getPhoneInfoAggregate(aggregation10.getPrefix(), phoneId.length());
 						info.setRating(DB.rating(aggregateInfo));
 					}
 				} else {
@@ -410,11 +397,11 @@ public class SearchServlet extends HttpServlet {
 			}
 		}
 		
-		searches = db.getSearchHistory(reports, phone, 7);
-		aiSummary = reports.getSummary(phone);
+		searches = db.getSearchHistory(reports, phoneId, 7);
+		aiSummary = reports.getSummary(phoneId);
 		
-		prev = reports.getPrevPhone(phone);
-		next = reports.getNextPhone(phone);
+		prev = reports.getPrevPhone(phoneId);
+		next = reports.getNextPhone(phoneId);
 		
 		if (commit) {
 			session.commit();
@@ -450,7 +437,7 @@ public class SearchServlet extends HttpServlet {
 		Rating topRating = info.getRating();
 		
 		return SearchResult.create()
-				.setPhoneId(phone)
+				.setPhoneId(phoneId)
 				.setNumber(number)
 				.setComments(shownComments)
 				.setInfo(info)

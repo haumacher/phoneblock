@@ -357,7 +357,7 @@ public class TestDB {
 	}
 	
 	private void addSearchHit(String phone) {
-		_db.addSearchHit(NumberAnalyzer.analyze(phone), "+49");
+		_db.addSearchHit(NumberAnalyzer.analyze(phone, "+49"), "+49");
 	}
 
 	@Test
@@ -381,7 +381,7 @@ public class TestDB {
 	}
 	
 	private void addSearchHit(String phone, long now) {
-		_db.addSearchHit(NumberAnalyzer.analyze(phone), "+49", now);
+		_db.addSearchHit(NumberAnalyzer.analyze(phone, "+49"), "+49", now);
 	}
 
 	@Test
@@ -443,8 +443,8 @@ public class TestDB {
 		checkPhone("040299962999", 0, 0, 0, 0, 0);
 	}
 	
-	private void processVotes(String phoneId, int votes, long time) {
-		_db.processVotes(NumberAnalyzer.analyze(phoneId), "+49", votes, time);
+	private void processVotes(String phone, int votes, long time) {
+		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}
 
 	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
@@ -489,7 +489,7 @@ public class TestDB {
 	}
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
-		_db.addRating(userName, NumberAnalyzer.analyze(phoneId), "+49", rating, comment, "de", now);
+		_db.addRating(userName, NumberAnalyzer.analyze(phoneId, "+49"), "+49", rating, comment, "de", now);
 	}
 
 	public List<? extends UserComment> getComments(String phone) {

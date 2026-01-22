@@ -211,11 +211,16 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 						if (state.booleanValue()) {
 							// Locally blocked.
 							LOG.info("Caller is on blacklist of {}: {}", botName, phoneId);
-							info = PhoneInfo.create().setPhone(phoneId).setRating(Rating.B_MISSED).setVotes(1000).setVotesWildcard(1000);
+							info = NumberAnalyzer.phoneInfoFromId(phoneId)
+								.setRating(Rating.B_MISSED)
+								.setVotes(1000)
+								.setVotesWildcard(1000);
 						} else {
 							// On the exclude list.
 							LOG.info("Call form white-listed number of {}.", botName);
-							info = PhoneInfo.create().setPhone(phoneId).setRating(Rating.A_LEGITIMATE).setVotes(0);
+							info = NumberAnalyzer.phoneInfoFromId(phoneId)
+								.setRating(Rating.A_LEGITIMATE)
+								.setVotes(0);
 						}
 					} else {
 						info = db.getPhoneApiInfo(reports, phoneId);
@@ -235,7 +240,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					return info;
 				}
 			}
-			
+
 			@Override
 			protected void processCallData(String userName, String from, long startTime, long duration) {
 				super.processCallData(userName, from, startTime, duration);

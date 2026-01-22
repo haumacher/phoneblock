@@ -36,7 +36,8 @@ public class HashServlet extends HttpServlet {
 			return;
 		}
 		
-		PhoneNumer phone = NumberAnalyzer.parsePhoneNumber(phoneText);
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
+		PhoneNumer phone = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
 		if (phone == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;

@@ -227,7 +227,7 @@ public class MetaSearchService implements ServletContextListener {
 		scheduler.contextInitialized(null);
 		searchService.contextInitialized(null);
 		String phoneText = args[0];
-		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, NumberAnalyzer.GERMAN_DIAL_PREFIX);
 		if (number == null) {
 			System.err.println("Invalid number: " + phoneText);
 			return;

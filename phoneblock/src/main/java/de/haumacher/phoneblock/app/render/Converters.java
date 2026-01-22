@@ -23,7 +23,7 @@ public class Converters {
 	}
 	
 	public PhoneNumer analyze(String phoneId) {
-		PhoneNumer result = NumberAnalyzer.analyze(phoneId);
+		PhoneNumer result = NumberAnalyzer.analyzePhoneID(phoneId);
 		if (result == null) {
 			// Must not return null for rendering.
 			return PhoneNumer.create().setId(phoneId).setPlus(phoneId).setShortcut(phoneId).setZeroZero(phoneId).setDial(phoneId);

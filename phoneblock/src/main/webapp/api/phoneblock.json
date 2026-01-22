@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.4.0"
+		"version": "v1.4.1"
 	},
 	"servers": [
 		{
@@ -47,7 +47,7 @@
 									}
 								},
 								"example": {
-									"phone": "0123456789",
+									"phone": "+49123456789",
 									"votes": 42,
 									"rating": "C_POLL"
 								}
@@ -117,7 +117,7 @@
 									}
 								},
 								"example": {
-									"phone": "0123456789",
+									"phone": "+49123456789",
 									"votes": 42,
 									"rating": "C_POLL"
 								}
@@ -188,7 +188,7 @@
 									}
 								},
 								"example": {
-									"phone": "0123456789",
+									"phone": "+49123456789",
 									"votes": 42,
 									"rating": "C_POLL"
 								}
@@ -268,12 +268,12 @@
 								"example": {
 									"numbers": [
 										{
-											"phone": "0123456789",
+											"phone": "+49123456789",
 											"rating": "G_FRAUD",
 											"votes": 4
 										},
 										{
-											"phone": "0456789123",
+											"phone": "+390456789123",
 											"rating": "F_GAMBLE",
 											"votes": 8
 										}
@@ -515,7 +515,7 @@
 								}
 							},
 							"example": {
-								"phone": "0123456789",
+								"phone": "+49123456789",
 								"rating": "C_PING",
 								"comment": "Anrufer hat sofort aufgelegt."
 							}

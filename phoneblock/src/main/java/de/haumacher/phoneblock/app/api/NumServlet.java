@@ -48,7 +48,8 @@ public class NumServlet extends HttpServlet {
 			return;
 		}
 		
-		PhoneNumer number = NumberAnalyzer.analyze(phone);
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
+		PhoneNumer number = NumberAnalyzer.analyze(phone, dialPrefix);
 		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;

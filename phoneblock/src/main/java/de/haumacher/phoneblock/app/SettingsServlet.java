@@ -211,13 +211,13 @@ public class SettingsServlet extends HttpServlet {
 					if (key.equals("add-wl")) {
 						String addValues = entry.getValue()[0];
 						for (String value : addValues.split("[,;]")) {
-							String phone = NumberAnalyzer.toId(value, dialPrefix);
-							if (phone == null) {
+							String phoneId = NumberAnalyzer.toId(value, dialPrefix);
+							if (phoneId == null) {
 								continue;
 							}
 							
 							long now = System.currentTimeMillis();
-							PhoneNumer number = NumberAnalyzer.analyze(phone);
+							PhoneNumer number = NumberAnalyzer.analyzePhoneID(phoneId);
 							db.addRating(userName, number, dialPrefix, Rating.A_LEGITIMATE, null, settings.getLang(), now);
 						}
 					}
@@ -230,7 +230,7 @@ public class SettingsServlet extends HttpServlet {
 							}
 							
 							long now = System.currentTimeMillis();
-							PhoneNumer number = NumberAnalyzer.analyze(phone);
+							PhoneNumer number = NumberAnalyzer.analyzePhoneID(phone);
 							db.addRating(userName, number, dialPrefix, Rating.B_MISSED, null, settings.getLang(), now);
 						}
 					}

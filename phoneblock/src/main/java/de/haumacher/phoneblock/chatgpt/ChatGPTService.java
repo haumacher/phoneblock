@@ -200,8 +200,8 @@ public class ChatGPTService implements ServletContextListener {
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			
-			String phone = reports.topSummaryRequest();
-			return NumberAnalyzer.analyze(phone);
+			String phoneId = reports.topSummaryRequest();
+			return NumberAnalyzer.analyzePhoneID(phoneId);
 		}
 	}
 

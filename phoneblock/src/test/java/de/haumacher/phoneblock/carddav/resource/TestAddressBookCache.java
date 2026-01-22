@@ -35,10 +35,10 @@ public class TestAddressBookCache {
 		
 		_db = new DB(TestDB.createTestDataSource(), _scheduler);
 		
-		_db.processVotes(NumberAnalyzer.analyze("+39111111111"), "+39", 20, _now);
-		_db.processVotes(NumberAnalyzer.analyze("+39222222222"), "+39", 2, _now);
-		_db.processVotes(NumberAnalyzer.analyze("+49333333333"), "+39", 20, _now);
-		_db.processVotes(NumberAnalyzer.analyze("+49444444444"), "+39", 2, _now);
+		_db.processVotes(NumberAnalyzer.analyze("+39111111111", "+49"), "+39", 20, _now);
+		_db.processVotes(NumberAnalyzer.analyze("+39222222222", "+49"), "+39", 2, _now);
+		_db.processVotes(NumberAnalyzer.analyze("+49333333333", "+49"), "+39", 20, _now);
+		_db.processVotes(NumberAnalyzer.analyze("+49444444444", "+49"), "+39", 2, _now);
 		
 		_cache = new AddressBookCache(() -> _db);
 	}
@@ -100,9 +100,9 @@ public class TestAddressBookCache {
 		settings.setMinVotes(2);
 		_db.updateSettings(settings);
 
-		_db.addRating("u1", NumberAnalyzer.analyze("+39111111111"), "+39", Rating.A_LEGITIMATE, null, "fr", _now);
-		_db.addRating("u1", NumberAnalyzer.analyze("+39555555555"), "+39", Rating.E_ADVERTISING, null, "fr", _now);
-		_db.addRating("u1", NumberAnalyzer.analyze("+49666666666"), "+39", Rating.F_GAMBLE, null, "fr", _now);
+		_db.addRating("u1", NumberAnalyzer.analyze("+39111111111", "+49"), "+39", Rating.A_LEGITIMATE, null, "fr", _now);
+		_db.addRating("u1", NumberAnalyzer.analyze("+39555555555", "+49"), "+39", Rating.E_ADVERTISING, null, "fr", _now);
+		_db.addRating("u1", NumberAnalyzer.analyze("+49666666666", "+49"), "+39", Rating.F_GAMBLE, null, "fr", _now);
 		
 		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now);
 		Assertions.assertEquals(Arrays.asList("+39222222222", "+39555555555", "+49333333333", "+49444444444", "+49666666666"), phoneNumbers(numbers));

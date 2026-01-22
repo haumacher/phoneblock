@@ -41,7 +41,7 @@ class TestNumberAnalyzer {
 			"+1" + "241" + "123456789,'Canada, United States of America'",
 	})
 	void testCountry(String phone, String label) {
-		PhoneNumer info = NumberAnalyzer.analyze(phone);
+		PhoneNumer info = NumberAnalyzer.analyze(phone, "+49");
 		assertNotNull(info);
 		assertEquals(label, info.getCountry());
 	}
@@ -55,7 +55,7 @@ class TestNumberAnalyzer {
 			"+49 9131 9235017072,Erlangen"
 	})
 	void testCity(String phone, String label) {
-		PhoneNumer info = NumberAnalyzer.analyze(phone);
+		PhoneNumer info = NumberAnalyzer.analyze(phone, "+49");
 		assertNotNull(info);
 		assertEquals(label, info.getCity());
 	}

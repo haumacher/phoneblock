@@ -75,7 +75,7 @@ public class SpamCheckServlet extends HttpServlet {
 		
 		PhoneInfo info;
 		
-		PhoneNumer number = phoneId == null ? null : NumberAnalyzer.analyze(phoneId);
+		PhoneNumer number = phoneId == null ? null : NumberAnalyzer.analyzePhoneID(phoneId);
 		if (number == null) {
 			info = createUnknownResult();
 		} else {
@@ -93,7 +93,9 @@ public class SpamCheckServlet extends HttpServlet {
 	}
 
 	private PhoneInfo createUnknownResult() {
-		return PhoneInfo.create().setPhone("unknown").setRating(Rating.A_LEGITIMATE);
+		return PhoneInfo.create()
+			.setPhone("unknown")
+			.setRating(Rating.A_LEGITIMATE);
 	}
 
 	private int hex(char ch) {

@@ -19,6 +19,7 @@ import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.I18N;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -44,13 +45,6 @@ public class RatingServlet extends HttpServlet {
         
 		String phoneText = req.getParameter("phone");
 
-		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText);
-		if (number == null) {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
-		}
-		String phoneId = NumberAnalyzer.getPhoneId(number);
-        
 		String ratingName = req.getParameter("rating");
 		String comment = req.getParameter("comment");
 
@@ -59,7 +53,7 @@ public class RatingServlet extends HttpServlet {
         if (userName == null) {
     		String captcha = req.getParameter("captcha");
     		if (captcha == null || captcha.trim().isEmpty()) {
-    			sendFailure(req, resp, phoneId, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-required"));
+    			sendFailure(req, resp, phoneText, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-required"));
     			return;
     		}
 
@@ -67,7 +61,7 @@ public class RatingServlet extends HttpServlet {
     		String captchaExpected = (String) session.getAttribute("captcha");
     		session.removeAttribute("captcha");
     		if (!captcha.trim().equals(captchaExpected)) {
-    			sendFailure(req, resp, phoneId, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-mismatch"));
+    			sendFailure(req, resp, phoneText, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-mismatch"));
     			return;
     		}
     		
@@ -80,6 +74,13 @@ public class RatingServlet extends HttpServlet {
 				comment = null;
 			}
 		}
+		
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
+		if (number == null) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+		String phoneId = NumberAnalyzer.getPhoneId(number);
 		
 		HttpSession session = req.getSession();
 		String ratingAttr = ratingAttribute(phoneId);
