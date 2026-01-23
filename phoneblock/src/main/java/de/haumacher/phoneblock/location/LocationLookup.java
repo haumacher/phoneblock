@@ -4,7 +4,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.location.model.Country;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface LocationLookup {
@@ -36,7 +38,7 @@ public interface LocationLookup {
 		return getCountry(ipAddress);
 	}
 	
-	default String getDialPrefix(HttpServletRequest req) {
+	default String browserDialPrefix(HttpServletRequest req) {
 		Country country = LocationService.getInstance().getCountry(req);
 		if (country != null) {
 			List<String> dialPrefixes = country.getDialPrefixes();
@@ -44,7 +46,10 @@ public interface LocationLookup {
 				return dialPrefixes.get(0);
 			}
 		}
-		return null;
+		
+		Language lang = DefaultController.selectLanguage(req);
+		
+		return lang.dialPrefix;
 	}
 	
 }

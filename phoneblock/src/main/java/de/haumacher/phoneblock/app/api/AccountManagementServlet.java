@@ -138,7 +138,7 @@ public class AccountManagementServlet extends HttpServlet {
 			// Verify the dial prefix is actually known by the service
 			if (countryCode == null || countryCode.isEmpty()) {
 				// Only verify if dial prefix was provided directly (not converted from country code)
-				if (Countries.fromDialPrefix(dialPrefix) == null) {
+				if (Countries.countriesFromDialPrefix(dialPrefix) == null) {
 					ServletUtil.sendError(resp, "Unknown dial prefix '" + dialPrefix + "'. Please use a valid country dial prefix.");
 					return;
 				}

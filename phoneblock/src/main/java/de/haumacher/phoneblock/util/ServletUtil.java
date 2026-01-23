@@ -125,10 +125,11 @@ public class ServletUtil {
 	}
 
 	public static String lookupDialPrefix(HttpServletRequest req) {
-		String dialPrefix;
 		String userName = LoginFilter.getAuthenticatedUser(req);
+		
+		String dialPrefix;
 		if (userName == null) {
-			dialPrefix = LocationService.getInstance().getDialPrefix(req);
+			dialPrefix = LocationService.getInstance().browserDialPrefix(req);
 		} else {
 			DB db = DBService.getInstance();
 			try (SqlSession session = db.openSession()) {

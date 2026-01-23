@@ -273,7 +273,7 @@ public class SettingsServlet extends HttpServlet {
 		int minVotes = Integer.parseInt(req.getParameter("minVotes"));
 		int maxLength = Integer.parseInt(req.getParameter("maxLength"));
 		boolean wildcards = req.getParameter("wildcards") != null;
-		String myDialPrefix = Countries.selectDialPrefix(req.getParameter("myDialPrefix"));
+		String myDialPrefixOrNull = Countries.normalizeDialPrefix(req.getParameter("myDialPrefix"), null);
 		boolean nationalOnly = req.getParameter("nationalOnly") != null;
 		
 		if (minVotes <= 2) {
@@ -315,8 +315,8 @@ public class SettingsServlet extends HttpServlet {
 		settings.setWildcards(wildcards);
 		
 		// Verify input.
-		if (myDialPrefix != null) {
-			settings.setDialPrefix(myDialPrefix);
+		if (myDialPrefixOrNull != null) {
+			settings.setDialPrefix(myDialPrefixOrNull);
 		}
 		
 		settings.setNationalOnly(nationalOnly);

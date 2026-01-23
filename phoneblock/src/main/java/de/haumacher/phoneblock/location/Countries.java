@@ -210,15 +210,15 @@ public class Countries {
 		return BY_ISO_31661_ALPHA_2.get(iso31661alpha2);
 	}
 
-	public static String selectDialPrefix(String dialPrefix) {
-		return fromDialPrefix(dialPrefix) == null ? null : dialPrefix;
+	public static String normalizeDialPrefix(String selectedDialPrefix, String defaultDialPrefix) {
+		return countriesFromDialPrefix(selectedDialPrefix) == null ? defaultDialPrefix : selectedDialPrefix;
 	}
 
 	public static Collection<Country> all() {
 		return BY_ISO_31661_ALPHA_2.values();
 	}
 
-	public static List<Country> fromDialPrefix(String dialPrefix) {
+	public static List<Country> countriesFromDialPrefix(String dialPrefix) {
 		return BY_DIAL_PREFIX.get(dialPrefix);
 	}
 }

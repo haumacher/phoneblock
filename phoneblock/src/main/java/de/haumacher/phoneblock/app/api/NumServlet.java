@@ -80,14 +80,7 @@ public class NumServlet extends HttpServlet {
 			
 			// Only record search hits, for numbers that are suspicious to SPAM.
 			if (!SearchServlet.isBot(req)) {
-				String dialPrefix;
-
-				String userName = LoginFilter.getAuthenticatedUser(req);
-				if (userName == null) {
-					dialPrefix = LocationService.getInstance().getDialPrefix(req);
-				} else {
-					dialPrefix = session.getMapper(Users.class).getDialPrefix(userName);
-				}
+				String dialPrefix = ServletUtil.lookupDialPrefix(req);
 				
 				db.addSearchHit(number, dialPrefix);
 			}

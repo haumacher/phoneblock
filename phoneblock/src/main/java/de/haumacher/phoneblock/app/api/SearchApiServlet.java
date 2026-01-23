@@ -34,15 +34,8 @@ public class SearchApiServlet extends HttpServlet {
 			return;
 		}
 		
-		String dialPrefix;
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
 		String userName = LoginFilter.getAuthenticatedUser(req);
-		if (userName == null) {
-			dialPrefix = LocationService.getInstance().getDialPrefix(req);
-		} else {
-			// Resolved later.
-			dialPrefix = null;
-		}
-		
 		String query = pathInfo.substring(1);
 		SearchResult searchResult = SearchServlet.analyze(query, userName, dialPrefix);
 		

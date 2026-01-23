@@ -1,6 +1,5 @@
 package de.haumacher.phoneblock.app.render;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import java.util.Properties;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.servlet.IServletWebExchange;
 
@@ -202,7 +200,7 @@ public class DefaultController implements WebController {
 		request.setAttribute("currentDialPrefix", dialPrefix);
 
 		// Also set the international prefix and trunk prefix for the user's country
-		List<Country> countries = Countries.fromDialPrefix(dialPrefix);
+		List<Country> countries = Countries.countriesFromDialPrefix(dialPrefix);
 		String internationalPrefix = "00"; // Default fallback
 		String trunkPrefix = "0"; // Default fallback
 		if (countries != null && !countries.isEmpty()) {
@@ -222,13 +220,13 @@ public class DefaultController implements WebController {
 	
 	public static String selectDialPrefix(HttpServletRequest request, Language lang) {
 		String selectedPrefix = request.getParameter(DIAL_PREFIX_ATTR);
-		String dialPrefix = null;
+		String dialPrefix;
 		if (selectedPrefix == null) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
-				dialPrefix = (String) session.getAttribute(DIAL_PREFIX_ATTR);
-				if (dialPrefix != null) {
-					return dialPrefix;
+				String sessionDialPrefix = (String) session.getAttribute(DIAL_PREFIX_ATTR);
+				if (sessionDialPrefix != null) {
+					return sessionDialPrefix;
 				}
 			}
 			
@@ -245,7 +243,9 @@ public class DefaultController implements WebController {
 				Country country = LocationService.getInstance().getCountry(request);
 				if (country != null) {
 					List<String> dialPrefixes = country.getDialPrefixes();
-					dialPrefix = dialPrefixes.size() > 0 ? dialPrefixes.get(0) : null;
+					dialPrefix = dialPrefixes.size() > 0 ? dialPrefixes.get(0) : lang.dialPrefix;
+				} else {
+					dialPrefix = lang.dialPrefix;
 				}
 			}
 			
@@ -254,7 +254,7 @@ public class DefaultController implements WebController {
 				session.setAttribute(DIAL_PREFIX_ATTR, dialPrefix);
 			}
 		} else {
-			dialPrefix = Countries.selectDialPrefix(selectedPrefix);
+			dialPrefix = Countries.normalizeDialPrefix(selectedPrefix, lang.dialPrefix);
 			
 			// Remember requested language.
 			request.getSession().setAttribute(DIAL_PREFIX_ATTR, dialPrefix);
@@ -269,10 +269,6 @@ public class DefaultController implements WebController {
 					tx.commit();
 				}
 			}
-		}
-		
-		if (dialPrefix == null) {
-			dialPrefix = lang.dialPrefix;
 		}
 		
 		return dialPrefix;

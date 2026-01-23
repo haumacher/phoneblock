@@ -27,6 +27,7 @@ public class PhoneHash {
 	 * @return The phone number in international format (starting with "+"), or null if invalid
 	 */
 	public static String toInternationalForm(String phone, String dialPrefix, java.util.List<String> trunkPrefixes) {
+		assert dialPrefix != null : "Dial prefix is null.";
 		String plus = null;
 
 		if (phone.startsWith("00")) {

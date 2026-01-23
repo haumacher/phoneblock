@@ -49,7 +49,6 @@ public class RatingServlet extends HttpServlet {
 		String comment = req.getParameter("comment");
 
 		String userName = LoginFilter.getAuthenticatedUser(req);
-		String dialPrefix = null;
         if (userName == null) {
     		String captcha = req.getParameter("captcha");
     		if (captcha == null || captcha.trim().isEmpty()) {
@@ -64,8 +63,6 @@ public class RatingServlet extends HttpServlet {
     			sendFailure(req, resp, phoneText, ratingName, comment, I18N.getMessage(req, "error.rating.captcha-mismatch"));
     			return;
     		}
-    		
-    		dialPrefix = LocationService.getInstance().getDialPrefix(req);
         }
         
 		if (comment != null) {
@@ -74,6 +71,8 @@ public class RatingServlet extends HttpServlet {
 				comment = null;
 			}
 		}
+		
+		String dialPrefix = ServletUtil.lookupDialPrefix(req);
 		
 		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
 		if (number == null) {
