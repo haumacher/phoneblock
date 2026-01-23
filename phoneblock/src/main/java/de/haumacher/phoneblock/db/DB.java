@@ -1196,6 +1196,7 @@ public class DB {
 					.stream()
 					.filter(s -> !whiteList.contains(s.getPhone()))
 					.map(DB::toBlocklistEntry)
+					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			return Blocklist.create().setNumbers(numbers);
 		}
@@ -1203,8 +1204,12 @@ public class DB {
 	
 	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
 		PhoneNumer number = NumberAnalyzer.analyzePhoneID(n.getPhone());
+		if (number == null) {
+			// Invalid number in DB, filter out.
+			return null;
+		}
 		return BlockListEntry.create()
-				.setPhone(number == null ? n.getPhone() : number.getPlus())
+				.setPhone(number.getPlus())
 				.setVotes(n.getVotes())
 				.setRating(rating(n));
 	}
