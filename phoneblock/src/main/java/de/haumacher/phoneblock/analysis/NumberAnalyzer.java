@@ -90,7 +90,12 @@ public class NumberAnalyzer {
 	}
 	
 	public static PhoneInfo phoneInfoFromId(String phoneId) {
-		return phoneInfoFromNumber(analyzePhoneID(phoneId));
+		PhoneNumer number = analyzePhoneID(phoneId);
+		if (number == null) {
+			// Safety: Prevent NPE, if phoneId is invalid.
+			return PhoneInfo.create().setPhone(phoneId);
+		}
+		return phoneInfoFromNumber(number);
 	}
 
 	public static PhoneInfo phoneInfoFromNumber(PhoneNumer number) {
@@ -103,8 +108,6 @@ public class NumberAnalyzer {
 	 * @param dialPrefix The users local dial prefix.
 	 */
 	public static PhoneNumer analyze(String phone, String dialPrefix) {
-		PhoneNumer result = PhoneNumer.create();
-
 		// Look up country by dial prefix to get trunk prefix information for parsing
 		// This is used by PhoneHash.toInternationalForm() to convert national format to international
 		List<String> userTrunkPrefixes = null;
@@ -120,27 +123,32 @@ public class NumberAnalyzer {
 			// Not a valid number.
 			return null;
 		}
-		result.setPlus(plus);
-		String zeroZero = "00" + plus.substring(1);
-		result.setZeroZero(zeroZero);
-
-		// Compute dial format using the user's country-specific international prefix
-		// Get user's international prefix from their country
-		List<String> userInternationalPrefixes = null;
-		if (countriesForDialPrefix != null && !countriesForDialPrefix.isEmpty()) {
-			userInternationalPrefixes = countriesForDialPrefix.get(0).getInternationalPrefixes();
-		}
-		String internationalPrefix = (userInternationalPrefixes != null && !userInternationalPrefixes.isEmpty())
-			? userInternationalPrefixes.get(0)
-			: "00";  // fallback to "00" if no data available
-		String dial = internationalPrefix + plus.substring(1);
-		result.setDial(dial);
-
+		
 		PrefixInfo info = findInfo(plus);
-
 		String countryCode = info.getCountryCode();
 		if (countryCode == null) {
 			return null;
+		}
+
+		// Numbers seen in real live seem to exceed the maximum digit size in the numbering plan. 
+		// E.g. +49-9131-9235017072 from Erlangen(9131)/Germany(49) is a number observed by many users, 
+		// even if the numbering plan for Germany states that numbers with the prefix 9131 have 
+		// a maximum length of 11 digits (9131-9235017-072). Does this mean that the suffix (072) that 
+		// exceeds the digits in the numbering plan is a direct dialing suffix for the 
+		// connection 9131-9235017?
+		// 
+//		int maxDigits = info.getMaxDigits();
+//		if (maxDigits >= 0) {
+//			if (plus.length() > maxDigits + countryCode.length()) {
+//				return null;
+//			}
+//		}
+		
+		int minDigits = info.getMinDigits();
+		if (minDigits >= 0) {
+			if (plus.length() < minDigits + countryCode.length()) {
+				return null;
+			}
 		}
 
 		// Validate that the local part doesn't start with any trunk prefix
@@ -164,27 +172,23 @@ public class NumberAnalyzer {
 				}
 			}
 		}
-
-		// Numbers seen in real live seem to exceed the maximum digit size in the numbering plan. 
-		// E.g. +49-9131-9235017072 from Erlangen(9131)/Germany(49) is a number observed by many users, 
-		// even if the numbering plan for Germany states that numbers with the prefix 9131 have 
-		// a maximum length of 11 digits (9131-9235017-072). Does this mean that the suffix (072) that 
-		// exceeds the digits in the numbering plan is a direct dialing suffix for the 
-		// connection 9131-9235017?
-		// 
-//		int maxDigits = info.getMaxDigits();
-//		if (maxDigits >= 0) {
-//			if (plus.length() > maxDigits + countryCode.length()) {
-//				return null;
-//			}
-//		}
 		
-		int minDigits = info.getMinDigits();
-		if (minDigits >= 0) {
-			if (plus.length() < minDigits + countryCode.length()) {
-				return null;
-			}
+		PhoneNumer result = PhoneNumer.create();
+		result.setPlus(plus);
+		String zeroZero = "00" + plus.substring(1);
+		result.setZeroZero(zeroZero);
+
+		// Compute dial format using the user's country-specific international prefix
+		// Get user's international prefix from their country
+		List<String> userInternationalPrefixes = null;
+		if (countriesForDialPrefix != null && !countriesForDialPrefix.isEmpty()) {
+			userInternationalPrefixes = countriesForDialPrefix.get(0).getInternationalPrefixes();
 		}
+		String internationalPrefix = (userInternationalPrefixes != null && !userInternationalPrefixes.isEmpty())
+			? userInternationalPrefixes.get(0)
+			: "00";  // fallback to "00" if no data available
+		String dial = internationalPrefix + plus.substring(1);
+		result.setDial(dial);
 		
 		result.setCountryCode(countryCode);
 		List<Country> countries = info.getCountries();

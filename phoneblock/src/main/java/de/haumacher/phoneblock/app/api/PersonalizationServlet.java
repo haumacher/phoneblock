@@ -269,46 +269,45 @@ public class PersonalizationServlet extends HttpServlet {
 
 			// Get user's dial prefix and normalize phone number
 			String dialPrefix = users.getDialPrefix(userName);
-			String phone = NumberAnalyzer.toId(phoneText, dialPrefix);
-
-			if (phone == null) {
-				ServletUtil.sendError(resp, "Invalid phone number format");
-				return;
-			}
+			String phoneId = NumberAnalyzer.toId(phoneText, dialPrefix);
 
 			BlockList blockList = session.getMapper(BlockList.class);
-			boolean deleted = blockList.removePersonalization(userId, phone);
+			
+			// Safety: DB content may be inconsistent: Try also deletion of invalid phone numbers.
+			boolean deleted = blockList.removePersonalization(userId, phoneId == null ? phoneText : phoneId);
 			String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
 
 			if (deleted) {
 				// Also delete the user's comment and decrement vote counts
 				SpamReports spamReports = session.getMapper(SpamReports.class);
-				DBUserComment userComment = spamReports.getUserComment(userId, phone);
+				DBUserComment userComment = spamReports.getUserComment(userId, phoneId);
 
 				if (userComment != null) {
 					// Delete the comment
-					spamReports.deleteUserComments(userId, phone);
+					spamReports.deleteUserComments(userId, phoneId);
 
-					// Decrement the vote counts and rating counters based on the rating
-					Rating rating = userComment.getRating();
-					int voteDelta = -Ratings.getVotes(rating);
-					long now = System.currentTimeMillis();
-
-					// Update vote counts in NUMBERS table
-					spamReports.addVote(phone, voteDelta, now);
-
-					// Decrement the specific rating counter (LEGITIMATE, PING, etc.) by -1
-					spamReports.updateRating(phone, rating, -1, now);
-
-					LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phone, voteDelta);
+					if (phoneId != null) {
+						// Decrement the vote counts and rating counters based on the rating
+						Rating rating = userComment.getRating();
+						int voteDelta = -Ratings.getVotes(rating);
+						long now = System.currentTimeMillis();
+						
+						// Update vote counts in NUMBERS table
+						spamReports.addVote(phoneId, voteDelta, now);
+						
+						// Decrement the specific rating counter (LEGITIMATE, PING, etc.) by -1
+						spamReports.updateRating(phoneId, rating, -1, now);
+						
+						LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phoneId, voteDelta);
+					}
 				}
 
 				session.commit();
-				LOG.info("Removed {} from {} for user '{}'", phone, listType, userName);
+				LOG.info("Removed {} from {} for user '{}'", phoneId, listType, userName);
 
 				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 			} else {
-				LOG.info("Invalid delete request for {} for user '{}': {}", listType, userName, phone);
+				LOG.info("Invalid delete request for {} for user '{}': {}", listType, userName, phoneId);
 
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Phone number not found in personalization list");
 			}

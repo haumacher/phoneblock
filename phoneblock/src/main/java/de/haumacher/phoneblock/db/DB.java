@@ -1202,8 +1202,9 @@ public class DB {
 	}
 	
 	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
+		PhoneNumer number = NumberAnalyzer.analyzePhoneID(n.getPhone());
 		return BlockListEntry.create()
-				.setPhone(NumberAnalyzer.analyzePhoneID(n.getPhone()).getPlus())
+				.setPhone(number == null ? n.getPhone() : number.getPlus())
 				.setVotes(n.getVotes())
 				.setRating(rating(n));
 	}

@@ -218,7 +218,9 @@ public class SettingsServlet extends HttpServlet {
 							
 							long now = System.currentTimeMillis();
 							PhoneNumer number = NumberAnalyzer.analyzePhoneID(phoneId);
-							db.addRating(userName, number, dialPrefix, Rating.A_LEGITIMATE, null, settings.getLang(), now);
+							if (number != null) {
+								db.addRating(userName, number, dialPrefix, Rating.A_LEGITIMATE, null, settings.getLang(), now);
+							}
 						}
 					}
 					else if (key.equals("add-bl")) {
@@ -231,25 +233,30 @@ public class SettingsServlet extends HttpServlet {
 							
 							long now = System.currentTimeMillis();
 							PhoneNumer number = NumberAnalyzer.analyzePhoneID(phone);
-							db.addRating(userName, number, dialPrefix, Rating.B_MISSED, null, settings.getLang(), now);
+							if (number != null) {
+								db.addRating(userName, number, dialPrefix, Rating.B_MISSED, null, settings.getLang(), now);
+							}
 						}
 					}
 					else if (key.startsWith("bl-")) {
-						String phone = NumberAnalyzer.toId(key.substring("bl-".length()));
+						String rawPhone = key.substring("bl-".length());
+						String phone = NumberAnalyzer.toId(rawPhone);
 						if (phone == null) {
-							continue;
+							// Safety: DB content may be inconsistent.
+							blocklist.removePersonalization(owner, rawPhone);
+						} else {
+							blocklist.removePersonalization(owner, phone);
 						}
-						
-						blocklist.removePersonalization(owner, phone);
 					}
 					
 					else if (key.startsWith("wl-")) {
-						String phone = NumberAnalyzer.toId(key.substring("wl-".length()));
+						String rawPhone = key.substring("wl-".length());
+						String phone = NumberAnalyzer.toId(rawPhone);
 						if (phone == null) {
-							continue;
+							blocklist.removePersonalization(owner, rawPhone);
+						} else {
+							blocklist.removePersonalization(owner, phone);
 						}
-						
-						blocklist.removePersonalization(owner, phone);
 					}
 				}
 			}
