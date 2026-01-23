@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock-parent</artifactId>
-	<version>1.8.5</version>
+	<version>1.8.6-SNAPSHOT</version>
 	
 	<name>PhoneBlock Aggregator</name>
 	<description>Maven aggregator building all parts of PhoneBlock</description>
@@ -31,7 +31,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/haumacher/phoneblock.git</developerConnection>
-		<tag>1.8.5</tag>
+		<tag>1.7.15</tag>
 	</scm>
 	
 	<modules>
