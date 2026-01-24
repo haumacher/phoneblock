@@ -1330,8 +1330,32 @@ public class DB {
 		}
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
-				.setVotes(n.getVotes())
+				.setVotes(normalizeVotesToThreshold(n.getVotes()))
 				.setRating(rating(n));
+	}
+
+	/**
+	 * Normalizes a vote count to the nearest threshold value.
+	 *
+	 * <p>
+	 * This ensures consistency between when updates are triggered (at threshold crossings)
+	 * and the vote counts transmitted to clients. A number with 5 votes (between thresholds
+	 * 4 and 10) is normalized to 4, since no update would be sent until it reaches 10 votes.
+	 * </p>
+	 *
+	 * @param votes The actual vote count.
+	 * @return The normalized threshold value (0 if below the lowest threshold).
+	 */
+	private static int normalizeVotesToThreshold(int votes) {
+		// Find the highest threshold that votes meets or exceeds
+		// Search from high to low for efficiency (most numbers have higher votes)
+		for (int i = BLOCKLIST_THRESHOLDS.length - 1; i >= 0; i--) {
+			if (votes >= BLOCKLIST_THRESHOLDS[i]) {
+				return BLOCKLIST_THRESHOLDS[i];
+			}
+		}
+		// Below all thresholds
+		return 0;
 	}
 
 	public static Rating rating(NumberInfo n) {
