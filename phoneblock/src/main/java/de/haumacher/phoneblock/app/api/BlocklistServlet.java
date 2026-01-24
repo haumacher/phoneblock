@@ -23,10 +23,28 @@ import jakarta.servlet.http.HttpServletResponse;
  * {@link HttpServlet} serving the blocklist with optional incremental synchronization.
  *
  * <p>
- * Returns all numbers in the blocklist without filtering by vote threshold.
- * Clients are responsible for filtering based on their preferred threshold.
- * This ensures clients can detect when numbers drop below their threshold
- * and enables efficient response caching.
+ * <b>Vote Count Normalization:</b> All vote counts are normalized to predefined threshold
+ * values (see {@link DB#BLOCKLIST_THRESHOLDS}). For example, a number with 5-9 votes is
+ * transmitted as having 4 votes. This ensures consistency between when updates are triggered
+ * (only at threshold crossings) and the vote counts clients receive.
+ * </p>
+ *
+ * <p>
+ * <b>Incremental Synchronization:</b> Updates are only sent when numbers cross threshold
+ * boundaries. A number going from 5 to 6 votes triggers no update (both normalize to 4),
+ * but crossing from 9 to 10 votes triggers an update (4 → 10). Numbers dropping below
+ * the minimum threshold are sent with 0 votes, indicating removal from the blocklist.
+ * </p>
+ *
+ * <p>
+ * <b>Client-Side Filtering:</b> Clients should filter by one of the predefined threshold
+ * values to ensure consistency with the update mechanism. Filtering by arbitrary values
+ * (e.g., minVotes=7) is not meaningful since no updates occur at non-threshold values.
+ * </p>
+ *
+ * <p>
+ * <b>Caching:</b> The response contains no user-specific data and can be cached efficiently.
+ * All authenticated users receive identical responses for the same version.
  * </p>
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)

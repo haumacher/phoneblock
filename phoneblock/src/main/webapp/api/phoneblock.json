@@ -229,10 +229,10 @@
 		"/blocklist": {
 			"get": {
 				"summary": "Retrieves the blocklist with optional incremental synchronization",
-				"description": "Returns all active phone numbers (votes > 0) from the blocklist without any filtering. Clients are responsible for filtering by their preferred vote threshold and applying their own whitelist/blacklist personalization. This allows efficient caching. When the 'since' parameter is omitted, returns the complete blocklist. When 'since' is provided with a version number, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.",
+				"description": "Returns all active phone numbers from the blocklist. Vote counts are normalized to predefined threshold values (2, 4, 10, 20, 50, 100) - for example, a number with 5-9 votes is transmitted as having 4 votes. This normalization ensures consistency between when updates are triggered (only at threshold crossings) and the vote counts transmitted. Clients should filter by one of these threshold values (2, 4, 10, 20, 50, or 100). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number dropped below all thresholds and should be removed from the client's local blocklist.",
 				"responses": {
 					"200": {
-						"description": "Returns all active phone numbers (votes > 0) from the PhoneBlock database without any filtering. Clients must filter by their preferred vote threshold and apply their own whitelist/blacklist personalization.",
+						"description": "Returns all active phone numbers from the PhoneBlock database with normalized vote counts (2, 4, 10, 20, 50, or 100). Numbers with votes=0 indicate removal. Clients should filter by one of these threshold values for consistency with the incremental update mechanism.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -259,7 +259,9 @@
 														]
 													},
 													"votes": {
-														"type": "integer"
+														"type": "integer",
+														"description": "Normalized vote count. Possible values: 0 (removed), 2, 4, 10, 20, 50, or 100. Normalization ensures consistency with when updates are triggered.",
+														"enum": [0, 2, 4, 10, 20, 50, 100]
 													}
 												}
 											}
@@ -280,7 +282,7 @@
 										{
 											"phone": "+390456789123",
 											"rating": "F_GAMBLE",
-											"votes": 8
+											"votes": 10
 										}
 									],
 									"version": 42
@@ -300,7 +302,7 @@
 				{
 					"name": "since",
 					"in": "query",
-					"description": "Optional version number for incremental synchronization. When provided, returns only changes since the specified version. Entries with votes=0 indicate the number should be removed from the client's local blocklist.",
+					"description": "Optional version number for incremental synchronization. When provided, returns only changes since the specified version. Updates are triggered only when numbers cross threshold boundaries (2, 4, 10, 20, 50, 100). Entries with votes=0 indicate the number dropped below the minimum threshold and should be removed from the client's local blocklist.",
 					"required": false,
 					"schema": {
 						"type": "integer"
