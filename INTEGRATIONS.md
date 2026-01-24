@@ -429,7 +429,123 @@ Update account settings (e.g., sync device locale).
 }
 ```
 
-### 7. Test Connectivity
+### 7. Community Blocklist Download
+
+**Endpoint:** `GET /api/blocklist`
+
+Download the community-maintained blocklist for offline filtering. This is primarily intended for routers, PBX systems, or apps that need offline blocklist capabilities.
+
+**Important:** For real-time call screening in mobile apps, use the `/check` or `/num` endpoints instead. Only use the blocklist endpoint if you need offline blocking capabilities.
+
+**Rate Limits:**
+- **Full synchronization** (without `since` parameter): Maximum once per month
+- **Incremental synchronization** (with `since` parameter): Maximum once per day
+- Clients exceeding these limits may be subject to rate limiting
+
+**Parameters:**
+- `since` (optional): Version number for incremental sync. Returns only changes since that version.
+- `format` (optional): Response format - `json` (default) or `xml`
+
+**Request Example (Full Sync):**
+```http
+GET /phoneblock/api/blocklist?format=json HTTP/1.1
+Host: phoneblock.net
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+User-Agent: MyApp/1.0.0
+```
+
+**Response:**
+```json
+{
+  "numbers": [
+    {
+      "phone": "+49123456789",
+      "rating": "G_FRAUD",
+      "votes": 4
+    },
+    {
+      "phone": "+390456789123",
+      "rating": "F_GAMBLE",
+      "votes": 10
+    }
+  ],
+  "version": 42
+}
+```
+
+**Vote Normalization:**
+Vote counts are normalized to threshold values (2, 4, 10, 20, 50, 100) to ensure consistency. For example, a number with 5-9 votes is transmitted as having 4 votes. Clients should filter by one of these threshold values.
+
+**Incremental Sync:**
+```http
+GET /phoneblock/api/blocklist?since=42&format=json HTTP/1.1
+Host: phoneblock.net
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Response (Incremental):**
+```json
+{
+  "numbers": [
+    {
+      "phone": "+49987654321",
+      "rating": "E_ADVERTISING",
+      "votes": 10
+    },
+    {
+      "phone": "+49111222333",
+      "rating": "A_LEGITIMATE",
+      "votes": 0
+    }
+  ],
+  "version": 43
+}
+```
+
+**Implementation Guide:**
+
+1. **Initial Sync:**
+   ```java
+   // Perform full sync once
+   BlocklistResponse response = api.getBlocklist(null);
+   localDb.storeBlocklist(response.numbers);
+   localDb.saveVersion(response.version);
+   ```
+
+2. **Incremental Updates:**
+   ```java
+   // Daily incremental sync
+   long savedVersion = localDb.getVersion();
+   BlocklistResponse updates = api.getBlocklist(savedVersion);
+
+   for (BlocklistEntry entry : updates.numbers) {
+       if (entry.votes > 0) {
+           // Add or update entry
+           localDb.upsertNumber(entry.phone, entry.rating, entry.votes);
+       } else {
+           // votes=0 means remove from blocklist
+           localDb.removeNumber(entry.phone);
+       }
+   }
+
+   localDb.saveVersion(updates.version);
+   ```
+
+3. **Apply Threshold Filtering:**
+   ```java
+   // Example: Block numbers with 10+ votes
+   int minVotes = 10;
+   List<String> blockedNumbers = localDb.getNumbersAboveThreshold(minVotes);
+   ```
+
+**Best Practices:**
+- Store the blocklist locally in a database (SQLite, etc.)
+- Schedule incremental syncs daily (e.g., at night when device is charging)
+- Schedule full syncs monthly to catch any missed updates
+- Apply appropriate threshold filtering based on your use case
+- Handle `votes=0` entries as deletions from your local blocklist
+
+### 8. Test Connectivity
 
 **Endpoint:** `GET /api/test-connect`
 
@@ -842,6 +958,7 @@ public PhoneInfo checkNumber(String phone) {
 - Cache responses for frequently checked numbers
 - Implement exponential backoff on errors
 - Respect HTTP 429 (Too Many Requests) responses
+- **Blocklist downloads:** Limit full sync to once per month, incremental sync to once per day
 
 ### 5. Offline Handling
 

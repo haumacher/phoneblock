@@ -212,12 +212,19 @@ Protocol buffer-like message definitions using msgbuf framework. Generated Java 
 
 ## API Integration
 
+**API Documentation:**
+- OpenAPI 3.0 specification: `phoneblock/src/main/webapp/api/phoneblock.json`
+- Accessible at: https://phoneblock.net/phoneblock/api/phoneblock.json
+- When modifying API endpoints, update the OpenAPI specification to keep documentation current
+
 **Base URL:** https://phoneblock.net/phoneblock/api/
 
 **Key Endpoints:**
 - `GET /num/{phone}?format=json` - Query spam status
 - `POST /rate` - Submit spam rating
-- `GET /download?format=vcf` - Download blocklist
+- `GET /blocklist` - Download blocklist with incremental sync support
+  - Full sync: max once per month
+  - Incremental sync (`?since=version`): max once per day
 
 **Authentication:**
 - Bearer token in Authorization header
