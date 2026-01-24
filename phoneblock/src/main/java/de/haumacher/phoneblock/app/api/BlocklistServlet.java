@@ -21,6 +21,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link HttpServlet} serving the blocklist with optional incremental synchronization.
+ *
+ * <p>
+ * Returns all numbers in the blocklist without filtering by vote threshold.
+ * Clients are responsible for filtering based on their preferred threshold.
+ * This ensures clients can detect when numbers drop below their threshold
+ * and enables efficient response caching.
+ * </p>
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)
 public class BlocklistServlet extends HttpServlet {
@@ -35,26 +42,6 @@ public class BlocklistServlet extends HttpServlet {
 		if (userName == null) {
 			ServletUtil.sendAuthenticationRequest(resp);
 			return;
-		}
-
-		// Parse optional "minVotes" parameter (default 4)
-		int minVotes = 4;
-		String minVotesParam = req.getParameter("minVotes");
-		if (minVotesParam != null) {
-			try {
-				minVotes = Integer.parseInt(minVotesParam);
-			} catch (NumberFormatException ex) {
-				ServletUtil.sendError(resp, "Invalid minVotes parameter.");
-				return;
-			}
-
-			if (!DB.isValidBlocklistThreshold(minVotes)) {
-				ServletUtil.sendError(resp,
-					"Invalid minVotes parameter. Must be one of the predefined thresholds: " +
-					DB.getBlocklistThresholdsString() + ". " +
-					"These are the only values that guarantee consistent incremental synchronization.");
-				return;
-			}
 		}
 
 		DB db = DBService.getInstance();
@@ -78,11 +65,11 @@ public class BlocklistServlet extends HttpServlet {
 				return;
 			}
 
-			result = db.getBlocklistUpdateAPI(sinceVersion, minVotes);
+			result = db.getBlocklistUpdateAPI(sinceVersion);
 			LOG.info("Sending blocklist update (since {}) to user '{}' (agent '{}')", sinceVersion, userName, userAgent);
 		} else {
 			// Full blocklist
-			result = db.getBlockListAPI(minVotes);
+			result = db.getBlockListAPI();
 			LOG.info("Sending blocklist to user '{}' (agent '{}')", userName, userAgent);
 		}
 

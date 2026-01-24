@@ -1260,20 +1260,22 @@ public class DB {
 	}
 
 	/**
-	 * Looks up the newest entries in the blocklist.
+	 * Looks up all entries in the blocklist.
 	 *
 	 * <p>
-	 * Returns the raw blocklist without any user-specific filtering (no whitelist/blacklist applied).
-	 * Clients are responsible for applying their own personalization. This allows the response
-	 * to be cached and served identically to all users, improving efficiency.
+	 * Returns all active numbers (votes > 0) without any filtering.
+	 * No user-specific filtering (whitelist/blacklist) is applied.
+	 * No vote threshold filtering is applied - clients must filter by their preferred threshold.
+	 * This allows the response to be cached and served identically to all users, improving efficiency,
+	 * and ensures clients can detect when numbers drop below their threshold.
 	 * </p>
 	 */
-	public Blocklist getBlockListAPI(int minVotes) {
+	public Blocklist getBlockListAPI() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
-			List<BlockListEntry> numbers = reports.getBlocklist(minVotes)
+			List<BlockListEntry> numbers = reports.getBlocklist()
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
@@ -1293,19 +1295,20 @@ public class DB {
 	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
 	 *
 	 * <p>
-	 * Returns the raw blocklist changes without any user-specific filtering (no whitelist/blacklist applied).
-	 * Clients are responsible for applying their own personalization. This allows the response
-	 * to be cached and served identically to all users, improving efficiency.
+	 * Returns all blocklist changes without any filtering.
+	 * No user-specific filtering (whitelist/blacklist) is applied.
+	 * No vote threshold filtering is applied - clients must filter by their preferred threshold.
+	 * This allows the response to be cached and served identically to all users, improving efficiency,
+	 * and ensures clients can detect when numbers drop below their threshold.
 	 * </p>
 	 */
-	public Blocklist getBlocklistUpdateAPI(long sinceVersion, int minVotes) {
+	public Blocklist getBlocklistUpdateAPI(long sinceVersion) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
 			List<BlockListEntry> numbers = reports.getBlocklistChangesSince(sinceVersion)
 					.stream()
-					.filter(s -> s.getVotes() >= minVotes || s.getVotes() == 0)
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());

@@ -238,10 +238,10 @@ public interface SpamReports {
 
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-			where s.ACTIVE and s.VOTES >= #{minVotes}
+			where s.ACTIVE and s.VOTES > 0
 			order by s.PHONE
 			""")
-	List<DBNumberInfo> getBlocklist(int minVotes);
+	List<DBNumberInfo> getBlocklist();
 	
 	@Select("""
 			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
