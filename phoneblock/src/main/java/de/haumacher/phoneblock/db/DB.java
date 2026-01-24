@@ -127,8 +127,14 @@ public class DB {
 	/**
 	 * Vote thresholds that trigger blocklist version updates.
 	 * When a number crosses any of these thresholds, it's marked for version assignment.
+	 *
+	 * <p>
+	 * These are the only valid values for the <code>minVotes</code> parameter in blocklist APIs.
+	 * Using other values will result in inconsistent incremental synchronization, as version
+	 * updates are only triggered when numbers cross these specific thresholds.
+	 * </p>
 	 */
-	private static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
+	public static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
 
 	/**
 	 * One hour in milliseconds.
@@ -1115,6 +1121,27 @@ public class DB {
 		// Check for addition (0 -> positive votes) or deletion (positive -> 0 votes)
 		if (oldVotes > 0 && newVotes <= 0) return true;
 		if (oldVotes <= 0 && newVotes > 0) return true;
+		return false;
+	}
+
+	/**
+	 * Checks if the given minVotes value is a valid blocklist threshold.
+	 *
+	 * <p>
+	 * Only the predefined threshold values ({@link #BLOCKLIST_THRESHOLDS}) can be used
+	 * for consistent incremental synchronization, as version updates are only triggered
+	 * when numbers cross these specific thresholds.
+	 * </p>
+	 *
+	 * @param minVotes The minimum votes value to validate
+	 * @return true if the value is a valid threshold, false otherwise
+	 */
+	public static boolean isValidBlocklistThreshold(int minVotes) {
+		for (int threshold : BLOCKLIST_THRESHOLDS) {
+			if (minVotes == threshold) {
+				return true;
+			}
+		}
 		return false;
 	}
 
