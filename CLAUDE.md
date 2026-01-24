@@ -311,6 +311,11 @@ Example - Adding conditional device name display:
 - `.phoneblock.template` files in respective directories
 - Copy and fill in actual values
 
+**JNDI Configuration:**
+- See [JNDI-CONFIGURATION.md](JNDI-CONFIGURATION.md) for comprehensive documentation of all JNDI configuration options for production deployments
+- JNDI properties can be configured in Tomcat's `context.xml` or as system properties
+- When adding new JNDI properties to any service, update JNDI-CONFIGURATION.md
+
 ## Testing
 
 **Backend tests:**
