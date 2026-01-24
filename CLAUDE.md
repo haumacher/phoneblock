@@ -359,6 +359,13 @@ flutter analyze
 - App Bundle for Google Play Store
 - Requires signing with production keys
 
+## Documentation
+
+- **RELEASE-NOTES.md** - Comprehensive release history since version 1.7.0
+- **INTEGRATIONS.md** - Third-party API integration guide
+- **JNDI-CONFIGURATION.md** - JNDI configuration reference for all services
+- **OpenAPI Spec** - `phoneblock/src/main/webapp/api/phoneblock.json`
+
 ## Notes
 
 - Java compiler parameter names must be enabled for MyBatis (`maven.compiler.parameters=true`)
