@@ -228,7 +228,8 @@
 		},
 		"/blocklist": {
 			"get": {
-				"summary": "Retrieves the current list of blocked phone numbers",
+				"summary": "Retrieves the blocklist with optional incremental synchronization",
+				"description": "Returns the blocklist of phone numbers. When the 'since' parameter is omitted, returns the complete blocklist. When 'since' is provided with a version number, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.",
 				"responses": {
 					"200": {
 						"description": "Retrieves all currently blocked phone numbers with corresponding information from the PhoneBlock database.",
@@ -262,6 +263,10 @@
 													}
 												}
 											}
+										},
+										"version": {
+											"type": "integer",
+											"description": "Current version of the blocklist for incremental synchronization"
 										}
 									}
 								},
@@ -277,7 +282,8 @@
 											"rating": "F_GAMBLE",
 											"votes": 8
 										}
-									]
+									],
+									"version": 42
 								}
 							}
 						}
@@ -291,6 +297,15 @@
 				]
 			},
 			"parameters": [
+				{
+					"name": "since",
+					"in": "query",
+					"description": "Optional version number for incremental synchronization. When provided, returns only changes since the specified version. Entries with votes=0 indicate the number should be removed from the client's local blocklist.",
+					"required": false,
+					"schema": {
+						"type": "integer"
+					}
+				},
 				{
 					"name": "minVotes",
 					"in": "query",

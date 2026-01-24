@@ -125,6 +125,12 @@ public class DB {
 	public static final int MIN_AGGREGATE_100 = 3;
 
 	/**
+	 * Vote thresholds that trigger blocklist version updates.
+	 * When a number crosses any of these thresholds, it's marked for version assignment.
+	 */
+	private static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
+
+	/**
 	 * One hour in milliseconds.
 	 */
 	public static final long RATE_LIMIT_MS = 1000*60*60;
@@ -844,8 +850,15 @@ public class DB {
 		if (votes > 0) {
 			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, time);
 		}
-		
-		return classify(oldVotes) != classify(newVotes);
+
+		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
+		boolean thresholdCrossed = crossesThreshold(oldVotes, newVotes);
+
+		if (thresholdCrossed) {
+			reports.markPendingUpdate(phone);
+		}
+
+		return classifyChanged;
 	}
 
 	public void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
@@ -1081,10 +1094,28 @@ public class DB {
 		}
 		else if (newVotes < MIN_VOTES) {
 			return 1;
-		} 
+		}
 		else {
 			return 2;
 		}
+	}
+
+	/**
+	 * Checks if the vote count crosses any blocklist threshold.
+	 * Returns true if the number should be marked for version update.
+	 */
+	private boolean crossesThreshold(int oldVotes, int newVotes) {
+		for (int threshold : BLOCKLIST_THRESHOLDS) {
+			boolean wasBelowThreshold = oldVotes < threshold;
+			boolean isAboveThreshold = newVotes >= threshold;
+			if (wasBelowThreshold != isAboveThreshold) {
+				return true;
+			}
+		}
+		// Check for addition (0 -> positive votes) or deletion (positive -> 0 votes)
+		if (oldVotes > 0 && newVotes <= 0) return true;
+		if (oldVotes <= 0 && newVotes > 0) return true;
+		return false;
 	}
 
 	/**
@@ -1191,14 +1222,49 @@ public class DB {
 	public Blocklist getBlockListAPI(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
+			Users users = session.getMapper(Users.class);
 			Set<String> whiteList = reports.getWhiteList();
+
 			List<BlockListEntry> numbers = reports.getBlocklist(minVotes)
 					.stream()
 					.filter(s -> !whiteList.contains(s.getPhone()))
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
-			return Blocklist.create().setNumbers(numbers);
+
+			String versionStr = users.getProperty("blocklist.version");
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : 0L;
+
+			return Blocklist.create()
+					.setNumbers(numbers)
+					.setVersion(version);
+		}
+	}
+
+	/**
+	 * Gets blocklist changes since the given version (incremental sync).
+	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 */
+	public Blocklist getBlocklistUpdateAPI(long sinceVersion, int minVotes) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			Users users = session.getMapper(Users.class);
+			Set<String> whiteList = reports.getWhiteList();
+
+			List<BlockListEntry> numbers = reports.getBlocklistChangesSince(sinceVersion)
+					.stream()
+					.filter(s -> !whiteList.contains(s.getPhone()))
+					.filter(s -> s.getVotes() >= minVotes || s.getVotes() == 0)
+					.map(DB::toBlocklistEntry)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+
+			String versionStr = users.getProperty("blocklist.version");
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : 0L;
+
+			return Blocklist.create()
+					.setNumbers(numbers)
+					.setVersion(version);
 		}
 	}
 	

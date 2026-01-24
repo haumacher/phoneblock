@@ -20,13 +20,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * {@link HttpServlet} serving the blocklist.
+ * {@link HttpServlet} serving the blocklist with optional incremental synchronization.
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)
 public class BlocklistServlet extends HttpServlet {
-	
+
 	public static final String PATH = "/api/blocklist";
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 
 	@Override
@@ -36,7 +36,8 @@ public class BlocklistServlet extends HttpServlet {
 			ServletUtil.sendAuthenticationRequest(resp);
 			return;
 		}
-		
+
+		// Parse optional "minVotes" parameter (default 4)
 		int minVotes = 4;
 		String minVotesParam = req.getParameter("minVotes");
 		if (minVotesParam != null) {
@@ -46,19 +47,43 @@ public class BlocklistServlet extends HttpServlet {
 				ServletUtil.sendError(resp, "Invalid minVotes parameter.");
 				return;
 			}
-			
+
 			if (minVotes < 2) {
 				ServletUtil.sendError(resp, "Parameter minVotes must be 2 or greater.");
 				return;
 			}
 		}
+
 		DB db = DBService.getInstance();
-		Blocklist result = db.getBlockListAPI(minVotes);
-		
+		Blocklist result;
 		String userAgent = req.getHeader("User-Agent");
-		LOG.info("Sending blocklist to user '" + userName + "' (agent '" + userAgent + "')");
+
+		// Check if incremental sync is requested via "since" parameter
+		String sinceParam = req.getParameter("since");
+		if (sinceParam != null && !sinceParam.isEmpty()) {
+			// Incremental sync: return only changes since the specified version
+			long sinceVersion;
+			try {
+				sinceVersion = Long.parseLong(sinceParam);
+			} catch (NumberFormatException ex) {
+				ServletUtil.sendError(resp, "Invalid 'since' parameter: must be a number.");
+				return;
+			}
+
+			if (sinceVersion < 0) {
+				ServletUtil.sendError(resp, "Parameter 'since' must be non-negative.");
+				return;
+			}
+
+			result = db.getBlocklistUpdateAPI(sinceVersion, minVotes);
+			LOG.info("Sending blocklist update (since {}) to user '{}' (agent '{}')", sinceVersion, userName, userAgent);
+		} else {
+			// Full blocklist
+			result = db.getBlockListAPI(minVotes);
+			LOG.info("Sending blocklist to user '{}' (agent '{}')", userName, userAgent);
+		}
+
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent);
-		
 		ServletUtil.sendResult(req, resp, result);
 	}
 

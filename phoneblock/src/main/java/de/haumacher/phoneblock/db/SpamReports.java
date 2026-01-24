@@ -505,4 +505,37 @@ public interface SpamReports {
 	@Delete("delete from REVISION where ID=#{id}")
 	void removeRevision(int id);
 
+	/**
+	 * Marks a phone number as pending update for incremental blocklist synchronization.
+	 * Called when a number crosses a vote threshold.
+	 */
+	@Update("update NUMBERS set PENDING_UPDATE = true where PHONE = #{phone}")
+	void markPendingUpdate(String phone);
+
+	/**
+	 * Gets all phone numbers that are pending version assignment.
+	 */
+	@Select("select PHONE from NUMBERS where PENDING_UPDATE = true order by PHONE")
+	List<String> getPendingUpdates();
+
+	/**
+	 * Assigns the given version to all pending updates and clears the PENDING_UPDATE flag.
+	 * @return The number of entries updated.
+	 */
+	@Update("update NUMBERS set VERSION = #{version}, PENDING_UPDATE = false where PENDING_UPDATE = true")
+	int assignVersionToPendingUpdates(long version);
+
+	/**
+	 * Gets all blocklist changes since the given version.
+	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 */
+	@Select("""
+		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS,
+		       s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES
+		from NUMBERS s
+		where s.VERSION > #{sinceVersion} and s.ACTIVE
+		order by s.VERSION, s.PHONE
+		""")
+	List<DBNumberInfo> getBlocklistChangesSince(long sinceVersion);
+
 }

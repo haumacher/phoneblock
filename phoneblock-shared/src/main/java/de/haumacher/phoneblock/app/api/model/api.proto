@@ -185,6 +185,9 @@ message RatingInfo {
 message Blocklist {
 	/** Numbers in the blocklist. */
 	repeated BlockListEntry numbers;
+
+	/** Current version of the blocklist for incremental synchronization. */
+	long version;
 }
 
 abstract message AbstractNumberInfo {
