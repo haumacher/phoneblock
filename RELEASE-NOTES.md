@@ -1,6 +1,6 @@
 # PhoneBlock Release Notes
 
-## Version 1.8.7 (In Development)
+## Version 1.9.0 (In Development)
 
 **Status:** Development
 
