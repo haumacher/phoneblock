@@ -140,6 +140,7 @@ public class BlocklistSyncCLI {
 					break;
 
 				default:
+					printHelp();
 					throw new IllegalArgumentException("Unknown argument: " + arg);
 			}
 		}
