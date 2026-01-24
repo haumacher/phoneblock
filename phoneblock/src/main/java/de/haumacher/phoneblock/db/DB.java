@@ -137,6 +137,16 @@ public class DB {
 	public static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
 
 	/**
+	 * Initial version number for the blocklist.
+	 *
+	 * <p>
+	 * Starting at 1 makes <code>since=0</code> equivalent to omitting the parameter entirely
+	 * (both return the full blocklist), which is more intuitive for API consumers.
+	 * </p>
+	 */
+	public static final long INITIAL_BLOCKLIST_VERSION = 1L;
+
+	/**
 	 * One hour in milliseconds.
 	 */
 	public static final long RATE_LIMIT_MS = 1000*60*60;
@@ -1282,7 +1292,7 @@ public class DB {
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
-			long version = (versionStr != null) ? Long.parseLong(versionStr) : 0L;
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
 
 			return Blocklist.create()
 					.setNumbers(numbers)
@@ -1314,7 +1324,7 @@ public class DB {
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
-			long version = (versionStr != null) ? Long.parseLong(versionStr) : 0L;
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
 
 			return Blocklist.create()
 					.setNumbers(numbers)

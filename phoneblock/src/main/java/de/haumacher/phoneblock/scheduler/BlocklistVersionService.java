@@ -205,7 +205,7 @@ public class BlocklistVersionService implements ServletContextListener {
 
 			// Get current version
 			String versionStr = users.getProperty("blocklist.version");
-			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : 0L;
+			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
 
 			// Increment version
 			long newVersion = currentVersion + 1;
