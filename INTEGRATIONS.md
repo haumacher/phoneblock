@@ -435,7 +435,11 @@ Update account settings (e.g., sync device locale).
 
 Download the community-maintained blocklist for offline filtering. This is primarily intended for routers, PBX systems, or apps that need offline blocklist capabilities.
 
-**Important:** For real-time call screening in mobile apps, use the `/check` or `/num` endpoints instead. Only use the blocklist endpoint if you need offline blocking capabilities.
+**Important Notes:**
+- For real-time call screening in mobile apps, use the `/check` or `/num` endpoints instead. Only use the blocklist endpoint if you need offline blocking capabilities.
+- **This endpoint returns ONLY community data** - it does NOT include user-specific personalizations (personal blacklist/whitelist). For complete call filtering, you must also retrieve and check the user's personal lists via `/api/blacklist` and `/api/whitelist`.
+- **Personal whitelist overrides community blocklist** - Always allow calls from numbers on the user's whitelist, even if they appear in the community blocklist.
+- **Personal blacklist blocks regardless of community rating** - Block calls from numbers on the user's blacklist, even if the community has not flagged them.
 
 **Rate Limits:**
 - **Full synchronization** (without `since` parameter): Maximum once per month
@@ -538,12 +542,49 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    List<String> blockedNumbers = localDb.getNumbersAboveThreshold(minVotes);
    ```
 
+4. **Combine with Personal Lists for Call Filtering:**
+   ```java
+   public boolean shouldBlockCall(String phoneNumber) {
+       // 1. Check personal whitelist first - always allow
+       if (personalWhitelist.contains(phoneNumber)) {
+           return false; // Allow call
+       }
+
+       // 2. Check personal blacklist - always block
+       if (personalBlacklist.contains(phoneNumber)) {
+           return true; // Block call
+       }
+
+       // 3. Check community blocklist with threshold
+       BlocklistEntry entry = communityBlocklist.get(phoneNumber);
+       if (entry != null && entry.votes >= userThreshold) {
+           return true; // Block based on community votes
+       }
+
+       // 4. Default: allow call
+       return false;
+   }
+
+   // Sync personal lists separately
+   public void syncPersonalLists() {
+       // Fetch personal blacklist
+       BlacklistResponse blacklist = api.getBlacklist();
+       localDb.storePersonalBlacklist(blacklist.numbers);
+
+       // Fetch personal whitelist
+       WhitelistResponse whitelist = api.getWhitelist();
+       localDb.storePersonalWhitelist(whitelist.numbers);
+   }
+   ```
+
 **Best Practices:**
 - Store the blocklist locally in a database (SQLite, etc.)
 - Schedule incremental syncs daily (e.g., at night when device is charging)
 - Schedule full syncs monthly to catch any missed updates
 - Apply appropriate threshold filtering based on your use case
 - Handle `votes=0` entries as deletions from your local blocklist
+- **Always sync and check personal black/whitelist separately** - personal lists take precedence over community data
+- Update personal lists when users add/remove numbers via your app's UI
 
 ### 8. Test Connectivity
 
