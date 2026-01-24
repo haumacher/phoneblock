@@ -50,7 +50,8 @@ public class BlocklistServlet extends HttpServlet {
 
 			if (!DB.isValidBlocklistThreshold(minVotes)) {
 				ServletUtil.sendError(resp,
-					"Invalid minVotes parameter. Must be one of the predefined thresholds: 2, 4, 10, 20, 50, 100. " +
+					"Invalid minVotes parameter. Must be one of the predefined thresholds: " +
+					DB.getBlocklistThresholdsString() + ". " +
 					"These are the only values that guarantee consistent incremental synchronization.");
 				return;
 			}

@@ -1146,6 +1146,22 @@ public class DB {
 	}
 
 	/**
+	 * Returns a formatted string of valid blocklist thresholds for error messages.
+	 *
+	 * @return A comma-separated string of all values from {@link #BLOCKLIST_THRESHOLDS}
+	 */
+	public static String getBlocklistThresholdsString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < BLOCKLIST_THRESHOLDS.length; i++) {
+			if (i > 0) {
+				sb.append(", ");
+			}
+			sb.append(BLOCKLIST_THRESHOLDS[i]);
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * The time in milliseconds since epoch when the last update to the spam report table was done.
 	 */
 	public Long getLastSpamReport() {
