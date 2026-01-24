@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.4.1"
+		"version": "v1.5.0"
 	},
 	"servers": [
 		{
@@ -229,10 +229,10 @@
 		"/blocklist": {
 			"get": {
 				"summary": "Retrieves the blocklist with optional incremental synchronization",
-				"description": "Returns the blocklist of phone numbers. When the 'since' parameter is omitted, returns the complete blocklist. When 'since' is provided with a version number, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.",
+				"description": "Returns the blocklist of phone numbers without any user-specific filtering (no whitelist/blacklist applied). Clients are responsible for applying their own personalization. This allows efficient caching. When the 'since' parameter is omitted, returns the complete blocklist. When 'since' is provided with a version number, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.",
 				"responses": {
 					"200": {
-						"description": "Retrieves all currently blocked phone numbers with corresponding information from the PhoneBlock database.",
+						"description": "Returns blocked phone numbers from the PhoneBlock database without user-specific filtering. Clients must apply their own whitelist/blacklist personalization.",
 						"content": {
 							"application/json": {
 								"schema": {

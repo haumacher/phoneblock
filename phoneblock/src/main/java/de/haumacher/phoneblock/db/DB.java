@@ -1261,16 +1261,20 @@ public class DB {
 
 	/**
 	 * Looks up the newest entries in the blocklist.
+	 *
+	 * <p>
+	 * Returns the raw blocklist without any user-specific filtering (no whitelist/blacklist applied).
+	 * Clients are responsible for applying their own personalization. This allows the response
+	 * to be cached and served identically to all users, improving efficiency.
+	 * </p>
 	 */
 	public Blocklist getBlockListAPI(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
-			Set<String> whiteList = reports.getWhiteList();
 
 			List<BlockListEntry> numbers = reports.getBlocklist(minVotes)
 					.stream()
-					.filter(s -> !whiteList.contains(s.getPhone()))
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
@@ -1287,16 +1291,20 @@ public class DB {
 	/**
 	 * Gets blocklist changes since the given version (incremental sync).
 	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 *
+	 * <p>
+	 * Returns the raw blocklist changes without any user-specific filtering (no whitelist/blacklist applied).
+	 * Clients are responsible for applying their own personalization. This allows the response
+	 * to be cached and served identically to all users, improving efficiency.
+	 * </p>
 	 */
 	public Blocklist getBlocklistUpdateAPI(long sinceVersion, int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
-			Set<String> whiteList = reports.getWhiteList();
 
 			List<BlockListEntry> numbers = reports.getBlocklistChangesSince(sinceVersion)
 					.stream()
-					.filter(s -> !whiteList.contains(s.getPhone()))
 					.filter(s -> s.getVotes() >= minVotes || s.getVotes() == 0)
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
