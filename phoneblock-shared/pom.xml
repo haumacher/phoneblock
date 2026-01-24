@@ -40,6 +40,21 @@
 			<version>${msgbuf.version}</version>
 			<artifactId>msgbuf-api</artifactId>
 		</dependency>
+
+		<!-- SLF4J for logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.9</version>
+		</dependency>
+
+		<!-- Tinylog binding for CLI (optional) -->
+		<dependency>
+			<groupId>org.tinylog</groupId>
+			<artifactId>slf4j-tinylog</artifactId>
+			<version>2.6.2</version>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -48,13 +63,37 @@
 				<groupId>de.haumacher.msgbuf</groupId>
 				<version>${msgbuf.version}</version>
 				<artifactId>msgbuf-generator-maven-plugin</artifactId>
-				
+
 				<executions>
 					<execution>
 						<id>generate-protocols</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Build executable CLI JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>cli</shadedClassifierName>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>de.haumacher.phoneblock.sync.cli.BlocklistSyncCLI</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
