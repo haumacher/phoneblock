@@ -24,16 +24,18 @@ import jakarta.servlet.ServletContextListener;
 
 /**
  * Service for assigning version numbers to blocklist changes for incremental synchronization.
- * Runs daily at a configurable time (default: 3:00 AM) to process all pending updates.
+ * Runs at a configurable interval (default: daily at 3:00 AM) to process all pending updates.
  *
  * <p>The schedule can be configured via JNDI or system properties:</p>
  * <ul>
  * <li><code>blocklist/version/hour</code> - Hour of day to run (0-23), default: 3</li>
  * <li><code>blocklist/version/minute</code> - Minute of hour to run (0-59), default: 0</li>
+ * <li><code>blocklist/version/intervalMinutes</code> - Interval between runs in minutes, default: 1440 (24 hours)</li>
  * <li><code>blocklist/version/initialDelayMinutes</code> - Initial delay in minutes for testing (overrides schedule), default: -1 (disabled)</li>
  * </ul>
  *
- * <p>For testing, you can trigger the job immediately by setting <code>blocklist.version.initialDelayMinutes=0</code> as a system property.</p>
+ * <p>For testing, you can trigger the job immediately and run it frequently by setting:</p>
+ * <code>blocklist.version.initialDelayMinutes=0 -Dblocklist.version.intervalMinutes=5</code>
  */
 public class BlocklistVersionService implements ServletContextListener {
 
@@ -50,6 +52,7 @@ public class BlocklistVersionService implements ServletContextListener {
 	private int _scheduleHour = 3;
 	private int _scheduleMinute = 0;
 	private long _initialDelayMinutes = -1; // -1 means use calculated delay based on schedule time
+	private long _intervalMinutes = 1440; // 24 hours in minutes (1440 = 24 * 60)
 
 	public BlocklistVersionService(SchedulerService scheduler, DBService dbService) {
 		_schedulerService = scheduler;
@@ -67,7 +70,8 @@ public class BlocklistVersionService implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		loadConfig();
 
-		LOG.info("Starting blocklist version service with daily version assignment at {}:{:02d}", _scheduleHour, _scheduleMinute);
+		LOG.info("Starting blocklist version service: schedule={}:{:02d}, interval={} minutes",
+			_scheduleHour, _scheduleMinute, _intervalMinutes);
 
 		long initialDelay;
 		if (_initialDelayMinutes >= 0) {
@@ -92,11 +96,11 @@ public class BlocklistVersionService implements ServletContextListener {
 			initialDelay = firstRun.getTimeInMillis() - System.currentTimeMillis();
 		}
 
-		// Run version assignment at scheduled time daily
+		// Run version assignment at configured interval
 		_task = _schedulerService.scheduler().scheduleAtFixedRate(
 			this::assignVersions,
 			initialDelay,
-			24 * 60 * 60 * 1000, // Period: 24 hours
+			_intervalMinutes * 60 * 1000, // Convert minutes to milliseconds
 			TimeUnit.MILLISECONDS
 		);
 
@@ -112,6 +116,7 @@ public class BlocklistVersionService implements ServletContextListener {
 	 * <ul>
 	 * <li><code>blocklist/version/hour</code> - Hour of day to run (0-23), default: 3</li>
 	 * <li><code>blocklist/version/minute</code> - Minute of hour to run (0-59), default: 0</li>
+	 * <li><code>blocklist/version/intervalMinutes</code> - Interval between runs in minutes, default: 1440 (24 hours)</li>
 	 * <li><code>blocklist/version/initialDelayMinutes</code> - Initial delay in minutes for testing (overrides schedule calculation), default: -1 (disabled)</li>
 	 * </ul>
 	 */
@@ -139,6 +144,15 @@ public class BlocklistVersionService implements ServletContextListener {
 			}
 
 			try {
+				_intervalMinutes = ((Number) envCtx.lookup("blocklist/version/intervalMinutes")).longValue();
+			} catch (NamingException ex) {
+				String value = System.getProperty("blocklist.version.intervalMinutes");
+				if (value != null) {
+					_intervalMinutes = Long.parseLong(value);
+				}
+			}
+
+			try {
 				_initialDelayMinutes = ((Number) envCtx.lookup("blocklist/version/initialDelayMinutes")).longValue();
 			} catch (NamingException ex) {
 				String value = System.getProperty("blocklist.version.initialDelayMinutes");
@@ -159,6 +173,10 @@ public class BlocklistVersionService implements ServletContextListener {
 			LOG.warn("Invalid schedule minute {}, using default 0", _scheduleMinute);
 			_scheduleMinute = 0;
 		}
+		if (_intervalMinutes < 1) {
+			LOG.warn("Invalid interval {} minutes, using default 1440 (24 hours)", _intervalMinutes);
+			_intervalMinutes = 1440;
+		}
 	}
 
 	@Override
@@ -175,7 +193,7 @@ public class BlocklistVersionService implements ServletContextListener {
 
 	/**
 	 * Assigns version numbers to all pending blocklist updates.
-	 * This is called automatically at 3:00 AM daily, or can be manually triggered.
+	 * This is called automatically at the configured schedule, or can be manually triggered for testing.
 	 */
 	public void assignVersions() {
 		LOG.info("Starting scheduled blocklist version assignment");
