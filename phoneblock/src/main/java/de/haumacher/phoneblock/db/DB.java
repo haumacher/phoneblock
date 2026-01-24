@@ -125,6 +125,28 @@ public class DB {
 	public static final int MIN_AGGREGATE_100 = 3;
 
 	/**
+	 * Vote thresholds that trigger blocklist version updates.
+	 * When a number crosses any of these thresholds, it's marked for version assignment.
+	 *
+	 * <p>
+	 * These are the only valid values for the <code>minVotes</code> parameter in blocklist APIs.
+	 * Using other values will result in inconsistent incremental synchronization, as version
+	 * updates are only triggered when numbers cross these specific thresholds.
+	 * </p>
+	 */
+	public static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
+
+	/**
+	 * Initial version number for the blocklist.
+	 *
+	 * <p>
+	 * Starting at 1 makes <code>since=0</code> equivalent to omitting the parameter entirely
+	 * (both return the full blocklist), which is more intuitive for API consumers.
+	 * </p>
+	 */
+	public static final long INITIAL_BLOCKLIST_VERSION = 1L;
+
+	/**
 	 * One hour in milliseconds.
 	 */
 	public static final long RATE_LIMIT_MS = 1000*60*60;
@@ -844,8 +866,15 @@ public class DB {
 		if (votes > 0) {
 			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, time);
 		}
-		
-		return classify(oldVotes) != classify(newVotes);
+
+		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
+		boolean thresholdCrossed = crossesThreshold(oldVotes, newVotes);
+
+		if (thresholdCrossed) {
+			reports.markPendingUpdate(phone);
+		}
+
+		return classifyChanged;
 	}
 
 	public void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
@@ -1081,10 +1110,65 @@ public class DB {
 		}
 		else if (newVotes < MIN_VOTES) {
 			return 1;
-		} 
+		}
 		else {
 			return 2;
 		}
+	}
+
+	/**
+	 * Checks if the vote count crosses any blocklist threshold.
+	 * Returns true if the number should be marked for version update.
+	 */
+	private boolean crossesThreshold(int oldVotes, int newVotes) {
+		for (int threshold : BLOCKLIST_THRESHOLDS) {
+			boolean wasBelowThreshold = oldVotes < threshold;
+			boolean isAboveThreshold = newVotes >= threshold;
+			if (wasBelowThreshold != isAboveThreshold) {
+				return true;
+			}
+		}
+		// Check for addition (0 -> positive votes) or deletion (positive -> 0 votes)
+		if (oldVotes > 0 && newVotes <= 0) return true;
+		if (oldVotes <= 0 && newVotes > 0) return true;
+		return false;
+	}
+
+	/**
+	 * Checks if the given minVotes value is a valid blocklist threshold.
+	 *
+	 * <p>
+	 * Only the predefined threshold values ({@link #BLOCKLIST_THRESHOLDS}) can be used
+	 * for consistent incremental synchronization, as version updates are only triggered
+	 * when numbers cross these specific thresholds.
+	 * </p>
+	 *
+	 * @param minVotes The minimum votes value to validate
+	 * @return true if the value is a valid threshold, false otherwise
+	 */
+	public static boolean isValidBlocklistThreshold(int minVotes) {
+		for (int threshold : BLOCKLIST_THRESHOLDS) {
+			if (minVotes == threshold) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns a formatted string of valid blocklist thresholds for error messages.
+	 *
+	 * @return A comma-separated string of all values from {@link #BLOCKLIST_THRESHOLDS}
+	 */
+	public static String getBlocklistThresholdsString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < BLOCKLIST_THRESHOLDS.length; i++) {
+			if (i > 0) {
+				sb.append(", ");
+			}
+			sb.append(BLOCKLIST_THRESHOLDS[i]);
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -1186,19 +1270,65 @@ public class DB {
 	}
 
 	/**
-	 * Looks up the newest entries in the blocklist.
+	 * Looks up all entries in the blocklist.
+	 *
+	 * <p>
+	 * Returns all active numbers (votes > 0) without any filtering.
+	 * No user-specific filtering (whitelist/blacklist) is applied.
+	 * No vote threshold filtering is applied - clients must filter by their preferred threshold.
+	 * This allows the response to be cached and served identically to all users, improving efficiency,
+	 * and ensures clients can detect when numbers drop below their threshold.
+	 * </p>
 	 */
-	public Blocklist getBlockListAPI(int minVotes) {
+	public Blocklist getBlockListAPI() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			Set<String> whiteList = reports.getWhiteList();
-			List<BlockListEntry> numbers = reports.getBlocklist(minVotes)
+			Users users = session.getMapper(Users.class);
+
+			List<BlockListEntry> numbers = reports.getBlocklist()
 					.stream()
-					.filter(s -> !whiteList.contains(s.getPhone()))
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
-			return Blocklist.create().setNumbers(numbers);
+
+			String versionStr = users.getProperty("blocklist.version");
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
+
+			return Blocklist.create()
+					.setNumbers(numbers)
+					.setVersion(version);
+		}
+	}
+
+	/**
+	 * Gets blocklist changes since the given version (incremental sync).
+	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 *
+	 * <p>
+	 * Returns all blocklist changes without any filtering.
+	 * No user-specific filtering (whitelist/blacklist) is applied.
+	 * No vote threshold filtering is applied - clients must filter by their preferred threshold.
+	 * This allows the response to be cached and served identically to all users, improving efficiency,
+	 * and ensures clients can detect when numbers drop below their threshold.
+	 * </p>
+	 */
+	public Blocklist getBlocklistUpdateAPI(long sinceVersion) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			Users users = session.getMapper(Users.class);
+
+			List<BlockListEntry> numbers = reports.getBlocklistChangesSince(sinceVersion)
+					.stream()
+					.map(DB::toBlocklistEntry)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+
+			String versionStr = users.getProperty("blocklist.version");
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
+
+			return Blocklist.create()
+					.setNumbers(numbers)
+					.setVersion(version);
 		}
 	}
 	
@@ -1210,8 +1340,32 @@ public class DB {
 		}
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
-				.setVotes(n.getVotes())
+				.setVotes(normalizeVotesToThreshold(n.getVotes()))
 				.setRating(rating(n));
+	}
+
+	/**
+	 * Normalizes a vote count to the nearest threshold value.
+	 *
+	 * <p>
+	 * This ensures consistency between when updates are triggered (at threshold crossings)
+	 * and the vote counts transmitted to clients. A number with 5 votes (between thresholds
+	 * 4 and 10) is normalized to 4, since no update would be sent until it reaches 10 votes.
+	 * </p>
+	 *
+	 * @param votes The actual vote count.
+	 * @return The normalized threshold value (0 if below the lowest threshold).
+	 */
+	private static int normalizeVotesToThreshold(int votes) {
+		// Find the highest threshold that votes meets or exceeds
+		// Search from high to low for efficiency (most numbers have higher votes)
+		for (int i = BLOCKLIST_THRESHOLDS.length - 1; i >= 0; i--) {
+			if (votes >= BLOCKLIST_THRESHOLDS[i]) {
+				return BLOCKLIST_THRESHOLDS[i];
+			}
+		}
+		// Below all thresholds
+		return 0;
 	}
 
 	public static Rating rating(NumberInfo n) {

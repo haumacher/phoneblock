@@ -20,13 +20,38 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * {@link HttpServlet} serving the blocklist.
+ * {@link HttpServlet} serving the blocklist with optional incremental synchronization.
+ *
+ * <p>
+ * <b>Vote Count Normalization:</b> All vote counts are normalized to predefined threshold
+ * values (see {@link DB#BLOCKLIST_THRESHOLDS}). For example, a number with 5-9 votes is
+ * transmitted as having 4 votes. This ensures consistency between when updates are triggered
+ * (only at threshold crossings) and the vote counts clients receive.
+ * </p>
+ *
+ * <p>
+ * <b>Incremental Synchronization:</b> Updates are only sent when numbers cross threshold
+ * boundaries. A number going from 5 to 6 votes triggers no update (both normalize to 4),
+ * but crossing from 9 to 10 votes triggers an update (4 → 10). Numbers dropping below
+ * the minimum threshold are sent with 0 votes, indicating removal from the blocklist.
+ * </p>
+ *
+ * <p>
+ * <b>Client-Side Filtering:</b> Clients should filter by one of the predefined threshold
+ * values to ensure consistency with the update mechanism. Filtering by arbitrary values
+ * (e.g., minVotes=7) is not meaningful since no updates occur at non-threshold values.
+ * </p>
+ *
+ * <p>
+ * <b>Caching:</b> The response contains no user-specific data and can be cached efficiently.
+ * All authenticated users receive identical responses for the same version.
+ * </p>
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)
 public class BlocklistServlet extends HttpServlet {
-	
+
 	public static final String PATH = "/api/blocklist";
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 
 	@Override
@@ -36,29 +61,37 @@ public class BlocklistServlet extends HttpServlet {
 			ServletUtil.sendAuthenticationRequest(resp);
 			return;
 		}
-		
-		int minVotes = 4;
-		String minVotesParam = req.getParameter("minVotes");
-		if (minVotesParam != null) {
-			try {
-				minVotes = Integer.parseInt(minVotesParam);
-			} catch (NumberFormatException ex) {
-				ServletUtil.sendError(resp, "Invalid minVotes parameter.");
-				return;
-			}
-			
-			if (minVotes < 2) {
-				ServletUtil.sendError(resp, "Parameter minVotes must be 2 or greater.");
-				return;
-			}
-		}
+
 		DB db = DBService.getInstance();
-		Blocklist result = db.getBlockListAPI(minVotes);
-		
+		Blocklist result;
 		String userAgent = req.getHeader("User-Agent");
-		LOG.info("Sending blocklist to user '" + userName + "' (agent '" + userAgent + "')");
+
+		// Check if incremental sync is requested via "since" parameter
+		String sinceParam = req.getParameter("since");
+		if (sinceParam != null && !sinceParam.isEmpty()) {
+			// Incremental sync: return only changes since the specified version
+			long sinceVersion;
+			try {
+				sinceVersion = Long.parseLong(sinceParam);
+			} catch (NumberFormatException ex) {
+				ServletUtil.sendError(resp, "Invalid 'since' parameter: must be a number.");
+				return;
+			}
+
+			if (sinceVersion < 0) {
+				ServletUtil.sendError(resp, "Parameter 'since' must be non-negative.");
+				return;
+			}
+
+			result = db.getBlocklistUpdateAPI(sinceVersion);
+			LOG.info("Sending blocklist update (since {}) to user '{}' (agent '{}')", sinceVersion, userName, userAgent);
+		} else {
+			// Full blocklist
+			result = db.getBlockListAPI();
+			LOG.info("Sending blocklist to user '{}' (agent '{}')", userName, userAgent);
+		}
+
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent);
-		
 		ServletUtil.sendResult(req, resp, result);
 	}
 

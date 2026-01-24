@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.4.1"
+		"version": "v1.5.0"
 	},
 	"servers": [
 		{
@@ -228,10 +228,11 @@
 		},
 		"/blocklist": {
 			"get": {
-				"summary": "Retrieves the current list of blocked phone numbers",
+				"summary": "Retrieves the blocklist with optional incremental synchronization",
+				"description": "Returns all active phone numbers from the blocklist. Vote counts are normalized to predefined threshold values (2, 4, 10, 20, 50, 100) - for example, a number with 5-9 votes is transmitted as having 4 votes. This normalization ensures consistency between when updates are triggered (only at threshold crossings) and the vote counts transmitted. Clients should filter by one of these threshold values (2, 4, 10, 20, 50, or 100). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number dropped below all thresholds and should be removed from the client's local blocklist.\n\n**Important:** This endpoint returns only the community-maintained blocklist data. It does NOT include user-specific personalizations (personal blacklist/whitelist). For call filtering, clients must check BOTH the community blocklist AND the user's personal black/whitelist entries (retrieved via /api/blacklist and /api/whitelist). Personal whitelist entries should override community blocklist entries, and personal blacklist entries should block calls regardless of community ratings.\n\n**Rate Limits:** To avoid excessive server load, clients should limit full synchronization (without 'since' parameter) to a maximum of once per month. Incremental synchronization (with 'since' parameter) should be performed at most once per day. Clients exceeding these limits may be subject to rate limiting.\n\n**Implementation:** Perform an initial full sync to retrieve the complete blocklist and its version number. Store this data locally and save the version number. For subsequent updates, use the saved version number in the 'since' parameter to retrieve only changes. Apply the incremental updates to your local copy: add/update entries with votes > 0, remove entries with votes = 0. After each sync, update your saved version number to the one returned in the response.",
 				"responses": {
 					"200": {
-						"description": "Retrieves all currently blocked phone numbers with corresponding information from the PhoneBlock database.",
+						"description": "Returns all active phone numbers from the PhoneBlock database with normalized vote counts (2, 4, 10, 20, 50, or 100). Numbers with votes=0 indicate removal. Clients should filter by one of these threshold values for consistency with the incremental update mechanism.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -258,10 +259,16 @@
 														]
 													},
 													"votes": {
-														"type": "integer"
+														"type": "integer",
+														"description": "Normalized vote count. Possible values: 0 (removed), 2, 4, 10, 20, 50, or 100. Normalization ensures consistency with when updates are triggered.",
+														"enum": [0, 2, 4, 10, 20, 50, 100]
 													}
 												}
 											}
+										},
+										"version": {
+											"type": "integer",
+											"description": "Current version of the blocklist for incremental synchronization"
 										}
 									}
 								},
@@ -275,9 +282,10 @@
 										{
 											"phone": "+390456789123",
 											"rating": "F_GAMBLE",
-											"votes": 8
+											"votes": 10
 										}
-									]
+									],
+									"version": 42
 								}
 							}
 						}
@@ -292,14 +300,12 @@
 			},
 			"parameters": [
 				{
-					"name": "minVotes",
+					"name": "since",
 					"in": "query",
-					"description": "The minimum votes for a number to be added to the blocklist.",
+					"description": "Optional version number for incremental synchronization. When provided, returns only changes since the specified version. Updates are triggered only when numbers cross threshold boundaries (2, 4, 10, 20, 50, 100). Entries with votes=0 indicate the number dropped below the minimum threshold and should be removed from the client's local blocklist.",
 					"required": false,
-					"default": "4",
 					"schema": {
-						"type": "integer",
-						"minimum": 2
+						"type": "integer"
 					}
 				},
 				{

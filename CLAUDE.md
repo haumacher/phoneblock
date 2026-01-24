@@ -212,12 +212,19 @@ Protocol buffer-like message definitions using msgbuf framework. Generated Java 
 
 ## API Integration
 
+**API Documentation:**
+- OpenAPI 3.0 specification: `phoneblock/src/main/webapp/api/phoneblock.json`
+- Accessible at: https://phoneblock.net/phoneblock/api/phoneblock.json
+- When modifying API endpoints, update the OpenAPI specification to keep documentation current
+
 **Base URL:** https://phoneblock.net/phoneblock/api/
 
 **Key Endpoints:**
 - `GET /num/{phone}?format=json` - Query spam status
 - `POST /rate` - Submit spam rating
-- `GET /download?format=vcf` - Download blocklist
+- `GET /blocklist` - Download blocklist with incremental sync support
+  - Full sync: max once per month
+  - Incremental sync (`?since=version`): max once per day
 
 **Authentication:**
 - Bearer token in Authorization header
@@ -310,6 +317,11 @@ Example - Adding conditional device name display:
 **Templates provided:**
 - `.phoneblock.template` files in respective directories
 - Copy and fill in actual values
+
+**JNDI Configuration:**
+- See [JNDI-CONFIGURATION.md](JNDI-CONFIGURATION.md) for comprehensive documentation of all JNDI configuration options for production deployments
+- JNDI properties can be configured in Tomcat's `context.xml` or as system properties
+- When adding new JNDI properties to any service, update JNDI-CONFIGURATION.md
 
 ## Testing
 
