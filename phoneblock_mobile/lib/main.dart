@@ -594,6 +594,7 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
       routerConfig: router,
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        answerbotLocalizationsDelegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
