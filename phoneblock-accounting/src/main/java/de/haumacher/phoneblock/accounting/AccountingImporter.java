@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -28,6 +30,7 @@ import de.haumacher.phoneblock.accounting.config.AccountingConfig;
 import de.haumacher.phoneblock.accounting.db.AccountingDB;
 import de.haumacher.phoneblock.accounting.db.ContributionRecord;
 import de.haumacher.phoneblock.accounting.db.Contributions;
+import de.haumacher.phoneblock.accounting.db.Users;
 
 /**
  * Command-line tool for importing PhoneBlock contribution accounting data from CSV bank exports.
@@ -215,6 +218,11 @@ public class AccountingImporter {
 	private static final String BETRAG_COLUMN = "Betrag";
 	private static final String PHONEBLOCK_KEYWORD = "phoneblock";
 
+	/**
+	 * Pattern to extract username from "PhoneBlock-XXXXX" format.
+	 */
+	private static final Pattern USERNAME_PATTERN = Pattern.compile("PhoneBlock-([^\\s]+)", Pattern.CASE_INSENSITIVE);
+
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
 	/**
@@ -244,6 +252,7 @@ public class AccountingImporter {
 
 			try (SqlSession session = _db.openSession()) {
 				Contributions contributions = session.getMapper(Contributions.class);
+				Users users = session.getMapper(Users.class);
 
 				try {
 					ColumnMapping columnMapping = null;
@@ -266,7 +275,7 @@ public class AccountingImporter {
 						// Process data records after header
 						recordCount++;
 
-						ProcessResult result = processRecord(record, columnMapping, contributions);
+						ProcessResult result = processRecord(record, columnMapping, contributions, users);
 						if (result == ProcessResult.PHONEBLOCK_NEW) {
 							filteredCount++;
 							newCount++;
@@ -331,9 +340,10 @@ public class AccountingImporter {
 	 * @param record The CSV record to process
 	 * @param columnMapping The column index mapping from the header
 	 * @param contributions The contributions mapper
+	 * @param users The users mapper
 	 * @return ProcessResult indicating whether the record was processed
 	 */
-	private ProcessResult processRecord(CSVRecord record, ColumnMapping columnMapping, Contributions contributions) {
+	private ProcessResult processRecord(CSVRecord record, ColumnMapping columnMapping, Contributions contributions, Users users) {
 		LOG.debug("Processing record: {}", record.getRecordNumber());
 
 		// Extract fields from CSV using column mapping
@@ -365,8 +375,21 @@ public class AccountingImporter {
 			// Parse date to timestamp
 			long receivedTimestamp = parseDate(buchungDate);
 
+			// Try to find the contributing user by extracting username from message
+			Long userId = null;
+			String username = extractUsername(verwendungszweck);
+			if (username != null) {
+				userId = users.findUserIdByUsername(username);
+				if (userId != null) {
+					LOG.debug("Found user ID {} for username '{}'", userId, username);
+				} else {
+					LOG.debug("No user found for username '{}'", username);
+				}
+			}
+
 			// Create and insert contribution
 			ContributionRecord contribution = new ContributionRecord(
+				userId,
 				sender,
 				tx,
 				amountCents,
@@ -385,6 +408,25 @@ public class AccountingImporter {
 			LOG.error("Failed to process record {}: {}", record.getRecordNumber(), e.getMessage(), e);
 			return ProcessResult.NOT_PHONEBLOCK;
 		}
+	}
+
+	/**
+	 * Extracts the username from a PhoneBlock contribution message.
+	 *
+	 * @param message The contribution message (Verwendungszweck)
+	 * @return The extracted username, or null if no pattern found
+	 */
+	private String extractUsername(String message) {
+		if (message == null) {
+			return null;
+		}
+
+		Matcher matcher = USERNAME_PATTERN.matcher(message);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+
+		return null;
 	}
 
 	/**

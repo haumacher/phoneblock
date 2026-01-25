@@ -51,6 +51,7 @@ public class AccountingDB implements AutoCloseable {
 
 		Configuration configuration = new Configuration(environment);
 		configuration.addMapper(Contributions.class);
+		configuration.addMapper(Users.class);
 
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 

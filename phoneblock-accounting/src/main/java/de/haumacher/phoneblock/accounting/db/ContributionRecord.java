@@ -9,6 +9,7 @@ package de.haumacher.phoneblock.accounting.db;
 public class ContributionRecord {
 
 	private long id;
+	private Long userId;
 	private String sender;
 	private String tx;
 	private int amount;
@@ -25,13 +26,15 @@ public class ContributionRecord {
 	/**
 	 * Creates a new contribution record with all fields.
 	 *
+	 * @param userId The user ID who made the contribution (can be null)
 	 * @param sender The sender's name
 	 * @param tx The transaction identifier (sender + date)
 	 * @param amount The amount in cents
 	 * @param message The purpose/message field
 	 * @param received The timestamp when the contribution was received (Unix milliseconds)
 	 */
-	public ContributionRecord(String sender, String tx, int amount, String message, long received) {
+	public ContributionRecord(Long userId, String sender, String tx, int amount, String message, long received) {
+		this.userId = userId;
 		this.sender = sender;
 		this.tx = tx;
 		this.amount = amount;
@@ -45,6 +48,14 @@ public class ContributionRecord {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getSender() {

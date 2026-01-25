@@ -27,8 +27,8 @@ public interface Contributions {
 	 * @param contribution The contribution record to insert
 	 */
 	@Insert("""
-		INSERT INTO CONTRIBUTIONS (SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK)
-		VALUES (#{sender}, #{tx}, #{amount}, #{message}, #{received}, FALSE)
+		INSERT INTO CONTRIBUTIONS (USER_ID, SENDER, TX, AMOUNT, MESSAGE, RECEIVED, ACK)
+		VALUES (#{userId}, #{sender}, #{tx}, #{amount}, #{message}, #{received}, FALSE)
 	""")
 	@Options(useGeneratedKeys = true, keyProperty = "id")
 	void insert(ContributionRecord contribution);
