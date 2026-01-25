@@ -6,9 +6,11 @@ package de.haumacher.phoneblock.accounting;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,16 +27,19 @@ class AccountingImporterTest {
 
 	@Test
 	void testImportEmptyCsv() throws IOException {
-		// Create empty CSV file with header only
+		// Create CSV file with German bank format header but no data
 		File csvFile = new File(tempDir, "empty.csv");
-		try (FileWriter writer = new FileWriter(csvFile)) {
-			writer.write("Date,Amount,Reference,Description\n");
+		try (OutputStreamWriter writer = new OutputStreamWriter(
+				new FileOutputStream(csvFile), StandardCharsets.UTF_8)) {
+			writer.write("Umsatzanzeige;Datei erstellt am: 25.01.2026 17:31\n");
+			writer.write("\n");
+			writer.write("Buchung;Wertstellungsdatum;Auftraggeber/Empfänger;Buchungstext;Verwendungszweck;Betrag;Währung\n");
 		}
 
 		AccountingImporter importer = new AccountingImporter();
 
 		// Should not throw exception
-		assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath()));
+		assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8));
 	}
 
 	@Test
@@ -51,17 +56,23 @@ class AccountingImporterTest {
 
 	@Test
 	void testImportSampleCsv() throws IOException {
-		// Create sample CSV with test data
+		// Create sample CSV with German bank format and PhoneBlock contributions
 		File csvFile = new File(tempDir, "sample.csv");
-		try (FileWriter writer = new FileWriter(csvFile)) {
-			writer.write("Date,Amount,Reference,Description\n");
-			writer.write("2026-01-15,10.00,REF123,Test contribution\n");
-			writer.write("2026-01-20,25.50,REF124,Another contribution\n");
+		try (OutputStreamWriter writer = new OutputStreamWriter(
+				new FileOutputStream(csvFile), StandardCharsets.UTF_8)) {
+			writer.write("Umsatzanzeige;Datei erstellt am: 25.01.2026 17:31\n");
+			writer.write("\n");
+			writer.write("IBAN;DE00 0000 0000 0000 0000 00\n");
+			writer.write("\n");
+			writer.write("Buchung;Wertstellungsdatum;Auftraggeber/Empfänger;Buchungstext;Verwendungszweck;Betrag;Währung\n");
+			writer.write("20.01.2026;20.01.2026;Max Mustermann;Gutschrift aus Dauerauftrag;PhoneBlock-7b2f1641-298e;5,00;EUR\n");
+			writer.write("20.01.2026;20.01.2026;John Doe;Gutschrift;Some other purpose;10,00;EUR\n");
+			writer.write("19.01.2026;19.01.2026;Erika Musterfrau;Gutschrift;PhoneBlock-cf4081f7-5e4b;25,00;EUR\n");
 		}
 
 		AccountingImporter importer = new AccountingImporter();
 
 		// Should not throw exception
-		assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath()));
+		assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8));
 	}
 }
