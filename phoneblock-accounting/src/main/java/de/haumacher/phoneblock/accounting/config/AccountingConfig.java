@@ -117,7 +117,15 @@ public class AccountingConfig {
 				return false;
 			}
 
-			if (arg.equals("-f") || arg.equals("--file")) {
+			if (arg.equals("-c") || arg.equals("--config")) {
+				// Config file option is handled before calling parseArguments
+				// Skip it and its value here
+				if (i + 1 >= args.length) {
+					LOG.error("Missing value for {}", arg);
+					return false;
+				}
+				i++; // Skip the config file path
+			} else if (arg.equals("-f") || arg.equals("--file")) {
 				if (i + 1 >= args.length) {
 					LOG.error("Missing value for {}", arg);
 					return false;
