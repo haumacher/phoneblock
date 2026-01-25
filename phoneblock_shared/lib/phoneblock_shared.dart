@@ -9,6 +9,7 @@ export 'src/models/proto.dart';
 
 // API
 export 'src/api/Api.dart';
+export 'src/api/auth_provider.dart';
 export 'src/api/base_path.dart';
 export 'src/api/sendRequest.dart';
 export 'src/api/httpAddons.dart';
@@ -18,7 +19,6 @@ export 'src/screens/AnswerBotList.dart';
 export 'src/screens/AnswerBotView.dart';
 export 'src/screens/BotSetupForm.dart';
 export 'src/screens/CallListView.dart';
-export 'src/screens/LoginScreen.dart';
 
 // Widgets
 export 'src/widgets/ErrorDialog.dart';

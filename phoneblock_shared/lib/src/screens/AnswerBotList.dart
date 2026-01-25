@@ -7,18 +7,22 @@ import '../api/Api.dart';
 import './BotSetupForm.dart';
 import './CallListView.dart';
 import '../widgets/ErrorDialog.dart';
-import './LoginScreen.dart';
 import '../widgets/TitleRow.dart';
 import '../api/httpAddons.dart';
 import '../models/proto.dart';
 import 'package:http/http.dart' as http;
 import '../api/sendRequest.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+
+/// Callback function for handling login when authentication is required.
+/// Returns true if login was successful, false otherwise.
+typedef LoginHandler = Future<bool> Function(BuildContext context);
 
 class AnswerBotList extends StatefulWidget {
-  const AnswerBotList({super.key});
+  /// Optional login handler for when authentication is required.
+  /// If not provided, shows a default "Login required" message.
+  final LoginHandler? onLoginRequired;
+
+  const AnswerBotList({super.key, this.onLoginRequired});
 
   @override
   State<StatefulWidget> createState() => AnswerBotListState();
@@ -102,9 +106,11 @@ class AnswerBotListState extends State<AnswerBotList> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton(
-                          onPressed: () async {
-                            await login(context);
-                            requestBotList();
+                          onPressed: widget.onLoginRequired == null ? null : () async {
+                            bool success = await widget.onLoginRequired!(context);
+                            if (success) {
+                              requestBotList();
+                            }
                           },
                           child: const Text("Login")
                       )
@@ -221,19 +227,6 @@ class AnswerBotListState extends State<AnswerBotList> {
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
-  }
-
-  Future<void> login(BuildContext context) async {
-    if (kIsWeb) {
-      launchUrl(Uri.parse("$basePath/login?locationAfterLogin=/ab/"), webOnlyWindowName: "_self");
-    } else {
-      String authToken = await Navigator.push(context, MaterialPageRoute(builder: showLogin));
-      await storeAuthToken(authToken);
-    }
-  }
-
-  Widget showLogin(BuildContext context) {
-    return LoginScreen();
   }
 
   bool setupComplete(AnswerbotInfo bot) => isSet(bot.host) || isSet(bot.ip4) || isSet(bot.ip6);

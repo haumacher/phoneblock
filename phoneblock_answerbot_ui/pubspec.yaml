@@ -33,6 +33,11 @@ dependencies:
 
   cupertino_icons: ^1.0.2
 
+  # Answerbot-specific dependencies
+  url_launcher: ^6.3.1
+  shared_preferences: ^2.5.3
+  webview_flutter: ^4.10.0
+
   # Shared PhoneBlock components
   phoneblock_shared:
     path: ../phoneblock_shared

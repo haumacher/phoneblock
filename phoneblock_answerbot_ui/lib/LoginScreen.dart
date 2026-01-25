@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../api/base_path.dart'
-  if (dart.library.html) '../api/base_path_web.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 final String PHONE_BLOCK_CONNECT_URL = '$basePath/mobile/login.jsp';

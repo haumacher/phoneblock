@@ -508,6 +508,9 @@ void main() async {
   final retentionDays = await getRetentionDays();
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
+  // Set up auth provider for shared answerbot components
+  setAuthProvider(getAuthToken);
+
   runApp(const PhoneBlockApp());
 }
 
