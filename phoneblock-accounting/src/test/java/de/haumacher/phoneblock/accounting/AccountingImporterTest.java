@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import de.haumacher.phoneblock.accounting.config.AccountingConfig;
+import de.haumacher.phoneblock.accounting.db.ContributionRecord;
 
 /**
  * Test cases for {@link AccountingImporter}.
@@ -157,90 +158,55 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_StandardFormat() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			assertEquals("user@example.com", importer.extractEmailPattern("Contribution from user@example.com"));
-			assertEquals("john.doe@mail.de", importer.extractEmailPattern("PhoneBlock john.doe@mail.de support"));
-			assertEquals("test_user@domain.org", importer.extractEmailPattern("test_user@domain.org"));
-		} finally {
-			importer.close();
-		}
+		assertEquals("user@example.com", ContributionRecord.extractEmailPattern("Contribution from user@example.com"));
+		assertEquals("john.doe@mail.de", ContributionRecord.extractEmailPattern("PhoneBlock john.doe@mail.de support"));
+		assertEquals("test_user@domain.org", ContributionRecord.extractEmailPattern("test_user@domain.org"));
 	}
 
 	@Test
 	void testExtractEmailPattern_ObfuscatedWithAt() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			assertEquals("user@example.com", importer.extractEmailPattern("Contribution from user at example.com"));
-			assertEquals("sh-konsum@mai", importer.extractEmailPattern("sh-konsum at mai"));
-			assertEquals("john.doe@mail.de", importer.extractEmailPattern("PhoneBlock john.doe at mail.de support"));
-		} finally {
-			importer.close();
-		}
+		assertEquals("user@example.com", ContributionRecord.extractEmailPattern("Contribution from user at example.com"));
+		assertEquals("sh-konsum@mai", ContributionRecord.extractEmailPattern("sh-konsum at mai"));
+		assertEquals("john.doe@mail.de", ContributionRecord.extractEmailPattern("PhoneBlock john.doe at mail.de support"));
 	}
 
 	@Test
 	void testExtractEmailPattern_WithSpaces() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			assertEquals("user@example.com", importer.extractEmailPattern("user  at  example.com"));
-			assertEquals("test@domain", importer.extractEmailPattern("test  @  domain"));
-		} finally {
-			importer.close();
-		}
+		assertEquals("user@example.com", ContributionRecord.extractEmailPattern("user  at  example.com"));
+		assertEquals("test@domain", ContributionRecord.extractEmailPattern("test  @  domain"));
 	}
 
 	@Test
 	void testExtractEmailPattern_CaseInsensitive() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			assertEquals("User@Example.Com", importer.extractEmailPattern("User AT Example.Com"));
-			assertEquals("TEST@DOMAIN", importer.extractEmailPattern("TEST At DOMAIN"));
-		} finally {
-			importer.close();
-		}
+		assertEquals("User@Example.Com", ContributionRecord.extractEmailPattern("User AT Example.Com"));
+		assertEquals("TEST@DOMAIN", ContributionRecord.extractEmailPattern("TEST At DOMAIN"));
 	}
 
 	@Test
 	void testExtractEmailPattern_SpecialCharacters() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			assertEquals("user-name@sub-domain.example.com",
-					importer.extractEmailPattern("user-name@sub-domain.example.com"));
-			assertEquals("user_123@test.org", importer.extractEmailPattern("user_123@test.org"));
-			assertEquals("first.last@company.co.uk", importer.extractEmailPattern("first.last at company.co.uk"));
-		} finally {
-			importer.close();
-		}
+		assertEquals("user-name@sub-domain.example.com",
+				ContributionRecord.extractEmailPattern("user-name@sub-domain.example.com"));
+		assertEquals("user_123@test.org", ContributionRecord.extractEmailPattern("user_123@test.org"));
+		assertEquals("first.last@company.co.uk", ContributionRecord.extractEmailPattern("first.last at company.co.uk"));
 	}
 
 	@Test
 	void testExtractEmailPattern_NoMatch() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			assertNull(importer.extractEmailPattern("PhoneBlock contribution"));
-			assertNull(importer.extractEmailPattern("No email here"));
-			assertNull(importer.extractEmailPattern("@invalid"));
-			assertNull(importer.extractEmailPattern("user@"));
-			assertNull(importer.extractEmailPattern("@domain"));
-			assertNull(importer.extractEmailPattern(null));
-			assertNull(importer.extractEmailPattern(""));
-		} finally {
-			importer.close();
-		}
+		assertNull(ContributionRecord.extractEmailPattern("PhoneBlock contribution"));
+		assertNull(ContributionRecord.extractEmailPattern("No email here"));
+		assertNull(ContributionRecord.extractEmailPattern("@invalid"));
+		assertNull(ContributionRecord.extractEmailPattern("user@"));
+		assertNull(ContributionRecord.extractEmailPattern("@domain"));
+		assertNull(ContributionRecord.extractEmailPattern(null));
+		assertNull(ContributionRecord.extractEmailPattern(""));
 	}
 
 	@Test
 	void testExtractEmailPattern_FirstMatchOnly() throws Exception {
-		AccountingImporter importer = new AccountingImporter(createTestConfig());
-		try {
-			// Should extract the first email pattern found
-			assertEquals("first@example.com",
-					importer.extractEmailPattern("first@example.com and second@other.com"));
-			assertEquals("user1@test.org",
-					importer.extractEmailPattern("user1 at test.org or user2 at test.org"));
-		} finally {
-			importer.close();
-		}
+		// Should extract the first email pattern found
+		assertEquals("first@example.com",
+				ContributionRecord.extractEmailPattern("first@example.com and second@other.com"));
+		assertEquals("user1@test.org",
+				ContributionRecord.extractEmailPattern("user1 at test.org or user2 at test.org"));
 	}
 }

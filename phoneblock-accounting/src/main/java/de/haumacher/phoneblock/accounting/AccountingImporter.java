@@ -19,8 +19,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -236,20 +234,6 @@ public class AccountingImporter {
 
 	private static final String PHONEBLOCK_KEYWORD = "phoneblock";
 
-	/**
-	 * Pattern to extract username from "PhoneBlock-XXXXX" format.
-	 */
-	private static final Pattern USERNAME_PATTERN = Pattern.compile("PhoneBlock-([^\\s]+)", Pattern.CASE_INSENSITIVE);
-
-	/**
-	 * Pattern to extract email-like patterns from messages.
-	 * Matches formats like "user@domain", "user at domain", or partial addresses.
-	 */
-	private static final Pattern EMAIL_PATTERN = Pattern.compile(
-		"([a-zA-Z0-9._-]+)\\s*(?:@|at)\\s*([a-zA-Z0-9._-]+)",
-		Pattern.CASE_INSENSITIVE
-	);
-
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
 	/**
@@ -414,7 +398,7 @@ public class AccountingImporter {
 			String tx = createTxIdentifier(sender, buchungDate);
 
 			// Try to find the contributing user by extracting username from message
-			String username = extractUsername(verwendungszweck);
+			String username = ContributionRecord.extractUsername(verwendungszweck);
 			Long userId = null;
 			if (username != null) {
 				userId = users.findUserIdByUsername(username);
@@ -427,7 +411,7 @@ public class AccountingImporter {
 
 			// If user not found by username, try email pattern matching
 			if (userId == null) {
-				String emailPattern = extractEmailPattern(verwendungszweck);
+				String emailPattern = ContributionRecord.extractEmailPattern(verwendungszweck);
 				if (emailPattern != null) {
 					List<Long> matchingUsers = users.findUserIdsByEmail(emailPattern);
 					if (matchingUsers.size() == 1) {
@@ -471,7 +455,7 @@ public class AccountingImporter {
 		// Check if contribution already exists
 		if (contributions.exists(tx)) {
 			LOG.info("Skipping duplicate contribution: {}", tx);
-			printRecord("DUPLICATE", contribution);
+			contribution.print("DUPLICATE");
 			return ProcessResult.PHONEBLOCK_DUPLICATE;
 		}
 
@@ -484,52 +468,10 @@ public class AccountingImporter {
 			LOG.debug("Added {} cents to credit of user ID {}", contribution.getAmount(), contribution.getUserId());
 		}
 
-		LOG.info("Imported new contribution: {} ({}€)", tx, formatAmount(contribution.getAmount()));
-		printRecord("NEW", contribution);
+		LOG.info("Imported new contribution: {} ({}€)", tx, ContributionRecord.formatAmount(contribution.getAmount()));
+		contribution.print("NEW");
 
 		return ProcessResult.PHONEBLOCK_NEW;
-	}
-
-	/**
-	 * Extracts the username from a PhoneBlock contribution message.
-	 *
-	 * @param message The contribution message (Verwendungszweck)
-	 * @return The extracted username, or null if no pattern found
-	 */
-	private String extractUsername(String message) {
-		if (message == null) {
-			return null;
-		}
-
-		Matcher matcher = USERNAME_PATTERN.matcher(message);
-		if (matcher.find()) {
-			return matcher.group(1);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Extracts email-like patterns from a message.
-	 * Handles formats like "user@domain" or "user at domain".
-	 *
-	 * @param message The contribution message (Verwendungszweck)
-	 * @return The extracted email pattern for searching, or null if no pattern found
-	 */
-	String extractEmailPattern(String message) {
-		if (message == null) {
-			return null;
-		}
-
-		Matcher matcher = EMAIL_PATTERN.matcher(message);
-		if (matcher.find()) {
-			// Normalize to standard email format: "user@domain"
-			String localPart = matcher.group(1);
-			String domainPart = matcher.group(2);
-			return localPart + "@" + domainPart;
-		}
-
-		return null;
 	}
 
 	/**
@@ -570,54 +512,4 @@ public class AccountingImporter {
 		return date.getTime();
 	}
 
-	/**
-	 * Prints a contribution record to the console.
-	 *
-	 * @param status The status label (NEW, DUPLICATE, etc.)
-	 * @param contribution The contribution record
-	 */
-	private void printRecord(String status, ContributionRecord contribution) {
-		System.out.println("=".repeat(80));
-		System.out.println("Contribution: " + contribution.getTx() + " [" + status + "]");
-		System.out.println("-".repeat(80));
-
-		// Extract date from TX identifier (format: "Sender; DD.MM.YYYY")
-		String tx = contribution.getTx();
-		int semicolonPos = tx.lastIndexOf("; ");
-		String buchungDate = semicolonPos >= 0 ? tx.substring(semicolonPos + 2) : "unknown";
-
-		// Print important fields
-		System.out.printf("  %-25s: %s%n", "Buchung", buchungDate);
-		System.out.printf("  %-25s: %s%n", "Auftraggeber/Empfänger", contribution.getSender());
-		System.out.printf("  %-25s: %s%n", "Verwendungszweck", contribution.getMessage());
-		System.out.printf("  %-25s: %s%n", "Betrag", formatAmount(contribution.getAmount()));
-
-		// Print user information
-		String username = extractUsername(contribution.getMessage());
-		if (username == null) {
-			username = extractEmailPattern(contribution.getMessage());
-		}
-
-		if (username != null) {
-			if (contribution.getUserId() != null) {
-				System.out.printf("  %-25s: %s (User ID: %d)%n", "PhoneBlock User", username, contribution.getUserId());
-			} else {
-				System.out.printf("  %-25s: %s (not found)%n", "PhoneBlock User", username);
-			}
-		}
-
-		System.out.println("=".repeat(80));
-		System.out.println();
-	}
-
-	/**
-	 * Formats an amount in cents to Euro string.
-	 *
-	 * @param amountCents The amount in cents
-	 * @return Formatted amount string (e.g., "5,00")
-	 */
-	private String formatAmount(int amountCents) {
-		double euros = amountCents / 100.0;
-		return String.format("%.2f", euros).replace('.', ',');
-	}
 }

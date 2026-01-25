@@ -3,10 +3,27 @@
  */
 package de.haumacher.phoneblock.accounting.db;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Record representing a contribution entry to be stored in the database.
  */
 public class ContributionRecord {
+
+	/**
+	 * Pattern to extract username from "PhoneBlock-XXXXX" format.
+	 */
+	private static final Pattern USERNAME_PATTERN = Pattern.compile("PhoneBlock-([^\\s]+)", Pattern.CASE_INSENSITIVE);
+
+	/**
+	 * Pattern to extract email-like patterns from messages.
+	 * Matches formats like "user@domain", "user at domain", or partial addresses.
+	 */
+	private static final Pattern EMAIL_PATTERN = Pattern.compile(
+		"([a-zA-Z0-9._-]+)\\s*(?:@|at)\\s*([a-zA-Z0-9._-]+)",
+		Pattern.CASE_INSENSITIVE
+	);
 
 	private long id;
 	private Long userId;
@@ -96,5 +113,96 @@ public class ContributionRecord {
 
 	public void setReceived(long received) {
 		this.received = received;
+	}
+
+	/**
+	 * Prints this contribution record to the console.
+	 *
+	 * @param status The status label (NEW, DUPLICATE, etc.)
+	 */
+	public void print(String status) {
+		System.out.println("=".repeat(80));
+		System.out.println("Contribution: " + tx + " [" + status + "]");
+		System.out.println("-".repeat(80));
+
+		// Extract date from TX identifier (format: "Sender; DD.MM.YYYY")
+		int semicolonPos = tx.lastIndexOf("; ");
+		String buchungDate = semicolonPos >= 0 ? tx.substring(semicolonPos + 2) : "unknown";
+
+		// Print important fields
+		System.out.printf("  %-25s: %s%n", "Buchung", buchungDate);
+		System.out.printf("  %-25s: %s%n", "Auftraggeber/Empfänger", sender);
+		System.out.printf("  %-25s: %s%n", "Verwendungszweck", message);
+		System.out.printf("  %-25s: %s%n", "Betrag", formatAmount(amount));
+
+		// Print user information
+		String username = extractUsername(message);
+		if (username == null) {
+			username = extractEmailPattern(message);
+		}
+
+		if (username != null) {
+			if (userId != null) {
+				System.out.printf("  %-25s: %s (User ID: %d)%n", "PhoneBlock User", username, userId);
+			} else {
+				System.out.printf("  %-25s: %s (not found)%n", "PhoneBlock User", username);
+			}
+		}
+
+		System.out.println("=".repeat(80));
+		System.out.println();
+	}
+
+	/**
+	 * Formats an amount in cents to Euro string.
+	 *
+	 * @param amountCents The amount in cents
+	 * @return Formatted amount string (e.g., "5,00")
+	 */
+	public static String formatAmount(int amountCents) {
+		double euros = amountCents / 100.0;
+		return String.format("%.2f", euros).replace('.', ',');
+	}
+
+	/**
+	 * Extracts the username from a PhoneBlock contribution message.
+	 *
+	 * @param message The contribution message (Verwendungszweck)
+	 * @return The extracted username, or null if no pattern found
+	 */
+	public static String extractUsername(String message) {
+		if (message == null) {
+			return null;
+		}
+
+		Matcher matcher = USERNAME_PATTERN.matcher(message);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Extracts email-like patterns from a message.
+	 * Handles formats like "user@domain" or "user at domain".
+	 *
+	 * @param message The contribution message (Verwendungszweck)
+	 * @return The extracted email pattern for searching, or null if no pattern found
+	 */
+	public static String extractEmailPattern(String message) {
+		if (message == null) {
+			return null;
+		}
+
+		Matcher matcher = EMAIL_PATTERN.matcher(message);
+		if (matcher.find()) {
+			// Normalize to standard email format: "user@domain"
+			String localPart = matcher.group(1);
+			String domainPart = matcher.group(2);
+			return localPart + "@" + domainPart;
+		}
+
+		return null;
 	}
 }
