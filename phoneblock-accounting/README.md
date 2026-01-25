@@ -96,6 +96,7 @@ java -jar phoneblock-accounting.jar \
 The tool expects CSV files with the following structure:
 - Semicolon-delimited (`;`) format
 - Header row containing: `Buchung`, `Wertstellungsdatum`, `Auftraggeber/Empfänger`, `Buchungstext`, `Verwendungszweck`, `Betrag`, `Währung`
+- Columns can appear in any order - the tool automatically detects column positions from the header
 - The tool automatically skips metadata rows before the header
 - Only transactions containing "PhoneBlock" (case-insensitive) in the `Verwendungszweck` column are processed
 

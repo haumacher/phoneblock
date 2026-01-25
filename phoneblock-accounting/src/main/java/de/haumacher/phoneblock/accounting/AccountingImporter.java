@@ -45,6 +45,49 @@ public class AccountingImporter {
 	private AccountingDB _db;
 
 	/**
+	 * Column indices extracted from the header row.
+	 * Encapsulates column access to handle reordered columns.
+	 */
+	private static class ColumnMapping {
+		private final int buchung;
+		private final int auftraggeber;
+		private final int verwendungszweck;
+		private final int betrag;
+
+		ColumnMapping(CSVRecord headerRecord) throws IOException {
+			buchung = findColumn(headerRecord, BUCHUNG_COLUMN);
+			auftraggeber = findColumn(headerRecord, AUFTRAGGEBER_COLUMN);
+			verwendungszweck = findColumn(headerRecord, VERWENDUNGSZWECK_COLUMN);
+			betrag = findColumn(headerRecord, BETRAG_COLUMN);
+		}
+
+		private int findColumn(CSVRecord headerRecord, String columnName) throws IOException {
+			for (int i = 0; i < headerRecord.size(); i++) {
+				if (columnName.equals(headerRecord.get(i))) {
+					return i;
+				}
+			}
+			throw new IOException("Required column not found in header: " + columnName);
+		}
+
+		String getBuchung(CSVRecord record) {
+			return record.get(buchung);
+		}
+
+		String getAuftraggeber(CSVRecord record) {
+			return record.get(auftraggeber);
+		}
+
+		String getVerwendungszweck(CSVRecord record) {
+			return record.get(verwendungszweck);
+		}
+
+		String getBetrag(CSVRecord record) {
+			return record.get(betrag);
+		}
+	}
+
+	/**
 	 * Main entry point for the accounting importer.
 	 *
 	 * @param args Command-line arguments (see printUsage for details)
@@ -189,122 +232,93 @@ public class AccountingImporter {
 
 		LOG.info("Starting import from CSV file: {} (charset: {})", csvFilePath, charset.name());
 
-		// Read file line by line until we find the header
-		try (BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(new FileInputStream(csvFile), charset))) {
-			String headerLine = findHeaderLine(bufferedReader);
-
-			if (headerLine == null) {
-				String errorMessage = String.format(
-					"Could not find header line with required columns in CSV file.%n" +
-					"Expected header to contain: %s",
-					String.join(", ", REQUIRED_HEADERS)
-				);
-				LOG.error(errorMessage);
-				throw new IOException(errorMessage);
-			}
-
-			LOG.info("Found header line: {}", headerLine);
-
-			// Now parse the CSV data starting from the current position
-			processDataRows(bufferedReader, headerLine);
-		}
-	}
-
-	/**
-	 * Reads lines until the header line is found.
-	 *
-	 * @param reader The buffered reader
-	 * @return The header line if found, null otherwise
-	 * @throws IOException If reading fails
-	 */
-	private String findHeaderLine(BufferedReader reader) throws IOException {
-		String line;
-		while ((line = reader.readLine()) != null) {
-			if (isHeaderLine(line)) {
-				return line;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Checks if a line contains all required header columns.
-	 *
-	 * @param line The line to check
-	 * @return true if the line is a valid header line
-	 */
-	private boolean isHeaderLine(String line) {
-		for (String requiredHeader : REQUIRED_HEADERS) {
-			if (!line.contains(requiredHeader)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Processes data rows after the header has been found.
-	 *
-	 * @param reader The buffered reader positioned after the header line
-	 * @param headerLine The header line
-	 * @throws IOException If reading fails
-	 */
-	private void processDataRows(BufferedReader reader, String headerLine) throws IOException {
-		// Collect remaining lines
-		List<String> lines = new ArrayList<>();
-		String line;
-		while ((line = reader.readLine()) != null) {
-			lines.add(line);
-		}
-
-		// Create CSV content with header and data
-		StringBuilder csvContent = new StringBuilder();
-		csvContent.append(headerLine).append("\n");
-		for (String dataLine : lines) {
-			csvContent.append(dataLine).append("\n");
-		}
-
-		// Parse CSV using semicolon delimiter
+		// Parse entire file as CSV using semicolon delimiter
 		CSVFormat format = CSVFormat.DEFAULT
 			.builder()
 			.setDelimiter(';')
-			.setHeader()
-			.setSkipHeaderRecord(true)
 			.build();
 
-		try (SqlSession session = _db.openSession()) {
-			Contributions contributions = session.getMapper(Contributions.class);
+		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(csvFile), charset);
+		     CSVParser parser = new CSVParser(reader, format)) {
 
-			try (CSVParser parser = CSVParser.parse(csvContent.toString(), format)) {
-				int recordCount = 0;
-				int filteredCount = 0;
-				int newCount = 0;
-				int skippedCount = 0;
+			try (SqlSession session = _db.openSession()) {
+				Contributions contributions = session.getMapper(Contributions.class);
 
-				for (CSVRecord record : parser) {
-					recordCount++;
+				try {
+					ColumnMapping columnMapping = null;
+					int recordCount = 0;
+					int filteredCount = 0;
+					int newCount = 0;
+					int skippedCount = 0;
 
-					ProcessResult result = processRecord(record, contributions);
-					if (result == ProcessResult.PHONEBLOCK_NEW) {
-						filteredCount++;
-						newCount++;
-					} else if (result == ProcessResult.PHONEBLOCK_DUPLICATE) {
-						filteredCount++;
-						skippedCount++;
+					for (CSVRecord record : parser) {
+						if (columnMapping == null) {
+							// Check if this record is the header
+							if (isHeaderRecord(record)) {
+								LOG.info("Found header at record #{}", record.getRecordNumber());
+								columnMapping = new ColumnMapping(record);
+							}
+							// Skip records before header
+							continue;
+						}
+
+						// Process data records after header
+						recordCount++;
+
+						ProcessResult result = processRecord(record, columnMapping, contributions);
+						if (result == ProcessResult.PHONEBLOCK_NEW) {
+							filteredCount++;
+							newCount++;
+						} else if (result == ProcessResult.PHONEBLOCK_DUPLICATE) {
+							filteredCount++;
+							skippedCount++;
+						}
 					}
+
+					if (columnMapping == null) {
+						String errorMessage = String.format(
+							"Could not find header line with required columns in CSV file.%n" +
+							"Expected header to contain: %s",
+							String.join(", ", REQUIRED_HEADERS)
+						);
+						LOG.error(errorMessage);
+						throw new IOException(errorMessage);
+					}
+
+					// Commit all inserts
+					session.commit();
+
+					LOG.info("Import completed. Processed {} records, found {} PhoneBlock contributions ({} new, {} duplicates).",
+							recordCount, filteredCount, newCount, skippedCount);
+				} catch (Exception e) {
+					session.rollback();
+					throw e;
 				}
-
-				// Commit all inserts
-				session.commit();
-
-				LOG.info("Import completed. Processed {} records, found {} PhoneBlock contributions ({} new, {} duplicates).",
-						recordCount, filteredCount, newCount, skippedCount);
-			} catch (Exception e) {
-				session.rollback();
-				throw e;
 			}
 		}
+	}
+
+	/**
+	 * Checks if a CSV record is the header row.
+	 *
+	 * @param record The CSV record to check
+	 * @return true if this record contains all required header columns
+	 */
+	private boolean isHeaderRecord(CSVRecord record) {
+		// Get all values from the record
+		List<String> values = new ArrayList<>();
+		for (int i = 0; i < record.size(); i++) {
+			values.add(record.get(i));
+		}
+
+		// Check if all required headers are present
+		for (String requiredHeader : REQUIRED_HEADERS) {
+			if (!values.contains(requiredHeader)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -320,19 +334,15 @@ public class AccountingImporter {
 	 * Processes a single CSV record and imports it as a contribution if valid.
 	 *
 	 * @param record The CSV record to process
+	 * @param columnMapping The column index mapping from the header
 	 * @param contributions The contributions mapper
 	 * @return ProcessResult indicating whether the record was processed
 	 */
-	private ProcessResult processRecord(CSVRecord record, Contributions contributions) {
+	private ProcessResult processRecord(CSVRecord record, ColumnMapping columnMapping, Contributions contributions) {
 		LOG.debug("Processing record: {}", record.getRecordNumber());
 
-		// Check if record has the required columns
-		if (!record.isMapped(VERWENDUNGSZWECK_COLUMN)) {
-			LOG.warn("Record {} does not have '{}' column", record.getRecordNumber(), VERWENDUNGSZWECK_COLUMN);
-			return ProcessResult.NOT_PHONEBLOCK;
-		}
-
-		String verwendungszweck = record.get(VERWENDUNGSZWECK_COLUMN);
+		// Extract fields from CSV using column mapping
+		String verwendungszweck = columnMapping.getVerwendungszweck(record);
 
 		// Filter for PhoneBlock contributions (case insensitive)
 		if (verwendungszweck == null || !verwendungszweck.toLowerCase().contains(PHONEBLOCK_KEYWORD)) {
@@ -340,10 +350,9 @@ public class AccountingImporter {
 		}
 
 		try {
-			// Extract fields from CSV
-			String buchungDate = record.get(BUCHUNG_COLUMN);
-			String sender = record.get(AUFTRAGGEBER_COLUMN);
-			String betrag = record.get(BETRAG_COLUMN);
+			String buchungDate = columnMapping.getBuchung(record);
+			String sender = columnMapping.getAuftraggeber(record);
+			String betrag = columnMapping.getBetrag(record);
 
 			// Create TX identifier: "Sender DD.MM.YYYY"
 			String tx = createTxIdentifier(sender, buchungDate);
@@ -351,7 +360,7 @@ public class AccountingImporter {
 			// Check if contribution already exists
 			if (contributions.exists(tx)) {
 				LOG.info("Skipping duplicate contribution: {}", tx);
-				printRecord(record, "DUPLICATE");
+				printRecord(record, columnMapping, "DUPLICATE");
 				return ProcessResult.PHONEBLOCK_DUPLICATE;
 			}
 
@@ -373,7 +382,7 @@ public class AccountingImporter {
 			contributions.insert(contribution);
 
 			LOG.info("Imported new contribution: {} ({}€)", tx, betrag);
-			printRecord(record, "NEW");
+			printRecord(record, columnMapping, "NEW");
 
 			return ProcessResult.PHONEBLOCK_NEW;
 
@@ -425,17 +434,19 @@ public class AccountingImporter {
 	 * Prints a CSV record to the console.
 	 *
 	 * @param record The record to print
+	 * @param columnMapping The column index mapping
 	 * @param status The status label (NEW, DUPLICATE, etc.)
 	 */
-	private void printRecord(CSVRecord record, String status) {
+	private void printRecord(CSVRecord record, ColumnMapping columnMapping, String status) {
 		System.out.println("=".repeat(80));
 		System.out.println("Record #" + record.getRecordNumber() + " [" + status + "]");
 		System.out.println("-".repeat(80));
 
-		// Print all columns
-		record.toMap().forEach((column, value) -> {
-			System.out.printf("  %-25s: %s%n", column, value);
-		});
+		// Print important columns using column mapping
+		System.out.printf("  %-25s: %s%n", "Buchung", columnMapping.getBuchung(record));
+		System.out.printf("  %-25s: %s%n", "Auftraggeber/Empfänger", columnMapping.getAuftraggeber(record));
+		System.out.printf("  %-25s: %s%n", "Verwendungszweck", columnMapping.getVerwendungszweck(record));
+		System.out.printf("  %-25s: %s%n", "Betrag", columnMapping.getBetrag(record));
 
 		System.out.println("=".repeat(80));
 		System.out.println();
