@@ -359,27 +359,18 @@ public class AccountingImporter {
 			String sender = columnMapping.getAuftraggeber(record);
 			String betrag = columnMapping.getBetrag(record);
 
-			// Create TX identifier: "Sender DD.MM.YYYY"
-			String tx = createTxIdentifier(sender, buchungDate);
-
-			// Check if contribution already exists
-			if (contributions.exists(tx)) {
-				LOG.info("Skipping duplicate contribution: {}", tx);
-				// Extract username for display (but don't look up user since it's a duplicate)
-				String duplicateUsername = extractUsername(verwendungszweck);
-				printRecord(record, columnMapping, "DUPLICATE", duplicateUsername, null);
-				return ProcessResult.PHONEBLOCK_DUPLICATE;
-			}
-
 			// Parse amount (convert from EUR to cents)
 			int amountCents = parseAmount(betrag);
 
 			// Parse date to timestamp
 			long receivedTimestamp = parseDate(buchungDate);
 
+			// Create TX identifier
+			String tx = createTxIdentifier(sender, buchungDate);
+
 			// Try to find the contributing user by extracting username from message
-			Long userId = null;
 			String username = extractUsername(verwendungszweck);
+			Long userId = null;
 			if (username != null) {
 				userId = users.findUserIdByUsername(username);
 				if (userId != null) {
@@ -389,7 +380,7 @@ public class AccountingImporter {
 				}
 			}
 
-			// Create and insert contribution
+			// Create contribution record
 			ContributionRecord contribution = new ContributionRecord(
 				userId,
 				sender,
@@ -399,10 +390,18 @@ public class AccountingImporter {
 				receivedTimestamp
 			);
 
+			// Check if contribution already exists
+			if (contributions.exists(tx)) {
+				LOG.info("Skipping duplicate contribution: {}", tx);
+				printRecord(record, columnMapping, "DUPLICATE", contribution, username);
+				return ProcessResult.PHONEBLOCK_DUPLICATE;
+			}
+
+			// Insert new contribution
 			contributions.insert(contribution);
 
 			LOG.info("Imported new contribution: {} ({}€)", tx, betrag);
-			printRecord(record, columnMapping, "NEW", username, userId);
+			printRecord(record, columnMapping, "NEW", contribution, username);
 
 			return ProcessResult.PHONEBLOCK_NEW;
 
@@ -472,13 +471,13 @@ public class AccountingImporter {
 	/**
 	 * Prints a CSV record to the console.
 	 *
-	 * @param record The record to print
+	 * @param record The CSV record to print
 	 * @param columnMapping The column index mapping
 	 * @param status The status label (NEW, DUPLICATE, etc.)
+	 * @param contribution The contribution record
 	 * @param username The extracted username from the message (can be null)
-	 * @param userId The found user ID (can be null)
 	 */
-	private void printRecord(CSVRecord record, ColumnMapping columnMapping, String status, String username, Long userId) {
+	private void printRecord(CSVRecord record, ColumnMapping columnMapping, String status, ContributionRecord contribution, String username) {
 		System.out.println("=".repeat(80));
 		System.out.println("Record #" + record.getRecordNumber() + " [" + status + "]");
 		System.out.println("-".repeat(80));
@@ -491,8 +490,8 @@ public class AccountingImporter {
 
 		// Print user information
 		if (username != null) {
-			if (userId != null) {
-				System.out.printf("  %-25s: %s (User ID: %d)%n", "PhoneBlock User", username, userId);
+			if (contribution.getUserId() != null) {
+				System.out.printf("  %-25s: %s (User ID: %d)%n", "PhoneBlock User", username, contribution.getUserId());
 			} else {
 				System.out.printf("  %-25s: %s (not found)%n", "PhoneBlock User", username);
 			}
