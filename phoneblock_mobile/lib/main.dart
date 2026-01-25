@@ -18,6 +18,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
@@ -176,6 +177,12 @@ final callScreenedStreamController = StreamController<ScreenedCall>.broadcast();
 /// Global app version string, initialized at startup from package info.
 late String appVersion;
 
+/// Stream subscription for sharing intents (warm start).
+StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
+
+/// Stores shared phone number from cold start for later processing.
+String? _pendingSharedNumber;
+
 /// Parses rating string from PhoneBlock service API response.
 Rating? _parseRatingFromService(String ratingStr) {
   switch (ratingStr) {
@@ -188,6 +195,60 @@ Rating? _parseRatingFromService(String ratingStr) {
     case 'G_FRAUD': return Rating.fRAUD;
     default: return null;
   }
+}
+
+/// Extracts phone numbers from shared text.
+/// Supports formats: +49 123 456789, (123) 456-7890, 1234567890, etc.
+/// Returns first valid number found, or null if none.
+String? extractPhoneNumber(String text) {
+  final cleaned = text.trim();
+
+  // Patterns for international, formatted, and plain phone numbers
+  final patterns = [
+    RegExp(r'\+[\d\s\-()]{7,}'), // International with +
+    RegExp(r'\([\d]{2,}\)[\d\s\-]{6,}'), // Area code in parentheses
+    RegExp(r'[\d]{2,}[\s\-][\d]{2,}[\s\-][\d]{4,}'), // Separated format
+    RegExp(r'\b[\d]{10,}\b'), // Plain 10+ digits
+  ];
+
+  for (final pattern in patterns) {
+    final match = pattern.firstMatch(cleaned);
+    if (match != null) {
+      return match.group(0);
+    }
+  }
+
+  // Fallback: if mostly digits with formatting, use cleaned text
+  final digitsOnly = cleaned.replaceAll(RegExp(r'[^\d+]'), '');
+  if (digitsOnly.length >= 7) {
+    return cleaned;
+  }
+
+  return null;
+}
+
+/// Handles shared phone numbers by storing them for lookup after auth check.
+Future<void> handleSharedPhoneNumber(String? sharedText) async {
+  if (sharedText == null || sharedText.isEmpty) return;
+
+  if (kDebugMode) {
+    print('Received shared text: $sharedText');
+  }
+
+  final phoneNumber = extractPhoneNumber(sharedText);
+  if (phoneNumber == null) {
+    if (kDebugMode) {
+      print('No valid phone number found');
+    }
+    return;
+  }
+
+  if (kDebugMode) {
+    print('Extracted phone number: $phoneNumber');
+  }
+
+  // Store for processing in MainScreen after auth check
+  _pendingSharedNumber = phoneNumber;
 }
 
 /// Gets the configured retention period in days.
@@ -464,6 +525,33 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
   void initState() {
     super.initState();
     _loadThemeMode();
+    _initSharingIntent();
+  }
+
+  /// Initializes sharing intent listener for warm starts.
+  void _initSharingIntent() {
+    _sharingIntentSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (List<SharedMediaFile> value) {
+        if (value.isEmpty) return;
+
+        final sharedFile = value.first;
+        if (sharedFile.type == SharedMediaType.text) {
+          handleSharedPhoneNumber(sharedFile.path); // path contains text
+          ReceiveSharingIntent.instance.reset();
+        }
+      },
+      onError: (err) {
+        if (kDebugMode) {
+          print('Error receiving sharing intent: $err');
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _sharingIntentSubscription?.cancel();
+    super.dispose();
   }
 
   /// Loads the theme mode from preferences.
@@ -634,6 +722,16 @@ class _AppLauncherState extends State<AppLauncher> {
   }
 
   Future<void> _checkSetupState() async {
+    // Check for shared intent on cold start
+    final initialMedia = await ReceiveSharingIntent.instance.getInitialMedia();
+    if (initialMedia.isNotEmpty) {
+      final sharedFile = initialMedia.first;
+      if (sharedFile.type == SharedMediaType.text) {
+        await handleSharedPhoneNumber(sharedFile.path);
+        ReceiveSharingIntent.instance.reset();
+      }
+    }
+
     // Validate auth token (checks existence and validity)
     bool hasValidToken = await validateAuthToken();
 
@@ -935,6 +1033,26 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _loadScreenedCalls();
     _setupCallScreeningListener();
+    _checkPendingSharedNumber();
+  }
+
+  /// Checks for pending shared number and opens lookup screen.
+  Future<void> _checkPendingSharedNumber() async {
+    if (_pendingSharedNumber != null) {
+      final number = _pendingSharedNumber!;
+      _pendingSharedNumber = null; // Clear it
+
+      if (kDebugMode) {
+        print('Processing pending shared number: $number');
+      }
+
+      // Brief delay for screen to finish building
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (context.mounted) {
+        _searchPhoneNumber(number); // Reuses existing lookup method
+      }
+    }
   }
 
   @override

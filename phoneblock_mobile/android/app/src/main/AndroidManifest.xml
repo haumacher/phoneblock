@@ -51,6 +51,13 @@
                     android:host="phoneblock.net"
                     android:path="/pb-test/mobile/response" />
             </intent-filter>
+
+            <!-- Intent filter for sharing phone numbers from other apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
         </activity>
 
         <service android:name="de.haumacher.phoneblock_mobile.CallChecker"
