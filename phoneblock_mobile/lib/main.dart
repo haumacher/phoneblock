@@ -1968,30 +1968,10 @@ class _MainScreenState extends State<MainScreen> {
             onTap: () async {
               Navigator.pop(context); // Close drawer
 
-              String? token = await getAuthToken();
-              if (token == null) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.l10n.notLoggedInShort),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                return;
-              }
-
-              if (context.mounted) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PhoneBlockWebView(
-                      title: context.l10n.serverSettings,
-                      path: '/settings',
-                      authToken: token,
-                    ),
-                  ),
-                );
+              final url = await buildPhoneBlockUrlWithToken('/settings');
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
             },
           ),
