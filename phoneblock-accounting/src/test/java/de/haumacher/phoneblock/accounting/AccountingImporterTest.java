@@ -81,7 +81,7 @@ class AccountingImporterTest {
 		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
 		try {
 			// Should not throw exception
-			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8));
+			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8, true));
 		} finally {
 			importer.close();
 		}
@@ -94,7 +94,7 @@ class AccountingImporterTest {
 			String nonExistentPath = new File(tempDir, "does-not-exist.csv").getAbsolutePath();
 
 			IOException exception = assertThrows(IOException.class,
-					() -> importer.importFromCsv(nonExistentPath, StandardCharsets.UTF_8));
+					() -> importer.importFromCsv(nonExistentPath, StandardCharsets.UTF_8, true));
 
 			assertTrue(exception.getMessage().contains("not found"));
 		} finally {
@@ -120,8 +120,8 @@ class AccountingImporterTest {
 
 		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
 		try {
-			// Should not throw exception
-			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8));
+			// Should not throw exception (initial import)
+			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8, true));
 		} finally {
 			importer.close();
 		}

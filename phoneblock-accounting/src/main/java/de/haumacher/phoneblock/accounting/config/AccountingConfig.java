@@ -31,6 +31,7 @@ public class AccountingConfig {
 	private String dbUrl;
 	private String dbUser;
 	private String dbPassword;
+	private boolean initial;
 
 	/**
 	 * Creates a new configuration with default values.
@@ -160,6 +161,8 @@ public class AccountingConfig {
 					return false;
 				}
 				this.dbPassword = args[++i];
+			} else if (arg.equals("--initial")) {
+				this.initial = true;
 			} else if (!arg.startsWith("-")) {
 				// Positional argument - treat as CSV file
 				if (this.csvFile == null) {
@@ -215,6 +218,14 @@ public class AccountingConfig {
 
 	public void setDbPassword(String dbPassword) {
 		this.dbPassword = dbPassword;
+	}
+
+	public boolean isInitial() {
+		return initial;
+	}
+
+	public void setInitial(boolean initial) {
+		this.initial = initial;
 	}
 
 	/**

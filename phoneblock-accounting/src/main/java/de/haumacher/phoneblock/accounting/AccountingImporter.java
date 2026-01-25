@@ -139,7 +139,7 @@ public class AccountingImporter {
 				config.getDbPassword()
 			);
 			try {
-				importer.importFromCsv(config.getCsvFile(), config.getCharset());
+				importer.importFromCsv(config.getCsvFile(), config.getCharset(), config.isInitial());
 			} finally {
 				importer.close();
 			}
@@ -162,6 +162,7 @@ public class AccountingImporter {
 		System.out.println("  --db-url <url>           Database JDBC URL (default: jdbc:h2:./phoneblock)");
 		System.out.println("  --db-user <user>         Database user (default: phone)");
 		System.out.println("  --db-password <pass>     Database password (default: block)");
+		System.out.println("  --initial                Skip overlap check (for initial import only)");
 		System.out.println("  -h, --help               Show this help message");
 		System.out.println();
 		System.out.println("The CSV file can also be specified as a positional argument.");
@@ -242,9 +243,10 @@ public class AccountingImporter {
 	 *
 	 * @param csvFilePath Path to the CSV file to import
 	 * @param charset Character encoding to use for reading the file
+	 * @param initial If true, skip the overlap check (for initial import)
 	 * @throws IOException If the file cannot be read
 	 */
-	public void importFromCsv(String csvFilePath, Charset charset) throws IOException {
+	public void importFromCsv(String csvFilePath, Charset charset, boolean initial) throws IOException {
 		File csvFile = new File(csvFilePath);
 
 		if (!csvFile.exists()) {
@@ -311,6 +313,7 @@ public class AccountingImporter {
 					int filteredCount = 0;
 					int newCount = 0;
 					int skippedCount = 0;
+					boolean foundDuplicateBeforeNew = false;
 
 					for (ContributionRecord contribution : contributions) {
 						filteredCount++;
@@ -320,7 +323,20 @@ public class AccountingImporter {
 							newCount++;
 						} else if (result == ProcessResult.PHONEBLOCK_DUPLICATE) {
 							skippedCount++;
+							// Track if we found a duplicate before processing any new records
+							if (newCount == 0) {
+								foundDuplicateBeforeNew = true;
+							}
 						}
+					}
+
+					// Safety check: ensure data overlap unless this is the initial import
+					if (!initial && newCount > 0 && !foundDuplicateBeforeNew) {
+						String errorMessage = "No duplicate contributions found before new records. " +
+							"This indicates a gap in import data and potential missing donations. " +
+							"Use --initial flag only for the very first import.";
+						LOG.error(errorMessage);
+						throw new IOException(errorMessage);
 					}
 
 					// Commit all inserts (only if there were any)
