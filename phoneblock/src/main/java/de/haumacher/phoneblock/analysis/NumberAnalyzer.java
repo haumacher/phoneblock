@@ -85,6 +85,20 @@ public class NumberAnalyzer {
 		return NORMALIZE_PATTERN.matcher(phoneNumber).replaceAll("");
 	}
 
+	/**
+	 * Converts a phone ID (phone format used in the database) to a phone number in international format.
+	 */
+	public static String toInternationalFormat(String phoneId) {
+		// Numbers are stored in German national format, internationalize them.
+		if (phoneId.startsWith("00")) {
+			phoneId = "+" + phoneId.substring(2);
+		} else {
+			// The number is a national German number (that must start with a single zero).
+			phoneId = GERMAN_DIAL_PREFIX + phoneId.substring(1);
+		}
+		return phoneId;
+	}
+
 	public static PhoneNumer analyzePhoneID(String phone) {
 		return analyze(phone, GERMAN_DIAL_PREFIX);
 	}
@@ -475,5 +489,5 @@ public class NumberAnalyzer {
 		}
 		return number;
 	}
-	
+
 }

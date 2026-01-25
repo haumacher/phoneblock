@@ -145,26 +145,16 @@ public class AddressBookCache implements ServletContextListener {
 			ListType listType, long now) {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
-		
-		// For legacy compatibility, since numbers in DB are stored in German national format.
-		boolean isGerman = NumberAnalyzer.GERMAN_DIAL_PREFIX.equals(dialPrefix);
-		
+
 		List<DBNumberInfo> result = reports.getReports();
 		NumberTree numberTree = new NumberTree();
 		for (DBNumberInfo report : result) {
-			String phone = report.getPhone();
-			
-			if (isGerman) {
-				if (nationalOnly && phone.startsWith("00")) {
-					// Only non-German numbers are stored with country prefix in the DB.
-					continue;
-				}
-			} else {
-				phone = toInternationalFormat(phone);
-				
-				if (nationalOnly && !phone.startsWith(dialPrefix)) {
-					continue;
-				}
+			String phoneId = report.getPhone();
+			String phone = NumberAnalyzer.toInternationalFormat(phoneId);
+
+			// Only filter by dial prefix if it's valid and national-only mode is enabled
+			if (nationalOnly && !phone.startsWith(dialPrefix)) {
+				continue;
 			}
 			
 			int votes = report.getVotes();
@@ -176,19 +166,19 @@ public class AddressBookCache implements ServletContextListener {
 		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 
 		Set<String> whitelist = reports.getWhiteList();
 		for (String phone : whitelist) {
-			phone = isGerman ? phone : toInternationalFormat(phone);
+			phone = NumberAnalyzer.toInternationalFormat(phone);
 			
 			numberTree.insert(phone, -1_000_000, 0);
 		}
-		for (String phone : exclusions) {
-			phone = isGerman ? phone : toInternationalFormat(phone);
+		for (String phoneId : exclusions) {
+			String phone = NumberAnalyzer.toInternationalFormat(phoneId);
 
 			numberTree.insert(phone, -1_000_000, 0);
 		}
 		
 		// Make sure to override whitelist entries with personal blacklist entries.
-		for (String phone : personalizations) {
-			phone = isGerman ? phone : toInternationalFormat(phone);
+		for (String phoneId : personalizations) {
+			String phone = NumberAnalyzer.toInternationalFormat(phoneId);
 
 			numberTree.insert(phone, 10_000_000, 0);
 		}
@@ -200,17 +190,6 @@ public class AddressBookCache implements ServletContextListener {
 		return numberTree.createNumberBlocks(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
 	}
 
-	private static String toInternationalFormat(String phone) {
-		// Numbers are stored in German national format, internationalize them.
-		if (phone.startsWith("00")) {
-			phone = "+" + phone.substring(2);
-		} else {
-			// The number is a national German number (that must start with a single zero).
-			phone = NumberAnalyzer.GERMAN_DIAL_PREFIX + phone.substring(1);
-		}
-		return phone;
-	}
-	
 	private static final class Cache<K, V> {
 		
 		private static final long FLUSH_INTERVAL_NANOS = 1_000_000_000L * 60 * 1;
