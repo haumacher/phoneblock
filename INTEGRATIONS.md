@@ -437,6 +437,7 @@ Download the community-maintained blocklist for offline filtering. This is prima
 
 **Important Notes:**
 - For real-time call screening in mobile apps, use the `/check` or `/num` endpoints instead. Only use the blocklist endpoint if you need offline blocking capabilities.
+- **CRITICAL: Randomize synchronization times** - Never use fixed sync times (e.g., daily at 3am). Use randomized intervals (e.g., 23-25 hours) to distribute server load evenly throughout the day. Fixed sync times create load spikes that harm service availability for all users.
 - **This endpoint returns ONLY community data** - it does NOT include user-specific personalizations (personal blacklist/whitelist). For complete call filtering, you must also retrieve and check the user's personal lists via `/api/blacklist` and `/api/whitelist`.
 - **Personal whitelist overrides community blocklist** - Always allow calls from numbers on the user's whitelist, even if they appear in the community blocklist.
 - **Personal blacklist blocks regardless of community rating** - Block calls from numbers on the user's blacklist, even if the community has not flagged them.
@@ -578,8 +579,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    ```
 
 **Best Practices:**
+- **Future-proof hybrid approach (RECOMMENDED):** Combine dynamic lookups with local blocklist fallback for best results:
+  - When online: Use `/check` endpoint for real-time lookups - this provides the most current data and preserves community feedback loops
+  - When offline: Fall back to locally cached blocklist for basic protection
+  - Why this matters: Local-only blocking eliminates automatic feedback as numbers accumulate more votes, potentially harming list quality. If community feedback becomes critical, PhoneBlock may limit future blocklist downloads to only high-confidence numbers. Apps using the hybrid approach will continue to access the full dataset via dynamic lookups while maintaining offline functionality.
 - Store the blocklist locally in a database (SQLite, etc.)
-- Schedule incremental syncs daily (e.g., at night when device is charging)
+- Schedule incremental syncs daily with randomized timing (e.g., 23-25 hour intervals when device is charging)
 - Schedule full syncs monthly to catch any missed updates
 - Apply appropriate threshold filtering based on your use case
 - Handle `votes=0` entries as deletions from your local blocklist
