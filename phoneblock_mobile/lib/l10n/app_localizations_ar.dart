@@ -519,4 +519,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get themeModeDark => 'داكن';
+
+  @override
+  String get experimentalFeatures => 'الوظائف التجريبية';
+
+  @override
+  String get answerbotFeature => 'جهاز الرد على المكالمات الهاتفي (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'ميزة تجريبية: إدارة أجهزة الرد الآلي على الرسائل الاقتحامية التي تتحدث تلقائيًا إلى المتصلين غير المرغوب فيهم';
 }

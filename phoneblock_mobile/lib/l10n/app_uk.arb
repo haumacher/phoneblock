@@ -143,5 +143,8 @@
   "themeModeDescription": "Виберіть світлий або темний дизайн",
   "themeModeSystem": "Системний стандарт",
   "themeModeLight": "Світло",
-  "themeModeDark": "Темнота."
+  "themeModeDark": "Темнота.",
+  "experimentalFeatures": "Експериментальні функції",
+  "answerbotFeature": "Автовідповідач (Answerbot)",
+  "answerbotFeatureDescription": "Експериментальна функція: Керування автовідповідачами, які автоматично розмовляють зі спамерськими абонентами"
 }

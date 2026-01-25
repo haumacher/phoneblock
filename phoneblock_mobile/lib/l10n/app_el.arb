@@ -143,5 +143,8 @@
   "themeModeDescription": "Επιλέξτε ένα ανοιχτό ή σκούρο σχέδιο",
   "themeModeSystem": "Πρότυπο συστήματος",
   "themeModeLight": "Φως",
-  "themeModeDark": "Σκούρο"
+  "themeModeDark": "Σκούρο",
+  "experimentalFeatures": "Πειραματικές λειτουργίες",
+  "answerbotFeature": "Αυτόματος τηλεφωνητής (Answerbot)",
+  "answerbotFeatureDescription": "Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam"
 }

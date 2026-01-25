@@ -519,4 +519,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Dark';
+
+  @override
+  String get experimentalFeatures => 'Experimental functions';
+
+  @override
+  String get answerbotFeature => 'Answering machine (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Experimental feature: Manage SPAM answering machines that automatically talk to spam callers';
 }

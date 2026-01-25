@@ -520,4 +520,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Mörk';
+
+  @override
+  String get experimentalFeatures => 'Experimentella funktioner';
+
+  @override
+  String get answerbotFeature => 'Telefonsvarare (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Experimentell funktion: Hantera SPAM-svarare som automatiskt pratar med spam-samtalare';
 }

@@ -143,5 +143,8 @@
   "themeModeDescription": "选择浅色或深色设计",
   "themeModeSystem": "系统标准",
   "themeModeLight": "灯光",
-  "themeModeDark": "黑暗"
+  "themeModeDark": "黑暗",
+  "experimentalFeatures": "实验功能",
+  "answerbotFeature": "答录机（Answerbot）",
+  "answerbotFeatureDescription": "试验功能：管理自动与垃圾来电者通话的垃圾邮件应答机"
 }

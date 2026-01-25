@@ -143,5 +143,8 @@
   "themeModeDescription": "Kies een licht of donker ontwerp",
   "themeModeSystem": "Systeemstandaard",
   "themeModeLight": "Licht",
-  "themeModeDark": "Donker"
+  "themeModeDark": "Donker",
+  "experimentalFeatures": "Experimentele functies",
+  "answerbotFeature": "Antwoordapparaat (Answerbot)",
+  "answerbotFeatureDescription": "Experimentele functie: Beheer SPAM antwoordapparaten die automatisch met spam bellers praten"
 }

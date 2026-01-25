@@ -520,4 +520,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Oscuro';
+
+  @override
+  String get experimentalFeatures => 'Funciones experimentales';
+
+  @override
+  String get answerbotFeature => 'Contestador automático (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Función experimental: gestión de contestadores automáticos que hablan automáticamente con las personas que llaman por spam';
 }

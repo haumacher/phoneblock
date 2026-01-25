@@ -522,4 +522,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Σκούρο';
+
+  @override
+  String get experimentalFeatures => 'Πειραματικές λειτουργίες';
+
+  @override
+  String get answerbotFeature => 'Αυτόματος τηλεφωνητής (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam';
 }

@@ -527,4 +527,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Sombre';
+
+  @override
+  String get experimentalFeatures => 'Fonctions expérimentales';
+
+  @override
+  String get answerbotFeature => 'Répondeur téléphonique (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Fonction expérimentale : gérer les répondeurs SPAM qui parlent automatiquement aux appelants spam';
 }

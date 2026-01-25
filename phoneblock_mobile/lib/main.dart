@@ -1867,33 +1867,38 @@ class _MainScreenState extends State<MainScreen> {
   /// Builds the navigation drawer with menu items.
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/spam_icon.png',
-                  width: 80,
-                  height: 80,
+      child: FutureBuilder<bool>(
+        future: platform.invokeMethod<bool>("getAnswerbotEnabled").then((value) => value ?? false),
+        builder: (context, snapshot) {
+          final answerbotEnabled = snapshot.data ?? false;
+
+          return ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  context.l10n.appTitle,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/spam_icon.png',
+                      width: 80,
+                      height: 80,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      context.l10n.appTitle,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
           ListTile(
             leading: const Icon(Icons.block),
             title: Text(context.l10n.blacklistTitle),
@@ -1980,18 +1985,19 @@ class _MainScreenState extends State<MainScreen> {
               }
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.phone_callback),
-            title: const Text('Answerbot'),
-            subtitle: const Text('Manage spam call answering machines'),
-            onTap: () {
-              Navigator.pop(context); // Close drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AnswerBotList()),
-              );
-            },
-          ),
+          if (answerbotEnabled)
+            ListTile(
+              leading: const Icon(Icons.phone_callback),
+              title: const Text('Answerbot'),
+              subtitle: const Text('Manage spam call answering machines'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnswerBotList()),
+                );
+              },
+            ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.favorite, color: Colors.orange),
@@ -2018,7 +2024,9 @@ class _MainScreenState extends State<MainScreen> {
               );
             },
           ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -2467,6 +2475,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _minRangeVotes = 10;
   int _retentionDays = retentionDefault;
   String _themeMode = 'system';
+  bool _answerbotEnabled = false;
   bool _isLoading = true;
 
   @override
@@ -2488,9 +2497,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final minRangeVotesResult = await platform.invokeMethod("getMinRangeVotes");
       final retentionDaysResult = await platform.invokeMethod("getRetentionDays");
       final themeModeResult = await getThemeMode();
+      final answerbotEnabledResult = await platform.invokeMethod("getAnswerbotEnabled");
 
       if (kDebugMode) {
-        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult");
+        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
       }
 
       setState(() {
@@ -2499,11 +2509,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _minRangeVotes = minRangeVotesResult ?? 10;
         _retentionDays = retentionDaysResult ?? retentionDefault;
         _themeMode = themeModeResult;
+        _answerbotEnabled = answerbotEnabledResult ?? false;
         _isLoading = false;
       });
 
       if (kDebugMode) {
-        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode");
+        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode, answerbotEnabled: $_answerbotEnabled");
       }
     } catch (e) {
       if (kDebugMode) {
@@ -2696,6 +2707,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Save answerbot enabled setting.
+  Future<void> _saveAnswerbotEnabled(bool value) async {
+    if (kDebugMode) {
+      print("Saving answerbotEnabled: $value");
+    }
+    try {
+      await platform.invokeMethod("setAnswerbotEnabled", value);
+      if (kDebugMode) {
+        print("Successfully saved answerbotEnabled to SharedPreferences: $value");
+      }
+      setState(() {
+        _answerbotEnabled = value;
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.settingSaved),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving answerbot enabled: $e");
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorSaving),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2838,6 +2885,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                   ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.experimentalFeatures,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                SwitchListTile(
+                  title: Text(context.l10n.answerbotFeature),
+                  subtitle: Text(context.l10n.answerbotFeatureDescription),
+                  value: _answerbotEnabled,
+                  onChanged: (value) {
+                    _saveAnswerbotEnabled(value);
+                  },
                 ),
               ],
             ),

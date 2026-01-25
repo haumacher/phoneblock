@@ -522,4 +522,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Dunkel';
+
+  @override
+  String get experimentalFeatures => 'Experimentelle Funktionen';
+
+  @override
+  String get answerbotFeature => 'Anrufbeantworter (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen';
 }

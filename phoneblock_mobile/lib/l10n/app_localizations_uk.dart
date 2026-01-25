@@ -520,4 +520,14 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Темнота.';
+
+  @override
+  String get experimentalFeatures => 'Експериментальні функції';
+
+  @override
+  String get answerbotFeature => 'Автовідповідач (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Експериментальна функція: Керування автовідповідачами, які автоматично розмовляють зі спамерськими абонентами';
 }

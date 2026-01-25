@@ -143,5 +143,8 @@
   "themeModeDescription": "Scegliere un design chiaro o scuro",
   "themeModeSystem": "Sistema standard",
   "themeModeLight": "Luce",
-  "themeModeDark": "Scuro"
+  "themeModeDark": "Scuro",
+  "experimentalFeatures": "Funzioni sperimentali",
+  "answerbotFeature": "Segreteria telefonica (Answerbot)",
+  "answerbotFeatureDescription": "Funzione sperimentale: gestione delle segreterie telefoniche SPAM che parlano automaticamente con i chiamanti spam"
 }

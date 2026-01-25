@@ -480,4 +480,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeModeDark => '黑暗';
+
+  @override
+  String get experimentalFeatures => '实验功能';
+
+  @override
+  String get answerbotFeature => '答录机（Answerbot）';
+
+  @override
+  String get answerbotFeatureDescription => '试验功能：管理自动与垃圾来电者通话的垃圾邮件应答机';
 }

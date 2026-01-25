@@ -143,5 +143,8 @@
   "themeModeDescription": "Elige un diseño claro u oscuro",
   "themeModeSystem": "Sistema estándar",
   "themeModeLight": "Luz",
-  "themeModeDark": "Oscuro"
+  "themeModeDark": "Oscuro",
+  "experimentalFeatures": "Funciones experimentales",
+  "answerbotFeature": "Contestador automático (Answerbot)",
+  "answerbotFeatureDescription": "Función experimental: gestión de contestadores automáticos que hablan automáticamente con las personas que llaman por spam"
 }

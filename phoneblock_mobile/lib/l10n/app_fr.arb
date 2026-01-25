@@ -143,5 +143,8 @@
   "themeModeDescription": "Choisir un design clair ou foncé",
   "themeModeSystem": "Système standard",
   "themeModeLight": "Lumineux",
-  "themeModeDark": "Sombre"
+  "themeModeDark": "Sombre",
+  "experimentalFeatures": "Fonctions expérimentales",
+  "answerbotFeature": "Répondeur téléphonique (Answerbot)",
+  "answerbotFeatureDescription": "Fonction expérimentale : gérer les répondeurs SPAM qui parlent automatiquement aux appelants spam"
 }

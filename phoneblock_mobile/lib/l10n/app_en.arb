@@ -143,5 +143,8 @@
   "themeModeDescription": "Choose light or dark design",
   "themeModeSystem": "System standard",
   "themeModeLight": "Light",
-  "themeModeDark": "Dark"
+  "themeModeDark": "Dark",
+  "experimentalFeatures": "Experimental functions",
+  "answerbotFeature": "Answering machine (Answerbot)",
+  "answerbotFeatureDescription": "Experimental feature: Manage SPAM answering machines that automatically talk to spam callers"
 }

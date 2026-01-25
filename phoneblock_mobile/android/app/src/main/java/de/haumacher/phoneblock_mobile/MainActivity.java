@@ -273,6 +273,15 @@ public class MainActivity extends FlutterActivity {
                 setThemeMode((String) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "getAnswerbotEnabled":
+                result.success(getAnswerbotEnabled());
+                break;
+
+            case "setAnswerbotEnabled":
+                setAnswerbotEnabled((Boolean) methodCall.arguments);
+                result.success(null);
+                break;
         }
     }
 
@@ -416,6 +425,27 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("theme_mode", themeMode).apply();
         Log.d(MainActivity.class.getName(), "setThemeMode: " + themeMode);
+    }
+
+    /**
+     * Gets whether the answerbot experimental feature is enabled.
+     * @return true if answerbot is enabled, false otherwise. Defaults to false.
+     */
+    private boolean getAnswerbotEnabled() {
+        SharedPreferences prefs = getPreferences(this);
+        boolean value = prefs.getBoolean("answerbot_enabled", false);
+        Log.d(MainActivity.class.getName(), "getAnswerbotEnabled: " + value);
+        return value;
+    }
+
+    /**
+     * Sets whether the answerbot experimental feature is enabled.
+     * @param enabled true to enable answerbot, false to disable.
+     */
+    private void setAnswerbotEnabled(boolean enabled) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putBoolean("answerbot_enabled", enabled).apply();
+        Log.d(MainActivity.class.getName(), "setAnswerbotEnabled: " + enabled);
     }
 
     public static SharedPreferences getPreferences(Context context) {

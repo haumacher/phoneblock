@@ -527,4 +527,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Scuro';
+
+  @override
+  String get experimentalFeatures => 'Funzioni sperimentali';
+
+  @override
+  String get answerbotFeature => 'Segreteria telefonica (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Funzione sperimentale: gestione delle segreterie telefoniche SPAM che parlano automaticamente con i chiamanti spam';
 }

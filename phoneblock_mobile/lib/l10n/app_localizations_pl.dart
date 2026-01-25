@@ -522,4 +522,14 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Ciemny';
+
+  @override
+  String get experimentalFeatures => 'Funkcje eksperymentalne';
+
+  @override
+  String get answerbotFeature => 'Automatyczna sekretarka (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Eksperymentalna funkcja: Zarządzanie automatycznymi sekretarkami SPAM, które automatycznie rozmawiają z osobami dzwoniącymi ze spamem.';
 }

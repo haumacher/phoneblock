@@ -143,5 +143,8 @@
   "themeModeDescription": "Wybierz jasny lub ciemny wzór",
   "themeModeSystem": "Standard systemu",
   "themeModeLight": "Światło",
-  "themeModeDark": "Ciemny"
+  "themeModeDark": "Ciemny",
+  "experimentalFeatures": "Funkcje eksperymentalne",
+  "answerbotFeature": "Automatyczna sekretarka (Answerbot)",
+  "answerbotFeatureDescription": "Eksperymentalna funkcja: Zarządzanie automatycznymi sekretarkami SPAM, które automatycznie rozmawiają z osobami dzwoniącymi ze spamem."
 }

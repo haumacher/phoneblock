@@ -143,5 +143,8 @@
   "themeModeDescription": "Velg et lyst eller mørkt design",
   "themeModeSystem": "Systemstandard",
   "themeModeLight": "Lys",
-  "themeModeDark": "Mørk"
+  "themeModeDark": "Mørk",
+  "experimentalFeatures": "Eksperimentelle funksjoner",
+  "answerbotFeature": "Telefonsvarer (Answerbot)",
+  "answerbotFeatureDescription": "Eksperimentell funksjon: Administrer SPAM-telefonsvarere som automatisk snakker med spam-oppringere"
 }

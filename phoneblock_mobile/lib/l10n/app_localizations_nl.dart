@@ -522,4 +522,14 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Donker';
+
+  @override
+  String get experimentalFeatures => 'Experimentele functies';
+
+  @override
+  String get answerbotFeature => 'Antwoordapparaat (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Experimentele functie: Beheer SPAM antwoordapparaten die automatisch met spam bellers praten';
 }

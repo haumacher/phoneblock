@@ -518,4 +518,14 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Mørk';
+
+  @override
+  String get experimentalFeatures => 'Eksperimentelle funktioner';
+
+  @override
+  String get answerbotFeature => 'Telefonsvarer (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Eksperimentel funktion: Administrer SPAM-telefonsvarere, der automatisk taler med spamopkald';
 }

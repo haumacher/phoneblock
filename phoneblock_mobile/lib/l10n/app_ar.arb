@@ -143,5 +143,8 @@
   "themeModeDescription": "اختر تصميماً فاتحاً أو غامقاً",
   "themeModeSystem": "معيار النظام",
   "themeModeLight": "خفيف",
-  "themeModeDark": "داكن"
+  "themeModeDark": "داكن",
+  "experimentalFeatures": "الوظائف التجريبية",
+  "answerbotFeature": "جهاز الرد على المكالمات الهاتفي (Answerbot)",
+  "answerbotFeatureDescription": "ميزة تجريبية: إدارة أجهزة الرد الآلي على الرسائل الاقتحامية التي تتحدث تلقائيًا إلى المتصلين غير المرغوب فيهم"
 }

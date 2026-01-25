@@ -985,6 +985,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dunkel'**
   String get themeModeDark;
+
+  /// Experimental features section header
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentelle Funktionen'**
+  String get experimentalFeatures;
+
+  /// Answerbot feature toggle title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter (Answerbot)'**
+  String get answerbotFeature;
+
+  /// Answerbot feature toggle description
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen'**
+  String get answerbotFeatureDescription;
 }
 
 class _AppLocalizationsDelegate
