@@ -1111,7 +1111,14 @@ class _MainScreenState extends State<MainScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(context.l10n.appTitle),
-          automaticallyImplyLeading: false,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.search),
@@ -1120,17 +1127,9 @@ class _MainScreenState extends State<MainScreen> {
                 _showSearchDialog(context);
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                );
-              },
-            ),
           ],
         ),
+        drawer: _buildDrawer(context),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _screenedCalls.isEmpty
@@ -1858,6 +1857,173 @@ class _MainScreenState extends State<MainScreen> {
         ),
       );
     }
+  }
+
+  /// Builds the navigation drawer with menu items.
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/spam_icon.png',
+                  width: 80,
+                  height: 80,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.l10n.appTitle,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.block),
+            title: Text(context.l10n.blacklistTitle),
+            subtitle: Text(context.l10n.blacklistDescription),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+
+              String? token = await getAuthToken();
+              if (token == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.notLoggedInShort),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlacklistScreen(authToken: token),
+                  ),
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.check_circle),
+            title: Text(context.l10n.whitelistTitle),
+            subtitle: Text(context.l10n.whitelistDescription),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+
+              String? token = await getAuthToken();
+              if (token == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.notLoggedInShort),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WhitelistScreen(authToken: token),
+                  ),
+                );
+              }
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: Text(context.l10n.settings),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.dns),
+            title: Text(context.l10n.serverSettings),
+            subtitle: Text(context.l10n.serverSettingsDescription),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+
+              String? token = await getAuthToken();
+              if (token == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.notLoggedInShort),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PhoneBlockWebView(
+                      title: context.l10n.serverSettings,
+                      path: '/settings',
+                      authToken: token,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.favorite, color: Colors.orange),
+            title: Text(context.l10n.donate),
+            subtitle: Text(context.l10n.aboutDescription),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+
+              final url = await buildPhoneBlockUrlWithToken('/support');
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(context.l10n.about),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AboutScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   /// Opens the phone number on PhoneBlock website in a WebView.
@@ -2639,94 +2805,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const Divider(),
-                ListTile(
-                  title: Text(context.l10n.blacklistTitle),
-                  subtitle: Text(context.l10n.blacklistDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => BlacklistScreen(authToken: token),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  title: Text(context.l10n.whitelistTitle),
-                  subtitle: Text(context.l10n.whitelistDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => WhitelistScreen(authToken: token),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  title: Text(context.l10n.serverSettings),
-                  subtitle: Text(context.l10n.serverSettingsDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => PhoneBlockWebView(
-                          title: localizations.serverSettings,
-                          path: '/settings',
-                          authToken: token,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
@@ -2764,88 +2842,117 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   ),
                 ),
-                const Divider(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
-                  child: Text(
-                    context.l10n.about,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.version),
-                  subtitle: Text(appVersion),
-                ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.developer),
-                  subtitle: Text(context.l10n.developerName),
-                ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.website),
-                  subtitle: Text(context.l10n.websiteUrl),
-                  onTap: () async {
-                    final url = await buildPhoneBlockUrlWithToken('/');
-                    final uri = Uri.parse(url);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    }
-                  },
-                ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.sourceCode),
-                  subtitle: Text(context.l10n.sourceCodeLicense),
-                  onTap: () async {
-                    final url = Uri.parse('https://github.com/haumacher/phoneblock');
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                    }
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(
-                    context.l10n.aboutDescription,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final url = await buildPhoneBlockUrlWithToken('/support');
-                      final uri = Uri.parse(url);
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    icon: const Icon(Icons.favorite),
-                    label: Text(context.l10n.donate),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    ),
-                  ),
-                ),
               ],
             ),
+    );
+  }
+}
+
+/// About screen showing app information, credits, and links.
+class AboutScreen extends StatelessWidget {
+  const AboutScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.l10n.about),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // App logo
+          Center(
+            child: Image.asset(
+              'assets/images/spam_icon.png',
+              width: 120,
+              height: 120,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // App title
+          Center(
+            child: Text(
+              context.l10n.appTitle,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Version
+          Center(
+            child: Text(
+              '${context.l10n.version} $appVersion',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          // About description
+          Text(
+            context.l10n.aboutDescription,
+            style: const TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          // Developer
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: Text(context.l10n.developer),
+            subtitle: Text(context.l10n.developerName),
+          ),
+          // Website
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: Text(context.l10n.website),
+            subtitle: Text(context.l10n.websiteUrl),
+            onTap: () async {
+              final url = await buildPhoneBlockUrlWithToken('/');
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
+          // Source code
+          ListTile(
+            leading: const Icon(Icons.code),
+            title: Text(context.l10n.sourceCode),
+            subtitle: Text(context.l10n.sourceCodeLicense),
+            onTap: () async {
+              final url = Uri.parse('https://github.com/haumacher/phoneblock');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
+          const SizedBox(height: 32),
+          // Donate button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final url = await buildPhoneBlockUrlWithToken('/support');
+                final uri = Uri.parse(url);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              icon: const Icon(Icons.favorite),
+              label: Text(context.l10n.donate),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
