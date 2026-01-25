@@ -1030,6 +1030,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
   bool _isLoading = true;
+  bool _answerbotEnabled = false;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
   Offset _lastTapPosition = Offset.zero;
 
@@ -1039,6 +1040,21 @@ class _MainScreenState extends State<MainScreen> {
     _loadScreenedCalls();
     _setupCallScreeningListener();
     _checkPendingSharedNumber();
+    _loadAnswerbotEnabled();
+  }
+
+  /// Loads the answerbot enabled setting.
+  Future<void> _loadAnswerbotEnabled() async {
+    try {
+      final enabled = await platform.invokeMethod<bool>("getAnswerbotEnabled");
+      setState(() {
+        _answerbotEnabled = enabled ?? false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error loading answerbot enabled setting: $e");
+      }
+    }
   }
 
   /// Checks for pending shared number and opens lookup screen.
@@ -1867,38 +1883,33 @@ class _MainScreenState extends State<MainScreen> {
   /// Builds the navigation drawer with menu items.
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
-      child: FutureBuilder<bool>(
-        future: platform.invokeMethod<bool>("getAnswerbotEnabled").then((value) => value ?? false),
-        builder: (context, snapshot) {
-          final answerbotEnabled = snapshot.data ?? false;
-
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/spam_icon.png',
+                  width: 80,
+                  height: 80,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/spam_icon.png',
-                      width: 80,
-                      height: 80,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      context.l10n.appTitle,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 8),
+                Text(
+                  context.l10n.appTitle,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
           ListTile(
             leading: const Icon(Icons.block),
             title: Text(context.l10n.blacklistTitle),
@@ -1969,9 +1980,9 @@ class _MainScreenState extends State<MainScreen> {
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
-              // Trigger rebuild to update drawer based on changed settings
+              // Reload answerbot enabled state when returning from settings
               if (context.mounted) {
-                setState(() {});
+                await _loadAnswerbotEnabled();
               }
             },
           ),
@@ -1989,7 +2000,7 @@ class _MainScreenState extends State<MainScreen> {
               }
             },
           ),
-          if (answerbotEnabled)
+          if (_answerbotEnabled)
             ListTile(
               leading: const Icon(Icons.phone_callback),
               title: Text(context.l10n.answerbotMenuTitle),
@@ -2028,9 +2039,7 @@ class _MainScreenState extends State<MainScreen> {
               );
             },
           ),
-            ],
-          );
-        },
+        ],
       ),
     );
   }
