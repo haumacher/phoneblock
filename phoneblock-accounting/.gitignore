@@ -1,6 +1,9 @@
 target/
 input/
 
+# Configuration files with credentials
+.phoneblock-accounting
+
 # Eclipse project files
 .classpath
 .project

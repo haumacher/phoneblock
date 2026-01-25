@@ -17,22 +17,43 @@ mvn clean package
 
 This creates `phoneblock-accounting-*-jar-with-dependencies.jar` in the `target/` directory.
 
-## Usage
+## Configuration
 
-Run the tool with a CSV file and database connection parameters:
+### Configuration File
 
-```bash
-java -jar phoneblock-accounting/target/phoneblock-accounting-*-jar-with-dependencies.jar <csv-file> [charset] [db-url] [db-user] [db-password]
+The tool supports a configuration file for default settings. By default, it looks for `~/.phoneblock-accounting`.
+
+Create the configuration file with this format:
+
+```properties
+# Character encoding for CSV files
+charset=ISO-8859-1
+
+# Database connection settings
+db.url=jdbc:h2:./phoneblock
+db.user=phone
+db.password=block
 ```
 
-### Arguments
+A template file is provided at `.phoneblock-accounting.template` in the module directory.
 
-- `<csv-file>` - Path to the CSV file containing bank transactions (required)
-- `[charset]` - Character encoding (optional, default: ISO-8859-1)
+### Command-line Options
+
+```bash
+java -jar phoneblock-accounting.jar [options] <csv-file>
+```
+
+**Options:**
+- `-c, --config <file>` - Configuration file (default: ~/.phoneblock-accounting)
+- `-f, --file <csv-file>` - CSV file to import (required, can also be positional)
+- `--charset <charset>` - Character encoding (default: ISO-8859-1)
   - Common values: ISO-8859-1, UTF-8, Windows-1252
-- `[db-url]` - Database JDBC URL (optional, default: jdbc:h2:./phoneblock)
-- `[db-user]` - Database user (optional, default: phone)
-- `[db-password]` - Database password (optional, default: block)
+- `--db-url <url>` - Database JDBC URL (default: jdbc:h2:./phoneblock)
+- `--db-user <user>` - Database user (default: phone)
+- `--db-password <pass>` - Database password (default: block)
+- `-h, --help` - Show help message
+
+Command-line options override configuration file settings.
 
 ### Prerequisites
 
@@ -40,24 +61,34 @@ The tool requires an existing PhoneBlock database with the CONTRIBUTIONS table a
 
 ### Examples
 
-Using defaults (connects to ./phoneblock database):
+Using defaults from ~/.phoneblock-accounting:
 ```bash
-java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv
+java -jar phoneblock-accounting.jar bank-export-2026.csv
 ```
 
-Specifying UTF-8 encoding:
+With named arguments:
 ```bash
-java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv UTF-8
+java -jar phoneblock-accounting.jar --file bank-export-2026.csv --charset UTF-8
 ```
 
-Connecting to a specific database:
+With custom config file:
 ```bash
-java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv ISO-8859-1 jdbc:h2:/path/to/phoneblock
+java -jar phoneblock-accounting.jar -c /path/to/config bank-export-2026.csv
 ```
 
-With custom credentials:
+Override database settings:
 ```bash
-java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv ISO-8859-1 jdbc:h2:/path/to/phoneblock myuser mypass
+java -jar phoneblock-accounting.jar --db-url jdbc:h2:/custom/path bank-export-2026.csv
+```
+
+Full example with all options:
+```bash
+java -jar phoneblock-accounting.jar \
+  --file bank-export-2026.csv \
+  --charset ISO-8859-1 \
+  --db-url jdbc:h2:/var/lib/phoneblock \
+  --db-user myuser \
+  --db-password mypass
 ```
 
 ## CSV Format

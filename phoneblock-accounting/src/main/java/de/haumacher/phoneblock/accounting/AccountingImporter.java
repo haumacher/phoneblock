@@ -23,6 +23,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.accounting.config.AccountingConfig;
 import de.haumacher.phoneblock.accounting.db.AccountingDB;
 import de.haumacher.phoneblock.accounting.db.ContributionRecord;
 import de.haumacher.phoneblock.accounting.db.Contributions;
@@ -41,65 +42,59 @@ public class AccountingImporter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AccountingImporter.class);
 
-	private static final Charset DEFAULT_CHARSET = Charset.forName("ISO-8859-1");
-	private static final String DEFAULT_DB_URL = "jdbc:h2:./phoneblock";
-	private static final String DEFAULT_DB_USER = "phone";
-	private static final String DEFAULT_DB_PASSWORD = "block";
-
 	private AccountingDB _db;
 
 	/**
 	 * Main entry point for the accounting importer.
 	 *
-	 * @param args Command-line arguments:
-	 *             args[0] - Path to CSV file to import
-	 *             args[1] - (Optional) Character encoding (default: ISO-8859-1)
-	 *             args[2] - (Optional) Database URL (default: jdbc:h2:./phoneblock)
-	 *             args[3] - (Optional) Database user (default: phone)
-	 *             args[4] - (Optional) Database password (default: block)
+	 * @param args Command-line arguments (see printUsage for details)
 	 */
 	public static void main(String[] args) {
-		if (args.length == 0) {
+		// Check for config file option first
+		String configFile = null;
+		for (int i = 0; i < args.length; i++) {
+			if ((args[i].equals("-c") || args[i].equals("--config")) && i + 1 < args.length) {
+				configFile = args[i + 1];
+				break;
+			}
+		}
+
+		// Load configuration
+		AccountingConfig config;
+		if (configFile != null) {
+			config = AccountingConfig.loadFromFile(configFile, false);
+		} else {
+			config = AccountingConfig.loadDefault();
+		}
+
+		// Parse command-line arguments (these override config file values)
+		if (!config.parseArguments(args)) {
 			printUsage();
 			System.exit(1);
 		}
 
-		String csvFilePath = args[0];
-		Charset charset = DEFAULT_CHARSET;
-		String dbUrl = DEFAULT_DB_URL;
-		String dbUser = DEFAULT_DB_USER;
-		String dbPassword = DEFAULT_DB_PASSWORD;
-
-		if (args.length > 1) {
-			try {
-				charset = Charset.forName(args[1]);
-			} catch (Exception e) {
-				System.err.println("Error: Invalid charset '" + args[1] + "'");
-				System.err.println("Using default charset: " + DEFAULT_CHARSET.name());
-			}
+		// Validate configuration
+		if (!config.isValid()) {
+			System.err.println("Error: CSV file is required");
+			System.err.println();
+			printUsage();
+			System.exit(1);
 		}
 
-		if (args.length > 2) {
-			dbUrl = args[2];
-		}
-
-		if (args.length > 3) {
-			dbUser = args[3];
-		}
-
-		if (args.length > 4) {
-			dbPassword = args[4];
-		}
-
+		// Import CSV file
 		try {
-			AccountingImporter importer = new AccountingImporter(dbUrl, dbUser, dbPassword);
+			AccountingImporter importer = new AccountingImporter(
+				config.getDbUrl(),
+				config.getDbUser(),
+				config.getDbPassword()
+			);
 			try {
-				importer.importFromCsv(csvFilePath, charset);
+				importer.importFromCsv(config.getCsvFile(), config.getCharset());
 			} finally {
 				importer.close();
 			}
 		} catch (Exception e) {
-			LOG.error("Failed to import CSV file: {}", csvFilePath, e);
+			LOG.error("Failed to import CSV file: {}", config.getCsvFile(), e);
 			System.exit(1);
 		}
 	}
@@ -107,21 +102,38 @@ public class AccountingImporter {
 	private static void printUsage() {
 		System.out.println("PhoneBlock Accounting Importer");
 		System.out.println();
-		System.out.println("Usage: java -jar phoneblock-accounting.jar <csv-file> [charset] [db-url] [db-user] [db-password]");
+		System.out.println("Usage: java -jar phoneblock-accounting.jar [options] <csv-file>");
 		System.out.println();
-		System.out.println("Arguments:");
-		System.out.println("  <csv-file>     Path to the CSV file containing bank transactions (required)");
-		System.out.println("  [charset]      Character encoding (optional, default: ISO-8859-1)");
-		System.out.println("                 Common values: ISO-8859-1, UTF-8, Windows-1252");
-		System.out.println("  [db-url]       Database JDBC URL (optional, default: jdbc:h2:./phoneblock)");
-		System.out.println("  [db-user]      Database user (optional, default: phone)");
-		System.out.println("  [db-password]  Database password (optional, default: block)");
+		System.out.println("Options:");
+		System.out.println("  -c, --config <file>      Configuration file (default: ~/.phoneblock-accounting)");
+		System.out.println("  -f, --file <csv-file>    CSV file to import (required)");
+		System.out.println("  --charset <charset>      Character encoding (default: ISO-8859-1)");
+		System.out.println("                           Common values: ISO-8859-1, UTF-8, Windows-1252");
+		System.out.println("  --db-url <url>           Database JDBC URL (default: jdbc:h2:./phoneblock)");
+		System.out.println("  --db-user <user>         Database user (default: phone)");
+		System.out.println("  --db-password <pass>     Database password (default: block)");
+		System.out.println("  -h, --help               Show this help message");
+		System.out.println();
+		System.out.println("The CSV file can also be specified as a positional argument.");
+		System.out.println();
+		System.out.println("Configuration File Format (~/.phoneblock-accounting):");
+		System.out.println("  charset=ISO-8859-1");
+		System.out.println("  db.url=jdbc:h2:./phoneblock");
+		System.out.println("  db.user=phone");
+		System.out.println("  db.password=block");
 		System.out.println();
 		System.out.println("Examples:");
-		System.out.println("  java -jar phoneblock-accounting.jar bank-export-2026.csv");
-		System.out.println("  java -jar phoneblock-accounting.jar bank-export-2026.csv UTF-8");
-		System.out.println("  java -jar phoneblock-accounting.jar bank-export-2026.csv ISO-8859-1 jdbc:h2:/path/to/db");
-		System.out.println("  java -jar phoneblock-accounting.jar bank-export-2026.csv ISO-8859-1 jdbc:h2:/path/to/db myuser mypass");
+		System.out.println("  # Using defaults from ~/.phoneblock-accounting");
+		System.out.println("  java -jar phoneblock-accounting.jar bank-export.csv");
+		System.out.println();
+		System.out.println("  # With named arguments");
+		System.out.println("  java -jar phoneblock-accounting.jar --file bank-export.csv --charset UTF-8");
+		System.out.println();
+		System.out.println("  # With custom config file");
+		System.out.println("  java -jar phoneblock-accounting.jar -c /path/to/config bank-export.csv");
+		System.out.println();
+		System.out.println("  # Override database settings");
+		System.out.println("  java -jar phoneblock-accounting.jar --db-url jdbc:h2:/custom/path bank-export.csv");
 	}
 
 	/**
@@ -197,16 +209,6 @@ public class AccountingImporter {
 			// Now parse the CSV data starting from the current position
 			processDataRows(bufferedReader, headerLine);
 		}
-	}
-
-	/**
-	 * Imports contribution data from a CSV file using default charset.
-	 *
-	 * @param csvFilePath Path to the CSV file to import
-	 * @throws IOException If the file cannot be read
-	 */
-	public void importFromCsv(String csvFilePath) throws IOException {
-		importFromCsv(csvFilePath, DEFAULT_CHARSET);
 	}
 
 	/**

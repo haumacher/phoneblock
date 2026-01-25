@@ -83,7 +83,7 @@ class AccountingImporterTest {
 			String nonExistentPath = new File(tempDir, "does-not-exist.csv").getAbsolutePath();
 
 			IOException exception = assertThrows(IOException.class,
-					() -> importer.importFromCsv(nonExistentPath));
+					() -> importer.importFromCsv(nonExistentPath, StandardCharsets.UTF_8));
 
 			assertTrue(exception.getMessage().contains("not found"));
 		} finally {
