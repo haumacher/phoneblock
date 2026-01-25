@@ -426,6 +426,12 @@ public class AccountingImporter {
 			// Insert new contribution
 			contributions.insert(contribution);
 
+			// Update user's credit if contribution is linked to a user
+			if (userId != null) {
+				users.addCredit(userId, amountCents);
+				LOG.debug("Added {} cents to credit of user ID {}", amountCents, userId);
+			}
+
 			LOG.info("Imported new contribution: {} ({}€)", tx, betrag);
 			printRecord(record, columnMapping, "NEW", contribution, username);
 

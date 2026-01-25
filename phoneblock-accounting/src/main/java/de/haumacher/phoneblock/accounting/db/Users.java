@@ -5,7 +5,9 @@ package de.haumacher.phoneblock.accounting.db;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * MyBatis mapper interface for accessing the USERS table.
@@ -37,4 +39,17 @@ public interface Users {
 		WHERE EMAIL LIKE CONCAT('%', #{emailPattern}, '%')
 	""")
 	List<Long> findUserIdsByEmail(String emailPattern);
+
+	/**
+	 * Adds an amount to a user's credit.
+	 *
+	 * @param userId The user ID
+	 * @param amount The amount to add (in cents)
+	 */
+	@Update("""
+		UPDATE USERS
+		SET CREDIT = CREDIT + #{amount}
+		WHERE ID = #{userId}
+	""")
+	void addCredit(@Param("userId") long userId, @Param("amount") int amount);
 }
