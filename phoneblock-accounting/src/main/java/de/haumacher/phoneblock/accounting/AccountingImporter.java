@@ -57,6 +57,19 @@ public class AccountingImporter {
 	 * Encapsulates column access to handle reordered columns.
 	 */
 	private static class ColumnMapping {
+		/**
+		 * Required header columns to identify the data section.
+		 */
+		static final Set<String> REQUIRED_HEADERS = new HashSet<>(Arrays.asList(
+			"Buchung", "Wertstellungsdatum", "Auftraggeber/Empfänger",
+			"Buchungstext", "Verwendungszweck", "Betrag", "Währung"
+		));
+
+		private static final String BUCHUNG_COLUMN = "Buchung";
+		private static final String AUFTRAGGEBER_COLUMN = "Auftraggeber/Empfänger";
+		private static final String VERWENDUNGSZWECK_COLUMN = "Verwendungszweck";
+		private static final String BETRAG_COLUMN = "Betrag";
+
 		private final int buchung;
 		private final int auftraggeber;
 		private final int verwendungszweck;
@@ -67,6 +80,23 @@ public class AccountingImporter {
 			auftraggeber = findColumn(headerRecord, AUFTRAGGEBER_COLUMN);
 			verwendungszweck = findColumn(headerRecord, VERWENDUNGSZWECK_COLUMN);
 			betrag = findColumn(headerRecord, BETRAG_COLUMN);
+		}
+
+		/**
+		 * Checks if a CSV record is the header row.
+		 *
+		 * @param record The CSV record to check
+		 * @return true if this record contains all required header columns
+		 */
+		static boolean isHeaderRecord(CSVRecord record) {
+			// Get all values from the record as a Set for efficient lookup
+			Set<String> values = new HashSet<>();
+			for (int i = 0; i < record.size(); i++) {
+				values.add(record.get(i));
+			}
+
+			// Check if all required headers are present
+			return values.containsAll(REQUIRED_HEADERS);
 		}
 
 		private int findColumn(CSVRecord headerRecord, String columnName) throws IOException {
@@ -204,18 +234,6 @@ public class AccountingImporter {
 		}
 	}
 
-	/**
-	 * Required header columns to identify the data section.
-	 */
-	private static final Set<String> REQUIRED_HEADERS = new HashSet<>(Arrays.asList(
-		"Buchung", "Wertstellungsdatum", "Auftraggeber/Empfänger",
-		"Buchungstext", "Verwendungszweck", "Betrag", "Währung"
-	));
-
-	private static final String BUCHUNG_COLUMN = "Buchung";
-	private static final String AUFTRAGGEBER_COLUMN = "Auftraggeber/Empfänger";
-	private static final String VERWENDUNGSZWECK_COLUMN = "Verwendungszweck";
-	private static final String BETRAG_COLUMN = "Betrag";
 	private static final String PHONEBLOCK_KEYWORD = "phoneblock";
 
 	/**
@@ -271,7 +289,7 @@ public class AccountingImporter {
 				for (CSVRecord record : parser) {
 					if (columnMapping == null) {
 						// Check if this record is the header
-						if (isHeaderRecord(record)) {
+						if (ColumnMapping.isHeaderRecord(record)) {
 							LOG.info("Found header at record #{}", record.getRecordNumber());
 							columnMapping = new ColumnMapping(record);
 						}
@@ -291,7 +309,7 @@ public class AccountingImporter {
 				String errorMessage = String.format(
 					"Could not find header line with required columns in CSV file.%n" +
 					"Expected header to contain: %s",
-					String.join(", ", REQUIRED_HEADERS)
+					String.join(", ", ColumnMapping.REQUIRED_HEADERS)
 				);
 				LOG.error(errorMessage);
 				throw new IOException(errorMessage);
@@ -351,22 +369,6 @@ public class AccountingImporter {
 		}
 	}
 
-	/**
-	 * Checks if a CSV record is the header row.
-	 *
-	 * @param record The CSV record to check
-	 * @return true if this record contains all required header columns
-	 */
-	private boolean isHeaderRecord(CSVRecord record) {
-		// Get all values from the record as a Set for efficient lookup
-		Set<String> values = new HashSet<>();
-		for (int i = 0; i < record.size(); i++) {
-			values.add(record.get(i));
-		}
-
-		// Check if all required headers are present
-		return values.containsAll(REQUIRED_HEADERS);
-	}
 
 	/**
 	 * Result of processing a record.
