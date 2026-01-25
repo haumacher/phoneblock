@@ -34,7 +34,7 @@ class AccountingImporterTest {
 
 	@BeforeAll
 	static void setupDatabase() throws Exception {
-		// Create CONTRIBUTIONS table in the in-memory database
+		// Create CONTRIBUTIONS and USERS tables in the in-memory database
 		try (Connection conn = DriverManager.getConnection(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
 			 Statement stmt = conn.createStatement()) {
 
@@ -53,6 +53,16 @@ class AccountingImporterTest {
 			""");
 
 			stmt.execute("CREATE UNIQUE INDEX CONTRIBUTIONS_TX_IDX ON CONTRIBUTIONS (TX)");
+
+			stmt.execute("""
+				CREATE TABLE USERS (
+				  ID BIGINT NOT NULL AUTO_INCREMENT,
+				  LOGIN CHARACTER VARYING(255) NOT NULL,
+				  DISPLAYNAME CHARACTER VARYING(255) NOT NULL,
+				  EMAIL CHARACTER VARYING(255),
+				  CONSTRAINT USERS_PK PRIMARY KEY (ID)
+				)
+			""");
 		}
 	}
 
@@ -111,6 +121,95 @@ class AccountingImporterTest {
 		try {
 			// Should not throw exception
 			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_StandardFormat() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			assertEquals("user@example.com", importer.extractEmailPattern("Contribution from user@example.com"));
+			assertEquals("john.doe@mail.de", importer.extractEmailPattern("PhoneBlock john.doe@mail.de support"));
+			assertEquals("test_user@domain.org", importer.extractEmailPattern("test_user@domain.org"));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_ObfuscatedWithAt() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			assertEquals("user@example.com", importer.extractEmailPattern("Contribution from user at example.com"));
+			assertEquals("sh-konsum@mai", importer.extractEmailPattern("sh-konsum at mai"));
+			assertEquals("john.doe@mail.de", importer.extractEmailPattern("PhoneBlock john.doe at mail.de support"));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_WithSpaces() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			assertEquals("user@example.com", importer.extractEmailPattern("user  at  example.com"));
+			assertEquals("test@domain", importer.extractEmailPattern("test  @  domain"));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_CaseInsensitive() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			assertEquals("User@Example.Com", importer.extractEmailPattern("User AT Example.Com"));
+			assertEquals("TEST@DOMAIN", importer.extractEmailPattern("TEST At DOMAIN"));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_SpecialCharacters() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			assertEquals("user-name@sub-domain.example.com",
+					importer.extractEmailPattern("user-name@sub-domain.example.com"));
+			assertEquals("user_123@test.org", importer.extractEmailPattern("user_123@test.org"));
+			assertEquals("first.last@company.co.uk", importer.extractEmailPattern("first.last at company.co.uk"));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_NoMatch() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			assertNull(importer.extractEmailPattern("PhoneBlock contribution"));
+			assertNull(importer.extractEmailPattern("No email here"));
+			assertNull(importer.extractEmailPattern("@invalid"));
+			assertNull(importer.extractEmailPattern("user@"));
+			assertNull(importer.extractEmailPattern("@domain"));
+			assertNull(importer.extractEmailPattern(null));
+			assertNull(importer.extractEmailPattern(""));
+		} finally {
+			importer.close();
+		}
+	}
+
+	@Test
+	void testExtractEmailPattern_FirstMatchOnly() throws Exception {
+		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		try {
+			// Should extract the first email pattern found
+			assertEquals("first@example.com",
+					importer.extractEmailPattern("first@example.com and second@other.com"));
+			assertEquals("user1@test.org",
+					importer.extractEmailPattern("user1 at test.org or user2 at test.org"));
 		} finally {
 			importer.close();
 		}

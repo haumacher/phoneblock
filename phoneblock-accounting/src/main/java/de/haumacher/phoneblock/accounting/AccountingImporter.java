@@ -463,7 +463,7 @@ public class AccountingImporter {
 	 * @param message The contribution message (Verwendungszweck)
 	 * @return The extracted email pattern for searching, or null if no pattern found
 	 */
-	private String extractEmailPattern(String message) {
+	String extractEmailPattern(String message) {
 		if (message == null) {
 			return null;
 		}
