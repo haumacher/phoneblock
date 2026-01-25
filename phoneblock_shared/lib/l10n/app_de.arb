@@ -293,5 +293,598 @@
   "@noCalls": {
     "description": "No calls message",
     "x-translated": "d44ce81e"
+  },
+  "answerbot": "Anrufbeantworter",
+  "@answerbot": {
+    "description": "Answerbot label",
+    "x-translated": "3877c928"
+  },
+  "answerbotSettings": "Anrufbeantworter-Einstellungen",
+  "@answerbotSettings": {
+    "description": "Answerbot settings group title",
+    "x-translated": "1423a879"
+  },
+  "minConfidence": "Mindestkonfidenz",
+  "@minConfidence": {
+    "description": "Minimum confidence label",
+    "x-translated": "a951192a"
+  },
+  "minConfidenceHelp": "Wie viele Beschwerden notwendig sind, damit eine Nummer durch den Anrufbeantworter abgefangen wird.",
+  "@minConfidenceHelp": {
+    "description": "Minimum confidence help text",
+    "x-translated": "6f849535"
+  },
+  "blockNumberRanges": "Nummernbereiche sperren",
+  "@blockNumberRanges": {
+    "description": "Block number ranges label",
+    "x-translated": "e62966dc"
+  },
+  "blockNumberRangesHelp": "Nimmt das Gespräch auch für einen Nummer an, die selbst noch nicht als SPAM bekannt ist, wenn die Vermutung naheliegt, dass die Nummer zu einem Anlagenanschluss gehört, von dem SPAM ausgeht.",
+  "@blockNumberRangesHelp": {
+    "description": "Block number ranges help text",
+    "x-translated": "5ca7cabf"
+  },
+  "preferIPv4": "IPv4 Kommunikation bevorzugen",
+  "@preferIPv4": {
+    "description": "Prefer IPv4 label",
+    "x-translated": "34f1a82d"
+  },
+  "preferIPv4Help": "Wenn verfügbar wird die Kommunikation mit dem Anrufbeantworter über IPv4 abgewickelt. Es scheint Telefonanschlüsse zu geben, bei denen eine Sprachverbindung über IPv6 nicht möglich ist, obwohl eine IPv6 Adresse verfügbar ist.",
+  "@preferIPv4Help": {
+    "description": "Prefer IPv4 help text",
+    "x-translated": "63784bb5"
+  },
+  "callRetention": "Anruf-Aufbewahrung",
+  "@callRetention": {
+    "description": "Call retention group title",
+    "x-translated": "700b351"
+  },
+  "automaticDeletion": "Automatische Löschung",
+  "@automaticDeletion": {
+    "description": "Automatic deletion label",
+    "x-translated": "9b1cfd08"
+  },
+  "automaticDeletionHelp": "Nach welcher Zeit sollen alte Anrufprotokolle automatisch gelöscht werden? 'Niemals löschen' deaktiviert die automatische Löschung.",
+  "@automaticDeletionHelp": {
+    "description": "Automatic deletion help text",
+    "x-translated": "7ac8ca33"
+  },
+  "dnsSettings": "DNS Settings",
+  "@dnsSettings": {
+    "description": "DNS settings group title",
+    "x-translated": "654dda1b"
+  },
+  "dnsSetting": "DNS-Einstellung",
+  "@dnsSetting": {
+    "description": "DNS setting label",
+    "x-translated": "485c83c"
+  },
+  "phoneBlockDns": "PhoneBlock-DNS",
+  "@phoneBlockDns": {
+    "description": "PhoneBlock DNS option",
+    "x-translated": "1ee593f1"
+  },
+  "otherProviderOrDomain": "Anderer Anbieter oder Domainname",
+  "@otherProviderOrDomain": {
+    "description": "Other provider or domain option",
+    "x-translated": "5de1d884"
+  },
+  "dnsSettingHelp": "Wie der Anrufbeantworter Deine Fritz!Box im Internet findet.",
+  "@dnsSettingHelp": {
+    "description": "DNS setting help text",
+    "x-translated": "e240db3c"
+  },
+  "updateUrl": "Update-URL",
+  "@updateUrl": {
+    "description": "Update URL label",
+    "x-translated": "3bdd1180"
+  },
+  "updateUrlHelp": "Nutzername für die DynDNS-Freige in Deiner Fritz!Box.",
+  "@updateUrlHelp": {
+    "description": "Update URL help text",
+    "x-translated": "76ec452"
+  },
+  "domainNameHelp": "Name den Deine Fritz!Box im Internet erhält.",
+  "@domainNameHelp": {
+    "description": "Domain name help text",
+    "x-translated": "2297fade"
+  },
+  "dyndnsUsername": "DynDNS-Benutzername",
+  "@dyndnsUsername": {
+    "description": "DynDNS username label",
+    "x-translated": "43b22a3f"
+  },
+  "dyndnsUsernameHelp": "Nutzername für die DynDNS-Freige in Deiner Fritz!Box.",
+  "@dyndnsUsernameHelp": {
+    "description": "DynDNS username help text",
+    "x-translated": "76ec452"
+  },
+  "dyndnsPassword": "DynDNS-Kennwort",
+  "@dyndnsPassword": {
+    "description": "DynDNS password label",
+    "x-translated": "f739c15d"
+  },
+  "dyndnsPasswordHelp": "Das Kennwort, dass Du für die DynDNS-Freigabe verwenden musst.",
+  "@dyndnsPasswordHelp": {
+    "description": "DynDNS password help text",
+    "x-translated": "a94561bf"
+  },
+  "host": "Host",
+  "@host": {
+    "description": "Host label",
+    "x-translated": "6f15bcc3"
+  },
+  "hostHelp": "Der Host-Name, über den Deine Fritz!Box aus dem Internet erreichbar ist.",
+  "@hostHelp": {
+    "description": "Host help text",
+    "x-translated": "7968a4d8"
+  },
+  "sipSettings": "SIP Settings",
+  "@sipSettings": {
+    "description": "SIP settings group title",
+    "x-translated": "dfc170e8"
+  },
+  "user": "User",
+  "@user": {
+    "description": "User label",
+    "x-translated": "2da17977"
+  },
+  "userHelp": "Der Nutzername, der in der Fritz!Box für den Zugriff auf das Telefoniegerät eingerichtet sein muss.",
+  "@userHelp": {
+    "description": "User help text",
+    "x-translated": "c448457a"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password label",
+    "x-translated": "ccb42483"
+  },
+  "passwordHelp": "Das Passwort, dass für den Zugriff auf das Telefoniegerät in der Fritz!Box vergeben sein muss.",
+  "@passwordHelp": {
+    "description": "Password help text",
+    "x-translated": "bed188bf"
+  },
+  "savingSettings": "Speichere Einstellungen...",
+  "@savingSettings": {
+    "description": "Saving settings progress message",
+    "x-translated": "c64e9a32"
+  },
+  "errorSavingSettings": "Fehler beim Speichern der Einstellungen.",
+  "@errorSavingSettings": {
+    "description": "Error saving settings message",
+    "x-translated": "e97ed429"
+  },
+  "savingFailed": "Speichern fehlgeschlagen: {message}",
+  "@savingFailed": {
+    "description": "Saving failed message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "77d38ebb"
+  },
+  "enableAfterSavingFailed": "Neu einschalten nach Speichern fehlgeschlagen",
+  "@enableAfterSavingFailed": {
+    "description": "Enable after saving failed message",
+    "x-translated": "ebca6396"
+  },
+  "enablingAnswerbot": "Schalte Anrufbeantworter ein...",
+  "@enablingAnswerbot": {
+    "description": "Enabling answerbot progress message",
+    "x-translated": "c9edac35"
+  },
+  "errorEnablingAnswerbot": "Fehler beim Einschalten des Anrufbeantworters.",
+  "@errorEnablingAnswerbot": {
+    "description": "Error enabling answerbot message",
+    "x-translated": "e1f15c84"
+  },
+  "cannotEnable": "Kann nicht einschalten: {message}",
+  "@cannotEnable": {
+    "description": "Cannot enable message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "ecd3943c"
+  },
+  "enablingFailed": "Einschalten des Anrufbeantworters fehlgeschlagen",
+  "@enablingFailed": {
+    "description": "Enabling failed message",
+    "x-translated": "6ce9a6cb"
+  },
+  "enablingFailedMessage": "Einschalten fehlgeschlagen: {message}",
+  "@enablingFailedMessage": {
+    "description": "Enabling failed with error message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "49f42705"
+  },
+  "retryingMessage": "{message} Versuche erneut...",
+  "@retryingMessage": {
+    "description": "Retrying with error message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "8d05ba95"
+  },
+  "savingRetentionSettings": "Speichere Aufbewahrungseinstellungen...",
+  "@savingRetentionSettings": {
+    "description": "Saving retention settings progress message",
+    "x-translated": "7f0881e5"
+  },
+  "errorSavingRetentionSettings": "Fehler beim Speichern der Aufbewahrungseinstellungen.",
+  "@errorSavingRetentionSettings": {
+    "description": "Error saving retention settings message",
+    "x-translated": "e82f0bc8"
+  },
+  "automaticDeletionDisabled": "Automatische Löschung deaktiviert",
+  "@automaticDeletionDisabled": {
+    "description": "Automatic deletion disabled message",
+    "x-translated": "40aa5fd5"
+  },
+  "retentionSettingsSaved": "Aufbewahrungseinstellungen gespeichert ({period})",
+  "@retentionSettingsSaved": {
+    "description": "Retention settings saved message",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    },
+    "x-translated": "5bbf7ea9"
+  },
+  "oneWeek": "1 Woche",
+  "@oneWeek": {
+    "description": "One week period",
+    "x-translated": "a7cf8121"
+  },
+  "oneMonth": "1 Monat",
+  "@oneMonth": {
+    "description": "One month period",
+    "x-translated": "3e3506ea"
+  },
+  "threeMonths": "3 Monate",
+  "@threeMonths": {
+    "description": "Three months period",
+    "x-translated": "ed1e4347"
+  },
+  "oneYear": "1 Jahr",
+  "@oneYear": {
+    "description": "One year period",
+    "x-translated": "11b6b25e"
+  },
+  "never": "Niemals",
+  "@never": {
+    "description": "Never period",
+    "x-translated": "776cfd11"
+  },
+  "deleteAnswerbotConfirm": "Soll der Anrufbeantworter {userName} wirklich gelöscht werden?",
+  "@deleteAnswerbotConfirm": {
+    "description": "Delete answerbot confirmation message",
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    },
+    "x-translated": "324a4d95"
+  },
+  "cancel": "Abbrechen",
+  "@cancel": {
+    "description": "Cancel button",
+    "x-translated": "6be8bcdf"
+  },
+  "delete": "Löschen",
+  "@delete": {
+    "description": "Delete button",
+    "x-translated": "49d3f662"
+  },
+  "deletionFailed": "Löschen Fehlgeschlagen",
+  "@deletionFailed": {
+    "description": "Deletion failed title",
+    "x-translated": "3a0e743c"
+  },
+  "answerbotCouldNotBeDeleted": "Der Anrufbeantworter konnte nicht gelöscht werden",
+  "@answerbotCouldNotBeDeleted": {
+    "description": "Answerbot could not be deleted message",
+    "x-translated": "78a07f83"
+  },
+  "spamCalls": "SPAM Anrufe",
+  "@spamCalls": {
+    "description": "Spam calls title",
+    "x-translated": "f876feda"
+  },
+  "deleteCalls": "Anrufe löschen",
+  "@deleteCalls": {
+    "description": "Delete calls tooltip",
+    "x-translated": "5d0d1c41"
+  },
+  "deletingCallsFailed": "Löschen fehlgeschlagen",
+  "@deletingCallsFailed": {
+    "description": "Deleting calls failed title",
+    "x-translated": "f76a0ce4"
+  },
+  "deleteRequestFailed": "Die Löschanforderung konnte nicht bearbeitet werden.",
+  "@deleteRequestFailed": {
+    "description": "Delete request failed message",
+    "x-translated": "d542b942"
+  },
+  "cannotRetrieveCalls": "Anrufe können nicht abgerufen werden (Fehler {statusCode}): {message}",
+  "@cannotRetrieveCalls": {
+    "description": "Cannot retrieve calls error",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      },
+      "statusCode": {
+        "type": "int"
+      }
+    },
+    "x-translated": "231d7598"
+  },
+  "noNewCalls": "Keine neuen Anrufe.",
+  "@noNewCalls": {
+    "description": "No new calls message",
+    "x-translated": "9f742ed9"
+  },
+  "duration": "Dauer {seconds} s",
+  "@duration": {
+    "description": "Call duration",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    },
+    "x-translated": "5dc0c3a5"
+  },
+  "today": "Heute {time}",
+  "@today": {
+    "description": "Today with time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    },
+    "x-translated": "db08bfc9"
+  },
+  "yesterday": "Gestern {time}",
+  "@yesterday": {
+    "description": "Yesterday with time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    },
+    "x-translated": "45d35928"
+  },
+  "dynDnsDescriptionLong": "PhoneBlock muss die Internet-Adresse Deiner Fritz!Box kennen, um den Anrufbeantworter an Deiner Fritz!Box anmelden zu können. Wenn Du schon MyFRITZ! oder einen anderen DynDNS-Anbieter eingerichtet hast, kannst Du diesen Domain-Namen verwenden. Wenn nicht kannst Du ganz einfach DynDNS von PhoneBlock einrichten, aktiviere dann diesen Schalter.",
+  "@dynDnsDescriptionLong": {
+    "description": "Long DynDNS description",
+    "x-translated": "74acb99"
+  },
+  "setupPhoneBlockDynDnsSnackbar": "Richte PhoneBlock DynDNS ein.",
+  "@setupPhoneBlockDynDnsSnackbar": {
+    "description": "Setup PhoneBlock DynDNS snackbar message",
+    "x-translated": "af467576"
+  },
+  "setupFailed": "Einrichtung Fehlgeschlagen",
+  "@setupFailed": {
+    "description": "Setup failed title",
+    "x-translated": "5689ce29"
+  },
+  "cannotSetupDynDns": "DynDNS kann nicht eingerichtet werden: {message}",
+  "@cannotSetupDynDns": {
+    "description": "Cannot setup DynDNS message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "a1c19954"
+  },
+  "domainname": "Domainname",
+  "@domainname": {
+    "description": "Domain name label (lowercase)",
+    "x-translated": "e7b04546"
+  },
+  "domainNameHintLong": "Domainname Deiner Fritz!Box (entweder MyFRITZ!-Adresse, oder DynDNS Domainname)",
+  "@domainNameHintLong": {
+    "description": "Long domain name hint",
+    "x-translated": "795b8f89"
+  },
+  "inputCannotBeEmpty": "Eingabe darf nicht leer sein.",
+  "@inputCannotBeEmpty": {
+    "description": "Input cannot be empty validation",
+    "x-translated": "65b8bf15"
+  },
+  "invalidDomainName": "Kein gültiger Domain-Name.",
+  "@invalidDomainName": {
+    "description": "Invalid domain name validation",
+    "x-translated": "2b5974ca"
+  },
+  "domainNameTooLong": "Der Domain-Name ist zu lang.",
+  "@domainNameTooLong": {
+    "description": "Domain name too long validation",
+    "x-translated": "84dbb553"
+  },
+  "domainNameHintExtended": "Gib den Domain-Namen Deiner Fritz!Box an. Wenn Deine Fritz!Box noch keinen Domain-Namen hat, aktiviere PhoneBlock-DynDNS. Den Domain-Namen Deiner Deiner Fritz!Box findest Du unter (Unter Internet > Freigaben > DynDNS). Alternativ kannst Du auch die MyFRITZ!-Adresse angeben (Internet > MyFRITZ!-Konto), z.B. z4z...l4n.myfritz.net.",
+  "@domainNameHintExtended": {
+    "description": "Extended domain name hint",
+    "x-translated": "d2ef9830"
+  },
+  "checkingDomainName": "Überprüfe Domainnamen.",
+  "@checkingDomainName": {
+    "description": "Checking domain name snackbar",
+    "x-translated": "712e4e32"
+  },
+  "domainNameNotAccepted": "Domainname wurde nicht akzeptiert: {message}",
+  "@domainNameNotAccepted": {
+    "description": "Domain name not accepted message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "2fa5b2ea"
+  },
+  "dynDnsInstructionsLong": "Öffne in Deinen Fritz!Box-Einstellungen die Seite die Internet > Freigaben > DynDNS und trage die hier angegebenen Informationen ein.",
+  "@dynDnsInstructionsLong": {
+    "description": "Long DynDNS instructions",
+    "x-translated": "d21e5141"
+  },
+  "updateUrlHelp2": "Die URL, die Deine Fritz!Box aufruft, um PhoneBlock ihre Internetadresse bekannt zu geben. Gib die URL genau so ein, wie sie hier geschrieben ist. Ersetze nicht die Werte in den spitzen Klammern, das macht Deine Fritz!Box beim Aufruf automatisch. Nutze am besten die Kopierfuntion, um die Werte zu übernehmen.",
+  "@updateUrlHelp2": {
+    "description": "Update URL help text (detailed)",
+    "x-translated": "87269d0c"
+  },
+  "domainNameHelp2": "Dieser Domainname kann später nicht öffentlich aufgelöst werden. Deine Internetadresse wird ausschließlich mit PhoneBlock geteilt.",
+  "@domainNameHelp2": {
+    "description": "Domain name help text 2",
+    "x-translated": "55470e77"
+  },
+  "username": "Benutzername",
+  "@username": {
+    "description": "Username label",
+    "x-translated": "375afb70"
+  },
+  "usernameHelp": "Der Benutzername, mit dem sich Deine Fritz!Box bei PhoneBlock anmeldet, um ihre Internetadresse bekannt zu geben.",
+  "@usernameHelp": {
+    "description": "Username help text",
+    "x-translated": "10ca855b"
+  },
+  "passwordLabel": "Kennwort",
+  "@passwordLabel": {
+    "description": "Password label (Kennwort)",
+    "x-translated": "23a57fff"
+  },
+  "passwordHelp2": "Das Kennwort, mit dem sich Deine Fritz!Box bei PhoneBlock anmeldet, um ihre Internetadresse bekannt zu geben. Aus Sicherheitsgründen kannst Du kein eigenes Kennwort eingeben, sondern musst das von PhoneBlock sicher generierte Kennwort verwenden.",
+  "@passwordHelp2": {
+    "description": "Password help text 2",
+    "x-translated": "938d697d"
+  },
+  "checkingDynDns": "Überprüfe DynDNS Einrichtung.",
+  "@checkingDynDns": {
+    "description": "Checking DynDNS snackbar",
+    "x-translated": "ecdb1a8f"
+  },
+  "notRegistered": "Nicht registriert",
+  "@notRegistered": {
+    "description": "Not registered title",
+    "x-translated": "5558c6cf"
+  },
+  "fritzBoxNotRegistered": "Deine Fritz!Box hat sich bei PhoneBlock noch nicht angemeldet, DynDNS ist nicht aktuell: {message}",
+  "@fritzBoxNotRegistered": {
+    "description": "Fritz!Box not registered message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "afc12551"
+  },
+  "sipSetupInstructions": "Richte jetzt den PhoneBlock-Anrufbeantworter als \"Telefon (mit und ohne Anrufbeantworter)\" ein. Damit das auch klappt, halte Dich bitte genau an die folgenden Schritte:",
+  "@sipSetupInstructions": {
+    "description": "SIP setup instructions intro",
+    "x-translated": "406f7b2a"
+  },
+  "sipSetupStep1": "1. Öffne in Deinen Fritz!Box-Einstellungen die Seite die Telefonie > Telefoniegeräte und klicke auf den Knopf \"Neues Gerät einrichten\".",
+  "@sipSetupStep1": {
+    "description": "SIP setup step 1",
+    "x-translated": "9208f3de"
+  },
+  "sipSetupStep2": "2. Wähle die Option \"Telefon (mit und ohne Anrufbeantworter)\" und klicke auf \"Weiter\".",
+  "@sipSetupStep2": {
+    "description": "SIP setup step 2",
+    "x-translated": "254d0ba4"
+  },
+  "sipSetupStep3": "3. Wähle die Option \"LAN/WLAN (IP-Telefon)\", gib dem Telefon den Namen \"PhoneBlock\" und klicke auf \"Weiter\".",
+  "@sipSetupStep3": {
+    "description": "SIP setup step 3",
+    "x-translated": "5fcaf4f6"
+  },
+  "sipSetupStep4": "4. Vergib jetzt den folgenden Benutzernamen und das Kennwort für deinen Anrufbeantworter und klicke dann auf \"Weiter\".",
+  "@sipSetupStep4": {
+    "description": "SIP setup step 4",
+    "x-translated": "2d85c303"
+  },
+  "usernameHelp2": "Der Benutzername, mit dem sich der PhoneBlock-Anrufbeantworter an Deiner Fritz!Box anmeldet.",
+  "@usernameHelp2": {
+    "description": "Username help text 2",
+    "x-translated": "19f99022"
+  },
+  "passwordHelp3": "Das Kennwort, das der PhoneBlock-Anrufbeantworter nutzt, um sich an Deiner Fritz!Box anzumelden. PhoneBlock hat für Dich ein sicheres Kennwort generiert.",
+  "@passwordHelp3": {
+    "description": "Password help text 3",
+    "x-translated": "46eabc33"
+  },
+  "sipSetupStep5": "5. Die jetzt abgefragte Rufnummer ist egal, der PhoneBlock-Anrufbeantworter führt aktiv keine Gespräche, sondern nimmt nur SPAM-Anrufe entgegen. Die Rufnummer wird in Schritt 9 wieder abgewählt. Klicke hier einfach auf \"Weiter\".",
+  "@sipSetupStep5": {
+    "description": "SIP setup step 5",
+    "x-translated": "d419b4f0"
+  },
+  "sipSetupStep6": "6. Wähle \"alle Anrufe annehmen\" und klicke auf \"Weiter\". Der PhoneBlock-Anrufbeantworter nimmt sowieso nur Gespräche an, wenn die Nummer des Anrufers auf der Blockliste steht. Gleichzeitig nimmt PhoneBlock nie Gespräche von Nummern an, die in Deinem normalen Telefonbuch stehen.",
+  "@sipSetupStep6": {
+    "description": "SIP setup step 6",
+    "x-translated": "c0e91342"
+  },
+  "sipSetupStep7": "7. Du siehst eine Zusammenfassung. Die Einstellungen sind (fast) fertig, klicke auf \"Übernehmen\".",
+  "@sipSetupStep7": {
+    "description": "SIP setup step 7",
+    "x-translated": "8c3be32b"
+  },
+  "sipSetupStep8": "8. In der Liste der Telefoniegeräte siehst Du jetzt \"PhoneBlock\". Es fehlen noch ein paar Einstellungen, die man erst nachträglich machen kann. Klicke daher auf den Bearbeiten-Stift in der Zeile des PhoneBlock-Anrufbeantworters.",
+  "@sipSetupStep8": {
+    "description": "SIP setup step 8",
+    "x-translated": "100a6d9e"
+  },
+  "sipSetupStep9": "9. In dem Feld \"Ausgehende Anrufe\" wähle die letzte (leere) Option, da PhoneBlock nie ausgehende Anrufe tätigt und daher der Anrufbeantworter keine Nummer für ausgehende Anrufe benötigt.",
+  "@sipSetupStep9": {
+    "description": "SIP setup step 9",
+    "x-translated": "11d83442"
+  },
+  "sipSetupStep10": "10. Selektiere den Reiter \"Anmeldedaten\". Bestätige dabei die Rückfage mit Klick auf \"Übernehmen\". Wähle jetzt die Option \"Anmeldung aus dem Internet erlauben\", damit sich der PhoneBlock-Anrufbeantworter aus der PhoneBlock-Cloud an Deiner Fritz!Box anmelden kann. Du musst das Kennwort des Anrufbeantworters (siehe oben) nocheinmal in das Feld \"Kennwort\" eingeben, bevor Du auf \"Übernehmen\" klickst. Lösche hierzu vorher die im Feld befindlichen Sternchen.",
+  "@sipSetupStep10": {
+    "description": "SIP setup step 10",
+    "x-translated": "ed07a56c"
+  },
+  "sipSetupStep11": "11. Es erscheint eine Nachricht, die vor darauf hinweist, dass über den Internetzugriff kostenpflichtige Verbindungen aufgebaut werden könnten. Du kannst Das getrost bestätigen, da erstens PhoneBlock nie aktiv Verbindungen aufbaut, zweitens PhoneBlock für Dich ein sicheres Passwort erzeugthat (siehe oben), so dass sich niemand anderes verbinden kann und drittens Du in Schritt 9 die ausgehenden Verbindungen deaktiviert hast. Je nach Einstellungen Deiner Fritz!Box musst Du die Einstellung noch an einem direkt an der Fritz!Box angeschlossenen DECT-Telefon bestätigen.",
+  "@sipSetupStep11": {
+    "description": "SIP setup step 11",
+    "x-translated": "b21b3e4b"
+  },
+  "sipSetupStep12": "12. Jetzt ist alles erledigt. Klicke auf Zurück, um wieder in die Liste der Telefoniegeräte zu springen. Du kannst jetzt mit dem Knopf unten Deinen Anrufbeantworter aktivieren.",
+  "@sipSetupStep12": {
+    "description": "SIP setup step 12",
+    "x-translated": "9a13fecd"
+  },
+  "tryingToRegisterAnswerbot": "Versuche Anrufbeantworter anzumelden...",
+  "@tryingToRegisterAnswerbot": {
+    "description": "Trying to register answerbot progress",
+    "x-translated": "a353aff2"
+  },
+  "answerbotRegistrationFailed": "Anmeldung des Anrufbeantworters fehlgeschlagen",
+  "@answerbotRegistrationFailed": {
+    "description": "Answerbot registration failed title",
+    "x-translated": "88d9e101"
+  },
+  "registrationFailed": "Registrierung fehlgeschlagen: {message}",
+  "@registrationFailed": {
+    "description": "Registration failed message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "57dcae07"
+  },
+  "answerbotRegisteredSuccess": "Dein PhoneBlock-Anrufbeantworter ist erfolgreich angemeldet. Die nächsten Spam-Anrufer können sich jetzt ausgibig mit PhoneBlock unterhalten. Wenn Du den PhoneBlock-Anrufbeantworter selber testen möchtest,dann wähle die interne Rufnummer des von Dir eingerichteten Telefoniegerätes \"PhoneBlock\". Die interne Nummer beginnt i.d.R. mit \"**\".",
+  "@answerbotRegisteredSuccess": {
+    "description": "Answerbot registered success message",
+    "x-translated": "22ea13a3"
   }
 }

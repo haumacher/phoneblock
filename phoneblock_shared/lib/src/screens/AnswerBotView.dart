@@ -9,6 +9,7 @@ import '../widgets/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../l10n_extensions.dart';
 
 class AnswerBotView extends StatefulWidget {
   final AnswerbotInfo bot;
@@ -44,14 +45,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
         actions: [
           if (!bot.enabled) PopupMenuButton(
             itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                   value: "delete",
                   child: Row(
                     children: [
-                      Padding(padding: EdgeInsets.only(right: 16),
+                      const Padding(padding: EdgeInsets.only(right: 16),
                         child: Icon(Icons.delete_forever, color: Colors.black),
                       ),
-                      Text("Anrufbeantworter löschen")
+                      Text(context.answerbotL10n.deleteAnswerbot)
                     ],
                   ))
             ],
@@ -74,14 +75,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     Expanded(
                       child: Row(
                         children: [
-                          const Text('Anrufbeantworter'),
+                          Text(context.answerbotL10n.answerbot),
                           if (bot.enabled) Padding(padding: const EdgeInsets.only(left: 16),
                             child: bot.registered ?
-                            const Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),) :
-                            const Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),),
+                            Chip(label: Text(context.answerbotL10n.statusActive), backgroundColor: Colors.green, labelStyle: const TextStyle(color: Colors.white),) :
+                            Chip(label: Text(context.answerbotL10n.statusConnecting), backgroundColor: Colors.orangeAccent, labelStyle: const TextStyle(color: Colors.white),),
                           )
-                          else const Padding(padding: EdgeInsets.only(left: 16),
-                              child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)
+                          else Padding(padding: const EdgeInsets.only(left: 16),
+                              child: Chip(label: Text(context.answerbotL10n.statusDisabled), backgroundColor: Colors.black54, labelStyle: const TextStyle(color: Colors.white),)
                           )
                         ],
                       ),
@@ -113,21 +114,21 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 ),
               ),
 
-              const Group("Anrufbeantworter-Einstellungen"),
+              Group(context.answerbotL10n.answerbotSettings),
 
               DropdownButtonFormField(
-                items: const [
-                  DropdownMenuItem(value: 2, child: Text("2 - sofort sperren")),
-                  DropdownMenuItem(value: 4, child: Text("4 - Bestätigung abwarten")),
-                  DropdownMenuItem(value: 10, child: Text("10 - erst wenn sicher")),
-                  DropdownMenuItem(value: 100, child: Text("100 - nur Top-Spammer")),
+                items: [
+                  DropdownMenuItem(value: 2, child: Text(context.answerbotL10n.minVotes2)),
+                  DropdownMenuItem(value: 4, child: Text(context.answerbotL10n.minVotes4)),
+                  DropdownMenuItem(value: 10, child: Text(context.answerbotL10n.minVotes10)),
+                  DropdownMenuItem(value: 100, child: Text(context.answerbotL10n.minVotes100)),
                 ],
-                decoration: const InputDecoration(
-                    labelText: 'Mindestkonfidenz',
-                    helperText: "Wie viele Beschwerden notwendig sind, damit eine Nummer durch den Anrufbeantworter abgefangen wird."
+                decoration: InputDecoration(
+                    labelText: context.answerbotL10n.minConfidence,
+                    helperText: context.answerbotL10n.minConfidenceHelp
                 ),
                 value: bot.minVotes,
-                disabledHint: const Text("Kann nur bei ausgeschaltetem Anrufbeantworter geändert werden."),
+                disabledHint: Text(context.answerbotL10n.cannotChangeWhileEnabled),
                 onChanged: (value) {
                   setState(() {
                     bot.minVotes = value ?? 4;
@@ -135,16 +136,16 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 },
               ),
               
-              SwitchField("Nummernbereiche sperren", value: bot.wildcards,
-                help: "Nimmt das Gespräch auch für einen Nummer an, die selbst noch nicht als SPAM bekannt ist, wenn die Vermutung naheliegt, dass die Nummer zu einem Anlagenanschluss gehört, von dem SPAM ausgeht.",
+              SwitchField(context.answerbotL10n.blockNumberRanges, value: bot.wildcards,
+                help: context.answerbotL10n.blockNumberRangesHelp,
                 onChanged: (bool value) {
                   setState(() {
                     bot.wildcards = value;
                   });
                 }),
 
-              SwitchField("IPv4 Kommunikation bevorzugen", value: bot.preferIPv4,
-                help: "Wenn verfügbar wird die Kommunikation mit dem Anrufbeantworter über IPv4 abgewickelt. Es scheint Telefonanschlüsse zu geben, bei denen eine Sprachverbindung über IPv6 nicht möglich ist, obwohl eine IPv6 Adresse verfügbar ist.",
+              SwitchField(context.answerbotL10n.preferIPv4, value: bot.preferIPv4,
+                help: context.answerbotL10n.preferIPv4Help,
                 onChanged: (bool value) {
                   setState(() {
                     bot.preferIPv4 = value;
@@ -157,26 +158,26 @@ class AnswerBotViewState extends State<AnswerBotView> {
                   setState(() {
                     bot.registered = ok;
                   });
-                }, 
-                child: const Text("Einstellungen speichern"),
+                },
+                child: Text(context.answerbotL10n.saveSettings),
               ),
 
-              const Padding(
-                padding: EdgeInsets.only(top: groupSpacing),
-                child: Group("Anruf-Aufbewahrung"),
+              Padding(
+                padding: const EdgeInsets.only(top: groupSpacing),
+                child: Group(context.answerbotL10n.callRetention),
               ),
 
               DropdownButtonFormField<RetentionPeriod>(
-                items: const [
-                  DropdownMenuItem(value: RetentionPeriod.never, child: Text("Niemals löschen")),
-                  DropdownMenuItem(value: RetentionPeriod.week, child: Text("Nach 1 Woche löschen")),
-                  DropdownMenuItem(value: RetentionPeriod.month, child: Text("Nach 1 Monat löschen")),
-                  DropdownMenuItem(value: RetentionPeriod.quarter, child: Text("Nach 3 Monaten löschen")),
-                  DropdownMenuItem(value: RetentionPeriod.year, child: Text("Nach 1 Jahr löschen")),
+                items: [
+                  DropdownMenuItem(value: RetentionPeriod.never, child: Text(context.answerbotL10n.retentionNever)),
+                  DropdownMenuItem(value: RetentionPeriod.week, child: Text(context.answerbotL10n.retentionWeek)),
+                  DropdownMenuItem(value: RetentionPeriod.month, child: Text(context.answerbotL10n.retentionMonth)),
+                  DropdownMenuItem(value: RetentionPeriod.quarter, child: Text(context.answerbotL10n.retentionQuarter)),
+                  DropdownMenuItem(value: RetentionPeriod.year, child: Text(context.answerbotL10n.retentionYear)),
                 ],
-                decoration: const InputDecoration(
-                    labelText: 'Automatische Löschung',
-                    helperText: "Nach welcher Zeit sollen alte Anrufprotokolle automatisch gelöscht werden? 'Niemals löschen' deaktiviert die automatische Löschung."
+                decoration: InputDecoration(
+                    labelText: context.answerbotL10n.automaticDeletion,
+                    helperText: context.answerbotL10n.automaticDeletionHelp
                 ),
                 value: bot.retentionPeriod,
                 onChanged: (value) {
@@ -189,33 +190,34 @@ class AnswerBotViewState extends State<AnswerBotView> {
               ElevatedButton(
                 onPressed: () async {
                   await updateRetentionPolicy(bot);
-                }, 
-                child: const Text("Aufbewahrungseinstellungen speichern"),
+                },
+                child: Text(context.answerbotL10n.saveRetentionSettings),
               ),
 
-              const Padding(
-                padding: EdgeInsets.only(top: groupSpacing),
-                child: const Group("DNS Settings"),),
+              Padding(
+                padding: const EdgeInsets.only(top: groupSpacing),
+                child: Group(context.answerbotL10n.dnsSettings),),
 
-              InfoField('DNS-Einstellung', internalDynDns ? "PhoneBlock-DNS" : "Anderer Anbieter oder Domainname",
-                help: "Wie der Anrufbeantworter Deine Fritz!Box im Internet findet.",
+              InfoField(context.answerbotL10n.dnsSetting,
+                internalDynDns ? context.answerbotL10n.phoneBlockDns : context.answerbotL10n.otherProviderOrDomain,
+                help: context.answerbotL10n.dnsSettingHelp,
                 noCopy: true,
                 padding: fieldSpacing,),
 
               if (internalDynDns) ...[
-                const InfoField('Update-URL',
+                InfoField(context.answerbotL10n.updateUrl,
                   "https://phoneblock.net/phoneblock/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>",
-                  help: "Nutzername für die DynDNS-Freige in Deiner Fritz!Box.",
+                  help: context.answerbotL10n.updateUrlHelp,
                   padding: fieldSpacing,),
-                InfoField('Domainname', "${bot.dyndnsUser}box.phoneblock.net",
-                  help: "Name den Deine Fritz!Box im Internet erhält.",
+                InfoField(context.answerbotL10n.domainname, "${bot.dyndnsUser}box.phoneblock.net",
+                  help: context.answerbotL10n.domainNameHelp,
                   padding: fieldSpacing,),
-                InfoField('DynDNS-Benutzername', bot.dyndnsUser,
-                  help: "Nutzername für die DynDNS-Freige in Deiner Fritz!Box.",
+                InfoField(context.answerbotL10n.dyndnsUsername, bot.dyndnsUser,
+                  help: context.answerbotL10n.dyndnsUsernameHelp,
                   padding: fieldSpacing,),
-                InfoField('DynDNS-Kennwort', bot.dyndnsPassword,
+                InfoField(context.answerbotL10n.dyndnsPassword, bot.dyndnsPassword,
                   password: true,
-                  help: "Das Kennwort, dass Du für die DynDNS-Freigabe verwenden musst.",
+                  help: context.answerbotL10n.dyndnsPasswordHelp,
                   padding: fieldSpacing,),
               ],
 
@@ -223,31 +225,31 @@ class AnswerBotViewState extends State<AnswerBotView> {
                 Padding(
                   padding: const EdgeInsets.only(top: fieldSpacing),
                   child: TextFormField(
-                    decoration: const InputDecoration(
-                        labelText: 'Host',
-                        helperText: "Der Host-Name, über den Deine Fritz!Box aus dem Internet erreichbar ist."
+                    decoration: InputDecoration(
+                        labelText: context.answerbotL10n.host,
+                        helperText: context.answerbotL10n.hostHelp
                     ),
                     initialValue: bot.host,
                   ),
                 ),
 
-              const Padding(
-                padding: EdgeInsets.only(top: groupSpacing),
-                child: Group("SIP Settings"),
+              Padding(
+                padding: const EdgeInsets.only(top: groupSpacing),
+                child: Group(context.answerbotL10n.sipSettings),
               ),
 
-              InfoField('User', bot.userName,
-                help: "Der Nutzername, der in der Fritz!Box für den Zugriff auf das Telefoniegerät eingerichtet sein muss.",),
-              InfoField('Password', bot.password,
+              InfoField(context.answerbotL10n.user, bot.userName,
+                help: context.answerbotL10n.userHelp,),
+              InfoField(context.answerbotL10n.password, bot.password,
                 password: true,
-                help: "Das Passwort, dass für den Zugriff auf das Telefoniegerät in der Fritz!Box vergeben sein muss.",
+                help: context.answerbotL10n.passwordHelp,
                 padding: fieldSpacing,),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: "Hilfe anzeigen",
+        tooltip: context.answerbotL10n.showHelp,
         onPressed: () async {
           await launchUrl(Uri.parse("https://phoneblock.net/"));
         },
@@ -260,7 +262,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
   Future<bool> updateAnswerBot(AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
-    pd.show(max: maxRetry, msg: 'Speichere Einstellungen...');
+    pd.show(max: maxRetry, msg: context.answerbotL10n.savingSettings);
 
     var botId = bot.id;
     var response = await sendRequest(
@@ -277,13 +279,13 @@ class AnswerBotViewState extends State<AnswerBotView> {
     if (response.statusCode != 200) {
       pd.close();
 
-      showErrorDialog(context, response, 'Fehler beim Speichern der Einstellungen.',
-        "Speichern fehlgeschlagen: ${response.body}");
+      showErrorDialog(context, response, context.answerbotL10n.errorSavingSettings,
+        context.answerbotL10n.savingFailed(response.body));
       return false;
     }
 
     if (bot.enabled) {
-      return await waitForRegister(botId, pd, 'Neu einschalten nach Speichern fehlgeschlagen');
+      return await waitForRegister(botId, pd, context.answerbotL10n.enableAfterSavingFailed);
     } else {
       pd.close();
       return false;
@@ -292,7 +294,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
   Future<bool> enableAnswerBot(AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
-    pd.show(max: maxRetry, msg: 'Schalte Anrufbeantworter ein...');
+    pd.show(max: maxRetry, msg: context.answerbotL10n.enablingAnswerbot);
 
     var botId = bot.id;
     var response = await sendRequest(EnableAnswerBot(id: botId));
@@ -302,12 +304,12 @@ class AnswerBotViewState extends State<AnswerBotView> {
     if (response.statusCode != 200) {
       pd.close();
 
-      showErrorDialog(context, response, 'Fehler beim Einschalten des Anrufbeantworters.',
-        "Kann nicht einschalten: ${response.body}");
+      showErrorDialog(context, response, context.answerbotL10n.errorEnablingAnswerbot,
+        context.answerbotL10n.cannotEnable(response.body));
       return false;
     }
 
-    return await waitForRegister(botId, pd, 'Einschalten des Anrufbeantworters fehlgeschlagen');
+    return await waitForRegister(botId, pd, context.answerbotL10n.enablingFailed);
   }
 
   Future<bool> waitForRegister(int botId, ProgressDialog pd, String errorMessage) async {
@@ -330,12 +332,12 @@ class AnswerBotViewState extends State<AnswerBotView> {
           pd.close();
     
           showErrorDialog(context, response, errorMessage,
-              "Einschalten fehlgeschlagen: $errorMessage");
+              context.answerbotL10n.enablingFailedMessage(errorMessage));
           return false;
         } else {
           await Future.delayed(Duration(milliseconds: sleep));
-    
-          pd.update(value: n, msg: "$errorMessage Versuche erneut...");
+
+          pd.update(value: n, msg: context.answerbotL10n.retryingMessage(errorMessage));
         }
       }
     }
@@ -343,7 +345,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
   Future<void> updateRetentionPolicy(AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
-    pd.show(max: 1, msg: 'Speichere Aufbewahrungseinstellungen...');
+    pd.show(max: 1, msg: context.answerbotL10n.savingRetentionSettings);
 
     var response = await sendRequest(
       SetRetentionPolicy(
@@ -356,13 +358,13 @@ class AnswerBotViewState extends State<AnswerBotView> {
     if (!context.mounted) return;
 
     if (response.statusCode != 200) {
-      showErrorDialog(context, response, 'Fehler beim Speichern der Aufbewahrungseinstellungen.',
-        "Speichern fehlgeschlagen: ${response.body}");
+      showErrorDialog(context, response, context.answerbotL10n.errorSavingRetentionSettings,
+        context.answerbotL10n.savingFailed(response.body));
     } else {
-      String message = bot.retentionPeriod == "NEVER" 
-        ? "Automatische Löschung deaktiviert"
-        : "Aufbewahrungseinstellungen gespeichert (${_getRetentionDisplayName(bot.retentionPeriod)})";
-      
+      String message = bot.retentionPeriod == "NEVER"
+        ? context.answerbotL10n.automaticDeletionDisabled
+        : context.answerbotL10n.retentionSettingsSaved(_getRetentionDisplayName(bot.retentionPeriod));
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
@@ -371,11 +373,11 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
   String _getRetentionDisplayName(RetentionPeriod period) {
     switch (period) {
-      case RetentionPeriod.week: return "1 Woche";
-      case RetentionPeriod.month: return "1 Monat";
-      case RetentionPeriod.quarter: return "3 Monate";
-      case RetentionPeriod.year: return "1 Jahr";
-      case RetentionPeriod.never: return "Niemals";
+      case RetentionPeriod.week: return context.answerbotL10n.oneWeek;
+      case RetentionPeriod.month: return context.answerbotL10n.oneMonth;
+      case RetentionPeriod.quarter: return context.answerbotL10n.threeMonths;
+      case RetentionPeriod.year: return context.answerbotL10n.oneYear;
+      case RetentionPeriod.never: return context.answerbotL10n.never;
       default: return period.name;
     }
   }
@@ -384,25 +386,25 @@ class AnswerBotViewState extends State<AnswerBotView> {
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Anrufbeantworter löschen'),
+          title: Text(context.answerbotL10n.deleteAnswerbot),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Soll der Anrufbeantworter ${bot.userName} wirklich gelöscht werden?'),
+                Text(context.answerbotL10n.deleteAnswerbotConfirm(bot.userName)),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Abbrechen'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(context.answerbotL10n.cancel),
             ),
             TextButton(
-              child: const Text('Löschen'),
+              child: Text(context.answerbotL10n.delete),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
 
                 sendRequest(DeleteAnswerBot(id: bot.id)).then((value) {
                   if (!context.mounted) {
@@ -411,7 +413,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                   if (value.statusCode == 200) {
                     Navigator.of(context).pop(true);
                   } else {
-                    showErrorDialog(context, value, "Löschen Fehlgeschlagen", "Der Anrufbeantworter konnte nicht gelöscht werden");
+                    showErrorDialog(context, value, context.answerbotL10n.deletionFailed, context.answerbotL10n.answerbotCouldNotBeDeleted);
                   }
                 });
               },

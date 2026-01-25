@@ -12,6 +12,7 @@ import '../api/sendRequest.dart';
 import '../widgets/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n_extensions.dart';
 
 class BotSetupForm extends StatefulWidget {
   final CreateAnswerbotResponse creation;
@@ -60,18 +61,18 @@ class BotSetupState extends State<BotSetupForm> {
   Widget domainSetup(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("Neuer Anrufbeantworter"),
+        title: TitleRow(context.answerbotL10n.newAnswerbot),
         actions: [
           PopupMenuButton(
             itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                   value: "delete",
                   child: Row(
                     children: [
-                      Padding(padding: EdgeInsets.only(right: 16),
+                      const Padding(padding: EdgeInsets.only(right: 16),
                         child: Icon(Icons.delete_forever, color: Colors.black),
                       ),
-                      Text("Anrufbeantworter löschen")
+                      Text(context.answerbotL10n.deleteAnswerbot)
                     ],
                   ))
             ],
@@ -91,8 +92,8 @@ class BotSetupState extends State<BotSetupForm> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
-                    const Expanded(
-                        child: Text("PhoneBlock-DynDNS benutzen")
+                    Expanded(
+                        child: Text(context.answerbotL10n.usePhoneBlockDynDns)
                     ),
                     Switch(
                       thumbIcon: switchIcon,
@@ -107,12 +108,7 @@ class BotSetupState extends State<BotSetupForm> {
                 ),
               ),
 
-              hintText("PhoneBlock muss die Internet-Adresse Deiner "
-                  "Fritz!Box kennen, um den Anrufbeantworter an Deiner "
-                  "Fritz!Box anmelden zu können. Wenn Du schon "
-                  "MyFRITZ! oder einen anderen DynDNS-Anbieter eingerichtet hast, "
-                  "kannst Du diesen Domain-Namen verwenden. Wenn nicht kannst Du ganz einfach "
-                  "DynDNS von PhoneBlock einrichten, aktiviere dann diesen Schalter."),
+              hintText(context.answerbotL10n.dynDnsDescriptionLong),
 
               if (phoneblockDns) ...[
                 Padding(
@@ -120,14 +116,14 @@ class BotSetupState extends State<BotSetupForm> {
                   child: ElevatedButton(
                       onPressed: () async {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Richte PhoneBlock DynDNS ein.')),
+                          SnackBar(content: Text(context.answerbotL10n.setupPhoneBlockDynDnsSnackbar)),
                         );
 
                         http.Response response = await sendRequest(SetupDynDns()..id=widget.creation.id);
                         if (!context.mounted) return;
 
                         if (response.statusCode != 200) {
-                          return showErrorDialog(context, response, 'Einrichtung Fehlgeschlagen', "DynDNS kann nicht eingerichtet werden: ${response.body}");
+                          return showErrorDialog(context, response, context.answerbotL10n.setupFailed, context.answerbotL10n.cannotSetupDynDns(response.body));
                         }
 
                         setState(() {
@@ -136,35 +132,32 @@ class BotSetupState extends State<BotSetupForm> {
                         });
                       },
                       child:
-                      const Text("PhoneBlock-DynDNS einrichten")
+                      Text(context.answerbotL10n.setupPhoneBlockDynDns)
                   ),
                 )
               ]
               else ...[
                 TextFormField(
-                  decoration: const InputDecoration(
-                      labelText: 'Domainname',
-                      hintText: "Domainname Deiner Fritz!Box (entweder MyFRITZ!-Adresse, oder DynDNS Domainname)"
+                  decoration: InputDecoration(
+                      labelText: context.answerbotL10n.domainname,
+                      hintText: context.answerbotL10n.domainNameHintLong
                   ),
                   controller: _hostName,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Eingabe darf nicht leer sein.";
+                      return context.answerbotL10n.inputCannotBeEmpty;
                     }
                     if (!hostNamePattern.hasMatch(value)) {
-                      return "Kein gültiger Domain-Name.";
+                      return context.answerbotL10n.invalidDomainName;
                     }
                     if (value.length > 255) {
-                      return "Der Domain-Name ist zu lang.";
+                      return context.answerbotL10n.domainNameTooLong;
                     }
                     return null;
                   },
                   onTapOutside: (evt) => _formKey.currentState!.validate(),
                 ),
-                hintText("Gib den Domain-Namen Deiner Fritz!Box an. Wenn Deine Fritz!Box noch keinen Domain-Namen hat, aktiviere PhoneBlock-DynDNS. "
-                    "Den Domain-Namen Deiner Deiner Fritz!Box findest Du unter (Unter Internet > Freigaben > DynDNS). "
-                    "Alternativ kannst Du auch die MyFRITZ!-Adresse angeben (Internet > MyFRITZ!-Konto), "
-                    "z.B. z4z...l4n.myfritz.net.",
+                hintText(context.answerbotL10n.domainNameHintExtended,
                   helpUrl: "setup-ab/help/01-existing-dyndns.png"
                 ),
                 Padding(
@@ -173,7 +166,7 @@ class BotSetupState extends State<BotSetupForm> {
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Überprüfe Domainnamen.')),
+                            SnackBar(content: Text(context.answerbotL10n.checkingDomainName)),
                           );
 
                           http.Response response = await sendRequest(
@@ -183,7 +176,7 @@ class BotSetupState extends State<BotSetupForm> {
                           if (!context.mounted) return;
 
                           if (response.statusCode != 200) {
-                            return showErrorDialog(context, response, 'Einrichtung Fehlgeschlagen', "Domainname wurde nicht akzeptiert: ${response.body}");
+                            return showErrorDialog(context, response, context.answerbotL10n.setupFailed, context.answerbotL10n.domainNameNotAccepted(response.body));
                           }
 
                           setState(() {
@@ -192,7 +185,7 @@ class BotSetupState extends State<BotSetupForm> {
                         }
                       },
                       child:
-                      const Text("Domainnamen überprüfen")),
+                      Text(context.answerbotL10n.checkDomainName)),
                 )
               ]
             ],
@@ -208,45 +201,37 @@ class BotSetupState extends State<BotSetupForm> {
   Widget dynDnsSetup(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("DynDNS einrichten"),
+        title: TitleRow(context.answerbotL10n.setupDynDns),
       ),
       body: Form(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ListView(
               children: <Widget>[
-                hintText("Öffne in Deinen Fritz!Box-Einstellungen die Seite die "
-                    "Internet > Freigaben > DynDNS und trage die hier angegebenen Informationen ein.",
+                hintText(context.answerbotL10n.dynDnsInstructionsLong,
                     helpUrl: "setup-ab/help/02-configure-dyndns.png"
                 ),
 
-                InfoField('Update-URL',
+                InfoField(context.answerbotL10n.updateUrl,
                     "$basePath/api/dynip?user=<username>&passwd=$pwdPlaceholder&ip4=<ipaddr>&ip6=<ip6addr>",
                     key: const Key("dynip.updateurl"),
-                    help: "Die URL, die Deine Fritz!Box aufruft, um PhoneBlock ihre Internetadresse bekannt zu geben. "
-                        "Gib die URL genau so ein, wie sie hier geschrieben ist. Ersetze nicht die Werte in den spitzen "
-                        "Klammern, das macht Deine Fritz!Box beim Aufruf automatisch. Nutze am besten die Kopierfuntion, "
-                        "um die Werte zu übernehmen."),
-                InfoField('Domainname', "${dynDns!.dyndnsDomain}",
+                    help: context.answerbotL10n.updateUrlHelp2),
+                InfoField(context.answerbotL10n.domainname, "${dynDns!.dyndnsDomain}",
                     key: const Key("dynip.domainname"),
-                    help: "Dieser Domainname kann später nicht öffentlich aufgelöst werden. Deine Internetadresse wird "
-                        "ausschließlich mit PhoneBlock geteilt."),
-                InfoField('Benutzername', dynDns!.dyndnsUser,
+                    help: context.answerbotL10n.domainNameHelp2),
+                InfoField(context.answerbotL10n.username, dynDns!.dyndnsUser,
                     key: const Key("dynip.username"),
-                    help: "Der Benutzername, mit dem sich Deine Fritz!Box bei "
-                        "PhoneBlock anmeldet, um ihre Internetadresse bekannt zu geben."),
-                InfoField('Kennwort', dynDns!.dyndnsPassword,
+                    help: context.answerbotL10n.usernameHelp),
+                InfoField(context.answerbotL10n.passwordLabel, dynDns!.dyndnsPassword,
                     key: const Key("dynip.password"),
-                    help: "Das Kennwort, mit dem sich Deine Fritz!Box bei PhoneBlock anmeldet, "
-                        "um ihre Internetadresse bekannt zu geben. Aus Sicherheitsgründen kannst Du kein eigenes Kennwort "
-                        "eingeben, sondern musst das von PhoneBlock sicher generierte Kennwort verwenden. "),
+                    help: context.answerbotL10n.passwordHelp2),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: ElevatedButton(
                       onPressed: () async {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Überprüfe DynDNS Einrichtung.')),
+                          SnackBar(content: Text(context.answerbotL10n.checkingDynDns)),
                         );
 
                         http.Response response = await sendRequest(
@@ -256,14 +241,14 @@ class BotSetupState extends State<BotSetupForm> {
                         if (!context.mounted) return;
 
                         if (response.statusCode != 200) {
-                          return showErrorDialog(context, response, 'Nicht registriert', "Deine Fritz!Box hat sich bei PhoneBlock noch nicht angemeldet, DynDNS ist nicht aktuell: ${response.body}");
+                          return showErrorDialog(context, response, context.answerbotL10n.notRegistered, context.answerbotL10n.fritzBoxNotRegistered(response.body));
                         }
 
                         setState(() {
                           state = SetupState.enableSip;
                         });
                       },
-                      child: const Text("DynDNS überprüfen")),
+                      child: Text(context.answerbotL10n.checkDynDns)),
                 )
               ]
           ),
@@ -275,86 +260,66 @@ class BotSetupState extends State<BotSetupForm> {
   Widget enableSip(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("Anrufbeantworter erstellen"),
+        title: TitleRow(context.answerbotL10n.createAnswerbotTitle),
       ),
       body: Form(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ListView(
               children: <Widget>[
-                const Text(
-                  "Richte jetzt den PhoneBlock-Anrufbeantworter als \"Telefon (mit und ohne Anrufbeantworter)\" ein. "
-                      "Damit das auch klappt, halte Dich bitte genau an die folgenden Schritte:"),
+                Text(
+                  context.answerbotL10n.sipSetupInstructions),
                 hintText(
-                    "1. Öffne in Deinen Fritz!Box-Einstellungen die Seite die "
-                        "Telefonie > Telefoniegeräte und klicke auf den Knopf \"Neues Gerät einrichten\".",
+                    context.answerbotL10n.sipSetupStep1,
                   helpUrl: "setup-ab/help/03-create-new-device.png"
                 ),
                 hintText(
-                    "2. Wähle die Option \"Telefon (mit und ohne Anrufbeantworter)\" und klicke auf \"Weiter\".",
+                    context.answerbotL10n.sipSetupStep2,
                     helpUrl: "setup-ab/help/04-create-phone.png"
                 ),
                 hintText(
-                    "3. Wähle die Option \"LAN/WLAN (IP-Telefon)\", gib dem Telefon den Namen \"PhoneBlock\" und klicke auf \"Weiter\".",
+                    context.answerbotL10n.sipSetupStep3,
                     helpUrl: "setup-ab/help/05-choose-ip-phone.png"
                 ),
                 hintText(
-                    "4. Vergib jetzt den folgenden Benutzernamen und das Kennwort für deinen Anrufbeantworter und klicke dann auf \"Weiter\".",
+                    context.answerbotL10n.sipSetupStep4,
                     helpUrl: "setup-ab/help/06-user-name-and-password.png"
                 ),
 
-                InfoField('Benutzername', widget.creation.userName,
+                InfoField(context.answerbotL10n.username, widget.creation.userName,
                     key: const Key("sip.username"),
-                    help: "Der Benutzername, mit dem sich der PhoneBlock-Anrufbeantworter an Deiner Fritz!Box anmeldet."),
-                InfoField('Kennwort', widget.creation.password,
+                    help: context.answerbotL10n.usernameHelp2),
+                InfoField(context.answerbotL10n.passwordLabel, widget.creation.password,
                     key: const Key("sip.password"),
-                    help: "Das Kennwort, das der PhoneBlock-Anrufbeantworter "
-                        "nutzt, um sich an Deiner Fritz!Box anzumelden. "
-                        "PhoneBlock hat für Dich ein sicheres Kennwort generiert.  "),
+                    help: context.answerbotL10n.passwordHelp3),
                 hintText(
-                    "5. Die jetzt abgefragte Rufnummer ist egal, der PhoneBlock-Anrufbeantworter führt "
-                        "aktiv keine Gespräche, sondern nimmt nur SPAM-Anrufe entgegen. Die Rufnummer wird "
-                        "in Schritt 9 wieder abgewählt. Klicke hier einfach auf \"Weiter\".",
+                    context.answerbotL10n.sipSetupStep5,
                     helpUrl: "setup-ab/help/07-choose-local-number.png"
                 ),
                 hintText(
-                    "6. Wähle \"alle Anrufe annehmen\" und klicke auf \"Weiter\". Der PhoneBlock-Anrufbeantworter nimmt "
-                        "sowieso nur Gespräche an, wenn die Nummer des Anrufers auf der Blockliste steht. Gleichzeitig "
-                        "nimmt PhoneBlock nie Gespräche von Nummern an, die in Deinem normalen Telefonbuch stehen.",
+                    context.answerbotL10n.sipSetupStep6,
                     helpUrl: "setup-ab/help/08-numbers-to-protect.png"
                 ),
                 hintText(
-                    "7. Du siehst eine Zusammenfassung. Die Einstellungen sind (fast) fertig, klicke auf \"Übernehmen\".",
+                    context.answerbotL10n.sipSetupStep7,
                     helpUrl: "setup-ab/help/10-check-settings.png"
                 ),
                 hintText(
-                    "8. In der Liste der Telefoniegeräte siehst Du jetzt \"PhoneBlock\". Es fehlen noch ein paar "
-                        "Einstellungen, die man erst nachträglich machen kann. Klicke daher auf den Bearbeiten-Stift "
-                        "in der Zeile des PhoneBlock-Anrufbeantworters.",
+                    context.answerbotL10n.sipSetupStep8,
                     helpUrl: "setup-ab/help/09-edit-phone.png"
                 ),
                 hintText(
-                    "9. In dem Feld \"Ausgehende Anrufe\" wähle die letzte (leere) Option, da PhoneBlock nie ausgehende Anrufe tätigt "
-                        "und daher der Anrufbeantworter keine Nummer für ausgehende Anrufe benötigt.",
+                    context.answerbotL10n.sipSetupStep9,
                     helpUrl: "setup-ab/help/11-prevent-call.png"
                 ),
                 hintText(
-                    "10. Selektiere den Reiter \"Anmeldedaten\". Bestätige dabei die Rückfage mit Klick auf \"Übernehmen\". "
-                        "Wähle jetzt die Option \"Anmeldung aus dem Internet erlauben\", "
-                        "damit sich der PhoneBlock-Anrufbeantworter aus der PhoneBlock-Cloud an Deiner Fritz!Box anmelden kann. "
-                        "Du musst das Kennwort des Anrufbeantworters (siehe oben) nocheinmal in das "
-                        "Feld \"Kennwort\" eingeben, bevor Du auf \"Übernehmen\" klickst. Lösche hierzu vorher "
-                        "die im Feld befindlichen Sternchen. ",
+                    context.answerbotL10n.sipSetupStep10,
                     helpUrl: "setup-ab/help/13-allow-internet-access.png"
                 ),
                 hintText(
-                    "11. Es erscheint eine Nachricht, die vor darauf hinweist, dass über den Internetzugriff kostenpflichtige Verbindungen aufgebaut werden könnten. "
-                        "Du kannst Das getrost bestätigen, da erstens PhoneBlock nie aktiv Verbindungen aufbaut, zweitens PhoneBlock für Dich ein sicheres Passwort erzeugt"
-                        "hat (siehe oben), so dass sich niemand anderes verbinden kann und drittens Du in Schritt 9 die ausgehenden Verbindungen deaktiviert hast. "
-                        "Je nach Einstellungen Deiner Fritz!Box musst Du die Einstellung noch an einem direkt an der Fritz!Box angeschlossenen DECT-Telefon bestätigen."),
+                    context.answerbotL10n.sipSetupStep11),
                 hintText(
-                    "12. Jetzt ist alles erledigt. Klicke auf Zurück, um wieder in die Liste der Telefoniegeräte zu springen. Du kannst jetzt mit dem Knopf unten "
-                        "Deinen Anrufbeantworter aktivieren."),
+                    context.answerbotL10n.sipSetupStep12),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -362,7 +327,7 @@ class BotSetupState extends State<BotSetupForm> {
                       onPressed: () async {
                         const int maxCount = 20;
                         ProgressDialog pd = ProgressDialog(context: context);
-                        pd.show(max: maxCount, msg: 'Versuche Anrufbeantworter anzumelden...');
+                        pd.show(max: maxCount, msg: context.answerbotL10n.tryingToRegisterAnswerbot);
 
                         {
                           http.Response response = await sendRequest(
@@ -374,8 +339,8 @@ class BotSetupState extends State<BotSetupForm> {
                           if (response.statusCode != 200) {
                             pd.close();
 
-                            return showErrorDialog(context, response, 'Anmeldung des Anrufbeantworters fehlgeschlagen',
-                                "Registrierung fehlgeschlagen: ${response.body}");
+                            return showErrorDialog(context, response, context.answerbotL10n.answerbotRegistrationFailed,
+                                context.answerbotL10n.registrationFailed(response.body));
                           }
                         }
 
@@ -396,12 +361,12 @@ class BotSetupState extends State<BotSetupForm> {
                             if (responseCode != 409 || n++ == maxCount) {
                               pd.close();
 
-                              return showErrorDialog(context, response, 'Anmeldung des Anrufbeantworters fehlgeschlagen',
-                                  "Registrierung fehlgeschlagen: $errorMessage");
+                              return showErrorDialog(context, response, context.answerbotL10n.answerbotRegistrationFailed,
+                                  context.answerbotL10n.registrationFailed(errorMessage));
                             } else {
                               await Future.delayed(Duration(milliseconds: sleep));
 
-                              pd.update(value: n, msg: "$errorMessage Versuche erneut...");
+                              pd.update(value: n, msg: context.answerbotL10n.retryingMessage(errorMessage));
                             }
                           }
                         }
@@ -411,7 +376,7 @@ class BotSetupState extends State<BotSetupForm> {
                           state = SetupState.finish;
                         });
                       },
-                      child: const Text("Anrufbeantworter anmelden")),
+                      child: Text(context.answerbotL10n.registerAnswerbot)),
                 )
               ]
           ),
@@ -423,7 +388,7 @@ class BotSetupState extends State<BotSetupForm> {
   Widget sipFinish(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Anrufbeantworter angemeldet"),
+        title: Text(context.answerbotL10n.answerbotRegistered),
       ),
       body: Form(
         child: Padding(
@@ -431,12 +396,8 @@ class BotSetupState extends State<BotSetupForm> {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text(
-                    "Dein PhoneBlock-Anrufbeantworter ist erfolgreich angemeldet. "
-                        "Die nächsten Spam-Anrufer können sich jetzt ausgibig mit "
-                        "PhoneBlock unterhalten. Wenn Du den PhoneBlock-Anrufbeantworter selber testen möchtest,"
-                        "dann wähle die interne Rufnummer des von Dir eingerichteten Telefoniegerätes \"PhoneBlock\". "
-                        "Die interne Nummer beginnt i.d.R. mit \"**\"."),
+                Text(
+                    context.answerbotL10n.answerbotRegisteredSuccess),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -444,7 +405,7 @@ class BotSetupState extends State<BotSetupForm> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: const Text("Schließen")),
+                      child: Text(context.answerbotL10n.close)),
                 )
               ]
           ),
@@ -456,7 +417,7 @@ class BotSetupState extends State<BotSetupForm> {
   Widget showError(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Fehler"),
+          title: Text(context.answerbotL10n.error),
         ),
         body: const Text("")
     );
