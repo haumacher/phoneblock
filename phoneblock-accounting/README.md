@@ -112,28 +112,6 @@ The tool automatically:
 - Skips duplicate transactions
 - Inserts only new contributions into the database
 
-## Implementation Status
-
-Completed features:
-- [x] Dynamic header detection in CSV files
-- [x] Parse German bank CSV format (semicolon-delimited)
-- [x] Filter transactions by "PhoneBlock" keyword in purpose field
-- [x] Display all matching transactions with formatted output
-- [x] Configurable character encoding (ISO-8859-1 default)
-- [x] Configurable database connection (H2)
-- [x] Parse and extract transaction details (date, amount, sender)
-- [x] Create TX identifier from sender name and date
-- [x] Store contributions in the CONTRIBUTIONS table
-- [x] Duplicate detection based on TX identifier
-- [x] Parse German number format (comma as decimal separator)
-- [x] Convert amounts from EUR to cents
-- [x] Proper error reporting for missing headers
-
-Features to be implemented:
-- [ ] Match transactions to PhoneBlock users by reference ID in Verwendungszweck
-- [ ] Generate accounting reports and summaries
-- [ ] Support for additional CSV formats from other banks
-
 ## Testing
 
 Run the unit tests:
