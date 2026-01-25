@@ -39,7 +39,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds) {
+  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted) {
     return '$newCalls neue Anrufe, $callsAccepted Anrufe, $talkTimeSeconds s Gesprächszeit gesamt';
   }
 
@@ -164,7 +164,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get error => 'Fehler';
 
   @override
-  String cannotLoadInfo(int statusCode, String message) {
+  String cannotLoadInfo(String message, int statusCode) {
     return 'Informationen können nicht abgerufen werden (Fehler $statusCode): $message';
   }
 

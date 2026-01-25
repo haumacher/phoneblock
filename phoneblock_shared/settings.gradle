@@ -1,6 +1,9 @@
 pluginManagement {
     repositories {
-        mavenCentral()
+        mavenLocal()
         gradlePluginPortal()
+        mavenCentral()
     }
 }
+
+rootProject.name = 'phoneblock_shared'

@@ -8,9 +8,18 @@ const LocalizationsDelegate<answerbot_l10n.AppLocalizations> answerbotLocalizati
 
 /// Supported locales for answerbot localizations.
 const List<Locale> answerbotSupportedLocales = [
+  Locale('ar'),
+  Locale('da'),
   Locale('de'),
-  // Add more locales here when translations are generated
-  // Locale('en'),
-  // Locale('es'),
-  // etc.
+  Locale('el'),
+  Locale('en'),
+  Locale('es'),
+  Locale('fr'),
+  Locale('it'),
+  Locale('nb'),
+  Locale('nl'),
+  Locale('pl'),
+  Locale('sv'),
+  Locale('uk'),
+  Locale('zh'),
 ];
