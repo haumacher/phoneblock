@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -223,6 +224,15 @@ public class AccountingImporter {
 	 */
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("PhoneBlock-([^\\s]+)", Pattern.CASE_INSENSITIVE);
 
+	/**
+	 * Pattern to extract email-like patterns from messages.
+	 * Matches formats like "user@domain", "user at domain", or partial addresses.
+	 */
+	private static final Pattern EMAIL_PATTERN = Pattern.compile(
+		"([a-zA-Z0-9._-]+)\\s*(?:@|at)\\s*([a-zA-Z0-9._-]+)",
+		Pattern.CASE_INSENSITIVE
+	);
+
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
 	/**
@@ -380,6 +390,22 @@ public class AccountingImporter {
 				}
 			}
 
+			// If user not found by username, try email pattern matching
+			if (userId == null) {
+				String emailPattern = extractEmailPattern(verwendungszweck);
+				if (emailPattern != null) {
+					List<Long> matchingUsers = users.findUserIdsByEmail(emailPattern);
+					if (matchingUsers.size() == 1) {
+						userId = matchingUsers.get(0);
+						LOG.debug("Found user ID {} by email pattern '{}'", userId, emailPattern);
+					} else if (matchingUsers.size() > 1) {
+						LOG.debug("Found {} users for email pattern '{}', result not unique - skipping", matchingUsers.size(), emailPattern);
+					} else {
+						LOG.debug("No user found for email pattern '{}'", emailPattern);
+					}
+				}
+			}
+
 			// Create contribution record
 			ContributionRecord contribution = new ContributionRecord(
 				userId,
@@ -425,6 +451,29 @@ public class AccountingImporter {
 		Matcher matcher = USERNAME_PATTERN.matcher(message);
 		if (matcher.find()) {
 			return matcher.group(1);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Extracts email-like patterns from a message.
+	 * Handles formats like "user@domain" or "user at domain".
+	 *
+	 * @param message The contribution message (Verwendungszweck)
+	 * @return The extracted email pattern for searching, or null if no pattern found
+	 */
+	private String extractEmailPattern(String message) {
+		if (message == null) {
+			return null;
+		}
+
+		Matcher matcher = EMAIL_PATTERN.matcher(message);
+		if (matcher.find()) {
+			// Normalize to standard email format: "user@domain"
+			String localPart = matcher.group(1);
+			String domainPart = matcher.group(2);
+			return localPart + "@" + domainPart;
 		}
 
 		return null;
