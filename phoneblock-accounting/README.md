@@ -19,10 +19,10 @@ This creates `phoneblock-accounting-*-jar-with-dependencies.jar` in the `target/
 
 ## Usage
 
-Run the tool with a CSV file:
+Run the tool with a CSV file and database connection parameters:
 
 ```bash
-java -jar phoneblock-accounting/target/phoneblock-accounting-*-jar-with-dependencies.jar <csv-file> [charset]
+java -jar phoneblock-accounting/target/phoneblock-accounting-*-jar-with-dependencies.jar <csv-file> [charset] [db-url] [db-user] [db-password]
 ```
 
 ### Arguments
@@ -30,10 +30,17 @@ java -jar phoneblock-accounting/target/phoneblock-accounting-*-jar-with-dependen
 - `<csv-file>` - Path to the CSV file containing bank transactions (required)
 - `[charset]` - Character encoding (optional, default: ISO-8859-1)
   - Common values: ISO-8859-1, UTF-8, Windows-1252
+- `[db-url]` - Database JDBC URL (optional, default: jdbc:h2:./phoneblock)
+- `[db-user]` - Database user (optional, default: phone)
+- `[db-password]` - Database password (optional, default: block)
+
+### Prerequisites
+
+The tool requires an existing PhoneBlock database with the CONTRIBUTIONS table already created. It will NOT create the schema automatically.
 
 ### Examples
 
-Using default ISO-8859-1 encoding (German banks):
+Using defaults (connects to ./phoneblock database):
 ```bash
 java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv
 ```
@@ -41,6 +48,16 @@ java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-
 Specifying UTF-8 encoding:
 ```bash
 java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv UTF-8
+```
+
+Connecting to a specific database:
+```bash
+java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv ISO-8859-1 jdbc:h2:/path/to/phoneblock
+```
+
+With custom credentials:
+```bash
+java -jar phoneblock-accounting/target/phoneblock-accounting-1.9.0-SNAPSHOT-jar-with-dependencies.jar bank-export-2026.csv ISO-8859-1 jdbc:h2:/path/to/phoneblock myuser mypass
 ```
 
 ## CSV Format
@@ -51,6 +68,18 @@ The tool expects CSV files with the following structure:
 - The tool automatically skips metadata rows before the header
 - Only transactions containing "PhoneBlock" (case-insensitive) in the `Verwendungszweck` column are processed
 
+## Transaction Identification
+
+Each contribution is identified by the `TX` column in the database, which consists of:
+- Sender name (from `Auftraggeber/Empfänger`)
+- Booking date (from `Buchung` in format DD.MM.YYYY)
+- Format: `"Sender Name DD.MM.YYYY"` (e.g., "Max Mustermann 10.03.2025")
+
+The tool automatically:
+- Checks if a contribution with the same TX identifier already exists
+- Skips duplicate transactions
+- Inserts only new contributions into the database
+
 ## Implementation Status
 
 Completed features:
@@ -59,15 +88,19 @@ Completed features:
 - [x] Filter transactions by "PhoneBlock" keyword in purpose field
 - [x] Display all matching transactions with formatted output
 - [x] Configurable character encoding (ISO-8859-1 default)
+- [x] Configurable database connection (H2)
+- [x] Parse and extract transaction details (date, amount, sender)
+- [x] Create TX identifier from sender name and date
+- [x] Store contributions in the CONTRIBUTIONS table
+- [x] Duplicate detection based on TX identifier
+- [x] Parse German number format (comma as decimal separator)
+- [x] Convert amounts from EUR to cents
 - [x] Proper error reporting for missing headers
 
 Features to be implemented:
-- [ ] Parse and extract transaction details (date, amount, reference ID)
-- [ ] Validate record data (amounts, dates, reference format)
-- [ ] Store contributions in the PhoneBlock database
-- [ ] Handle duplicate detection
-- [ ] Match transactions to PhoneBlock users by reference ID
+- [ ] Match transactions to PhoneBlock users by reference ID in Verwendungszweck
 - [ ] Generate accounting reports and summaries
+- [ ] Support for additional CSV formats from other banks
 
 ## Testing
 

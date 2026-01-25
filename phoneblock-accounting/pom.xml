@@ -37,6 +37,8 @@
   	</scm>
 
 	<properties>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<dependencies>
@@ -51,6 +53,20 @@
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-csv</artifactId>
 		    <version>1.10.0</version>
+		</dependency>
+
+		<!-- H2 Database -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.3.232</version>
+		</dependency>
+
+		<!-- MyBatis -->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.5.16</version>
 		</dependency>
 	</dependencies>
 
