@@ -323,8 +323,10 @@ public class AccountingImporter {
 						}
 					}
 
-					// Commit all inserts
-					session.commit();
+					// Commit all inserts (only if there were any)
+					if (newCount > 0) {
+						session.commit();
+					}
 
 					LOG.info("Import completed. Found {} PhoneBlock contributions ({} new, {} duplicates).",
 							filteredCount, newCount, skippedCount);
