@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
-import 'package:phoneblock_answerbot_ui/base_path.dart'
-  if (dart.library.html) 'package:phoneblock_answerbot_ui/base_path_web.dart';
-import 'package:phoneblock_answerbot_ui/Api.dart';
-import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
-import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
-import 'package:phoneblock_answerbot_ui/TitleRow.dart';
-import 'package:phoneblock_answerbot_ui/proto.dart';
+import '../api/base_path.dart'
+  if (dart.library.html) '../api/base_path_web.dart';
+import '../api/Api.dart';
+import './AnswerBotView.dart';
+import '../widgets/ErrorDialog.dart';
+import '../widgets/TitleRow.dart';
+import '../models/proto.dart';
 import 'package:http/http.dart' as http;
-import 'package:phoneblock_answerbot_ui/sendRequest.dart';
+import '../api/sendRequest.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 

@@ -50,6 +50,11 @@ dependencies:
   package_info_plus: ^8.1.2
   device_info_plus: ^11.2.0
   device_region: ^1.4.0
+  sn_progress_dialog: ^1.1.3
+
+  # Shared PhoneBlock components
+  phoneblock_shared:
+    path: ../phoneblock_shared
 
 dev_dependencies:
   flutter_test:

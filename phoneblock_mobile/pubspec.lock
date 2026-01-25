@@ -285,6 +285,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  phoneblock_shared:
+    dependency: "direct main"
+    description:
+      path: "../phoneblock_shared"
+      relative: true
+    source: path
+    version: "0.0.1"
   platform:
     dependency: transitive
     description:
@@ -370,6 +377,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  sn_progress_dialog:
+    dependency: "direct main"
+    description:
+      name: sn_progress_dialog
+      sha256: bbb6bbe71c12afe937474932eefcb5c7d607238b1325f83206f12d3f7a850acf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   source_span:
     dependency: transitive
     description:

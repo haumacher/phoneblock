@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
-import 'package:phoneblock_answerbot_ui/InfoField.dart';
-import 'package:phoneblock_answerbot_ui/TitleRow.dart';
-import 'package:phoneblock_answerbot_ui/proto.dart';
-import 'package:phoneblock_answerbot_ui/sendRequest.dart';
-import 'package:phoneblock_answerbot_ui/switchIcon.dart';
+import '../widgets/ErrorDialog.dart';
+import '../widgets/InfoField.dart';
+import '../widgets/TitleRow.dart';
+import '../models/proto.dart';
+import '../api/sendRequest.dart';
+import '../widgets/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

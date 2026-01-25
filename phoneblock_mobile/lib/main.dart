@@ -19,6 +19,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
@@ -1973,6 +1974,18 @@ class _MainScreenState extends State<MainScreen> {
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.phone_callback),
+            title: const Text('Answerbot'),
+            subtitle: const Text('Manage spam call answering machines'),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AnswerBotList()),
+              );
             },
           ),
           const Divider(),
