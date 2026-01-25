@@ -4,6 +4,10 @@
 /// including answerbot screens, API clients, and data models.
 library phoneblock_shared;
 
+// Localization
+export 'l10n/app_localizations.dart';
+export 'src/l10n_extensions.dart';
+
 // Models
 export 'src/models/proto.dart';
 

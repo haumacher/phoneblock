@@ -12,6 +12,7 @@ import '../api/httpAddons.dart';
 import '../models/proto.dart';
 import 'package:http/http.dart' as http;
 import '../api/sendRequest.dart';
+import '../l10n_extensions.dart';
 
 /// Callback function for handling login when authentication is required.
 /// Returns true if login was successful, false otherwise.
@@ -31,7 +32,7 @@ class AnswerBotList extends StatefulWidget {
 class AnswerBotListState extends State<AnswerBotList> {
 
   bool loginRequired = false;
-  String msg = 'Loading data...';
+  String msg = '';
 
   List<AnswerbotInfo>? bots;
 
@@ -64,18 +65,18 @@ class AnswerBotListState extends State<AnswerBotList> {
       loginRequired = false;
 
       if (response.statusCode != 200) {
-        msg = "Informationen können nicht abgerufen werden (Fehler ${response.statusCode}): ${response.body}";
+        msg = context.l10n.cannotLoadInfo(response.statusCode, response.body);
         return;
       }
 
       if (response.contentType.mimeType != "application/json") {
-        msg = "Informationen können nicht abgerufen werden (Content-Type: ${response.contentType.mimeType}).";
+        msg = context.l10n.wrongContentType(response.contentType.mimeType);
         return;
       }
 
       var bots = ListAnswerbotResponse.read(JsonReader.fromString(response.body)).bots;
       if (bots.isEmpty) {
-        msg = "Du hast noch keinen Anrufbeantworter, klicke den Plus-Knopf unten, um einen PhoneBlock-Anrufbeantworter anzulegen.";
+        msg = context.l10n.noAnswerbotsYet;
         this.bots = null;
       } else {
         this.bots = bots;
@@ -88,7 +89,7 @@ class AnswerBotListState extends State<AnswerBotList> {
     if (loginRequired) {
       return Scaffold(
         appBar: AppBar(
-          title: const TitleRow("Deine Anrufbeantworter"),
+          title: TitleRow(context.l10n.yourAnswerbots),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -96,8 +97,8 @@ class AnswerBotListState extends State<AnswerBotList> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              const Text("Anmeldung erforderlich",
-                style: TextStyle(fontSize: 20),
+              Text(context.l10n.loginRequired,
+                style: const TextStyle(fontSize: 20),
                 textAlign: TextAlign.center,
               ),
               Padding(
@@ -112,7 +113,7 @@ class AnswerBotListState extends State<AnswerBotList> {
                               requestBotList();
                             }
                           },
-                          child: const Text("Login")
+                          child: Text(context.l10n.login)
                       )
                     ]
                 ),
@@ -126,7 +127,7 @@ class AnswerBotListState extends State<AnswerBotList> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("Deine Anrufbeantworter"),
+        title: TitleRow(context.l10n.yourAnswerbots),
         actions: [
           IconButton(
             onPressed: () {
@@ -139,7 +140,7 @@ class AnswerBotListState extends State<AnswerBotList> {
       body: _botList(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _createAnswerBot(context),
-        tooltip: 'Anrufbeantworter anlegen',
+        tooltip: context.l10n.createAnswerbot,
         child: const Icon(Icons.add),
       ),
     );
@@ -199,23 +200,23 @@ class AnswerBotListState extends State<AnswerBotList> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Anrufbeantworter ${bot.userName}', overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
-                      Text('${bot.newCalls} neue Anrufe, ${bot.callsAccepted} Anrufe, ${(bot.talkTime / 1000).round()} s Gesprächszeit gesamt', overflow: TextOverflow.ellipsis,),
+                      Text(context.l10n.answerbotName(bot.userName), overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
+                      Text(context.l10n.answerbotStats(bot.newCalls, bot.callsAccepted, (bot.talkTime / 1000).round()), overflow: TextOverflow.ellipsis,),
                     ],
                   ),
                 ),
                 if (bot.enabled)
                   bot.registered ?
-                  const Padding(padding: EdgeInsets.only(left: 16),
-                      child: Chip(label: Text("aktiv"), backgroundColor: Colors.green, labelStyle: TextStyle(color: Colors.white),)) :
-                  const Padding(padding: EdgeInsets.only(left: 16),
-                      child: Chip(label: Text("verbinde..."), backgroundColor: Colors.orangeAccent, labelStyle: TextStyle(color: Colors.white),))
+                  Padding(padding: const EdgeInsets.only(left: 16),
+                      child: Chip(label: Text(context.l10n.statusActive), backgroundColor: Colors.green, labelStyle: const TextStyle(color: Colors.white),)) :
+                  Padding(padding: const EdgeInsets.only(left: 16),
+                      child: Chip(label: Text(context.l10n.statusConnecting), backgroundColor: Colors.orangeAccent, labelStyle: const TextStyle(color: Colors.white),))
                 else
                   setupComplete(bot) ?
-                  const Padding(padding: EdgeInsets.only(left: 16),
-                      child: Chip(label: Text("ausgeschaltet"), backgroundColor: Colors.black54, labelStyle: TextStyle(color: Colors.white),)) :
-                  const Padding(padding: EdgeInsets.only(left: 16),
-                      child: Chip(label: Text("unvollständig"), backgroundColor: Colors.black12, labelStyle: TextStyle(color: Colors.black),)),
+                  Padding(padding: const EdgeInsets.only(left: 16),
+                      child: Chip(label: Text(context.l10n.statusDisabled), backgroundColor: Colors.black54, labelStyle: const TextStyle(color: Colors.white),)) :
+                  Padding(padding: const EdgeInsets.only(left: 16),
+                      child: Chip(label: Text(context.l10n.statusIncomplete), backgroundColor: Colors.black12, labelStyle: const TextStyle(color: Colors.black),)),
                 IconButton(
                   icon: const Icon(Icons.arrow_right),
                   iconSize: 32,
@@ -246,7 +247,7 @@ class AnswerBotListState extends State<AnswerBotList> {
   }
 
   refreshBotList() {
-    msg = 'Refreshing data...';
+    msg = '';
     requestBotList();
   }
 

@@ -1,0 +1,297 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "PhoneBlock Anrufbeantworter",
+  "@appTitle": {
+    "description": "Application title"
+  },
+
+  "yourAnswerbots": "Deine Anrufbeantworter",
+  "@yourAnswerbots": {
+    "description": "Title for answerbot list screen"
+  },
+
+  "loginRequired": "Anmeldung erforderlich",
+  "@loginRequired": {
+    "description": "Login required message"
+  },
+
+  "login": "Login",
+  "@login": {
+    "description": "Login button label"
+  },
+
+  "loadingData": "Lade Daten...",
+  "@loadingData": {
+    "description": "Loading message"
+  },
+
+  "refreshingData": "Aktualisiere Daten...",
+  "@refreshingData": {
+    "description": "Refreshing message"
+  },
+
+  "noAnswerbotsYet": "Du hast noch keinen Anrufbeantworter, klicke den Plus-Knopf unten, um einen PhoneBlock-Anrufbeantworter anzulegen.",
+  "@noAnswerbotsYet": {
+    "description": "Message when no answerbots exist"
+  },
+
+  "createAnswerbot": "Anrufbeantworter anlegen",
+  "@createAnswerbot": {
+    "description": "Tooltip for create answerbot button"
+  },
+
+  "answerbotName": "Anrufbeantworter {userName}",
+  "@answerbotName": {
+    "description": "Answerbot name with username",
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "answerbotStats": "{newCalls} neue Anrufe, {callsAccepted} Anrufe, {talkTimeSeconds} s Gesprächszeit gesamt",
+  "@answerbotStats": {
+    "description": "Answerbot statistics",
+    "placeholders": {
+      "newCalls": {
+        "type": "int"
+      },
+      "callsAccepted": {
+        "type": "int"
+      },
+      "talkTimeSeconds": {
+        "type": "int"
+      }
+    }
+  },
+
+  "statusActive": "aktiv",
+  "@statusActive": {
+    "description": "Status: active"
+  },
+
+  "statusConnecting": "verbinde...",
+  "@statusConnecting": {
+    "description": "Status: connecting"
+  },
+
+  "statusDisabled": "ausgeschaltet",
+  "@statusDisabled": {
+    "description": "Status: disabled"
+  },
+
+  "statusIncomplete": "unvollständig",
+  "@statusIncomplete": {
+    "description": "Status: incomplete setup"
+  },
+
+  "deleteAnswerbot": "Anrufbeantworter löschen",
+  "@deleteAnswerbot": {
+    "description": "Delete answerbot button"
+  },
+
+  "enabled": "Aktiviert",
+  "@enabled": {
+    "description": "Enabled label"
+  },
+
+  "minVotes": "Mindest-Stimmen",
+  "@minVotes": {
+    "description": "Minimum votes setting"
+  },
+
+  "minVotesDescription": "Wie viele Stimmen muss eine Nummer mindestens haben, damit sie vom Anrufbeantworter angenommen wird?",
+  "@minVotesDescription": {
+    "description": "Minimum votes description"
+  },
+
+  "minVotes2": "2 - sofort sperren",
+  "@minVotes2": {
+    "description": "2 votes option"
+  },
+
+  "minVotes4": "4 - Bestätigung abwarten",
+  "@minVotes4": {
+    "description": "4 votes option"
+  },
+
+  "minVotes10": "10 - erst wenn sicher",
+  "@minVotes10": {
+    "description": "10 votes option"
+  },
+
+  "minVotes100": "100 - nur Top-Spammer",
+  "@minVotes100": {
+    "description": "100 votes option"
+  },
+
+  "cannotChangeWhileEnabled": "Kann nur bei ausgeschaltetem Anrufbeantworter geändert werden.",
+  "@cannotChangeWhileEnabled": {
+    "description": "Warning when trying to change settings while enabled"
+  },
+
+  "saveSettings": "Einstellungen speichern",
+  "@saveSettings": {
+    "description": "Save settings button"
+  },
+
+  "retentionPeriod": "Aufbewahrungszeit",
+  "@retentionPeriod": {
+    "description": "Retention period label"
+  },
+
+  "retentionPeriodDescription": "Wie lange sollen Anrufe aufbewahrt werden?",
+  "@retentionPeriodDescription": {
+    "description": "Retention period description"
+  },
+
+  "retentionNever": "Niemals löschen",
+  "@retentionNever": {
+    "description": "Never delete option"
+  },
+
+  "retentionWeek": "Nach 1 Woche löschen",
+  "@retentionWeek": {
+    "description": "Delete after 1 week"
+  },
+
+  "retentionMonth": "Nach 1 Monat löschen",
+  "@retentionMonth": {
+    "description": "Delete after 1 month"
+  },
+
+  "retentionQuarter": "Nach 3 Monaten löschen",
+  "@retentionQuarter": {
+    "description": "Delete after 3 months"
+  },
+
+  "retentionYear": "Nach 1 Jahr löschen",
+  "@retentionYear": {
+    "description": "Delete after 1 year"
+  },
+
+  "saveRetentionSettings": "Aufbewahrungseinstellungen speichern",
+  "@saveRetentionSettings": {
+    "description": "Save retention settings button"
+  },
+
+  "showHelp": "Hilfe anzeigen",
+  "@showHelp": {
+    "description": "Show help tooltip"
+  },
+
+  "newAnswerbot": "Neuer Anrufbeantworter",
+  "@newAnswerbot": {
+    "description": "New answerbot title"
+  },
+
+  "usePhoneBlockDynDns": "PhoneBlock-DynDNS benutzen",
+  "@usePhoneBlockDynDns": {
+    "description": "Use PhoneBlock DynDNS checkbox"
+  },
+
+  "dynDnsDescription": "PhoneBlock muss die Internet-Adresse Deiner Fritz!Box kennen, um Anrufe annehmen zu können.",
+  "@dynDnsDescription": {
+    "description": "DynDNS description"
+  },
+
+  "setupPhoneBlockDynDns": "PhoneBlock-DynDNS einrichten",
+  "@setupPhoneBlockDynDns": {
+    "description": "Setup PhoneBlock DynDNS button"
+  },
+
+  "domainName": "Domain-Name",
+  "@domainName": {
+    "description": "Domain name label"
+  },
+
+  "domainNameHint": "Gib den Domain-Namen Deiner Fritz!Box an. Wenn Deine Fritz!Box noch keinen Domain-Namen hat, aktiviere PhoneBlock-DynDNS.",
+  "@domainNameHint": {
+    "description": "Domain name input hint"
+  },
+
+  "checkDomainName": "Domainnamen überprüfen",
+  "@checkDomainName": {
+    "description": "Check domain name button"
+  },
+
+  "setupDynDns": "DynDNS einrichten",
+  "@setupDynDns": {
+    "description": "Setup DynDNS title"
+  },
+
+  "dynDnsInstructions": "Öffne in Deinen Fritz!Box-Einstellungen die Seite die Seite Internet > Freigaben > DynDNS und trage dort die folgenden Werte ein:",
+  "@dynDnsInstructions": {
+    "description": "DynDNS setup instructions"
+  },
+
+  "checkDynDns": "DynDNS überprüfen",
+  "@checkDynDns": {
+    "description": "Check DynDNS button"
+  },
+
+  "createAnswerbotTitle": "Anrufbeantworter erstellen",
+  "@createAnswerbotTitle": {
+    "description": "Create answerbot title"
+  },
+
+  "registerAnswerbot": "Anrufbeantworter anmelden",
+  "@registerAnswerbot": {
+    "description": "Register answerbot button"
+  },
+
+  "answerbotRegistered": "Anrufbeantworter angemeldet",
+  "@answerbotRegistered": {
+    "description": "Answerbot registered title"
+  },
+
+  "close": "Schließen",
+  "@close": {
+    "description": "Close button"
+  },
+
+  "error": "Fehler",
+  "@error": {
+    "description": "Error title"
+  },
+
+  "cannotLoadInfo": "Informationen können nicht abgerufen werden (Fehler {statusCode}): {message}",
+  "@cannotLoadInfo": {
+    "description": "Cannot load information error",
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+
+  "wrongContentType": "Informationen können nicht abgerufen werden (Content-Type: {contentType}).",
+  "@wrongContentType": {
+    "description": "Wrong content type error",
+    "placeholders": {
+      "contentType": {
+        "type": "String"
+      }
+    }
+  },
+
+  "callList": "Anrufliste",
+  "@callList": {
+    "description": "Call list title"
+  },
+
+  "clearCallList": "Anrufliste löschen",
+  "@clearCallList": {
+    "description": "Clear call list button"
+  },
+
+  "noCalls": "Noch keine Anrufe",
+  "@noCalls": {
+    "description": "No calls message"
+  }
+}
