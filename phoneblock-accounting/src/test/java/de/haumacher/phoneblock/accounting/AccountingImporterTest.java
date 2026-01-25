@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import de.haumacher.phoneblock.accounting.config.AccountingConfig;
+
 /**
  * Test cases for {@link AccountingImporter}.
  *
@@ -31,6 +33,17 @@ class AccountingImporterTest {
 	private static final String TEST_DB_URL = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
 	private static final String TEST_DB_USER = "sa";
 	private static final String TEST_DB_PASSWORD = "";
+
+	/**
+	 * Creates a test configuration with database settings.
+	 */
+	private AccountingConfig createTestConfig() {
+		AccountingConfig config = new AccountingConfig();
+		config.setDbUrl(TEST_DB_URL);
+		config.setDbUser(TEST_DB_USER);
+		config.setDbPassword(TEST_DB_PASSWORD);
+		return config;
+	}
 
 	@BeforeAll
 	static void setupDatabase() throws Exception {
@@ -78,10 +91,15 @@ class AccountingImporterTest {
 			writer.write("Buchung;Wertstellungsdatum;Auftraggeber/Empfänger;Buchungstext;Verwendungszweck;Betrag;Währung\n");
 		}
 
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingConfig config = createTestConfig()
+				.setCsvFile(csvFile.getAbsolutePath())
+				.setCharset(StandardCharsets.UTF_8)
+				.setInitial(true);
+
+		AccountingImporter importer = new AccountingImporter(config);
 		try {
 			// Should not throw exception
-			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8, true));
+			assertDoesNotThrow(() -> importer.importFromCsv());
 		} finally {
 			importer.close();
 		}
@@ -89,12 +107,17 @@ class AccountingImporterTest {
 
 	@Test
 	void testImportNonExistentFile() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
-		try {
-			String nonExistentPath = new File(tempDir, "does-not-exist.csv").getAbsolutePath();
+		String nonExistentPath = new File(tempDir, "does-not-exist.csv").getAbsolutePath();
 
+		AccountingConfig config = createTestConfig()
+				.setCsvFile(nonExistentPath)
+				.setCharset(StandardCharsets.UTF_8)
+				.setInitial(true);
+
+		AccountingImporter importer = new AccountingImporter(config);
+		try {
 			IOException exception = assertThrows(IOException.class,
-					() -> importer.importFromCsv(nonExistentPath, StandardCharsets.UTF_8, true));
+					() -> importer.importFromCsv());
 
 			assertTrue(exception.getMessage().contains("not found"));
 		} finally {
@@ -118,10 +141,15 @@ class AccountingImporterTest {
 			writer.write("19.01.2026;19.01.2026;Erika Musterfrau;Gutschrift;PhoneBlock-cf4081f7-5e4b;25,00;EUR\n");
 		}
 
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingConfig config = createTestConfig()
+				.setCsvFile(csvFile.getAbsolutePath())
+				.setCharset(StandardCharsets.UTF_8)
+				.setInitial(true);
+
+		AccountingImporter importer = new AccountingImporter(config);
 		try {
 			// Should not throw exception (initial import)
-			assertDoesNotThrow(() -> importer.importFromCsv(csvFile.getAbsolutePath(), StandardCharsets.UTF_8, true));
+			assertDoesNotThrow(() -> importer.importFromCsv());
 		} finally {
 			importer.close();
 		}
@@ -129,7 +157,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_StandardFormat() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			assertEquals("user@example.com", importer.extractEmailPattern("Contribution from user@example.com"));
 			assertEquals("john.doe@mail.de", importer.extractEmailPattern("PhoneBlock john.doe@mail.de support"));
@@ -141,7 +169,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_ObfuscatedWithAt() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			assertEquals("user@example.com", importer.extractEmailPattern("Contribution from user at example.com"));
 			assertEquals("sh-konsum@mai", importer.extractEmailPattern("sh-konsum at mai"));
@@ -153,7 +181,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_WithSpaces() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			assertEquals("user@example.com", importer.extractEmailPattern("user  at  example.com"));
 			assertEquals("test@domain", importer.extractEmailPattern("test  @  domain"));
@@ -164,7 +192,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_CaseInsensitive() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			assertEquals("User@Example.Com", importer.extractEmailPattern("User AT Example.Com"));
 			assertEquals("TEST@DOMAIN", importer.extractEmailPattern("TEST At DOMAIN"));
@@ -175,7 +203,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_SpecialCharacters() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			assertEquals("user-name@sub-domain.example.com",
 					importer.extractEmailPattern("user-name@sub-domain.example.com"));
@@ -188,7 +216,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_NoMatch() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			assertNull(importer.extractEmailPattern("PhoneBlock contribution"));
 			assertNull(importer.extractEmailPattern("No email here"));
@@ -204,7 +232,7 @@ class AccountingImporterTest {
 
 	@Test
 	void testExtractEmailPattern_FirstMatchOnly() throws Exception {
-		AccountingImporter importer = new AccountingImporter(TEST_DB_URL, TEST_DB_USER, TEST_DB_PASSWORD);
+		AccountingImporter importer = new AccountingImporter(createTestConfig());
 		try {
 			// Should extract the first email pattern found
 			assertEquals("first@example.com",

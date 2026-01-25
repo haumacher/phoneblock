@@ -50,6 +50,7 @@ public class AccountingImporter {
 	private static final Logger LOG = LoggerFactory.getLogger(AccountingImporter.class);
 
 	private AccountingDB _db;
+	private AccountingConfig _config;
 
 	/**
 	 * Column indices extracted from the header row.
@@ -133,13 +134,9 @@ public class AccountingImporter {
 
 		// Import CSV file
 		try {
-			AccountingImporter importer = new AccountingImporter(
-				config.getDbUrl(),
-				config.getDbUser(),
-				config.getDbPassword()
-			);
+			AccountingImporter importer = new AccountingImporter(config);
 			try {
-				importer.importFromCsv(config.getCsvFile(), config.getCharset(), config.isInitial());
+				importer.importFromCsv();
 			} finally {
 				importer.close();
 			}
@@ -188,15 +185,14 @@ public class AccountingImporter {
 	}
 
 	/**
-	 * Creates a new accounting importer with database connection.
+	 * Creates a new accounting importer with configuration.
 	 *
-	 * @param dbUrl The database JDBC URL
-	 * @param dbUser The database user
-	 * @param dbPassword The database password
+	 * @param config The accounting configuration
 	 * @throws SQLException If database connection fails
 	 */
-	public AccountingImporter(String dbUrl, String dbUser, String dbPassword) throws SQLException {
-		_db = new AccountingDB(dbUrl, dbUser, dbPassword);
+	public AccountingImporter(AccountingConfig config) throws SQLException {
+		_config = config;
+		_db = new AccountingDB(config.getDbUrl(), config.getDbUser(), config.getDbPassword());
 	}
 
 	/**
@@ -239,14 +235,15 @@ public class AccountingImporter {
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
 	/**
-	 * Imports contribution data from a CSV file.
+	 * Imports contribution data from the configured CSV file.
 	 *
-	 * @param csvFilePath Path to the CSV file to import
-	 * @param charset Character encoding to use for reading the file
-	 * @param initial If true, skip the overlap check (for initial import)
 	 * @throws IOException If the file cannot be read
 	 */
-	public void importFromCsv(String csvFilePath, Charset charset, boolean initial) throws IOException {
+	public void importFromCsv() throws IOException {
+		String csvFilePath = _config.getCsvFile();
+		Charset charset = _config.getCharset();
+		boolean initial = _config.isInitial();
+
 		File csvFile = new File(csvFilePath);
 
 		if (!csvFile.exists()) {

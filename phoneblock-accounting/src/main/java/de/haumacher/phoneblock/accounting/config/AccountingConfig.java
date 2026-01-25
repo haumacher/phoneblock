@@ -184,48 +184,54 @@ public class AccountingConfig {
 		return csvFile;
 	}
 
-	public void setCsvFile(String csvFile) {
+	public AccountingConfig setCsvFile(String csvFile) {
 		this.csvFile = csvFile;
+		return this;
 	}
 
 	public Charset getCharset() {
 		return charset;
 	}
 
-	public void setCharset(Charset charset) {
+	public AccountingConfig setCharset(Charset charset) {
 		this.charset = charset;
+		return this;
 	}
 
 	public String getDbUrl() {
 		return dbUrl;
 	}
 
-	public void setDbUrl(String dbUrl) {
+	public AccountingConfig setDbUrl(String dbUrl) {
 		this.dbUrl = dbUrl;
+		return this;
 	}
 
 	public String getDbUser() {
 		return dbUser;
 	}
 
-	public void setDbUser(String dbUser) {
+	public AccountingConfig setDbUser(String dbUser) {
 		this.dbUser = dbUser;
+		return this;
 	}
 
 	public String getDbPassword() {
 		return dbPassword;
 	}
 
-	public void setDbPassword(String dbPassword) {
+	public AccountingConfig setDbPassword(String dbPassword) {
 		this.dbPassword = dbPassword;
+		return this;
 	}
 
 	public boolean isInitial() {
 		return initial;
 	}
 
-	public void setInitial(boolean initial) {
+	public AccountingConfig setInitial(boolean initial) {
 		this.initial = initial;
+		return this;
 	}
 
 	/**
