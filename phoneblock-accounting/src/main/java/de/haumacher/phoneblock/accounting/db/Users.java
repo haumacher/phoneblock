@@ -27,15 +27,14 @@ public interface Users {
 	Long findUserIdByUsername(String username);
 
 	/**
-	 * Finds users whose email (LOGIN or EMAIL field) matches the given email pattern.
+	 * Finds users whose EMAIL field matches the given email pattern.
 	 *
 	 * @param emailPattern The email pattern to search for (e.g., "user@domain")
 	 * @return List of matching user IDs (may be empty)
 	 */
 	@Select("""
 		SELECT ID FROM USERS
-		WHERE LOGIN LIKE CONCAT('%', #{emailPattern}, '%')
-		   OR EMAIL LIKE CONCAT('%', #{emailPattern}, '%')
+		WHERE EMAIL LIKE CONCAT('%', #{emailPattern}, '%')
 	""")
 	List<Long> findUserIdsByEmail(String emailPattern);
 }
