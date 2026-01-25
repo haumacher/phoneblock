@@ -12,7 +12,9 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -260,56 +262,72 @@ public class AccountingImporter {
 		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(csvFile), charset);
 		     CSVParser parser = new CSVParser(reader, format)) {
 
+			// First pass: find header and extract all contribution records
+			ColumnMapping columnMapping = null;
+			List<ContributionRecord> contributions = new ArrayList<>();
+
 			try (SqlSession session = _db.openSession()) {
-				Contributions contributions = session.getMapper(Contributions.class);
+				Users users = session.getMapper(Users.class);
+
+				for (CSVRecord record : parser) {
+					if (columnMapping == null) {
+						// Check if this record is the header
+						if (isHeaderRecord(record)) {
+							LOG.info("Found header at record #{}", record.getRecordNumber());
+							columnMapping = new ColumnMapping(record);
+						}
+						// Skip records before header
+						continue;
+					}
+
+					// Extract contribution records after header
+					ContributionRecord contribution = extractContribution(record, columnMapping, users);
+					if (contribution != null) {
+						contributions.add(contribution);
+					}
+				}
+			}
+
+			if (columnMapping == null) {
+				String errorMessage = String.format(
+					"Could not find header line with required columns in CSV file.%n" +
+					"Expected header to contain: %s",
+					String.join(", ", REQUIRED_HEADERS)
+				);
+				LOG.error(errorMessage);
+				throw new IOException(errorMessage);
+			}
+
+			// Sort contributions by date (ascending order)
+			LOG.info("Sorting {} contributions by date (ascending order)", contributions.size());
+			contributions.sort(Comparator.comparing(ContributionRecord::getReceived));
+
+			// Second pass: process contributions in chronological order
+			try (SqlSession session = _db.openSession()) {
+				Contributions contributionsMapper = session.getMapper(Contributions.class);
 				Users users = session.getMapper(Users.class);
 
 				try {
-					ColumnMapping columnMapping = null;
-					int recordCount = 0;
 					int filteredCount = 0;
 					int newCount = 0;
 					int skippedCount = 0;
 
-					for (CSVRecord record : parser) {
-						if (columnMapping == null) {
-							// Check if this record is the header
-							if (isHeaderRecord(record)) {
-								LOG.info("Found header at record #{}", record.getRecordNumber());
-								columnMapping = new ColumnMapping(record);
-							}
-							// Skip records before header
-							continue;
-						}
+					for (ContributionRecord contribution : contributions) {
+						filteredCount++;
 
-						// Process data records after header
-						recordCount++;
-
-						ProcessResult result = processRecord(record, columnMapping, contributions, users);
+						ProcessResult result = processContribution(contribution, contributionsMapper, users);
 						if (result == ProcessResult.PHONEBLOCK_NEW) {
-							filteredCount++;
 							newCount++;
 						} else if (result == ProcessResult.PHONEBLOCK_DUPLICATE) {
-							filteredCount++;
 							skippedCount++;
 						}
-					}
-
-					if (columnMapping == null) {
-						String errorMessage = String.format(
-							"Could not find header line with required columns in CSV file.%n" +
-							"Expected header to contain: %s",
-							String.join(", ", REQUIRED_HEADERS)
-						);
-						LOG.error(errorMessage);
-						throw new IOException(errorMessage);
 					}
 
 					// Commit all inserts
 					session.commit();
 
-					LOG.info("Import completed. Processed {} records, found {} PhoneBlock contributions ({} new, {} duplicates).",
-							recordCount, filteredCount, newCount, skippedCount);
+					LOG.info("Import completed. Found {} PhoneBlock contributions ({} new, {} duplicates).",
+							filteredCount, newCount, skippedCount);
 				} catch (Exception e) {
 					session.rollback();
 					throw e;
@@ -345,23 +363,23 @@ public class AccountingImporter {
 	}
 
 	/**
-	 * Processes a single CSV record and imports it as a contribution if valid.
+	 * Extracts a ContributionRecord from a CSV record.
+	 * Returns null if the record is not a PhoneBlock contribution or cannot be parsed.
 	 *
-	 * @param record The CSV record to process
+	 * @param record The CSV record to extract from
 	 * @param columnMapping The column index mapping from the header
-	 * @param contributions The contributions mapper
-	 * @param users The users mapper
-	 * @return ProcessResult indicating whether the record was processed
+	 * @param users The users mapper for looking up user IDs
+	 * @return The extracted ContributionRecord, or null if not applicable
 	 */
-	private ProcessResult processRecord(CSVRecord record, ColumnMapping columnMapping, Contributions contributions, Users users) {
-		LOG.debug("Processing record: {}", record.getRecordNumber());
+	private ContributionRecord extractContribution(CSVRecord record, ColumnMapping columnMapping, Users users) {
+		LOG.debug("Extracting record: {}", record.getRecordNumber());
 
 		// Extract fields from CSV using column mapping
 		String verwendungszweck = columnMapping.getVerwendungszweck(record);
 
 		// Filter for PhoneBlock contributions (case insensitive)
 		if (verwendungszweck == null || !verwendungszweck.toLowerCase().contains(PHONEBLOCK_KEYWORD)) {
-			return ProcessResult.NOT_PHONEBLOCK;
+			return null;
 		}
 
 		try {
@@ -407,7 +425,7 @@ public class AccountingImporter {
 			}
 
 			// Create contribution record
-			ContributionRecord contribution = new ContributionRecord(
+			return new ContributionRecord(
 				userId,
 				sender,
 				tx,
@@ -416,31 +434,43 @@ public class AccountingImporter {
 				receivedTimestamp
 			);
 
-			// Check if contribution already exists
-			if (contributions.exists(tx)) {
-				LOG.info("Skipping duplicate contribution: {}", tx);
-				printRecord(record, columnMapping, "DUPLICATE", contribution, username);
-				return ProcessResult.PHONEBLOCK_DUPLICATE;
-			}
-
-			// Insert new contribution
-			contributions.insert(contribution);
-
-			// Update user's credit if contribution is linked to a user
-			if (userId != null) {
-				users.addCredit(userId, amountCents);
-				LOG.debug("Added {} cents to credit of user ID {}", amountCents, userId);
-			}
-
-			LOG.info("Imported new contribution: {} ({}€)", tx, betrag);
-			printRecord(record, columnMapping, "NEW", contribution, username);
-
-			return ProcessResult.PHONEBLOCK_NEW;
-
 		} catch (Exception e) {
-			LOG.error("Failed to process record {}: {}", record.getRecordNumber(), e.getMessage(), e);
-			return ProcessResult.NOT_PHONEBLOCK;
+			LOG.error("Failed to extract record {}: {}", record.getRecordNumber(), e.getMessage(), e);
+			return null;
 		}
+	}
+
+	/**
+	 * Processes a single contribution record and imports it.
+	 *
+	 * @param contribution The contribution record to process
+	 * @param contributions The contributions mapper
+	 * @param users The users mapper
+	 * @return ProcessResult indicating whether the record was processed
+	 */
+	private ProcessResult processContribution(ContributionRecord contribution, Contributions contributions, Users users) {
+		String tx = contribution.getTx();
+
+		// Check if contribution already exists
+		if (contributions.exists(tx)) {
+			LOG.info("Skipping duplicate contribution: {}", tx);
+			printRecord("DUPLICATE", contribution);
+			return ProcessResult.PHONEBLOCK_DUPLICATE;
+		}
+
+		// Insert new contribution
+		contributions.insert(contribution);
+
+		// Update user's credit if contribution is linked to a user
+		if (contribution.getUserId() != null) {
+			users.addCredit(contribution.getUserId(), contribution.getAmount());
+			LOG.debug("Added {} cents to credit of user ID {}", contribution.getAmount(), contribution.getUserId());
+		}
+
+		LOG.info("Imported new contribution: {} ({}€)", tx, formatAmount(contribution.getAmount()));
+		printRecord("NEW", contribution);
+
+		return ProcessResult.PHONEBLOCK_NEW;
 	}
 
 	/**
@@ -524,26 +554,33 @@ public class AccountingImporter {
 	}
 
 	/**
-	 * Prints a CSV record to the console.
+	 * Prints a contribution record to the console.
 	 *
-	 * @param record The CSV record to print
-	 * @param columnMapping The column index mapping
 	 * @param status The status label (NEW, DUPLICATE, etc.)
 	 * @param contribution The contribution record
-	 * @param username The extracted username from the message (can be null)
 	 */
-	private void printRecord(CSVRecord record, ColumnMapping columnMapping, String status, ContributionRecord contribution, String username) {
+	private void printRecord(String status, ContributionRecord contribution) {
 		System.out.println("=".repeat(80));
-		System.out.println("Record #" + record.getRecordNumber() + " [" + status + "]");
+		System.out.println("Contribution: " + contribution.getTx() + " [" + status + "]");
 		System.out.println("-".repeat(80));
 
-		// Print important columns using column mapping
-		System.out.printf("  %-25s: %s%n", "Buchung", columnMapping.getBuchung(record));
-		System.out.printf("  %-25s: %s%n", "Auftraggeber/Empfänger", columnMapping.getAuftraggeber(record));
-		System.out.printf("  %-25s: %s%n", "Verwendungszweck", columnMapping.getVerwendungszweck(record));
-		System.out.printf("  %-25s: %s%n", "Betrag", columnMapping.getBetrag(record));
+		// Extract date from TX identifier (format: "Sender; DD.MM.YYYY")
+		String tx = contribution.getTx();
+		int semicolonPos = tx.lastIndexOf("; ");
+		String buchungDate = semicolonPos >= 0 ? tx.substring(semicolonPos + 2) : "unknown";
+
+		// Print important fields
+		System.out.printf("  %-25s: %s%n", "Buchung", buchungDate);
+		System.out.printf("  %-25s: %s%n", "Auftraggeber/Empfänger", contribution.getSender());
+		System.out.printf("  %-25s: %s%n", "Verwendungszweck", contribution.getMessage());
+		System.out.printf("  %-25s: %s%n", "Betrag", formatAmount(contribution.getAmount()));
 
 		// Print user information
+		String username = extractUsername(contribution.getMessage());
+		if (username == null) {
+			username = extractEmailPattern(contribution.getMessage());
+		}
+
 		if (username != null) {
 			if (contribution.getUserId() != null) {
 				System.out.printf("  %-25s: %s (User ID: %d)%n", "PhoneBlock User", username, contribution.getUserId());
@@ -554,5 +591,16 @@ public class AccountingImporter {
 
 		System.out.println("=".repeat(80));
 		System.out.println();
+	}
+
+	/**
+	 * Formats an amount in cents to Euro string.
+	 *
+	 * @param amountCents The amount in cents
+	 * @return Formatted amount string (e.g., "5,00")
+	 */
+	private String formatAmount(int amountCents) {
+		double euros = amountCents / 100.0;
+		return String.format("%.2f", euros).replace('.', ',');
 	}
 }
