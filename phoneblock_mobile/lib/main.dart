@@ -1963,12 +1963,16 @@ class _MainScreenState extends State<MainScreen> {
           ListTile(
             leading: const Icon(Icons.settings),
             title: Text(context.l10n.settings),
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context); // Close drawer
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
+              // Trigger rebuild to update drawer based on changed settings
+              if (context.mounted) {
+                setState(() {});
+              }
             },
           ),
           ListTile(
