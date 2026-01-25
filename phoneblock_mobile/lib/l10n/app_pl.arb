@@ -146,5 +146,7 @@
   "themeModeDark": "Ciemny",
   "experimentalFeatures": "Funkcje eksperymentalne",
   "answerbotFeature": "Automatyczna sekretarka (Answerbot)",
-  "answerbotFeatureDescription": "Eksperymentalna funkcja: Zarządzanie automatycznymi sekretarkami SPAM, które automatycznie rozmawiają z osobami dzwoniącymi ze spamem."
+  "answerbotFeatureDescription": "Eksperymentalna funkcja: Zarządzanie automatycznymi sekretarkami SPAM, które automatycznie rozmawiają z osobami dzwoniącymi ze spamem.",
+  "answerbotMenuTitle": "Automatyczna sekretarka",
+  "answerbotMenuDescription": "Zarządzanie automatyczną sekretarką SPAM"
 }

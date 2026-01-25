@@ -489,4 +489,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription => '试验功能：管理自动与垃圾来电者通话的垃圾邮件应答机';
+
+  @override
+  String get answerbotMenuTitle => '答录机';
+
+  @override
+  String get answerbotMenuDescription => '管理垃圾邮件应答机';
 }

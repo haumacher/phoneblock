@@ -530,4 +530,10 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Експериментальна функція: Керування автовідповідачами, які автоматично розмовляють зі спамерськими абонентами';
+
+  @override
+  String get answerbotMenuTitle => 'Автовідповідач';
+
+  @override
+  String get answerbotMenuDescription => 'Керування автовідповідачем СПАМу';
 }

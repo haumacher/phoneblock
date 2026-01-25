@@ -528,4 +528,10 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Eksperimentel funktion: Administrer SPAM-telefonsvarere, der automatisk taler med spamopkald';
+
+  @override
+  String get answerbotMenuTitle => 'Telefonsvarer';
+
+  @override
+  String get answerbotMenuDescription => 'Administrer SPAM-telefonsvareren';
 }

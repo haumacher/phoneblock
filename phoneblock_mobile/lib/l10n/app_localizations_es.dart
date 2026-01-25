@@ -530,4 +530,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Función experimental: gestión de contestadores automáticos que hablan automáticamente con las personas que llaman por spam';
+
+  @override
+  String get answerbotMenuTitle => 'Contestador automático';
+
+  @override
+  String get answerbotMenuDescription => 'Gestionar el contestador SPAM';
 }

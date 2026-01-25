@@ -146,5 +146,7 @@
   "themeModeDark": "Donker",
   "experimentalFeatures": "Experimentele functies",
   "answerbotFeature": "Antwoordapparaat (Answerbot)",
-  "answerbotFeatureDescription": "Experimentele functie: Beheer SPAM antwoordapparaten die automatisch met spam bellers praten"
+  "answerbotFeatureDescription": "Experimentele functie: Beheer SPAM antwoordapparaten die automatisch met spam bellers praten",
+  "answerbotMenuTitle": "Antwoordapparaat",
+  "answerbotMenuDescription": "SPAM antwoordapparaat beheren"
 }

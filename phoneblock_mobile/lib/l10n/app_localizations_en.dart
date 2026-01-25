@@ -529,4 +529,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Experimental feature: Manage SPAM answering machines that automatically talk to spam callers';
+
+  @override
+  String get answerbotMenuTitle => 'Answering machine';
+
+  @override
+  String get answerbotMenuDescription => 'Manage SPAM answering machine';
 }

@@ -146,5 +146,7 @@
   "themeModeDark": "Mørk",
   "experimentalFeatures": "Eksperimentelle funktioner",
   "answerbotFeature": "Telefonsvarer (Answerbot)",
-  "answerbotFeatureDescription": "Eksperimentel funktion: Administrer SPAM-telefonsvarere, der automatisk taler med spamopkald"
+  "answerbotFeatureDescription": "Eksperimentel funktion: Administrer SPAM-telefonsvarere, der automatisk taler med spamopkald",
+  "answerbotMenuTitle": "Telefonsvarer",
+  "answerbotMenuDescription": "Administrer SPAM-telefonsvareren"
 }

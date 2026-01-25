@@ -537,4 +537,11 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Funzione sperimentale: gestione delle segreterie telefoniche SPAM che parlano automaticamente con i chiamanti spam';
+
+  @override
+  String get answerbotMenuTitle => 'Segreteria telefonica';
+
+  @override
+  String get answerbotMenuDescription =>
+      'Gestire la segreteria telefonica SPAM';
 }

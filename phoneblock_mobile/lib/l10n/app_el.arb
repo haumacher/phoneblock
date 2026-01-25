@@ -146,5 +146,7 @@
   "themeModeDark": "Σκούρο",
   "experimentalFeatures": "Πειραματικές λειτουργίες",
   "answerbotFeature": "Αυτόματος τηλεφωνητής (Answerbot)",
-  "answerbotFeatureDescription": "Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam"
+  "answerbotFeatureDescription": "Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam",
+  "answerbotMenuTitle": "Τηλεφωνητής",
+  "answerbotMenuDescription": "Διαχείριση του τηλεφωνητή SPAM"
 }

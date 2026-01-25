@@ -532,4 +532,10 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam';
+
+  @override
+  String get answerbotMenuTitle => 'Τηλεφωνητής';
+
+  @override
+  String get answerbotMenuDescription => 'Διαχείριση του τηλεφωνητή SPAM';
 }

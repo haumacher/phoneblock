@@ -146,5 +146,7 @@
   "themeModeDark": "Dark",
   "experimentalFeatures": "Experimental functions",
   "answerbotFeature": "Answering machine (Answerbot)",
-  "answerbotFeatureDescription": "Experimental feature: Manage SPAM answering machines that automatically talk to spam callers"
+  "answerbotFeatureDescription": "Experimental feature: Manage SPAM answering machines that automatically talk to spam callers",
+  "answerbotMenuTitle": "Answering machine",
+  "answerbotMenuDescription": "Manage SPAM answering machine"
 }

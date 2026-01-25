@@ -537,4 +537,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Fonction expérimentale : gérer les répondeurs SPAM qui parlent automatiquement aux appelants spam';
+
+  @override
+  String get answerbotMenuTitle => 'Répondeur téléphonique';
+
+  @override
+  String get answerbotMenuDescription => 'Gérer les répondeurs SPAM';
 }

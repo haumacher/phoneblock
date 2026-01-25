@@ -530,4 +530,10 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Experimentell funktion: Hantera SPAM-svarare som automatiskt pratar med spam-samtalare';
+
+  @override
+  String get answerbotMenuTitle => 'Telefonsvarare';
+
+  @override
+  String get answerbotMenuDescription => 'Hantera telefonsvarare för SPAM';
 }

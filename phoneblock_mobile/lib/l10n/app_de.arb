@@ -813,5 +813,15 @@
   "@answerbotFeatureDescription": {
     "description": "Answerbot feature toggle description",
     "x-translated": "47913797"
+  },
+  "answerbotMenuTitle": "Anrufbeantworter",
+  "@answerbotMenuTitle": {
+    "description": "Answerbot menu item title",
+    "x-translated": "3877c928"
+  },
+  "answerbotMenuDescription": "SPAM-Anrufbeantworter verwalten",
+  "@answerbotMenuDescription": {
+    "description": "Answerbot menu item description",
+    "x-translated": "c4bce6df"
   }
 }

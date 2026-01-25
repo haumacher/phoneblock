@@ -146,5 +146,7 @@
   "themeModeDark": "黑暗",
   "experimentalFeatures": "实验功能",
   "answerbotFeature": "答录机（Answerbot）",
-  "answerbotFeatureDescription": "试验功能：管理自动与垃圾来电者通话的垃圾邮件应答机"
+  "answerbotFeatureDescription": "试验功能：管理自动与垃圾来电者通话的垃圾邮件应答机",
+  "answerbotMenuTitle": "答录机",
+  "answerbotMenuDescription": "管理垃圾邮件应答机"
 }

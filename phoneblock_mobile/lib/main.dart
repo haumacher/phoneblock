@@ -1988,8 +1988,8 @@ class _MainScreenState extends State<MainScreen> {
           if (answerbotEnabled)
             ListTile(
               leading: const Icon(Icons.phone_callback),
-              title: const Text('Answerbot'),
-              subtitle: const Text('Manage spam call answering machines'),
+              title: Text(context.l10n.answerbotMenuTitle),
+              subtitle: Text(context.l10n.answerbotMenuDescription),
               onTap: () {
                 Navigator.pop(context); // Close drawer
                 Navigator.push(

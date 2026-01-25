@@ -532,4 +532,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get answerbotFeatureDescription =>
       'Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen';
+
+  @override
+  String get answerbotMenuTitle => 'Anrufbeantworter';
+
+  @override
+  String get answerbotMenuDescription => 'SPAM-Anrufbeantworter verwalten';
 }

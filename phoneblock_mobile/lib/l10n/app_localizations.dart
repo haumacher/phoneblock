@@ -1003,6 +1003,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen'**
   String get answerbotFeatureDescription;
+
+  /// Answerbot menu item title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter'**
+  String get answerbotMenuTitle;
+
+  /// Answerbot menu item description
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Anrufbeantworter verwalten'**
+  String get answerbotMenuDescription;
 }
 
 class _AppLocalizationsDelegate

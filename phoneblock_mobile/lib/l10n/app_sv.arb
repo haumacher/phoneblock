@@ -146,5 +146,7 @@
   "themeModeDark": "Mörk",
   "experimentalFeatures": "Experimentella funktioner",
   "answerbotFeature": "Telefonsvarare (Answerbot)",
-  "answerbotFeatureDescription": "Experimentell funktion: Hantera SPAM-svarare som automatiskt pratar med spam-samtalare"
+  "answerbotFeatureDescription": "Experimentell funktion: Hantera SPAM-svarare som automatiskt pratar med spam-samtalare",
+  "answerbotMenuTitle": "Telefonsvarare",
+  "answerbotMenuDescription": "Hantera telefonsvarare för SPAM"
 }

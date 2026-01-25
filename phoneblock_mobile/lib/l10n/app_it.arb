@@ -146,5 +146,7 @@
   "themeModeDark": "Scuro",
   "experimentalFeatures": "Funzioni sperimentali",
   "answerbotFeature": "Segreteria telefonica (Answerbot)",
-  "answerbotFeatureDescription": "Funzione sperimentale: gestione delle segreterie telefoniche SPAM che parlano automaticamente con i chiamanti spam"
+  "answerbotFeatureDescription": "Funzione sperimentale: gestione delle segreterie telefoniche SPAM che parlano automaticamente con i chiamanti spam",
+  "answerbotMenuTitle": "Segreteria telefonica",
+  "answerbotMenuDescription": "Gestire la segreteria telefonica SPAM"
 }
