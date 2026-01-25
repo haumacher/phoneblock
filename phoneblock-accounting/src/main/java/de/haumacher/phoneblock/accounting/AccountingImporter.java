@@ -365,7 +365,9 @@ public class AccountingImporter {
 			// Check if contribution already exists
 			if (contributions.exists(tx)) {
 				LOG.info("Skipping duplicate contribution: {}", tx);
-				printRecord(record, columnMapping, "DUPLICATE");
+				// Extract username for display (but don't look up user since it's a duplicate)
+				String duplicateUsername = extractUsername(verwendungszweck);
+				printRecord(record, columnMapping, "DUPLICATE", duplicateUsername, null);
 				return ProcessResult.PHONEBLOCK_DUPLICATE;
 			}
 
@@ -400,7 +402,7 @@ public class AccountingImporter {
 			contributions.insert(contribution);
 
 			LOG.info("Imported new contribution: {} ({}€)", tx, betrag);
-			printRecord(record, columnMapping, "NEW");
+			printRecord(record, columnMapping, "NEW", username, userId);
 
 			return ProcessResult.PHONEBLOCK_NEW;
 
@@ -473,8 +475,10 @@ public class AccountingImporter {
 	 * @param record The record to print
 	 * @param columnMapping The column index mapping
 	 * @param status The status label (NEW, DUPLICATE, etc.)
+	 * @param username The extracted username from the message (can be null)
+	 * @param userId The found user ID (can be null)
 	 */
-	private void printRecord(CSVRecord record, ColumnMapping columnMapping, String status) {
+	private void printRecord(CSVRecord record, ColumnMapping columnMapping, String status, String username, Long userId) {
 		System.out.println("=".repeat(80));
 		System.out.println("Record #" + record.getRecordNumber() + " [" + status + "]");
 		System.out.println("-".repeat(80));
@@ -484,6 +488,15 @@ public class AccountingImporter {
 		System.out.printf("  %-25s: %s%n", "Auftraggeber/Empfänger", columnMapping.getAuftraggeber(record));
 		System.out.printf("  %-25s: %s%n", "Verwendungszweck", columnMapping.getVerwendungszweck(record));
 		System.out.printf("  %-25s: %s%n", "Betrag", columnMapping.getBetrag(record));
+
+		// Print user information
+		if (username != null) {
+			if (userId != null) {
+				System.out.printf("  %-25s: %s (User ID: %d)%n", "PhoneBlock User", username, userId);
+			} else {
+				System.out.printf("  %-25s: %s (not found)%n", "PhoneBlock User", username);
+			}
+		}
 
 		System.out.println("=".repeat(80));
 		System.out.println();
