@@ -12,9 +12,10 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -203,10 +204,10 @@ public class AccountingImporter {
 	/**
 	 * Required header columns to identify the data section.
 	 */
-	private static final String[] REQUIRED_HEADERS = {
+	private static final Set<String> REQUIRED_HEADERS = new HashSet<>(Arrays.asList(
 		"Buchung", "Wertstellungsdatum", "Auftraggeber/Empfänger",
 		"Buchungstext", "Verwendungszweck", "Betrag", "Währung"
-	};
+	));
 
 	private static final String BUCHUNG_COLUMN = "Buchung";
 	private static final String AUFTRAGGEBER_COLUMN = "Auftraggeber/Empfänger";
@@ -305,20 +306,14 @@ public class AccountingImporter {
 	 * @return true if this record contains all required header columns
 	 */
 	private boolean isHeaderRecord(CSVRecord record) {
-		// Get all values from the record
-		List<String> values = new ArrayList<>();
+		// Get all values from the record as a Set for efficient lookup
+		Set<String> values = new HashSet<>();
 		for (int i = 0; i < record.size(); i++) {
 			values.add(record.get(i));
 		}
 
 		// Check if all required headers are present
-		for (String requiredHeader : REQUIRED_HEADERS) {
-			if (!values.contains(requiredHeader)) {
-				return false;
-			}
-		}
-
-		return true;
+		return values.containsAll(REQUIRED_HEADERS);
 	}
 
 	/**
@@ -397,12 +392,12 @@ public class AccountingImporter {
 	 *
 	 * @param sender The sender's name
 	 * @param date The booking date (DD.MM.YYYY)
-	 * @return The TX identifier: "Sender DD.MM.YYYY"
+	 * @return The TX identifier: "Sender; DD.MM.YYYY"
 	 */
 	private String createTxIdentifier(String sender, String date) {
 		// Normalize sender: trim and replace multiple spaces with single space
 		String normalizedSender = sender.trim().replaceAll("\\s+", " ");
-		return normalizedSender + " " + date;
+		return normalizedSender + "; " + date;
 	}
 
 	/**
