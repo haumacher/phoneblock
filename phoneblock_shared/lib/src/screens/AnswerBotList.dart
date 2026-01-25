@@ -65,18 +65,18 @@ class AnswerBotListState extends State<AnswerBotList> {
       loginRequired = false;
 
       if (response.statusCode != 200) {
-        msg = context.l10n.cannotLoadInfo(response.statusCode, response.body);
+        msg = context.answerbotL10n.cannotLoadInfo(response.statusCode, response.body);
         return;
       }
 
       if (response.contentType.mimeType != "application/json") {
-        msg = context.l10n.wrongContentType(response.contentType.mimeType);
+        msg = context.answerbotL10n.wrongContentType(response.contentType.mimeType);
         return;
       }
 
       var bots = ListAnswerbotResponse.read(JsonReader.fromString(response.body)).bots;
       if (bots.isEmpty) {
-        msg = context.l10n.noAnswerbotsYet;
+        msg = context.answerbotL10n.noAnswerbotsYet;
         this.bots = null;
       } else {
         this.bots = bots;
@@ -89,7 +89,7 @@ class AnswerBotListState extends State<AnswerBotList> {
     if (loginRequired) {
       return Scaffold(
         appBar: AppBar(
-          title: TitleRow(context.l10n.yourAnswerbots),
+          title: TitleRow(context.answerbotL10n.yourAnswerbots),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -97,7 +97,7 @@ class AnswerBotListState extends State<AnswerBotList> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text(context.l10n.loginRequired,
+              Text(context.answerbotL10n.loginRequired,
                 style: const TextStyle(fontSize: 20),
                 textAlign: TextAlign.center,
               ),
@@ -113,7 +113,7 @@ class AnswerBotListState extends State<AnswerBotList> {
                               requestBotList();
                             }
                           },
-                          child: Text(context.l10n.login)
+                          child: Text(context.answerbotL10n.login)
                       )
                     ]
                 ),
@@ -127,7 +127,7 @@ class AnswerBotListState extends State<AnswerBotList> {
 
     return Scaffold(
       appBar: AppBar(
-        title: TitleRow(context.l10n.yourAnswerbots),
+        title: TitleRow(context.answerbotL10n.yourAnswerbots),
         actions: [
           IconButton(
             onPressed: () {
@@ -140,7 +140,7 @@ class AnswerBotListState extends State<AnswerBotList> {
       body: _botList(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _createAnswerBot(context),
-        tooltip: context.l10n.createAnswerbot,
+        tooltip: context.answerbotL10n.createAnswerbot,
         child: const Icon(Icons.add),
       ),
     );
@@ -200,23 +200,23 @@ class AnswerBotListState extends State<AnswerBotList> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(context.l10n.answerbotName(bot.userName), overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
-                      Text(context.l10n.answerbotStats(bot.newCalls, bot.callsAccepted, (bot.talkTime / 1000).round()), overflow: TextOverflow.ellipsis,),
+                      Text(context.answerbotL10n.answerbotName(bot.userName), overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
+                      Text(context.answerbotL10n.answerbotStats(bot.newCalls, bot.callsAccepted, (bot.talkTime / 1000).round()), overflow: TextOverflow.ellipsis,),
                     ],
                   ),
                 ),
                 if (bot.enabled)
                   bot.registered ?
                   Padding(padding: const EdgeInsets.only(left: 16),
-                      child: Chip(label: Text(context.l10n.statusActive), backgroundColor: Colors.green, labelStyle: const TextStyle(color: Colors.white),)) :
+                      child: Chip(label: Text(context.answerbotL10n.statusActive), backgroundColor: Colors.green, labelStyle: const TextStyle(color: Colors.white),)) :
                   Padding(padding: const EdgeInsets.only(left: 16),
-                      child: Chip(label: Text(context.l10n.statusConnecting), backgroundColor: Colors.orangeAccent, labelStyle: const TextStyle(color: Colors.white),))
+                      child: Chip(label: Text(context.answerbotL10n.statusConnecting), backgroundColor: Colors.orangeAccent, labelStyle: const TextStyle(color: Colors.white),))
                 else
                   setupComplete(bot) ?
                   Padding(padding: const EdgeInsets.only(left: 16),
-                      child: Chip(label: Text(context.l10n.statusDisabled), backgroundColor: Colors.black54, labelStyle: const TextStyle(color: Colors.white),)) :
+                      child: Chip(label: Text(context.answerbotL10n.statusDisabled), backgroundColor: Colors.black54, labelStyle: const TextStyle(color: Colors.white),)) :
                   Padding(padding: const EdgeInsets.only(left: 16),
-                      child: Chip(label: Text(context.l10n.statusIncomplete), backgroundColor: Colors.black12, labelStyle: const TextStyle(color: Colors.black),)),
+                      child: Chip(label: Text(context.answerbotL10n.statusIncomplete), backgroundColor: Colors.black12, labelStyle: const TextStyle(color: Colors.black),)),
                 IconButton(
                   icon: const Icon(Icons.arrow_right),
                   iconSize: 32,

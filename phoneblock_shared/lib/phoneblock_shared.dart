@@ -5,7 +5,8 @@
 library phoneblock_shared;
 
 // Localization
-export 'l10n/app_localizations.dart';
+// Note: AppLocalizations is not exported to avoid name conflicts with consuming apps.
+// Use the extension method context.answerbotL10n to access answerbot localizations.
 export 'src/l10n_extensions.dart';
 
 // Models
