@@ -65,7 +65,7 @@ class AnswerBotListState extends State<AnswerBotList> {
       loginRequired = false;
 
       if (response.statusCode != 200) {
-        msg = context.answerbotL10n.cannotLoadInfo(response.statusCode, response.body);
+        msg = context.answerbotL10n.cannotLoadInfo(response.body, response.statusCode);
         return;
       }
 
