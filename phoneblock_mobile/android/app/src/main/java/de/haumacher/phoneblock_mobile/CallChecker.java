@@ -67,7 +67,7 @@ public class CallChecker extends CallScreeningService {
         SharedPreferences prefs = MainActivity.getPreferences(this);
         String authToken = prefs.getString("auth_token", null);
         int minVotes = prefs.getInt("min_votes", 4);
-        boolean blockRanges = prefs.getBoolean("block_ranges", false);
+        boolean blockRanges = prefs.getBoolean("block_ranges", true);
         int minRangeVotes = prefs.getInt("min_range_votes", 10);
 
         if (authToken == null) {
