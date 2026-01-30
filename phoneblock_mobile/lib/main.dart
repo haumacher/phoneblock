@@ -2019,12 +2019,25 @@ class _MainScreenState extends State<MainScreen> {
             title: Text(context.l10n.donate),
             subtitle: Text(context.l10n.aboutDescription),
             onTap: () async {
+              final title = context.l10n.donate;
               Navigator.pop(context); // Close drawer
 
-              final url = await buildPhoneBlockUrlWithToken('/support');
-              final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              String? token = await getAuthToken();
+              if (token == null) {
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PhoneBlockWebView(
+                      title: title,
+                      path: '/support',
+                      authToken: token,
+                    ),
+                  ),
+                );
               }
             },
           ),
@@ -3018,10 +3031,22 @@ class AboutScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ElevatedButton.icon(
               onPressed: () async {
-                final url = await buildPhoneBlockUrlWithToken('/support');
-                final uri = Uri.parse(url);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                String? token = await getAuthToken();
+                if (token == null) {
+                  return;
+                }
+
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PhoneBlockWebView(
+                        title: context.l10n.donate,
+                        path: '/support',
+                        authToken: token,
+                      ),
+                    ),
+                  );
                 }
               },
               icon: const Icon(Icons.favorite),
