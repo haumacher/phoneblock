@@ -495,6 +495,43 @@ Configuration for scheduled blocklist versioning (incremental synchronization su
 
 ---
 
+## Blocklist API Configuration
+
+**JNDI Prefix:** `blocklist/`
+**System Property Prefix:** `blocklist.`
+**Source:** `BlocklistServlet.java`
+
+Configuration for the blocklist download API endpoint (`/api/blocklist`).
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `blocklist/minVisibleVotes` | Integer | `10` | Minimum vote threshold for blocklist visibility. Numbers with fewer votes will not be included in blocklist downloads. Must be one of: 2, 4, 10, 20, 50, 100 |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="blocklist/minVisibleVotes" value="10" type="java.lang.Integer"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Dblocklist.minVisibleVotes=10
+```
+
+**Note:**
+- The value must be one of the valid blocklist threshold values: 2, 4, 10, 20, 50, 100
+- Invalid values will fall back to the default of 10
+- This setting affects both full blocklist downloads and incremental synchronization
+- For incremental sync, numbers that fall below the threshold are returned with `votes=0` to indicate removal
+- This setting controls what is publicly visible in blocklist downloads; it does not affect user-specific settings
+
+---
+
 ## Complete Example Configuration
 
 Here's a complete example Tomcat `context.xml` file with common production settings:
@@ -554,7 +591,8 @@ Here's a complete example Tomcat `context.xml` file with common production setti
   <!-- <Environment name="imap/mail.imap.password" value="app_password" type="java.lang.String"/> -->
   <!-- <Environment name="credits/active" value="true" type="java.lang.String"/> -->
 
-  <!-- Blocklist Versioning Schedule -->
+  <!-- Blocklist Configuration -->
+  <Environment name="blocklist/minVisibleVotes" value="10" type="java.lang.Integer"/>
   <Environment name="blocklist/version/hour" value="3" type="java.lang.Integer"/>
   <Environment name="blocklist/version/minute" value="0" type="java.lang.Integer"/>
   <Environment name="blocklist/version/intervalMinutes" value="1440" type="java.lang.Integer"/>

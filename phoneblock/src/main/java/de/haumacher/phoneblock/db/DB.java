@@ -1280,7 +1280,15 @@ public class DB {
 	 * and ensures clients can detect when numbers drop below their threshold.
 	 * </p>
 	 */
-	public Blocklist getBlockListAPI() {
+	/**
+	 * Gets the full blocklist for API download.
+	 *
+	 * @param minVisibleVotes Minimum vote threshold for visibility. Numbers with fewer votes
+	 *        (after normalization to thresholds) will be excluded from the result.
+	 *        Must be one of the valid {@link #BLOCKLIST_THRESHOLDS} values.
+	 * @return The blocklist containing all numbers meeting the minimum threshold.
+	 */
+	public Blocklist getBlockListAPI(int minVisibleVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
@@ -1289,6 +1297,7 @@ public class DB {
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
+					.filter(entry -> entry.getVotes() >= minVisibleVotes)
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
@@ -1302,17 +1311,22 @@ public class DB {
 
 	/**
 	 * Gets blocklist changes since the given version (incremental sync).
-	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 * Returns entries with VERSION > sinceVersion.
 	 *
 	 * <p>
-	 * Returns all blocklist changes without any filtering.
+	 * Entries with votes below the minimum visible threshold are returned with votes=0,
+	 * indicating they should be removed from the client's local blocklist.
 	 * No user-specific filtering (whitelist/blacklist) is applied.
-	 * No vote threshold filtering is applied - clients must filter by their preferred threshold.
-	 * This allows the response to be cached and served identically to all users, improving efficiency,
-	 * and ensures clients can detect when numbers drop below their threshold.
+	 * This allows the response to be cached and served identically to all users, improving efficiency.
 	 * </p>
+	 *
+	 * @param sinceVersion Return only changes since this version number.
+	 * @param minVisibleVotes Minimum vote threshold for visibility. Numbers with fewer votes
+	 *        will be returned with votes=0 to indicate removal from the visible blocklist.
+	 *        Must be one of the valid {@link #BLOCKLIST_THRESHOLDS} values.
+	 * @return The blocklist changes since the specified version.
 	 */
-	public Blocklist getBlocklistUpdateAPI(long sinceVersion) {
+	public Blocklist getBlocklistUpdateAPI(long sinceVersion, int minVisibleVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
@@ -1321,6 +1335,13 @@ public class DB {
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
+					.map(entry -> {
+						// Entries below the visible threshold are returned as deletions (votes=0)
+						if (entry.getVotes() < minVisibleVotes) {
+							return entry.setVotes(0);
+						}
+						return entry;
+					})
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
