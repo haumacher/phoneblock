@@ -146,7 +146,8 @@
   "themeModeDark": "Mörk",
   "experimentalFeatures": "Experimentella funktioner",
   "answerbotFeature": "Telefonsvarare (Answerbot)",
+  "answerbotFeatureDescription": "Experiment: Hantera SPAM-svarare för Fritz!Box i appen",
   "answerbotMenuTitle": "Telefonsvarare",
   "answerbotMenuDescription": "Hantera telefonsvarare för SPAM",
-  "answerbotFeatureDescription": "Experiment: Hantera SPAM-svarare för Fritz!Box i appen"
+  "potentialSpamLabel": "Misstänkt: {rating}"
 }

@@ -823,5 +823,15 @@
   "@answerbotMenuDescription": {
     "description": "Answerbot menu item description",
     "x-translated": "c4bce6df"
+  },
+  "potentialSpamLabel": "Verdächtig: {rating}",
+  "@potentialSpamLabel": {
+    "description": "Label for calls that weren't blocked but have spam votes",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    },
+    "x-translated": "25eebdc4"
   }
 }

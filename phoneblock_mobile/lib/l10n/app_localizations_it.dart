@@ -544,4 +544,9 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get answerbotMenuDescription =>
       'Gestire la segreteria telefonica SPAM';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Sospetto: $rating';
+  }
 }

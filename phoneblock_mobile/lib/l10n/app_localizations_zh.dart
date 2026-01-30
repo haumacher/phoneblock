@@ -495,4 +495,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get answerbotMenuDescription => '管理垃圾邮件应答机';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return '可疑：<x1>评级</x1';
+  }
 }

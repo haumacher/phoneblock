@@ -1215,33 +1215,58 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds a single call list item.
   Widget _buildCallListItem(ScreenedCall call) {
-    final isSpam = call.wasBlocked;
+    final wasBlocked = call.wasBlocked;
 
-    // Use rating-specific styling if available, otherwise default styling
-    final hasRatingIcon = call.rating != null && call.rating != Rating.uNKNOWN && isSpam;
-    final rating = hasRatingIcon ? call.rating! : (isSpam ? Rating.uNKNOWN : Rating.aLEGITIMATE);
-    final color = bgColor(rating);
-    final String labelText = hasRatingIcon
-        ? (label(context, rating) as Text).data!
-        : (isSpam ? context.l10n.ratingSpam : context.l10n.ratingLegitimate);
+    // Determine the actual rating to display
+    // Use API rating if available, otherwise use generic labels
+    final bool hasApiRating = call.rating != null && call.rating != Rating.uNKNOWN;
+    final bool isPotentialSpam = !wasBlocked && hasApiRating && call.votes > 0;
+
+    final Rating displayRating;
+    if (hasApiRating) {
+      // Use actual rating from API
+      displayRating = call.rating!;
+    } else if (wasBlocked) {
+      // Blocked but no specific rating - generic SPAM
+      displayRating = Rating.uNKNOWN;
+    } else {
+      // Not blocked and no specific rating - legitimate
+      displayRating = Rating.aLEGITIMATE;
+    }
+
+    final color = bgColor(displayRating);
+    final String ratingText = (label(context, displayRating) as Text).data!;
+
+    // Build the label text
+    final String labelText;
+    if (isPotentialSpam) {
+      // Show "Verdächtig: {rating}" for potential spam
+      labelText = context.l10n.potentialSpamLabel(ratingText);
+    } else if (wasBlocked) {
+      // Show the rating for blocked calls
+      labelText = ratingText;
+    } else {
+      // Show "Legitim" for non-blocked calls without spam indicators
+      labelText = context.l10n.ratingLegitimate;
+    }
 
     return Dismissible(
       key: Key('call_${call.id}'),
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        color: isSpam ? Colors.green : Colors.orange,
+        color: wasBlocked ? Colors.green : Colors.orange,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Icon(
-              isSpam ? Icons.check_circle : Icons.report,
+              wasBlocked ? Icons.check_circle : Icons.report,
               color: Colors.white,
               size: 32,
             ),
             const SizedBox(width: 12),
             Text(
-              isSpam ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
+              wasBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1278,7 +1303,7 @@ class _MainScreenState extends State<MainScreen> {
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           // Swipe right
-          if (isSpam) {
+          if (wasBlocked) {
             // SPAM number - report as legitimate
             await _reportAsLegitimate(context, call);
           } else {
@@ -1302,7 +1327,7 @@ class _MainScreenState extends State<MainScreen> {
             _lastTapPosition = details.globalPosition;
           },
           child: ListTile(
-            leading: buildRatingAvatar(rating),
+            leading: buildRatingAvatar(displayRating),
             title: Text(
               call.phoneNumber,
               style: const TextStyle(
@@ -1314,12 +1339,31 @@ class _MainScreenState extends State<MainScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text(
-                  _formatTimestamp(call.timestamp),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      wasBlocked ? Icons.block : Icons.check_circle_outline,
+                      size: 14,
+                      color: wasBlocked ? Colors.red[400] : Colors.green[400],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      wasBlocked ? context.l10n.blocked : context.l10n.accepted,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: wasBlocked ? Colors.red[400] : Colors.green[400],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatTimestamp(call.timestamp),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -1362,7 +1406,6 @@ class _MainScreenState extends State<MainScreen> {
   /// Shows a context menu with options for a call.
   void _showCallOptions(BuildContext context, ScreenedCall call) {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final isSpam = call.wasBlocked;
 
     final items = <PopupMenuEntry<dynamic>>[];
 

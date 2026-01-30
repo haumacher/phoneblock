@@ -146,7 +146,8 @@
   "themeModeDark": "Mørk",
   "experimentalFeatures": "Eksperimentelle funktioner",
   "answerbotFeature": "Telefonsvarer (Answerbot)",
+  "answerbotFeatureDescription": "Eksperimentelt: Administrer SPAM-telefonsvareren til Fritz!Box i appen",
   "answerbotMenuTitle": "Telefonsvarer",
   "answerbotMenuDescription": "Administrer SPAM-telefonsvareren",
-  "answerbotFeatureDescription": "Eksperimentelt: Administrer SPAM-telefonsvareren til Fritz!Box i appen"
+  "potentialSpamLabel": "Mistænkelig: {rating}."
 }

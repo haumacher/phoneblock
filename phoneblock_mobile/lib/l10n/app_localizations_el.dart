@@ -538,4 +538,9 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get answerbotMenuDescription => 'Διαχείριση του τηλεφωνητή SPAM';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Ύποπτο: $rating';
+  }
 }

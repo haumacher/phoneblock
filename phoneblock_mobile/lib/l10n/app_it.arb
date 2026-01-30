@@ -146,7 +146,8 @@
   "themeModeDark": "Scuro",
   "experimentalFeatures": "Funzioni sperimentali",
   "answerbotFeature": "Segreteria telefonica (Answerbot)",
+  "answerbotFeatureDescription": "Sperimentale: Gestione della segreteria telefonica SPAM per il Fritz!Box nell'app",
   "answerbotMenuTitle": "Segreteria telefonica",
   "answerbotMenuDescription": "Gestire la segreteria telefonica SPAM",
-  "answerbotFeatureDescription": "Sperimentale: Gestione della segreteria telefonica SPAM per il Fritz!Box nell'app"
+  "potentialSpamLabel": "Sospetto: {rating}"
 }

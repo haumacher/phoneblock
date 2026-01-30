@@ -534,4 +534,9 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get answerbotMenuDescription => 'Administrer SPAM-telefonsvareren';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Mistænkelig: $rating.';
+  }
 }

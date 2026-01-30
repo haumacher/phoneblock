@@ -146,7 +146,8 @@
   "themeModeDark": "Donker",
   "experimentalFeatures": "Experimentele functies",
   "answerbotFeature": "Antwoordapparaat (Answerbot)",
+  "answerbotFeatureDescription": "Experimenteel: Beheer SPAM antwoordapparaat voor de Fritz!Box in de app",
   "answerbotMenuTitle": "Antwoordapparaat",
   "answerbotMenuDescription": "SPAM antwoordapparaat beheren",
-  "answerbotFeatureDescription": "Experimenteel: Beheer SPAM antwoordapparaat voor de Fritz!Box in de app"
+  "potentialSpamLabel": "Verdacht: {rating}"
 }

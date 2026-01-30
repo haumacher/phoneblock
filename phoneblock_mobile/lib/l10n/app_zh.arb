@@ -146,7 +146,8 @@
   "themeModeDark": "黑暗",
   "experimentalFeatures": "实验功能",
   "answerbotFeature": "答录机（Answerbot）",
+  "answerbotFeatureDescription": "实验：在应用程序中管理 Fritz!Box 的垃圾邮件应答机",
   "answerbotMenuTitle": "答录机",
   "answerbotMenuDescription": "管理垃圾邮件应答机",
-  "answerbotFeatureDescription": "实验：在应用程序中管理 Fritz!Box 的垃圾邮件应答机"
+  "potentialSpamLabel": "可疑：<x1>评级</x1"
 }

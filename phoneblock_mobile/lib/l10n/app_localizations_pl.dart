@@ -539,4 +539,9 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get answerbotMenuDescription =>
       'Zarządzanie automatyczną sekretarką SPAM';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Podejrzane: $rating';
+  }
 }

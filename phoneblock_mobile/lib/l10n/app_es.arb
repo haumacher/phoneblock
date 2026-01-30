@@ -146,7 +146,8 @@
   "themeModeDark": "Oscuro",
   "experimentalFeatures": "Funciones experimentales",
   "answerbotFeature": "Contestador automático (Answerbot)",
+  "answerbotFeatureDescription": "Experimental: Gestión del contestador SPAM del buzón Fritz en la aplicación",
   "answerbotMenuTitle": "Contestador automático",
   "answerbotMenuDescription": "Gestionar el contestador SPAM",
-  "answerbotFeatureDescription": "Experimental: Gestión del contestador SPAM del buzón Fritz en la aplicación"
+  "potentialSpamLabel": "Sospechoso: {rating}"
 }

@@ -536,4 +536,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get answerbotMenuDescription => 'Керування автовідповідачем СПАМу';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Підозрілі: $rating';
+  }
 }

@@ -538,4 +538,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get answerbotMenuDescription => 'SPAM-Anrufbeantworter verwalten';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Verdächtig: $rating';
+  }
 }

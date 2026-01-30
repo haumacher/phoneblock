@@ -536,4 +536,9 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get answerbotMenuDescription =>
       'إدارة جهاز الرد على الرسائل الاقتحامية';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'مشبوه: <x1>التصنيف<x1>';
+  }
 }

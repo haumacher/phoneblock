@@ -146,7 +146,8 @@
   "themeModeDark": "Ciemny",
   "experimentalFeatures": "Funkcje eksperymentalne",
   "answerbotFeature": "Automatyczna sekretarka (Answerbot)",
+  "answerbotFeatureDescription": "Eksperyment: Zarządzanie automatyczną sekretarką SPAM dla Fritz!Box w aplikacji",
   "answerbotMenuTitle": "Automatyczna sekretarka",
   "answerbotMenuDescription": "Zarządzanie automatyczną sekretarką SPAM",
-  "answerbotFeatureDescription": "Eksperyment: Zarządzanie automatyczną sekretarką SPAM dla Fritz!Box w aplikacji"
+  "potentialSpamLabel": "Podejrzane: {rating}"
 }

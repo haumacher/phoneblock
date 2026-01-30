@@ -146,7 +146,8 @@
   "themeModeDark": "Sombre",
   "experimentalFeatures": "Fonctions expérimentales",
   "answerbotFeature": "Répondeur téléphonique (Answerbot)",
+  "answerbotFeatureDescription": "Expérimental : gérer le répondeur SPAM pour la Fritz!Box dans l'application",
   "answerbotMenuTitle": "Répondeur téléphonique",
   "answerbotMenuDescription": "Gérer les répondeurs SPAM",
-  "answerbotFeatureDescription": "Expérimental : gérer le répondeur SPAM pour la Fritz!Box dans l'application"
+  "potentialSpamLabel": "Suspect : {rating}"
 }

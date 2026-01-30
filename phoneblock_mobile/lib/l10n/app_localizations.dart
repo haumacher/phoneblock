@@ -1015,6 +1015,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'SPAM-Anrufbeantworter verwalten'**
   String get answerbotMenuDescription;
+
+  /// Label for calls that weren't blocked but have spam votes
+  ///
+  /// In de, this message translates to:
+  /// **'Verdächtig: {rating}'**
+  String potentialSpamLabel(String rating);
 }
 
 class _AppLocalizationsDelegate
