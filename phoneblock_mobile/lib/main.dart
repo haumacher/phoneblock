@@ -1457,12 +1457,38 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _buildReportsText(call),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _buildReportsText(call),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                    Builder(
+                      builder: (buttonContext) {
+                        return InkWell(
+                          onTap: () {
+                            final RenderBox button = buttonContext.findRenderObject() as RenderBox;
+                            _lastTapPosition = button.localToGlobal(Offset.zero);
+                            _showCallOptions(context, call);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            child: Icon(
+                              Icons.more_vert,
+                              size: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
