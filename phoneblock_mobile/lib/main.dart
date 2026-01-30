@@ -175,6 +175,11 @@ const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 /// This allows the UI to react to new screening results in real-time.
 final callScreenedStreamController = StreamController<ScreenedCall>.broadcast();
 
+/// Tracks call IDs that are considered "new" (not yet seen by user).
+/// Calls are added when synced from background or received while app is open.
+/// Calls are removed when user taps on them.
+final Set<int> newCallIds = {};
+
 /// Global app version string, initialized at startup from package info.
 late String appVersion;
 
@@ -483,14 +488,19 @@ void main() async {
         rating: rating,
       );
 
-      await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+      final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+      // Track as new call
+      if (insertedCall.id != null) {
+        newCallIds.add(insertedCall.id!);
+      }
 
       // Clean up old calls based on retention period when a new call arrives
       final retentionDays = await getRetentionDays();
       await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
       // Notify any listeners (e.g., MainScreen) about the new call
-      callScreenedStreamController.add(screenedCall);
+      callScreenedStreamController.add(insertedCall);
 
       if (kDebugMode) {
         print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rangeVotes: $votesWildcard, rating: $ratingStr)');
@@ -656,7 +666,12 @@ Future<void> syncStoredScreeningResults() async {
           rating: rating,
         );
 
-        await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+        final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+        // Track as new call
+        if (insertedCall.id != null) {
+          newCallIds.add(insertedCall.id!);
+        }
 
         if (kDebugMode) {
           print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: $ratingStr)');
@@ -1220,6 +1235,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildCallListItem(ScreenedCall call) {
     final wasBlocked = call.wasBlocked;
 
+    // Check if call is new (not yet seen by user)
+    final bool isNew = call.id != null && newCallIds.contains(call.id);
+
     // Determine the actual rating to display
     // Use API rating if available, otherwise use generic labels
     final bool hasApiRating = call.rating != null && call.rating != Rating.uNKNOWN;
@@ -1332,7 +1350,26 @@ class _MainScreenState extends State<MainScreen> {
             _lastTapPosition = details.globalPosition;
           },
           child: ListTile(
-            leading: buildRatingAvatar(displayRating),
+            leading: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                buildRatingAvatar(displayRating),
+                if (isNew)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             title: Text(
               call.phoneNumber,
               style: const TextStyle(
@@ -1396,7 +1433,10 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             ),
-            onTap: () => _viewOnPhoneBlock(call),
+            onTap: () {
+              _markCallAsSeen(call);
+              _viewOnPhoneBlock(call);
+            },
             onLongPress: () => _showCallOptions(context, call),
           ),
         ),
@@ -2113,6 +2153,15 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       );
+    }
+  }
+
+  /// Marks a call as seen (removes from new calls set).
+  void _markCallAsSeen(ScreenedCall call) {
+    if (call.id != null && newCallIds.contains(call.id)) {
+      setState(() {
+        newCallIds.remove(call.id);
+      });
     }
   }
 
