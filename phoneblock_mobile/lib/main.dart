@@ -1986,20 +1986,6 @@ class _MainScreenState extends State<MainScreen> {
               }
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.dns),
-            title: Text(context.l10n.serverSettings),
-            subtitle: Text(context.l10n.serverSettingsDescription),
-            onTap: () async {
-              Navigator.pop(context); // Close drawer
-
-              final url = await buildPhoneBlockUrlWithToken('/settings');
-              final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            },
-          ),
           if (_answerbotEnabled)
             ListTile(
               leading: const Icon(Icons.phone_callback),
@@ -2916,6 +2902,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                   ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.serverSettings,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  title: Text(context.l10n.serverSettings),
+                  subtitle: Text(context.l10n.serverSettingsDescription),
+                  onTap: () async {
+                    final uri = Uri.parse('$pbBaseUrl/settings');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
                 ),
                 const Divider(),
                 Padding(
