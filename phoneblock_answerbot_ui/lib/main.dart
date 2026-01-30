@@ -35,6 +35,18 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 209, 178),
+          brightness: Brightness.dark,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 0, 140, 120),
+          foregroundColor: Colors.white,
+        ),
+      ),
+      themeMode: ThemeMode.system,
       home: const AnswerbotHome(),
     );
   }
