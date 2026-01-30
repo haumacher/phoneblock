@@ -2397,14 +2397,11 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
       ..setUserAgent('PhoneBlockMobile/$appVersion')
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
+          onProgress: (int progress) {
+            // Use progress callback for reliable loading state tracking.
+            // loadRequest() with custom headers may not trigger onPageStarted/onPageFinished reliably.
             setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
+              _isLoading = progress < 100;
             });
           },
           onNavigationRequest: (NavigationRequest request) {
@@ -2427,6 +2424,11 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
 
   /// Loads a page with custom headers (Authorization and Accept-Language).
   Future<void> _loadPageWithHeaders(String url) async {
+    // Show loading indicator immediately
+    setState(() {
+      _isLoading = true;
+    });
+
     // Get device locale for Accept-Language header
     final languageTag = getDeviceLocale();
 
@@ -2465,8 +2467,11 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
         children: [
           WebViewWidget(controller: _controller),
           if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
+            Container(
+              color: Colors.white.withValues(alpha: 0.8),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
         ],
       ),
