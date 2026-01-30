@@ -531,7 +531,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam';
+      'Πειραματικό: Διαχείριση του τηλεφωνητή SPAM για το Fritz!Box στην εφαρμογή';
 
   @override
   String get answerbotMenuTitle => 'Τηλεφωνητής';

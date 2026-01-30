@@ -146,7 +146,7 @@
   "themeModeDark": "داكن",
   "experimentalFeatures": "الوظائف التجريبية",
   "answerbotFeature": "جهاز الرد على المكالمات الهاتفي (Answerbot)",
-  "answerbotFeatureDescription": "ميزة تجريبية: إدارة أجهزة الرد الآلي على الرسائل الاقتحامية التي تتحدث تلقائيًا إلى المتصلين غير المرغوب فيهم",
   "answerbotMenuTitle": "جهاز الرد الآلي",
-  "answerbotMenuDescription": "إدارة جهاز الرد على الرسائل الاقتحامية"
+  "answerbotMenuDescription": "إدارة جهاز الرد على الرسائل الاقتحامية",
+  "answerbotFeatureDescription": "تجريبي: إدارة جهاز الرد على الرسائل الاقتحامية للرد على الرسائل الاقتحامية في التطبيق"
 }

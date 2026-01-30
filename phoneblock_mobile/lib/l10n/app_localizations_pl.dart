@@ -531,7 +531,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Eksperymentalna funkcja: Zarządzanie automatycznymi sekretarkami SPAM, które automatycznie rozmawiają z osobami dzwoniącymi ze spamem.';
+      'Eksperyment: Zarządzanie automatyczną sekretarką SPAM dla Fritz!Box w aplikacji';
 
   @override
   String get answerbotMenuTitle => 'Automatyczna sekretarka';

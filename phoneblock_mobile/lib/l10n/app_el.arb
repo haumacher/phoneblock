@@ -146,7 +146,7 @@
   "themeModeDark": "Σκούρο",
   "experimentalFeatures": "Πειραματικές λειτουργίες",
   "answerbotFeature": "Αυτόματος τηλεφωνητής (Answerbot)",
-  "answerbotFeatureDescription": "Πειραματική λειτουργία: Διαχείριση τηλεφωνητών SPAM που μιλούν αυτόματα στους καλούντες spam",
   "answerbotMenuTitle": "Τηλεφωνητής",
-  "answerbotMenuDescription": "Διαχείριση του τηλεφωνητή SPAM"
+  "answerbotMenuDescription": "Διαχείριση του τηλεφωνητή SPAM",
+  "answerbotFeatureDescription": "Πειραματικό: Διαχείριση του τηλεφωνητή SPAM για το Fritz!Box στην εφαρμογή"
 }

@@ -529,7 +529,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Experimentell funktion: Hantera SPAM-svarare som automatiskt pratar med spam-samtalare';
+      'Experiment: Hantera SPAM-svarare för Fritz!Box i appen';
 
   @override
   String get answerbotMenuTitle => 'Telefonsvarare';

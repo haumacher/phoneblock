@@ -531,7 +531,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen';
+      'Experimentell: SPAM-Anrufbeantworter für die Fritz!Box in der App verwalten';
 
   @override
   String get answerbotMenuTitle => 'Anrufbeantworter';

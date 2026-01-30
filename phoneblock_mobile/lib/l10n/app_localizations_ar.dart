@@ -528,7 +528,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'ميزة تجريبية: إدارة أجهزة الرد الآلي على الرسائل الاقتحامية التي تتحدث تلقائيًا إلى المتصلين غير المرغوب فيهم';
+      'تجريبي: إدارة جهاز الرد على الرسائل الاقتحامية للرد على الرسائل الاقتحامية في التطبيق';
 
   @override
   String get answerbotMenuTitle => 'جهاز الرد الآلي';

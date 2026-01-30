@@ -527,7 +527,7 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Eksperimentel funktion: Administrer SPAM-telefonsvarere, der automatisk taler med spamopkald';
+      'Eksperimentelt: Administrer SPAM-telefonsvareren til Fritz!Box i appen';
 
   @override
   String get answerbotMenuTitle => 'Telefonsvarer';

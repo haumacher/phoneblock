@@ -1001,7 +1001,7 @@ abstract class AppLocalizations {
   /// Answerbot feature toggle description
   ///
   /// In de, this message translates to:
-  /// **'Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen'**
+  /// **'Experimentell: SPAM-Anrufbeantworter für die Fritz!Box in der App verwalten'**
   String get answerbotFeatureDescription;
 
   /// Answerbot menu item title

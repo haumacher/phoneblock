@@ -528,7 +528,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Experimental feature: Manage SPAM answering machines that automatically talk to spam callers';
+      'Experimental: Manage SPAM answering machine for the Fritz!Box in the app';
 
   @override
   String get answerbotMenuTitle => 'Answering machine';

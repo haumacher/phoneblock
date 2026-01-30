@@ -488,7 +488,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get answerbotFeature => '答录机（Answerbot）';
 
   @override
-  String get answerbotFeatureDescription => '试验功能：管理自动与垃圾来电者通话的垃圾邮件应答机';
+  String get answerbotFeatureDescription => '实验：在应用程序中管理 Fritz!Box 的垃圾邮件应答机';
 
   @override
   String get answerbotMenuTitle => '答录机';

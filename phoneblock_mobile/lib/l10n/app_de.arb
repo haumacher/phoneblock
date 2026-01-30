@@ -809,10 +809,10 @@
     "description": "Answerbot feature toggle title",
     "x-translated": "f4b9c4ee"
   },
-  "answerbotFeatureDescription": "Experimentelle Funktion: Verwalten Sie SPAM-Anrufbeantworter, die automatisch mit Spam-Anrufern sprechen",
+  "answerbotFeatureDescription": "Experimentell: SPAM-Anrufbeantworter für die Fritz!Box in der App verwalten",
   "@answerbotFeatureDescription": {
     "description": "Answerbot feature toggle description",
-    "x-translated": "47913797"
+    "x-translated": "83dff373"
   },
   "answerbotMenuTitle": "Anrufbeantworter",
   "@answerbotMenuTitle": {

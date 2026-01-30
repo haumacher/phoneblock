@@ -529,7 +529,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Función experimental: gestión de contestadores automáticos que hablan automáticamente con las personas que llaman por spam';
+      'Experimental: Gestión del contestador SPAM del buzón Fritz en la aplicación';
 
   @override
   String get answerbotMenuTitle => 'Contestador automático';

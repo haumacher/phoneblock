@@ -531,7 +531,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Experimentele functie: Beheer SPAM antwoordapparaten die automatisch met spam bellers praten';
+      'Experimenteel: Beheer SPAM antwoordapparaat voor de Fritz!Box in de app';
 
   @override
   String get answerbotMenuTitle => 'Antwoordapparaat';

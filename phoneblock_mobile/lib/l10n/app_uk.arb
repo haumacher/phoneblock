@@ -146,7 +146,7 @@
   "themeModeDark": "Темнота.",
   "experimentalFeatures": "Експериментальні функції",
   "answerbotFeature": "Автовідповідач (Answerbot)",
-  "answerbotFeatureDescription": "Експериментальна функція: Керування автовідповідачами, які автоматично розмовляють зі спамерськими абонентами",
   "answerbotMenuTitle": "Автовідповідач",
-  "answerbotMenuDescription": "Керування автовідповідачем СПАМу"
+  "answerbotMenuDescription": "Керування автовідповідачем СПАМу",
+  "answerbotFeatureDescription": "Експериментально: Керування автовідповідачем СПАМу для Fritz!Box у додатку"
 }

@@ -536,7 +536,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Fonction expérimentale : gérer les répondeurs SPAM qui parlent automatiquement aux appelants spam';
+      'Expérimental : gérer le répondeur SPAM pour la Fritz!Box dans l\'application';
 
   @override
   String get answerbotMenuTitle => 'Répondeur téléphonique';

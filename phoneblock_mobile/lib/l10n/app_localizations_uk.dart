@@ -529,7 +529,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get answerbotFeatureDescription =>
-      'Експериментальна функція: Керування автовідповідачами, які автоматично розмовляють зі спамерськими абонентами';
+      'Експериментально: Керування автовідповідачем СПАМу для Fritz!Box у додатку';
 
   @override
   String get answerbotMenuTitle => 'Автовідповідач';
