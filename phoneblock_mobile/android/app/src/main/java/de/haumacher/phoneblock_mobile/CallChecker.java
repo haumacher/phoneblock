@@ -131,7 +131,12 @@ public class CallChecker extends CallScreeningService {
                         }
                         Handler.createAsync(Looper.getMainLooper()).post(() -> {
                             Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + blockReason + ", rating: " + rating + ")");
-                            respondToCall(callDetails, new CallResponse.Builder().setDisallowCall(true).setRejectCall(true).build());
+                            respondToCall(callDetails, new CallResponse.Builder()
+                                .setDisallowCall(true)
+                                .setRejectCall(true)
+                                .setSkipCallLog(true)
+                                .setSkipNotification(true)
+                                .build());
                             // Report blocked call (persists even when app is not running)
                             // Use rawNumber for display, normalized number is only for API queries
                             MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, finalVotesWildcard, rating);
