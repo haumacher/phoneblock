@@ -275,6 +275,16 @@ Future<void> setThemeMode(String mode) async {
   await platform.invokeMethod("setThemeMode", mode);
 }
 
+/// Gets the total count of blocked calls.
+Future<int> getBlockedCallsCount() async {
+  return await platform.invokeMethod<int>("getBlockedCallsCount") ?? 0;
+}
+
+/// Gets the total count of suspicious calls (had votes but below threshold).
+Future<int> getSuspiciousCallsCount() async {
+  return await platform.invokeMethod<int>("getInspectedSuspiciousCount") ?? 0;
+}
+
 /// Makes an HTTP GET request to the PhoneBlock API with proper User-Agent header.
 /// Includes the Authorization header if a token is provided.
 Future<http.Response> callPhoneBlockApi(String url, {String? authToken}) async {
@@ -2667,6 +2677,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _themeMode = 'system';
   bool _answerbotEnabled = false;
   bool _isLoading = true;
+  int _blockedCallsCount = 0;
+  int _suspiciousCallsCount = 0;
 
   @override
   void initState() {
@@ -2688,6 +2700,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final retentionDaysResult = await platform.invokeMethod("getRetentionDays");
       final themeModeResult = await getThemeMode();
       final answerbotEnabledResult = await platform.invokeMethod("getAnswerbotEnabled");
+      final blockedCallsCountResult = await platform.invokeMethod("getBlockedCallsCount");
+      final suspiciousCallsCountResult = await platform.invokeMethod("getInspectedSuspiciousCount");
 
       if (kDebugMode) {
         print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
@@ -2700,6 +2714,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _retentionDays = retentionDaysResult ?? retentionDefault;
         _themeMode = themeModeResult;
         _answerbotEnabled = answerbotEnabledResult ?? false;
+        _blockedCallsCount = blockedCallsCountResult ?? 0;
+        _suspiciousCallsCount = suspiciousCallsCountResult ?? 0;
         _isLoading = false;
       });
 
@@ -3117,6 +3133,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (value) {
                     _saveAnswerbotEnabled(value);
                   },
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.statistics,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.block, color: Colors.red),
+                  title: Text(context.l10n.blockedCallsCount),
+                  trailing: Text(
+                    '$_blockedCallsCount',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.warning, color: Colors.orange),
+                  title: Text(context.l10n.suspiciousCallsCount),
+                  trailing: Text(
+                    '$_suspiciousCallsCount',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),

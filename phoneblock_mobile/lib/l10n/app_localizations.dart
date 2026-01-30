@@ -1027,6 +1027,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verdächtig: {rating}'**
   String potentialSpamLabel(String rating);
+
+  /// Statistics section header
+  ///
+  /// In de, this message translates to:
+  /// **'Statistik'**
+  String get statistics;
+
+  /// Label for total blocked calls count
+  ///
+  /// In de, this message translates to:
+  /// **'Blockierte Anrufe'**
+  String get blockedCallsCount;
+
+  /// Label for total suspicious calls count
+  ///
+  /// In de, this message translates to:
+  /// **'Verdächtige Anrufe'**
+  String get suspiciousCallsCount;
 }
 
 class _AppLocalizationsDelegate

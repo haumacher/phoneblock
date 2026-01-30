@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Experimental: Gestión del contestador SPAM del buzón Fritz en la aplicación",
   "answerbotMenuTitle": "Contestador automático",
   "answerbotMenuDescription": "Gestionar el contestador SPAM",
-  "potentialSpamLabel": "Sospechoso: {rating}"
+  "potentialSpamLabel": "Sospechoso: {rating}",
+  "statistics": "Estadísticas",
+  "blockedCallsCount": "Llamadas bloqueadas",
+  "suspiciousCallsCount": "Llamadas sospechosas"
 }

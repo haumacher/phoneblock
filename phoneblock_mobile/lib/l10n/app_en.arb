@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Experimental: Manage SPAM answering machine for the Fritz!Box in the app",
   "answerbotMenuTitle": "Answering machine",
   "answerbotMenuDescription": "Manage SPAM answering machine",
-  "potentialSpamLabel": "Suspicious: {rating}"
+  "potentialSpamLabel": "Suspicious: {rating}",
+  "statistics": "Statistics",
+  "blockedCallsCount": "Blocked calls",
+  "suspiciousCallsCount": "Suspicious calls"
 }

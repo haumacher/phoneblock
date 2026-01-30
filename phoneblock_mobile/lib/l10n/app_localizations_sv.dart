@@ -552,4 +552,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String potentialSpamLabel(String rating) {
     return 'Misstänkt: $rating';
   }
+
+  @override
+  String get statistics => 'Statistik';
+
+  @override
+  String get blockedCallsCount => 'Blockerade samtal';
+
+  @override
+  String get suspiciousCallsCount => 'Misstänkta samtal';
 }

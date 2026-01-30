@@ -551,4 +551,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String potentialSpamLabel(String rating) {
     return 'Suspicious: $rating';
   }
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get blockedCallsCount => 'Blocked calls';
+
+  @override
+  String get suspiciousCallsCount => 'Suspicious calls';
 }

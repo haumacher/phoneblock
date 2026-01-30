@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "New" indicator for calls received while app was closed
 - Display range votes in call list
 - Display formatted phone number and caller location in call list
+- Statistics section in settings showing total blocked and suspicious calls
 
 ### Changed
 - Swipe right to delete, swipe left to report in call list

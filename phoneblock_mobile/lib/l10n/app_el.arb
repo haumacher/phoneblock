@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Πειραματικό: Διαχείριση του τηλεφωνητή SPAM για το Fritz!Box στην εφαρμογή",
   "answerbotMenuTitle": "Τηλεφωνητής",
   "answerbotMenuDescription": "Διαχείριση του τηλεφωνητή SPAM",
-  "potentialSpamLabel": "Ύποπτο: {rating}"
+  "potentialSpamLabel": "Ύποπτο: {rating}",
+  "statistics": "Στατιστικά στοιχεία",
+  "blockedCallsCount": "Αποκλεισμένες κλήσεις",
+  "suspiciousCallsCount": "Ύποπτες κλήσεις"
 }

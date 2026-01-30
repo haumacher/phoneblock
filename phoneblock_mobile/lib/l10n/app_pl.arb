@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Eksperyment: Zarządzanie automatyczną sekretarką SPAM dla Fritz!Box w aplikacji",
   "answerbotMenuTitle": "Automatyczna sekretarka",
   "answerbotMenuDescription": "Zarządzanie automatyczną sekretarką SPAM",
-  "potentialSpamLabel": "Podejrzane: {rating}"
+  "potentialSpamLabel": "Podejrzane: {rating}",
+  "statistics": "Statystyki",
+  "blockedCallsCount": "Zablokowane połączenia",
+  "suspiciousCallsCount": "Podejrzane połączenia"
 }

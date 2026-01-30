@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Experimenteel: Beheer SPAM antwoordapparaat voor de Fritz!Box in de app",
   "answerbotMenuTitle": "Antwoordapparaat",
   "answerbotMenuDescription": "SPAM antwoordapparaat beheren",
-  "potentialSpamLabel": "Verdacht: {rating}"
+  "potentialSpamLabel": "Verdacht: {rating}",
+  "statistics": "Statistieken",
+  "blockedCallsCount": "Geblokkeerde oproepen",
+  "suspiciousCallsCount": "Verdachte telefoontjes"
 }

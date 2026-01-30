@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Sperimentale: Gestione della segreteria telefonica SPAM per il Fritz!Box nell'app",
   "answerbotMenuTitle": "Segreteria telefonica",
   "answerbotMenuDescription": "Gestire la segreteria telefonica SPAM",
-  "potentialSpamLabel": "Sospetto: {rating}"
+  "potentialSpamLabel": "Sospetto: {rating}",
+  "statistics": "Statistiche",
+  "blockedCallsCount": "Chiamate bloccate",
+  "suspiciousCallsCount": "Chiamate sospette"
 }

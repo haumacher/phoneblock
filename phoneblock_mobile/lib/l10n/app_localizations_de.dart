@@ -554,4 +554,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String potentialSpamLabel(String rating) {
     return 'Verdächtig: $rating';
   }
+
+  @override
+  String get statistics => 'Statistik';
+
+  @override
+  String get blockedCallsCount => 'Blockierte Anrufe';
+
+  @override
+  String get suspiciousCallsCount => 'Verdächtige Anrufe';
 }

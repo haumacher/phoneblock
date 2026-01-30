@@ -843,5 +843,20 @@
       }
     },
     "x-translated": "25eebdc4"
+  },
+  "statistics": "Statistik",
+  "@statistics": {
+    "description": "Statistics section header",
+    "x-translated": "e8b14c0d"
+  },
+  "blockedCallsCount": "Blockierte Anrufe",
+  "@blockedCallsCount": {
+    "description": "Label for total blocked calls count",
+    "x-translated": "328ea4d3"
+  },
+  "suspiciousCallsCount": "Verdächtige Anrufe",
+  "@suspiciousCallsCount": {
+    "description": "Label for total suspicious calls count",
+    "x-translated": "6b4288ff"
   }
 }

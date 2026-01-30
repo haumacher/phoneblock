@@ -552,4 +552,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String potentialSpamLabel(String rating) {
     return 'مشبوه: <x1>التصنيف<x1>';
   }
+
+  @override
+  String get statistics => 'الإحصائيات';
+
+  @override
+  String get blockedCallsCount => 'المكالمات المحظورة';
+
+  @override
+  String get suspiciousCallsCount => 'المكالمات المشبوهة';
 }

@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Experiment: Hantera SPAM-svarare för Fritz!Box i appen",
   "answerbotMenuTitle": "Telefonsvarare",
   "answerbotMenuDescription": "Hantera telefonsvarare för SPAM",
-  "potentialSpamLabel": "Misstänkt: {rating}"
+  "potentialSpamLabel": "Misstänkt: {rating}",
+  "statistics": "Statistik",
+  "blockedCallsCount": "Blockerade samtal",
+  "suspiciousCallsCount": "Misstänkta samtal"
 }

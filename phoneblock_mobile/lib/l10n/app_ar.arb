@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "تجريبي: إدارة جهاز الرد على الرسائل الاقتحامية للرد على الرسائل الاقتحامية في التطبيق",
   "answerbotMenuTitle": "جهاز الرد الآلي",
   "answerbotMenuDescription": "إدارة جهاز الرد على الرسائل الاقتحامية",
-  "potentialSpamLabel": "مشبوه: <x1>التصنيف<x1>"
+  "potentialSpamLabel": "مشبوه: <x1>التصنيف<x1>",
+  "statistics": "الإحصائيات",
+  "blockedCallsCount": "المكالمات المحظورة",
+  "suspiciousCallsCount": "المكالمات المشبوهة"
 }

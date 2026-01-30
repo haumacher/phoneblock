@@ -505,4 +505,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String potentialSpamLabel(String rating) {
     return '可疑：<x1>评级</x1';
   }
+
+  @override
+  String get statistics => '统计资料';
+
+  @override
+  String get blockedCallsCount => '被阻止的电话';
+
+  @override
+  String get suspiciousCallsCount => '可疑电话';
 }

@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Expérimental : gérer le répondeur SPAM pour la Fritz!Box dans l'application",
   "answerbotMenuTitle": "Répondeur téléphonique",
   "answerbotMenuDescription": "Gérer les répondeurs SPAM",
-  "potentialSpamLabel": "Suspect : {rating}"
+  "potentialSpamLabel": "Suspect : {rating}",
+  "statistics": "Statistiques",
+  "blockedCallsCount": "Appels bloqués",
+  "suspiciousCallsCount": "Appels suspects"
 }

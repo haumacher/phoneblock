@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Експериментально: Керування автовідповідачем СПАМу для Fritz!Box у додатку",
   "answerbotMenuTitle": "Автовідповідач",
   "answerbotMenuDescription": "Керування автовідповідачем СПАМу",
-  "potentialSpamLabel": "Підозрілі: {rating}"
+  "potentialSpamLabel": "Підозрілі: {rating}",
+  "statistics": "Статистика",
+  "blockedCallsCount": "Заблоковані дзвінки",
+  "suspiciousCallsCount": "Підозрілі дзвінки"
 }

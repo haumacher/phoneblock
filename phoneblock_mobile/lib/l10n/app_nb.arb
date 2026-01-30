@@ -150,5 +150,8 @@
   "answerbotFeatureDescription": "Eksperimentelt: Administrer SPAM-svareren for Fritz!Box i appen",
   "answerbotMenuTitle": "Telefonsvarer",
   "answerbotMenuDescription": "Administrer SPAM-telefonsvarer",
-  "potentialSpamLabel": "Mistenkelig: {rating}"
+  "potentialSpamLabel": "Mistenkelig: {rating}",
+  "statistics": "Statistikk",
+  "blockedCallsCount": "Blokkerte anrop",
+  "suspiciousCallsCount": "Mistenkelige samtaler"
 }

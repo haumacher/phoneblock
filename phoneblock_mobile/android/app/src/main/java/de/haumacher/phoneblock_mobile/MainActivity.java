@@ -175,6 +175,14 @@ public class MainActivity extends FlutterActivity {
     public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location) {
         long timestamp = System.currentTimeMillis();
 
+        // Update call counters
+        if (wasBlocked) {
+            incrementBlockedCallsCount(context);
+        } else if (votes > 0 || votesWildcard > 0) {
+            // Suspicious call: has votes but wasn't blocked (below threshold)
+            incrementSuspiciousCallsCount(context);
+        }
+
         // Check if Flutter is active
         if (_instance != null && _instance._channel != null) {
             // Flutter is running - send directly via MethodChannel
@@ -325,6 +333,24 @@ public class MainActivity extends FlutterActivity {
 
             case "setAnswerbotEnabled":
                 setAnswerbotEnabled((Boolean) methodCall.arguments);
+                result.success(null);
+                break;
+
+            case "getBlockedCallsCount":
+                result.success(getBlockedCallsCount());
+                break;
+
+            case "incrementBlockedCallsCount":
+                incrementBlockedCallsCount(this);
+                result.success(null);
+                break;
+
+            case "getInspectedSuspiciousCount":
+                result.success(getInspectedSuspiciousCount());
+                break;
+
+            case "incrementInspectedSuspiciousCount":
+                incrementSuspiciousCallsCount(this);
                 result.success(null);
                 break;
         }
@@ -498,6 +524,40 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putBoolean("answerbot_enabled", enabled).apply();
         Log.d(MainActivity.class.getName(), "setAnswerbotEnabled: " + enabled);
+    }
+
+    /**
+     * Gets the total count of blocked calls.
+     */
+    private int getBlockedCallsCount() {
+        SharedPreferences prefs = getPreferences(this);
+        return prefs.getInt("blocked_calls_count", 0);
+    }
+
+    /**
+     * Increments the blocked calls counter.
+     */
+    private static void incrementBlockedCallsCount(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        int current = prefs.getInt("blocked_calls_count", 0);
+        prefs.edit().putInt("blocked_calls_count", current + 1).apply();
+    }
+
+    /**
+     * Gets the total count of suspicious calls (had votes but below threshold).
+     */
+    private int getInspectedSuspiciousCount() {
+        SharedPreferences prefs = getPreferences(this);
+        return prefs.getInt("suspicious_calls_count", 0);
+    }
+
+    /**
+     * Increments the suspicious calls counter.
+     */
+    private static void incrementSuspiciousCallsCount(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        int current = prefs.getInt("suspicious_calls_count", 0);
+        prefs.edit().putInt("suspicious_calls_count", current + 1).apply();
     }
 
     public static SharedPreferences getPreferences(Context context) {

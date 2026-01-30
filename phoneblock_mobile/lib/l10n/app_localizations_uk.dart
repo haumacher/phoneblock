@@ -552,4 +552,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String potentialSpamLabel(String rating) {
     return 'Підозрілі: $rating';
   }
+
+  @override
+  String get statistics => 'Статистика';
+
+  @override
+  String get blockedCallsCount => 'Заблоковані дзвінки';
+
+  @override
+  String get suspiciousCallsCount => 'Підозрілі дзвінки';
 }
