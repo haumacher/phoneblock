@@ -11,7 +11,16 @@
 
 <h1 data-tx="t0001:1bd232b9">Finalizar enlace</h1>
 
-<p data-tx="t0002:73beecd2">Si ve esta página, entonces su navegador no ha reenviado el enlace a su aplicación PhoneBlock. Debe hacerlo manualmente abriendo esta página "en la app". Abra el menú en la parte inferior:</p>
+<p data-tx="t0008:39b22977">Si ve esta página, su navegador no ha reenviado el enlace a su aplicación PhoneBlock. Haga clic en el siguiente botón para abrir el enlace en la aplicación:</p>
+
+<p>
+	<a class="button is-primary" th:href="|intent://phoneblock.net${contextPath}/mobile/response?loginToken=${loginToken}#Intent;scheme=https;package=de.haumacher.phoneblock_mobile;end|">
+		<span class="icon"><i class="fa-solid fa-mobile-screen"></i></span>
+		<span data-tx="t0009:70167705">Abrir en aplicación</span>
+	</a>
+</p>
+
+<p data-tx="t0010:a6c05ee6">Si esto tampoco funciona, abra esta página manualmente "en la aplicación". Para ello, abre el menú de la parte inferior:</p>
 
 <img alt="Abrir menú" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>
 	

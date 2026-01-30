@@ -11,8 +11,19 @@
 
 <h1 data-tx="t0001:1bd232b9">Verknüpfung fertigstellen</h1>
 
-<p data-tx="t0002:73beecd2">
-	Wenn Du diese Seite siehst, dann hat Dein Browser die Verknüpfung nicht an Deine PhoneBlock-App weitergeleitet. Du musst das manuell tun, indem Du diese Seite "in der App" öffnest. Öffne unten das Menü:
+<p data-tx="t0008:39b22977">
+	Wenn Du diese Seite siehst, dann hat Dein Browser die Verknüpfung nicht an Deine PhoneBlock-App weitergeleitet. Klicke auf den folgenden Button, um die Verknüpfung in der App zu öffnen:
+</p>
+
+<p>
+	<a class="button is-primary" th:href="|intent://phoneblock.net${contextPath}/mobile/response?loginToken=${loginToken}#Intent;scheme=https;package=de.haumacher.phoneblock_mobile;end|">
+		<span class="icon"><i class="fa-solid fa-mobile-screen"></i></span>
+		<span data-tx="t0009:70167705">In App öffnen</span>
+	</a>
+</p>
+
+<p data-tx="t0010:a6c05ee6">
+	Falls auch das nicht funktioniert, öffne diese Seite manuell "in der App". Öffne dazu unten das Menü:
 </p>
 
 <img alt="Menü öffnen" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>

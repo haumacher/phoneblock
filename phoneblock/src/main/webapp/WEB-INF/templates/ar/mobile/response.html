@@ -11,7 +11,16 @@
 
 <h1 data-tx="t0001:1bd232b9">إنهاء الارتباط النهائي</h1>
 
-<p data-tx="t0002:73beecd2">إذا كنت ترى هذه الصفحة، فهذا يعني أن متصفحك لم يقم بإعادة توجيه الرابط إلى تطبيق PhoneBlock الخاص بك. يجب عليك القيام بذلك يدويًا عن طريق فتح هذه الصفحة "في التطبيق". افتح القائمة في الأسفل:</p>
+<p data-tx="t0008:39b22977">إذا كنت ترى هذه الصفحة، فهذا يعني أن متصفحك لم يقم بإعادة توجيه الرابط إلى تطبيق PhoneBlock الخاص بك. انقر على الزر التالي لفتح الرابط في التطبيق:</p>
+
+<p>
+	<a class="button is-primary" th:href="|intent://phoneblock.net${contextPath}/mobile/response?loginToken=${loginToken}#Intent;scheme=https;package=de.haumacher.phoneblock_mobile;end|">
+		<span class="icon"><i class="fa-solid fa-mobile-screen"></i></span>
+		<span data-tx="t0009:70167705">فتح في التطبيق</span>
+	</a>
+</p>
+
+<p data-tx="t0010:a6c05ee6">إذا لم ينجح ذلك أيضًا، افتح هذه الصفحة يدويًا "في التطبيق". للقيام بذلك، افتح القائمة في الأسفل:</p>
 
 <img alt="فتح القائمة" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>
 	

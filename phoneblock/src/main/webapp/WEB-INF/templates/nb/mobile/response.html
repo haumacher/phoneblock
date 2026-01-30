@@ -11,7 +11,16 @@
 
 <h1 data-tx="t0001:1bd232b9">Fullfør lenken</h1>
 
-<p data-tx="t0002:73beecd2">Hvis du ser denne siden, har ikke nettleseren din videresendt lenken til PhoneBlock-appen din. Du må gjøre dette manuelt ved å åpne denne siden "i appen". Åpne menyen nederst:</p>
+<p data-tx="t0008:39b22977">Hvis du ser denne siden, har ikke nettleseren din videresendt lenken til PhoneBlock-appen. Klikk på følgende knapp for å åpne lenken i appen:</p>
+
+<p>
+	<a class="button is-primary" th:href="|intent://phoneblock.net${contextPath}/mobile/response?loginToken=${loginToken}#Intent;scheme=https;package=de.haumacher.phoneblock_mobile;end|">
+		<span class="icon"><i class="fa-solid fa-mobile-screen"></i></span>
+		<span data-tx="t0009:70167705">Åpne i appen</span>
+	</a>
+</p>
+
+<p data-tx="t0010:a6c05ee6">Hvis dette heller ikke fungerer, kan du åpne denne siden manuelt "i appen". Dette gjør du ved å åpne menyen nederst:</p>
 
 <img alt="Åpne menyen" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>
 	

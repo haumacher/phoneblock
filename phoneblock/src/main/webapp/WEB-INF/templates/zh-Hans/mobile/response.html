@@ -11,7 +11,16 @@
 
 <h1 data-tx="t0001:1bd232b9">最后确定链接</h1>
 
-<p data-tx="t0002:73beecd2">如果您看到此页面，说明您的浏览器没有将链接转发到 PhoneBlock 应用程序。您必须在 "应用程序 "中手动打开此页面。打开底部菜单：</p>
+<p data-tx="t0008:39b22977">如果你看到这个页面，说明你的浏览器没有将链接转发到你的 PhoneBlock 应用程序。点击以下按钮在应用程序中打开链接：</p>
+
+<p>
+	<a class="button is-primary" th:href="|intent://phoneblock.net${contextPath}/mobile/response?loginToken=${loginToken}#Intent;scheme=https;package=de.haumacher.phoneblock_mobile;end|">
+		<span class="icon"><i class="fa-solid fa-mobile-screen"></i></span>
+		<span data-tx="t0009:70167705">在应用程序中打开</span>
+	</a>
+</p>
+
+<p data-tx="t0010:a6c05ee6">如果也不行，请 "在应用程序中 "手动打开该页面。为此，请打开底部的菜单：</p>
 
 <img alt="打开菜单" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>
 	

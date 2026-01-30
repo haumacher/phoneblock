@@ -77,7 +77,6 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		// TODO: This might better come from a DB table (registered integrations):
 		String baseUrl = switch (appId) {
 			case "PhoneSpamBlocker" -> "PhoneSpamBlocker://auth";
-			case "PhoneBlockMobile" -> "PhoneBlockMobile://auth";
 			default -> req.getContextPath() + MOBILE_RESPONSE;
 		};
 		

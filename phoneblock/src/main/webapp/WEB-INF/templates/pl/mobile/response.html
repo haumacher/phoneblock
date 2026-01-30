@@ -11,7 +11,16 @@
 
 <h1 data-tx="t0001:1bd232b9">Sfinalizuj połączenie</h1>
 
-<p data-tx="t0002:73beecd2">Jeśli widzisz tę stronę, oznacza to, że Twoja przeglądarka nie przekazała linku do aplikacji PhoneBlock. Musisz to zrobić ręcznie, otwierając tę stronę "w aplikacji". Otwórz menu na dole:</p>
+<p data-tx="t0008:39b22977">Jeśli zobaczysz tę stronę, oznacza to, że Twoja przeglądarka nie przekazała łącza do aplikacji PhoneBlock. Kliknij poniższy przycisk, aby otworzyć łącze w aplikacji:</p>
+
+<p>
+	<a class="button is-primary" th:href="|intent://phoneblock.net${contextPath}/mobile/response?loginToken=${loginToken}#Intent;scheme=https;package=de.haumacher.phoneblock_mobile;end|">
+		<span class="icon"><i class="fa-solid fa-mobile-screen"></i></span>
+		<span data-tx="t0009:70167705">Otwórz w aplikacji</span>
+	</a>
+</p>
+
+<p data-tx="t0010:a6c05ee6">Jeśli to również nie zadziała, otwórz tę stronę ręcznie "w aplikacji". Aby to zrobić, otwórz menu na dole:</p>
 
 <img alt="Otwórz menu" data-tx="t0003:4910225c" th:src="@{/assets/img/mobile/connect-1.png}"/>
 	
