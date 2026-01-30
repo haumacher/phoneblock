@@ -65,19 +65,14 @@ public class MainActivity extends FlutterActivity {
     }
 
     /**
-     * Shows or updates a notification displaying the count of pending screened calls.
+     * Shows a notification for a screened call.
      * @param context Application context
-     * @param count Number of pending calls
+     * @param phoneNumber The phone number that was screened
+     * @param wasBlocked true if the call was blocked, false if just suspicious
      */
-    private static void updatePendingCallsNotification(Context context, int count) {
+    private static void showCallNotification(Context context, String phoneNumber, boolean wasBlocked) {
         NotificationManager notificationManager =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (count == 0) {
-            // No pending calls - remove notification
-            notificationManager.cancel(NOTIFICATION_ID);
-            return;
-        }
 
         // Create intent to launch app when notification is tapped
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
@@ -88,25 +83,39 @@ public class MainActivity extends FlutterActivity {
             PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        // Build notification with localized strings
-        String title = context.getResources().getQuantityString(
-            R.plurals.pending_calls_notification_title,
-            count,
-            count
-        );
-        String text = context.getString(R.string.notification_tap_to_open);
+        // Build notification with PhoneBlock branding and call details
+        String title = wasBlocked
+            ? context.getString(R.string.notification_blocked_title)
+            : context.getString(R.string.notification_suspicious_title);
+
+        // Format phone number for display (use system formatting if available)
+        String formattedNumber = android.telephony.PhoneNumberUtils.formatNumber(
+            phoneNumber, java.util.Locale.getDefault().getCountry());
+        if (formattedNumber == null) {
+            formattedNumber = phoneNumber;
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_call)
             .setContentTitle(title)
-            .setContentText(text)
-            .setNumber(count)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true)  // Make it persistent
-            .setAutoCancel(false)  // Don't dismiss on tap
+            .setContentText(formattedNumber)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
             .setContentIntent(pendingIntent);
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        // Use unique notification ID based on phone number hash to allow multiple notifications
+        int notificationId = NOTIFICATION_ID + phoneNumber.hashCode();
+        notificationManager.notify(notificationId, builder.build());
+    }
+
+    /**
+     * Clears all pending call notifications.
+     * @param context Application context
+     */
+    private static void clearPendingCallsNotifications(Context context) {
+        NotificationManager notificationManager =
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
     }
 
     @Override
@@ -177,19 +186,8 @@ public class MainActivity extends FlutterActivity {
                 // Regular calls without spam indicators are already notified by the phone app
                 boolean isSuspicious = votes > 0 || votesWildcard > 0;
                 if (wasBlocked || isSuspicious) {
-                    // Count blocked and suspicious calls for notification
-                    int notableCount = 0;
-                    for (int i = 0; i < callsArray.length(); i++) {
-                        JSONObject call = callsArray.getJSONObject(i);
-                        boolean callBlocked = call.getBoolean("wasBlocked");
-                        int callVotes = call.optInt("votes", 0);
-                        int callVotesWildcard = call.optInt("votesWildcard", 0);
-                        if (callBlocked || callVotes > 0 || callVotesWildcard > 0) {
-                            notableCount++;
-                        }
-                    }
-                    updatePendingCallsNotification(context, notableCount);
-                    Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber + " (notable count: " + notableCount + ")");
+                    showCallNotification(context, phoneNumber, wasBlocked);
+                    Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber);
                 } else {
                     Log.d(MainActivity.class.getName(), "Stored non-blocked call for later sync: " + phoneNumber);
                 }
@@ -336,9 +334,9 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().remove("pending_screened_calls").apply();
 
-        // Clear the notification since all pending calls have been synced
-        updatePendingCallsNotification(this, 0);
-        Log.d(MainActivity.class.getName(), "Cleared pending calls notification after syncing");
+        // Clear all notifications since all pending calls have been synced
+        clearPendingCallsNotifications(this);
+        Log.d(MainActivity.class.getName(), "Cleared pending calls notifications after syncing");
     }
 
     private String getAuthToken() {

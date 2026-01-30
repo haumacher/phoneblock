@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PhoneBlock Mobile</string>
-    <string name="notification_channel_name">Ausstehende gefilterte Anrufe</string>
-    <string name="notification_channel_description">Zeigt die Anzahl der Anrufe, die gefiltert wurden, während die App geschlossen war</string>
-    <plurals name="pending_calls_notification_title">
-        <item quantity="one">1 neuer gefilterter Anruf</item>
-        <item quantity="other">%d neue gefilterte Anrufe</item>
-    </plurals>
-    <string name="notification_tap_to_open">Tippen zum Öffnen der App</string>
+    <string name="notification_channel_name">Gefilterte Anrufe</string>
+    <string name="notification_channel_description">Benachrichtigungen für blockierte und verdächtige Anrufe</string>
+    <string name="notification_blocked_title">PhoneBlock: Blockiert</string>
+    <string name="notification_suspicious_title">PhoneBlock: Verdächtig</string>
 </resources>
