@@ -11,6 +11,8 @@ class ScreenedCall {
   final int votes; // Number of votes from PhoneBlock database
   final int votesWildcard; // Number of range votes (aggregated from similar numbers)
   final Rating? rating; // The type of spam (e.g., PING, POLL, ADVERTISING, etc.)
+  final String? label; // Formatted phone number for display (e.g., "(DE) 030 12345678")
+  final String? location; // City or region where the call originated (e.g., "Berlin")
 
   ScreenedCall({
     this.id,
@@ -20,6 +22,8 @@ class ScreenedCall {
     required this.votes,
     this.votesWildcard = 0,
     this.rating,
+    this.label,
+    this.location,
   });
 
   /// Converts database map to ScreenedCall object.
@@ -38,6 +42,8 @@ class ScreenedCall {
       votes: map['votes'] as int,
       votesWildcard: (map['votesWildcard'] as int?) ?? 0,
       rating: rating,
+      label: map['label'] as String?,
+      location: map['location'] as String?,
     );
   }
 
@@ -51,6 +57,8 @@ class ScreenedCall {
       'votes': votes,
       'votesWildcard': votesWildcard,
       'rating': rating != null ? _ratingToString(rating!) : null,
+      'label': label,
+      'location': location,
     };
   }
 
@@ -103,7 +111,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -119,7 +127,9 @@ class ScreenedCallsDatabase {
         wasBlocked INTEGER NOT NULL,
         votes INTEGER NOT NULL,
         votesWildcard INTEGER NOT NULL DEFAULT 0,
-        rating TEXT
+        rating TEXT,
+        label TEXT,
+        location TEXT
       )
     ''');
 
@@ -140,6 +150,11 @@ class ScreenedCallsDatabase {
       // Add votesWildcard column in version 3
       await db.execute('ALTER TABLE screened_calls ADD COLUMN votesWildcard INTEGER NOT NULL DEFAULT 0');
     }
+    if (oldVersion < 4) {
+      // Add label and location columns in version 4
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN label TEXT');
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN location TEXT');
+    }
   }
 
   /// Inserts a new screened call record.
@@ -154,6 +169,8 @@ class ScreenedCallsDatabase {
       votes: call.votes,
       votesWildcard: call.votesWildcard,
       rating: call.rating,
+      label: call.label,
+      location: call.location,
     );
   }
 

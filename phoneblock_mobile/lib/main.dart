@@ -471,6 +471,8 @@ void main() async {
       final votesWildcard = args['votesWildcard'] as int? ?? 0;
       final timestamp = args['timestamp'] as int;
       final ratingStr = args['rating'] as String?;
+      final label = args['label'] as String?;
+      final location = args['location'] as String?;
 
       // Parse rating if available
       Rating? rating;
@@ -486,6 +488,8 @@ void main() async {
         votes: votes,
         votesWildcard: votesWildcard,
         rating: rating,
+        label: label,
+        location: location,
       );
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -664,6 +668,8 @@ Future<void> syncStoredScreeningResults() async {
           votes: data['votes'] as int,
           votesWildcard: (data['votesWildcard'] as int?) ?? 0,
           rating: rating,
+          label: data['label'] as String?,
+          location: data['location'] as String?,
         );
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -1371,7 +1377,7 @@ class _MainScreenState extends State<MainScreen> {
               ],
             ),
             title: Text(
-              call.phoneNumber,
+              call.label ?? call.phoneNumber,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -1380,6 +1386,26 @@ class _MainScreenState extends State<MainScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (call.location != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        call.location!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 4),
                 Row(
                   children: [

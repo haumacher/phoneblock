@@ -84,18 +84,21 @@ public class MainActivity extends FlutterActivity {
             if (callBlocked || callVotes > 0 || callVotesWildcard > 0) {
                 String phoneNumber = call.getString("phoneNumber");
 
-                // Format phone number for display
-                String formattedNumber = android.telephony.PhoneNumberUtils.formatNumber(
-                    phoneNumber, java.util.Locale.getDefault().getCountry());
-                if (formattedNumber == null) {
-                    formattedNumber = phoneNumber;
+                // Use label from API if available, otherwise format locally
+                String displayNumber = call.optString("label", null);
+                if (displayNumber == null || displayNumber.isEmpty()) {
+                    displayNumber = android.telephony.PhoneNumberUtils.formatNumber(
+                        phoneNumber, java.util.Locale.getDefault().getCountry());
+                    if (displayNumber == null) {
+                        displayNumber = phoneNumber;
+                    }
                 }
 
                 String prefix = callBlocked
                     ? context.getString(R.string.notification_blocked_prefix)
                     : context.getString(R.string.notification_suspicious_prefix);
 
-                lines.add(prefix + " " + formattedNumber);
+                lines.add(prefix + " " + displayNumber);
             }
         }
 
@@ -166,8 +169,10 @@ public class MainActivity extends FlutterActivity {
      * @param votes Number of votes from PhoneBlock database
      * @param votesWildcard Number of range votes (aggregated from similar numbers)
      * @param rating The rating/category of the call (e.g., "C_PING", "E_ADVERTISING", null for legitimate)
+     * @param label Formatted phone number for display (e.g., "(DE) 030 12345678"), may be null
+     * @param location City or region where the call originated (e.g., "Berlin"), may be null
      */
-    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location) {
         long timestamp = System.currentTimeMillis();
 
         // Check if Flutter is active
@@ -181,6 +186,12 @@ public class MainActivity extends FlutterActivity {
             data.put("timestamp", timestamp);
             if (rating != null) {
                 data.put("rating", rating);
+            }
+            if (label != null) {
+                data.put("label", label);
+            }
+            if (location != null) {
+                data.put("location", location);
             }
 
             _instance._channel.invokeMethod("onCallScreened", data);
@@ -202,6 +213,12 @@ public class MainActivity extends FlutterActivity {
                 callJson.put("timestamp", timestamp);
                 if (rating != null) {
                     callJson.put("rating", rating);
+                }
+                if (label != null) {
+                    callJson.put("label", label);
+                }
+                if (location != null) {
+                    callJson.put("location", location);
                 }
 
                 // Add to array
@@ -338,6 +355,12 @@ public class MainActivity extends FlutterActivity {
                 data.put("timestamp", callJson.getLong("timestamp"));
                 if (callJson.has("rating")) {
                     data.put("rating", callJson.getString("rating"));
+                }
+                if (callJson.has("label")) {
+                    data.put("label", callJson.getString("label"));
+                }
+                if (callJson.has("location")) {
+                    data.put("location", callJson.getString("location"));
                 }
                 results.add(data);
             }

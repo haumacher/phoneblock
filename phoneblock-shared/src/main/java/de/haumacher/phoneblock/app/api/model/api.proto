@@ -125,14 +125,14 @@ message RateRequest {
 message PhoneInfo {
 	/** The number being requested. */
 	string phone;
-	
+
 	/** The number of votes that support blocking the requested number. */
 	int votes;
-	
+
 	/** The rating for the requested phone number. */
 	Rating rating;
 
-	/** 
+	/**
 	 * The number of votes when also considering votes for numbers that have all but the last two digits in common with the requested number.
 	 *
 	 * <p>
@@ -141,17 +141,25 @@ message PhoneInfo {
 	 */
 	int votesWildcard;
 
-	/** Whether this number is on the white list and therefore cannot receive votes. */	
+	/** Whether this number is on the white list and therefore cannot receive votes. */
 	boolean whiteListed;
-	
-	/** Whether this number no longer is on the blocklist, because no votes have been received for a long time. */	
+
+	/** Whether this number no longer is on the blocklist, because no votes have been received for a long time. */
 	boolean archived;
 
-	/** Date when this number was added to the SPAM database (in milliseconds since epoch). */	
+	/** Date when this number was added to the SPAM database (in milliseconds since epoch). */
 	long dateAdded;
 
-	/** Date when the last report for this number was received (in milliseconds since epoch). */	
+	/** Date when the last report for this number was received (in milliseconds since epoch). */
 	long lastUpdate;
+
+	/** The phone number formatted for local display (e.g., "(DE) 030 12345678"). */
+	@Nullable
+	string label;
+
+	/** The city or region from where the call originated (e.g., "Berlin"). */
+	@Nullable
+	string location;
 }
 
 /** Info about how often a number was searched. */

@@ -104,6 +104,8 @@ public class CallChecker extends CallScreeningService {
                 int votes = json.getInt("votes");
                 int votesWildcard = json.optInt("votesWildcard", 0);
                 String rating = json.optString("rating", null);
+                String label = json.optString("label", null);
+                String location = json.optString("location", null);
 
                 // Check if number should be blocked based on direct votes or range votes
                 final boolean shouldBlock;
@@ -122,6 +124,8 @@ public class CallChecker extends CallScreeningService {
 
                 // Capture final values for lambda
                 final int finalVotesWildcard = votesWildcard;
+                final String finalLabel = label;
+                final String finalLocation = location;
 
                 if (shouldBlock) {
                     if (canceled.compareAndSet(false, true)) {
@@ -139,7 +143,7 @@ public class CallChecker extends CallScreeningService {
                                 .build());
                             // Report blocked call (persists even when app is not running)
                             // Use rawNumber for display, normalized number is only for API queries
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, finalVotesWildcard, rating);
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, finalVotesWildcard, rating, finalLabel, finalLocation);
                         });
                     }
                     return;
@@ -154,7 +158,7 @@ public class CallChecker extends CallScreeningService {
                             acceptCall(callDetails);
                             // Report accepted call (persists even when app is not running)
                             // Use rawNumber for display, normalized number is only for API queries
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, false, votes, finalVotesWildcard, rating);
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, false, votes, finalVotesWildcard, rating, finalLabel, finalLocation);
                         });
                     }
                     return;
