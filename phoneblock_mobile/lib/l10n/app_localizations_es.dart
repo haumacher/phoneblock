@@ -331,8 +331,19 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count mensajes',
-      one: '1 Mensaje',
+      other: '$count reclamaciones',
+      one: '1 Denuncia',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rangeReportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Reclamaciones en el intervalo de números.',
+      one: '1 Denuncia en el intervalo de números',
     );
     return '$_temp0';
   }

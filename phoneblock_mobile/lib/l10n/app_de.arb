@@ -525,7 +525,7 @@
     },
     "x-translated": "dd350270"
   },
-  "reportsCount": "{count, plural, =1{1 Meldung} other{{count} Meldungen}}",
+  "reportsCount": "{count, plural, =1{1 Beschwerde} other{{count} Beschwerden}}",
   "@reportsCount": {
     "description": "Number of reports for a phone number",
     "placeholders": {
@@ -533,7 +533,17 @@
         "type": "int"
       }
     },
-    "x-translated": "549c5b01"
+    "x-translated": "15b0eee3"
+  },
+  "rangeReportsCount": "{count, plural, =1{1 Beschwerde im Nummernbereich} other{{count} Beschwerden im Nummernbereich}}",
+  "@rangeReportsCount": {
+    "description": "Number of range reports for a phone number (aggregated from similar numbers)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "7cb452e"
   },
   "legitimateReportsCount": "{count, plural, =1{1 Legitim-Meldung} other{{count} Legitim-Meldungen}}",
   "@legitimateReportsCount": {

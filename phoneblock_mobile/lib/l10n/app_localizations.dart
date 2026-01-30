@@ -689,8 +689,14 @@ abstract class AppLocalizations {
   /// Number of reports for a phone number
   ///
   /// In de, this message translates to:
-  /// **'{count, plural, =1{1 Meldung} other{{count} Meldungen}}'**
+  /// **'{count, plural, =1{1 Beschwerde} other{{count} Beschwerden}}'**
   String reportsCount(int count);
+
+  /// Number of range reports for a phone number (aggregated from similar numbers)
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Beschwerde im Nummernbereich} other{{count} Beschwerden im Nummernbereich}}'**
+  String rangeReportsCount(int count);
 
   /// Number of legitimate reports for a phone number
   ///

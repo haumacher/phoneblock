@@ -463,6 +463,7 @@ void main() async {
       final phoneNumber = args['phoneNumber'] as String;
       final wasBlocked = args['wasBlocked'] as bool;
       final votes = args['votes'] as int;
+      final votesWildcard = args['votesWildcard'] as int? ?? 0;
       final timestamp = args['timestamp'] as int;
       final ratingStr = args['rating'] as String?;
 
@@ -478,6 +479,7 @@ void main() async {
         timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
         wasBlocked: wasBlocked,
         votes: votes,
+        votesWildcard: votesWildcard,
         rating: rating,
       );
 
@@ -491,7 +493,7 @@ void main() async {
       callScreenedStreamController.add(screenedCall);
 
       if (kDebugMode) {
-        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rating: $ratingStr)');
+        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rangeVotes: $votesWildcard, rating: $ratingStr)');
       }
     }
   });
@@ -650,13 +652,14 @@ Future<void> syncStoredScreeningResults() async {
           timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
           wasBlocked: data['wasBlocked'] as bool,
           votes: data['votes'] as int,
+          votesWildcard: (data['votesWildcard'] as int?) ?? 0,
           rating: rating,
         );
 
         await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
         if (kDebugMode) {
-          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rating: $ratingStr)');
+          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: $ratingStr)');
         }
       }
 
@@ -1220,17 +1223,19 @@ class _MainScreenState extends State<MainScreen> {
     // Determine the actual rating to display
     // Use API rating if available, otherwise use generic labels
     final bool hasApiRating = call.rating != null && call.rating != Rating.uNKNOWN;
-    final bool isPotentialSpam = !wasBlocked && hasApiRating && call.votes > 0;
+    final bool hasSpamIndicators = call.votes > 0 || call.votesWildcard > 0;
+    // Show as potential spam if not blocked but has spam indicators (votes)
+    final bool isPotentialSpam = !wasBlocked && hasSpamIndicators;
 
     final Rating displayRating;
     if (hasApiRating) {
       // Use actual rating from API
       displayRating = call.rating!;
-    } else if (wasBlocked) {
-      // Blocked but no specific rating - generic SPAM
+    } else if (wasBlocked || hasSpamIndicators) {
+      // Blocked or has spam indicators but no specific rating - generic SPAM
       displayRating = Rating.uNKNOWN;
     } else {
-      // Not blocked and no specific rating - legitimate
+      // Not blocked and no spam indicators - legitimate
       displayRating = Rating.aLEGITIMATE;
     }
 
@@ -1367,11 +1372,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  call.votes > 0
-                      ? context.l10n.reportsCount(call.votes)
-                      : call.votes < 0
-                          ? context.l10n.legitimateReportsCount(call.votes.abs())
-                          : context.l10n.noReports,
+                  _buildReportsText(call),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -2113,6 +2114,27 @@ class _MainScreenState extends State<MainScreen> {
         ),
       );
     }
+  }
+
+  /// Builds the reports text showing votes and range votes.
+  String _buildReportsText(ScreenedCall call) {
+    final parts = <String>[];
+
+    if (call.votes > 0) {
+      parts.add(context.l10n.reportsCount(call.votes));
+    } else if (call.votes < 0) {
+      parts.add(context.l10n.legitimateReportsCount(call.votes.abs()));
+    }
+
+    if (call.votesWildcard > 0) {
+      parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
+    }
+
+    if (parts.isEmpty) {
+      return context.l10n.noReports;
+    }
+
+    return parts.join(', ');
   }
 
   /// Formats the timestamp for display.

@@ -321,6 +321,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String rangeReportsCount(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
   String legitimateReportsCount(int count) {
     return '<x1>计数</x1';
   }

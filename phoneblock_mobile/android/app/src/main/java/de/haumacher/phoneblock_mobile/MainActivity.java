@@ -127,9 +127,10 @@ public class MainActivity extends FlutterActivity {
      * @param phoneNumber The phone number that was screened
      * @param wasBlocked true if the call was blocked as SPAM, false if accepted
      * @param votes Number of votes from PhoneBlock database
+     * @param votesWildcard Number of range votes (aggregated from similar numbers)
      * @param rating The rating/category of the call (e.g., "C_PING", "E_ADVERTISING", null for legitimate)
      */
-    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, String rating) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating) {
         long timestamp = System.currentTimeMillis();
 
         // Check if Flutter is active
@@ -139,6 +140,7 @@ public class MainActivity extends FlutterActivity {
             data.put("phoneNumber", phoneNumber);
             data.put("wasBlocked", wasBlocked);
             data.put("votes", votes);
+            data.put("votesWildcard", votesWildcard);
             data.put("timestamp", timestamp);
             if (rating != null) {
                 data.put("rating", rating);
@@ -159,6 +161,7 @@ public class MainActivity extends FlutterActivity {
                 callJson.put("phoneNumber", phoneNumber);
                 callJson.put("wasBlocked", wasBlocked);
                 callJson.put("votes", votes);
+                callJson.put("votesWildcard", votesWildcard);
                 callJson.put("timestamp", timestamp);
                 if (rating != null) {
                     callJson.put("rating", rating);
@@ -306,6 +309,7 @@ public class MainActivity extends FlutterActivity {
                 data.put("phoneNumber", callJson.getString("phoneNumber"));
                 data.put("wasBlocked", callJson.getBoolean("wasBlocked"));
                 data.put("votes", callJson.getInt("votes"));
+                data.put("votesWildcard", callJson.optInt("votesWildcard", 0));
                 data.put("timestamp", callJson.getLong("timestamp"));
                 if (callJson.has("rating")) {
                     data.put("rating", callJson.getString("rating"));

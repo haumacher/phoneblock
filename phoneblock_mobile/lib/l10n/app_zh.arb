@@ -95,6 +95,7 @@
   "errorSaving": "保存时出错",
   "ratePhoneNumber": "费率 <x1> 电话号码</x1",
   "reportsCount": "<x1>计数</x1",
+  "rangeReportsCount": "<x1>计数</x1",
   "legitimateReportsCount": "<x1>计数</x1",
   "noReports": "无信息",
   "todayTime": "今天，<x1>时间</x1",
