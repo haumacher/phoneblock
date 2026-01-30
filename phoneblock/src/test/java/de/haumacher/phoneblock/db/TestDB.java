@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -22,6 +23,11 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -601,6 +607,117 @@ public class TestDB {
 				Set<String> ids = inactiveUsers.stream().map(u -> u.getLogin()).collect(Collectors.toSet());
 				Assertions.assertEquals(new HashSet<>(Arrays.asList()), ids);
 			}
+		}
+	}
+
+	/**
+	 * Test that mergeLastMetaSearch correctly inserts new rows and updates existing ones.
+	 *
+	 * @see SpamReports#mergeLastMetaSearch(String, byte[], long)
+	 */
+	@Test
+	public void testMergeLastMetaSearch() {
+		String phone = "012345678";
+		byte[] hash = new byte[] {1, 2, 3, 4, 5};
+
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			// Initially, no record exists
+			assertNull(reports.getLastMetaSearch(phone));
+
+			// First merge should insert
+			long insertTime = 1000;
+			reports.mergeLastMetaSearch(phone, hash, insertTime);
+			session.commit();
+
+			// Verify the record was created with correct LASTMETA
+			Long lastMeta1 = reports.getLastMetaSearch(phone);
+			assertNotNull(lastMeta1);
+			assertEquals(insertTime, lastMeta1.longValue());
+
+			// Verify ADDED was set
+			DBNumberInfo info1 = reports.getPhoneInfo(phone);
+			assertNotNull(info1);
+			assertEquals(insertTime, info1.getAdded());
+
+			// Second merge should update LASTMETA (and ADDED due to H2 MERGE KEY semantics)
+			long updateTime = 2000;
+			reports.mergeLastMetaSearch(phone, hash, updateTime);
+			session.commit();
+
+			// Verify LASTMETA was updated
+			Long lastMeta2 = reports.getLastMetaSearch(phone);
+			assertNotNull(lastMeta2);
+			assertEquals(updateTime, lastMeta2.longValue());
+
+			// Note: H2's MERGE KEY syntax overwrites all columns, so ADDED is also updated.
+			// This is acceptable since in practice this only happens during race conditions
+			// where both requests happen at nearly the same time.
+			DBNumberInfo info2 = reports.getPhoneInfo(phone);
+			assertNotNull(info2);
+			assertEquals(updateTime, info2.getAdded());
+		}
+	}
+
+	/**
+	 * Test that concurrent mergeLastMetaSearch calls for the same phone number
+	 * don't cause exceptions (race condition fix for issue #216).
+	 */
+	@Test
+	public void testMergeLastMetaSearchConcurrent() throws Exception {
+		String phone = "098765432";
+		byte[] hash = new byte[] {9, 8, 7, 6, 5};
+		int threadCount = 10;
+
+		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		CountDownLatch startLatch = new CountDownLatch(1);
+		CountDownLatch doneLatch = new CountDownLatch(threadCount);
+		List<Future<Exception>> futures = new ArrayList<>();
+
+		// Submit tasks that all try to merge the same phone number simultaneously
+		for (int i = 0; i < threadCount; i++) {
+			final long time = 1000 + i;
+			futures.add(executor.submit(() -> {
+				try {
+					// Wait for all threads to be ready
+					startLatch.await();
+
+					try (SqlSession session = _db.openSession()) {
+						SpamReports reports = session.getMapper(SpamReports.class);
+						reports.mergeLastMetaSearch(phone, hash, time);
+						session.commit();
+					}
+					return null;
+				} catch (Exception e) {
+					return e;
+				} finally {
+					doneLatch.countDown();
+				}
+			}));
+		}
+
+		// Start all threads at once
+		startLatch.countDown();
+
+		// Wait for all threads to complete
+		assertTrue(doneLatch.await(10, TimeUnit.SECONDS), "Threads did not complete in time");
+
+		executor.shutdown();
+
+		// Check that no exceptions occurred
+		for (Future<Exception> future : futures) {
+			Exception ex = future.get();
+			if (ex != null) {
+				fail("Concurrent merge failed with exception: " + ex.getMessage());
+			}
+		}
+
+		// Verify the record exists
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			Long lastMeta = reports.getLastMetaSearch(phone);
+			assertNotNull(lastMeta, "Record should exist after concurrent merges");
 		}
 	}
 

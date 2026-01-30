@@ -426,9 +426,19 @@ public interface SpamReports {
 	
 	@Update("update NUMBERS s set s.LASTMETA=#{lastUpdate} where s.PHONE=#{phone}")
 	int setLastMetaSearch(String phone, long lastUpdate);
-	
-	@Insert("insert into NUMBERS (PHONE, SHA1, ADDED, LASTMETA) values (#{phone}, #{hash}, #{now}, #{now})")
-	void insertLastMetaSearch(String phone, byte[] hash, long now);
+
+	/**
+	 * Atomically inserts or updates the LASTMETA timestamp for a phone number.
+	 *
+	 * <p>Uses H2's MERGE KEY syntax to avoid race conditions when multiple requests
+	 * search for the same number simultaneously. This is atomic and will never fail
+	 * with duplicate key violations.</p>
+	 *
+	 * <p>Note: In a race condition, ADDED may be overwritten by the second request,
+	 * but since both requests happen at nearly the same time, this is acceptable.</p>
+	 */
+	@Insert("MERGE INTO NUMBERS (PHONE, SHA1, ADDED, LASTMETA) KEY (PHONE) VALUES (#{phone}, #{hash}, #{now}, #{now})")
+	void mergeLastMetaSearch(String phone, byte[] hash, long now);
 	
 	@Select("SELECT PHONE FROM SUMMARY_REQUEST sr ORDER BY sr.PRIORITY LIMIT 1")
 	String topSummaryRequest();

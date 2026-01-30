@@ -139,17 +139,19 @@ public class SearchOperation {
 
 	/**
 	 * Check whether an update of the meta-search results is required.
-	 * 
+	 *
 	 * @return Whether a search should be performed.
 	 */
 	private boolean shouldSearch(SpamReports db, PhoneNumer number) {
 		String phoneId = NumberAnalyzer.getPhoneId(number);
-		
+
 		long now = System.currentTimeMillis();
 		Long lastMetaSearch = db.getLastMetaSearch(phoneId);
 		boolean doSearch;
 		if (lastMetaSearch == null) {
-			db.insertLastMetaSearch(phoneId, NumberAnalyzer.getPhoneHash(number), now);
+			// Use MERGE to atomically insert or update, avoiding race conditions
+			// when multiple requests search for the same number simultaneously.
+			db.mergeLastMetaSearch(phoneId, NumberAnalyzer.getPhoneHash(number), now);
 			doSearch = true;
 		} else if (lastMetaSearch.longValue() < now - SearchServlet.ONE_MONTH) {
 			db.setLastMetaSearch(phoneId, now);
