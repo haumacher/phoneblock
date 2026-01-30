@@ -27,7 +27,13 @@ class MyApp extends StatelessWidget {
       supportedLocales: answerbotSupportedLocales,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 209, 178),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 0, 209, 178),
+          foregroundColor: Colors.white,
+        ),
       ),
       home: const AnswerbotHome(),
     );
