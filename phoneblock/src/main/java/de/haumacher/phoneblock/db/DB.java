@@ -874,6 +874,12 @@ public class DB {
 			reports.markPendingUpdate(phone);
 		}
 
+		// Clear SHA1 hash when votes fall below 1 to protect privacy for legitimate numbers.
+		// This prevents identifying legitimate callers in privacy-aware lookups.
+		if (newVotes < 1) {
+			reports.clearPhoneHash(phone);
+		}
+
 		return classifyChanged;
 	}
 

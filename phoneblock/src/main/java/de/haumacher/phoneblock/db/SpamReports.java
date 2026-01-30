@@ -35,7 +35,7 @@ public interface SpamReports {
 	String resolvePhoneHash(byte[] hash);
 	
 	@Update("""
-			update NUMBERS set 
+			update NUMBERS set
 				VOTES = VOTES + #{delta},
 				DOWN_VOTES = DOWN_VOTES + CASEWHEN(#{delta} > 0, #{delta}, 0),
 				UP_VOTES = UP_VOTES + CASEWHEN(#{delta} < 0, 0 - #{delta}, 0),
@@ -45,6 +45,13 @@ public interface SpamReports {
 			where PHONE = #{phone}
 			""")
 	int addVote(String phone, int delta, long now);
+
+	/**
+	 * Clears the SHA1 hash of a phone number to protect privacy for legitimate numbers.
+	 * Called when votes fall below 1, indicating the number is likely not spam.
+	 */
+	@Update("update NUMBERS set SHA1 = null where PHONE = #{phone}")
+	void clearPhoneHash(String phone);
 	
 	@Insert("""
 			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, VOTES, CALLS, LASTACCESS) 
