@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show list of blocked/suspicious calls in notification
 - "New" indicator for calls received while app was closed
 - Display range votes in call list
+- Display formatted phone number and caller location in call list
 
 ### Changed
 - Improved notifications with PhoneBlock branding and call details
