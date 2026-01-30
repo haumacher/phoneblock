@@ -1284,18 +1284,18 @@ class _MainScreenState extends State<MainScreen> {
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        color: wasBlocked ? Colors.green : Colors.orange,
+        color: Colors.red,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Icon(
-              wasBlocked ? Icons.check_circle : Icons.report,
+              Icons.delete,
               color: Colors.white,
               size: 32,
             ),
             const SizedBox(width: 12),
             Text(
-              wasBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
+              context.l10n.delete,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1308,12 +1308,12 @@ class _MainScreenState extends State<MainScreen> {
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: Colors.red,
+        color: wasBlocked ? Colors.green : Colors.orange,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              context.l10n.delete,
+              wasBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1322,7 +1322,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             SizedBox(width: 12),
             Icon(
-              Icons.delete,
+              wasBlocked ? Icons.check_circle : Icons.report,
               color: Colors.white,
               size: 32,
             ),
@@ -1330,8 +1330,8 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       confirmDismiss: (direction) async {
-        if (direction == DismissDirection.startToEnd) {
-          // Swipe right
+        if (direction == DismissDirection.endToStart) {
+          // Swipe left to report
           if (wasBlocked) {
             // SPAM number - report as legitimate
             await _reportAsLegitimate(context, call);
@@ -1341,7 +1341,7 @@ class _MainScreenState extends State<MainScreen> {
           }
           return false; // Don't dismiss, just report
         } else {
-          // Swipe left to delete
+          // Swipe right to delete
           return true; // Allow dismissal
         }
       },

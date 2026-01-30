@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Display formatted phone number and caller location in call list
 
 ### Changed
+- Swipe right to delete, swipe left to report in call list
 - Improved notifications with PhoneBlock branding and call details
 - Skip call log and notification for blocked spam calls
 - Show notification for suspicious calls, not just blocked ones
