@@ -65,14 +65,45 @@ public class MainActivity extends FlutterActivity {
     }
 
     /**
-     * Shows a notification for a screened call.
+     * Updates the notification showing all pending screened calls as a list.
      * @param context Application context
-     * @param phoneNumber The phone number that was screened
-     * @param wasBlocked true if the call was blocked, false if just suspicious
+     * @param callsArray JSON array of all pending calls
      */
-    private static void showCallNotification(Context context, String phoneNumber, boolean wasBlocked) {
+    private static void updateCallsNotification(Context context, JSONArray callsArray) throws JSONException {
         NotificationManager notificationManager =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Build list of notable calls (blocked or suspicious)
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        for (int i = 0; i < callsArray.length(); i++) {
+            JSONObject call = callsArray.getJSONObject(i);
+            boolean callBlocked = call.getBoolean("wasBlocked");
+            int callVotes = call.optInt("votes", 0);
+            int callVotesWildcard = call.optInt("votesWildcard", 0);
+
+            if (callBlocked || callVotes > 0 || callVotesWildcard > 0) {
+                String phoneNumber = call.getString("phoneNumber");
+
+                // Format phone number for display
+                String formattedNumber = android.telephony.PhoneNumberUtils.formatNumber(
+                    phoneNumber, java.util.Locale.getDefault().getCountry());
+                if (formattedNumber == null) {
+                    formattedNumber = phoneNumber;
+                }
+
+                String prefix = callBlocked
+                    ? context.getString(R.string.notification_blocked_prefix)
+                    : context.getString(R.string.notification_suspicious_prefix);
+
+                lines.add(prefix + " " + formattedNumber);
+            }
+        }
+
+        if (lines.isEmpty()) {
+            // No notable calls - remove notification
+            notificationManager.cancel(NOTIFICATION_ID);
+            return;
+        }
 
         // Create intent to launch app when notification is tapped
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
@@ -83,29 +114,26 @@ public class MainActivity extends FlutterActivity {
             PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        // Build notification with PhoneBlock branding and call details
-        String title = wasBlocked
-            ? context.getString(R.string.notification_blocked_title)
-            : context.getString(R.string.notification_suspicious_title);
-
-        // Format phone number for display (use system formatting if available)
-        String formattedNumber = android.telephony.PhoneNumberUtils.formatNumber(
-            phoneNumber, java.util.Locale.getDefault().getCountry());
-        if (formattedNumber == null) {
-            formattedNumber = phoneNumber;
+        // Build inbox style with list of calls
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        for (String line : lines) {
+            inboxStyle.addLine(line);
         }
+
+        String title = context.getResources().getQuantityString(
+            R.plurals.notification_title, lines.size(), lines.size());
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_call)
             .setContentTitle(title)
-            .setContentText(formattedNumber)
+            .setContentText(lines.get(lines.size() - 1))  // Show last call when collapsed
+            .setStyle(inboxStyle)
+            .setNumber(lines.size())
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent);
 
-        // Use unique notification ID based on phone number hash to allow multiple notifications
-        int notificationId = NOTIFICATION_ID + phoneNumber.hashCode();
-        notificationManager.notify(notificationId, builder.build());
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
@@ -115,7 +143,7 @@ public class MainActivity extends FlutterActivity {
     private static void clearPendingCallsNotifications(Context context) {
         NotificationManager notificationManager =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancelAll();
+        notificationManager.cancel(NOTIFICATION_ID);
     }
 
     @Override
@@ -182,15 +210,9 @@ public class MainActivity extends FlutterActivity {
                 // Save back to SharedPreferences
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
-                // Show notification for blocked calls OR suspicious calls (with spam votes)
-                // Regular calls without spam indicators are already notified by the phone app
-                boolean isSuspicious = votes > 0 || votesWildcard > 0;
-                if (wasBlocked || isSuspicious) {
-                    showCallNotification(context, phoneNumber, wasBlocked);
-                    Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber);
-                } else {
-                    Log.d(MainActivity.class.getName(), "Stored non-blocked call for later sync: " + phoneNumber);
-                }
+                // Update notification showing all notable calls (blocked or suspicious)
+                updateCallsNotification(context, callsArray);
+                Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber);
             } catch (JSONException e) {
                 Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
             }

@@ -3,6 +3,10 @@
     <string name="app_name">PhoneBlock Mobile</string>
     <string name="notification_channel_name">Filtered Calls</string>
     <string name="notification_channel_description">Notifications for blocked and suspicious calls</string>
-    <string name="notification_blocked_title">PhoneBlock: Blocked</string>
-    <string name="notification_suspicious_title">PhoneBlock: Suspicious</string>
+    <string name="notification_blocked_prefix">Blocked:</string>
+    <string name="notification_suspicious_prefix">Suspicious:</string>
+    <plurals name="notification_title">
+        <item quantity="one">PhoneBlock: 1 filtered call</item>
+        <item quantity="other">PhoneBlock: %d filtered calls</item>
+    </plurals>
 </resources>
