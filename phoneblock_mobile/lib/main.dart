@@ -1269,8 +1269,8 @@ class _MainScreenState extends State<MainScreen> {
     // Build the label text
     final String labelText;
     if (isPotentialSpam) {
-      // Show "Verdächtig: {rating}" for potential spam
-      labelText = context.l10n.potentialSpamLabel(ratingText);
+      // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
+      labelText = '$ratingText ?';
     } else if (wasBlocked) {
       // Show the rating for blocked calls
       labelText = ratingText;
@@ -1376,12 +1376,35 @@ class _MainScreenState extends State<MainScreen> {
                   ),
               ],
             ),
-            title: Text(
-              call.label ?? call.phoneNumber,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    call.label ?? call.phoneNumber,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: color, width: 1),
+                  ),
+                  child: Text(
+                    labelText,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ],
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1442,22 +1465,6 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
               ],
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color, width: 1.5),
-              ),
-              child: Text(
-                labelText,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
             ),
             onTap: () {
               _markCallAsSeen(call);
@@ -2405,7 +2412,7 @@ Widget label(BuildContext context, Rating rating) {
 Color bgColor(Rating rating) {
   switch (rating) {
     case Rating.aLEGITIMATE: return const Color.fromRGBO(72, 199, 142, 1);
-    case Rating.uNKNOWN: return const Color.fromRGBO(170, 172, 170, 1);
+    case Rating.uNKNOWN: return const Color.fromRGBO(255, 152, 0, 1); // Orange for unknown spam
     case Rating.pING: return const Color.fromRGBO(31, 94, 220, 1);
     case Rating.pOLL: return const Color.fromRGBO(157, 31, 220, 1);
     case Rating.aDVERTISING: return const Color.fromRGBO(255, 152, 0, 1); // Darker orange for better contrast
