@@ -173,18 +173,23 @@ public class MainActivity extends FlutterActivity {
                 // Save back to SharedPreferences
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
-                // Only show notification for blocked SPAM calls
-                // Regular calls are already notified by the phone app
-                if (wasBlocked) {
-                    // Count only blocked calls for notification
-                    int blockedCount = 0;
+                // Show notification for blocked calls OR suspicious calls (with spam votes)
+                // Regular calls without spam indicators are already notified by the phone app
+                boolean isSuspicious = votes > 0 || votesWildcard > 0;
+                if (wasBlocked || isSuspicious) {
+                    // Count blocked and suspicious calls for notification
+                    int notableCount = 0;
                     for (int i = 0; i < callsArray.length(); i++) {
-                        if (callsArray.getJSONObject(i).getBoolean("wasBlocked")) {
-                            blockedCount++;
+                        JSONObject call = callsArray.getJSONObject(i);
+                        boolean callBlocked = call.getBoolean("wasBlocked");
+                        int callVotes = call.optInt("votes", 0);
+                        int callVotesWildcard = call.optInt("votesWildcard", 0);
+                        if (callBlocked || callVotes > 0 || callVotesWildcard > 0) {
+                            notableCount++;
                         }
                     }
-                    updatePendingCallsNotification(context, blockedCount);
-                    Log.d(MainActivity.class.getName(), "Stored blocked SPAM call for later sync: " + phoneNumber + " (blocked count: " + blockedCount + ")");
+                    updatePendingCallsNotification(context, notableCount);
+                    Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber + " (notable count: " + notableCount + ")");
                 } else {
                     Log.d(MainActivity.class.getName(), "Stored non-blocked call for later sync: " + phoneNumber);
                 }
