@@ -1440,18 +1440,8 @@ public class DB {
 				max = votes;
 			}
 		}
-		
+	
 		return result;
-	}
-
-	public int getMinVotes(SqlSession session, String login) {
-		int minVotes = (login == null) ? MIN_VOTES : getUserSettingsRaw(session, login).getMinVotes();
-		return minVotes;
-	}
-
-	public DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
-		Users users = session.getMapper(Users.class);
-		return users.getSettingsRaw(login);
 	}
 
 	private DBUserSettings getUserSettings(Users users, String login) {

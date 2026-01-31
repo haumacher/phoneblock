@@ -122,16 +122,9 @@ public class EmailChangeServlet extends HttpServlet {
 		newEmail = newEmail.trim();
 		req.setAttribute(EMAIL_ATTR, newEmail);
 
-		DB db = DBService.getInstance();
-
 		// Get current email to prevent setting the same email
-		UserSettings settings;
-		try (SqlSession sqlSession = db.openSession()) {
-			Users users = sqlSession.getMapper(Users.class);
-			settings = users.getSettingsRaw(userName);
-		}
-
-		if (newEmail.equalsIgnoreCase(settings.getEmail())) {
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		if (settings != null && newEmail.equalsIgnoreCase(settings.getEmail())) {
 			showError(req, resp, CHANGE_PAGE, "error.email.change.same-as-current");
 			return;
 		}
@@ -167,6 +160,7 @@ public class EmailChangeServlet extends HttpServlet {
 
 		// Check if email is already in use by another user
 		int emailUseCount;
+		DB db = DBService.getInstance();
 		try (SqlSession sqlSession = db.openSession()) {
 			Users users = sqlSession.getMapper(Users.class);
 			emailUseCount = users.isEmailInUse(newEmail);
