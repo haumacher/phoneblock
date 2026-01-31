@@ -41,6 +41,7 @@ import de.haumacher.phoneblock.carddav.resource.Resource;
 import de.haumacher.phoneblock.carddav.resource.RootResource;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.DebugUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -342,10 +343,11 @@ public class CardDavServlet extends HttpServlet {
 				if (!isAuthenticated(req, principal, resourcePath)) {
 					return null;
 				}
-				
-				AddressBookResource addressBook = 
-						AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal);
-				
+
+				UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+				AddressBookResource addressBook =
+						AddressBookCache.getInstance().lookupAddressBook(rootUrl, serverRoot, resourcePath, principal, cachedSettings);
+
 				if (endIdx < resourcePath.length() - 1) {
 					return addressBook.lookupAddress(resourcePath.substring(endIdx + 1));
 				} else {
