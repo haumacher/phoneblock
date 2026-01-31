@@ -20,7 +20,6 @@ import org.thymeleaf.web.servlet.IServletWebExchange;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
-import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.UIProperties;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
@@ -49,6 +48,11 @@ public class DefaultController implements WebController {
 	 * @see Country#getDialPrefix()
 	 */
 	public static final String DIAL_PREFIX_ATTR = "dialPrefix";
+
+	/**
+	 * Session attribute for storing a newly created password to display once.
+	 */
+	public static final String PASSWORD_ATTR = "passwd";
 
 	/**
 	 * Session attribute for storing a newly created CardDAV token to display once.
@@ -314,15 +318,16 @@ public class DefaultController implements WebController {
 
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			String token = RegistrationServlet.getPassword(session);
+			Object password = session.getAttribute(PASSWORD_ATTR);
 			Object cardDavToken = session.getAttribute(CARD_DAV_TOKEN_ATTR);
 			Object apiKey = session.getAttribute(API_KEY_ATTR);
 
 			// Show this only once.
+			session.removeAttribute(PASSWORD_ATTR);
 			session.removeAttribute(CARD_DAV_TOKEN_ATTR);
 			session.removeAttribute(API_KEY_ATTR);
 
-			ctx.setVariable(TOKEN_VAR, token);
+			ctx.setVariable(TOKEN_VAR, password);
 			ctx.setVariable(CARD_DAV_TOKEN_ATTR, cardDavToken);
 			ctx.setVariable(API_KEY_ATTR, apiKey);
 		}

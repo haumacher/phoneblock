@@ -22,7 +22,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.APP_ID;
 import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.TOKEN_LABEL;
@@ -50,8 +49,6 @@ public class RegistrationServlet extends HttpServlet {
 	public static final String REGISTER_WEB = "/register-web";
 	
 	public static final String REGISTER_MOBILE = "/register-mobile";
-
-	private static final String PASSWORD_ATTR = "passwd";
 
 	private static final Logger LOG = LoggerFactory.getLogger(RegistrationServlet.class);
 
@@ -124,7 +121,7 @@ public class RegistrationServlet extends HttpServlet {
 		default:
 			if (passwd != null) {
 				// For new accounts, redirect to credentials page first.
-				req.getSession().setAttribute(PASSWORD_ATTR, passwd);
+				req.getSession().setAttribute(DefaultController.PASSWORD_ATTR, passwd);
 
 				// Use the answer bot setup page as default target location after login. 
 				String targetLocation = LoginServlet.location(req, switch (UserAgentType.detect(req)) {
@@ -156,15 +153,5 @@ public class RegistrationServlet extends HttpServlet {
 		default:
 			return "/signup-code";
 		}
-	}
-
-	/**
-	 * The password that was newly assigned.
-	 */
-	public static String getPassword(HttpSession session) {
-		if (session == null) {
-			return null;
-		}
-		return (String) session.getAttribute(PASSWORD_ATTR);
 	}
 }

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.render.controller;
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.LoginServlet;
-import de.haumacher.phoneblock.app.RegistrationServlet;
+import de.haumacher.phoneblock.app.render.DefaultController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -18,11 +18,11 @@ public class ShowCredentialsController extends RequireLoginController {
 
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			String passwd = RegistrationServlet.getPassword(session);
+			String passwd = (String) session.getAttribute(DefaultController.PASSWORD_ATTR);
 			if (passwd != null) {
-				request.setAttribute("passwd", passwd);
+				request.setAttribute(DefaultController.PASSWORD_ATTR, passwd);
 				// Remove password from session after displaying it (show only once)
-				session.removeAttribute("passwd");
+				session.removeAttribute(DefaultController.PASSWORD_ATTR);
 			}
 		}
 
