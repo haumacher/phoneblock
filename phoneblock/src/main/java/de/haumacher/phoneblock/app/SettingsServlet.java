@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
@@ -122,10 +123,10 @@ public class SettingsServlet extends HttpServlet {
 				}
 
 				HttpSession httpSession = req.getSession();
-				httpSession.setAttribute("apiKey", token);
+				httpSession.setAttribute(DefaultController.API_KEY_ATTR, token);
 				if (isCardDav) {
 					// Remember at least until setup is complete.
-					httpSession.setAttribute("cardDavToken", token);
+					httpSession.setAttribute(DefaultController.CARD_DAV_TOKEN_ATTR, token);
 				} 
 				
 				resp.sendRedirect(req.getContextPath() + location);

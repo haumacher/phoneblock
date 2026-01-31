@@ -45,10 +45,25 @@ public class DefaultController implements WebController {
 	
 	/**
 	 * Session attribute specifying the user's dial prefix ("+49" for Germany).
-	 * 
+	 *
 	 * @see Country#getDialPrefix()
 	 */
 	public static final String DIAL_PREFIX_ATTR = "dialPrefix";
+
+	/**
+	 * Session attribute for storing a newly created CardDAV token to display once.
+	 */
+	public static final String CARD_DAV_TOKEN_ATTR = "cardDavToken";
+
+	/**
+	 * Session attribute for storing a newly created API key to display once.
+	 */
+	public static final String API_KEY_ATTR = "apiKey";
+
+	/**
+	 * Template variable for displaying a newly created password/token.
+	 */
+	public static final String TOKEN_VAR = "token";
 
 	static final String RENDER_TEMPLATE = "renderTemplate";
 
@@ -300,16 +315,16 @@ public class DefaultController implements WebController {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			String token = RegistrationServlet.getPassword(session);
-			Object cardDavToken = session.getAttribute("cardDavToken");
-			Object apiKey = session.getAttribute("apiKey");
-			
-			// Show this only once.
-			session.removeAttribute("cardDavToken");
-			session.removeAttribute("apiKey");
+			Object cardDavToken = session.getAttribute(CARD_DAV_TOKEN_ATTR);
+			Object apiKey = session.getAttribute(API_KEY_ATTR);
 
-			ctx.setVariable("token", token);
-			ctx.setVariable("cardDavToken", cardDavToken);
-			ctx.setVariable("apiKey", apiKey);
+			// Show this only once.
+			session.removeAttribute(CARD_DAV_TOKEN_ATTR);
+			session.removeAttribute(API_KEY_ATTR);
+
+			ctx.setVariable(TOKEN_VAR, token);
+			ctx.setVariable(CARD_DAV_TOKEN_ATTR, cardDavToken);
+			ctx.setVariable(API_KEY_ATTR, apiKey);
 		}
 
 		String userName = LoginFilter.getAuthenticatedUser(request);
