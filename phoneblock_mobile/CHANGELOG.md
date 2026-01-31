@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-01-31
+
 ### Added
 - Show list of blocked/suspicious calls in notification
 - "New" indicator for calls received while app was closed
@@ -79,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial tracked release.
 
-[Unreleased]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.1.0...HEAD
+[Unreleased]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.1.1...HEAD
+[1.1.1]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.1.0...pb-mobile-1.1.1
 [1.1.0]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.0.5...pb-mobile-1.1.0
 [1.0.5]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.0.4...pb-mobile-1.0.5
 [1.0.4]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.0.3...pb-mobile-1.0.4
