@@ -76,26 +76,25 @@ public class AddressBookCache implements ServletContextListener {
 	/**
 	 * Looks up the block list resource for the given user.
 	 *
-	 * @param cachedSettings The user settings from session cache, or null to look up from database.
+	 * @param settings The user settings (from request attribute).
 	 */
 	public AddressBookResource lookupAddressBook(String rootUrl, String serverRoot, String resourcePath,
-			String principal, UserSettings cachedSettings) {
+			String principal, UserSettings settings) {
 		AddressBookResource cachedResult = _userCache.lookup(principal);
 		if (cachedResult != null) {
 			return cachedResult;
 		}
 
 		long now = System.currentTimeMillis();
-		List<NumberBlock> phoneNumbers = loadNumbers(principal, now, cachedSettings);
+		List<NumberBlock> phoneNumbers = loadNumbers(principal, now, settings);
 		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers);
 		return _userCache.put(principal, addressBook);
 	}
 
-	List<NumberBlock> loadNumbers(String principal, long now, UserSettings cachedSettings) {
+	List<NumberBlock> loadNumbers(String principal, long now, UserSettings settings) {
 		List<NumberBlock> phoneNumbers;
 		try (SqlSession session = _db.db().openSession()) {
 			Users users = session.getMapper(Users.class);
-			UserSettings settings = cachedSettings != null ? cachedSettings : users.getSettingsRaw(principal);
 
 			int minVotes = settings.getMinVotes();
 			int maxLength = settings.getMaxLength();

@@ -276,19 +276,12 @@ public abstract class LoginFilter implements Filter {
 	}
 
 	/**
-	 * Gets the cached user settings from the request or session.
+	 * Gets the user settings from the request attribute.
 	 *
 	 * @return UserSettings or null if not logged in
 	 */
 	public static UserSettings getUserSettings(HttpServletRequest req) {
-		// First try request attribute (set by filter for every request)
-		UserSettings settings = (UserSettings) req.getAttribute(USER_SETTINGS_ATTR);
-		if (settings != null) {
-			return settings;
-		}
-		// Fallback to session for backwards compatibility
-		HttpSession session = req.getSession(false);
-		return session != null ? getUserSettings(session) : null;
+		return (UserSettings) req.getAttribute(USER_SETTINGS_ATTR);
 	}
 
 	private static UserSettings getUserSettings(HttpSession session) {
