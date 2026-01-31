@@ -8,9 +8,11 @@ import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Statistics;
 import de.haumacher.phoneblock.db.Status;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class StatusController extends DefaultController {
@@ -18,9 +20,11 @@ public class StatusController extends DefaultController {
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);
-		
+
 		long now = System.currentTimeMillis();
 		String userName = LoginFilter.getAuthenticatedUser(request);
+		UserSettings settings = LoginFilter.getUserSettings(request);
+		int minVotes = settings != null ? settings.getMinVotes() : DB.MIN_VOTES;
 
 		request.setAttribute("now", Long.valueOf(now));
 		request.setAttribute("searches", DBService.getInstance().getTopSearches());
@@ -28,8 +32,8 @@ public class StatusController extends DefaultController {
 		request.setAttribute("newlyBlocked", DBService.getInstance().getLatestBlocklistEntries(userName));
 		request.setAttribute("topSpammers", DBService.getInstance().getTopSpamReports(15));
 		request.setAttribute("topSearches", DBService.getInstance().getTopSearchesOverall(15));
-		
-		Status status = DBService.getInstance().getStatus(userName);
+
+		Status status = DBService.getInstance().getStatus(minVotes);
 		List<Statistics> statistic = status.getStatistics();
 		int cnt = 0;
 		Map<String, Integer> statistics = new HashMap<>();

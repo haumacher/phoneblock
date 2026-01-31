@@ -1509,13 +1509,12 @@ public class DB {
 	/**
 	 * The current DB status.
 	 */
-	public Status getStatus(String login) {
+	public Status getStatus(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			int minVotes = getMinVotes(session, login);
 			return new Status(
-					reports.getStatistics(minVotes), 
-					nonNull(reports.getTotalVotes()), 
+					reports.getStatistics(minVotes),
+					nonNull(reports.getTotalVotes()),
 					nonNull(reports.getArchivedReportCount()));
 		}
 	}
