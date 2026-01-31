@@ -16,195 +16,214 @@ import org.junit.jupiter.api.Test;
  */
 public class MailServiceImplTest {
 
+	/** All available locales for email templates. */
+	private static final String[] LOCALES = {
+		"ar", "da", "de", "el", "en-US", "es", "fr", "it", "nb", "nl", "pl", "sv", "uk", "zh-Hans"
+	};
+
 	/**
-	 * Test that mail-template.html expands all parameters.
+	 * Test that mail-template.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testMailTemplate() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_NAME_123");
-		variables.put("code", "TEST_CODE_456");
-		variables.put("image", "https://test.example.com/image.svg");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_NAME_123");
+			variables.put("code", "TEST_CODE_456");
+			variables.put("image", "https://test.example.com/image.svg");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "mail-template", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "mail-template", variables);
 
-		assertTrue(html.contains("TEST_NAME_123"), "name should be expanded");
-		assertTrue(html.contains("TEST_CODE_456"), "code should be expanded");
-		assertTrue(html.contains("https://test.example.com/image.svg"), "image should be expanded");
+			assertTrue(html.contains("TEST_NAME_123"), locale + ": name should be expanded");
+			assertTrue(html.contains("TEST_CODE_456"), locale + ": code should be expanded");
+			assertTrue(html.contains("https://test.example.com/image.svg"), locale + ": image should be expanded");
+		}
 	}
 
 	/**
-	 * Test that email-change-mail.html expands all parameters.
+	 * Test that email-change-mail.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testEmailChangeMail() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_NAME_789");
-		variables.put("code", "TEST_CODE_ABC");
-		variables.put("image", "https://test.example.com/change-image.svg");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_NAME_789");
+			variables.put("code", "TEST_CODE_ABC");
+			variables.put("image", "https://test.example.com/change-image.svg");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "email-change-mail", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "email-change-mail", variables);
 
-		assertTrue(html.contains("TEST_NAME_789"), "name should be expanded");
-		assertTrue(html.contains("TEST_CODE_ABC"), "code should be expanded");
-		assertTrue(html.contains("https://test.example.com/change-image.svg"), "image should be expanded");
+			assertTrue(html.contains("TEST_NAME_789"), locale + ": name should be expanded");
+			assertTrue(html.contains("TEST_CODE_ABC"), locale + ": code should be expanded");
+			assertTrue(html.contains("https://test.example.com/change-image.svg"), locale + ": image should be expanded");
+		}
 	}
 
 	/**
-	 * Test that welcome-mail.html expands all parameters.
+	 * Test that welcome-mail.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testWelcomeMail() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_WELCOME_NAME");
-		variables.put("image", "https://test.example.com/welcome-image.svg");
-		variables.put("home", "https://test.example.com/home");
-		variables.put("support", "https://test.example.com/support");
-		variables.put("settings", "https://test.example.com/settings");
-		variables.put("help", "https://test.example.com/help");
-		variables.put("facebook", "https://test.example.com/facebook");
-		variables.put("mail", "test-welcome@example.com");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_WELCOME_NAME");
+			variables.put("image", "https://test.example.com/welcome-image.svg");
+			variables.put("home", "https://test.example.com/home");
+			variables.put("support", "https://test.example.com/support");
+			variables.put("settings", "https://test.example.com/settings");
+			variables.put("help", "https://test.example.com/help");
+			variables.put("facebook", "https://test.example.com/facebook");
+			variables.put("mail", "test-welcome@example.com");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "welcome-mail", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "welcome-mail", variables);
 
-		assertTrue(html.contains("TEST_WELCOME_NAME"), "name should be expanded");
-		assertTrue(html.contains("https://test.example.com/welcome-image.svg"), "image should be expanded");
-		assertTrue(html.contains("https://test.example.com/home"), "home should be expanded");
-		assertTrue(html.contains("https://test.example.com/support"), "support should be expanded");
-		assertTrue(html.contains("https://test.example.com/settings"), "settings should be expanded");
-		assertTrue(html.contains("https://test.example.com/help"), "help should be expanded");
-		assertTrue(html.contains("https://test.example.com/facebook"), "facebook should be expanded");
-		assertTrue(html.contains("test-welcome@example.com"), "mail should be expanded");
+			assertTrue(html.contains("TEST_WELCOME_NAME"), locale + ": name should be expanded");
+			assertTrue(html.contains("https://test.example.com/welcome-image.svg"), locale + ": image should be expanded");
+			assertTrue(html.contains("https://test.example.com/home"), locale + ": home should be expanded");
+			assertTrue(html.contains("https://test.example.com/support"), locale + ": support should be expanded");
+			assertTrue(html.contains("https://test.example.com/settings"), locale + ": settings should be expanded");
+			assertTrue(html.contains("https://test.example.com/help"), locale + ": help should be expanded");
+			assertTrue(html.contains("https://test.example.com/facebook"), locale + ": facebook should be expanded");
+			assertTrue(html.contains("test-welcome@example.com"), locale + ": mail should be expanded");
+		}
 	}
 
 	/**
-	 * Test that mobile-welcome-mail.html expands all parameters.
+	 * Test that mobile-welcome-mail.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testMobileWelcomeMail() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_MOBILE_NAME");
-		variables.put("deviceLabel", "TEST_DEVICE_XYZ");
-		variables.put("image", "https://test.example.com/mobile-image.svg");
-		variables.put("home", "https://test.example.com/mobile-home");
-		variables.put("support", "https://test.example.com/mobile-support");
-		variables.put("settings", "https://test.example.com/mobile-settings");
-		variables.put("app", "https://test.example.com/mobile-app");
-		variables.put("help", "https://test.example.com/mobile-help");
-		variables.put("facebook", "https://test.example.com/mobile-facebook");
-		variables.put("mail", "test-mobile@example.com");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_MOBILE_NAME");
+			variables.put("deviceLabel", "TEST_DEVICE_XYZ");
+			variables.put("image", "https://test.example.com/mobile-image.svg");
+			variables.put("home", "https://test.example.com/mobile-home");
+			variables.put("support", "https://test.example.com/mobile-support");
+			variables.put("settings", "https://test.example.com/mobile-settings");
+			variables.put("app", "https://test.example.com/mobile-app");
+			variables.put("help", "https://test.example.com/mobile-help");
+			variables.put("facebook", "https://test.example.com/mobile-facebook");
+			variables.put("mail", "test-mobile@example.com");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "mobile-welcome-mail", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "mobile-welcome-mail", variables);
 
-		assertTrue(html.contains("TEST_MOBILE_NAME"), "name should be expanded");
-		assertTrue(html.contains("TEST_DEVICE_XYZ"), "deviceLabel should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-image.svg"), "image should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-home"), "home should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-support"), "support should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-settings"), "settings should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-app"), "app should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-help"), "help should be expanded");
-		assertTrue(html.contains("https://test.example.com/mobile-facebook"), "facebook should be expanded");
-		assertTrue(html.contains("test-mobile@example.com"), "mail should be expanded");
+			assertTrue(html.contains("TEST_MOBILE_NAME"), locale + ": name should be expanded");
+			assertTrue(html.contains("TEST_DEVICE_XYZ"), locale + ": deviceLabel should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-image.svg"), locale + ": image should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-home"), locale + ": home should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-support"), locale + ": support should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-settings"), locale + ": settings should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-app"), locale + ": app should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-help"), locale + ": help should be expanded");
+			assertTrue(html.contains("https://test.example.com/mobile-facebook"), locale + ": facebook should be expanded");
+			assertTrue(html.contains("test-mobile@example.com"), locale + ": mail should be expanded");
+		}
 	}
 
 	/**
-	 * Test that help-mail.html expands all parameters.
+	 * Test that help-mail.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testHelpMail() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_HELP_NAME");
-		variables.put("userName", "TEST_USERNAME_HELP");
-		variables.put("lastAccess", "TEST_LAST_ACCESS_DATE");
-		variables.put("image", "https://test.example.com/help-image.svg");
-		variables.put("home", "https://test.example.com/help-home");
-		variables.put("support", "https://test.example.com/help-support");
-		variables.put("settings", "https://test.example.com/help-settings");
-		variables.put("app", "https://test.example.com/help-app");
-		variables.put("help", "https://test.example.com/help-video");
-		variables.put("facebook", "https://test.example.com/help-facebook");
-		variables.put("mail", "test-help@example.com");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_HELP_NAME");
+			variables.put("userName", "TEST_USERNAME_HELP");
+			variables.put("lastAccess", "TEST_LAST_ACCESS_DATE");
+			variables.put("image", "https://test.example.com/help-image.svg");
+			variables.put("home", "https://test.example.com/help-home");
+			variables.put("support", "https://test.example.com/help-support");
+			variables.put("settings", "https://test.example.com/help-settings");
+			variables.put("app", "https://test.example.com/help-app");
+			variables.put("help", "https://test.example.com/help-video");
+			variables.put("facebook", "https://test.example.com/help-facebook");
+			variables.put("mail", "test-help@example.com");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "help-mail", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "help-mail", variables);
 
-		assertTrue(html.contains("TEST_HELP_NAME"), "name should be expanded");
-		assertTrue(html.contains("TEST_USERNAME_HELP"), "userName should be expanded");
-		assertTrue(html.contains("TEST_LAST_ACCESS_DATE"), "lastAccess should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-image.svg"), "image should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-home"), "home should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-support"), "support should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-settings"), "settings should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-app"), "app should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-video"), "help should be expanded");
-		assertTrue(html.contains("https://test.example.com/help-facebook"), "facebook should be expanded");
-		assertTrue(html.contains("test-help@example.com"), "mail should be expanded");
+			assertTrue(html.contains("TEST_HELP_NAME"), locale + ": name should be expanded");
+			assertTrue(html.contains("TEST_USERNAME_HELP"), locale + ": userName should be expanded");
+			assertTrue(html.contains("TEST_LAST_ACCESS_DATE"), locale + ": lastAccess should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-image.svg"), locale + ": image should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-home"), locale + ": home should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-support"), locale + ": support should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-settings"), locale + ": settings should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-app"), locale + ": app should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-video"), locale + ": help should be expanded");
+			assertTrue(html.contains("https://test.example.com/help-facebook"), locale + ": facebook should be expanded");
+			assertTrue(html.contains("test-help@example.com"), locale + ": mail should be expanded");
+		}
 	}
 
 	/**
-	 * Test that thanks-mail.html expands all parameters.
+	 * Test that thanks-mail.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testThanksMail() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_THANKS_NAME");
-		variables.put("attribute", "TEST_ATTRIBUTE_VALUE ");
-		variables.put("image", "https://test.example.com/thanks-image.svg");
-		variables.put("home", "https://test.example.com/thanks-home");
-		variables.put("support", "https://test.example.com/thanks-support");
-		variables.put("settings", "https://test.example.com/thanks-settings");
-		variables.put("help", "https://test.example.com/thanks-help");
-		variables.put("facebook", "https://test.example.com/thanks-facebook");
-		variables.put("mail", "test-thanks@example.com");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_THANKS_NAME");
+			variables.put("attribute", "TEST_ATTRIBUTE_VALUE ");
+			variables.put("image", "https://test.example.com/thanks-image.svg");
+			variables.put("home", "https://test.example.com/thanks-home");
+			variables.put("support", "https://test.example.com/thanks-support");
+			variables.put("settings", "https://test.example.com/thanks-settings");
+			variables.put("help", "https://test.example.com/thanks-help");
+			variables.put("facebook", "https://test.example.com/thanks-facebook");
+			variables.put("mail", "test-thanks@example.com");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "thanks-mail", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "thanks-mail", variables);
 
-		assertTrue(html.contains("TEST_THANKS_NAME"), "name should be expanded");
-		assertTrue(html.contains("TEST_ATTRIBUTE_VALUE"), "attribute should be expanded");
-		assertTrue(html.contains("https://test.example.com/thanks-image.svg"), "image should be expanded");
-		assertTrue(html.contains("https://test.example.com/thanks-home"), "home should be expanded");
-		assertTrue(html.contains("https://test.example.com/thanks-support"), "support should be expanded");
-		assertTrue(html.contains("https://test.example.com/thanks-settings"), "settings should be expanded");
-		assertTrue(html.contains("https://test.example.com/thanks-help"), "help should be expanded");
-		assertTrue(html.contains("https://test.example.com/thanks-facebook"), "facebook should be expanded");
-		assertTrue(html.contains("test-thanks@example.com"), "mail should be expanded");
+			assertTrue(html.contains("TEST_THANKS_NAME"), locale + ": name should be expanded");
+			assertTrue(html.contains("TEST_ATTRIBUTE_VALUE"), locale + ": attribute should be expanded");
+			assertTrue(html.contains("https://test.example.com/thanks-image.svg"), locale + ": image should be expanded");
+			assertTrue(html.contains("https://test.example.com/thanks-home"), locale + ": home should be expanded");
+			assertTrue(html.contains("https://test.example.com/thanks-support"), locale + ": support should be expanded");
+			assertTrue(html.contains("https://test.example.com/thanks-settings"), locale + ": settings should be expanded");
+			assertTrue(html.contains("https://test.example.com/thanks-help"), locale + ": help should be expanded");
+			assertTrue(html.contains("https://test.example.com/thanks-facebook"), locale + ": facebook should be expanded");
+			assertTrue(html.contains("test-thanks@example.com"), locale + ": mail should be expanded");
+		}
 	}
 
 	/**
-	 * Test that ab-disable-mail.html expands all parameters.
+	 * Test that ab-disable-mail.html expands all parameters in all locales.
 	 */
 	@Test
 	public void testAbDisableMail() {
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("name", "TEST_DISABLE_NAME");
-		variables.put("userName", "TEST_USERNAME_DISABLE");
-		variables.put("botId", "TEST_BOT_ID_123");
-		variables.put("lastSuccess", "TEST_LAST_SUCCESS_DATE");
-		variables.put("lastMessage", "TEST_LAST_ERROR_MSG");
-		variables.put("image", "https://test.example.com/disable-image.svg");
-		variables.put("home", "https://test.example.com/disable-home");
-		variables.put("support", "https://test.example.com/disable-support");
-		variables.put("settings", "https://test.example.com/disable-settings");
-		variables.put("app", "https://test.example.com/disable-app");
-		variables.put("help", "https://test.example.com/disable-help");
-		variables.put("facebook", "https://test.example.com/disable-facebook");
-		variables.put("mail", "test-disable@example.com");
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("name", "TEST_DISABLE_NAME");
+			variables.put("userName", "TEST_USERNAME_DISABLE");
+			variables.put("botId", "TEST_BOT_ID_123");
+			variables.put("lastSuccess", "TEST_LAST_SUCCESS_DATE");
+			variables.put("lastMessage", "TEST_LAST_ERROR_MSG");
+			variables.put("image", "https://test.example.com/disable-image.svg");
+			variables.put("home", "https://test.example.com/disable-home");
+			variables.put("support", "https://test.example.com/disable-support");
+			variables.put("settings", "https://test.example.com/disable-settings");
+			variables.put("app", "https://test.example.com/disable-app");
+			variables.put("help", "https://test.example.com/disable-help");
+			variables.put("facebook", "https://test.example.com/disable-facebook");
+			variables.put("mail", "test-disable@example.com");
 
-		String html = MailTemplateEngine.getInstance().processTemplate("de", "ab-disable-mail", variables);
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "ab-disable-mail", variables);
 
-		assertTrue(html.contains("TEST_DISABLE_NAME"), "name should be expanded");
-		assertTrue(html.contains("TEST_USERNAME_DISABLE"), "userName should be expanded");
-		assertTrue(html.contains("TEST_BOT_ID_123"), "botId should be expanded");
-		assertTrue(html.contains("TEST_LAST_SUCCESS_DATE"), "lastSuccess should be expanded");
-		assertTrue(html.contains("TEST_LAST_ERROR_MSG"), "lastMessage should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-image.svg"), "image should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-home"), "home should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-support"), "support should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-settings"), "settings should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-app"), "app should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-help"), "help should be expanded");
-		assertTrue(html.contains("https://test.example.com/disable-facebook"), "facebook should be expanded");
-		assertTrue(html.contains("test-disable@example.com"), "mail should be expanded");
+			assertTrue(html.contains("TEST_DISABLE_NAME"), locale + ": name should be expanded");
+			assertTrue(html.contains("TEST_USERNAME_DISABLE"), locale + ": userName should be expanded");
+			assertTrue(html.contains("TEST_BOT_ID_123"), locale + ": botId should be expanded");
+			assertTrue(html.contains("TEST_LAST_SUCCESS_DATE"), locale + ": lastSuccess should be expanded");
+			assertTrue(html.contains("TEST_LAST_ERROR_MSG"), locale + ": lastMessage should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-image.svg"), locale + ": image should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-home"), locale + ": home should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-support"), locale + ": support should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-settings"), locale + ": settings should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-app"), locale + ": app should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-help"), locale + ": help should be expanded");
+			assertTrue(html.contains("https://test.example.com/disable-facebook"), locale + ": facebook should be expanded");
+			assertTrue(html.contains("test-disable@example.com"), locale + ": mail should be expanded");
+		}
 	}
 
 	/**
