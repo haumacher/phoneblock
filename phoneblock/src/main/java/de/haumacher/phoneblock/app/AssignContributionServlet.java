@@ -48,7 +48,7 @@ public class AssignContributionServlet extends HttpServlet {
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
 			showSettings(req, resp);
 			return;

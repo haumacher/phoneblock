@@ -122,8 +122,8 @@ public class BasicLoginFilter extends LoginFilter {
 	}
 	
 	@Override
-	protected void setUser(HttpServletRequest req, String userName) {
-		setRequestUser(req, userName);
+	protected void setUser(HttpServletRequest req, AuthToken authorization) {
+		setRequestUser(req, authorization);
 	}
 
 }

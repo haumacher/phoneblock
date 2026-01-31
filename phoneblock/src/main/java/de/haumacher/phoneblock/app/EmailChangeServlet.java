@@ -63,7 +63,7 @@ public class EmailChangeServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
+		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
 			resp.sendRedirect(req.getContextPath() + "/login");
 			return;
@@ -85,7 +85,7 @@ public class EmailChangeServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
+		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
 			resp.sendRedirect(req.getContextPath() + "/login");
 			return;

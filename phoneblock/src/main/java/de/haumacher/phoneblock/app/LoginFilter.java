@@ -13,6 +13,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.shared.Language;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -43,7 +44,9 @@ public abstract class LoginFilter implements Filter {
 
 	private static final String BEARER_AUTH = "Bearer ";
 
-	public static final String AUTHENTICATED_USER_ATTR = "authenticated-user";
+	private static final String AUTHENTICATED_USER_ATTR = "authenticated-user";
+
+	private static final String USER_SETTINGS_ATTR = "user-settings";
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -59,10 +62,10 @@ public abstract class LoginFilter implements Filter {
 			// Short-cut to prevent authenticating every request.
 			HttpSession session = req.getSession(false);
 			if (session != null) {
-				String userName = LoginFilter.getAuthenticatedUser(session);
-				if (userName != null) {
-					setRequestUser(req, userName);
-					loggedIn(req, resp, userName, chain);
+				AuthToken authorization = LoginFilter.getAuthorization(session);
+				if (authorization != null) {
+					setRequestUser(req, authorization);
+					loggedIn(req, resp, chain);
 					return;
 				}
 			}
@@ -81,13 +84,13 @@ public abstract class LoginFilter implements Filter {
 							String userName = authorization.getUserName();
 							LOG.info("Accepted login token for user {} accessing '{}'.", userName, req.getServletPath());
 							
-							setUser(req, userName);
+							setUser(req, authorization);
 							
 							// Update cookie to extend lifetime and invalidate old version of cookie. 
 							// This enhances security since a token can be used only once.
 							setLoginCookie(req, resp, authorization);
 							
-							loggedIn(req, resp, userName, chain);
+							loggedIn(req, resp, chain);
 							return;
 						} else {
 							if (authorization == null) {
@@ -115,9 +118,8 @@ public abstract class LoginFilter implements Filter {
 					if (checkTokenAuthorization(req, authorization)) {
 						LOG.info("Accepted bearer token {}...({}) for user {}.", token.substring(0, 16), token, authorization.getId(), userName);
 
-						setUser(req, userName);
-
-						loggedIn(req, resp, userName, chain);
+						setUser(req, authorization);
+						loggedIn(req, resp, chain);
 						return;
 					} else {
 						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.",
@@ -125,10 +127,10 @@ public abstract class LoginFilter implements Filter {
 					}
 				}
 			} else if (allowBasicAuth(req)) {
-				String userName = db.basicAuth(authHeader, req.getHeader("User-Agent"));
-				if (userName != null) {
-					setUser(req, userName);
-					loggedIn(req, resp, userName, chain);
+				AuthToken authorization = db.basicAuth(authHeader, req.getHeader("User-Agent"));
+				if (authorization != null) {
+					setUser(req, authorization);
+					loggedIn(req, resp, chain);
 					return;
 				}
 			}
@@ -141,11 +143,11 @@ public abstract class LoginFilter implements Filter {
 			if (authorization != null) {
 				String userName = authorization.getUserName();
 
-				if (checkTokenAuthorization(req, authorization)) {
+				if (authorization.isAccessLogin() && checkTokenAuthorization(req, authorization)) {
 					LOG.info("Accepted token parameter {}...({}) for user {}.", tokenParam.substring(0, 16), tokenParam, authorization.getId(), userName);
 
 					// Create session to avoid keeping token in URL
-					setSessionUser(req, userName);
+					setUser(req, authorization);
 
 					// Redirect to same URL without token parameter to remove it from browser history
 					String redirectUrl = buildUrlWithoutTokenParameter(req);
@@ -161,7 +163,7 @@ public abstract class LoginFilter implements Filter {
 		requestLogin(req, resp, chain);
 	}
 
-	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, String userName, FilterChain chain)
+	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		chain.doFilter(request, response);
 	}
@@ -178,8 +180,8 @@ public abstract class LoginFilter implements Filter {
 		return true;
 	}
 
-	protected void setUser(HttpServletRequest req, String userName) {
-		setSessionUser(req, userName);
+	protected void setUser(HttpServletRequest req, AuthToken authorization) {
+		setSessionUser(req, authorization);
 	}
 
 	/**
@@ -243,51 +245,53 @@ public abstract class LoginFilter implements Filter {
 	}
 
 	/**
-	 * Retrieves the authenticated user from a request attribute set by a {@link LoginFilter} for the service URI.
+	 * The user name of the authenticated user from a request attribute set by a {@link LoginFilter} for the service URI.
 	 * 
 	 * @see BasicLoginFilter
 	 */
 	public static String getAuthenticatedUser(HttpServletRequest req) {
-		return (String) req.getAttribute(AUTHENTICATED_USER_ATTR);
+		AuthToken authorization = getAuthorization(req);
+		return authorization == null ? null : authorization.getUserName();
+	}
+
+	/** 
+	 * The authenticated user for the given request.
+	 */
+	public static AuthToken getAuthorization(HttpServletRequest req) {
+		return (AuthToken) req.getAttribute(AUTHENTICATED_USER_ATTR);
+	}
+	
+	private static AuthToken getAuthorization(HttpSession session) {
+		return (AuthToken) session.getAttribute(AUTHENTICATED_USER_ATTR);
 	}
 	
 	/** 
-	 * The authenticated user of the given session.
-	 */
-	public static String getAuthenticatedUser(HttpSession session) {
-		if (session == null) {
-			return null;
-		}
-		return (String) session.getAttribute(AUTHENTICATED_USER_ATTR);
-	}
-
-	/** 
 	 * Adds the given user name to the request and session.
 	 */
-	public static void setSessionUser(HttpServletRequest req, String userName) {
-		setRequestUser(req, userName);
-		setSessionUser(req.getSession(), userName);
+	public static void setSessionUser(HttpServletRequest req, AuthToken authorization) {
+		setRequestUser(req, authorization);
+		setSessionUser(req.getSession(), authorization);
 	}
 
-	private static void setSessionUser(HttpSession session, String userName) {
-		session.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+	private static void setSessionUser(HttpSession session, AuthToken authorization) {
+		session.setAttribute(AUTHENTICATED_USER_ATTR, authorization);
 
 		DB db = DBService.getInstance();
-		try (SqlSession tx = db.openSession()) {
-			Users users = tx.getMapper(Users.class);
-			String lang = users.getLang(userName);
-			Language selectedLang = DefaultController.selectLanguage(lang);
-			session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
-			
-			LOG.debug("Initialized user session for '{}' in language '{}'.", userName, selectedLang);
-		}
+		UserSettings settings = db.getSettings(authorization.getUserName());
+		
+		session.setAttribute(USER_SETTINGS_ATTR, settings);
+		
+		Language selectedLang = DefaultController.selectLanguage(settings.getLang());
+		session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
+		
+		LOG.debug("Initialized user session for '{}' in language '{}'.", authorization.getUserName(), selectedLang);
 	}
 
 	/**
 	 * Adds the given user name to the current request.
 	 */
-	public static void setRequestUser(HttpServletRequest req, String userName) {
-		req.setAttribute(AUTHENTICATED_USER_ATTR, userName);
+	public static void setRequestUser(HttpServletRequest req, AuthToken authorization) {
+		req.setAttribute(AUTHENTICATED_USER_ATTR, authorization);
 	}
 
 	/**

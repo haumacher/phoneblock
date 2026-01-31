@@ -143,10 +143,10 @@ public class ContentFilter extends LoginFilter {
 		}
 		
 		switch (path) {
-		case RatingServlet.PATH: 
-			return authorization.isAccessRate();
+		case "/settings": 
+			return authorization.isAccessLogin();
 		default:
-		return authorization.isAccessLogin();
+			return authorization.isAccessRate();
 		}
 	}
 
@@ -290,7 +290,7 @@ public class ContentFilter extends LoginFilter {
 	}
 
 	@Override
-	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, String userName, FilterChain chain)
+	protected void loggedIn(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		render(request, response, chain);
 	}

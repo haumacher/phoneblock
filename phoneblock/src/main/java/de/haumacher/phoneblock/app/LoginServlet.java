@@ -67,7 +67,7 @@ public class LoginServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
+		if (LoginFilter.getAuthenticatedUser(req) != null) {
 			String location = location(req);
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
@@ -93,17 +93,24 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		DB db = DBService.getInstance();
-		String authenticatedUser = db.login(userName, password);
-		if (authenticatedUser == null) {
+		AuthToken authorization = db.login(userName, password);
+		if (authorization == null) {
 			LOG.warn("Login failed for user: " + userName);
 			sendFailure(req, resp);
 			return;
 		}
+		if (!authorization.isAccessLogin()) {
+			LOG.warn("Login attempt with unprivileged token for user: " + userName);
+			sendFailure(req, resp);
+			return;
+		}
 
-		String rememberValue = req.getParameter(REMEMBER_ME_PARAM);
-		processRememberMe(req, resp, db, rememberValue, userName);
+		String authenticatedUser = authorization.getUserName();
 		
-		LoginFilter.setSessionUser(req, authenticatedUser);
+		String rememberValue = req.getParameter(REMEMBER_ME_PARAM);
+		processRememberMe(req, resp, db, rememberValue, authenticatedUser);
+		
+		LoginFilter.setSessionUser(req, authorization);
 		
 		redirectToLocationAfterLogin(req, resp, SettingsServlet.PATH);
 	}

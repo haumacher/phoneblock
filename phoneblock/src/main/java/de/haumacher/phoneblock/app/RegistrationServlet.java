@@ -111,7 +111,9 @@ public class RegistrationServlet extends HttpServlet {
 	 */
 	public static void startSetup(HttpServletRequest req, HttpServletResponse resp,
 			String login, String passwd) throws ServletException, IOException {
-		LoginFilter.setSessionUser(req, login);
+
+		DB db = DBService.getInstance();
+		LoginFilter.setSessionUser(req, db.createMasterLoginToken(login));
 
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:

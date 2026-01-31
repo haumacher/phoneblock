@@ -296,10 +296,9 @@ public class DefaultController implements WebController {
 			String attribute = it.nextElement();
 			ctx.setVariable(attribute, request.getAttribute(attribute));
 		}
-		
+
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			String userName = LoginFilter.getAuthenticatedUser(session);
 			String token = RegistrationServlet.getPassword(session);
 			Object cardDavToken = session.getAttribute("cardDavToken");
 			Object apiKey = session.getAttribute("apiKey");
@@ -308,12 +307,16 @@ public class DefaultController implements WebController {
 			session.removeAttribute("cardDavToken");
 			session.removeAttribute("apiKey");
 
-			ctx.setVariable("userName", userName);
 			ctx.setVariable("token", token);
 			ctx.setVariable("cardDavToken", cardDavToken);
 			ctx.setVariable("apiKey", apiKey);
-			ctx.setVariable("supporterId", userName == null ? null : "PhoneBlock-" + userName.substring(0, 13));
-			ctx.setVariable("loggedIn", Boolean.valueOf(userName != null));
+		}
+
+		String userName = LoginFilter.getAuthenticatedUser(request);
+		if (userName != null) {
+			ctx.setVariable("userName", userName);
+			ctx.setVariable("supporterId", "PhoneBlock-" + userName.substring(0, 13));
+			ctx.setVariable("loggedIn", Boolean.TRUE);
 		} else {
 			ctx.setVariable("loggedIn", Boolean.FALSE);
 		}

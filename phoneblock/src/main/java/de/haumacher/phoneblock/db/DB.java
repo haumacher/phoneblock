@@ -1811,7 +1811,7 @@ public class DB {
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String basicAuth(String authHeader, String userAgent) throws IOException {
+	public AuthToken basicAuth(String authHeader, String userAgent) throws IOException {
 		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
 			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
@@ -1832,9 +1832,13 @@ public class DB {
 						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authToken.getUserName());
 						return null;
 					}
-					return authToken.getUserName();
+					return authToken;
 				} else {
-					return login(login, passwd);
+					AuthToken result = login(login, passwd);
+					if (result != null) {
+						result.setUserAgent(userAgent);
+					}
+					return result;
 				}
 			}
 		}
@@ -1847,7 +1851,7 @@ public class DB {
 	 * 
 	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String login(String login, String passwd) throws IOException {
+	public AuthToken login(String login, String passwd) throws IOException {
 		byte[] pwhash = pwhash(passwd);
 		
 		try (SqlSession session = openSession()) {
@@ -1857,7 +1861,8 @@ public class DB {
 			if (hashIn != null) {
 				byte[] expectedHash = hashIn.readAllBytes();
 				if (Arrays.equals(pwhash, expectedHash)) {
-					return login;
+					long userId = users.getUserId(login).longValue();
+					return createMasterLoginToken(login, userId);
 				} else {
 					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + login);
 				}
@@ -1866,6 +1871,29 @@ public class DB {
 			}
 		}
 		return null;
+	}
+
+	public AuthToken createMasterLoginToken(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			Long userId = users.getUserId(login);
+			if (userId == null) {
+				return null;
+			}
+			return createMasterLoginToken(login, userId.longValue());
+		}
+	}
+	
+	private static AuthToken createMasterLoginToken(String login, long userId) {
+		return AuthToken.create()
+			.setUserName(login)
+			.setUserId(userId)
+			.setAccessCarddav(true)
+			.setAccessDownload(true)
+			.setAccessLogin(true)
+			.setAccessQuery(true)
+			.setAccessRate(true);
 	}
 
 	public static String saveChars(String login) {

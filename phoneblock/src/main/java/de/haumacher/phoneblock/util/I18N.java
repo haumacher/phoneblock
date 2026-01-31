@@ -109,7 +109,7 @@ public class I18N {
 	 * @return The user's locale language tag (e.g., "de", "en-US")
 	 */
 	public static String getUserLocale(HttpServletRequest req) {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName != null) {
 			DB db = DBService.getInstance();
 			try (SqlSession sqlSession = db.openSession()) {

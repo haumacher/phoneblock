@@ -19,13 +19,11 @@ import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
-import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.util.I18N;
-import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -46,11 +44,13 @@ public class SettingsServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
-		if (userName == null) {
+		AuthToken authorization = LoginFilter.getAuthorization(req);
+		if (authorization == null || !authorization.isAccessLogin()) {
 			sendFailure(req, resp);
 			return;
 		}
+		
+		String userName = authorization.getUserName();
 		
 		String action = req.getParameter("action");
 		if (action == null) {

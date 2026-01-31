@@ -32,7 +32,7 @@ public class ResetPasswordServlet extends HttpServlet {
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = LoginFilter.getAuthenticatedUser(req);
 		if (login == null) {
 			showSettings(req, resp);
 			return;

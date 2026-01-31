@@ -366,7 +366,7 @@ public class CardDavServlet extends HttpServlet {
 	}
 
 	private boolean isAuthenticated(HttpServletRequest req, String principal, String resourcePath) {
-		Object currentUser = req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
+		String currentUser = LoginFilter.getAuthenticatedUser(req);
 		if (currentUser == null) {
 			LOG.warn("No authentication accessing: " + resourcePath);
 			return false;

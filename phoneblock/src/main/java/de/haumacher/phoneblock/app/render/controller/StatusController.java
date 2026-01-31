@@ -12,7 +12,6 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Statistics;
 import de.haumacher.phoneblock.db.Status;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 public class StatusController extends DefaultController {
 
@@ -21,8 +20,7 @@ public class StatusController extends DefaultController {
 		super.fillContext(ctx, request);
 		
 		long now = System.currentTimeMillis();
-		HttpSession session = request.getSession(false);
-		String userName = LoginFilter.getAuthenticatedUser(session);
+		String userName = LoginFilter.getAuthenticatedUser(request);
 
 		request.setAttribute("now", Long.valueOf(now));
 		request.setAttribute("searches", DBService.getInstance().getTopSearches());
