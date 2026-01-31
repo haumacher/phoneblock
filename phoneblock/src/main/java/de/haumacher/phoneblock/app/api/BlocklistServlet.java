@@ -84,8 +84,14 @@ public class BlocklistServlet extends HttpServlet {
 				return;
 			}
 
-			result = db.getBlocklistUpdateAPI(sinceVersion);
-			LOG.info("Sending blocklist update (since {}, minVotes {}) to user '{}' (agent '{}')", sinceVersion, db.getMinVisibleVotes(), userName, userAgent);
+			if (sinceVersion == 0) {
+				// Treat since=0 as a full sync request - client has nothing, so no deletions needed
+				result = db.getBlockListAPI();
+				LOG.info("Sending blocklist (since=0 treated as full sync, minVotes {}) to user '{}' (agent '{}')", db.getMinVisibleVotes(), userName, userAgent);
+			} else {
+				result = db.getBlocklistUpdateAPI(sinceVersion);
+				LOG.info("Sending blocklist update (since {}, minVotes {}) to user '{}' (agent '{}')", sinceVersion, db.getMinVisibleVotes(), userName, userAgent);
+			}
 		} else {
 			// Full blocklist
 			result = db.getBlockListAPI();
