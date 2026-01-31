@@ -613,6 +613,10 @@ public class DB {
 	public AuthToken createLoginToken(String login, long now, String userAgent) {
 		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
 			.setImplicit(true)
+			
+			// See required ContentFilter authorizations.
+			.setAccessQuery(true)
+			.setAccessRate(true)
 			.setAccessLogin(true);
 		createAuthToken(authorization);
 		return authorization;
