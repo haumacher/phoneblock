@@ -8,7 +8,7 @@ import java.io.IOException;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.SearchResult;
-import de.haumacher.phoneblock.location.LocationService;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -35,9 +35,9 @@ public class SearchApiServlet extends HttpServlet {
 		}
 		
 		String dialPrefix = ServletUtil.lookupDialPrefix(req);
-		String userName = LoginFilter.getAuthenticatedUser(req);
+		UserSettings settings = LoginFilter.getUserSettings(req);
 		String query = pathInfo.substring(1);
-		SearchResult searchResult = SearchServlet.analyze(query, userName, dialPrefix);
+		SearchResult searchResult = SearchServlet.analyze(query, settings, dialPrefix);
 		
 		if (searchResult == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");

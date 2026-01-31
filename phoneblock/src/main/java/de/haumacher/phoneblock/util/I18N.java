@@ -7,13 +7,9 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.apache.ibatis.session.SqlSession;
-
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.render.DefaultController;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -104,21 +100,17 @@ public class I18N {
 	}
 
 	/**
-	 * Gets the user's preferred locale from their database settings, with fallback to browser locale.
+	 * Gets the user's preferred locale from cached session settings, with fallback to browser locale.
 	 *
 	 * @param req The HTTP request
 	 * @return The user's locale language tag (e.g., "de", "en-US")
 	 */
 	public static String getUserLocale(HttpServletRequest req) {
-		String userName = LoginFilter.getAuthenticatedUser(req);
-		if (userName != null) {
-			DB db = DBService.getInstance();
-			try (SqlSession sqlSession = db.openSession()) {
-				Users users = sqlSession.getMapper(Users.class);
-				String lang = users.getLang(userName);
-				if (lang != null && !lang.isEmpty()) {
-					return lang;
-				}
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		if (settings != null) {
+			String lang = settings.getLang();
+			if (lang != null && !lang.isEmpty()) {
+				return lang;
 			}
 		}
 		// Fallback to browser locale, normalized to available languages

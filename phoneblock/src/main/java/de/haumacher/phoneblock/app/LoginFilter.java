@@ -264,8 +264,34 @@ public abstract class LoginFilter implements Filter {
 	private static AuthToken getAuthorization(HttpSession session) {
 		return (AuthToken) session.getAttribute(AUTHENTICATED_USER_ATTR);
 	}
-	
-	/** 
+
+	/**
+	 * Gets the cached user settings from the session.
+	 *
+	 * @return UserSettings or null if not logged in
+	 */
+	public static UserSettings getUserSettings(HttpServletRequest req) {
+		HttpSession session = req.getSession(false);
+		return session != null ? getUserSettings(session) : null;
+	}
+
+	private static UserSettings getUserSettings(HttpSession session) {
+		return (UserSettings) session.getAttribute(USER_SETTINGS_ATTR);
+	}
+
+	/**
+	 * Refreshes the cached user settings after an update.
+	 */
+	public static void refreshUserSettings(HttpServletRequest req, UserSettings settings) {
+		HttpSession session = req.getSession(false);
+		if (session != null) {
+			session.setAttribute(USER_SETTINGS_ATTR, settings);
+			Language selectedLang = DefaultController.selectLanguage(settings.getLang());
+			session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
+		}
+	}
+
+	/**
 	 * Adds the given user name to the request and session.
 	 */
 	public static void setSessionUser(HttpServletRequest req, AuthToken authorization) {

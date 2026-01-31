@@ -308,21 +308,24 @@ public class SettingsServlet extends HttpServlet {
 			maxLength = 6000;
 		}
 		
-		DB db = DBService.getInstance();
-		UserSettings settings = db.getSettings(userName);
+		UserSettings settings = LoginFilter.getUserSettings(req);
 		settings.setMinVotes(minVotes);
 		settings.setMaxLength(maxLength);
 		settings.setWildcards(wildcards);
-		
+
 		// Verify input.
 		if (myDialPrefixOrNull != null) {
 			settings.setDialPrefix(myDialPrefixOrNull);
 		}
-		
+
 		settings.setNationalOnly(nationalOnly);
-		
+
+		DB db = DBService.getInstance();
 		db.updateSettings(settings);
-		
+
+		// Refresh cached settings in session
+		LoginFilter.refreshUserSettings(req, settings);
+
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
 		AddressBookCache.getInstance().flushUserCache(userName);
 		

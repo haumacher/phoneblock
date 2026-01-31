@@ -65,9 +65,9 @@ public class SettingsController extends RequireLoginController {
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);
-		
+
 		String userName = LoginFilter.getAuthenticatedUser(request);
-		UserSettings settings = DBService.getInstance().getSettings(userName);
+		UserSettings settings = LoginFilter.getUserSettings(request);
 
 		// Check for success message from session and move to request scope
 		HttpSession httpSession = request.getSession(false);
