@@ -10,16 +10,12 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.ibatis.session.SqlSession;
-
 import de.haumacher.msgbuf.data.DataObject;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 import de.haumacher.msgbuf.xml.XmlSerializable;
 import de.haumacher.phoneblock.app.LoginFilter;
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.LocationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -125,19 +121,11 @@ public class ServletUtil {
 	}
 
 	public static String lookupDialPrefix(HttpServletRequest req) {
-		String userName = LoginFilter.getAuthenticatedUser(req);
-		
-		String dialPrefix;
-		if (userName == null) {
-			dialPrefix = LocationService.getInstance().browserDialPrefix(req);
-		} else {
-			DB db = DBService.getInstance();
-			try (SqlSession session = db.openSession()) {
-				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
-				dialPrefix = settings.getDialPrefix();
-			}
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		if (settings != null) {
+			return settings.getDialPrefix();
 		}
-		return dialPrefix;
+		return LocationService.getInstance().browserDialPrefix(req);
 	}
 
 }
