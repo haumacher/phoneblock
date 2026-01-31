@@ -9,12 +9,24 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
  * Test case for {@link MailServiceImpl}.
  */
 public class MailServiceImplTest {
+
+	private final class Params extends HashMap<String, Object> {
+		@Override
+		public Object get(Object key) {
+			Object result = super.get(key);
+			if (result == null) {
+				Assertions.fail("Access to undeclared variable: " + key);
+			}
+			return result;
+		}
+	}
 
 	/** All available locales for email templates. */
 	private static final String[] LOCALES = {
@@ -27,7 +39,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testMailTemplate() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_NAME_123");
 			variables.put("code", "TEST_CODE_456");
 			variables.put("image", "https://test.example.com/image.svg");
@@ -46,7 +58,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testEmailChangeMail() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_NAME_789");
 			variables.put("code", "TEST_CODE_ABC");
 			variables.put("image", "https://test.example.com/change-image.svg");
@@ -65,7 +77,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testWelcomeMail() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_WELCOME_NAME");
 			variables.put("image", "https://test.example.com/welcome-image.svg");
 			variables.put("home", "https://test.example.com/home");
@@ -94,7 +106,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testMobileWelcomeMail() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_MOBILE_NAME");
 			variables.put("deviceLabel", "TEST_DEVICE_XYZ");
 			variables.put("image", "https://test.example.com/mobile-image.svg");
@@ -127,7 +139,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testHelpMail() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_HELP_NAME");
 			variables.put("userName", "TEST_USERNAME_HELP");
 			variables.put("lastAccess", "TEST_LAST_ACCESS_DATE");
@@ -162,7 +174,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testThanksMail() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_THANKS_NAME");
 			variables.put("attribute", "TEST_ATTRIBUTE_VALUE ");
 			variables.put("image", "https://test.example.com/thanks-image.svg");
@@ -193,7 +205,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testAbDisableMail() {
 		for (String locale : LOCALES) {
-			Map<String, Object> variables = new HashMap<>();
+			Map<String, Object> variables = new Params();
 			variables.put("name", "TEST_DISABLE_NAME");
 			variables.put("userName", "TEST_USERNAME_DISABLE");
 			variables.put("botId", "TEST_BOT_ID_123");
@@ -232,7 +244,7 @@ public class MailServiceImplTest {
 	@Test
 	public void testHtmlToPlainText_MobileWelcomeMail() throws IOException {
 		// Process the mobile-welcome-mail template using Thymeleaf
-		Map<String, Object> variables = new HashMap<>();
+		Map<String, Object> variables = new Params();
 		variables.put("name", "Max Mustermann");
 		variables.put("deviceLabel", "Samsung-Galaxy-S23");
 		variables.put("image", "https://phoneblock.net/phoneblock/assets/img/app-logo.svg");
