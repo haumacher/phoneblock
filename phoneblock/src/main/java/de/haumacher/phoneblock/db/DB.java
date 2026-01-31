@@ -55,6 +55,7 @@ import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
 import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
@@ -660,31 +661,31 @@ public class DB {
 		return userAgent == null ? "-" : userAgent;
 	}
 
-	public AuthToken checkAuthToken(String token, long now, String userAgent, boolean renew) {
+	public AuthContext checkAuthToken(String token, long now, String userAgent, boolean renew) {
 		if (!token.startsWith(TOKEN_VERSION)) {
 			return null;
 		}
-		
+
 		try {
 			TokenInfo tokenInfo = TokenInfo.parse(token);
-			
+
 			try (SqlSession session = openSession()) {
 				Users users = session.getMapper(Users.class);
-				
+
 				DBAuthToken result = users.getAuthToken(tokenInfo.id);
 				if (result == null) {
 					LOG.info("Outdated authorization token received: {}", token);
 					return null;
 				}
-				
+
 				byte[] expectedHash = result.getPwHash();
 				byte[] digest = sha256().digest(tokenInfo.secret);
-				
+
 				if (!Arrays.equals(digest, expectedHash)) {
 					LOG.info("Invalid authorization token received for user {}: {}", result.getUserId(), token);
 					return null;
 				}
-				
+
 				result.setUserName(users.getUserName(result.getUserId()));
 
 				// Remember token, since an update is sent to the client.
@@ -709,20 +710,20 @@ public class DB {
 					session.commit();
 				}
 
+				// Load user settings in the same transaction
+				DBUserSettings userSettings = getUserSettings(users, result.getUserName());
+
 				// Send welcome mail on first token usage (independent of rate limit)
 				if (isFirstAccess && !result.isImplicit() && _config.isSendWelcomeMails() && _mailService != null) {
 					LOG.info("First token usage detected for token {}, sending welcome mail.",
 					         result.getId());
 
-					DBUserSettings userSettings = getUserSettings(users, result.getUserName());
 					String deviceLabel = result.getLabel();
-
-					final String finalDeviceLabel = deviceLabel;
 					_scheduler.executor().submit(() ->
-					    _mailService.sendMobileWelcomeMail(userSettings, finalDeviceLabel));
+					    _mailService.sendMobileWelcomeMail(userSettings, deviceLabel));
 				}
 
-				return result;
+				return new AuthContext(result, userSettings);
 			}
 		} catch (IOException e) {
 			LOG.info("Failed to parse authorization token: {}", token);
@@ -1798,11 +1799,11 @@ public class DB {
 	/**
 	 * Checks credentials in the given authorization header.
 	 * Ignores whitespaces surrounding username or password.
-	 * @param userAgent 
-	 * 
-	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
+	 * @param userAgent
+	 *
+	 * @return The authentication context if authorization was successful, <code>null</code> otherwise.
 	 */
-	public AuthToken basicAuth(String authHeader, String userAgent) throws IOException {
+	public AuthContext basicAuth(String authHeader, String userAgent) throws IOException {
 		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
 			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
@@ -1811,23 +1812,23 @@ public class DB {
 			if (sepIndex >= 0) {
 				String login = decoded.substring(0, sepIndex).trim();
 				String passwd = decoded.substring(sepIndex + 1).trim();
-				
+
 				if (passwd.startsWith(TOKEN_VERSION)) {
 					// Compatibility - FRITZ!Box cannot send bearer tokens.
-					AuthToken authToken = checkAuthToken(passwd, System.currentTimeMillis(), userAgent, false);
-					if (authToken == null) {
+					AuthContext authContext = checkAuthToken(passwd, System.currentTimeMillis(), userAgent, false);
+					if (authContext == null) {
 						LOG.warn("Invalid token received from {}.", login);
 						return null;
 					}
-					if (!login.equals(authToken.getUserName())) {
-						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authToken.getUserName());
+					if (!login.equals(authContext.getUserName())) {
+						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authContext.getUserName());
 						return null;
 					}
-					return authToken;
+					return authContext;
 				} else {
-					AuthToken result = login(login, passwd);
+					AuthContext result = login(login, passwd);
 					if (result != null) {
-						result.setUserAgent(userAgent);
+						result.getAuthorization().setUserAgent(userAgent);
 					}
 					return result;
 				}
@@ -1837,23 +1838,25 @@ public class DB {
 		return null;
 	}
 
-	/** 
+	/**
 	 * Checks the given credentials.
-	 * 
-	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
+	 *
+	 * @return The authentication context if authorization was successful, <code>null</code> otherwise.
 	 */
-	public AuthToken login(String login, String passwd) throws IOException {
+	public AuthContext login(String login, String passwd) throws IOException {
 		byte[] pwhash = pwhash(passwd);
-		
+
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			
+
 			InputStream hashIn = users.getHash(login);
 			if (hashIn != null) {
 				byte[] expectedHash = hashIn.readAllBytes();
 				if (Arrays.equals(pwhash, expectedHash)) {
 					long userId = users.getUserId(login).longValue();
-					return createMasterLoginToken(login, userId);
+					AuthToken authorization = createMasterLoginToken(login, userId);
+					DBUserSettings settings = getUserSettings(users, login);
+					return new AuthContext(authorization, settings);
 				} else {
 					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + login);
 				}
@@ -1864,18 +1867,20 @@ public class DB {
 		return null;
 	}
 
-	public AuthToken createMasterLoginToken(String login) {
+	public AuthContext createMasterLoginToken(String login) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			
+
 			Long userId = users.getUserId(login);
 			if (userId == null) {
 				return null;
 			}
-			return createMasterLoginToken(login, userId.longValue());
+			AuthToken token = createMasterLoginToken(login, userId.longValue());
+			UserSettings settings = getUserSettings(users, login);
+			return new AuthContext(token, settings);
 		}
 	}
-	
+
 	private static AuthToken createMasterLoginToken(String login, long userId) {
 		return AuthToken.create()
 			.setUserName(login)

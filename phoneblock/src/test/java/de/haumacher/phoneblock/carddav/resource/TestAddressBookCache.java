@@ -62,7 +62,7 @@ public class TestAddressBookCache {
 		settings.setMinVotes(2);
 		_db.updateSettings(settings);
 
-		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now);
+		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now, settings);
 		Assertions.assertEquals(1, numbers.size());
 		Assertions.assertEquals(Arrays.asList("+39011111111", "+39022222222"), numbers.get(0).getNumbers());
 	}
@@ -74,8 +74,8 @@ public class TestAddressBookCache {
 		settings.setNationalOnly(false);
 		settings.setMinVotes(2);
 		_db.updateSettings(settings);
-		
-		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now);
+
+		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now, settings);
 		Assertions.assertEquals(Arrays.asList("+39011111111", "+39022222222", "+49333333333", "+49444444444"), phoneNumbers(numbers));
 	}
 	
@@ -86,8 +86,8 @@ public class TestAddressBookCache {
 		settings.setNationalOnly(false);
 		settings.setMinVotes(10);
 		_db.updateSettings(settings);
-		
-		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now);
+
+		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now, settings);
 		Assertions.assertEquals(Arrays.asList("+39011111111", "+49333333333"), phoneNumbers(numbers));
 	}
 	
@@ -103,7 +103,7 @@ public class TestAddressBookCache {
 		_db.addRating("u1", NumberAnalyzer.analyze("+39055555555", "+49"), "+39", Rating.E_ADVERTISING, null, "fr", _now);
 		_db.addRating("u1", NumberAnalyzer.analyze("+49666666666", "+49"), "+39", Rating.F_GAMBLE, null, "fr", _now);
 
-		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now);
+		List<NumberBlock> numbers = _cache.loadNumbers("u1", _now, settings);
 		Assertions.assertEquals(Arrays.asList("+39022222222", "+39055555555", "+49333333333", "+49444444444", "+49666666666"), phoneNumbers(numbers));
 	}
 

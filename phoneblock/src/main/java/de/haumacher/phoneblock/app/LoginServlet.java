@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -93,12 +94,13 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		DB db = DBService.getInstance();
-		AuthToken authorization = db.login(userName, password);
-		if (authorization == null) {
+		AuthContext authContext = db.login(userName, password);
+		if (authContext == null) {
 			LOG.warn("Login failed for user: " + userName);
 			sendFailure(req, resp);
 			return;
 		}
+		AuthToken authorization = authContext.getAuthorization();
 		if (!authorization.isAccessLogin()) {
 			LOG.warn("Login attempt with unprivileged token for user: " + userName);
 			sendFailure(req, resp);
@@ -106,11 +108,11 @@ public class LoginServlet extends HttpServlet {
 		}
 
 		String authenticatedUser = authorization.getUserName();
-		
+
 		String rememberValue = req.getParameter(REMEMBER_ME_PARAM);
 		processRememberMe(req, resp, db, rememberValue, authenticatedUser);
-		
-		LoginFilter.setSessionUser(req, authorization);
+
+		LoginFilter.setSessionUser(req, authContext);
 		
 		redirectToLocationAfterLogin(req, resp, SettingsServlet.PATH);
 	}

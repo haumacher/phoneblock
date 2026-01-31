@@ -45,6 +45,7 @@ import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
+import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -88,16 +89,18 @@ public class TestDB {
 
 		long time = 1000;
 		final long createTime = time;
-		
+
 		AuthToken token1 = _db.createLoginToken("user1", time++, "creating-browser");
-		
+
 		// Skip rate limit.
 		time += DB.RATE_LIMIT_MS;
-		
+
 		final String origToken1 = token1.getToken();
 		final long checkTime = time;
-		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "other-browser", true));
-		
+		AuthContext context1 = _db.checkAuthToken(token1.getToken(), time++, "other-browser", true);
+		assertNotNull(context1);
+		token1 = context1.getAuthorization();
+
 		assertEquals(token1.getUserName(), "user1");
 		assertEquals(createTime, token1.getCreated());
 		assertEquals(checkTime, token1.getLastAccess());
@@ -105,34 +108,40 @@ public class TestDB {
 		assertEquals("other-browser", token1.getUserAgent());
 		assertTrue(token1.isImplicit());
 		assertTrue(token1.isAccessLogin());
-		
+
 		AuthToken token2 = _db.createLoginToken("user1", time++, "creating-browser");
 		AuthToken token3 = _db.createLoginToken("user1", time++, "creating-browser");
 		AuthToken token4 = _db.createLoginToken("user1", time++, "creating-browser");
 		AuthToken token5 = _db.createLoginToken("user1", time++, "creating-browser");
-		
+
 		// Skip rate limit.
 		time += DB.RATE_LIMIT_MS;
-		
+
 		String oldToken1 = token1.getToken();
-		
-		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "login-browser", true));
-		assertNotNull(token2 = _db.checkAuthToken(token2.getToken(), time++, "login-browser", true));
-		assertNotNull(token3 = _db.checkAuthToken(token3.getToken(), time++, "login-browser", true));
-		assertNotNull(token4 = _db.checkAuthToken(token4.getToken(), time++, "login-browser", true));
-		assertNotNull(token5 = _db.checkAuthToken(token5.getToken(), time++, "login-browser", true));
-		
+
+		token1 = checkAuthToken(token1.getToken(), time++, "login-browser", true);
+		token2 = checkAuthToken(token2.getToken(), time++, "login-browser", true);
+		token3 = checkAuthToken(token3.getToken(), time++, "login-browser", true);
+		token4 = checkAuthToken(token4.getToken(), time++, "login-browser", true);
+		token5 = checkAuthToken(token5.getToken(), time++, "login-browser", true);
+
 		assertNotEquals(origToken1, token1.getToken());
 		assertNull(_db.checkAuthToken(oldToken1, time, "bad-browser", false));
-		
+
 		AuthToken token6 = _db.createLoginToken("user1", time++, "creating-browser");
-		
+
 		assertNull(   _db.checkAuthToken(token1.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token2.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token3.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token4.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token5.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token6.getToken(), time++, "login-browser", false));
+	}
+
+	private AuthToken checkAuthToken(String token, long time, String userAgent, boolean renew) {
+		AuthContext context = _db.checkAuthToken(token, time, userAgent, renew);
+		assertNotNull(context);
+		return context.getAuthorization();
 	}
 
 	@Test
