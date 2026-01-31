@@ -22,7 +22,9 @@ import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.app.api.TestConnectServlet;
 import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
+import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.annotation.WebFilter;
@@ -124,6 +126,10 @@ public class BasicLoginFilter extends LoginFilter {
 	@Override
 	protected void setUser(HttpServletRequest req, AuthToken authorization) {
 		setRequestUser(req, authorization);
+
+		// Also load and attach UserSettings to request (no session for API/CardDAV clients)
+		UserSettings settings = DBService.getInstance().getSettings(authorization.getUserName());
+		setRequestUserSettings(req, settings);
 	}
 
 }

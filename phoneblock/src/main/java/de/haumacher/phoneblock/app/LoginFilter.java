@@ -46,7 +46,10 @@ public abstract class LoginFilter implements Filter {
 
 	private static final String AUTHENTICATED_USER_ATTR = "authenticated-user";
 
-	private static final String USER_SETTINGS_ATTR = "user-settings";
+	/**
+	 * Attribute name for cached user settings (used in both session and request).
+	 */
+	protected static final String USER_SETTINGS_ATTR = "user-settings";
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -65,6 +68,13 @@ public abstract class LoginFilter implements Filter {
 				AuthToken authorization = LoginFilter.getAuthorization(session);
 				if (authorization != null) {
 					setRequestUser(req, authorization);
+
+					// Copy UserSettings from session to request
+					UserSettings settings = getUserSettings(session);
+					if (settings != null) {
+						req.setAttribute(USER_SETTINGS_ATTR, settings);
+					}
+
 					loggedIn(req, resp, chain);
 					return;
 				}
@@ -266,11 +276,17 @@ public abstract class LoginFilter implements Filter {
 	}
 
 	/**
-	 * Gets the cached user settings from the session.
+	 * Gets the cached user settings from the request or session.
 	 *
 	 * @return UserSettings or null if not logged in
 	 */
 	public static UserSettings getUserSettings(HttpServletRequest req) {
+		// First try request attribute (set by filter for every request)
+		UserSettings settings = (UserSettings) req.getAttribute(USER_SETTINGS_ATTR);
+		if (settings != null) {
+			return settings;
+		}
+		// Fallback to session for backwards compatibility
 		HttpSession session = req.getSession(false);
 		return session != null ? getUserSettings(session) : null;
 	}
@@ -283,6 +299,10 @@ public abstract class LoginFilter implements Filter {
 	 * Refreshes the cached user settings after an update.
 	 */
 	public static void refreshUserSettings(HttpServletRequest req, UserSettings settings) {
+		// Update in request
+		req.setAttribute(USER_SETTINGS_ATTR, settings);
+
+		// Update in session if available
 		HttpSession session = req.getSession(false);
 		if (session != null) {
 			session.setAttribute(USER_SETTINGS_ATTR, settings);
@@ -296,28 +316,35 @@ public abstract class LoginFilter implements Filter {
 	 */
 	public static void setSessionUser(HttpServletRequest req, AuthToken authorization) {
 		setRequestUser(req, authorization);
-		setSessionUser(req.getSession(), authorization);
-	}
 
-	private static void setSessionUser(HttpSession session, AuthToken authorization) {
+		HttpSession session = req.getSession();
 		session.setAttribute(AUTHENTICATED_USER_ATTR, authorization);
 
 		DB db = DBService.getInstance();
 		UserSettings settings = db.getSettings(authorization.getUserName());
-		
+
+		// Store in both session and request
 		session.setAttribute(USER_SETTINGS_ATTR, settings);
-		
+		req.setAttribute(USER_SETTINGS_ATTR, settings);
+
 		Language selectedLang = DefaultController.selectLanguage(settings.getLang());
 		session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
-		
+
 		LOG.debug("Initialized user session for '{}' in language '{}'.", authorization.getUserName(), selectedLang);
 	}
 
 	/**
-	 * Adds the given user name to the current request.
+	 * Adds the given user name to the current request (without session).
 	 */
 	public static void setRequestUser(HttpServletRequest req, AuthToken authorization) {
 		req.setAttribute(AUTHENTICATED_USER_ATTR, authorization);
+	}
+
+	/**
+	 * Adds the given user settings to the current request (without session).
+	 */
+	protected static void setRequestUserSettings(HttpServletRequest req, UserSettings settings) {
+		req.setAttribute(USER_SETTINGS_ATTR, settings);
 	}
 
 	/**
