@@ -29,11 +29,21 @@ class CallListViewState extends State<CallListView> {
 
   ListCallsResponse? callInfo;
 
+  bool _initialized = false;
+
   @override
   void initState() {
     super.initState();
-    msg = context.answerbotL10n.loadingData;
     requestCallList();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      msg = context.answerbotL10n.loadingData;
+    }
   }
 
   void requestCallList() async {
