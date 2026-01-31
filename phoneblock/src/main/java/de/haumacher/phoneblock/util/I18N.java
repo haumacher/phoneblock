@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
@@ -120,8 +121,8 @@ public class I18N {
 				}
 			}
 		}
-		// Fallback to browser locale or default
-		return req.getLocale().toLanguageTag();
+		// Fallback to browser locale, normalized to available languages
+		return DefaultController.selectLanguage(req.getLocale()).tag;
 	}
 
 	private I18N() {

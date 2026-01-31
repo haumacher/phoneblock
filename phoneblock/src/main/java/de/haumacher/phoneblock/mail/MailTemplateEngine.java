@@ -47,23 +47,38 @@ public class MailTemplateEngine {
 		// Build template engine with current classloader context
 		TemplateEngine templateEngine = buildTemplateEngine();
 
-		// Try localized template first
-		String localizedTemplate = locale + "/" + templateName;
-
 		Context context = new Context();
 		context.setVariables(variables);
 
+		// Try localized template first (e.g., "de-DE/template")
+		String localizedTemplate = locale + "/" + templateName;
 		try {
 			return templateEngine.process(localizedTemplate, context);
 		} catch (Exception ex) {
-			// Fallback to German if localized template not found
-			if (!"de".equals(locale)) {
-				LOG.warn("Mail template not found: {}, falling back to German", localizedTemplate);
-				String fallbackTemplate = "de/" + templateName;
-				return templateEngine.process(fallbackTemplate, context);
-			}
-			throw ex;
+			// Template not found for exact locale
 		}
+
+		// Try language-only variant (e.g., "de-DE" -> "de")
+		int dashIndex = locale.indexOf('-');
+		if (dashIndex > 0) {
+			String languageOnly = locale.substring(0, dashIndex);
+			String languageTemplate = languageOnly + "/" + templateName;
+			try {
+				LOG.debug("Mail template not found for {}, trying {}", locale, languageOnly);
+				return templateEngine.process(languageTemplate, context);
+			} catch (Exception ex) {
+				// Template not found for language-only locale
+			}
+		}
+
+		// Final fallback to German
+		if (!"de".equals(locale) && !locale.startsWith("de-")) {
+			LOG.warn("Mail template not found: {}, falling back to German", localizedTemplate);
+			String fallbackTemplate = "de/" + templateName;
+			return templateEngine.process(fallbackTemplate, context);
+		}
+
+		throw new RuntimeException("Mail template not found: " + localizedTemplate);
 	}
 
 	private static TemplateEngine buildTemplateEngine() {
