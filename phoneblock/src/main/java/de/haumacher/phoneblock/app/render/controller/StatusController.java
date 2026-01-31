@@ -22,14 +22,13 @@ public class StatusController extends DefaultController {
 		super.fillContext(ctx, request);
 
 		long now = System.currentTimeMillis();
-		String userName = LoginFilter.getAuthenticatedUser(request);
 		UserSettings settings = LoginFilter.getUserSettings(request);
 		int minVotes = settings != null ? settings.getMinVotes() : DB.MIN_VOTES;
 
 		request.setAttribute("now", Long.valueOf(now));
 		request.setAttribute("searches", DBService.getInstance().getTopSearches());
 		request.setAttribute("reports", DBService.getInstance().getLatestSpamReports(now - 60 * 60 * 1000));
-		request.setAttribute("newlyBlocked", DBService.getInstance().getLatestBlocklistEntries(userName));
+		request.setAttribute("newlyBlocked", DBService.getInstance().getLatestBlocklistEntries(minVotes));
 		request.setAttribute("topSpammers", DBService.getInstance().getTopSpamReports(15));
 		request.setAttribute("topSearches", DBService.getInstance().getTopSearchesOverall(15));
 

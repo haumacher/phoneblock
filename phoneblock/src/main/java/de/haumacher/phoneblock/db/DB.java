@@ -1270,11 +1270,9 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<DBNumberInfo> getLatestBlocklistEntries(String login) {
+	public List<DBNumberInfo> getLatestBlocklistEntries(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-
-			int minVotes = getMinVotes(session, login);
 			return reports.getLatestBlocklistEntries(minVotes);
 		}
 	}
