@@ -24,7 +24,7 @@ public class MailServiceImplTest {
 		// Process the mobile-welcome-mail template using Thymeleaf
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("name", "Max Mustermann");
-		variables.put("deviceLabel", "Samsung Galaxy S23");
+		variables.put("deviceLabel", "Samsung-Galaxy-S23");
 		variables.put("image", "https://phoneblock.net/phoneblock/assets/img/app-logo.svg");
 		variables.put("home", "https://phoneblock.net/phoneblock");
 		variables.put("support", "https://phoneblock.net/phoneblock/support");
@@ -34,7 +34,7 @@ public class MailServiceImplTest {
 		variables.put("facebook", "https://www.facebook.com/PhoneBlock");
 		variables.put("mail", "phoneblock@haumacher.de");
 
-		String htmlWithVariables = MailTemplateEngine.getInstance().processTemplate("de", "mobile-welcome-mail", variables);
+		String htmlWithVariables = MailTemplateEngine.getInstance().processTemplate("es", "mobile-welcome-mail", variables);
 
 		// Convert to plain text using static method
 		String plainText = MailServiceImpl.htmlToPlainText(htmlWithVariables);
@@ -56,7 +56,7 @@ public class MailServiceImplTest {
 
 		// Verify that actual content IS in the plain text
 		assertTrue(plainText.contains("Max Mustermann"), "Should contain user name");
-		assertTrue(plainText.contains("Samsung Galaxy S23"), "Should contain device label");
+		assertTrue(plainText.contains("Samsung-Galaxy-S23"), "Should contain device label");
 		assertTrue(plainText.contains("PhoneBlock"), "Should contain PhoneBlock reference");
 		assertTrue(plainText.contains("Bernhard Haumacher"), "Should contain signature");
 
