@@ -164,6 +164,24 @@ public class DB {
 
 	private DBConfig _config;
 
+	/**
+	 * Minimum votes threshold for blocklist visibility.
+	 * Only threshold crossings at or above this value trigger version updates.
+	 * Default: 10 (same as {@link #DEFAULT_MIN_VISIBLE_VOTES}).
+	 */
+	private int _minVisibleVotes = DEFAULT_MIN_VISIBLE_VOTES;
+
+	/**
+	 * Effective thresholds for version updates, containing only thresholds >= minVisibleVotes.
+	 * Precomputed for efficiency in {@link #crossesThreshold(int, int)}.
+	 */
+	private int[] _effectiveThresholds = computeEffectiveThresholds(DEFAULT_MIN_VISIBLE_VOTES);
+
+	/**
+	 * Default minimum votes threshold for blocklist visibility.
+	 */
+	public static final int DEFAULT_MIN_VISIBLE_VOTES = 10;
+
 	public DB(DataSource dataSource, SchedulerService scheduler) throws SQLException {
 		this(new SecureRandom(), DBConfig.create(), dataSource, IndexUpdateService.NONE, scheduler, null);
 	}
@@ -208,6 +226,55 @@ public class DB {
 		 } else {
 			 LOG.info("Support mails are disabled.");
 		 }
+	}
+
+	/**
+	 * Sets the minimum votes threshold for blocklist visibility.
+	 *
+	 * <p>
+	 * Only threshold crossings at or above this value will trigger blocklist version updates.
+	 * This should be called during initialization, before any votes are processed.
+	 * </p>
+	 *
+	 * @param minVisibleVotes The minimum votes threshold. Must be one of {@link #BLOCKLIST_THRESHOLDS}.
+	 */
+	public void setMinVisibleVotes(int minVisibleVotes) {
+		if (!isValidBlocklistThreshold(minVisibleVotes)) {
+			LOG.warn("Invalid minVisibleVotes {}, must be one of: {}. Using default {}",
+				minVisibleVotes, getBlocklistThresholdsString(), DEFAULT_MIN_VISIBLE_VOTES);
+			minVisibleVotes = DEFAULT_MIN_VISIBLE_VOTES;
+		}
+		_minVisibleVotes = minVisibleVotes;
+		_effectiveThresholds = computeEffectiveThresholds(minVisibleVotes);
+		LOG.info("Blocklist minVisibleVotes set to: {}", _minVisibleVotes);
+	}
+
+	/**
+	 * Computes the effective thresholds for version updates.
+	 * Returns an array containing only thresholds >= minVisibleVotes.
+	 */
+	private static int[] computeEffectiveThresholds(int minVisibleVotes) {
+		int count = 0;
+		for (int threshold : BLOCKLIST_THRESHOLDS) {
+			if (threshold >= minVisibleVotes) {
+				count++;
+			}
+		}
+		int[] result = new int[count];
+		int index = 0;
+		for (int threshold : BLOCKLIST_THRESHOLDS) {
+			if (threshold >= minVisibleVotes) {
+				result[index++] = threshold;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Gets the minimum votes threshold for blocklist visibility.
+	 */
+	public int getMinVisibleVotes() {
+		return _minVisibleVotes;
 	}
 
 	private void setupSchema() throws SQLException {
@@ -1128,20 +1195,25 @@ public class DB {
 	}
 
 	/**
-	 * Checks if the vote count crosses any blocklist threshold.
+	 * Checks if the vote count crosses any visible blocklist threshold.
 	 * Returns true if the number should be marked for version update.
+	 *
+	 * <p>
+	 * Only thresholds at or above {@link #_minVisibleVotes} are considered,
+	 * since changes below this threshold are not visible to API clients.
+	 * Uses precomputed {@link #_effectiveThresholds} for efficiency.
+	 * </p>
 	 */
 	private boolean crossesThreshold(int oldVotes, int newVotes) {
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
+		for (int threshold : _effectiveThresholds) {
 			boolean wasBelowThreshold = oldVotes < threshold;
-			boolean isAboveThreshold = newVotes >= threshold;
-			if (wasBelowThreshold != isAboveThreshold) {
+			boolean isNowAtOrAbove = newVotes >= threshold;
+			// Crossed upward: was below and is now at-or-above
+			// Crossed downward: was at-or-above and is now below
+			if (wasBelowThreshold == isNowAtOrAbove) {
 				return true;
 			}
 		}
-		// Check for addition (0 -> positive votes) or deletion (positive -> 0 votes)
-		if (oldVotes > 0 && newVotes <= 0) return true;
-		if (oldVotes <= 0 && newVotes > 0) return true;
 		return false;
 	}
 
@@ -1292,12 +1364,13 @@ public class DB {
 	/**
 	 * Gets the full blocklist for API download.
 	 *
-	 * @param minVisibleVotes Minimum vote threshold for visibility. Numbers with fewer votes
-	 *        (after normalization to thresholds) will be excluded from the result.
-	 *        Must be one of the valid {@link #BLOCKLIST_THRESHOLDS} values.
+	 * <p>
+	 * Numbers with fewer votes than {@link #getMinVisibleVotes()} are excluded from the result.
+	 * </p>
+	 *
 	 * @return The blocklist containing all numbers meeting the minimum threshold.
 	 */
-	public Blocklist getBlockListAPI(int minVisibleVotes) {
+	public Blocklist getBlockListAPI() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
@@ -1306,7 +1379,7 @@ public class DB {
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
-					.filter(entry -> entry.getVotes() >= minVisibleVotes)
+					.filter(entry -> entry.getVotes() >= _minVisibleVotes)
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
@@ -1323,19 +1396,16 @@ public class DB {
 	 * Returns entries with VERSION > sinceVersion.
 	 *
 	 * <p>
-	 * Entries with votes below the minimum visible threshold are returned with votes=0,
+	 * Entries with votes below {@link #getMinVisibleVotes()} are returned with votes=0,
 	 * indicating they should be removed from the client's local blocklist.
 	 * No user-specific filtering (whitelist/blacklist) is applied.
 	 * This allows the response to be cached and served identically to all users, improving efficiency.
 	 * </p>
 	 *
 	 * @param sinceVersion Return only changes since this version number.
-	 * @param minVisibleVotes Minimum vote threshold for visibility. Numbers with fewer votes
-	 *        will be returned with votes=0 to indicate removal from the visible blocklist.
-	 *        Must be one of the valid {@link #BLOCKLIST_THRESHOLDS} values.
 	 * @return The blocklist changes since the specified version.
 	 */
-	public Blocklist getBlocklistUpdateAPI(long sinceVersion, int minVisibleVotes) {
+	public Blocklist getBlocklistUpdateAPI(long sinceVersion) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
@@ -1346,7 +1416,7 @@ public class DB {
 					.filter(Objects::nonNull)
 					.map(entry -> {
 						// Entries below the visible threshold are returned as deletions (votes=0)
-						if (entry.getVotes() < minVisibleVotes) {
+						if (entry.getVotes() < _minVisibleVotes) {
 							return entry.setVotes(0);
 						}
 						return entry;

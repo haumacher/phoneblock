@@ -123,6 +123,32 @@ public class DBService implements IDBService, ServletContextListener {
 		
 		_pool = JdbcConnectionPool.create(dataSource);
 		INSTANCE = new DB(_rnd.getRnd(), config, _pool, _indexer, _scheduler, _mail == null ? null : _mail.getMailService());
+
+		// Configure blocklist visibility threshold
+		int minVisibleVotes = loadMinVisibleVotes();
+		INSTANCE.setMinVisibleVotes(minVisibleVotes);
+	}
+
+	/**
+	 * Loads the minimum visible votes threshold from JNDI or system properties.
+	 */
+	private int loadMinVisibleVotes() {
+		int minVisibleVotes = DB.DEFAULT_MIN_VISIBLE_VOTES;
+		try {
+			InitialContext initCtx = new InitialContext();
+			Context envCtx = (Context) initCtx.lookup("java:comp/env");
+			try {
+				minVisibleVotes = ((Number) envCtx.lookup("blocklist/minVisibleVotes")).intValue();
+			} catch (NamingException ex) {
+				String value = System.getProperty("blocklist.minVisibleVotes");
+				if (value != null) {
+					minVisibleVotes = Integer.parseInt(value);
+				}
+			}
+		} catch (NamingException ex) {
+			LOG.info("Not using JNDI configuration for blocklist: {}", ex.getMessage());
+		}
+		return minVisibleVotes;
 	}
 
 	protected int defaultDbPort() {
