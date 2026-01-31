@@ -1752,30 +1752,40 @@ public class DB {
 		return address.getAddress().strip().toLowerCase();
 	}
 	
-	/** 
+	/**
 	 * Sets the last access time for the given user to the given timestamp.
-	 * 
+	 *
 	 * @param userAgent The user agent header string.
 	 */
 	public void updateLastAccess(String login, long timestamp, String userAgent) {
+		updateLastAccess(login, timestamp, userAgent, null);
+	}
+
+	/**
+	 * Sets the last access time for the given user to the given timestamp.
+	 *
+	 * @param userAgent The user agent header string.
+	 * @param cachedSettings The user settings from session cache, or null to look up from database.
+	 */
+	public void updateLastAccess(String login, long timestamp, String userAgent, UserSettings cachedSettings) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			
+
 			Long before = users.getLastAccess(login);
 			users.setLastAccess(login, timestamp, userAgent);
 			session.commit();
-			
+
 			if (before == null || before.longValue() == 0) {
 				// This was the first access, send welcome message;
 				MailService mailService = _mailService;
 				if (mailService != null && _config.isSendWelcomeMails()) {
-					DBUserSettings userSettings = getUserSettings(users, login);
+					UserSettings userSettings = cachedSettings != null ? cachedSettings : getUserSettings(users, login);
 					users.markWelcome(userSettings.getId());
 					session.commit();
 
 					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(userSettings));
 				} else {
-					LOG.info("Not sending welcome mail to '{}': {}", login, 
+					LOG.info("Not sending welcome mail to '{}': {}", login,
 						mailService == null ? "No mail service." : "Welcome mails are disabled.");
 				}
 			}

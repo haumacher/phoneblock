@@ -16,6 +16,7 @@ import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -150,7 +151,8 @@ public class BlocklistServlet extends HttpServlet {
 			LOG.info("Sending blocklist (minVotes {}) to user '{}' (agent '{}')", _minVisibleVotes, userName, userAgent);
 		}
 
-		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent);
+		UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
 		ServletUtil.sendResult(req, resp, result);
 	}
 
