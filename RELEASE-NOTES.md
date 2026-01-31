@@ -1,8 +1,6 @@
 # PhoneBlock Release Notes
 
-## Version 1.9.0 (In Development)
-
-**Status:** Development
+## Version 1.9.0 (2026-01-31)
 
 **Key Features:**
 - Incremental blocklist synchronization API with version tracking
@@ -10,6 +8,9 @@
 - Blocklist client library and CLI tool in phoneblock-shared
 - Comprehensive JNDI configuration documentation
 - Rate limiting guidance for API consumers
+
+**Bug Fixes:**
+- Fixed incremental blocklist sync with `since=0` returning zero-vote entries
 
 ## Version 1.8.6 (2026-01-23)
 
