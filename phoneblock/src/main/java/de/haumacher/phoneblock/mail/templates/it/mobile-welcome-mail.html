@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 	<meta charset="UTF-8"/>
 	<title data-tx="t0001:7bfc5ab">Benvenuti a PhoneBlock</title>
@@ -38,29 +38,29 @@
 </head>
 <body>
 	<div class="header">
-		<img alt="Logo PhoneBlock" data-tx="t0002:5b0e8765" height="100" src="{image}" width="100"/>
+		<img alt="Logo PhoneBlock" data-tx="t0002:5b0e8765" height="100" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="100"/>
 	</div>
 
-	<p data-tx="t0003:246aceaa">Ciao {nome},</p>
+	<p data-tx="t0017:f05885dc">Salve <span th:text="${name}">utente</span>,</p>
 
-	<p data-tx="t0004:9a5ee6f">È fantastico che abbiate installato con successo <strong>PhoneBlock</strong> su "<span class="device-label">{dispositivoLabel}</span>"! <br/> D'ora in poi, le chiamate spam saranno bloccate automaticamente su questo dispositivo.</p>
+	<p data-tx="t0018:7fb45dc8">È fantastico che abbiate installato con successo <strong>Blocco telefono</strong> su "<span class="device-label" th:text="${deviceLabel}">il vostro dispositivo</span>"! <br/> D'ora in poi, le chiamate spam saranno bloccate automaticamente su questo dispositivo.</p>
 
-	<p data-tx="t0005:e5f62056">Se siete soddisfatti di PhoneBlock, sarei lieto se voleste contribuire ai costi di gestione di PhoneBlock con una piccola <a href="{support}">donazione</a>.</p>
+	<p data-tx="t0005:e5f62056">Se siete soddisfatti di PhoneBlock, sarei lieto se voleste contribuire ai costi di gestione di PhoneBlock con una piccola <a href="https://phoneblock.net/phoneblock/support" th:href="${support}">donazione</a>.</p>
 
-	<p data-tx="t0006:c3705d3d">Ma ancora più importante è che ne parliate ai vostri amici, conoscenti e parenti. Perché non condividete la pagina iniziale di <a href="{home}">PhoneBlock</a> su Facebook, Twitter o un altro canale e seguite <a href="{facebook}">PhoneBlock</a> per non perdere nessun aggiornamento.</p>
+	<p data-tx="t0006:c3705d3d">Ma ancora più importante è che ne parliate ai vostri amici, conoscenti e parenti. Perché non condividete la pagina iniziale di <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a> su Facebook, Twitter o un altro canale e seguite <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}">PhoneBlock</a> per non perdere nessun aggiornamento.</p>
 
 	<p data-tx="t0007:2be40556">Solo se parlate ad altri di PhoneBlock potrete diffondere la buona notizia che nessuno è più indifeso contro il terrore telefonico.</p>
 
 	<p data-tx="t0008:ac6e6c33">Cordiali saluti<br/> Bernhard Haumacher</p>
 
 	<div class="footer">
-		<a data-tx="t0010:12aaf3d4" href="{home}">Homepage</a> |
-		<a data-tx="t0011:f41f32ed" href="{support}">Donazione</a> |
-		<a data-tx="t0012:1798fbdb" href="{settings}">Impostazioni</a> |
-		<a data-tx="t0013:b64ed532" href="{app}">Segreteria telefonica</a> |
-		<a data-tx="t0014:d8bf861a" href="{help}">Istruzioni video</a> |
-		<a data-tx="t0015:f5b28ece" href="{facebook}">Facebook</a> |
-		<a data-tx="t0016:1e3bb77d" href="mailto:{mail}">Contattateci</a>
+		<a data-tx="t0010:12aaf3d4" href="https://phoneblock.net" th:href="${home}">Homepage</a> |
+		<a data-tx="t0011:f41f32ed" href="https://phoneblock.net/phoneblock/support" th:href="${support}">Donazione</a> |
+		<a data-tx="t0012:1798fbdb" href="https://phoneblock.net/phoneblock/settings" th:href="${settings}">Impostazioni</a> |
+		<a data-tx="t0013:b64ed532" href="https://phoneblock.net/phoneblock/ab/" th:href="${app}">Segreteria telefonica</a> |
+		<a data-tx="t0014:d8bf861a" href="https://www.youtube.com/@phoneblock" th:href="${help}">Istruzioni video</a> |
+		<a data-tx="t0015:f5b28ece" href="https://www.facebook.com/PhoneBlock" th:href="${facebook}">Facebook</a> |
+		<a data-tx="t0016:1e3bb77d" href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|">Contattateci</a>
 	</div>
 </body>
 </html>

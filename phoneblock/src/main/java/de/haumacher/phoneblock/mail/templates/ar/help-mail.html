@@ -1,34 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:8eacd512">PhoneBlock: المساعدة في الإعداد</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="شعار فون بلوك" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="شعار فون بلوك" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">مرحباً {الاسم},</h2>
+<h2 data-tx="t0009:f05885dc">مرحباً <span th:text="${name}">المستخدم</span>,</h2>
 
-<p data-tx="t0004:72d2e942">لقد قمت بتسجيل الدخول إلى <a href="{home}"> كتلة الهاتف</a>. ومع ذلك، فإن استرداد قائمة الحظر</p>
+<p data-tx="t0004:72d2e942">لقد قمت بتسجيل الدخول إلى <a href="https://phoneblock.net" th:href="${home}"> كتلة الهاتف</a>. ومع ذلك، فإن استرداد قائمة الحظر</p>
 
-<p data-tx="t0005:1eb9427b">اسم مستخدم PhoneBlock الخاص بك: <code>{اسم المستخدم}<br/></code><code></code></p>
+<p data-tx="t0010:5c7907d7">اسم مستخدم "حظر الهاتف" الخاص بك: <code th:text="${userName}">المستخدم123</code><br/>
+آخر استرجاع لقائمة الحظر كان في: <code th:text="${lastAccess}">01.01.01.2024 12:00:00:00:00</code></p>
 
-<p data-tx="t0006:19eaeef4">أشرح أيضًا التثبيت في مقطع فيديو YouTube هذا <a href="{help}">{مساعدة} - ربما</a></p>
+<p data-tx="t0011:710893df">أشرح أيضًا التثبيت في مقطع فيديو YouTube هذا <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a> - ربما
+يساعدك على إكمال الإعداد بنجاح. من المهم ألا تستخدم عنوان البريد الإلكتروني الخاص بك كاسم مستخدم في فريتز!
+عنوان البريد الإلكتروني كاسم المستخدم، ولكن اسم المستخدم PhoneBlock الذي يتم عرضه لك بعد تسجيل الدخول.
+المعروض بعد تسجيل الدخول. إذا لم تعد لديك تفاصيل تسجيل الدخول هذه في متناول اليد، يمكنك ببساطة تكرار عملية التسجيل لنفس عنوان البريد الإلكتروني.
+عنوان البريد الإلكتروني.</p>
 
 <p data-tx="t0007:284b3eac">مع أطيب التحيات</p>
 
 <p data-tx="t0008:70c6d927">برنهارد هاوماخر</p>
 
-<p data-tx="t0009:cb09622c" style="color: gray;">--<br/>
-الصفحة الرئيسية: <a href="{home}">{المنزل}</a><br/>
-التبرع: <a href="{support}">{دعم}<br/>
-الإعدادات: <a href="{settings}">{إعدادات}<br/>
-جهاز الرد على المكالمات: <a href="{app}">{التطبيق}<br/>
-فيديو تعليمي: <a href="{help}">{مساعدة}<br/>
-فيسبوك: <a href="{facebook}">{facebook}</a><br/>
-الاتصال: <a href="mailto:{mail}">{البريد الإلكتروني}<br/></a></a></a></a></a></p>
+<p data-tx="t0012:14e1f6dc" style="color: gray;">--<br/>
+الصفحة الرئيسية: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+التبرع: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+الإعدادات: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+جهاز الرد على المكالمات: <a href="https://phoneblock.net/phoneblock/ab/" th:href="${app}" th:text="${app}">https://phoneblock.net/phoneblock/ab/</a><br/>
+إرشادات الفيديو: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>
+فيسبوك <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock&lt;x12</a><br/>
+الاتصال: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/></p>
 
 </body>
 </html>

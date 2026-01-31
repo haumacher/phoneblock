@@ -332,8 +332,19 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count μηνυμάτων',
-      one: '1 μήνυμα',
+      other: '$count καταγγελιών',
+      one: '1 Καταγγελία',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rangeReportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Καταγγελίες στην περιοχή αριθμών',
+      one: '1 Καταγγελία στην περιοχή αριθμών',
     );
     return '$_temp0';
   }
@@ -522,4 +533,34 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Σκούρο';
+
+  @override
+  String get experimentalFeatures => 'Πειραματικές λειτουργίες';
+
+  @override
+  String get answerbotFeature => 'Αυτόματος τηλεφωνητής (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Πειραματικό: Διαχείριση του τηλεφωνητή SPAM για το Fritz!Box στην εφαρμογή';
+
+  @override
+  String get answerbotMenuTitle => 'Τηλεφωνητής';
+
+  @override
+  String get answerbotMenuDescription => 'Διαχείριση του τηλεφωνητή SPAM';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Ύποπτο: $rating';
+  }
+
+  @override
+  String get statistics => 'Στατιστικά στοιχεία';
+
+  @override
+  String get blockedCallsCount => 'Αποκλεισμένες κλήσεις';
+
+  @override
+  String get suspiciousCallsCount => 'Ύποπτες κλήσεις';
 }

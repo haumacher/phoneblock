@@ -94,7 +94,8 @@
   "settingSaved": "Setting saved",
   "errorSaving": "Error saving",
   "ratePhoneNumber": "Rate {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 report} other{{count} reports}}",
+  "reportsCount": "{count, plural, =1{1 Complaint} other{{count} complaints}}",
+  "rangeReportsCount": "{count, plural, =1{1 Complaint in the number range} other{{count} Complaints in the number range}}",
   "legitimateReportsCount": "{count, plural, =1{1 legitimate report} other{{count} legitimate reports}}",
   "noReports": "No reports",
   "todayTime": "Today, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Choose light or dark design",
   "themeModeSystem": "System standard",
   "themeModeLight": "Light",
-  "themeModeDark": "Dark"
+  "themeModeDark": "Dark",
+  "experimentalFeatures": "Experimental functions",
+  "answerbotFeature": "Answering machine (Answerbot)",
+  "answerbotFeatureDescription": "Experimental: Manage SPAM answering machine for the Fritz!Box in the app",
+  "answerbotMenuTitle": "Answering machine",
+  "answerbotMenuDescription": "Manage SPAM answering machine",
+  "potentialSpamLabel": "Suspicious: {rating}",
+  "statistics": "Statistics",
+  "blockedCallsCount": "Blocked calls",
+  "suspiciousCallsCount": "Suspicious calls"
 }

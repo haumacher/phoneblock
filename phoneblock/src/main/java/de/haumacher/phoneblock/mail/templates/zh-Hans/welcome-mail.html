@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
   </head>
   <body>
-    <p data-tx="t0001:cee289b8">你好，{姓名}，<img align="right" alt="PhoneBlock 徽标" data-tx="t0002:5b0e8765" height="133" src="{image}" style="vertical-align: bottom;" width="133"/></p>
+    <p data-tx="t0009:336bea4">您好，<span th:text="${name}">用户</span>,<img align="right" alt="PhoneBlock 徽标" data-tx="t0002:5b0e8765" height="133" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" style="vertical-align: bottom;" th:src="${image}" width="133"/>。</p>
 
-    <p data-tx="t0003:d4ff0bbe">很高兴您发现了 <a href="{home}">PhoneBlock</a> 并成功安装了它。希望今后不必要的电话会大大减少。</p>
+    <p data-tx="t0003:d4ff0bbe">很高兴您发现了 <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a> 并成功安装了它。希望今后不必要的电话会大大减少。</p>
 
-    <p data-tx="t0004:57bc0241">如果您对PhoneBlock感到满意，那么我将非常高兴您能以<a href="{support}">小额捐款</a>的方式为PhoneBlock的运行费用做出贡献。</p>
+    <p data-tx="t0004:57bc0241">如果您对PhoneBlock感到满意，那么我将非常高兴您能以<a href="https://phoneblock.net/phoneblock/support" th:href="${support}">小额捐款</a>的方式为PhoneBlock的运行费用做出贡献。</p>
 
-    <p data-tx="t0005:1d98c39d">但更重要的是，你要把它告诉你的朋友、熟人和亲戚。为什么不在 Facebook、Twitter 或其他渠道分享 PhoneBlock 主页（<a href="{home}">{home}</a>）并关注 PhoneBlock，以免错过任何更新：<a href="{facebook}">{facebook}&lt;/x2</a></p>
+    <p data-tx="t0010:fd8c5cc5">但更重要的是，你要把它告诉你的朋友、熟人和亲戚。何不在 Facebook、Twitter 或其他渠道上分享 PhoneBlock 主页 (<a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a>)，并关注 PhoneBlock，这样就不会错过任何更新了：<a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a></p>
 
     <p data-tx="t0006:2be40556">只有当你向他人介绍 PhoneBlock 时，这个好消息才能传播开来：没有人再能抵御电话恐怖了。</p>
 
     <p data-tx="t0007:284b3eac">致以最诚挚的问候</p>
     <p data-tx="t0008:70c6d927">伯恩哈德-豪马赫</p>
 
-<p data-tx="t0009:d3aaad68" style="color: gray;">--<br/>
-主页：<a href="{home}">{首页}</a><br/>&lt;/x3
-捐款： <a href="{support}">{support}</a><br/>
-设置：<a href="{settings}">{settings}</a><br/>&lt;/x7
-视频教程：<a href="{help}">{help}</a><br/>&lt;/x9
-Facebook：<a href="{facebook}">{facebook}</a><br/>
-联系方式：<a href="mailto:{mail}">{电子邮件}</a><br/>&lt;/x13</p>
+<p data-tx="t0011:fb9d285" style="color: gray;">--<br/>
+主页：<a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+捐款： <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+设置：<a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>&lt;/x7
+视频说明：<a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>&lt;/x9
+Facebook：<a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a><br/>。
+联系方式：<a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/>&lt;/x13</p>
 
 </body>
 </html>

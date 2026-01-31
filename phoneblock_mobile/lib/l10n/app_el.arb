@@ -94,7 +94,8 @@
   "settingSaved": "Ρύθμιση αποθηκευμένη",
   "errorSaving": "Σφάλμα κατά την αποθήκευση",
   "ratePhoneNumber": "Βαθμολογία {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 μήνυμα} other{{count} μηνυμάτων}}",
+  "reportsCount": "{count, plural, =1{1 Καταγγελία} other{{count} καταγγελιών}}",
+  "rangeReportsCount": "{count, plural, =1{1 Καταγγελία στην περιοχή αριθμών} other{{count} Καταγγελίες στην περιοχή αριθμών}}",
   "legitimateReportsCount": "{count, plural, =1{1 Νόμιμο μήνυμα} other{{count} Νόμιμα μηνύματα}}",
   "noReports": "Δεν υπάρχουν μηνύματα",
   "todayTime": "Σήμερα, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Επιλέξτε ένα ανοιχτό ή σκούρο σχέδιο",
   "themeModeSystem": "Πρότυπο συστήματος",
   "themeModeLight": "Φως",
-  "themeModeDark": "Σκούρο"
+  "themeModeDark": "Σκούρο",
+  "experimentalFeatures": "Πειραματικές λειτουργίες",
+  "answerbotFeature": "Αυτόματος τηλεφωνητής (Answerbot)",
+  "answerbotFeatureDescription": "Πειραματικό: Διαχείριση του τηλεφωνητή SPAM για το Fritz!Box στην εφαρμογή",
+  "answerbotMenuTitle": "Τηλεφωνητής",
+  "answerbotMenuDescription": "Διαχείριση του τηλεφωνητή SPAM",
+  "potentialSpamLabel": "Ύποπτο: {rating}",
+  "statistics": "Στατιστικά στοιχεία",
+  "blockedCallsCount": "Αποκλεισμένες κλήσεις",
+  "suspiciousCallsCount": "Ύποπτες κλήσεις"
 }

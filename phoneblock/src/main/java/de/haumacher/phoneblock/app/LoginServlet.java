@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -67,7 +68,7 @@ public class LoginServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (LoginFilter.getAuthenticatedUser(req.getSession(false)) != null) {
+		if (LoginFilter.getAuthenticatedUser(req) != null) {
 			String location = location(req);
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
@@ -93,17 +94,25 @@ public class LoginServlet extends HttpServlet {
 		}
 		
 		DB db = DBService.getInstance();
-		String authenticatedUser = db.login(userName, password);
-		if (authenticatedUser == null) {
+		AuthContext authContext = db.login(userName, password);
+		if (authContext == null) {
 			LOG.warn("Login failed for user: " + userName);
 			sendFailure(req, resp);
 			return;
 		}
+		AuthToken authorization = authContext.getAuthorization();
+		if (!authorization.isAccessLogin()) {
+			LOG.warn("Login attempt with unprivileged token for user: " + userName);
+			sendFailure(req, resp);
+			return;
+		}
+
+		String authenticatedUser = authorization.getUserName();
 
 		String rememberValue = req.getParameter(REMEMBER_ME_PARAM);
-		processRememberMe(req, resp, db, rememberValue, userName);
-		
-		LoginFilter.setSessionUser(req, authenticatedUser);
+		processRememberMe(req, resp, db, rememberValue, authenticatedUser);
+
+		LoginFilter.setSessionUser(req, authContext);
 		
 		redirectToLocationAfterLogin(req, resp, SettingsServlet.PATH);
 	}

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:jsontool/jsontool.dart';
-import 'package:phoneblock_answerbot_ui/base_path.dart'
-  if (dart.library.html) 'package:phoneblock_answerbot_ui/base_path_web.dart';
-import 'package:phoneblock_answerbot_ui/Api.dart';
-import 'package:phoneblock_answerbot_ui/AnswerBotView.dart';
-import 'package:phoneblock_answerbot_ui/ErrorDialog.dart';
-import 'package:phoneblock_answerbot_ui/TitleRow.dart';
-import 'package:phoneblock_answerbot_ui/proto.dart';
+import '../api/base_path.dart'
+  if (dart.library.html) '../api/base_path_web.dart';
+import '../api/Api.dart';
+import './AnswerBotView.dart';
+import '../widgets/ErrorDialog.dart';
+import '../widgets/TitleRow.dart';
+import '../models/proto.dart';
 import 'package:http/http.dart' as http;
-import 'package:phoneblock_answerbot_ui/sendRequest.dart';
+import '../api/sendRequest.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n_extensions.dart';
 
 class CallListView extends StatefulWidget {
   final AnswerbotInfo bot;
@@ -24,14 +25,25 @@ class CallListView extends StatefulWidget {
 
 class CallListViewState extends State<CallListView> {
 
-  String? msg = 'Loading data...';
+  String? msg;
 
   ListCallsResponse? callInfo;
+
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     requestCallList();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      msg = context.answerbotL10n.loadingData;
+    }
   }
 
   void requestCallList() async {
@@ -44,7 +56,7 @@ class CallListViewState extends State<CallListView> {
   void processResponse(http.Response response) {
     setState(() {
       if (response.statusCode != 200) {
-        msg = "Anrufe können nicht abgerufen werden (Fehler ${response.statusCode}): ${response.body}";
+        msg = context.answerbotL10n.cannotRetrieveCalls(response.body, response.statusCode);
         return;
       }
 
@@ -57,7 +69,7 @@ class CallListViewState extends State<CallListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleRow("SPAM Anrufe"),
+        title: TitleRow(context.answerbotL10n.spamCalls),
         actions: [
           IconButton(
             onPressed: () {
@@ -76,7 +88,7 @@ class CallListViewState extends State<CallListView> {
       body: _callList(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _clearCalls(context),
-        tooltip: 'Anrufe löschen',
+        tooltip: context.answerbotL10n.deleteCalls,
         child: const Icon(Icons.delete_forever),
       ),
     );
@@ -87,7 +99,7 @@ class CallListViewState extends State<CallListView> {
     if (!context.mounted) return;
 
     if (response.statusCode != 200) {
-      return showErrorDialog(context, response, 'Löschen fehlgeschlagen', "Die Löschanforderung konnte nicht bearbeitet werden.");
+      return showErrorDialog(context, response, context.answerbotL10n.deletingCallsFailed, context.answerbotL10n.deleteRequestFailed);
     }
 
     setState(refreshCallList);
@@ -103,7 +115,7 @@ class CallListViewState extends State<CallListView> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(msg ?? "Keine neuen Anrufe.",
+            Text(msg ?? context.answerbotL10n.noNewCalls,
               style: const TextStyle(fontSize: 20),
               textAlign: TextAlign.center,
             )
@@ -132,7 +144,7 @@ class CallListViewState extends State<CallListView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(call.caller, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                      Text("${dateFormat(DateTime.fromMillisecondsSinceEpoch(call.started))}, Dauer ${(call.duration / 1000).round()} s"),
+                      Text("${dateFormat(DateTime.fromMillisecondsSinceEpoch(call.started))}, ${context.answerbotL10n.duration((call.duration / 1000).round())}"),
                     ],
                   ),
                 ),
@@ -166,10 +178,10 @@ class CallListViewState extends State<CallListView> {
 
     return (DateTime dateTime) {
       if (sameDay(today, dateTime)) {
-        return "Heute ${DateFormat.jm().format(dateTime)}";
+        return context.answerbotL10n.today(DateFormat.jm().format(dateTime));
       }
-      else if (sameDay(today, dateTime)) {
-        return "Gestern ${DateFormat.jm().format(dateTime)}";
+      else if (sameDay(yesterDay, dateTime)) {
+        return context.answerbotL10n.yesterday(DateFormat.jm().format(dateTime));
       }
       else {
         return DateFormat.yMd().add_jm().format(dateTime);
@@ -182,7 +194,7 @@ class CallListViewState extends State<CallListView> {
   }
 
   refreshCallList() {
-    msg = 'Refreshing data...';
+    msg = context.answerbotL10n.refreshingData;
     requestCallList();
   }
 }

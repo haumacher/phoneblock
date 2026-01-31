@@ -146,7 +146,7 @@ public abstract class Resource {
 	 */
 	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
 		if (DavSchema.DAV_CURRENT_USER_PRINCIPAL.equals(property)) {
-			String userName = (String) req.getAttribute(LoginFilter.AUTHENTICATED_USER_ATTR);
+			String userName = LoginFilter.getAuthenticatedUser(req);
 			if (userName != null) {
 				Element container = appendElement(propElement, DavSchema.DAV_CURRENT_USER_PRINCIPAL);
 				appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.PRINCIPALS_PATH + userName));

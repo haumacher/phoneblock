@@ -18,6 +18,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
@@ -173,8 +175,19 @@ const platform = MethodChannel('de.haumacher.phoneblock_mobile/call_checker');
 /// This allows the UI to react to new screening results in real-time.
 final callScreenedStreamController = StreamController<ScreenedCall>.broadcast();
 
+/// Tracks call IDs that are considered "new" (not yet seen by user).
+/// Calls are added when synced from background or received while app is open.
+/// Calls are removed when user taps on them.
+final Set<int> newCallIds = {};
+
 /// Global app version string, initialized at startup from package info.
 late String appVersion;
+
+/// Stream subscription for sharing intents (warm start).
+StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
+
+/// Stores shared phone number from cold start for later processing.
+String? _pendingSharedNumber;
 
 /// Parses rating string from PhoneBlock service API response.
 Rating? _parseRatingFromService(String ratingStr) {
@@ -188,6 +201,60 @@ Rating? _parseRatingFromService(String ratingStr) {
     case 'G_FRAUD': return Rating.fRAUD;
     default: return null;
   }
+}
+
+/// Extracts phone numbers from shared text.
+/// Supports formats: +49 123 456789, (123) 456-7890, 1234567890, etc.
+/// Returns first valid number found, or null if none.
+String? extractPhoneNumber(String text) {
+  final cleaned = text.trim();
+
+  // Patterns for international, formatted, and plain phone numbers
+  final patterns = [
+    RegExp(r'\+[\d\s\-()]{7,}'), // International with +
+    RegExp(r'\([\d]{2,}\)[\d\s\-]{6,}'), // Area code in parentheses
+    RegExp(r'[\d]{2,}[\s\-][\d]{2,}[\s\-][\d]{4,}'), // Separated format
+    RegExp(r'\b[\d]{10,}\b'), // Plain 10+ digits
+  ];
+
+  for (final pattern in patterns) {
+    final match = pattern.firstMatch(cleaned);
+    if (match != null) {
+      return match.group(0);
+    }
+  }
+
+  // Fallback: if mostly digits with formatting, use cleaned text
+  final digitsOnly = cleaned.replaceAll(RegExp(r'[^\d+]'), '');
+  if (digitsOnly.length >= 7) {
+    return cleaned;
+  }
+
+  return null;
+}
+
+/// Handles shared phone numbers by storing them for lookup after auth check.
+Future<void> handleSharedPhoneNumber(String? sharedText) async {
+  if (sharedText == null || sharedText.isEmpty) return;
+
+  if (kDebugMode) {
+    print('Received shared text: $sharedText');
+  }
+
+  final phoneNumber = extractPhoneNumber(sharedText);
+  if (phoneNumber == null) {
+    if (kDebugMode) {
+      print('No valid phone number found');
+    }
+    return;
+  }
+
+  if (kDebugMode) {
+    print('Extracted phone number: $phoneNumber');
+  }
+
+  // Store for processing in MainScreen after auth check
+  _pendingSharedNumber = phoneNumber;
 }
 
 /// Gets the configured retention period in days.
@@ -206,6 +273,16 @@ Future<String> getThemeMode() async {
 /// Valid values are 'system', 'light', or 'dark'.
 Future<void> setThemeMode(String mode) async {
   await platform.invokeMethod("setThemeMode", mode);
+}
+
+/// Gets the total count of blocked calls.
+Future<int> getBlockedCallsCount() async {
+  return await platform.invokeMethod<int>("getBlockedCallsCount") ?? 0;
+}
+
+/// Gets the total count of suspicious calls (had votes but below threshold).
+Future<int> getSuspiciousCallsCount() async {
+  return await platform.invokeMethod<int>("getInspectedSuspiciousCount") ?? 0;
 }
 
 /// Makes an HTTP GET request to the PhoneBlock API with proper User-Agent header.
@@ -401,8 +478,11 @@ void main() async {
       final phoneNumber = args['phoneNumber'] as String;
       final wasBlocked = args['wasBlocked'] as bool;
       final votes = args['votes'] as int;
+      final votesWildcard = args['votesWildcard'] as int? ?? 0;
       final timestamp = args['timestamp'] as int;
       final ratingStr = args['rating'] as String?;
+      final label = args['label'] as String?;
+      final location = args['location'] as String?;
 
       // Parse rating if available
       Rating? rating;
@@ -416,20 +496,28 @@ void main() async {
         timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
         wasBlocked: wasBlocked,
         votes: votes,
+        votesWildcard: votesWildcard,
         rating: rating,
+        label: label,
+        location: location,
       );
 
-      await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+      final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+      // Track as new call
+      if (insertedCall.id != null) {
+        newCallIds.add(insertedCall.id!);
+      }
 
       // Clean up old calls based on retention period when a new call arrives
       final retentionDays = await getRetentionDays();
       await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
       // Notify any listeners (e.g., MainScreen) about the new call
-      callScreenedStreamController.add(screenedCall);
+      callScreenedStreamController.add(insertedCall);
 
       if (kDebugMode) {
-        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rating: $ratingStr)');
+        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rangeVotes: $votesWildcard, rating: $ratingStr)');
       }
     }
   });
@@ -445,6 +533,9 @@ void main() async {
   // Clean up old screened calls based on retention period
   final retentionDays = await getRetentionDays();
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
+
+  // Set up auth provider for shared answerbot components
+  setAuthProvider(getAuthToken);
 
   runApp(const PhoneBlockApp());
 }
@@ -464,6 +555,33 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
   void initState() {
     super.initState();
     _loadThemeMode();
+    _initSharingIntent();
+  }
+
+  /// Initializes sharing intent listener for warm starts.
+  void _initSharingIntent() {
+    _sharingIntentSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (List<SharedMediaFile> value) {
+        if (value.isEmpty) return;
+
+        final sharedFile = value.first;
+        if (sharedFile.type == SharedMediaType.text) {
+          handleSharedPhoneNumber(sharedFile.path); // path contains text
+          ReceiveSharingIntent.instance.reset();
+        }
+      },
+      onError: (err) {
+        if (kDebugMode) {
+          print('Error receiving sharing intent: $err');
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _sharingIntentSubscription?.cancel();
+    super.dispose();
   }
 
   /// Loads the theme mode from preferences.
@@ -502,6 +620,7 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
       routerConfig: router,
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        answerbotLocalizationsDelegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -557,13 +676,21 @@ Future<void> syncStoredScreeningResults() async {
           timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
           wasBlocked: data['wasBlocked'] as bool,
           votes: data['votes'] as int,
+          votesWildcard: (data['votesWildcard'] as int?) ?? 0,
           rating: rating,
+          label: data['label'] as String?,
+          location: data['location'] as String?,
         );
 
-        await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+        final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
+
+        // Track as new call
+        if (insertedCall.id != null) {
+          newCallIds.add(insertedCall.id!);
+        }
 
         if (kDebugMode) {
-          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rating: $ratingStr)');
+          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: $ratingStr)');
         }
       }
 
@@ -634,6 +761,16 @@ class _AppLauncherState extends State<AppLauncher> {
   }
 
   Future<void> _checkSetupState() async {
+    // Check for shared intent on cold start
+    final initialMedia = await ReceiveSharingIntent.instance.getInitialMedia();
+    if (initialMedia.isNotEmpty) {
+      final sharedFile = initialMedia.first;
+      if (sharedFile.type == SharedMediaType.text) {
+        await handleSharedPhoneNumber(sharedFile.path);
+        ReceiveSharingIntent.instance.reset();
+      }
+    }
+
     // Validate auth token (checks existence and validity)
     bool hasValidToken = await validateAuthToken();
 
@@ -927,6 +1064,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
   bool _isLoading = true;
+  bool _answerbotEnabled = false;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
   Offset _lastTapPosition = Offset.zero;
 
@@ -935,6 +1073,41 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _loadScreenedCalls();
     _setupCallScreeningListener();
+    _checkPendingSharedNumber();
+    _loadAnswerbotEnabled();
+  }
+
+  /// Loads the answerbot enabled setting.
+  Future<void> _loadAnswerbotEnabled() async {
+    try {
+      final enabled = await platform.invokeMethod<bool>("getAnswerbotEnabled");
+      setState(() {
+        _answerbotEnabled = enabled ?? false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error loading answerbot enabled setting: $e");
+      }
+    }
+  }
+
+  /// Checks for pending shared number and opens lookup screen.
+  Future<void> _checkPendingSharedNumber() async {
+    if (_pendingSharedNumber != null) {
+      final number = _pendingSharedNumber!;
+      _pendingSharedNumber = null; // Clear it
+
+      if (kDebugMode) {
+        print('Processing pending shared number: $number');
+      }
+
+      // Brief delay for screen to finish building
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (context.mounted) {
+        _searchPhoneNumber(number); // Reuses existing lookup method
+      }
+    }
   }
 
   @override
@@ -993,7 +1166,14 @@ class _MainScreenState extends State<MainScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(context.l10n.appTitle),
-          automaticallyImplyLeading: false,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.search),
@@ -1002,17 +1182,9 @@ class _MainScreenState extends State<MainScreen> {
                 _showSearchDialog(context);
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                );
-              },
-            ),
           ],
         ),
+        drawer: _buildDrawer(context),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _screenedCalls.isEmpty
@@ -1077,33 +1249,63 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds a single call list item.
   Widget _buildCallListItem(ScreenedCall call) {
-    final isSpam = call.wasBlocked;
+    final wasBlocked = call.wasBlocked;
 
-    // Use rating-specific styling if available, otherwise default styling
-    final hasRatingIcon = call.rating != null && call.rating != Rating.uNKNOWN && isSpam;
-    final rating = hasRatingIcon ? call.rating! : (isSpam ? Rating.uNKNOWN : Rating.aLEGITIMATE);
-    final color = bgColor(rating);
-    final String labelText = hasRatingIcon
-        ? (label(context, rating) as Text).data!
-        : (isSpam ? context.l10n.ratingSpam : context.l10n.ratingLegitimate);
+    // Check if call is new (not yet seen by user)
+    final bool isNew = call.id != null && newCallIds.contains(call.id);
+
+    // Determine the actual rating to display
+    // Use API rating if available, otherwise use generic labels
+    final bool hasApiRating = call.rating != null && call.rating != Rating.uNKNOWN;
+    final bool hasSpamIndicators = call.votes > 0 || call.votesWildcard > 0;
+    // Show as potential spam if not blocked but has spam indicators (votes)
+    final bool isPotentialSpam = !wasBlocked && hasSpamIndicators;
+
+    final Rating displayRating;
+    if (hasApiRating) {
+      // Use actual rating from API
+      displayRating = call.rating!;
+    } else if (wasBlocked || hasSpamIndicators) {
+      // Blocked or has spam indicators but no specific rating - generic SPAM
+      displayRating = Rating.uNKNOWN;
+    } else {
+      // Not blocked and no spam indicators - legitimate
+      displayRating = Rating.aLEGITIMATE;
+    }
+
+    final color = bgColor(displayRating);
+    final String ratingText = (label(context, displayRating) as Text).data!;
+
+    // Build the label text
+    final String labelText;
+    if (isPotentialSpam) {
+      // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
+      labelText = '$ratingText ?';
+    } else if (wasBlocked) {
+      // Show the rating for blocked calls
+      labelText = ratingText;
+    } else {
+      // Show "Legitim" for non-blocked calls without spam indicators
+      labelText = context.l10n.ratingLegitimate;
+    }
 
     return Dismissible(
       key: Key('call_${call.id}'),
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        color: isSpam ? Colors.green : Colors.orange,
+        color: Colors.red,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Icon(
-              isSpam ? Icons.check_circle : Icons.report,
+              Icons.delete,
               color: Colors.white,
               size: 32,
             ),
             const SizedBox(width: 12),
             Text(
-              isSpam ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
+              context.l10n.delete,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1116,12 +1318,12 @@ class _MainScreenState extends State<MainScreen> {
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: Colors.red,
+        color: wasBlocked ? Colors.green : Colors.orange,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              context.l10n.delete,
+              wasBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1130,7 +1332,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             SizedBox(width: 12),
             Icon(
-              Icons.delete,
+              wasBlocked ? Icons.check_circle : Icons.report,
               color: Colors.white,
               size: 32,
             ),
@@ -1138,9 +1340,9 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       confirmDismiss: (direction) async {
-        if (direction == DismissDirection.startToEnd) {
-          // Swipe right
-          if (isSpam) {
+        if (direction == DismissDirection.endToStart) {
+          // Swipe left to report
+          if (wasBlocked) {
             // SPAM number - report as legitimate
             await _reportAsLegitimate(context, call);
           } else {
@@ -1149,7 +1351,7 @@ class _MainScreenState extends State<MainScreen> {
           }
           return false; // Don't dismiss, just report
         } else {
-          // Swipe left to delete
+          // Swipe right to delete
           return true; // Allow dismissal
         }
       },
@@ -1164,56 +1366,146 @@ class _MainScreenState extends State<MainScreen> {
             _lastTapPosition = details.globalPosition;
           },
           child: ListTile(
-            leading: buildRatingAvatar(rating),
-            title: Text(
-              call.phoneNumber,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            leading: Stack(
+              clipBehavior: Clip.none,
               children: [
-                const SizedBox(height: 4),
-                Text(
-                  _formatTimestamp(call.timestamp),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                buildRatingAvatar(displayRating),
+                if (isNew)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    call.label ?? call.phoneNumber,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  call.votes > 0
-                      ? context.l10n.reportsCount(call.votes)
-                      : call.votes < 0
-                          ? context.l10n.legitimateReportsCount(call.votes.abs())
-                          : context.l10n.noReports,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: color, width: 1),
+                  ),
+                  child: Text(
+                    labelText,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],
             ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color, width: 1.5),
-              ),
-              child: Text(
-                labelText,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (call.location != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        call.location!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      wasBlocked ? Icons.block : Icons.check_circle_outline,
+                      size: 14,
+                      color: wasBlocked ? Colors.red[400] : Colors.green[400],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      wasBlocked ? context.l10n.blocked : context.l10n.accepted,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: wasBlocked ? Colors.red[400] : Colors.green[400],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatTimestamp(call.timestamp),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _buildReportsText(call),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                    Builder(
+                      builder: (buttonContext) {
+                        return InkWell(
+                          onTap: () {
+                            final RenderBox button = buttonContext.findRenderObject() as RenderBox;
+                            _lastTapPosition = button.localToGlobal(Offset.zero);
+                            _showCallOptions(context, call);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            child: Icon(
+                              Icons.more_vert,
+                              size: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-            onTap: () => _viewOnPhoneBlock(call),
+            onTap: () {
+              _markCallAsSeen(call);
+              _viewOnPhoneBlock(call);
+            },
             onLongPress: () => _showCallOptions(context, call),
           ),
         ),
@@ -1224,7 +1516,6 @@ class _MainScreenState extends State<MainScreen> {
   /// Shows a context menu with options for a call.
   void _showCallOptions(BuildContext context, ScreenedCall call) {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final isSpam = call.wasBlocked;
 
     final items = <PopupMenuEntry<dynamic>>[];
 
@@ -1742,6 +2033,169 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  /// Builds the navigation drawer with menu items.
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/spam_icon.png',
+                  width: 80,
+                  height: 80,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.l10n.appTitle,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.block),
+            title: Text(context.l10n.blacklistTitle),
+            subtitle: Text(context.l10n.blacklistDescription),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+
+              String? token = await getAuthToken();
+              if (token == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.notLoggedInShort),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlacklistScreen(authToken: token),
+                  ),
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.check_circle),
+            title: Text(context.l10n.whitelistTitle),
+            subtitle: Text(context.l10n.whitelistDescription),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+
+              String? token = await getAuthToken();
+              if (token == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.notLoggedInShort),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WhitelistScreen(authToken: token),
+                  ),
+                );
+              }
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: Text(context.l10n.settings),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+              // Reload answerbot enabled state when returning from settings
+              if (context.mounted) {
+                await _loadAnswerbotEnabled();
+              }
+            },
+          ),
+          if (_answerbotEnabled)
+            ListTile(
+              leading: const Icon(Icons.phone_callback),
+              title: Text(context.l10n.answerbotMenuTitle),
+              subtitle: Text(context.l10n.answerbotMenuDescription),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnswerBotList()),
+                );
+              },
+            ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.favorite, color: Colors.orange),
+            title: Text(context.l10n.donate),
+            subtitle: Text(context.l10n.aboutDescription),
+            onTap: () async {
+              final title = context.l10n.donate;
+              Navigator.pop(context); // Close drawer
+
+              String? token = await getAuthToken();
+              if (token == null) {
+                return;
+              }
+
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PhoneBlockWebView(
+                      title: title,
+                      path: '/support',
+                      authToken: token,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(context.l10n.about),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AboutScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Opens the phone number on PhoneBlock website in a WebView.
   Future<void> _viewOnPhoneBlock(ScreenedCall call) async {
     String? token = await getAuthToken();
@@ -1769,6 +2223,36 @@ class _MainScreenState extends State<MainScreen> {
         ),
       );
     }
+  }
+
+  /// Marks a call as seen (removes from new calls set).
+  void _markCallAsSeen(ScreenedCall call) {
+    if (call.id != null && newCallIds.contains(call.id)) {
+      setState(() {
+        newCallIds.remove(call.id);
+      });
+    }
+  }
+
+  /// Builds the reports text showing votes and range votes.
+  String _buildReportsText(ScreenedCall call) {
+    final parts = <String>[];
+
+    if (call.votes > 0) {
+      parts.add(context.l10n.reportsCount(call.votes));
+    } else if (call.votes < 0) {
+      parts.add(context.l10n.legitimateReportsCount(call.votes.abs()));
+    }
+
+    if (call.votesWildcard > 0) {
+      parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
+    }
+
+    if (parts.isEmpty) {
+      return context.l10n.noReports;
+    }
+
+    return parts.join(', ');
   }
 
   /// Formats the timestamp for display.
@@ -1964,7 +2448,7 @@ Widget label(BuildContext context, Rating rating) {
 Color bgColor(Rating rating) {
   switch (rating) {
     case Rating.aLEGITIMATE: return const Color.fromRGBO(72, 199, 142, 1);
-    case Rating.uNKNOWN: return const Color.fromRGBO(170, 172, 170, 1);
+    case Rating.uNKNOWN: return const Color.fromRGBO(255, 152, 0, 1); // Orange for unknown spam
     case Rating.pING: return const Color.fromRGBO(31, 94, 220, 1);
     case Rating.pOLL: return const Color.fromRGBO(157, 31, 220, 1);
     case Rating.aDVERTISING: return const Color.fromRGBO(255, 152, 0, 1); // Darker orange for better contrast
@@ -2095,14 +2579,11 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
       ..setUserAgent('PhoneBlockMobile/$appVersion')
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
+          onProgress: (int progress) {
+            // Use progress callback for reliable loading state tracking.
+            // loadRequest() with custom headers may not trigger onPageStarted/onPageFinished reliably.
             setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
+              _isLoading = progress < 100;
             });
           },
           onNavigationRequest: (NavigationRequest request) {
@@ -2125,6 +2606,11 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
 
   /// Loads a page with custom headers (Authorization and Accept-Language).
   Future<void> _loadPageWithHeaders(String url) async {
+    // Show loading indicator immediately
+    setState(() {
+      _isLoading = true;
+    });
+
     // Get device locale for Accept-Language header
     final languageTag = getDeviceLocale();
 
@@ -2163,8 +2649,11 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
         children: [
           WebViewWidget(controller: _controller),
           if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
+            Container(
+              color: Colors.white.withValues(alpha: 0.8),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
         ],
       ),
@@ -2186,7 +2675,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _minRangeVotes = 10;
   int _retentionDays = retentionDefault;
   String _themeMode = 'system';
+  bool _answerbotEnabled = false;
   bool _isLoading = true;
+  int _blockedCallsCount = 0;
+  int _suspiciousCallsCount = 0;
 
   @override
   void initState() {
@@ -2207,9 +2699,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final minRangeVotesResult = await platform.invokeMethod("getMinRangeVotes");
       final retentionDaysResult = await platform.invokeMethod("getRetentionDays");
       final themeModeResult = await getThemeMode();
+      final answerbotEnabledResult = await platform.invokeMethod("getAnswerbotEnabled");
+      final blockedCallsCountResult = await platform.invokeMethod("getBlockedCallsCount");
+      final suspiciousCallsCountResult = await platform.invokeMethod("getInspectedSuspiciousCount");
 
       if (kDebugMode) {
-        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult");
+        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
       }
 
       setState(() {
@@ -2218,11 +2713,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _minRangeVotes = minRangeVotesResult ?? 10;
         _retentionDays = retentionDaysResult ?? retentionDefault;
         _themeMode = themeModeResult;
+        _answerbotEnabled = answerbotEnabledResult ?? false;
+        _blockedCallsCount = blockedCallsCountResult ?? 0;
+        _suspiciousCallsCount = suspiciousCallsCountResult ?? 0;
         _isLoading = false;
       });
 
       if (kDebugMode) {
-        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode");
+        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode, answerbotEnabled: $_answerbotEnabled");
       }
     } catch (e) {
       if (kDebugMode) {
@@ -2415,6 +2913,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Save answerbot enabled setting.
+  Future<void> _saveAnswerbotEnabled(bool value) async {
+    if (kDebugMode) {
+      print("Saving answerbotEnabled: $value");
+    }
+    try {
+      await platform.invokeMethod("setAnswerbotEnabled", value);
+      if (kDebugMode) {
+        print("Successfully saved answerbotEnabled to SharedPreferences: $value");
+      }
+      setState(() {
+        _answerbotEnabled = value;
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.settingSaved),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving answerbot enabled: $e");
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorSaving),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2521,94 +3055,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const Divider(),
-                ListTile(
-                  title: Text(context.l10n.blacklistTitle),
-                  subtitle: Text(context.l10n.blacklistDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => BlacklistScreen(authToken: token),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  title: Text(context.l10n.whitelistTitle),
-                  subtitle: Text(context.l10n.whitelistDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => WhitelistScreen(authToken: token),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  title: Text(context.l10n.serverSettings),
-                  subtitle: Text(context.l10n.serverSettingsDescription),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final navigator = Navigator.of(context);
-                    final scaffold = ScaffoldMessenger.of(context);
-                    final localizations = context.l10n;
-
-                    String? token = await getAuthToken();
-                    if (token == null) {
-                      scaffold.showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.notLoggedInShort),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    navigator.push(
-                      MaterialPageRoute(
-                        builder: (context) => PhoneBlockWebView(
-                          title: localizations.serverSettings,
-                          path: '/settings',
-                          authToken: token,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
@@ -2648,9 +3094,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 4.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    context.l10n.about,
+                    context.l10n.serverSettings,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -2659,75 +3105,192 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.version),
-                  subtitle: Text(appVersion),
-                ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.developer),
-                  subtitle: Text(context.l10n.developerName),
-                ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.website),
-                  subtitle: Text(context.l10n.websiteUrl),
+                  title: Text(context.l10n.serverSettings),
+                  subtitle: Text(context.l10n.serverSettingsDescription),
                   onTap: () async {
-                    final url = await buildPhoneBlockUrlWithToken('/');
-                    final uri = Uri.parse(url);
+                    final uri = Uri.parse('$pbBaseUrl/settings');
                     if (await canLaunchUrl(uri)) {
                       await launchUrl(uri, mode: LaunchMode.externalApplication);
                     }
                   },
                 ),
-                ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(context.l10n.sourceCode),
-                  subtitle: Text(context.l10n.sourceCodeLicense),
-                  onTap: () async {
-                    final url = Uri.parse('https://github.com/haumacher/phoneblock');
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                    }
-                  },
-                ),
+                const Divider(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    context.l10n.aboutDescription,
+                    context.l10n.experimentalFeatures,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                       color: Colors.grey,
-                      fontStyle: FontStyle.italic,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
+                SwitchListTile(
+                  title: Text(context.l10n.answerbotFeature),
+                  subtitle: Text(context.l10n.answerbotFeatureDescription),
+                  value: _answerbotEnabled,
+                  onChanged: (value) {
+                    _saveAnswerbotEnabled(value);
+                  },
+                ),
+                const Divider(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final url = await buildPhoneBlockUrlWithToken('/support');
-                      final uri = Uri.parse(url);
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    icon: const Icon(Icons.favorite),
-                    label: Text(context.l10n.donate),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.statistics,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.block, color: Colors.red),
+                  title: Text(context.l10n.blockedCallsCount),
+                  trailing: Text(
+                    '$_blockedCallsCount',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.warning, color: Colors.orange),
+                  title: Text(context.l10n.suspiciousCallsCount),
+                  trailing: Text(
+                    '$_suspiciousCallsCount',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// About screen showing app information, credits, and links.
+class AboutScreen extends StatelessWidget {
+  const AboutScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.l10n.about),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // App logo
+          Center(
+            child: Image.asset(
+              'assets/images/spam_icon.png',
+              width: 120,
+              height: 120,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // App title
+          Center(
+            child: Text(
+              context.l10n.appTitle,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Version
+          Center(
+            child: Text(
+              '${context.l10n.version} $appVersion',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          // About description
+          Text(
+            context.l10n.aboutDescription,
+            style: const TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          // Developer
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: Text(context.l10n.developer),
+            subtitle: Text(context.l10n.developerName),
+          ),
+          // Website
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: Text(context.l10n.website),
+            subtitle: Text(context.l10n.websiteUrl),
+            onTap: () async {
+              final url = await buildPhoneBlockUrlWithToken('/');
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
+          // Source code
+          ListTile(
+            leading: const Icon(Icons.code),
+            title: Text(context.l10n.sourceCode),
+            subtitle: Text(context.l10n.sourceCodeLicense),
+            onTap: () async {
+              final url = Uri.parse('https://github.com/haumacher/phoneblock');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
+          const SizedBox(height: 32),
+          // Donate button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                String? token = await getAuthToken();
+                if (token == null) {
+                  return;
+                }
+
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PhoneBlockWebView(
+                        title: context.l10n.donate,
+                        path: '/support',
+                        authToken: token,
+                      ),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.favorite),
+              label: Text(context.l10n.donate),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,8 +1,6 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
@@ -57,7 +55,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String user = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String user = LoginFilter.getAuthenticatedUser(req);
 		if (user == null) {
 			resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			TemplateRenderer.getInstance(req).process(MOBILE_LOGIN, req, resp);
@@ -77,7 +75,6 @@ public class CreateAuthTokenServlet extends HttpServlet {
 		// TODO: This might better come from a DB table (registered integrations):
 		String baseUrl = switch (appId) {
 			case "PhoneSpamBlocker" -> "PhoneSpamBlocker://auth";
-			case "PhoneBlockMobile" -> "PhoneBlockMobile://auth";
 			default -> req.getContextPath() + MOBILE_RESPONSE;
 		};
 		

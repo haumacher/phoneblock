@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 	<meta charset="UTF-8"/>
 	<title data-tx="t0001:7bfc5ab">Velkommen til PhoneBlock</title>
@@ -38,29 +38,29 @@
 </head>
 <body>
 	<div class="header">
-		<img alt="PhoneBlock-logo" data-tx="t0002:5b0e8765" height="100" src="{image}" width="100"/>
+		<img alt="PhoneBlock-logo" data-tx="t0002:5b0e8765" height="100" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="100"/>
 	</div>
 
-	<p data-tx="t0003:246aceaa">Hallo {navn},</p>
+	<p data-tx="t0017:f05885dc">Hei <span th:text="${name}">bruker</span>,</p>
 
-	<p data-tx="t0004:9a5ee6f">Flott at du har installert <strong>PhoneBlock</strong> på "<span class="device-label">{deviceLabel}</span>"!<br/> Fra nå av vil spam-anrop blokkeres automatisk på denne enheten.</p>
+	<p data-tx="t0018:7fb45dc8">Flott at du har installert <strong>PhoneBlock</strong> på "<span class="device-label" th:text="${deviceLabel}">Din enhet</span>"!<br/> Fra nå av vil spam-anrop bli blokkert automatisk på denne enheten.</p>
 
-	<p data-tx="t0005:e5f62056">Hvis du er fornøyd med PhoneBlock, vil jeg bli veldig glad hvis du vil bidra til kostnadene ved å drive PhoneBlock med en liten <a href="{support}">donasjon</a>.</p>
+	<p data-tx="t0005:e5f62056">Hvis du er fornøyd med PhoneBlock, vil jeg bli veldig glad hvis du vil bidra til kostnadene ved å drive PhoneBlock med en liten <a href="https://phoneblock.net/phoneblock/support" th:href="${support}">donasjon</a>.</p>
 
-	<p data-tx="t0006:c3705d3d">Men enda viktigere er det at du forteller venner, bekjente og slektninger om det. Hvorfor deler du ikke <a href="{home}">PhoneBlock hjemmeside</a> på Facebook, Twitter eller en annen kanal og følger <a href="{facebook}">PhoneBlock</a> slik at du ikke går glipp av noen oppdateringer.</p>
+	<p data-tx="t0006:c3705d3d">Men enda viktigere er det at du forteller venner, bekjente og slektninger om det. Hvorfor deler du ikke <a href="https://phoneblock.net" th:href="${home}">PhoneBlock hjemmeside</a> på Facebook, Twitter eller en annen kanal og følger <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}">PhoneBlock</a> slik at du ikke går glipp av noen oppdateringer.</p>
 
 	<p data-tx="t0007:2be40556">Bare hvis du forteller andre om PhoneBlock, kan den gode nyheten om at ingen lenger er forsvarsløse mot telefonterror, spres.</p>
 
 	<p data-tx="t0008:ac6e6c33">Med vennlig hilsen<br/> Bernhard Haumacher</p>
 
 	<div class="footer">
-		<a data-tx="t0010:12aaf3d4" href="{home}">Hjemmeside</a> |
-		<a data-tx="t0011:f41f32ed" href="{support}">Donasjon</a> |
-		<a data-tx="t0012:1798fbdb" href="{settings}">Innstillinger</a> |
-		<a data-tx="t0013:b64ed532" href="{app}">Telefonsvarer</a> |
-		<a data-tx="t0014:d8bf861a" href="{help}">Videoinstruksjon</a> |
-		<a data-tx="t0015:f5b28ece" href="{facebook}">Facebook</a> |
-		<a data-tx="t0016:1e3bb77d" href="mailto:{mail}">Kontakt oss</a>
+		<a data-tx="t0010:12aaf3d4" href="https://phoneblock.net" th:href="${home}">Hjemmeside</a> |
+		<a data-tx="t0011:f41f32ed" href="https://phoneblock.net/phoneblock/support" th:href="${support}">Donasjon</a> |
+		<a data-tx="t0012:1798fbdb" href="https://phoneblock.net/phoneblock/settings" th:href="${settings}">Innstillinger</a> |
+		<a data-tx="t0013:b64ed532" href="https://phoneblock.net/phoneblock/ab/" th:href="${app}">Telefonsvarer</a> |
+		<a data-tx="t0014:d8bf861a" href="https://www.youtube.com/@phoneblock" th:href="${help}">Videoinstruksjon</a> |
+		<a data-tx="t0015:f5b28ece" href="https://www.facebook.com/PhoneBlock" th:href="${facebook}">Facebook</a> |
+		<a data-tx="t0016:1e3bb77d" href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|">Kontakt oss</a>
 	</div>
 </body>
 </html>

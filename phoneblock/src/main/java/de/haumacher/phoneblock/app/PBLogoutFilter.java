@@ -23,7 +23,7 @@ public class PBLogoutFilter extends LogoutFilter {
 		
 		String all = request.getParameter("all");
 		if ("true".equals(all)) {
-			String user = LoginFilter.getAuthenticatedUser(((HttpServletRequest) request).getSession(false));
+			String user = LoginFilter.getAuthenticatedUser((HttpServletRequest) request);
 			if (user != null) {
 				DBService.getInstance().logoutAll(user);
 			}

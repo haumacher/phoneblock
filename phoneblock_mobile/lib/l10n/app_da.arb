@@ -94,7 +94,8 @@
   "settingSaved": "Indstilling gemt",
   "errorSaving": "Fejl ved lagring",
   "ratePhoneNumber": "Bedøm {phoneNumber}.",
-  "reportsCount": "{count, plural, =1{1 Besked} other{{count} beskeder}}.",
+  "reportsCount": "{count, plural, =1{1 klage} other{{count} klager}}.",
+  "rangeReportsCount": "{count, plural, =1{1 klage i nummerrækken} other{{count} Klager i talområdet}}.",
   "legitimateReportsCount": "{count, plural, =1{1 Legitim besked} other{{count} Legitime beskeder}}.",
   "noReports": "Ingen beskeder",
   "todayTime": "I dag, {time}.",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Vælg et lyst eller mørkt design",
   "themeModeSystem": "Systemets standard",
   "themeModeLight": "Lys",
-  "themeModeDark": "Mørk"
+  "themeModeDark": "Mørk",
+  "experimentalFeatures": "Eksperimentelle funktioner",
+  "answerbotFeature": "Telefonsvarer (Answerbot)",
+  "answerbotFeatureDescription": "Eksperimentelt: Administrer SPAM-telefonsvareren til Fritz!Box i appen",
+  "answerbotMenuTitle": "Telefonsvarer",
+  "answerbotMenuDescription": "Administrer SPAM-telefonsvareren",
+  "potentialSpamLabel": "Mistænkelig: {rating}.",
+  "statistics": "Statistik",
+  "blockedCallsCount": "Blokerede opkald",
+  "suspiciousCallsCount": "Mistænkelige opkald"
 }

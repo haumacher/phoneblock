@@ -19,8 +19,8 @@ import de.haumacher.phoneblock.app.api.model.AccountSettings;
 import de.haumacher.phoneblock.app.api.model.UpdateAccountRequest;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.location.model.Country;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -69,18 +69,13 @@ public class AccountManagementServlet extends HttpServlet {
 			return;
 		}
 
-		DB db = DBService.getInstance();
-		try (SqlSession session = db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			DBUserSettings settings = users.getSettingsRaw(userName);
-
-			if (settings == null) {
-				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User settings not found");
-				return;
-			}
-
-			sendAccountSettings(resp, settings);
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		if (settings == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "User settings not found");
+			return;
 		}
+
+		sendAccountSettings(resp, settings);
 	}
 
 	@Override
@@ -181,8 +176,9 @@ public class AccountManagementServlet extends HttpServlet {
 				session.commit();
 			}
 
-			// Fetch updated settings to return
-			DBUserSettings settings = users.getSettingsRaw(userName);
+			// Fetch updated settings to return and refresh session cache
+			UserSettings settings = users.getSettingsRaw(userName);
+			LoginFilter.refreshUserSettings(req, settings);
 
 			sendAccountSettings(resp, settings);
 		}
@@ -191,7 +187,7 @@ public class AccountManagementServlet extends HttpServlet {
 	/**
 	 * Sends account settings as JSON response.
 	 */
-	private void sendAccountSettings(HttpServletResponse resp, DBUserSettings settings) throws IOException {
+	private void sendAccountSettings(HttpServletResponse resp, UserSettings settings) throws IOException {
 		AccountSettings response = AccountSettings.create()
 				.setLang(settings.getLang())
 				.setDialPrefix(settings.getDialPrefix())

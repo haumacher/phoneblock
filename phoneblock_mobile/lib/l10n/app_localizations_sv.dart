@@ -331,8 +331,19 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count meddelanden',
-      one: '1 Meddelande',
+      other: '$count klagomål',
+      one: '1 Klagomål',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rangeReportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Klagomål i nummerintervallet',
+      one: '1 Klagomål i nummerintervallet',
     );
     return '$_temp0';
   }
@@ -520,4 +531,34 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Mörk';
+
+  @override
+  String get experimentalFeatures => 'Experimentella funktioner';
+
+  @override
+  String get answerbotFeature => 'Telefonsvarare (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Experiment: Hantera SPAM-svarare för Fritz!Box i appen';
+
+  @override
+  String get answerbotMenuTitle => 'Telefonsvarare';
+
+  @override
+  String get answerbotMenuDescription => 'Hantera telefonsvarare för SPAM';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Misstänkt: $rating';
+  }
+
+  @override
+  String get statistics => 'Statistik';
+
+  @override
+  String get blockedCallsCount => 'Blockerade samtal';
+
+  @override
+  String get suspiciousCallsCount => 'Misstänkta samtal';
 }

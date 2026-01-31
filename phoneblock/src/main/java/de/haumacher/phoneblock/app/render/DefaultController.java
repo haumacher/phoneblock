@@ -20,7 +20,6 @@ import org.thymeleaf.web.servlet.IServletWebExchange;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
-import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.UIProperties;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
@@ -45,10 +44,30 @@ public class DefaultController implements WebController {
 	
 	/**
 	 * Session attribute specifying the user's dial prefix ("+49" for Germany).
-	 * 
+	 *
 	 * @see Country#getDialPrefix()
 	 */
 	public static final String DIAL_PREFIX_ATTR = "dialPrefix";
+
+	/**
+	 * Session attribute for storing a newly created password to display once.
+	 */
+	public static final String PASSWORD_ATTR = "passwd";
+
+	/**
+	 * Session attribute for storing a newly created CardDAV token to display once.
+	 */
+	public static final String CARD_DAV_TOKEN_ATTR = "cardDavToken";
+
+	/**
+	 * Session attribute for storing a newly created API key to display once.
+	 */
+	public static final String API_KEY_ATTR = "apiKey";
+
+	/**
+	 * Template variable for displaying a newly created password/token.
+	 */
+	public static final String TOKEN_VAR = "token";
 
 	static final String RENDER_TEMPLATE = "renderTemplate";
 
@@ -296,24 +315,28 @@ public class DefaultController implements WebController {
 			String attribute = it.nextElement();
 			ctx.setVariable(attribute, request.getAttribute(attribute));
 		}
-		
+
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			String userName = LoginFilter.getAuthenticatedUser(session);
-			String token = RegistrationServlet.getPassword(session);
-			Object cardDavToken = session.getAttribute("cardDavToken");
-			Object apiKey = session.getAttribute("apiKey");
-			
-			// Show this only once.
-			session.removeAttribute("cardDavToken");
-			session.removeAttribute("apiKey");
+			Object password = session.getAttribute(PASSWORD_ATTR);
+			Object cardDavToken = session.getAttribute(CARD_DAV_TOKEN_ATTR);
+			Object apiKey = session.getAttribute(API_KEY_ATTR);
 
+			// Show this only once.
+			session.removeAttribute(PASSWORD_ATTR);
+			session.removeAttribute(CARD_DAV_TOKEN_ATTR);
+			session.removeAttribute(API_KEY_ATTR);
+
+			ctx.setVariable(TOKEN_VAR, password);
+			ctx.setVariable(CARD_DAV_TOKEN_ATTR, cardDavToken);
+			ctx.setVariable(API_KEY_ATTR, apiKey);
+		}
+
+		String userName = LoginFilter.getAuthenticatedUser(request);
+		if (userName != null) {
 			ctx.setVariable("userName", userName);
-			ctx.setVariable("token", token);
-			ctx.setVariable("cardDavToken", cardDavToken);
-			ctx.setVariable("apiKey", apiKey);
-			ctx.setVariable("supporterId", userName == null ? null : "PhoneBlock-" + userName.substring(0, 13));
-			ctx.setVariable("loggedIn", Boolean.valueOf(userName != null));
+			ctx.setVariable("supporterId", "PhoneBlock-" + userName.substring(0, 13));
+			ctx.setVariable("loggedIn", Boolean.TRUE);
 		} else {
 			ctx.setVariable("loggedIn", Boolean.FALSE);
 		}

@@ -65,16 +65,45 @@ public class MainActivity extends FlutterActivity {
     }
 
     /**
-     * Shows or updates a notification displaying the count of pending screened calls.
+     * Updates the notification showing all pending screened calls as a list.
      * @param context Application context
-     * @param count Number of pending calls
+     * @param callsArray JSON array of all pending calls
      */
-    private static void updatePendingCallsNotification(Context context, int count) {
+    private static void updateCallsNotification(Context context, JSONArray callsArray) throws JSONException {
         NotificationManager notificationManager =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (count == 0) {
-            // No pending calls - remove notification
+        // Build list of notable calls (blocked or suspicious)
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        for (int i = 0; i < callsArray.length(); i++) {
+            JSONObject call = callsArray.getJSONObject(i);
+            boolean callBlocked = call.getBoolean("wasBlocked");
+            int callVotes = call.optInt("votes", 0);
+            int callVotesWildcard = call.optInt("votesWildcard", 0);
+
+            if (callBlocked || callVotes > 0 || callVotesWildcard > 0) {
+                String phoneNumber = call.getString("phoneNumber");
+
+                // Use label from API if available, otherwise format locally
+                String displayNumber = call.optString("label", null);
+                if (displayNumber == null || displayNumber.isEmpty()) {
+                    displayNumber = android.telephony.PhoneNumberUtils.formatNumber(
+                        phoneNumber, java.util.Locale.getDefault().getCountry());
+                    if (displayNumber == null) {
+                        displayNumber = phoneNumber;
+                    }
+                }
+
+                String prefix = callBlocked
+                    ? context.getString(R.string.notification_blocked_prefix)
+                    : context.getString(R.string.notification_suspicious_prefix);
+
+                lines.add(prefix + " " + displayNumber);
+            }
+        }
+
+        if (lines.isEmpty()) {
+            // No notable calls - remove notification
             notificationManager.cancel(NOTIFICATION_ID);
             return;
         }
@@ -88,25 +117,36 @@ public class MainActivity extends FlutterActivity {
             PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        // Build notification with localized strings
+        // Build inbox style with list of calls
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        for (String line : lines) {
+            inboxStyle.addLine(line);
+        }
+
         String title = context.getResources().getQuantityString(
-            R.plurals.pending_calls_notification_title,
-            count,
-            count
-        );
-        String text = context.getString(R.string.notification_tap_to_open);
+            R.plurals.notification_title, lines.size(), lines.size());
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_call)
             .setContentTitle(title)
-            .setContentText(text)
-            .setNumber(count)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true)  // Make it persistent
-            .setAutoCancel(false)  // Don't dismiss on tap
+            .setContentText(lines.get(lines.size() - 1))  // Show last call when collapsed
+            .setStyle(inboxStyle)
+            .setNumber(lines.size())
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
             .setContentIntent(pendingIntent);
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());
+    }
+
+    /**
+     * Clears all pending call notifications.
+     * @param context Application context
+     */
+    private static void clearPendingCallsNotifications(Context context) {
+        NotificationManager notificationManager =
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(NOTIFICATION_ID);
     }
 
     @Override
@@ -127,10 +167,21 @@ public class MainActivity extends FlutterActivity {
      * @param phoneNumber The phone number that was screened
      * @param wasBlocked true if the call was blocked as SPAM, false if accepted
      * @param votes Number of votes from PhoneBlock database
+     * @param votesWildcard Number of range votes (aggregated from similar numbers)
      * @param rating The rating/category of the call (e.g., "C_PING", "E_ADVERTISING", null for legitimate)
+     * @param label Formatted phone number for display (e.g., "(DE) 030 12345678"), may be null
+     * @param location City or region where the call originated (e.g., "Berlin"), may be null
      */
-    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, String rating) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location) {
         long timestamp = System.currentTimeMillis();
+
+        // Update call counters
+        if (wasBlocked) {
+            incrementBlockedCallsCount(context);
+        } else if (votes > 0 || votesWildcard > 0) {
+            // Suspicious call: has votes but wasn't blocked (below threshold)
+            incrementSuspiciousCallsCount(context);
+        }
 
         // Check if Flutter is active
         if (_instance != null && _instance._channel != null) {
@@ -139,9 +190,16 @@ public class MainActivity extends FlutterActivity {
             data.put("phoneNumber", phoneNumber);
             data.put("wasBlocked", wasBlocked);
             data.put("votes", votes);
+            data.put("votesWildcard", votesWildcard);
             data.put("timestamp", timestamp);
             if (rating != null) {
                 data.put("rating", rating);
+            }
+            if (label != null) {
+                data.put("label", label);
+            }
+            if (location != null) {
+                data.put("location", location);
             }
 
             _instance._channel.invokeMethod("onCallScreened", data);
@@ -159,9 +217,16 @@ public class MainActivity extends FlutterActivity {
                 callJson.put("phoneNumber", phoneNumber);
                 callJson.put("wasBlocked", wasBlocked);
                 callJson.put("votes", votes);
+                callJson.put("votesWildcard", votesWildcard);
                 callJson.put("timestamp", timestamp);
                 if (rating != null) {
                     callJson.put("rating", rating);
+                }
+                if (label != null) {
+                    callJson.put("label", label);
+                }
+                if (location != null) {
+                    callJson.put("location", location);
                 }
 
                 // Add to array
@@ -170,21 +235,9 @@ public class MainActivity extends FlutterActivity {
                 // Save back to SharedPreferences
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
-                // Only show notification for blocked SPAM calls
-                // Regular calls are already notified by the phone app
-                if (wasBlocked) {
-                    // Count only blocked calls for notification
-                    int blockedCount = 0;
-                    for (int i = 0; i < callsArray.length(); i++) {
-                        if (callsArray.getJSONObject(i).getBoolean("wasBlocked")) {
-                            blockedCount++;
-                        }
-                    }
-                    updatePendingCallsNotification(context, blockedCount);
-                    Log.d(MainActivity.class.getName(), "Stored blocked SPAM call for later sync: " + phoneNumber + " (blocked count: " + blockedCount + ")");
-                } else {
-                    Log.d(MainActivity.class.getName(), "Stored non-blocked call for later sync: " + phoneNumber);
-                }
+                // Update notification showing all notable calls (blocked or suspicious)
+                updateCallsNotification(context, callsArray);
+                Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber);
             } catch (JSONException e) {
                 Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
             }
@@ -273,6 +326,33 @@ public class MainActivity extends FlutterActivity {
                 setThemeMode((String) methodCall.arguments);
                 result.success(null);
                 break;
+
+            case "getAnswerbotEnabled":
+                result.success(getAnswerbotEnabled());
+                break;
+
+            case "setAnswerbotEnabled":
+                setAnswerbotEnabled((Boolean) methodCall.arguments);
+                result.success(null);
+                break;
+
+            case "getBlockedCallsCount":
+                result.success(getBlockedCallsCount());
+                break;
+
+            case "incrementBlockedCallsCount":
+                incrementBlockedCallsCount(this);
+                result.success(null);
+                break;
+
+            case "getInspectedSuspiciousCount":
+                result.success(getInspectedSuspiciousCount());
+                break;
+
+            case "incrementInspectedSuspiciousCount":
+                incrementSuspiciousCallsCount(this);
+                result.success(null);
+                break;
         }
     }
 
@@ -297,9 +377,16 @@ public class MainActivity extends FlutterActivity {
                 data.put("phoneNumber", callJson.getString("phoneNumber"));
                 data.put("wasBlocked", callJson.getBoolean("wasBlocked"));
                 data.put("votes", callJson.getInt("votes"));
+                data.put("votesWildcard", callJson.optInt("votesWildcard", 0));
                 data.put("timestamp", callJson.getLong("timestamp"));
                 if (callJson.has("rating")) {
                     data.put("rating", callJson.getString("rating"));
+                }
+                if (callJson.has("label")) {
+                    data.put("label", callJson.getString("label"));
+                }
+                if (callJson.has("location")) {
+                    data.put("location", callJson.getString("location"));
                 }
                 results.add(data);
             }
@@ -318,9 +405,9 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().remove("pending_screened_calls").apply();
 
-        // Clear the notification since all pending calls have been synced
-        updatePendingCallsNotification(this, 0);
-        Log.d(MainActivity.class.getName(), "Cleared pending calls notification after syncing");
+        // Clear all notifications since all pending calls have been synced
+        clearPendingCallsNotifications(this);
+        Log.d(MainActivity.class.getName(), "Cleared pending calls notifications after syncing");
     }
 
     private String getAuthToken() {
@@ -416,6 +503,61 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("theme_mode", themeMode).apply();
         Log.d(MainActivity.class.getName(), "setThemeMode: " + themeMode);
+    }
+
+    /**
+     * Gets whether the answerbot experimental feature is enabled.
+     * @return true if answerbot is enabled, false otherwise. Defaults to false.
+     */
+    private boolean getAnswerbotEnabled() {
+        SharedPreferences prefs = getPreferences(this);
+        boolean value = prefs.getBoolean("answerbot_enabled", false);
+        Log.d(MainActivity.class.getName(), "getAnswerbotEnabled: " + value);
+        return value;
+    }
+
+    /**
+     * Sets whether the answerbot experimental feature is enabled.
+     * @param enabled true to enable answerbot, false to disable.
+     */
+    private void setAnswerbotEnabled(boolean enabled) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putBoolean("answerbot_enabled", enabled).apply();
+        Log.d(MainActivity.class.getName(), "setAnswerbotEnabled: " + enabled);
+    }
+
+    /**
+     * Gets the total count of blocked calls.
+     */
+    private int getBlockedCallsCount() {
+        SharedPreferences prefs = getPreferences(this);
+        return prefs.getInt("blocked_calls_count", 0);
+    }
+
+    /**
+     * Increments the blocked calls counter.
+     */
+    private static void incrementBlockedCallsCount(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        int current = prefs.getInt("blocked_calls_count", 0);
+        prefs.edit().putInt("blocked_calls_count", current + 1).apply();
+    }
+
+    /**
+     * Gets the total count of suspicious calls (had votes but below threshold).
+     */
+    private int getInspectedSuspiciousCount() {
+        SharedPreferences prefs = getPreferences(this);
+        return prefs.getInt("suspicious_calls_count", 0);
+    }
+
+    /**
+     * Increments the suspicious calls counter.
+     */
+    private static void incrementSuspiciousCallsCount(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        int current = prefs.getInt("suspicious_calls_count", 0);
+        prefs.edit().putInt("suspicious_calls_count", current + 1).apply();
     }
 
     public static SharedPreferences getPreferences(Context context) {

@@ -94,7 +94,8 @@
   "settingSaved": "Impostazione salvata",
   "errorSaving": "Errore durante il salvataggio",
   "ratePhoneNumber": "Tariffa {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 Messaggio} other{{count} dei messaggi}}",
+  "reportsCount": "{count, plural, =1{1 reclamo} other{{count} dei reclami}}",
+  "rangeReportsCount": "{count, plural, =1{1 reclamo nell'intervallo di numeri} other{{count} Reclami nell'intervallo di numeri}}",
   "legitimateReportsCount": "{count, plural, =1{1 Messaggio legittimo} other{{count} Messaggi legittimi}}",
   "noReports": "Nessun messaggio",
   "todayTime": "Oggi, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Scegliere un design chiaro o scuro",
   "themeModeSystem": "Sistema standard",
   "themeModeLight": "Luce",
-  "themeModeDark": "Scuro"
+  "themeModeDark": "Scuro",
+  "experimentalFeatures": "Funzioni sperimentali",
+  "answerbotFeature": "Segreteria telefonica (Answerbot)",
+  "answerbotFeatureDescription": "Sperimentale: Gestione della segreteria telefonica SPAM per il Fritz!Box nell'app",
+  "answerbotMenuTitle": "Segreteria telefonica",
+  "answerbotMenuDescription": "Gestire la segreteria telefonica SPAM",
+  "potentialSpamLabel": "Sospetto: {rating}",
+  "statistics": "Statistiche",
+  "blockedCallsCount": "Chiamate bloccate",
+  "suspiciousCallsCount": "Chiamate sospette"
 }

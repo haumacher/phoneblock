@@ -94,7 +94,8 @@
   "settingSaved": "الإعداد المحفوظ",
   "errorSaving": "خطأ عند الحفظ",
   "ratePhoneNumber": "معدل {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 رسالة} other{{count} الرسائل}}",
+  "reportsCount": "{count, plural, =1{1 شكوى} other{{count}}}",
+  "rangeReportsCount": "{count, plural, =1{1 شكوى في نطاق الأرقام} other{{count} الشكاوى في نطاق الأرقام}}",
   "legitimateReportsCount": "{count, plural, =1{1 رسالة شرعية 1 رسالة شرعية} other{{count}الرسائل الشرعية}}",
   "noReports": "لا توجد رسائل",
   "todayTime": "اليوم، {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "اختر تصميماً فاتحاً أو غامقاً",
   "themeModeSystem": "معيار النظام",
   "themeModeLight": "خفيف",
-  "themeModeDark": "داكن"
+  "themeModeDark": "داكن",
+  "experimentalFeatures": "الوظائف التجريبية",
+  "answerbotFeature": "جهاز الرد على المكالمات الهاتفي (Answerbot)",
+  "answerbotFeatureDescription": "تجريبي: إدارة جهاز الرد على الرسائل الاقتحامية للرد على الرسائل الاقتحامية في التطبيق",
+  "answerbotMenuTitle": "جهاز الرد الآلي",
+  "answerbotMenuDescription": "إدارة جهاز الرد على الرسائل الاقتحامية",
+  "potentialSpamLabel": "مشبوه: <x1>التصنيف<x1>",
+  "statistics": "الإحصائيات",
+  "blockedCallsCount": "المكالمات المحظورة",
+  "suspiciousCallsCount": "المكالمات المشبوهة"
 }

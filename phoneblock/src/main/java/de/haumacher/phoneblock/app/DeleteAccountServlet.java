@@ -13,7 +13,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 /**
  * {@link HttpServlet} deleting the account of the currently logged in user.
@@ -33,8 +32,7 @@ public class DeleteAccountServlet extends HttpServlet {
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		HttpSession session = req.getSession(false);
-		String login = LoginFilter.getAuthenticatedUser(session);
+		String login = LoginFilter.getAuthenticatedUser(req);
 		if (login == null) {
 			showSettings(req, resp);
 			return;

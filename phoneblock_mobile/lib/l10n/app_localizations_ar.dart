@@ -330,8 +330,19 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count الرسائل',
-      one: '1 رسالة',
+      other: '$count',
+      one: '1 شكوى',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rangeReportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count الشكاوى في نطاق الأرقام',
+      one: '1 شكوى في نطاق الأرقام',
     );
     return '$_temp0';
   }
@@ -519,4 +530,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get themeModeDark => 'داكن';
+
+  @override
+  String get experimentalFeatures => 'الوظائف التجريبية';
+
+  @override
+  String get answerbotFeature => 'جهاز الرد على المكالمات الهاتفي (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'تجريبي: إدارة جهاز الرد على الرسائل الاقتحامية للرد على الرسائل الاقتحامية في التطبيق';
+
+  @override
+  String get answerbotMenuTitle => 'جهاز الرد الآلي';
+
+  @override
+  String get answerbotMenuDescription =>
+      'إدارة جهاز الرد على الرسائل الاقتحامية';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'مشبوه: <x1>التصنيف<x1>';
+  }
+
+  @override
+  String get statistics => 'الإحصائيات';
+
+  @override
+  String get blockedCallsCount => 'المكالمات المحظورة';
+
+  @override
+  String get suspiciousCallsCount => 'المكالمات المشبوهة';
 }

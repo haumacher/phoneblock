@@ -6,13 +6,10 @@ package de.haumacher.phoneblock.mail;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -20,28 +17,200 @@ import org.junit.jupiter.api.Test;
  */
 public class MailServiceImplTest {
 
+	private final class Params extends HashMap<String, Object> {
+		@Override
+		public Object get(Object key) {
+			Object result = super.get(key);
+			if (result == null) {
+				Assertions.fail("Access to undeclared variable: " + key);
+			}
+			return result;
+		}
+	}
+
+	/** All available locales for email templates. */
+	private static final String[] LOCALES = {
+		"ar", "da", "de", "el", "en-US", "es", "fr", "it", "nb", "nl", "pl", "sv", "uk", "zh-Hans"
+	};
+
+	/**
+	 * Verifies that all variable values are present in the rendered HTML.
+	 */
+	private void assertAllVariablesExpanded(String locale, String html, Map<String, Object> variables) {
+		for (Map.Entry<String, Object> entry : variables.entrySet()) {
+			String value = entry.getValue().toString().trim();
+			assertTrue(html.contains(value),
+				locale + ": " + entry.getKey() + " should be expanded (value: " + value + ")");
+		}
+	}
+
+	/**
+	 * Test that mail-template.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testMailTemplate() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_NAME_123");
+			variables.put("code", "TEST_CODE_456");
+			variables.put("image", "https://test.example.com/image.svg");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "mail-template", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
+	/**
+	 * Test that email-change-mail.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testEmailChangeMail() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_NAME_789");
+			variables.put("code", "TEST_CODE_ABC");
+			variables.put("image", "https://test.example.com/change-image.svg");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "email-change-mail", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
+	/**
+	 * Test that welcome-mail.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testWelcomeMail() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_WELCOME_NAME");
+			variables.put("image", "https://test.example.com/welcome-image.svg");
+			variables.put("home", "https://test.example.com/home");
+			variables.put("support", "https://test.example.com/support");
+			variables.put("settings", "https://test.example.com/settings");
+			variables.put("help", "https://test.example.com/help");
+			variables.put("facebook", "https://test.example.com/facebook");
+			variables.put("mail", "test-welcome@example.com");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "welcome-mail", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
+	/**
+	 * Test that mobile-welcome-mail.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testMobileWelcomeMail() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_MOBILE_NAME");
+			variables.put("deviceLabel", "TEST_DEVICE_XYZ");
+			variables.put("image", "https://test.example.com/mobile-image.svg");
+			variables.put("home", "https://test.example.com/mobile-home");
+			variables.put("support", "https://test.example.com/mobile-support");
+			variables.put("settings", "https://test.example.com/mobile-settings");
+			variables.put("app", "https://test.example.com/mobile-app");
+			variables.put("help", "https://test.example.com/mobile-help");
+			variables.put("facebook", "https://test.example.com/mobile-facebook");
+			variables.put("mail", "test-mobile@example.com");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "mobile-welcome-mail", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
+	/**
+	 * Test that help-mail.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testHelpMail() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_HELP_NAME");
+			variables.put("userName", "TEST_USERNAME_HELP");
+			variables.put("lastAccess", "TEST_LAST_ACCESS_DATE");
+			variables.put("image", "https://test.example.com/help-image.svg");
+			variables.put("home", "https://test.example.com/help-home");
+			variables.put("support", "https://test.example.com/help-support");
+			variables.put("settings", "https://test.example.com/help-settings");
+			variables.put("app", "https://test.example.com/help-app");
+			variables.put("help", "https://test.example.com/help-video");
+			variables.put("facebook", "https://test.example.com/help-facebook");
+			variables.put("mail", "test-help@example.com");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "help-mail", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
+	/**
+	 * Test that thanks-mail.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testThanksMail() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_THANKS_NAME");
+			variables.put("attribute", "TEST_ATTRIBUTE_VALUE");
+			variables.put("image", "https://test.example.com/thanks-image.svg");
+			variables.put("home", "https://test.example.com/thanks-home");
+			variables.put("support", "https://test.example.com/thanks-support");
+			variables.put("settings", "https://test.example.com/thanks-settings");
+			variables.put("help", "https://test.example.com/thanks-help");
+			variables.put("facebook", "https://test.example.com/thanks-facebook");
+			variables.put("mail", "test-thanks@example.com");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "thanks-mail", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
+	/**
+	 * Test that ab-disable-mail.html expands all parameters in all locales.
+	 */
+	@Test
+	public void testAbDisableMail() {
+		for (String locale : LOCALES) {
+			Map<String, Object> variables = new Params();
+			variables.put("name", "TEST_DISABLE_NAME");
+			variables.put("userName", "TEST_USERNAME_DISABLE");
+			variables.put("botId", "TEST_BOT_ID_123");
+			variables.put("lastSuccess", "TEST_LAST_SUCCESS_DATE");
+			variables.put("lastMessage", "TEST_LAST_ERROR_MSG");
+			variables.put("image", "https://test.example.com/disable-image.svg");
+			variables.put("home", "https://test.example.com/disable-home");
+			variables.put("support", "https://test.example.com/disable-support");
+			variables.put("settings", "https://test.example.com/disable-settings");
+			variables.put("app", "https://test.example.com/disable-app");
+			variables.put("help", "https://test.example.com/disable-help");
+			variables.put("facebook", "https://test.example.com/disable-facebook");
+			variables.put("mail", "test-disable@example.com");
+
+			String html = MailTemplateEngine.getInstance().processTemplate(locale, "ab-disable-mail", variables);
+			assertAllVariablesExpanded(locale, html, variables);
+		}
+	}
+
 	/**
 	 * Test HTML to plain text conversion with the mobile-welcome-mail template.
 	 */
 	@Test
 	public void testHtmlToPlainText_MobileWelcomeMail() throws IOException {
-		// Read the mobile-welcome-mail template
-		String html = readTemplate("templates/de/mobile-welcome-mail.html");
+		// Process the mobile-welcome-mail template using Thymeleaf
+		Map<String, Object> variables = new Params();
+		variables.put("name", "Max Mustermann");
+		variables.put("deviceLabel", "Samsung-Galaxy-S23");
+		variables.put("image", "https://phoneblock.net/phoneblock/assets/img/app-logo.svg");
+		variables.put("home", "https://phoneblock.net/phoneblock");
+		variables.put("support", "https://phoneblock.net/phoneblock/support");
+		variables.put("settings", "https://phoneblock.net/phoneblock/settings");
+		variables.put("app", "https://phoneblock.net/phoneblock/ab/");
+		variables.put("help", "https://www.youtube.com/@phoneblock");
+		variables.put("facebook", "https://www.facebook.com/PhoneBlock");
+		variables.put("mail", "phoneblock@haumacher.de");
 
-		// Substitute variables with test values
-		Map<String, String> variables = new HashMap<>();
-		variables.put("{name}", "Max Mustermann");
-		variables.put("{deviceLabel}", "Samsung Galaxy S23");
-		variables.put("{image}", "https://phoneblock.net/phoneblock/assets/img/app-logo.svg");
-		variables.put("{home}", "https://phoneblock.net/phoneblock");
-		variables.put("{support}", "https://phoneblock.net/phoneblock/support");
-		variables.put("{settings}", "https://phoneblock.net/phoneblock/settings");
-		variables.put("{app}", "https://phoneblock.net/phoneblock/ab/");
-		variables.put("{help}", "https://www.youtube.com/@phoneblock");
-		variables.put("{facebook}", "https://www.facebook.com/PhoneBlock");
-		variables.put("{mail}", "phoneblock@haumacher.de");
-
-		String htmlWithVariables = expandVariables(html, variables);
+		String htmlWithVariables = MailTemplateEngine.getInstance().processTemplate("es", "mobile-welcome-mail", variables);
 
 		// Convert to plain text using static method
 		String plainText = MailServiceImpl.htmlToPlainText(htmlWithVariables);
@@ -63,7 +232,7 @@ public class MailServiceImplTest {
 
 		// Verify that actual content IS in the plain text
 		assertTrue(plainText.contains("Max Mustermann"), "Should contain user name");
-		assertTrue(plainText.contains("Samsung Galaxy S23"), "Should contain device label");
+		assertTrue(plainText.contains("Samsung-Galaxy-S23"), "Should contain device label");
 		assertTrue(plainText.contains("PhoneBlock"), "Should contain PhoneBlock reference");
 		assertTrue(plainText.contains("Bernhard Haumacher"), "Should contain signature");
 
@@ -161,38 +330,4 @@ public class MailServiceImplTest {
 		assertTrue(wrapped.contains("\n\n"), "Should preserve paragraph breaks");
 	}
 
-	/**
-	 * Read a template from the classpath.
-	 */
-	private String readTemplate(String resourcePath) throws IOException {
-		InputStream in = MailServiceImpl.class.getResourceAsStream(resourcePath);
-		if (in == null) {
-			throw new IOException("Template not found: " + resourcePath);
-		}
-
-		StringBuilder result = new StringBuilder();
-		char[] buffer = new char[4096];
-		try (InputStream stream = in) {
-			try (Reader r = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-				while (true) {
-					int read = r.read(buffer);
-					if (read < 0) {
-						break;
-					}
-					result.append(buffer, 0, read);
-				}
-			}
-		}
-		return result.toString();
-	}
-
-	/**
-	 * Expand variables in a template.
-	 */
-	private String expandVariables(String text, Map<String, String> variables) {
-		for (Map.Entry<String, String> var : variables.entrySet()) {
-			text = text.replace(var.getKey(), var.getValue());
-		}
-		return text;
-	}
 }

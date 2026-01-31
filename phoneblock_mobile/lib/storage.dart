@@ -9,7 +9,10 @@ class ScreenedCall {
   final DateTime timestamp;
   final bool wasBlocked; // true if blocked as SPAM, false if accepted as legitimate
   final int votes; // Number of votes from PhoneBlock database
+  final int votesWildcard; // Number of range votes (aggregated from similar numbers)
   final Rating? rating; // The type of spam (e.g., PING, POLL, ADVERTISING, etc.)
+  final String? label; // Formatted phone number for display (e.g., "(DE) 030 12345678")
+  final String? location; // City or region where the call originated (e.g., "Berlin")
 
   ScreenedCall({
     this.id,
@@ -17,7 +20,10 @@ class ScreenedCall {
     required this.timestamp,
     required this.wasBlocked,
     required this.votes,
+    this.votesWildcard = 0,
     this.rating,
+    this.label,
+    this.location,
   });
 
   /// Converts database map to ScreenedCall object.
@@ -34,7 +40,10 @@ class ScreenedCall {
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
       wasBlocked: (map['wasBlocked'] as int) == 1,
       votes: map['votes'] as int,
+      votesWildcard: (map['votesWildcard'] as int?) ?? 0,
       rating: rating,
+      label: map['label'] as String?,
+      location: map['location'] as String?,
     );
   }
 
@@ -46,7 +55,10 @@ class ScreenedCall {
       'timestamp': timestamp.millisecondsSinceEpoch,
       'wasBlocked': wasBlocked ? 1 : 0,
       'votes': votes,
+      'votesWildcard': votesWildcard,
       'rating': rating != null ? _ratingToString(rating!) : null,
+      'label': label,
+      'location': location,
     };
   }
 
@@ -99,7 +111,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -114,7 +126,10 @@ class ScreenedCallsDatabase {
         timestamp INTEGER NOT NULL,
         wasBlocked INTEGER NOT NULL,
         votes INTEGER NOT NULL,
-        rating TEXT
+        votesWildcard INTEGER NOT NULL DEFAULT 0,
+        rating TEXT,
+        label TEXT,
+        location TEXT
       )
     ''');
 
@@ -131,6 +146,15 @@ class ScreenedCallsDatabase {
       // Add rating column in version 2
       await db.execute('ALTER TABLE screened_calls ADD COLUMN rating TEXT');
     }
+    if (oldVersion < 3) {
+      // Add votesWildcard column in version 3
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN votesWildcard INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 4) {
+      // Add label and location columns in version 4
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN label TEXT');
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN location TEXT');
+    }
   }
 
   /// Inserts a new screened call record.
@@ -143,6 +167,10 @@ class ScreenedCallsDatabase {
       timestamp: call.timestamp,
       wasBlocked: call.wasBlocked,
       votes: call.votes,
+      votesWildcard: call.votesWildcard,
+      rating: call.rating,
+      label: call.label,
+      location: call.location,
     );
   }
 

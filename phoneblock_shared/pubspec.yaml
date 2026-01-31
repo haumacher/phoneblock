@@ -1,0 +1,52 @@
+name: phoneblock_shared
+description: "Shared components for PhoneBlock applications including answerbot screens, API clients, and data models."
+version: 0.0.1
+homepage: https://phoneblock.net
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # JSON serialization
+  jsontool: ^2.1.0
+
+  # HTTP requests
+  http: ^1.3.0
+  http_parser: ^4.0.2
+
+  # Storage
+  shared_preferences: ^2.5.3
+
+  # URL launching
+  url_launcher: ^6.3.1
+
+  # WebView
+  webview_flutter: ^4.10.0
+
+  # Progress dialogs
+  sn_progress_dialog: ^1.1.3
+
+  # Date formatting
+  intl: ^0.20.1
+
+  # Icons
+  font_awesome_flutter: ^10.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  generate: true
+
+  assets:
+    - assets/images/ab-logo-appbar.png
+    - assets/images/ab-logo-color-128.png
+    - assets/images/ab-logo-bot.png

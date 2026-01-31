@@ -225,7 +225,7 @@ public class CreateABServlet extends ABApiServlet implements SetupRequest.Visito
 	public Void visit(CheckDynDns self, RequestContext context) throws IOException {
 		HttpServletResponse resp = context.resp;
 		HttpServletRequest req = context.req;
-		String login = LoginFilter.getAuthenticatedUser(req.getSession(false));
+		String login = LoginFilter.getAuthenticatedUser(req);
 		if (login == null) {
 			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Please authenticate.");
 			return null;

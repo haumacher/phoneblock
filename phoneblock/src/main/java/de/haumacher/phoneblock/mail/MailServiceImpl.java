@@ -4,16 +4,11 @@
 package de.haumacher.phoneblock.mail;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.simplejavamail.utils.mail.dkim.Canonicalization;
@@ -135,10 +130,10 @@ public class MailServiceImpl implements MailService {
 		}
 		LOG.info("Sending activation mail to '{}' in locale '{}'.", receiver, locale);
 
-		Map<String, String> variables = new HashMap<>();
-		variables.put("{name}", DB.toDisplayName(address.getAddress()));
-    	variables.put("{code}", code);
-    	variables.put("{image}", _appLogoSvg);
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("name", DB.toDisplayName(address.getAddress()));
+		variables.put("code", code);
+		variables.put("image", _appLogoSvg);
 
 		sendMail("mail.subject.activation", address, locale, "mail-template", variables);
 	}
@@ -165,10 +160,10 @@ public class MailServiceImpl implements MailService {
 		}
 		LOG.info("Sending email change verification mail to '{}' in locale '{}'.", receiver, locale);
 
-		Map<String, String> variables = new HashMap<>();
-		variables.put("{name}", DB.toDisplayName(address.getAddress()));
-		variables.put("{code}", code);
-		variables.put("{image}", _appLogoSvg);
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("name", DB.toDisplayName(address.getAddress()));
+		variables.put("code", code);
+		variables.put("image", _appLogoSvg);
 
 		sendMail("mail.subject.email-change", address, locale, "email-change-mail", variables);
 	}
@@ -204,7 +199,7 @@ public class MailServiceImpl implements MailService {
 		LOG.info("Sending thanks mail to '{}' in locale '{}'.", receiver, locale);
 
 		try {
-			Map<String, String> variables = buildVariables(userSettings);
+			Map<String, Object> variables = buildVariables(userSettings);
 			String attribute = "";
 			if (amount >= 2000) {
 				attribute = "unfassbar großzügige ";
@@ -212,8 +207,8 @@ public class MailServiceImpl implements MailService {
 			else if (amount >= 500) {
 				attribute = "großzügige ";
 			}
-			variables.put("{attribute}", attribute);
-			variables.put("{name}", donator);
+			variables.put("attribute", attribute);
+			variables.put("name", donator);
 
 			sendMail("mail.subject.thanks", new InternetAddress(receiver), locale, "thanks-mail", variables);
 			return true;
@@ -242,13 +237,13 @@ public class MailServiceImpl implements MailService {
 		}
 	}
 	
-	private Map<String, String> buildVariables(UserSettings userSettings, AnswerBotSip answerbot) {
-		Map<String, String> variables = buildVariables(userSettings);
-		
-		variables.put("{lastSuccess}", formatDateTime(answerbot.getLastSuccess()));
-		variables.put("{lastMessage}", answerbot.getRegisterMessage());
-		variables.put("{botId}", answerbot.getUserName());
-		
+	private Map<String, Object> buildVariables(UserSettings userSettings, AnswerBotSip answerbot) {
+		Map<String, Object> variables = buildVariables(userSettings);
+
+		variables.put("lastSuccess", formatDateTime(answerbot.getLastSuccess()));
+		variables.put("lastMessage", answerbot.getRegisterMessage());
+		variables.put("botId", answerbot.getUserName());
+
 		return variables;
 	}
 	
@@ -292,8 +287,8 @@ public class MailServiceImpl implements MailService {
 		         receiver, deviceLabel, locale);
 
 		try {
-			Map<String, String> variables = buildVariables(userSettings);
-			variables.put("{deviceLabel}", deviceLabel);
+			Map<String, Object> variables = buildVariables(userSettings);
+			variables.put("deviceLabel", deviceLabel);
 
 			sendMail("mail.subject.mobile-welcome",
 			         new InternetAddress(receiver),
@@ -305,19 +300,19 @@ public class MailServiceImpl implements MailService {
 		}
 	}
 
-	private Map<String, String> buildVariables(UserSettings userSettings) {
-		Map<String, String> variables = new HashMap<>();
-		variables.put("{name}", userSettings.getDisplayName());
-		variables.put("{userName}", userSettings.getLogin());
-		variables.put("{lastAccess}", formatDateTime(userSettings.getLastAccess()));
-		variables.put("{image}", _appLogoSvg);
-		variables.put("{home}", HOME_PAGE);
-		variables.put("{facebook}", FACE_BOOK);
-		variables.put("{help}", HELP_VIDEO);
-		variables.put("{mail}", MAIL);
-		variables.put("{settings}", _settings);
-		variables.put("{app}", _app);
-		variables.put("{support}", _support);
+	private Map<String, Object> buildVariables(UserSettings userSettings) {
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("name", userSettings.getDisplayName());
+		variables.put("userName", userSettings.getLogin());
+		variables.put("lastAccess", formatDateTime(userSettings.getLastAccess()));
+		variables.put("image", _appLogoSvg);
+		variables.put("home", HOME_PAGE);
+		variables.put("facebook", FACE_BOOK);
+		variables.put("help", HELP_VIDEO);
+		variables.put("mail", MAIL);
+		variables.put("settings", _settings);
+		variables.put("app", _app);
+		variables.put("support", _support);
 		return variables;
 	}
 
@@ -458,7 +453,7 @@ public class MailServiceImpl implements MailService {
 		return result.toString();
 	}
 
-	private void sendMail(String subjectKey, InternetAddress receiver, String locale, String template, Map<String, String> variables)
+	private void sendMail(String subjectKey, InternetAddress receiver, String locale, String template, Map<String, Object> variables)
 			throws MessagingException, IOException {
 		MimeMessage msg = createMessage();
 
@@ -466,8 +461,8 @@ public class MailServiceImpl implements MailService {
 		String subject = I18N.getMessage(locale, subjectKey);
 		msg.setSubject(subject);
 
-		// Read HTML template
-		String htmlContent = read(locale, template + ".html", variables);
+		// Process template with Thymeleaf
+		String htmlContent = MailTemplateEngine.getInstance().processTemplate(locale, template, variables);
 
 		// Generate plain text version from HTML
 		String plainTextContent = htmlToPlainText(htmlContent);
@@ -583,46 +578,6 @@ public class MailServiceImpl implements MailService {
 			LOG.error("Shutting down mail transport failed.", ex);
 		}
 		_transport = null;
-	}
-
-	private String read(String locale, String template, Map<String, String> variables) throws IOException {
-		String resourcePath = "templates/" + locale + "/" + template;
-
-		// Try localized template first
-		InputStream in = getClass().getResourceAsStream(resourcePath);
-
-		// Fallback to German if localized template not found
-		if (in == null) {
-			LOG.warn("Mail template not found: {}, falling back to German", resourcePath);
-			resourcePath = "templates/de/" + template;
-			in = getClass().getResourceAsStream(resourcePath);
-		}
-
-		if (in == null) {
-			throw new IOException("Mail template not found: " + template);
-		}
-
-		StringBuilder result = new StringBuilder();
-		char[] buffer = new char[4096];
-		try (InputStream stream = in) {
-			try (Reader r = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-				while (true) {
-					int direct = r.read(buffer);
-					if (direct < 0) {
-						break;
-					}
-					result.append(buffer, 0, direct);
-				}
-			}
-		}
-		return expandVariables(result.toString(), variables);
-	}
-
-	private String expandVariables(String text, Map<String, String> variables) {
-		for (Entry<String, String> var : variables.entrySet()) {
-			text = text.replace(var.getKey(), var.getValue());
-		}
-		return text;
 	}
 
 	private Session getSession() throws AddressException {

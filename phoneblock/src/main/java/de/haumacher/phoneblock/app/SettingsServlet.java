@@ -13,19 +13,18 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
-import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.util.I18N;
-import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -46,11 +45,13 @@ public class SettingsServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String userName = LoginFilter.getAuthenticatedUser(req.getSession());
-		if (userName == null) {
+		AuthToken authorization = LoginFilter.getAuthorization(req);
+		if (authorization == null || !authorization.isAccessLogin()) {
 			sendFailure(req, resp);
 			return;
 		}
+		
+		String userName = authorization.getUserName();
 		
 		String action = req.getParameter("action");
 		if (action == null) {
@@ -122,10 +123,10 @@ public class SettingsServlet extends HttpServlet {
 				}
 
 				HttpSession httpSession = req.getSession();
-				httpSession.setAttribute("apiKey", token);
+				httpSession.setAttribute(DefaultController.API_KEY_ATTR, token);
 				if (isCardDav) {
 					// Remember at least until setup is complete.
-					httpSession.setAttribute("cardDavToken", token);
+					httpSession.setAttribute(DefaultController.CARD_DAV_TOKEN_ATTR, token);
 				} 
 				
 				resp.sendRedirect(req.getContextPath() + location);
@@ -308,21 +309,24 @@ public class SettingsServlet extends HttpServlet {
 			maxLength = 6000;
 		}
 		
-		DB db = DBService.getInstance();
-		UserSettings settings = db.getSettings(userName);
+		UserSettings settings = LoginFilter.getUserSettings(req);
 		settings.setMinVotes(minVotes);
 		settings.setMaxLength(maxLength);
 		settings.setWildcards(wildcards);
-		
+
 		// Verify input.
 		if (myDialPrefixOrNull != null) {
 			settings.setDialPrefix(myDialPrefixOrNull);
 		}
-		
+
 		settings.setNationalOnly(nationalOnly);
-		
+
+		DB db = DBService.getInstance();
 		db.updateSettings(settings);
-		
+
+		// Refresh cached settings in session
+		LoginFilter.refreshUserSettings(req, settings);
+
 		// Ensure that a new block list is created, if the user is experimenting with the possible block list size.
 		AddressBookCache.getInstance().flushUserCache(userName);
 		

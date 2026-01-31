@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PhoneBlock Mobile</string>
-    <string name="notification_channel_name">Pending Filtered Calls</string>
-    <string name="notification_channel_description">Shows number of calls filtered while app was closed</string>
-    <plurals name="pending_calls_notification_title">
-        <item quantity="one">1 new filtered call</item>
-        <item quantity="other">%d new filtered calls</item>
+    <string name="notification_channel_name">Filtered Calls</string>
+    <string name="notification_channel_description">Notifications for blocked and suspicious calls</string>
+    <string name="notification_blocked_prefix">Blocked:</string>
+    <string name="notification_suspicious_prefix">Suspicious:</string>
+    <plurals name="notification_title">
+        <item quantity="one">PhoneBlock: 1 filtered call</item>
+        <item quantity="other">PhoneBlock: %d filtered calls</item>
     </plurals>
-    <string name="notification_tap_to_open">Tap to open the app</string>
 </resources>

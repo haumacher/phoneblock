@@ -37,6 +37,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -267,12 +268,10 @@ public class SearchServlet extends HttpServlet {
 		SearchResult searchResult;
 		int minVotes;
 		try (SqlSession session = db.openSession()) {
-			String userName = LoginFilter.getAuthenticatedUser(req);
-			
-			if (userName == null) {
+			UserSettings settings = LoginFilter.getUserSettings(req);
+			if (settings == null) {
 				minVotes = DB.MIN_VOTES;
 			} else {
-				DBUserSettings settings = db.getUserSettingsRaw(session, userName);
 				minVotes = settings.getMinVotes();
 			}
 			
@@ -290,24 +289,22 @@ public class SearchServlet extends HttpServlet {
 		sendResult(req, resp, searchResult, minVotes);
 	}
 
-	public static SearchResult analyze(String query, String userName, String dialPrefix) {
+	public static SearchResult analyze(String query, UserSettings settings, String dialPrefix) {
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Set<String> langs;
-			if (userName == null) {
+			if (settings == null) {
 				langs = Collections.singleton(Language.getDefault().tag);
 			} else {
-				Users users = session.getMapper(Users.class);
-				String lang = users.getLang(userName);
-				dialPrefix = users.getDialPrefix(userName);
-				langs = Collections.singleton(lang);
+				langs = Collections.singleton(settings.getLang());
+				dialPrefix = settings.getDialPrefix();
 			}
 
 			PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 			if (number == null) {
 				return null;
 			}
-			
+
 			return analyzeDb(db, session, number, dialPrefix, true, langs);
 		}
 	}

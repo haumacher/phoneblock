@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
   </head>
   <body>
-    <p data-tx="t0001:cee289b8">Γεια σου {όνομα},<img align="right" alt="Λογότυπο PhoneBlock" data-tx="t0002:5b0e8765" height="133" src="{image}" style="vertical-align: bottom;" width="133"/></p>
+    <p data-tx="t0007:336bea4">Γεια σας <span th:text="${name}">χρήστης</span>,<img align="right" alt="Λογότυπο PhoneBlock" data-tx="t0002:5b0e8765" height="133" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" style="vertical-align: bottom;" th:src="${image}" width="133"/></p>
 
-	<p data-tx="t0003:a8d0d40f">Σας ευχαριστούμε πολύ για τη {attribute}δωρεά σας για το έργο PhoneBlock! Ελπίζω ότι μπορεί να σας βοηθήσει να μειώσετε σημαντικά τις ανεπιθύμητες κλήσεις.</p>
+	<p data-tx="t0008:9985bd2c">Σας ευχαριστούμε πολύ για τη <span th:text="${attribute}"></span>δωρεά σας για το έργο PhoneBlock! Ελπίζω ότι μπορεί να σας βοηθήσει να μειώσετε σημαντικά τις ανεπιθύμητες κλήσεις.</p>
 
 	<p data-tx="t0004:b088fcbb">Και αν περάσει από το δίχτυ ένας άλλος ανεπιθύμητος καλούντας, μην ξεχάσετε να τον επισημάνετε ως SPAM στον ιστότοπο PhoneBlock. Αν όλοι το κάνουν αυτό με συνέπεια, κάθε νέος αριθμός SPAM μπλοκάρεται αμέσως ξανά.</p>
 
     <p data-tx="t0005:dfdaf9d7">Με εκτίμηση</p>
     <p data-tx="t0006:70c6d927">Bernhard Haumacher</p>
 
-<p data-tx="t0007:d3aaad68" style="color: gray;">--<br/>
-Αρχική σελίδα: <a href="{home}">{home}</a><br/>
-Δωρεά: <a href="{support}">{υποστήριξη}</a><br/>
-Ρυθμίσεις: <a href="{settings}">{settings}</a><br/>
-Βίντεο-διδασκαλία: <a href="{help}">{help}</a><br/>
-Facebook: <a href="{facebook}">{facebook}</a><br/>
-Επικοινωνία: <a href="mailto:{mail}">{mail}</a><br/></p>
+<p data-tx="t0009:fb9d285" style="color: gray;">--<br/>
+Αρχική σελίδα: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+Δωρεά: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+Ρυθμίσεις: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+Οδηγίες για το βίντεο: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>
+Facebook: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a><br/>
+Επικοινωνία: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/></p>
 
 </body>
 </html>

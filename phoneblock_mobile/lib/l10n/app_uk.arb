@@ -94,7 +94,8 @@
   "settingSaved": "Налаштування збережено",
   "errorSaving": "Помилка при збереженні",
   "ratePhoneNumber": "Оцініть {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 Повідомлення} other{{count} повідомлень}}",
+  "reportsCount": "{count, plural, =1{1 Скарга} other{{count} скарги}}",
+  "rangeReportsCount": "{count, plural, =1{1 Скарга в діапазоні чисел} other{{count} Скарги в діапазоні кількості}}",
   "legitimateReportsCount": "{count, plural, =1{1 Легітимне повідомлення} other{{count} Легітимні повідомлення}}",
   "noReports": "Немає повідомлень",
   "todayTime": "Сьогодні, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Виберіть світлий або темний дизайн",
   "themeModeSystem": "Системний стандарт",
   "themeModeLight": "Світло",
-  "themeModeDark": "Темнота."
+  "themeModeDark": "Темнота.",
+  "experimentalFeatures": "Експериментальні функції",
+  "answerbotFeature": "Автовідповідач (Answerbot)",
+  "answerbotFeatureDescription": "Експериментально: Керування автовідповідачем СПАМу для Fritz!Box у додатку",
+  "answerbotMenuTitle": "Автовідповідач",
+  "answerbotMenuDescription": "Керування автовідповідачем СПАМу",
+  "potentialSpamLabel": "Підозрілі: {rating}",
+  "statistics": "Статистика",
+  "blockedCallsCount": "Заблоковані дзвінки",
+  "suspiciousCallsCount": "Підозрілі дзвінки"
 }

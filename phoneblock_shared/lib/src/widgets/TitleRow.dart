@@ -10,7 +10,7 @@ class TitleRow extends StatelessWidget {
     return Row(
       children: [
         Padding(padding: const EdgeInsets.only(right: 8),
-            child: Image.asset('assets/images/ab-logo-appbar.png', height: 48)
+            child: Image.asset('packages/phoneblock_shared/assets/images/ab-logo-appbar.png', height: 48)
         ),
         Expanded(
             flex: 1,

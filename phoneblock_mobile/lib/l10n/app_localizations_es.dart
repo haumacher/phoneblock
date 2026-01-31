@@ -331,8 +331,19 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count mensajes',
-      one: '1 Mensaje',
+      other: '$count reclamaciones',
+      one: '1 Denuncia',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rangeReportsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Reclamaciones en el intervalo de números.',
+      one: '1 Denuncia en el intervalo de números',
     );
     return '$_temp0';
   }
@@ -520,4 +531,34 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Oscuro';
+
+  @override
+  String get experimentalFeatures => 'Funciones experimentales';
+
+  @override
+  String get answerbotFeature => 'Contestador automático (Answerbot)';
+
+  @override
+  String get answerbotFeatureDescription =>
+      'Experimental: Gestión del contestador SPAM del buzón Fritz en la aplicación';
+
+  @override
+  String get answerbotMenuTitle => 'Contestador automático';
+
+  @override
+  String get answerbotMenuDescription => 'Gestionar el contestador SPAM';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return 'Sospechoso: $rating';
+  }
+
+  @override
+  String get statistics => 'Estadísticas';
+
+  @override
+  String get blockedCallsCount => 'Llamadas bloqueadas';
+
+  @override
+  String get suspiciousCallsCount => 'Llamadas sospechosas';
 }

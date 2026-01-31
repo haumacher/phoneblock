@@ -321,6 +321,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String rangeReportsCount(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
   String legitimateReportsCount(int count) {
     return '<x1>计数</x1';
   }
@@ -480,4 +485,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeModeDark => '黑暗';
+
+  @override
+  String get experimentalFeatures => '实验功能';
+
+  @override
+  String get answerbotFeature => '答录机（Answerbot）';
+
+  @override
+  String get answerbotFeatureDescription => '实验：在应用程序中管理 Fritz!Box 的垃圾邮件应答机';
+
+  @override
+  String get answerbotMenuTitle => '答录机';
+
+  @override
+  String get answerbotMenuDescription => '管理垃圾邮件应答机';
+
+  @override
+  String potentialSpamLabel(String rating) {
+    return '可疑：<x1>评级</x1';
+  }
+
+  @override
+  String get statistics => '统计资料';
+
+  @override
+  String get blockedCallsCount => '被阻止的电话';
+
+  @override
+  String get suspiciousCallsCount => '可疑电话';
 }

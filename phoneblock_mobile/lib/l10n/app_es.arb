@@ -94,7 +94,8 @@
   "settingSaved": "Ajuste guardado",
   "errorSaving": "Error al guardar",
   "ratePhoneNumber": "Tarifa {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 Mensaje} other{{count} mensajes}}",
+  "reportsCount": "{count, plural, =1{1 Denuncia} other{{count} reclamaciones}}",
+  "rangeReportsCount": "{count, plural, =1{1 Denuncia en el intervalo de números} other{{count} Reclamaciones en el intervalo de números.}}",
   "legitimateReportsCount": "{count, plural, =1{1 Mensaje legítimo} other{{count} Mensajes legítimos}}",
   "noReports": "Sin mensajes",
   "todayTime": "Hoy, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Elige un diseño claro u oscuro",
   "themeModeSystem": "Sistema estándar",
   "themeModeLight": "Luz",
-  "themeModeDark": "Oscuro"
+  "themeModeDark": "Oscuro",
+  "experimentalFeatures": "Funciones experimentales",
+  "answerbotFeature": "Contestador automático (Answerbot)",
+  "answerbotFeatureDescription": "Experimental: Gestión del contestador SPAM del buzón Fritz en la aplicación",
+  "answerbotMenuTitle": "Contestador automático",
+  "answerbotMenuDescription": "Gestionar el contestador SPAM",
+  "potentialSpamLabel": "Sospechoso: {rating}",
+  "statistics": "Estadísticas",
+  "blockedCallsCount": "Llamadas bloqueadas",
+  "suspiciousCallsCount": "Llamadas sospechosas"
 }

@@ -11,10 +11,12 @@ import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
 
+import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.DomUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,9 +39,10 @@ public class PrincipalResource extends Resource {
 	@Override
 	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<QName> properties) {
 		String userAgent = req.getHeader("User-Agent");
-		
-		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis(), userAgent);
-		
+		UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+
+		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis(), userAgent, cachedSettings);
+
 		super.propfind(req, parent, multistatus, properties);
 	}
 	

@@ -525,7 +525,7 @@
     },
     "x-translated": "dd350270"
   },
-  "reportsCount": "{count, plural, =1{1 Meldung} other{{count} Meldungen}}",
+  "reportsCount": "{count, plural, =1{1 Beschwerde} other{{count} Beschwerden}}",
   "@reportsCount": {
     "description": "Number of reports for a phone number",
     "placeholders": {
@@ -533,7 +533,17 @@
         "type": "int"
       }
     },
-    "x-translated": "549c5b01"
+    "x-translated": "15b0eee3"
+  },
+  "rangeReportsCount": "{count, plural, =1{1 Beschwerde im Nummernbereich} other{{count} Beschwerden im Nummernbereich}}",
+  "@rangeReportsCount": {
+    "description": "Number of range reports for a phone number (aggregated from similar numbers)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "7cb452e"
   },
   "legitimateReportsCount": "{count, plural, =1{1 Legitim-Meldung} other{{count} Legitim-Meldungen}}",
   "@legitimateReportsCount": {
@@ -798,5 +808,55 @@
   "@themeModeDark": {
     "description": "Dark theme mode option",
     "x-translated": "d7cc9006"
+  },
+  "experimentalFeatures": "Experimentelle Funktionen",
+  "@experimentalFeatures": {
+    "description": "Experimental features section header",
+    "x-translated": "8ce489c8"
+  },
+  "answerbotFeature": "Anrufbeantworter (Answerbot)",
+  "@answerbotFeature": {
+    "description": "Answerbot feature toggle title",
+    "x-translated": "f4b9c4ee"
+  },
+  "answerbotFeatureDescription": "Experimentell: SPAM-Anrufbeantworter für die Fritz!Box in der App verwalten",
+  "@answerbotFeatureDescription": {
+    "description": "Answerbot feature toggle description",
+    "x-translated": "83dff373"
+  },
+  "answerbotMenuTitle": "Anrufbeantworter",
+  "@answerbotMenuTitle": {
+    "description": "Answerbot menu item title",
+    "x-translated": "3877c928"
+  },
+  "answerbotMenuDescription": "SPAM-Anrufbeantworter verwalten",
+  "@answerbotMenuDescription": {
+    "description": "Answerbot menu item description",
+    "x-translated": "c4bce6df"
+  },
+  "potentialSpamLabel": "Verdächtig: {rating}",
+  "@potentialSpamLabel": {
+    "description": "Label for calls that weren't blocked but have spam votes",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    },
+    "x-translated": "25eebdc4"
+  },
+  "statistics": "Statistik",
+  "@statistics": {
+    "description": "Statistics section header",
+    "x-translated": "e8b14c0d"
+  },
+  "blockedCallsCount": "Blockierte Anrufe",
+  "@blockedCallsCount": {
+    "description": "Label for total blocked calls count",
+    "x-translated": "328ea4d3"
+  },
+  "suspiciousCallsCount": "Verdächtige Anrufe",
+  "@suspiciousCallsCount": {
+    "description": "Label for total suspicious calls count",
+    "x-translated": "6b4288ff"
   }
 }

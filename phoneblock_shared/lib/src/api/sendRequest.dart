@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:phoneblock_answerbot_ui/base_path.dart'
-  if (dart.library.html) 'package:phoneblock_answerbot_ui/base_path_web.dart';
-import 'package:phoneblock_answerbot_ui/Api.dart';
-import 'package:phoneblock_answerbot_ui/proto.dart';
+import '../api/base_path.dart'
+  if (dart.library.html) '../api/base_path_web.dart';
+import '../api/Api.dart';
+import '../models/proto.dart';
 import 'package:http/http.dart' as http;
 
 Future<http.Response> sendRequest(SetupRequest request) async {

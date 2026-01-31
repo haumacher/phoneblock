@@ -94,7 +94,8 @@
   "settingSaved": "Opgeslagen instelling",
   "errorSaving": "Fout bij opslaan",
   "ratePhoneNumber": "Tarief {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 Bericht} other{{count} berichten}}",
+  "reportsCount": "{count, plural, =1{1 Klacht} other{{count}}}",
+  "rangeReportsCount": "{count, plural, =1{1 Klacht in de nummerreeks} other{{count} Klachten in het nummerbereik}}",
   "legitimateReportsCount": "{count, plural, =1{1 Legitiem bericht} other{{count} Legitieme berichten}}",
   "noReports": "Geen berichten",
   "todayTime": "Vandaag, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Kies een licht of donker ontwerp",
   "themeModeSystem": "Systeemstandaard",
   "themeModeLight": "Licht",
-  "themeModeDark": "Donker"
+  "themeModeDark": "Donker",
+  "experimentalFeatures": "Experimentele functies",
+  "answerbotFeature": "Antwoordapparaat (Answerbot)",
+  "answerbotFeatureDescription": "Experimenteel: Beheer SPAM antwoordapparaat voor de Fritz!Box in de app",
+  "answerbotMenuTitle": "Antwoordapparaat",
+  "answerbotMenuDescription": "SPAM antwoordapparaat beheren",
+  "potentialSpamLabel": "Verdacht: {rating}",
+  "statistics": "Statistieken",
+  "blockedCallsCount": "Geblokkeerde oproepen",
+  "suspiciousCallsCount": "Verdachte telefoontjes"
 }

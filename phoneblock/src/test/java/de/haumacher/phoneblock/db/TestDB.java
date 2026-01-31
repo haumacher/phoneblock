@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -22,6 +23,11 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -39,6 +45,7 @@ import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
+import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -82,16 +89,18 @@ public class TestDB {
 
 		long time = 1000;
 		final long createTime = time;
-		
+
 		AuthToken token1 = _db.createLoginToken("user1", time++, "creating-browser");
-		
+
 		// Skip rate limit.
 		time += DB.RATE_LIMIT_MS;
-		
+
 		final String origToken1 = token1.getToken();
 		final long checkTime = time;
-		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "other-browser", true));
-		
+		AuthContext context1 = _db.checkAuthToken(token1.getToken(), time++, "other-browser", true);
+		assertNotNull(context1);
+		token1 = context1.getAuthorization();
+
 		assertEquals(token1.getUserName(), "user1");
 		assertEquals(createTime, token1.getCreated());
 		assertEquals(checkTime, token1.getLastAccess());
@@ -99,34 +108,40 @@ public class TestDB {
 		assertEquals("other-browser", token1.getUserAgent());
 		assertTrue(token1.isImplicit());
 		assertTrue(token1.isAccessLogin());
-		
+
 		AuthToken token2 = _db.createLoginToken("user1", time++, "creating-browser");
 		AuthToken token3 = _db.createLoginToken("user1", time++, "creating-browser");
 		AuthToken token4 = _db.createLoginToken("user1", time++, "creating-browser");
 		AuthToken token5 = _db.createLoginToken("user1", time++, "creating-browser");
-		
+
 		// Skip rate limit.
 		time += DB.RATE_LIMIT_MS;
-		
+
 		String oldToken1 = token1.getToken();
-		
-		assertNotNull(token1 = _db.checkAuthToken(token1.getToken(), time++, "login-browser", true));
-		assertNotNull(token2 = _db.checkAuthToken(token2.getToken(), time++, "login-browser", true));
-		assertNotNull(token3 = _db.checkAuthToken(token3.getToken(), time++, "login-browser", true));
-		assertNotNull(token4 = _db.checkAuthToken(token4.getToken(), time++, "login-browser", true));
-		assertNotNull(token5 = _db.checkAuthToken(token5.getToken(), time++, "login-browser", true));
-		
+
+		token1 = checkAuthToken(token1.getToken(), time++, "login-browser", true);
+		token2 = checkAuthToken(token2.getToken(), time++, "login-browser", true);
+		token3 = checkAuthToken(token3.getToken(), time++, "login-browser", true);
+		token4 = checkAuthToken(token4.getToken(), time++, "login-browser", true);
+		token5 = checkAuthToken(token5.getToken(), time++, "login-browser", true);
+
 		assertNotEquals(origToken1, token1.getToken());
 		assertNull(_db.checkAuthToken(oldToken1, time, "bad-browser", false));
-		
+
 		AuthToken token6 = _db.createLoginToken("user1", time++, "creating-browser");
-		
+
 		assertNull(   _db.checkAuthToken(token1.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token2.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token3.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token4.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token5.getToken(), time++, "login-browser", false));
 		assertNotNull(_db.checkAuthToken(token6.getToken(), time++, "login-browser", false));
+	}
+
+	private AuthToken checkAuthToken(String token, long time, String userAgent, boolean renew) {
+		AuthContext context = _db.checkAuthToken(token, time, userAgent, renew);
+		assertNotNull(context);
+		return context.getAuthorization();
 	}
 
 	@Test
@@ -276,7 +291,7 @@ public class TestDB {
 		_db.addUser("foo@bar.com", "Mr. X", "de", "+49", "012300000");
 		_db.addUser("baz@bar.com", "Mr. Y", "de", "+49", "012300000");
 		
-		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000"), "none"));
+		assertEquals("foo@bar.com", _db.basicAuth(header("foo@bar.com", "012300000"), "none").getUserName());
         assertNull(_db.basicAuth(header("foo@bar.com", "0321"), "none"));
         assertNull(_db.basicAuth(header("xxx@bar.com", "012300000"), "none"));
 		
@@ -601,6 +616,117 @@ public class TestDB {
 				Set<String> ids = inactiveUsers.stream().map(u -> u.getLogin()).collect(Collectors.toSet());
 				Assertions.assertEquals(new HashSet<>(Arrays.asList()), ids);
 			}
+		}
+	}
+
+	/**
+	 * Test that mergeLastMetaSearch correctly inserts new rows and updates existing ones.
+	 *
+	 * @see SpamReports#mergeLastMetaSearch(String, byte[], long)
+	 */
+	@Test
+	public void testMergeLastMetaSearch() {
+		String phone = "012345678";
+		byte[] hash = new byte[] {1, 2, 3, 4, 5};
+
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			// Initially, no record exists
+			assertNull(reports.getLastMetaSearch(phone));
+
+			// First merge should insert
+			long insertTime = 1000;
+			reports.mergeLastMetaSearch(phone, hash, insertTime);
+			session.commit();
+
+			// Verify the record was created with correct LASTMETA
+			Long lastMeta1 = reports.getLastMetaSearch(phone);
+			assertNotNull(lastMeta1);
+			assertEquals(insertTime, lastMeta1.longValue());
+
+			// Verify ADDED was set
+			DBNumberInfo info1 = reports.getPhoneInfo(phone);
+			assertNotNull(info1);
+			assertEquals(insertTime, info1.getAdded());
+
+			// Second merge should update LASTMETA (and ADDED due to H2 MERGE KEY semantics)
+			long updateTime = 2000;
+			reports.mergeLastMetaSearch(phone, hash, updateTime);
+			session.commit();
+
+			// Verify LASTMETA was updated
+			Long lastMeta2 = reports.getLastMetaSearch(phone);
+			assertNotNull(lastMeta2);
+			assertEquals(updateTime, lastMeta2.longValue());
+
+			// Note: H2's MERGE KEY syntax overwrites all columns, so ADDED is also updated.
+			// This is acceptable since in practice this only happens during race conditions
+			// where both requests happen at nearly the same time.
+			DBNumberInfo info2 = reports.getPhoneInfo(phone);
+			assertNotNull(info2);
+			assertEquals(updateTime, info2.getAdded());
+		}
+	}
+
+	/**
+	 * Test that concurrent mergeLastMetaSearch calls for the same phone number
+	 * don't cause exceptions (race condition fix for issue #216).
+	 */
+	@Test
+	public void testMergeLastMetaSearchConcurrent() throws Exception {
+		String phone = "098765432";
+		byte[] hash = new byte[] {9, 8, 7, 6, 5};
+		int threadCount = 10;
+
+		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		CountDownLatch startLatch = new CountDownLatch(1);
+		CountDownLatch doneLatch = new CountDownLatch(threadCount);
+		List<Future<Exception>> futures = new ArrayList<>();
+
+		// Submit tasks that all try to merge the same phone number simultaneously
+		for (int i = 0; i < threadCount; i++) {
+			final long time = 1000 + i;
+			futures.add(executor.submit(() -> {
+				try {
+					// Wait for all threads to be ready
+					startLatch.await();
+
+					try (SqlSession session = _db.openSession()) {
+						SpamReports reports = session.getMapper(SpamReports.class);
+						reports.mergeLastMetaSearch(phone, hash, time);
+						session.commit();
+					}
+					return null;
+				} catch (Exception e) {
+					return e;
+				} finally {
+					doneLatch.countDown();
+				}
+			}));
+		}
+
+		// Start all threads at once
+		startLatch.countDown();
+
+		// Wait for all threads to complete
+		assertTrue(doneLatch.await(10, TimeUnit.SECONDS), "Threads did not complete in time");
+
+		executor.shutdown();
+
+		// Check that no exceptions occurred
+		for (Future<Exception> future : futures) {
+			Exception ex = future.get();
+			if (ex != null) {
+				fail("Concurrent merge failed with exception: " + ex.getMessage());
+			}
+		}
+
+		// Verify the record exists
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			Long lastMeta = reports.getLastMetaSearch(phone);
+			assertNotNull(lastMeta, "Record should exist after concurrent merges");
 		}
 	}
 

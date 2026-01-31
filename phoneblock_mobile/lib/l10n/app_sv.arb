@@ -94,7 +94,8 @@
   "settingSaved": "Inställning sparad",
   "errorSaving": "Fel när du sparar",
   "ratePhoneNumber": "Pris {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 Meddelande} other{{count} meddelanden}}",
+  "reportsCount": "{count, plural, =1{1 Klagomål} other{{count} klagomål}}",
+  "rangeReportsCount": "{count, plural, =1{1 Klagomål i nummerintervallet} other{{count} Klagomål i nummerintervallet}}",
   "legitimateReportsCount": "{count, plural, =1{1 Legitimt meddelande} other{{count} Legitima meddelanden}}",
   "noReports": "Inga meddelanden",
   "todayTime": "Idag, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Välj en ljus eller mörk design",
   "themeModeSystem": "Systemstandard",
   "themeModeLight": "Ljus",
-  "themeModeDark": "Mörk"
+  "themeModeDark": "Mörk",
+  "experimentalFeatures": "Experimentella funktioner",
+  "answerbotFeature": "Telefonsvarare (Answerbot)",
+  "answerbotFeatureDescription": "Experiment: Hantera SPAM-svarare för Fritz!Box i appen",
+  "answerbotMenuTitle": "Telefonsvarare",
+  "answerbotMenuDescription": "Hantera telefonsvarare för SPAM",
+  "potentialSpamLabel": "Misstänkt: {rating}",
+  "statistics": "Statistik",
+  "blockedCallsCount": "Blockerade samtal",
+  "suspiciousCallsCount": "Misstänkta samtal"
 }

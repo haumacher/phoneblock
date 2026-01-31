@@ -39,6 +39,12 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getLastUpdate() */
 	public static final String LAST_UPDATE__PROP = "lastUpdate";
 
+	/** @see #getLabel() */
+	public static final String LABEL__PROP = "label";
+
+	/** @see #getLocation() */
+	public static final String LOCATION__PROP = "location";
+
 	private String _phone = "";
 
 	private int _votes = 0;
@@ -54,6 +60,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private long _dateAdded = 0L;
 
 	private long _lastUpdate = 0L;
+
+	private String _label = null;
+
+	private String _location = null;
 
 	/**
 	 * Creates a {@link PhoneInfo} instance.
@@ -237,6 +247,62 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		_lastUpdate = value;
 	}
 
+	/**
+	 * The phone number formatted for local display (e.g., "(DE) 030 12345678").
+	 */
+	public final String getLabel() {
+		return _label;
+	}
+
+	/**
+	 * @see #getLabel()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setLabel(String value) {
+		internalSetLabel(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLabel()} without chain call utility. */
+	protected final void internalSetLabel(String value) {
+		_listener.beforeSet(this, LABEL__PROP, value);
+		_label = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getLabel()} has a value.
+	 */
+	public final boolean hasLabel() {
+		return _label != null;
+	}
+
+	/**
+	 * The city or region from where the call originated (e.g., "Berlin").
+	 */
+	public final String getLocation() {
+		return _location;
+	}
+
+	/**
+	 * @see #getLocation()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setLocation(String value) {
+		internalSetLocation(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLocation()} without chain call utility. */
+	protected final void internalSetLocation(String value) {
+		_listener.beforeSet(this, LOCATION__PROP, value);
+		_location = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getLocation()} has a value.
+	 */
+	public final boolean hasLocation() {
+		return _location != null;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -273,7 +339,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			WHITE_LISTED__PROP, 
 			ARCHIVED__PROP, 
 			DATE_ADDED__PROP, 
-			LAST_UPDATE__PROP));
+			LAST_UPDATE__PROP, 
+			LABEL__PROP, 
+			LOCATION__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -291,6 +359,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ARCHIVED__PROP: return isArchived();
 			case DATE_ADDED__PROP: return getDateAdded();
 			case LAST_UPDATE__PROP: return getLastUpdate();
+			case LABEL__PROP: return getLabel();
+			case LOCATION__PROP: return getLocation();
 			default: return null;
 		}
 	}
@@ -306,6 +376,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ARCHIVED__PROP: internalSetArchived((boolean) value); break;
 			case DATE_ADDED__PROP: internalSetDateAdded((long) value); break;
 			case LAST_UPDATE__PROP: internalSetLastUpdate((long) value); break;
+			case LABEL__PROP: internalSetLabel((String) value); break;
+			case LOCATION__PROP: internalSetLocation((String) value); break;
 		}
 	}
 
@@ -340,6 +412,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(getDateAdded());
 		out.name(LAST_UPDATE__PROP);
 		out.value(getLastUpdate());
+		if (hasLabel()) {
+			out.name(LABEL__PROP);
+			out.value(getLabel());
+		}
+		if (hasLocation()) {
+			out.name(LOCATION__PROP);
+			out.value(getLocation());
+		}
 	}
 
 	@Override
@@ -353,6 +433,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case ARCHIVED__PROP: setArchived(in.nextBoolean()); break;
 			case DATE_ADDED__PROP: setDateAdded(in.nextLong()); break;
 			case LAST_UPDATE__PROP: setLastUpdate(in.nextLong()); break;
+			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LOCATION__PROP: setLocation(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -384,6 +466,12 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** XML attribute or element name of a {@link #getLastUpdate} property. */
 	private static final String LAST_UPDATE__XML_ATTR = "last-update";
 
+	/** XML attribute or element name of a {@link #getLabel} property. */
+	private static final String LABEL__XML_ATTR = "label";
+
+	/** XML attribute or element name of a {@link #getLocation} property. */
+	private static final String LOCATION__XML_ATTR = "location";
+
 	@Override
 	public String getXmlTagName() {
 		return PHONE_INFO__XML_ELEMENT;
@@ -405,6 +493,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(ARCHIVED__XML_ATTR, Boolean.toString(isArchived()));
 		out.writeAttribute(DATE_ADDED__XML_ATTR, Long.toString(getDateAdded()));
 		out.writeAttribute(LAST_UPDATE__XML_ATTR, Long.toString(getLastUpdate()));
+		out.writeAttribute(LABEL__XML_ATTR, getLabel());
+		out.writeAttribute(LOCATION__XML_ATTR, getLocation());
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -474,6 +564,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setLastUpdate(Long.parseLong(value));
 				break;
 			}
+			case LABEL__XML_ATTR: {
+				setLabel(value);
+				break;
+			}
+			case LOCATION__XML_ATTR: {
+				setLocation(value);
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -513,6 +611,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case LAST_UPDATE__XML_ATTR: {
 				setLastUpdate(Long.parseLong(in.getElementText()));
+				break;
+			}
+			case LABEL__XML_ATTR: {
+				setLabel(in.getElementText());
+				break;
+			}
+			case LOCATION__XML_ATTR: {
+				setLocation(in.getElementText());
 				break;
 			}
 			default: {

@@ -94,7 +94,8 @@
   "settingSaved": "Réglage enregistré",
   "errorSaving": "Erreur lors de la sauvegarde",
   "ratePhoneNumber": "évaluer {phoneNumber}",
-  "reportsCount": "{count, plural, =1{1 message} other{{count} messages}}",
+  "reportsCount": "{count, plural, =1{1 plainte} other{{count} Plaintes}}",
+  "rangeReportsCount": "{count, plural, =1{1 plainte dans la zone de numérotation} other{{count} Plaintes dans le domaine numérique}}",
   "legitimateReportsCount": "{count, plural, =1{1 déclaration de légitimité} other{{count} Messages légitimes}}",
   "noReports": "Aucun message",
   "todayTime": "Aujourd'hui, {time}",
@@ -143,5 +144,14 @@
   "themeModeDescription": "Choisir un design clair ou foncé",
   "themeModeSystem": "Système standard",
   "themeModeLight": "Lumineux",
-  "themeModeDark": "Sombre"
+  "themeModeDark": "Sombre",
+  "experimentalFeatures": "Fonctions expérimentales",
+  "answerbotFeature": "Répondeur téléphonique (Answerbot)",
+  "answerbotFeatureDescription": "Expérimental : gérer le répondeur SPAM pour la Fritz!Box dans l'application",
+  "answerbotMenuTitle": "Répondeur téléphonique",
+  "answerbotMenuDescription": "Gérer les répondeurs SPAM",
+  "potentialSpamLabel": "Suspect : {rating}",
+  "statistics": "Statistiques",
+  "blockedCallsCount": "Appels bloqués",
+  "suspiciousCallsCount": "Appels suspects"
 }

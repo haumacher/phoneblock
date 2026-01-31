@@ -60,14 +60,20 @@ public class NumServlet extends HttpServlet {
 
 	static PhoneInfo lookup(HttpServletRequest req, PhoneNumer number) {
 		String phoneId = NumberAnalyzer.getPhoneId(number);
-		
+
 		DB db = DBService.getInstance();
 		MetaSearchService.getInstance().scheduleMetaSearch(number);
-		
+
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			PhoneInfo result = db.getPhoneApiInfo(reports, phoneId);
-			
+
+			// Add display-friendly label and location from the analyzed number
+			result.setLabel(number.getShortcut());
+			if (number.hasCity()) {
+				result.setLocation(number.getCity());
+			}
+
 			// Do not hand out any information for non-spam numbers, even if they have been
 			// (accidentally) recorded in the DB.
 			if (result.getVotes() == 0 && result.getVotesWildcard() == 0) {
@@ -77,14 +83,14 @@ public class NumServlet extends HttpServlet {
 				result.setRating(Rating.A_LEGITIMATE);
 				return result;
 			}
-			
+
 			// Only record search hits, for numbers that are suspicious to SPAM.
 			if (!SearchServlet.isBot(req)) {
 				String dialPrefix = ServletUtil.lookupDialPrefix(req);
-				
+
 				db.addSearchHit(number, dialPrefix);
 			}
-			
+
 			return result;
 		}
 	}

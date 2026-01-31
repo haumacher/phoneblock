@@ -1,43 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:phoneblock_answerbot_ui/AnswerBotList.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart';
+import 'auth.dart';
+import 'answerbot_home.dart';
 
 void main() {
+  // Set up auth provider for answerbot app
+  setAuthProvider(getStoredAuthToken);
+
   runApp(const MyApp());
 }
-
-const Color pbColor = Color(0xFF00d1b2);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PhoneBlock',
+      title: 'PhoneBlock Answerbot',
+      localizationsDelegates: const [
+        answerbotLocalizationsDelegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: answerbotSupportedLocales,
       theme: ThemeData(
-        primaryColorLight: pbColor,
-        appBarTheme: const AppBarTheme(
-          color: pbColor,
-          foregroundColor: Colors.white,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 209, 178),
         ),
-        primaryColor: pbColor,
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: pbColor,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 0, 209, 178),
           foregroundColor: Colors.white,
         ),
       ),
-      home: const HomeScreen(),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0, 209, 178),
+          brightness: Brightness.dark,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 0, 140, 120),
+          foregroundColor: Colors.white,
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: const AnswerbotHome(),
     );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const AnswerBotList();
   }
 }
 

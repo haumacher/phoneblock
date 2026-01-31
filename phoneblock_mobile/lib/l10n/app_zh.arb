@@ -95,6 +95,7 @@
   "errorSaving": "保存时出错",
   "ratePhoneNumber": "费率 <x1> 电话号码</x1",
   "reportsCount": "<x1>计数</x1",
+  "rangeReportsCount": "<x1>计数</x1",
   "legitimateReportsCount": "<x1>计数</x1",
   "noReports": "无信息",
   "todayTime": "今天，<x1>时间</x1",
@@ -143,5 +144,14 @@
   "themeModeDescription": "选择浅色或深色设计",
   "themeModeSystem": "系统标准",
   "themeModeLight": "灯光",
-  "themeModeDark": "黑暗"
+  "themeModeDark": "黑暗",
+  "experimentalFeatures": "实验功能",
+  "answerbotFeature": "答录机（Answerbot）",
+  "answerbotFeatureDescription": "实验：在应用程序中管理 Fritz!Box 的垃圾邮件应答机",
+  "answerbotMenuTitle": "答录机",
+  "answerbotMenuDescription": "管理垃圾邮件应答机",
+  "potentialSpamLabel": "可疑：<x1>评级</x1",
+  "statistics": "统计资料",
+  "blockedCallsCount": "被阻止的电话",
+  "suspiciousCallsCount": "可疑电话"
 }

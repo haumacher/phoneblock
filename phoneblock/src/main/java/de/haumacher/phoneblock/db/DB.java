@@ -55,6 +55,7 @@ import de.haumacher.phoneblock.ab.DBAnswerbotInfo;
 import de.haumacher.phoneblock.ab.proto.AnswerbotInfo;
 import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
@@ -613,6 +614,10 @@ public class DB {
 	public AuthToken createLoginToken(String login, long now, String userAgent) {
 		AuthToken authorization = createAuthorizationTemplate(login, now, userAgent)
 			.setImplicit(true)
+			
+			// See required ContentFilter authorizations.
+			.setAccessQuery(true)
+			.setAccessRate(true)
 			.setAccessLogin(true);
 		createAuthToken(authorization);
 		return authorization;
@@ -656,31 +661,31 @@ public class DB {
 		return userAgent == null ? "-" : userAgent;
 	}
 
-	public AuthToken checkAuthToken(String token, long now, String userAgent, boolean renew) {
+	public AuthContext checkAuthToken(String token, long now, String userAgent, boolean renew) {
 		if (!token.startsWith(TOKEN_VERSION)) {
 			return null;
 		}
-		
+
 		try {
 			TokenInfo tokenInfo = TokenInfo.parse(token);
-			
+
 			try (SqlSession session = openSession()) {
 				Users users = session.getMapper(Users.class);
-				
+
 				DBAuthToken result = users.getAuthToken(tokenInfo.id);
 				if (result == null) {
 					LOG.info("Outdated authorization token received: {}", token);
 					return null;
 				}
-				
+
 				byte[] expectedHash = result.getPwHash();
 				byte[] digest = sha256().digest(tokenInfo.secret);
-				
+
 				if (!Arrays.equals(digest, expectedHash)) {
 					LOG.info("Invalid authorization token received for user {}: {}", result.getUserId(), token);
 					return null;
 				}
-				
+
 				result.setUserName(users.getUserName(result.getUserId()));
 
 				// Remember token, since an update is sent to the client.
@@ -705,20 +710,20 @@ public class DB {
 					session.commit();
 				}
 
+				// Load user settings in the same transaction
+				DBUserSettings userSettings = getUserSettings(users, result.getUserName());
+
 				// Send welcome mail on first token usage (independent of rate limit)
 				if (isFirstAccess && !result.isImplicit() && _config.isSendWelcomeMails() && _mailService != null) {
 					LOG.info("First token usage detected for token {}, sending welcome mail.",
 					         result.getId());
 
-					DBUserSettings userSettings = getUserSettings(users, result.getUserName());
 					String deviceLabel = result.getLabel();
-
-					final String finalDeviceLabel = deviceLabel;
 					_scheduler.executor().submit(() ->
-					    _mailService.sendMobileWelcomeMail(userSettings, finalDeviceLabel));
+					    _mailService.sendMobileWelcomeMail(userSettings, deviceLabel));
 				}
 
-				return result;
+				return new AuthContext(result, userSettings);
 			}
 		} catch (IOException e) {
 			LOG.info("Failed to parse authorization token: {}", token);
@@ -872,6 +877,12 @@ public class DB {
 
 		if (thresholdCrossed) {
 			reports.markPendingUpdate(phone);
+		}
+
+		// Clear SHA1 hash when votes fall below 1 to protect privacy for legitimate numbers.
+		// This prevents identifying legitimate callers in privacy-aware lookups.
+		if (newVotes < 1) {
+			reports.clearPhoneHash(phone);
 		}
 
 		return classifyChanged;
@@ -1260,11 +1271,9 @@ public class DB {
 	/**
 	 * Looks up the newest entries in the blocklist.
 	 */
-	public List<DBNumberInfo> getLatestBlocklistEntries(String login) {
+	public List<DBNumberInfo> getLatestBlocklistEntries(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-
-			int minVotes = getMinVotes(session, login);
 			return reports.getLatestBlocklistEntries(minVotes);
 		}
 	}
@@ -1280,7 +1289,15 @@ public class DB {
 	 * and ensures clients can detect when numbers drop below their threshold.
 	 * </p>
 	 */
-	public Blocklist getBlockListAPI() {
+	/**
+	 * Gets the full blocklist for API download.
+	 *
+	 * @param minVisibleVotes Minimum vote threshold for visibility. Numbers with fewer votes
+	 *        (after normalization to thresholds) will be excluded from the result.
+	 *        Must be one of the valid {@link #BLOCKLIST_THRESHOLDS} values.
+	 * @return The blocklist containing all numbers meeting the minimum threshold.
+	 */
+	public Blocklist getBlockListAPI(int minVisibleVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
@@ -1289,6 +1306,7 @@ public class DB {
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
+					.filter(entry -> entry.getVotes() >= minVisibleVotes)
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
@@ -1302,17 +1320,22 @@ public class DB {
 
 	/**
 	 * Gets blocklist changes since the given version (incremental sync).
-	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 * Returns entries with VERSION > sinceVersion.
 	 *
 	 * <p>
-	 * Returns all blocklist changes without any filtering.
+	 * Entries with votes below the minimum visible threshold are returned with votes=0,
+	 * indicating they should be removed from the client's local blocklist.
 	 * No user-specific filtering (whitelist/blacklist) is applied.
-	 * No vote threshold filtering is applied - clients must filter by their preferred threshold.
-	 * This allows the response to be cached and served identically to all users, improving efficiency,
-	 * and ensures clients can detect when numbers drop below their threshold.
+	 * This allows the response to be cached and served identically to all users, improving efficiency.
 	 * </p>
+	 *
+	 * @param sinceVersion Return only changes since this version number.
+	 * @param minVisibleVotes Minimum vote threshold for visibility. Numbers with fewer votes
+	 *        will be returned with votes=0 to indicate removal from the visible blocklist.
+	 *        Must be one of the valid {@link #BLOCKLIST_THRESHOLDS} values.
+	 * @return The blocklist changes since the specified version.
 	 */
-	public Blocklist getBlocklistUpdateAPI(long sinceVersion) {
+	public Blocklist getBlocklistUpdateAPI(long sinceVersion, int minVisibleVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
@@ -1321,6 +1344,13 @@ public class DB {
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
+					.map(entry -> {
+						// Entries below the visible threshold are returned as deletions (votes=0)
+						if (entry.getVotes() < minVisibleVotes) {
+							return entry.setVotes(0);
+						}
+						return entry;
+					})
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
@@ -1411,18 +1441,8 @@ public class DB {
 				max = votes;
 			}
 		}
-		
+	
 		return result;
-	}
-
-	public int getMinVotes(SqlSession session, String login) {
-		int minVotes = (login == null) ? MIN_VOTES : getUserSettingsRaw(session, login).getMinVotes();
-		return minVotes;
-	}
-
-	public DBUserSettings getUserSettingsRaw(SqlSession session, String login) {
-		Users users = session.getMapper(Users.class);
-		return users.getSettingsRaw(login);
 	}
 
 	private DBUserSettings getUserSettings(Users users, String login) {
@@ -1478,13 +1498,12 @@ public class DB {
 	/**
 	 * The current DB status.
 	 */
-	public Status getStatus(String login) {
+	public Status getStatus(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			int minVotes = getMinVotes(session, login);
 			return new Status(
-					reports.getStatistics(minVotes), 
-					nonNull(reports.getTotalVotes()), 
+					reports.getStatistics(minVotes),
+					nonNull(reports.getTotalVotes()),
 					nonNull(reports.getArchivedReportCount()));
 		}
 	}
@@ -1724,30 +1743,30 @@ public class DB {
 		return address.getAddress().strip().toLowerCase();
 	}
 	
-	/** 
+	/**
 	 * Sets the last access time for the given user to the given timestamp.
-	 * 
+	 *
 	 * @param userAgent The user agent header string.
+	 * @param settings The user settings (from request attribute).
 	 */
-	public void updateLastAccess(String login, long timestamp, String userAgent) {
+	public void updateLastAccess(String login, long timestamp, String userAgent, UserSettings settings) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			
+
 			Long before = users.getLastAccess(login);
 			users.setLastAccess(login, timestamp, userAgent);
 			session.commit();
-			
+
 			if (before == null || before.longValue() == 0) {
 				// This was the first access, send welcome message;
 				MailService mailService = _mailService;
 				if (mailService != null && _config.isSendWelcomeMails()) {
-					DBUserSettings userSettings = getUserSettings(users, login);
-					users.markWelcome(userSettings.getId());
+					users.markWelcome(settings.getId());
 					session.commit();
 
-					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(userSettings));
+					_scheduler.executor().submit(() -> mailService.sendWelcomeMail(settings));
 				} else {
-					LOG.info("Not sending welcome mail to '{}': {}", login, 
+					LOG.info("Not sending welcome mail to '{}': {}", login,
 						mailService == null ? "No mail service." : "Welcome mails are disabled.");
 				}
 			}
@@ -1780,11 +1799,11 @@ public class DB {
 	/**
 	 * Checks credentials in the given authorization header.
 	 * Ignores whitespaces surrounding username or password.
-	 * @param userAgent 
-	 * 
-	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
+	 * @param userAgent
+	 *
+	 * @return The authentication context if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String basicAuth(String authHeader, String userAgent) throws IOException {
+	public AuthContext basicAuth(String authHeader, String userAgent) throws IOException {
 		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
 			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);
@@ -1793,21 +1812,25 @@ public class DB {
 			if (sepIndex >= 0) {
 				String login = decoded.substring(0, sepIndex).trim();
 				String passwd = decoded.substring(sepIndex + 1).trim();
-				
+
 				if (passwd.startsWith(TOKEN_VERSION)) {
 					// Compatibility - FRITZ!Box cannot send bearer tokens.
-					AuthToken authToken = checkAuthToken(passwd, System.currentTimeMillis(), userAgent, false);
-					if (authToken == null) {
+					AuthContext authContext = checkAuthToken(passwd, System.currentTimeMillis(), userAgent, false);
+					if (authContext == null) {
 						LOG.warn("Invalid token received from {}.", login);
 						return null;
 					}
-					if (!login.equals(authToken.getUserName())) {
-						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authToken.getUserName());
+					if (!login.equals(authContext.getUserName())) {
+						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authContext.getUserName());
 						return null;
 					}
-					return authToken.getUserName();
+					return authContext;
 				} else {
-					return login(login, passwd);
+					AuthContext result = login(login, passwd);
+					if (result != null) {
+						result.getAuthorization().setUserAgent(userAgent);
+					}
+					return result;
 				}
 			}
 		}
@@ -1815,22 +1838,25 @@ public class DB {
 		return null;
 	}
 
-	/** 
+	/**
 	 * Checks the given credentials.
-	 * 
-	 * @return The authorized user name, if authorization was successful, <code>null</code> otherwise.
+	 *
+	 * @return The authentication context if authorization was successful, <code>null</code> otherwise.
 	 */
-	public String login(String login, String passwd) throws IOException {
+	public AuthContext login(String login, String passwd) throws IOException {
 		byte[] pwhash = pwhash(passwd);
-		
+
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			
+
 			InputStream hashIn = users.getHash(login);
 			if (hashIn != null) {
 				byte[] expectedHash = hashIn.readAllBytes();
 				if (Arrays.equals(pwhash, expectedHash)) {
-					return login;
+					long userId = users.getUserId(login).longValue();
+					AuthToken authorization = createMasterLoginToken(login, userId);
+					DBUserSettings settings = getUserSettings(users, login);
+					return new AuthContext(authorization, settings);
 				} else {
 					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + login);
 				}
@@ -1839,6 +1865,31 @@ public class DB {
 			}
 		}
 		return null;
+	}
+
+	public AuthContext createMasterLoginToken(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+
+			Long userId = users.getUserId(login);
+			if (userId == null) {
+				return null;
+			}
+			AuthToken token = createMasterLoginToken(login, userId.longValue());
+			UserSettings settings = getUserSettings(users, login);
+			return new AuthContext(token, settings);
+		}
+	}
+
+	private static AuthToken createMasterLoginToken(String login, long userId) {
+		return AuthToken.create()
+			.setUserName(login)
+			.setUserId(userId)
+			.setAccessCarddav(true)
+			.setAccessDownload(true)
+			.setAccessLogin(true)
+			.setAccessQuery(true)
+			.setAccessRate(true);
 	}
 
 	public static String saveChars(String login) {

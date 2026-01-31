@@ -689,8 +689,14 @@ abstract class AppLocalizations {
   /// Number of reports for a phone number
   ///
   /// In de, this message translates to:
-  /// **'{count, plural, =1{1 Meldung} other{{count} Meldungen}}'**
+  /// **'{count, plural, =1{1 Beschwerde} other{{count} Beschwerden}}'**
   String reportsCount(int count);
+
+  /// Number of range reports for a phone number (aggregated from similar numbers)
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Beschwerde im Nummernbereich} other{{count} Beschwerden im Nummernbereich}}'**
+  String rangeReportsCount(int count);
 
   /// Number of legitimate reports for a phone number
   ///
@@ -985,6 +991,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dunkel'**
   String get themeModeDark;
+
+  /// Experimental features section header
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentelle Funktionen'**
+  String get experimentalFeatures;
+
+  /// Answerbot feature toggle title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter (Answerbot)'**
+  String get answerbotFeature;
+
+  /// Answerbot feature toggle description
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentell: SPAM-Anrufbeantworter für die Fritz!Box in der App verwalten'**
+  String get answerbotFeatureDescription;
+
+  /// Answerbot menu item title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter'**
+  String get answerbotMenuTitle;
+
+  /// Answerbot menu item description
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Anrufbeantworter verwalten'**
+  String get answerbotMenuDescription;
+
+  /// Label for calls that weren't blocked but have spam votes
+  ///
+  /// In de, this message translates to:
+  /// **'Verdächtig: {rating}'**
+  String potentialSpamLabel(String rating);
+
+  /// Statistics section header
+  ///
+  /// In de, this message translates to:
+  /// **'Statistik'**
+  String get statistics;
+
+  /// Label for total blocked calls count
+  ///
+  /// In de, this message translates to:
+  /// **'Blockierte Anrufe'**
+  String get blockedCallsCount;
+
+  /// Label for total suspicious calls count
+  ///
+  /// In de, this message translates to:
+  /// **'Verdächtige Anrufe'**
+  String get suspiciousCallsCount;
 }
 
 class _AppLocalizationsDelegate
