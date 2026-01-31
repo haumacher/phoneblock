@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:7e1ebbc9">PhoneBlock 登录代码</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="PhoneBlock 徽标" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="PhoneBlock 徽标" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">你好{name}、</h2>
+<h2 data-tx="t0007:f05885dc">你好，<span th:text="${name}">用户</span>、</h2>
 
 <p data-tx="t0004:7d470c8b">这是您的 <i>PhoneBlock</i> 账户的登录代码。验证您的电子邮件地址、</p>
 
 <p style="margin-left: 5em;">
-<code style="font-weight: bold; font-size: larger; padding: 4px; border-style: solid; border-width: 2px; border-radius: 3px;">{code}</code>
+<code style="font-weight: bold; font-size: larger; padding: 4px; border-style: solid; border-width: 2px; border-radius: 3px;" th:text="${code}">123456</code>
 </p>
 
 <p data-tx="t0005:a2efd4c6">如果您不想注册 <i>PhoneBlock</i>，可以放心地忽略这封邮件。</p>

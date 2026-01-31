@@ -1,34 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:8eacd512">PhoneBlock: Hjelp med oppsettet</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="PhoneBlock-logo" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="PhoneBlock-logo" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">Hallo {navn},</h2>
+<h2 data-tx="t0009:f05885dc">Hei <span th:text="${name}">bruker</span>,</h2>
 
-<p data-tx="t0004:72d2e942">Du er logget inn på <a href="{home}">PhoneBlock</a>. Det er imidlertid ikke mulig å hente blokkeringslisten</p>
+<p data-tx="t0004:72d2e942">Du er logget inn på <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a>. Det er imidlertid ikke mulig å hente blokkeringslisten</p>
 
-<p data-tx="t0005:1eb9427b">Ditt PhoneBlock-brukernavn: <code>{brukernavn}</code><br/>.<code></code></p>
+<p data-tx="t0010:5c7907d7">Ditt PhoneBlock-brukernavn: <code th:text="${userName}">bruker123</code><br/>
+Den siste hentingen av blokkeringslisten var den: <code th:text="${lastAccess}">01.01.2024 12:00:00</code></p>
 
-<p data-tx="t0006:19eaeef4">Jeg forklarer også installasjonen i denne YouTube-videoen <a href="{help}">{help}</a> - kanskje</p>
+<p data-tx="t0011:710893df">Jeg forklarer også installasjonen i denne YouTube-videoen <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a> - kanskje
+hjelpe deg med å fullføre installasjonen. Det er viktig at du ikke bruker e-postadressen din som brukernavn i Fritz!
+e-postadressen din som brukernavn, men PhoneBlock-brukernavnet som vises til deg etter innlogging.
+vises etter innlogging. Hvis du ikke lenger har disse påloggingsopplysningene tilgjengelig, kan du bare gjenta registreringsprosessen med den samme e-postadressen.
+E-postadresse.</p>
 
 <p data-tx="t0007:284b3eac">Med vennlig hilsen</p>
 
 <p data-tx="t0008:70c6d927">Bernhard Haumacher</p>
 
-<p data-tx="t0009:cb09622c" style="color: gray;">--<br/>
-Hjemmeside: <a href="{home}">{hjemmeside}</a><br/>
-Donasjon: <a href="{support}">{støtte}</a><br/>
-Innstillinger: <a href="{settings}">{innstillinger}</a><br/>
-Telefonsvarer: <a href="{app}">{app}</a>&gt;<br/>
-Videoopplæring: <a href="{help}">{hjelp}</a><br/>
-Facebook: <a href="{facebook}">{facebook}</a><br/>
-Kontakt: <a href="mailto:{mail}">{mail}</a><br/></p>
+<p data-tx="t0012:14e1f6dc" style="color: gray;">--<br/>
+Hjemmeside: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+Donasjon: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+Innstillinger: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+Telefonsvarer: <a href="https://phoneblock.net/phoneblock/ab/" th:href="${app}" th:text="${app}">https://phoneblock.net/phoneblock/ab/</a><br/>
+Videoinstruksjoner: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>
+Facebook: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a><br/>
+Kontakt: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/></p>
 
 </body>
 </html>

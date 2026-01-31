@@ -6,10 +6,6 @@ package de.haumacher.phoneblock.mail;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,23 +21,20 @@ public class MailServiceImplTest {
 	 */
 	@Test
 	public void testHtmlToPlainText_MobileWelcomeMail() throws IOException {
-		// Read the mobile-welcome-mail template
-		String html = readTemplate("templates/de/mobile-welcome-mail.html");
+		// Process the mobile-welcome-mail template using Thymeleaf
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("name", "Max Mustermann");
+		variables.put("deviceLabel", "Samsung Galaxy S23");
+		variables.put("image", "https://phoneblock.net/phoneblock/assets/img/app-logo.svg");
+		variables.put("home", "https://phoneblock.net/phoneblock");
+		variables.put("support", "https://phoneblock.net/phoneblock/support");
+		variables.put("settings", "https://phoneblock.net/phoneblock/settings");
+		variables.put("app", "https://phoneblock.net/phoneblock/ab/");
+		variables.put("help", "https://www.youtube.com/@phoneblock");
+		variables.put("facebook", "https://www.facebook.com/PhoneBlock");
+		variables.put("mail", "phoneblock@haumacher.de");
 
-		// Substitute variables with test values
-		Map<String, String> variables = new HashMap<>();
-		variables.put("{name}", "Max Mustermann");
-		variables.put("{deviceLabel}", "Samsung Galaxy S23");
-		variables.put("{image}", "https://phoneblock.net/phoneblock/assets/img/app-logo.svg");
-		variables.put("{home}", "https://phoneblock.net/phoneblock");
-		variables.put("{support}", "https://phoneblock.net/phoneblock/support");
-		variables.put("{settings}", "https://phoneblock.net/phoneblock/settings");
-		variables.put("{app}", "https://phoneblock.net/phoneblock/ab/");
-		variables.put("{help}", "https://www.youtube.com/@phoneblock");
-		variables.put("{facebook}", "https://www.facebook.com/PhoneBlock");
-		variables.put("{mail}", "phoneblock@haumacher.de");
-
-		String htmlWithVariables = expandVariables(html, variables);
+		String htmlWithVariables = MailTemplateEngine.getInstance().processTemplate("de", "mobile-welcome-mail", variables);
 
 		// Convert to plain text using static method
 		String plainText = MailServiceImpl.htmlToPlainText(htmlWithVariables);
@@ -161,38 +154,4 @@ public class MailServiceImplTest {
 		assertTrue(wrapped.contains("\n\n"), "Should preserve paragraph breaks");
 	}
 
-	/**
-	 * Read a template from the classpath.
-	 */
-	private String readTemplate(String resourcePath) throws IOException {
-		InputStream in = MailServiceImpl.class.getResourceAsStream(resourcePath);
-		if (in == null) {
-			throw new IOException("Template not found: " + resourcePath);
-		}
-
-		StringBuilder result = new StringBuilder();
-		char[] buffer = new char[4096];
-		try (InputStream stream = in) {
-			try (Reader r = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-				while (true) {
-					int read = r.read(buffer);
-					if (read < 0) {
-						break;
-					}
-					result.append(buffer, 0, read);
-				}
-			}
-		}
-		return result.toString();
-	}
-
-	/**
-	 * Expand variables in a template.
-	 */
-	private String expandVariables(String text, Map<String, String> variables) {
-		for (Map.Entry<String, String> var : variables.entrySet()) {
-			text = text.replace(var.getKey(), var.getValue());
-		}
-		return text;
-	}
 }

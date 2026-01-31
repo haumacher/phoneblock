@@ -1,34 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:8eacd512">PhoneBlock: Ayuda con la configuración</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="Logo PhoneBlock" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="Logo PhoneBlock" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">Hola {nombre},</h2>
+<h2 data-tx="t0009:f05885dc">Hola <span th:text="${name}">usuario</span>,</h2>
 
-<p data-tx="t0004:72d2e942">Ha iniciado sesión en <a href="{home}">PhoneBlock</a>. Sin embargo, la recuperación de la lista de bloqueo</p>
+<p data-tx="t0004:72d2e942">Ha iniciado sesión en <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a>. Sin embargo, la recuperación de la lista de bloqueo</p>
 
-<p data-tx="t0005:1eb9427b">Tu nombre de usuario PhoneBlock: <code>{userName}</code><br/><code></code></p>
+<p data-tx="t0010:5c7907d7">Su nombre de usuario PhoneBlock: <code th:text="${userName}">usuario123</code><br/>
+La última recuperación de la lista de bloqueo fue en: <code th:text="${lastAccess}">01.01.2024 12:00:00</code></p>
 
-<p data-tx="t0006:19eaeef4">También explico la instalación en este vídeo de YouTube <a href="{help}">{help}</a> - quizás</p>
+<p data-tx="t0011:710893df">También explico la instalación en este vídeo de YouTube <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a> - tal vez
+te ayude a completar con éxito la instalación. ¡Es importante que no utilice su dirección de correo electrónico como nombre de usuario en su Fritz!
+dirección de correo electrónico como nombre de usuario, sino el nombre de usuario de PhoneBlock que se le muestra tras iniciar sesión.
+que se le muestra tras iniciar sesión. Si ya no dispone de estos datos de acceso, puede repetir el proceso de registro con la misma dirección de correo electrónico.
+dirección de correo electrónico.</p>
 
 <p data-tx="t0007:284b3eac">Saludos cordiales</p>
 
 <p data-tx="t0008:70c6d927">Bernhard Haumacher</p>
 
-<p data-tx="t0009:cb09622c" style="color: gray;">--<br/>
-Página de inicio: <a href="{home}">{home}</a><br/>
-Donación: <a href="{support}">{support}</a><br/>
-Configuración: <a href="{settings}">{configuración}</a><br/>
-Contestador automático: <a href="{app}">{app}</a><br/>
-Videotutorial: <a href="{help}">{ayuda}</a><br/>
-Facebook: <a href="{facebook}">{facebook}</a><br/>
-Contacto: <a href="mailto:{mail}">{mail}</a><br/></p>
+<p data-tx="t0012:14e1f6dc" style="color: gray;">--<br/>
+Página de inicio: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+Donación: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+Configuración: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+Contestador automático: <a href="https://phoneblock.net/phoneblock/ab/" th:href="${app}" th:text="${app}">https://phoneblock.net/phoneblock/ab/</a><br/>
+Instrucciones de vídeo: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>
+Facebook: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a><br/>
+Contacto: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/></p>
 
 </body>
 </html>

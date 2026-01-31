@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:7e1ebbc9">PhoneBlock login code</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="PhoneBlock Logo" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="PhoneBlock Logo" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">Hello {name},</h2>
+<h2 data-tx="t0007:f05885dc">Hello <span th:text="${name}">user</span>,</h2>
 
 <p data-tx="t0004:7d470c8b">Here is the login code for your <i>PhoneBlock</i> account. To verify your e-mail address,</p>
 
 <p style="margin-left: 5em;">
-<code style="font-weight: bold; font-size: larger; padding: 4px; border-style: solid; border-width: 2px; border-radius: 3px;">{code}</code>
+<code style="font-weight: bold; font-size: larger; padding: 4px; border-style: solid; border-width: 2px; border-radius: 3px;" th:text="${code}">123456</code>
 </p>
 
 <p data-tx="t0005:a2efd4c6">If you don't want to register with <i>PhoneBlock</i>, you can safely ignore this e-mail.</p>

@@ -1,34 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:572a4b02">PhoneBlock: Telefonsvareren er slått av</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="PhoneBlock-logo" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="PhoneBlock-logo" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">Hallo {navn},</h2>
+<h2 data-tx="t0009:f05885dc">Hei <span th:text="${name}">bruker</span>,</h2>
 
-<p data-tx="t0004:f6b0dee3">Du har registrert en telefonsvarer med <a href="{home}">PhoneBlock</a>.</p>
+<p data-tx="t0004:f6b0dee3">Du har registrert en telefonsvarer med <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a>.</p>
 
-<p data-tx="t0005:4ffb31e5">Ditt PhoneBlock-brukernavn: <code>{brukernavn}</code><br/>.<code></code><br/><code></code><br/><code></code></p>
+<p data-tx="t0010:fc5c006">PhoneBlock-brukernavnet ditt: <code th:text="${userName}">bruker123</code><br/>.
+ID-en til telefonsvareren din: <code th:text="${botId}">bot123</code><br/>
+Den siste vellykkede registreringen: <code th:text="${lastSuccess}">01.01.2024 12:00:00</code><br/>
+Den siste feilmeldingen: <code th:text="${lastMessage}">Registrering mislyktes</code></p>
 
-<p data-tx="t0006:e6148ea6">Vennligst <a href="{app}">kontrollér innstillingene dine</a>, ellers vil du motta SPAM-anrop.<a href="{app}"></a></p>
+<p data-tx="t0011:3cc418fa">Vennligst <a href="https://phoneblock.net/phoneblock/ab/" th:href="${app}">sjekk innstillingene dine</a>, ellers kan SPAM-anrop nå deg
+kan nå deg uhindret igjen: <a href="https://phoneblock.net/phoneblock/ab/" th:href="${app}" th:text="${app}">https://phoneblock.net/phoneblock/ab/</a></p>
 
 <p data-tx="t0007:284b3eac">Med vennlig hilsen</p>
 
 <p data-tx="t0008:70c6d927">Bernhard Haumacher</p>
 
-<p data-tx="t0009:cb09622c" style="color: gray;">--<br/>
-Hjemmeside: <a href="{home}">{hjemmeside}</a><br/>
-Donasjon: <a href="{support}">{støtte}</a><br/>
-Innstillinger: <a href="{settings}">{innstillinger}</a><br/>
-Telefonsvarer: <a href="{app}">{app}</a>&gt;<br/>
-Videoopplæring: <a href="{help}">{hjelp}</a><br/>
-Facebook: <a href="{facebook}">{facebook}</a><br/>
-Kontakt: <a href="mailto:{mail}">{mail}</a><br/></p>
+<p data-tx="t0012:14e1f6dc" style="color: gray;">--<br/>
+Hjemmeside: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+Donasjon: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+Innstillinger: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+Telefonsvarer: <a href="https://phoneblock.net/phoneblock/ab/" th:href="${app}" th:text="${app}">https://phoneblock.net/phoneblock/ab/</a><br/>
+Videoinstruksjoner: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>
+Facebook: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a><br/>
+Kontakt: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/></p>
 
 </body>
 </html>

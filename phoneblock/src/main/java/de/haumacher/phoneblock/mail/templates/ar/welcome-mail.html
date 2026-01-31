@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
   </head>
   <body>
-    <p data-tx="t0001:cee289b8">مرحبًا {الاسم}، <img align="right" alt="شعار فون بلوك" data-tx="t0002:5b0e8765" height="133" src="{image}" style="vertical-align: bottom;" width="133"/></p>
+    <p data-tx="t0009:336bea4">مرحبًا <span th:text="${name}">المستخدم</span>،<img align="right" alt="شعار فون بلوك" data-tx="t0002:5b0e8765" height="133" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" style="vertical-align: bottom;" th:src="${image}" width="133"/></p>
 
-    <p data-tx="t0003:d4ff0bbe">من الجيد أنك عثرت على <a href="{home}">PhoneBlock</a> وقمت بتثبيته بنجاح. نأمل أن تقل المكالمات الهاتفية غير المرغوب فيها بشكل كبير في المستقبل.</p>
+    <p data-tx="t0003:d4ff0bbe">من الجيد أنك عثرت على <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a> وقمت بتثبيته بنجاح. نأمل أن تقل المكالمات الهاتفية غير المرغوب فيها بشكل كبير في المستقبل.</p>
 
-    <p data-tx="t0004:57bc0241">إذا كنت راضيًا عن PhoneBlock، فسأكون سعيدًا إذا ساهمت في تكاليف تشغيل PhoneBlock من خلال تبرع صغير.<a href="{support}"></a></p>
+    <p data-tx="t0004:57bc0241">إذا كنت راضيًا عن PhoneBlock، فسأكون سعيدًا إذا ساهمت في تكاليف تشغيل PhoneBlock من خلال تبرع صغير.<a href="https://phoneblock.net/phoneblock/support" th:href="${support}"></a></p>
 
-    <p data-tx="t0005:1d98c39d">ولكن الأهم من ذلك هو أن تخبر أصدقاءك ومعارفك وأقاربك عنه. لماذا لا تشارك الصفحة الرئيسية لـ PhoneBlock (<a href="{home}">{home}) على Facebook أو Twitter أو قناة أخرى وتتابع PhoneBlock حتى لا تفوتك أي تحديثات: <a href="{facebook}">{Facebook}</a></a></p>
+    <p data-tx="t0010:fd8c5cc5">ولكن الأهم من ذلك هو أن تخبر أصدقاءك ومعارفك وأقاربك عن ذلك. لماذا لا تشارك الصفحة الرئيسية لـ PhoneBlock (<a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a>) على Facebook أو Twitter أو أي قناة أخرى وتتابع PhoneBlock حتى لا تفوتك أي تحديثات: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a></p>
 
     <p data-tx="t0006:2be40556">فقط إذا أخبرت الآخرين عن PhoneBlock يمكن أن ينتشر الخبر السار بأنه لم يعد هناك من هو أعزل من إرهاب الهاتف بعد الآن.</p>
 
     <p data-tx="t0007:284b3eac">مع أطيب التحيات</p>
     <p data-tx="t0008:70c6d927">برنهارد هاوماخر</p>
 
-<p data-tx="t0009:d3aaad68" style="color: gray;">--<br/>
-الصفحة الرئيسية: <a href="{home}">{المنزل}</a><br/>
-التبرع: <a href="{support}">{دعم}<br/>
-الإعدادات: <a href="{settings}">{إعدادات}<br/>
-فيديو تعليمي: <a href="{help}">{مساعدة}<br/>
-فيسبوك: <a href="{facebook}">{facebook}</a><br/>
-الاتصال: <a href="mailto:{mail}">{بريد إلكتروني}<br/></a></a></a></a></p>
+<p data-tx="t0011:fb9d285" style="color: gray;">--<br/>
+الصفحة الرئيسية: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+التبرع: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+الإعدادات: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+إرشادات الفيديو: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock<br/>
+فيسبوك <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlockhttps://www.facebook.com/PhoneBlock<br/>
+الاتصال: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de<br/></a></a></a></p>
 
 </body>
 </html>

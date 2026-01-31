@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title data-tx="t0001:1733978d">Επιβεβαίωση αλλαγής e-mail PhoneBlock</title>
 </head>
 
 <body>
 <div style="float:right; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;">
-<img alt="Λογότυπο PhoneBlock" data-tx="t0002:5b0e8765" height="96" src="{image}" width="96"/>
+<img alt="Λογότυπο PhoneBlock" data-tx="t0002:5b0e8765" height="96" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" th:src="${image}" width="96"/>
 </div>
 
-<h2 data-tx="t0003:246aceaa">Γεια σας {όνομα},</h2>
+<h2 data-tx="t0007:f05885dc">Γεια σας <span th:text="${name}">χρήστης</span>,</h2>
 
 <p data-tx="t0004:496fe8b0">Υποβάλατε αίτημα για αλλαγή της διεύθυνσης ηλεκτρονικού ταχυδρομείου για το λογαριασμό σας <i>PhoneBlock</i>.
 Για να επιβεβαιώσετε την αλλαγή, παρακαλούμε εισάγετε τον ακόλουθο κωδικό στη μάσκα επιβεβαίωσης που έχετε αυτή τη στιγμή ανοιχτή στο πρόγραμμα περιήγησής σας
 ανοιχτό στο πρόγραμμα περιήγησής σας:</p>
 
 <p style="margin-left: 5em;">
-<code style="font-weight: bold; font-size: larger; padding: 4px; border-style: solid; border-width: 2px; border-radius: 3px;">{code}</code>
+<code style="font-weight: bold; font-size: larger; padding: 4px; border-style: solid; border-width: 2px; border-radius: 3px;" th:text="${code}">123456</code>
 </p>
 
 <p data-tx="t0005:cb2ec23c">Εάν δεν έχετε υποβάλει αυτό το αίτημα, μπορείτε να αγνοήσετε αυτό το email και να

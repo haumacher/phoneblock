@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
   </head>
   <body>
-    <p data-tx="t0001:cee289b8">Привіт {name},<img align="right" alt="Логотип PhoneBlock" data-tx="t0002:5b0e8765" height="133" src="{image}" style="vertical-align: bottom;" width="133"/></p>
+    <p data-tx="t0009:336bea4">Привіт <span th:text="${name}">користувач</span>, <img align="right" alt="Логотип PhoneBlock" data-tx="t0002:5b0e8765" height="133" src="https://phoneblock.net/phoneblock/assets/img/app-logo.svg" style="vertical-align: bottom;" th:src="${image}" width="133"/></p>
 
-    <p data-tx="t0003:d4ff0bbe">Приємно, що ви знайшли <a href="{home}">PhoneBlock</a> і успішно його встановили. Сподіваємося, що в майбутньому кількість небажаних телефонних дзвінків значно зменшиться.</p>
+    <p data-tx="t0003:d4ff0bbe">Приємно, що ви знайшли <a href="https://phoneblock.net" th:href="${home}">PhoneBlock</a> і успішно його встановили. Сподіваємося, що в майбутньому кількість небажаних телефонних дзвінків значно зменшиться.</p>
 
-    <p data-tx="t0004:57bc0241">Якщо ви задоволені роботою PhoneBlock, то я буду радий, якщо ви зробите невелику пожертву на підтримку роботи PhoneBlock.<a href="{support}"></a></p>
+    <p data-tx="t0004:57bc0241">Якщо ви задоволені роботою PhoneBlock, то я буду радий, якщо ви зробите невелику пожертву на підтримку роботи PhoneBlock.<a href="https://phoneblock.net/phoneblock/support" th:href="${support}"></a></p>
 
-    <p data-tx="t0005:1d98c39d">Але ще важливіше, щоб ви розповіли про нього своїм друзям, знайомим і родичам. Чому б не поділитися домашньою сторінкою PhoneBlock (<a href="{home}">{home}</a>) на Facebook, Twitter або іншому каналі і не підписатися на PhoneBlock, щоб не пропустити жодного оновлення: <a href="{facebook}">{facebook}</a></p>
+    <p data-tx="t0010:fd8c5cc5">Але ще важливіше, щоб ви розповіли про нього своїм друзям, знайомим і родичам. Чому б вам не поділитися домашньою сторінкою PhoneBlock (<a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a>) на Facebook, Twitter або іншому каналі і слідкувати за оновленнями PhoneBlock, щоб не пропустити жодного оновлення: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a></p>
 
     <p data-tx="t0006:2be40556">Тільки якщо ви розповісте іншим про PhoneBlock, хороша новина про те, що ніхто більше не захищений від телефонного терору, може поширитися.</p>
 
     <p data-tx="t0007:284b3eac">З повагою</p>
     <p data-tx="t0008:70c6d927">Бернхард Гаумахер</p>
 
-<p data-tx="t0009:d3aaad68" style="color: gray;">--<br/>
-Головна сторінка: <a href="{home}">{home}</a><br/>
-Пожертва: <a href="{support}">{підтримка}</a><br/>
-Налаштування: <a href="{settings}">{settings}</a><br/>
-Відеоурок: <a href="{help}">{допомога}</a><br/>
-Facebook: <a href="{facebook}">{facebook}</a><br/>
-Контакт: <a href="mailto:{mail}">{mail}</a><br/></p>
+<p data-tx="t0011:fb9d285" style="color: gray;">--<br/>
+Головна сторінка: <a href="https://phoneblock.net" th:href="${home}" th:text="${home}">https://phoneblock.net</a><br/>
+Пожертва: <a href="https://phoneblock.net/phoneblock/support" th:href="${support}" th:text="${support}">https://phoneblock.net/phoneblock/support</a><br/>
+Налаштування: <a href="https://phoneblock.net/phoneblock/settings" th:href="${settings}" th:text="${settings}">https://phoneblock.net/phoneblock/settings</a><br/>
+Відеоінструкції: <a href="https://www.youtube.com/@phoneblock" th:href="${help}" th:text="${help}">https://www.youtube.com/@phoneblock</a><br/>
+Facebook: <a href="https://www.facebook.com/PhoneBlock" th:href="${facebook}" th:text="${facebook}">https://www.facebook.com/PhoneBlock</a><br/>
+Контакт: <a href="mailto:phoneblock@haumacher.de" th:href="|mailto:${mail}|" th:text="${mail}">phoneblock@haumacher.de</a><br/></p>
 
 </body>
 </html>
