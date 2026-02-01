@@ -257,9 +257,9 @@ class FritzBoxService {
       // Parse duration (format: H:MM or M:SS)
       final duration = _parseDuration(entry.duration);
 
-      // Determine if call was blocked (missed/rejected calls from SPAM contacts)
-      final wasBlocked = name.startsWith('SPAM: ') &&
-          (callType == FritzBoxCallType.missed || callType == FritzBoxCallType.rejected);
+      // Determine if call was blocked (only rejected calls are actually blocked)
+      // missed = not answered, rejected = refused by call barring
+      final wasBlocked = callType == FritzBoxCallType.rejected;
 
       calls.add(ScreenedCall(
         phoneNumber: phoneNumber,
