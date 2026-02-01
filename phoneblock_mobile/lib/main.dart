@@ -1565,20 +1565,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    Icon(
-                      wasBlocked ? Icons.block : Icons.check_circle_outline,
-                      size: 14,
-                      color: wasBlocked ? Colors.red[400] : Colors.green[400],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      wasBlocked ? context.l10n.blocked : context.l10n.accepted,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: wasBlocked ? Colors.red[400] : Colors.green[400],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    // Call status icon and label
+                    ..._buildCallStatusBadge(context, call, sourceIndicator, wasBlocked),
                     const SizedBox(width: 8),
                     Text(
                       _formatTimestamp(call.timestamp),
@@ -2460,6 +2448,62 @@ class _MainScreenState extends State<MainScreen> {
     final minutes = seconds ~/ 60;
     final secs = seconds % 60;
     return '$minutes:${secs.toString().padLeft(2, '0')}';
+  }
+
+  /// Builds the call status badge (blocked/accepted/missed) based on source and call type.
+  List<Widget> _buildCallStatusBadge(
+    BuildContext context,
+    ScreenedCall call,
+    CallSource? source,
+    bool wasBlocked,
+  ) {
+    IconData icon;
+    String label;
+    Color color;
+
+    if (source == CallSource.fritzbox) {
+      // Fritz!Box calls: show based on actual call type
+      if (wasBlocked) {
+        // Rejected by call barring
+        icon = Icons.block;
+        label = context.l10n.blocked;
+        color = Colors.red[400]!;
+      } else if (call.callType == FritzBoxCallType.missed) {
+        // Missed call
+        icon = Icons.phone_missed;
+        label = context.l10n.missed;
+        color = Colors.orange[400]!;
+      } else {
+        // Answered call
+        icon = Icons.phone_callback;
+        label = context.l10n.accepted;
+        color = Colors.green[400]!;
+      }
+    } else {
+      // Mobile calls: blocked/accepted by call screening
+      if (wasBlocked) {
+        icon = Icons.block;
+        label = context.l10n.blocked;
+        color = Colors.red[400]!;
+      } else {
+        icon = Icons.check_circle_outline;
+        label = context.l10n.accepted;
+        color = Colors.green[400]!;
+      }
+    }
+
+    return [
+      Icon(icon, size: 14, color: color),
+      const SizedBox(width: 4),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ];
   }
 }
 

@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock will automatically check incoming calls and block SPAM calls.",
   "blocked": "Blocked",
   "accepted": "Accepted",
+  "missed": "Missed",
   "votes": "{count} votes",
   "viewOnPhoneBlock": "View on PhoneBlock",
   "confirmDeleteAll": "Delete all filtered calls?",

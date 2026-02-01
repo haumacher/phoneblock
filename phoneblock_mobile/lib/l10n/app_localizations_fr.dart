@@ -31,6 +31,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get accepted => 'Adopté';
 
   @override
+  String get missed => 'Verpasst';
+
+  @override
   String votes(int count) {
     return '$count votes';
   }

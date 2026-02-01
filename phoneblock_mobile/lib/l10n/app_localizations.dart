@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'Angenommen'**
   String get accepted;
 
+  /// Label for missed calls
+  ///
+  /// In de, this message translates to:
+  /// **'Verpasst'**
+  String get missed;
+
   /// Number of votes for a phone number
   ///
   /// In de, this message translates to:

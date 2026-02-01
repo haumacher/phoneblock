@@ -35,6 +35,10 @@
     "description": "Label for accepted calls",
     "x-translated": "17acbe98"
   },
+  "missed": "Verpasst",
+  "@missed": {
+    "description": "Label for missed calls"
+  },
   "votes": "{count} Stimmen",
   "@votes": {
     "description": "Number of votes for a phone number",

@@ -31,6 +31,9 @@ class AppLocalizationsNb extends AppLocalizations {
   String get accepted => 'Godkjent';
 
   @override
+  String get missed => 'Verpasst';
+
+  @override
   String votes(int count) {
     return '$count stemmer';
   }

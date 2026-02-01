@@ -31,6 +31,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get accepted => 'Прийнято';
 
   @override
+  String get missed => 'Verpasst';
+
+  @override
   String votes(int count) {
     return '$count голоси';
   }
