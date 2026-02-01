@@ -26,6 +26,7 @@ import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.util.I18N;
@@ -162,7 +163,7 @@ public class OAuthLoginServlet extends HttpServlet {
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", I18N.getMessage(req, "error.login.failed"));
-		TemplateRenderer.getInstance(req).process("/login", req, resp);
+		TemplateRenderer.getInstance(req).process(LoginController.LOGIN_PAGE, req, resp);
 	}
 
 }

@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -339,7 +340,7 @@ public class SettingsServlet extends HttpServlet {
 
 	private void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", I18N.getMessage(req, "error.login.failed"));
-		TemplateRenderer.getInstance(req).process("/login", req, resp);
+		TemplateRenderer.getInstance(req).process(LoginController.LOGIN_PAGE, req, resp);
 	}
 
 }

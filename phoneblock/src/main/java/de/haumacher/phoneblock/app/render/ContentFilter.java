@@ -49,6 +49,7 @@ import de.haumacher.phoneblock.app.ResetPasswordServlet;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.oauth.OAuthLoginServlet;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.random.SecureRandomService;
@@ -100,8 +101,8 @@ public class ContentFilter extends LoginFilter {
 		NO_POW = new HashSet<>();
 		NO_POW.add("/");
 		NO_POW.add("/support");
-		NO_POW.add("/login");
-		NO_POW.add("/login-web");
+		NO_POW.add(LoginController.LOGIN_PAGE);
+		NO_POW.add(EMailVerificationServlet.LOGIN_WEB);
 		NO_POW.add(LoginServlet.PATH);
 		NO_POW.add(RegistrationServlet.REGISTER_WEB);
 		NO_POW.add(RegistrationServlet.REGISTER_MOBILE);

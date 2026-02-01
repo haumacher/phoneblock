@@ -25,18 +25,23 @@ import jakarta.servlet.http.HttpServletResponse;
 public class TemplateRenderer {
 
 	private static final String RENDERER = "renderer";
-    private static Map<String, WebController> controllersByURL;
 
+	/**
+	 * Template path for the bank transfer support page.
+	 */
+	public static final String SUPPORT_BANKTRANSFER_PAGE = "/support-banktransfer";
+
+    private static Map<String, WebController> controllersByURL;
 
     static {
         controllersByURL = new HashMap<String, WebController>();
-        controllersByURL.put("/login", new LoginController(SettingsServlet.PATH));
+        controllersByURL.put(LoginController.LOGIN_PAGE, new LoginController(SettingsServlet.PATH));
         controllersByURL.put(CreateAuthTokenServlet.MOBILE_LOGIN, new MobileLoginController());
-        controllersByURL.put("/status", new StatusController());
+        controllersByURL.put(StatusController.STATUS_PAGE, new StatusController());
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
-        controllersByURL.put("/phone-info", new PhoneInfoController());
-        controllersByURL.put("/support-banktransfer", new RequireLoginController());
-        controllersByURL.put("/show-credentials", new ShowCredentialsController());
+        controllersByURL.put(PhoneInfoController.PHONE_INFO_PAGE, new PhoneInfoController());
+        controllersByURL.put(SUPPORT_BANKTRANSFER_PAGE, new RequireLoginController());
+        controllersByURL.put(ShowCredentialsController.SHOW_CREDENTIALS_PAGE, new ShowCredentialsController());
         controllersByURL.put(ShowApiKeyController.SHOW_API_KEY_PAGE, new ShowApiKeyController());
     }
     

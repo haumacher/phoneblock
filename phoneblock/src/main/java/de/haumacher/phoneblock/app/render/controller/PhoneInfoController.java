@@ -8,7 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 public class PhoneInfoController extends DefaultController {
-	
+
+	/**
+	 * Template path for the phone info page.
+	 */
+	public static final String PHONE_INFO_PAGE = "/phone-info";
+
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);

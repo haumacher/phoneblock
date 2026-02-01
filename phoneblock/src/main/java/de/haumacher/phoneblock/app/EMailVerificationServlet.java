@@ -16,6 +16,7 @@ import org.xbill.DNS.Record;
 import org.xbill.DNS.Type;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
@@ -206,7 +207,7 @@ public class EMailVerificationServlet extends HttpServlet {
 			return "/mobile/login";
 		case LOGIN_WEB:
 		default:
-			return "/login";
+			return LoginController.LOGIN_PAGE;
 		}
 	}
 

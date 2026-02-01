@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.app;
 import java.io.IOException;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.util.I18N;
 import jakarta.servlet.ServletException;
@@ -41,7 +42,7 @@ public class ResetPasswordServlet extends HttpServlet {
 		String password = DBService.getInstance().resetPassword(login);
 		if (password == null) {
 			req.setAttribute("message", I18N.getMessage(req, "error.password-reset.user-not-found"));
-			TemplateRenderer.getInstance(req).process("/login", req, resp);
+			TemplateRenderer.getInstance(req).process(LoginController.LOGIN_PAGE, req, resp);
 			return;
 		}
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.app.AuthContext;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
@@ -73,7 +74,7 @@ public class LoginServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath() + location);
 			return;
 		}
-		TemplateRenderer.getInstance(req).process("/login", req, resp);
+		TemplateRenderer.getInstance(req).process(LoginController.LOGIN_PAGE, req, resp);
 	}
 	
 	@Override
@@ -144,7 +145,7 @@ public class LoginServlet extends HttpServlet {
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute(LOGIN_ERROR_ATTR, I18N.getMessage(req, "error.login.failed"));
-		TemplateRenderer.getInstance(req).process("/login", req, resp);
+		TemplateRenderer.getInstance(req).process(LoginController.LOGIN_PAGE, req, resp);
 	}
 
 	/**
