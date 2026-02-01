@@ -69,16 +69,18 @@ Currently, there is no direct connection between the Fritz!Box router and the mo
 
 **PhoneBlock Account:** Required (existing app requirement - no change)
 
-**Fritz!Box Credentials - Two-tier approach:**
-1. **Initial Setup (Admin):** User enters Fritz!Box admin credentials once during setup. These are used to:
-   - Create the PhoneBlock app user on the Fritz!Box
-   - Configure CardDAV phonebook and/or Answer Bot
-   - Admin credentials are NOT stored after setup completes
+**Fritz!Box Credentials:**
 
-2. **Ongoing Access (App User):** The app creates a dedicated Fritz!Box user with restricted permissions:
-   - Only has access to read the call log
-   - Credentials stored securely on the device
-   - Used for all subsequent call log fetches
+**Initial Implementation (Phases 1-5):**
+- User enters Fritz!Box admin credentials
+- Credentials stored securely on device (Android Keystore)
+- Used for all TR-064 operations (call log, phonebook, configuration)
+
+**Future Enhancement (Phase 6):**
+- Two-tier approach with dedicated app user
+- Admin credentials used only for initial setup, then discarded
+- App user has restricted permissions (call log read-only)
+- Requires `LANConfigSecurity` TR-064 service implementation
 
 ### Answer Bot Details
 
@@ -109,17 +111,16 @@ The Answer Bot option registers the Fritz!Box to use **PhoneBlock's hosted cloud
 
 This feature combines **call log display** with **simplified setup** for Fritz!Box protection:
 
-| Capability | Description |
-|------------|-------------|
-| Call Log | Retrieve and display all incoming calls (except known contacts) from Fritz!Box |
-| Merged Timeline | Show Fritz!Box and mobile calls together with source indicator |
-| Offline Cache | View previously synced calls when away from home network |
-| Full Rating | Rate Fritz!Box calls with same spam categories as mobile |
-| App-Managed Blocklist | Efficient incremental blocklist sync via TR-064 (all FRITZ!OS versions) |
-| CardDAV Setup | Direct CardDAV sync (FRITZ!OS 7.20+ only, less efficient) |
-| Answer Bot Setup | Cloud answer bot registration (FRITZ!OS 7.20+ only) |
-| Combined Setup | App-Managed Blocklist + Answer Bot (recommended for 7.20+) |
-| App User | Automatic creation of restricted Fritz!Box user for secure ongoing access |
+| Capability | Description | Phase |
+|------------|-------------|-------|
+| Call Log | Retrieve and display all incoming calls (except known contacts) from Fritz!Box | 1 |
+| Merged Timeline | Show Fritz!Box and mobile calls together with source indicator | 1 |
+| Offline Cache | View previously synced calls when away from home network | 1 |
+| CardDAV Setup | Direct CardDAV sync (FRITZ!OS 7.20+ only) | 2 |
+| Answer Bot Setup | Cloud answer bot registration (FRITZ!OS 7.20+ only) | 3 |
+| Full Rating | Rate Fritz!Box calls with same spam categories as mobile | 4 |
+| App-Managed Blocklist | Efficient incremental blocklist sync via TR-064 (all FRITZ!OS versions) | 5 |
+| App User | Automatic creation of restricted Fritz!Box user for secure ongoing access | 6 |
 
 ---
 
@@ -263,18 +264,18 @@ CREATE TABLE fritzbox_config (
   id INTEGER PRIMARY KEY,
   host TEXT,                  -- Fritz!Box hostname/IP
   fritzos_version TEXT,       -- Detected FRITZ!OS version
-  app_username TEXT,          -- App user created during setup (encrypted)
-  app_password TEXT,          -- App user password (encrypted)
+  username TEXT,              -- Fritz!Box username (encrypted) - admin initially, app user in Phase 6
+  password TEXT,              -- Fritz!Box password (encrypted)
   blocklist_mode TEXT,        -- 'app_managed', 'carddav', or 'none'
   answerbot_enabled INTEGER,  -- 1 if answer bot is configured (FRITZ!OS 7.20+ only)
   last_fetch_timestamp INTEGER, -- Timestamp of newest call from last fetch (for call log sync)
-  blocklist_version TEXT,     -- PhoneBlock blocklist version for incremental sync
+  blocklist_version TEXT,     -- PhoneBlock blocklist version for incremental sync (Phase 5)
   phonebook_id TEXT,          -- Phonebook ID (for CardDAV or app-managed blocklist)
   sip_device_id TEXT          -- Answer bot SIP device ID if configured
 );
 ```
 
-**New SQLite table: `fritzbox_blocklist`** (for app-managed mode)
+**New SQLite table: `fritzbox_blocklist`** (Phase 5: app-managed mode)
 ```sql
 CREATE TABLE fritzbox_blocklist (
   id INTEGER PRIMARY KEY,
@@ -285,7 +286,7 @@ CREATE TABLE fritzbox_blocklist (
 ```
 This local blocklist enables efficient incremental sync with PhoneBlock API.
 
-**Note:** Admin credentials are NOT stored. Only the app-specific user credentials (with restricted call log access) are persisted.
+**Note:** Initially uses admin credentials. Phase 6 introduces restricted app user.
 
 ### New Dependencies
 
@@ -298,12 +299,16 @@ dependencies:
 
 ### Security Considerations
 
-- **Admin credentials never stored** - Used only during initial setup, then discarded
-- **App user credentials** stored using Android Keystore encryption
-- **Restricted permissions** - App user only has call log read access
+**Initial Implementation (Phases 1-5):**
+- Admin credentials stored using Android Keystore encryption
 - TR-064 communication over HTTPS when available
 - No credentials transmitted to PhoneBlock servers
 - Local network verification before attempting connection
+
+**Future Enhancement (Phase 6):**
+- Admin credentials used only during setup, then discarded
+- App user credentials stored using Android Keystore encryption
+- Restricted permissions - App user only has call log read access
 
 ---
 
@@ -357,9 +362,9 @@ When not connected to the home network:
    - Manual entry option if auto-detection fails
 
 2. **Admin Login**
-   - Enter Fritz!Box admin credentials (one-time use)
+   - Enter Fritz!Box admin credentials
    - Test connection and validate credentials
-   - Explain that admin access is only needed for initial setup
+   - Credentials stored securely for ongoing access (Phase 6 will add restricted app user)
 
 3. **Choose Protection Method**
    - App detects FRITZ!OS version and shows appropriate options:
@@ -380,16 +385,10 @@ When not connected to the home network:
      - Shows "SPAM:" markers in local phone call logs
 
    **Recommended setup:**
-   - FRITZ!OS 7.20+: App-Managed Blocklist + Answer Bot
-   - FRITZ!OS < 7.20: App-Managed Blocklist only
+   - FRITZ!OS 7.20+: CardDAV Blocklist + Answer Bot (initially), App-Managed + Answer Bot (Phase 5+)
+   - FRITZ!OS < 7.20: App-Managed Blocklist only (available from Phase 5)
 
-4. **App User Creation**
-   - App automatically creates a dedicated Fritz!Box user "PhoneBlock"
-   - User has read-only access to call log
-   - Credentials generated and stored securely
-   - Admin credentials discarded after this step
-
-5. **Configuration**
+4. **Configuration**
    - Method-specific settings
    - For CardDAV: sync interval, phonebook name
    - For Answer Bot: External access setup (automatic)
@@ -397,7 +396,7 @@ When not connected to the home network:
      2. Check for existing Dynamic DNS → use if available
      3. Otherwise → configure PhoneBlock Dynamic DNS automatically
 
-6. **Confirmation**
+5. **Confirmation**
    - Summary of configured settings
    - Test call option (optional)
    - Done - return to main app
@@ -427,48 +426,35 @@ Users can rate Fritz!Box calls with the **same spam categories** as mobile calls
 
 ## Implementation Phases
 
-### Phase 1: Fritz!Box Connection & Call Log
+### Phase 1: Fritz!Box Connection & Call Log (Prototype)
 
 **Scope:**
 - Fritz!Box detection and connection
-- Admin credential entry (temporary)
-- App user creation with restricted permissions
-- App user credential secure storage
+- Admin credential entry and secure storage
 - TR-064 call list retrieval
 - Display Fritz!Box calls in merged timeline
 - Source indicator (mobile vs. Fritz!Box)
 - Offline caching of call history
 
+**Note:** Initial prototype uses admin credentials for all operations. App user creation deferred to Phase 6.
+
 **Deliverables:**
 - Fritz!Box settings screen
-- Connection wizard (steps 1-2, 4)
-- App user creation via TR-064
+- Connection wizard (steps 1-2)
 - Modified call history UI with source indicators
 - Local SQLite schema for Fritz!Box data
 
-### Phase 2: Blocklist Setup
+### Phase 2: CardDAV Blocklist Setup (FRITZ!OS 7.20+)
 
 **Scope:**
-- Detect FRITZ!OS version to determine available options
-- **App-managed mode (Recommended, all versions):**
-  - Create local phonebook on Fritz!Box via TR-064
-  - Maintain local blocklist in SQLite for incremental sync
-  - Fetch blocklist incrementally from PhoneBlock (`/api/blocklist?since=version`)
-  - Update Fritz!Box phonebook with changes only
-  - Set up daily background sync task (Android WorkManager)
-  - Configure blocking rule for phonebook
-- **CardDAV mode (FRITZ!OS 7.20+ only, optional):**
-  - Create PhoneBlock CardDAV phonebook on Fritz!Box
-  - Configure blocking rule for phonebook
+- Detect FRITZ!OS version
+- Create PhoneBlock CardDAV phonebook on Fritz!Box
+- Configure blocking rule for phonebook
 - Display setup status and sync info
-- Support standalone or combined with Answer Bot (7.20+ only)
 
 **Deliverables:**
 - FRITZ!OS version detection
-- App-managed blocklist with local SQLite storage
-- Incremental sync with PhoneBlock API
-- Android WorkManager periodic task for daily sync
-- CardDAV configuration (optional, 7.20+)
+- CardDAV configuration wizard
 - Phonebook creation via TR-064
 - Blocking rule configuration
 - Status display in settings
@@ -481,17 +467,15 @@ Users can rate Fritz!Box calls with the **same spam categories** as mobile calls
 - Configure PhoneBlock Dynamic DNS if needed
 - Register PhoneBlock answer bot as SIP device
 - Configure call forwarding for spam numbers
-- Recommended combined with App-Managed Blocklist
 
 **Deliverables:**
 - FRITZ!OS version check (skip if < 7.20)
-- Answer bot setup wizard (step 3, 5, 6)
+- Answer bot setup wizard
 - External access detection and configuration
 - PhoneBlock Dynamic DNS integration
 - SIP device registration via TR-064
 - Server-side answer bot provisioning integration
 - Call forwarding rule configuration
-- Combined setup flow (App-Managed Blocklist + Answer Bot)
 
 ### Phase 4: Rating & Reporting
 
@@ -504,6 +488,42 @@ Users can rate Fritz!Box calls with the **same spam categories** as mobile calls
 - Rating UI for Fritz!Box calls
 - API integration for rating submission
 - Quick-block action
+
+### Phase 5: App-Managed Blocklist
+
+**Scope:**
+- Alternative to CardDAV for all FRITZ!OS versions
+- Create local phonebook on Fritz!Box via TR-064
+- Maintain local blocklist in SQLite for incremental sync
+- Fetch blocklist incrementally from PhoneBlock (`/api/blocklist?since=version`)
+- Update Fritz!Box phonebook with changes only
+- Set up daily background sync task (Android WorkManager)
+- Configure blocking rule for phonebook
+
+**Note:** Deferred due to complex state handling requirements.
+
+**Deliverables:**
+- App-managed blocklist with local SQLite storage
+- Incremental sync with PhoneBlock API
+- Android WorkManager periodic task for daily sync
+- Phonebook diff and update logic
+- Status display in settings
+
+### Phase 6: App User Creation (Security Hardening)
+
+**Scope:**
+- Create dedicated Fritz!Box user "PhoneBlock" with restricted permissions
+- User has read-only access to call log only
+- Migrate from admin credentials to app user credentials
+- Discard admin credentials after setup
+
+**Prerequisite:** `LANConfigSecurity` TR-064 service implementation in `fritz_tr64` library.
+
+**Deliverables:**
+- LANConfigSecurity service in fritz_tr64 library
+- App user creation via TR-064
+- Credential migration logic
+- Admin credential cleanup
 
 ---
 
