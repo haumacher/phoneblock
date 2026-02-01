@@ -298,7 +298,7 @@ public abstract class LoginFilter implements Filter {
 		HttpSession session = req.getSession(false);
 		if (session != null) {
 			session.setAttribute(AUTH_CONTEXT_ATTR, newContext);
-			Language selectedLang = DefaultController.selectLanguage(settings.getLang());
+			Language selectedLang = Language.fromTag(settings.getLang());
 			session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
 		}
 	}
@@ -314,7 +314,7 @@ public abstract class LoginFilter implements Filter {
 		HttpSession session = req.getSession();
 		session.setAttribute(AUTH_CONTEXT_ATTR, authContext);
 
-		Language selectedLang = DefaultController.selectLanguage(authContext.getSettings().getLang());
+		Language selectedLang = Language.fromTag(authContext.getSettings().getLang());
 		session.setAttribute(DefaultController.LANG_ATTR, selectedLang);
 
 		LOG.debug("Initialized user session for '{}' in language '{}'.", authContext.getUserName(), selectedLang);

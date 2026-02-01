@@ -23,6 +23,7 @@ import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.location.Countries;
 import de.haumacher.phoneblock.location.model.Country;
+import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -103,10 +104,19 @@ public class AccountManagementServlet extends HttpServlet {
 		String displayName = updateRequest.getDisplayName();
 		String countryCode = updateRequest.getCountryCode();
 
-		// Validate language tag format
-		if (lang != null && !lang.isEmpty() && !LANG_TAG_PATTERN.matcher(lang).matches()) {
-			ServletUtil.sendError(resp, "Invalid language tag format. Expected format: 'de' or 'en-US'");
-			return;
+		// Validate and normalize language tag to a supported language
+		if (lang != null && !lang.isEmpty()) {
+			if (!LANG_TAG_PATTERN.matcher(lang).matches()) {
+				ServletUtil.sendError(resp, "Invalid language tag format. Expected format: 'de' or 'en-US'");
+				return;
+			}
+
+			// Normalize to a supported language (e.g., "de-DE" -> "de", "en-GB" -> "en-US")
+			Language language = Language.fromTag(lang);
+			if (!lang.equals(language.tag)) {
+				LOG.info("Normalized language '{}' to '{}'", lang, language.tag);
+			}
+			lang = language.tag;
 		}
 
 		// Convert country code to dial prefix if provided

@@ -143,17 +143,7 @@ public class DefaultController implements WebController {
 	}
 
 	public static Language selectLanguage(Locale locale) {
-		Language language = Language.fromLocale(locale);
-		if (language != null) {
-			return language;
-		}
-		
-		Language fallback = Language.fromLocale(new Locale(locale.getLanguage()));
-		if (fallback != null) {
-			return fallback;
-		}
-		
-		return Language.getDefault();
+		return Language.fromLocale(locale);
 	}
 	
 	private static Language resolveLanguage(HttpServletRequest request) {
@@ -183,18 +173,14 @@ public class DefaultController implements WebController {
     			List<LanguageRange> acceptLanguage = LanguageRange.parse(acceptLanguageHeader);
     			locale = Locale.lookup(acceptLanguage, Language.supportedLocales());
     		}
-    		if (locale == null) {
-    			lang = Language.getDefault();
-    		} else {
-    			lang = Language.fromLocale(locale);
-    		}
+    		lang = Language.fromLocale(locale);
     		
     		if (session != null) {
     			// Remember to make next lookup more efficient.
     			session.setAttribute(LANG_ATTR, lang);
     		}
         } else {
-        	lang = selectLanguage(selectedLang);
+        	lang = Language.fromTag(selectedLang);
 
     		// Remember requested language.
         	request.getSession().setAttribute(LANG_ATTR, lang);
@@ -293,16 +279,6 @@ public class DefaultController implements WebController {
 		return dialPrefix;
 	}
 	
-	public static Language selectLanguage(String selectedLang) {
-		// Normalize value.
-		Language language = Language.fromTag(selectedLang);
-		if (language == null) {
-			return Language.getDefault();
-		} else {
-			return language;
-		}
-	}
-
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		// Use request parameters as template variables (at least as default values).
 		for (Enumeration<String> it = request.getParameterNames(); it.hasMoreElements(); ) {

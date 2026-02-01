@@ -91,12 +91,64 @@ public class Language {
 		return DEFAULT_LANG;
 	}
 
+	/**
+	 * Looks up a {@link Language} by tag, returning the default if not found.
+	 *
+	 * <p>
+	 * This method first tries an exact tag match, then parses the tag as a locale
+	 * and applies locale-based fallback logic (stripping region codes).
+	 * </p>
+	 *
+	 * @param tag The language tag (e.g., "de", "de-DE", "en-US", "en-GB")
+	 * @return The matching {@link Language}, or {@link #getDefault()} if not found or tag is null/empty
+	 */
 	public static Language fromTag(String tag) {
-		return LANG_BY_TAG.get(tag);
+		if (tag == null || tag.isEmpty()) {
+			return getDefault();
+		}
+
+		// Try exact tag match first
+		Language lang = LANG_BY_TAG.get(tag);
+		if (lang != null) {
+			return lang;
+		}
+
+		// Try locale-based lookup with fallback
+		return fromLocale(Locale.forLanguageTag(tag));
 	}
 
+	/**
+	 * Looks up a {@link Language} by {@link Locale}, returning the default if not found.
+	 *
+	 * <p>
+	 * Tries exact locale match first, then falls back to language-only lookup
+	 * (stripping region code, e.g., "de-DE" → "de").
+	 * </p>
+	 *
+	 * @param locale The locale to look up
+	 * @return The matching {@link Language}, or {@link #getDefault()} if not found or locale is null
+	 */
 	public static Language fromLocale(Locale locale) {
-		return LANG_BY_LOCALE.get(locale);
+		if (locale == null) {
+			return getDefault();
+		}
+
+		Language lang = LANG_BY_LOCALE.get(locale);
+		if (lang != null) {
+			return lang;
+		}
+
+		// Try with language-only (strip region), e.g., "de-DE" -> "de"
+		String language = locale.getLanguage();
+		if (!language.isEmpty()) {
+			Locale languageOnly = Locale.forLanguageTag(language);
+			lang = LANG_BY_LOCALE.get(languageOnly);
+			if (lang != null) {
+				return lang;
+			}
+		}
+
+		return getDefault();
 	}
 
 	public static Language lang(String tag, String icon, String name, String dialPrefix, Direction direct, String... fallbacks) {

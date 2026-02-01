@@ -11,6 +11,8 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 
+import de.haumacher.phoneblock.shared.Language;
+
 /**
  * Thymeleaf template engine configured for email templates.
  *
@@ -44,41 +46,59 @@ public class MailTemplateEngine {
 	 * @return The processed HTML content
 	 */
 	public String processTemplate(String locale, String templateName, Map<String, Object> variables) {
+		// Normalize locale to a supported language tag using Language class
+		String normalizedLocale = normalizeLocale(locale);
+
 		// Build template engine with current classloader context
 		TemplateEngine templateEngine = buildTemplateEngine();
 
 		Context context = new Context();
 		context.setVariables(variables);
 
-		// Try localized template first (e.g., "de-DE/template")
-		String localizedTemplate = locale + "/" + templateName;
-		try {
-			return templateEngine.process(localizedTemplate, context);
-		} catch (Exception ex) {
-			// Template not found for exact locale
+		String templatePath = normalizedLocale + "/" + templateName;
+		if (templateExists(templatePath)) {
+			return templateEngine.process(templatePath, context);
 		}
 
-		// Try language-only variant (e.g., "de-DE" -> "de")
-		int dashIndex = locale.indexOf('-');
-		if (dashIndex > 0) {
-			String languageOnly = locale.substring(0, dashIndex);
-			String languageTemplate = languageOnly + "/" + templateName;
-			try {
-				LOG.debug("Mail template not found for {}, trying {}", locale, languageOnly);
-				return templateEngine.process(languageTemplate, context);
-			} catch (Exception ex) {
-				// Template not found for language-only locale
+		// Final fallback to German if normalized locale template doesn't exist
+		if (!"de".equals(normalizedLocale)) {
+			String fallbackTemplate = "de/" + templateName;
+			if (templateExists(fallbackTemplate)) {
+				LOG.warn("Mail template not found: {}, falling back to German", templatePath);
+				return templateEngine.process(fallbackTemplate, context);
 			}
 		}
 
-		// Final fallback to German
-		if (!"de".equals(locale) && !locale.startsWith("de-")) {
-			LOG.warn("Mail template not found: {}, falling back to German", localizedTemplate);
-			String fallbackTemplate = "de/" + templateName;
-			return templateEngine.process(fallbackTemplate, context);
-		}
+		throw new RuntimeException("Mail template not found: " + templatePath);
+	}
 
-		throw new RuntimeException("Mail template not found: " + localizedTemplate);
+	/**
+	 * Normalizes a locale string to a supported language tag.
+	 *
+	 * @param locale The locale string (e.g., "de-DE", "en-GB", "fr")
+	 * @return The normalized language tag (e.g., "de", "en-US", "fr")
+	 */
+	private String normalizeLocale(String locale) {
+		Language language = Language.fromTag(locale);
+		if (locale != null && !locale.isEmpty() && !locale.equals(language.tag)) {
+			LOG.debug("Normalized mail locale '{}' to '{}'", locale, language.tag);
+		}
+		return language.tag;
+	}
+
+	/**
+	 * Checks if a template exists.
+	 *
+	 * @param templatePath The template path (e.g., "de/mobile-welcome-mail")
+	 * @return {@code true} if the template exists, {@code false} otherwise
+	 */
+	private boolean templateExists(String templatePath) {
+		String resourcePath = "templates/" + templatePath + ".html";
+		try (var stream = MailTemplateEngine.class.getResourceAsStream(resourcePath)) {
+			return stream != null;
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
 	private static TemplateEngine buildTemplateEngine() {
