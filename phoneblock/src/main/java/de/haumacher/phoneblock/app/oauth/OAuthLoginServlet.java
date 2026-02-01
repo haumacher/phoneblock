@@ -94,7 +94,15 @@ public class OAuthLoginServlet extends HttpServlet {
 		
 		String googleId = userProfile.getId();
 		
+		// Try session first (set by PhoneBlockConfigFactory during OAuth redirect),
+		// then fall back to URL parameter (present when pac4j redirects back after callback)
 		Optional<Object> location = sessionStore.get(context, LoginServlet.LOCATION_ATTRIBUTE);
+		if (location.isEmpty()) {
+			String locationParam = req.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+			if (locationParam != null && !locationParam.isEmpty()) {
+				location = Optional.of(locationParam);
+			}
+		}
 
 		DB db = DBService.getInstance();
 		String login = db.getGoogleLogin(googleId);
