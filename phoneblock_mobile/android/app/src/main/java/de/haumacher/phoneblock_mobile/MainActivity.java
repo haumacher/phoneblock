@@ -353,6 +353,16 @@ public class MainActivity extends FlutterActivity {
                 incrementSuspiciousCallsCount(this);
                 result.success(null);
                 break;
+
+            case "normalizePhoneNumber":
+                String rawNumber = methodCall.argument("phoneNumber");
+                String countryCode = methodCall.argument("countryCode");
+                if (countryCode == null || countryCode.isEmpty()) {
+                    countryCode = java.util.Locale.getDefault().getCountry();
+                }
+                String normalized = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryCode);
+                result.success(normalized);
+                break;
         }
     }
 

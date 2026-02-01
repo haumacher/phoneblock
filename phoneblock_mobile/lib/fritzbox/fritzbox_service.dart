@@ -9,6 +9,24 @@ import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
 
+/// Normalizes a phone number to international E.164 format.
+/// Uses the native Android libphonenumber library via MethodChannel.
+/// Returns null if normalization fails.
+Future<String?> normalizePhoneNumber(String phoneNumber, {String? countryCode}) async {
+  try {
+    final result = await platform.invokeMethod<String>('normalizePhoneNumber', {
+      'phoneNumber': phoneNumber,
+      'countryCode': countryCode ?? 'DE', // Default to Germany for Fritz!Box
+    });
+    return result;
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error normalizing phone number: $e');
+    }
+    return null;
+  }
+}
+
 /// Service for communicating with Fritz!Box via TR-064 protocol.
 class FritzBoxService {
   static final FritzBoxService instance = FritzBoxService._init();
@@ -344,8 +362,36 @@ class FritzBoxService {
       final exists = await _callExistsByFritzboxId(call.fritzboxId!);
       if (exists) continue;
 
-      // Enrich with spam info
-      final enriched = await _enrichCallWithSpamInfo(call, authToken);
+      // Normalize phone number to international format for API lookup
+      final normalizedNumber = await normalizePhoneNumber(call.phoneNumber);
+      if (normalizedNumber == null) {
+        // If normalization fails, skip this call (invalid number)
+        if (kDebugMode) {
+          print('Skipping call with invalid phone number: ${call.phoneNumber}');
+        }
+        continue;
+      }
+
+      // Create call with normalized phone number
+      final normalizedCall = ScreenedCall(
+        id: call.id,
+        phoneNumber: normalizedNumber,
+        timestamp: call.timestamp,
+        wasBlocked: call.wasBlocked,
+        votes: call.votes,
+        votesWildcard: call.votesWildcard,
+        rating: call.rating,
+        label: call.label,
+        location: call.location,
+        source: call.source,
+        duration: call.duration,
+        device: call.device,
+        fritzboxId: call.fritzboxId,
+        callType: call.callType,
+      );
+
+      // Enrich with spam info using normalized number
+      final enriched = await _enrichCallWithSpamInfo(normalizedCall, authToken);
       enrichedCalls.add(enriched);
     }
 
