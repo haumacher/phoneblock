@@ -16,7 +16,6 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.I18N;
-import de.haumacher.phoneblock.util.ServletUtil;
 import de.haumacher.phoneblock.util.UserAgentType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,9 +23,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.APP_ID;
 import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.MOBILE_LOGIN;
-import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.TOKEN_LABEL;
 import static de.haumacher.phoneblock.app.EMailVerificationServlet.MOBILE_CODE_PAGE;
 import static de.haumacher.phoneblock.app.EMailVerificationServlet.SIGNUP_CODE_PAGE;
 import static de.haumacher.phoneblock.app.render.controller.ShowCredentialsController.SHOW_CREDENTIALS_PAGE;
@@ -219,8 +216,9 @@ public class RegistrationServlet extends HttpServlet {
 
 		switch (req.getServletPath()) {
 		case REGISTER_MOBILE:
-			// Preserve token label parameter for mobile token creation
-			resp.sendRedirect(ServletUtil.forwardParam(req.getContextPath() + MOBILE_LOGIN, req, APP_ID, TOKEN_LABEL));
+			// Redirect to location which contains appId and tokenLabel parameters
+			String mobileLocation = LoginServlet.location(req, MOBILE_LOGIN);
+			resp.sendRedirect(req.getContextPath() + mobileLocation);
 			break;
 		case REGISTER_WEB:
 		default:

@@ -20,7 +20,7 @@
 				<p data-tx="t0003:5008487">Ένα email εστάλη στη διεύθυνση <code th:text="${email}"></code>.</p>
 				<p data-tx="t0004:691e4431">Ελέγξτε το γραμματοκιβώτιό σας, αντιγράψτε τον κωδικό και εισάγετε τον εδώ. Αυτό θα επιβεβαιώσει τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
-					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
+					<input name="location" th:value="${location}" type="hidden"/>
 					<div class="field">
 						<label class="label" data-tx="t0005:a34add52">Κωδικός</label>
 						<div class="control has-icons-left has-icons-right">

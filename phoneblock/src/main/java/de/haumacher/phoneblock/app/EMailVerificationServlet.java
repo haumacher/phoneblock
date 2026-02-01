@@ -4,8 +4,6 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +19,6 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.util.I18N;
-import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.ServletException;
@@ -30,9 +27,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.APP_ID;
-import static de.haumacher.phoneblock.app.CreateAuthTokenServlet.TOKEN_LABEL;
 
 /**
  * {@link HttpServlet} that is invoked from the <code>login.jsp</code> form when requesting to login by e-mail.
@@ -77,13 +71,9 @@ public class EMailVerificationServlet extends HttpServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String redirectUrl = req.getContextPath() + failurePage(req);
+		String redirectUrl = req.getContextPath() + failurePage(req) + LoginServlet.locationParam(req);
 
-		resp.sendRedirect(forwardTokenParams(redirectUrl, req));
-	}
-
-	public static String forwardTokenParams(String redirectUrl, HttpServletRequest req) {
-		return ServletUtil.forwardParam(redirectUrl, req, APP_ID, TOKEN_LABEL);
+		resp.sendRedirect(redirectUrl);
 	}
 
 	@Override
@@ -170,32 +160,19 @@ public class EMailVerificationServlet extends HttpServlet {
 		session.setAttribute("code", code);
 
 		req.setAttribute(RESTART_PAGE_ATTR, failurePage(req));
-		preserveTokenParamsForRendering(req);
 		TemplateRenderer.getInstance(req).process(successPage(req), req, resp);
 	}
 
 	private void sendEmailFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
 		req.setAttribute(EMAIL_MESSAGE_ATTR, message);
-		preserveTokenParamsForRendering(req);
 		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
 	}
 
 	private void sendCaptchaFailure(HttpServletRequest req, HttpServletResponse resp, String message)
 			throws ServletException, IOException {
 		req.setAttribute(CAPTCHA_MESSAGE_ATTR, message);
-		preserveTokenParamsForRendering(req);
 		TemplateRenderer.getInstance(req).process(failurePage(req), req, resp);
-	}
-
-	/**
-	 * Ensures token label is available for template rendering.
-	 */
-	private void preserveTokenParamsForRendering(HttpServletRequest req) {
-		// Token label might come from form submission, ensure it's in request parameters
-		// for MobileLoginController to pick up
-		ServletUtil.declareAttribute(req, APP_ID);
-		ServletUtil.declareAttribute(req, TOKEN_LABEL);
 	}
 
 	/**
@@ -204,7 +181,7 @@ public class EMailVerificationServlet extends HttpServlet {
 	private static String failurePage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 		case LOGIN_MOBILE:
-			return "/mobile/login";
+			return CreateAuthTokenServlet.MOBILE_LOGIN;
 		case LOGIN_WEB:
 		default:
 			return LoginController.LOGIN_PAGE;

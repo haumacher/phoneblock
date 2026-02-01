@@ -20,7 +20,7 @@
 				<p data-tx="t0003:5008487">Ett e-postmeddelande skickades till adressen <code th:text="${email}"></code>.</p>
 				<p data-tx="t0004:691e4431">Kontrollera din brevlåda, kopiera koden och skriv in den här. Detta kommer att bekräfta din e-postadress.</p>
 				<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/register-mobile}">
-					<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
+					<input name="location" th:value="${location}" type="hidden"/>
 					<div class="field">
 						<label class="label" data-tx="t0005:a34add52">Kod</label>
 						<div class="control has-icons-left has-icons-right">

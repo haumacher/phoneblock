@@ -1,8 +1,5 @@
 package de.haumacher.phoneblock.app.render.controller;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
@@ -19,7 +16,7 @@ public class MobileLoginController extends AbstractLoginController {
 		declareVariable(ctx, request, CreateAuthTokenServlet.APP_ID);
 		declareVariable(ctx, request, CreateAuthTokenServlet.TOKEN_LABEL);
 		
-		ctx.setVariable("location", ServletUtil.forwardParam("/mobile/login?", request, CreateAuthTokenServlet.APP_ID, CreateAuthTokenServlet.TOKEN_LABEL));
+		ctx.setVariable("location", ServletUtil.forwardParam(CreateAuthTokenServlet.MOBILE_LOGIN, request, CreateAuthTokenServlet.APP_ID, CreateAuthTokenServlet.TOKEN_LABEL));
 	}
 
 	private void declareVariable(WebContext ctx, HttpServletRequest request, String fromParam) {

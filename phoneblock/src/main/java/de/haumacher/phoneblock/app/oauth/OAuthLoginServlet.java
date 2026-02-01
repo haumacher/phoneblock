@@ -95,7 +95,7 @@ public class OAuthLoginServlet extends HttpServlet {
 		String googleId = userProfile.getId();
 		
 		Optional<Object> location = sessionStore.get(context, LoginServlet.LOCATION_ATTRIBUTE);
-		
+
 		DB db = DBService.getInstance();
 		String login = db.getGoogleLogin(googleId);
 		if (login == null) {

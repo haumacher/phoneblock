@@ -15,7 +15,7 @@
 
 			    <input name="force_client" th:value="${googleClient}" type="hidden"/>
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
-	
+
 				<div class="field" th:if="${web}">
 				  <div class="control">
 	  				<label class="checkbox">
@@ -55,7 +55,6 @@
 	  		<div class="panel-block">
 	  		<div class="content">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
-			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 					<label class="label" data-tx="t0007:30c9dcb9">e-mail</label>
 					<div class="control has-icons-left has-icons-right">
@@ -129,7 +128,6 @@
 	  		
 				<form method="post" th:action="${contextPath} + ${loginAction}">
 			    <input name="location" th:if="${location}" th:value="${location}" type="hidden"/>
-			    <input name="tokenLabel" th:if="${tokenLabel}" th:value="${tokenLabel}" type="hidden"/>
 				<div class="field">
 				  <p class="control has-icons-left has-icons-right">
 				    <input class="input" data-tx="t0023:2d49d98d" placeholder="Brugernavn" th:name="${userNameParam}" type="text"/>
