@@ -1269,7 +1269,7 @@ class _MainScreenState extends State<MainScreen> {
       itemCount: _screenedCalls.length,
       itemBuilder: (context, index) {
         final call = _screenedCalls[index];
-        return _buildCallListItem(call, sourceIndicator: call.source);
+        return _buildCallListItem(call);
       },
     );
   }
@@ -1310,8 +1310,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Builds a single call list item.
-  Widget _buildCallListItem(ScreenedCall call, {CallSource? sourceIndicator}) {
+  Widget _buildCallListItem(ScreenedCall call) {
     final wasBlocked = call.wasBlocked;
+    final source = call.source;
 
     // Check if call is new (not yet seen by user)
     final bool isNew = call.id != null && newCallIds.contains(call.id);
@@ -1447,7 +1448,7 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 // Mobile source indicator (shown when Fritz!Box calls are also in timeline)
-                if (sourceIndicator == CallSource.mobile && _fritzboxState != FritzBoxConnectionState.notConfigured)
+                if (source == CallSource.mobile && _fritzboxState != FritzBoxConnectionState.notConfigured)
                   Positioned(
                     right: -4,
                     bottom: -4,
@@ -1465,7 +1466,7 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 // Fritz!Box source indicator
-                if (sourceIndicator == CallSource.fritzbox)
+                if (source == CallSource.fritzbox)
                   Positioned(
                     right: -4,
                     bottom: -4,
@@ -1544,7 +1545,7 @@ class _MainScreenState extends State<MainScreen> {
                 Row(
                   children: [
                     // Fritz!Box source badge
-                    if (sourceIndicator == CallSource.fritzbox) ...[
+                    if (source == CallSource.fritzbox) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
@@ -1566,7 +1567,7 @@ class _MainScreenState extends State<MainScreen> {
                       const SizedBox(width: 8),
                     ],
                     // Call status icon and label
-                    ..._buildCallStatusBadge(context, call, sourceIndicator, wasBlocked),
+                    ..._buildCallStatusBadge(context, call, source, wasBlocked),
                     const SizedBox(width: 8),
                     Text(
                       _formatTimestamp(call.timestamp),
@@ -2454,7 +2455,7 @@ class _MainScreenState extends State<MainScreen> {
   List<Widget> _buildCallStatusBadge(
     BuildContext context,
     ScreenedCall call,
-    CallSource? source,
+    CallSource source,
     bool wasBlocked,
   ) {
     IconData icon;
