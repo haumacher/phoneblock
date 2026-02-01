@@ -328,9 +328,9 @@ class FritzBoxService {
 
   /// Syncs call list from Fritz!Box with spam enrichment from PhoneBlock API.
   ///
-  /// Returns the number of new calls synced.
-  Future<int> syncCallList() async {
-    if (!isConnected) return 0;
+  /// Returns the list of newly inserted call IDs.
+  Future<List<int>> syncCallList() async {
+    if (!isConnected) return [];
 
     // Get retention days setting
     final retentionDays = await getRetentionDays();
@@ -347,7 +347,7 @@ class FritzBoxService {
     // Use null for days if retention is infinite
     final days = retentionDays == retentionInfinite ? null : retentionDays;
     final calls = await getCallList(since: since, days: days);
-    if (calls.isEmpty) return 0;
+    if (calls.isEmpty) return [];
 
     // Get auth token for PhoneBlock API
     final authToken = await getAuthToken();
@@ -395,11 +395,15 @@ class FritzBoxService {
       enrichedCalls.add(enriched);
     }
 
-    if (enrichedCalls.isEmpty) return 0;
+    if (enrichedCalls.isEmpty) return [];
 
-    // Store calls in database
+    // Store calls in database and collect inserted IDs
+    final insertedIds = <int>[];
     for (final call in enrichedCalls) {
-      await db.insertScreenedCall(call);
+      final insertedCall = await db.insertScreenedCall(call);
+      if (insertedCall.id != null) {
+        insertedIds.add(insertedCall.id!);
+      }
     }
 
     // Update last fetch timestamp
@@ -410,7 +414,7 @@ class FritzBoxService {
     // Clean up old calls based on retention period
     await db.deleteOldScreenedCalls(retentionDays);
 
-    return enrichedCalls.length;
+    return insertedIds;
   }
 
   /// Checks if a call with the given Fritz!Box ID already exists.

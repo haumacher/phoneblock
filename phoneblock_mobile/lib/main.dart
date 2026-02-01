@@ -1089,7 +1089,9 @@ class _MainScreenState extends State<MainScreen> {
     await _checkFritzBoxConnection();
     // Sync Fritz!Box calls if connected - they'll be loaded with mobile calls
     if (FritzBoxService.instance.isConnected) {
-      await FritzBoxService.instance.syncCallList();
+      final newIds = await FritzBoxService.instance.syncCallList();
+      // Track synced calls as new
+      newCallIds.addAll(newIds);
       // Refresh the call list to include new Fritz!Box calls
       await _loadScreenedCalls();
     }

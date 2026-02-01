@@ -3,6 +3,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_discovery.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
+import 'package:phoneblock_mobile/main.dart' show newCallIds;
 
 /// Wizard steps for Fritz!Box connection.
 enum _WizardStep {
@@ -122,7 +123,9 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
     if (mounted) {
       if (success) {
         // Perform initial sync
-        await FritzBoxService.instance.syncCallList();
+        final newIds = await FritzBoxService.instance.syncCallList();
+        // Track synced calls as new
+        newCallIds.addAll(newIds);
 
         if (mounted) {
           Navigator.pop(context, true);

@@ -4,6 +4,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
+import 'package:phoneblock_mobile/main.dart' show newCallIds;
 import 'package:phoneblock_mobile/storage.dart';
 
 /// Settings screen for Fritz!Box integration.
@@ -72,7 +73,9 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     });
 
     try {
-      final newCalls = await FritzBoxService.instance.syncCallList();
+      final newIds = await FritzBoxService.instance.syncCallList();
+      // Track synced calls as new
+      newCallIds.addAll(newIds);
       final callCount = await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
 
       if (mounted) {
@@ -83,7 +86,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.fritzboxSyncComplete(newCalls)),
+            content: Text(AppLocalizations.of(context)!.fritzboxSyncComplete(newIds.length)),
           ),
         );
       }
