@@ -476,8 +476,9 @@ class FritzBoxService {
           rating = _parseRating(ratingStr);
         }
 
-        // Determine if call should be marked as blocked based on spam info
-        final wasBlocked = call.wasBlocked || votes > 0;
+        // Keep the original blocked status - for Fritz!Box calls, blocking
+        // already happened (or didn't) based on the CardDAV blocklist
+        final wasBlocked = call.wasBlocked;
 
         return ScreenedCall(
           id: call.id,
