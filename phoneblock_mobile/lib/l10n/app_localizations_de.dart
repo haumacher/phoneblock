@@ -699,7 +699,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxUsernameLabel => 'Benutzername';
 
   @override
-  String get fritzboxUsernameHint => 'admin oder Ihr Fritz!Box-Benutzer';
+  String get fritzboxUsernameHint => 'Leer für Standardbenutzer';
 
   @override
   String get fritzboxPasswordLabel => 'Kennwort';

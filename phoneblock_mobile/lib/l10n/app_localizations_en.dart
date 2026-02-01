@@ -697,7 +697,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxUsernameLabel => 'User name';
 
   @override
-  String get fritzboxUsernameHint => 'admin or your Fritz!Box user';
+  String get fritzboxUsernameHint => 'Leave empty for default user';
 
   @override
   String get fritzboxPasswordLabel => 'Password';

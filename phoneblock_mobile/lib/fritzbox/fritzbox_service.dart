@@ -98,20 +98,39 @@ class FritzBoxService {
 
       // Test connection by getting device info
       final deviceInfo = await getDeviceInfo();
-      if (deviceInfo != null) {
-        _connectionState = FritzBoxConnectionState.connected;
-
-        // Update config with connection info
-        await FritzBoxStorage.instance.updateConfig(
-          host: credentials.host,
-          fritzosVersion: deviceInfo.fritzosVersion,
-        );
-
-        return true;
+      if (deviceInfo == null || (deviceInfo.modelName?.isEmpty ?? true)) {
+        if (kDebugMode) {
+          print('Fritz!Box auth failed: no device info returned');
+        }
+        _connectionState = FritzBoxConnectionState.error;
+        return false;
       }
 
-      _connectionState = FritzBoxConnectionState.error;
-      return false;
+      // Verify authentication by making a call that requires auth
+      // Getting the call list URL requires authentication
+      final onTelService = _client!.onTel();
+      if (onTelService != null) {
+        try {
+          // This call will fail with SoapFaultException if auth is invalid
+          await onTelService.getCallList();
+        } catch (e) {
+          if (kDebugMode) {
+            print('Fritz!Box auth verification failed: $e');
+          }
+          _connectionState = FritzBoxConnectionState.error;
+          return false;
+        }
+      }
+
+      _connectionState = FritzBoxConnectionState.connected;
+
+      // Update config with connection info
+      await FritzBoxStorage.instance.updateConfig(
+        host: credentials.host,
+        fritzosVersion: deviceInfo.fritzosVersion,
+      );
+
+      return true;
     } catch (e) {
       if (kDebugMode) {
         print('Fritz!Box connection error: $e');

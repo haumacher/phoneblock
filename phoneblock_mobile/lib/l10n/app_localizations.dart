@@ -1259,7 +1259,7 @@ abstract class AppLocalizations {
   /// Username field hint
   ///
   /// In de, this message translates to:
-  /// **'admin oder Ihr Fritz!Box-Benutzer'**
+  /// **'Leer für Standardbenutzer'**
   String get fritzboxUsernameHint;
 
   /// Password field label

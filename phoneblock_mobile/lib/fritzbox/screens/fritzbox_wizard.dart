@@ -102,7 +102,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
-    if (host.isEmpty || username.isEmpty || password.isEmpty) {
+    if (host.isEmpty || password.isEmpty) {
       setState(() {
         _errorMessage = AppLocalizations.of(context)!.fritzboxFillAllFields;
       });

@@ -189,7 +189,7 @@
   "fritzboxManualConnect": "Connect",
   "fritzboxLoginDescription": "Enter your Fritz!Box access data. You can find them in the Fritz!Box user interface under System > Fritz!Box user.",
   "fritzboxUsernameLabel": "User name",
-  "fritzboxUsernameHint": "admin or your Fritz!Box user",
+  "fritzboxUsernameHint": "Leave empty for default user",
   "fritzboxPasswordLabel": "Password",
   "fritzboxCredentialsNote": "Your access data is stored securely on your device.",
   "fritzboxTestAndSave": "Testing and saving",

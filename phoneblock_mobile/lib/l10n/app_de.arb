@@ -1049,10 +1049,10 @@
     "description": "Username field label",
     "x-translated": "375afb70"
   },
-  "fritzboxUsernameHint": "admin oder Ihr Fritz!Box-Benutzer",
+  "fritzboxUsernameHint": "Leer für Standardbenutzer",
   "@fritzboxUsernameHint": {
     "description": "Username field hint",
-    "x-translated": "8bc8949a"
+    "x-translated": "490bb819"
   },
   "fritzboxPasswordLabel": "Kennwort",
   "@fritzboxPasswordLabel": {
