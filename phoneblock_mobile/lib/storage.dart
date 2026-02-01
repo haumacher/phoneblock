@@ -1,8 +1,10 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:phoneblock_mobile/state.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 
 /// Represents a screened call record stored in the database.
+/// Unified storage for both mobile screened calls and Fritz!Box calls.
 class ScreenedCall {
   final int? id;
   final String phoneNumber;
@@ -14,6 +16,15 @@ class ScreenedCall {
   final String? label; // Formatted phone number for display (e.g., "(DE) 030 12345678")
   final String? location; // City or region where the call originated (e.g., "Berlin")
 
+  // Unified source tracking
+  final CallSource source; // Where the call came from (mobile or fritzbox)
+
+  // Fritz!Box specific fields
+  final int? duration; // Call duration in seconds
+  final String? device; // Device that handled the call (e.g., "Telefon 1")
+  final String? fritzboxId; // Unique ID from Fritz!Box call list
+  final FritzBoxCallType? callType; // Type of call (incoming, missed, outgoing, etc.)
+
   ScreenedCall({
     this.id,
     required this.phoneNumber,
@@ -24,7 +35,18 @@ class ScreenedCall {
     this.rating,
     this.label,
     this.location,
+    this.source = CallSource.mobile,
+    this.duration,
+    this.device,
+    this.fritzboxId,
+    this.callType,
   });
+
+  /// Returns true if this call has spam indicators.
+  bool get hasSpamIndicators => votes > 0 || votesWildcard > 0;
+
+  /// Returns the display name for this call.
+  String get displayName => label ?? phoneNumber;
 
   /// Converts database map to ScreenedCall object.
   factory ScreenedCall.fromMap(Map<String, dynamic> map) {
@@ -32,6 +54,17 @@ class ScreenedCall {
     final ratingStr = map['rating'] as String?;
     if (ratingStr != null) {
       rating = _parseRating(ratingStr);
+    }
+
+    // Parse source
+    final sourceStr = map['source'] as String?;
+    final source = sourceStr == 'fritzbox' ? CallSource.fritzbox : CallSource.mobile;
+
+    // Parse call type for Fritz!Box calls
+    FritzBoxCallType? callType;
+    final callTypeInt = map['callType'] as int?;
+    if (callTypeInt != null) {
+      callType = FritzBoxCallType.fromCode(callTypeInt);
     }
 
     return ScreenedCall(
@@ -44,6 +77,11 @@ class ScreenedCall {
       rating: rating,
       label: map['label'] as String?,
       location: map['location'] as String?,
+      source: source,
+      duration: map['duration'] as int?,
+      device: map['device'] as String?,
+      fritzboxId: map['fritzboxId'] as String?,
+      callType: callType,
     );
   }
 
@@ -59,6 +97,11 @@ class ScreenedCall {
       'rating': rating != null ? _ratingToString(rating!) : null,
       'label': label,
       'location': location,
+      'source': source.name,
+      'duration': duration,
+      'device': device,
+      'fritzboxId': fritzboxId,
+      'callType': callType?.code,
     };
   }
 
@@ -111,7 +154,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -129,7 +172,12 @@ class ScreenedCallsDatabase {
         votesWildcard INTEGER NOT NULL DEFAULT 0,
         rating TEXT,
         label TEXT,
-        location TEXT
+        location TEXT,
+        source TEXT NOT NULL DEFAULT 'mobile',
+        duration INTEGER,
+        device TEXT,
+        fritzboxId TEXT UNIQUE,
+        callType INTEGER
       )
     ''');
 
@@ -137,6 +185,12 @@ class ScreenedCallsDatabase {
     await db.execute('''
       CREATE INDEX idx_screened_calls_timestamp
       ON screened_calls(timestamp DESC)
+    ''');
+
+    // Create index on fritzboxId for duplicate checking
+    await db.execute('''
+      CREATE INDEX idx_screened_calls_fritzbox_id
+      ON screened_calls(fritzboxId)
     ''');
 
     // Fritz!Box configuration table (single row)
@@ -158,30 +212,6 @@ class ScreenedCallsDatabase {
       )
     ''');
 
-    // Fritz!Box call history cache
-    await db.execute('''
-      CREATE TABLE fritzbox_calls (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fritzbox_id TEXT UNIQUE,
-        phone_number TEXT NOT NULL,
-        name TEXT,
-        timestamp INTEGER NOT NULL,
-        duration INTEGER DEFAULT 0,
-        call_type INTEGER NOT NULL,
-        device TEXT,
-        votes INTEGER DEFAULT 0,
-        votes_wildcard INTEGER DEFAULT 0,
-        rating TEXT,
-        label TEXT,
-        location TEXT,
-        synced_at INTEGER NOT NULL
-      )
-    ''');
-
-    await db.execute('''
-      CREATE INDEX idx_fritzbox_calls_timestamp
-      ON fritzbox_calls(timestamp DESC)
-    ''');
   }
 
   /// Upgrades the database schema.
@@ -200,7 +230,7 @@ class ScreenedCallsDatabase {
       await db.execute('ALTER TABLE screened_calls ADD COLUMN location TEXT');
     }
     if (oldVersion < 5) {
-      // Add Fritz!Box tables in version 5
+      // Add Fritz!Box config table in version 5
       await db.execute('''
         CREATE TABLE fritzbox_config (
           id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -219,29 +249,50 @@ class ScreenedCallsDatabase {
         )
       ''');
 
+      // Note: In v5, fritzbox_calls was created but is now unified in v6
+      // For users upgrading from v4, we skip creating fritzbox_calls
+      // and go directly to the unified schema in v6
+    }
+    if (oldVersion < 6) {
+      // Version 6: Unify call storage - add Fritz!Box fields to screened_calls
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN source TEXT NOT NULL DEFAULT \'mobile\'');
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN duration INTEGER');
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN device TEXT');
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN fritzboxId TEXT');
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN callType INTEGER');
+
+      // Create unique index on fritzboxId for duplicate checking
+      // (SQLite doesn't allow UNIQUE constraint in ALTER TABLE ADD COLUMN)
       await db.execute('''
-        CREATE TABLE fritzbox_calls (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          fritzbox_id TEXT UNIQUE,
-          phone_number TEXT NOT NULL,
-          name TEXT,
-          timestamp INTEGER NOT NULL,
-          duration INTEGER DEFAULT 0,
-          call_type INTEGER NOT NULL,
-          device TEXT,
-          votes INTEGER DEFAULT 0,
-          votes_wildcard INTEGER DEFAULT 0,
-          rating TEXT,
-          label TEXT,
-          location TEXT,
-          synced_at INTEGER NOT NULL
-        )
+        CREATE UNIQUE INDEX idx_screened_calls_fritzbox_id
+        ON screened_calls(fritzboxId)
+        WHERE fritzboxId IS NOT NULL
       ''');
 
-      await db.execute('''
-        CREATE INDEX idx_fritzbox_calls_timestamp
-        ON fritzbox_calls(timestamp DESC)
-      ''');
+      // Migrate data from fritzbox_calls if it exists (users upgrading from v5)
+      try {
+        final tables = await db.rawQuery(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='fritzbox_calls'"
+        );
+        if (tables.isNotEmpty) {
+          // Migrate existing Fritz!Box calls to screened_calls
+          await db.execute('''
+            INSERT INTO screened_calls (
+              phoneNumber, timestamp, wasBlocked, votes, votesWildcard,
+              rating, label, location, source, duration, device, fritzboxId, callType
+            )
+            SELECT
+              phone_number, timestamp, 0, votes, votes_wildcard,
+              rating, label, location, 'fritzbox', duration, device, fritzbox_id, call_type
+            FROM fritzbox_calls
+          ''');
+
+          // Drop the old fritzbox_calls table
+          await db.execute('DROP TABLE fritzbox_calls');
+        }
+      } catch (e) {
+        // Table doesn't exist, nothing to migrate
+      }
     }
   }
 
@@ -357,6 +408,25 @@ class ScreenedCallsDatabase {
     final db = await database;
     final result = await db.rawQuery('SELECT COUNT(*) as count FROM screened_calls');
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// Gets the count of Fritz!Box calls.
+  Future<int> getFritzBoxCallsCount() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      "SELECT COUNT(*) as count FROM screened_calls WHERE source = 'fritzbox'"
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// Deletes all Fritz!Box calls.
+  Future<int> deleteFritzBoxCalls() async {
+    final db = await database;
+    return await db.delete(
+      'screened_calls',
+      where: "source = ?",
+      whereArgs: ['fritzbox'],
+    );
   }
 
   /// Closes the database.

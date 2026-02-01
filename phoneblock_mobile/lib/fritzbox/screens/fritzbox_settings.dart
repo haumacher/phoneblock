@@ -4,6 +4,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
+import 'package:phoneblock_mobile/storage.dart';
 
 /// Settings screen for Fritz!Box integration.
 class FritzBoxSettingsScreen extends StatefulWidget {
@@ -34,7 +35,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     try {
       final config = await FritzBoxStorage.instance.getConfig();
-      final callCount = await FritzBoxStorage.instance.getCallsCount();
+      final callCount = await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
 
       // Check connection state
       await FritzBoxService.instance.checkConnection();
@@ -72,7 +73,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     try {
       final newCalls = await FritzBoxService.instance.syncCallList();
-      final callCount = await FritzBoxStorage.instance.getCallsCount();
+      final callCount = await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
 
       if (mounted) {
         setState(() {

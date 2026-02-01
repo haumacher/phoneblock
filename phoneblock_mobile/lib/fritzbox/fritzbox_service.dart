@@ -7,6 +7,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/state.dart';
+import 'package:phoneblock_mobile/storage.dart';
 
 /// Service for communicating with Fritz!Box via TR-064 protocol.
 class FritzBoxService {
@@ -109,7 +110,8 @@ class FritzBoxService {
     _connectionState = FritzBoxConnectionState.notConfigured;
     await FritzBoxStorage.instance.clearCredentials();
     await FritzBoxStorage.instance.deleteConfig();
-    await FritzBoxStorage.instance.deleteAllCalls();
+    // Delete all Fritz!Box calls from the unified call database
+    await ScreenedCallsDatabase.instance.deleteFritzBoxCalls();
   }
 
   /// Gets device information from Fritz!Box.
@@ -145,7 +147,7 @@ class FritzBoxService {
   /// - Include calls with no name (unknown caller)
   /// - Include calls with name starting with "SPAM: " (CardDAV blocklist)
   /// - Exclude other named contacts
-  Future<List<FritzBoxCall>> getCallList({DateTime? since, int? days}) async {
+  Future<List<ScreenedCall>> getCallList({DateTime? since, int? days}) async {
     if (_client == null) return [];
 
     try {
@@ -167,7 +169,7 @@ class FritzBoxService {
         return [];
       }
 
-      // Convert to FritzBoxCall objects
+      // Convert to ScreenedCall objects
       final calls = _convertCallListEntries(entries, since);
 
       return calls;
@@ -179,10 +181,9 @@ class FritzBoxService {
     }
   }
 
-  /// Converts CallListEntry objects to FritzBoxCall objects with filtering.
-  List<FritzBoxCall> _convertCallListEntries(List<CallListEntry> entries, DateTime? since) {
-    final calls = <FritzBoxCall>[];
-    final now = DateTime.now().millisecondsSinceEpoch;
+  /// Converts CallListEntry objects to ScreenedCall objects with filtering.
+  List<ScreenedCall> _convertCallListEntries(List<CallListEntry> entries, DateTime? since) {
+    final calls = <ScreenedCall>[];
 
     for (final entry in entries) {
       // Determine call type
@@ -216,15 +217,21 @@ class FritzBoxService {
       // Parse duration (format: H:MM or M:SS)
       final duration = _parseDuration(entry.duration);
 
-      calls.add(FritzBoxCall(
-        fritzboxId: entry.id.toString(),
+      // Determine if call was blocked (missed/rejected calls from SPAM contacts)
+      final wasBlocked = name.startsWith('SPAM: ') &&
+          (callType == FritzBoxCallType.missed || callType == FritzBoxCallType.rejected);
+
+      calls.add(ScreenedCall(
         phoneNumber: phoneNumber,
-        name: name.isEmpty ? null : name,
         timestamp: timestamp,
+        wasBlocked: wasBlocked,
+        votes: 0, // Will be enriched later
+        source: CallSource.fritzbox,
         duration: duration,
-        callType: callType,
         device: entry.device.isEmpty ? null : entry.device,
-        syncedAt: now,
+        fritzboxId: entry.id.toString(),
+        callType: callType,
+        label: name.isEmpty ? null : name,
       ));
     }
 
@@ -324,11 +331,14 @@ class FritzBoxService {
     // Get auth token for PhoneBlock API
     final authToken = await getAuthToken();
 
+    // Get database instance
+    final db = ScreenedCallsDatabase.instance;
+
     // Enrich calls with spam info from PhoneBlock
-    final enrichedCalls = <FritzBoxCall>[];
+    final enrichedCalls = <ScreenedCall>[];
     for (final call in calls) {
-      // Check if call already exists
-      final exists = await FritzBoxStorage.instance.callExists(call.fritzboxId);
+      // Check if call already exists by fritzboxId
+      final exists = await _callExistsByFritzboxId(call.fritzboxId!);
       if (exists) continue;
 
       // Enrich with spam info
@@ -339,7 +349,9 @@ class FritzBoxService {
     if (enrichedCalls.isEmpty) return 0;
 
     // Store calls in database
-    await FritzBoxStorage.instance.insertCalls(enrichedCalls);
+    for (final call in enrichedCalls) {
+      await db.insertScreenedCall(call);
+    }
 
     // Update last fetch timestamp
     await FritzBoxStorage.instance.updateConfig(
@@ -347,13 +359,25 @@ class FritzBoxService {
     );
 
     // Clean up old calls based on retention period
-    await FritzBoxStorage.instance.deleteOldCalls(retentionDays);
+    await db.deleteOldScreenedCalls(retentionDays);
 
     return enrichedCalls.length;
   }
 
+  /// Checks if a call with the given Fritz!Box ID already exists.
+  Future<bool> _callExistsByFritzboxId(String fritzboxId) async {
+    final db = await ScreenedCallsDatabase.instance.database;
+    final result = await db.query(
+      'screened_calls',
+      columns: ['id'],
+      where: 'fritzboxId = ?',
+      whereArgs: [fritzboxId],
+    );
+    return result.isNotEmpty;
+  }
+
   /// Enriches a call with spam information from PhoneBlock API.
-  Future<FritzBoxCall> _enrichCallWithSpamInfo(FritzBoxCall call, String? authToken) async {
+  Future<ScreenedCall> _enrichCallWithSpamInfo(ScreenedCall call, String? authToken) async {
     if (authToken == null) return call;
 
     try {
@@ -380,21 +404,24 @@ class FritzBoxService {
           rating = _parseRating(ratingStr);
         }
 
-        return FritzBoxCall(
+        // Determine if call should be marked as blocked based on spam info
+        final wasBlocked = call.wasBlocked || votes > 0;
+
+        return ScreenedCall(
           id: call.id,
-          fritzboxId: call.fritzboxId,
           phoneNumber: call.phoneNumber,
-          name: call.name,
           timestamp: call.timestamp,
-          duration: call.duration,
-          callType: call.callType,
-          device: call.device,
+          wasBlocked: wasBlocked,
           votes: votes,
           votesWildcard: votesWildcard,
           rating: rating,
-          label: label,
+          label: label ?? call.label,
           location: location,
-          syncedAt: call.syncedAt,
+          source: call.source,
+          duration: call.duration,
+          device: call.device,
+          fritzboxId: call.fritzboxId,
+          callType: call.callType,
         );
       }
     } catch (e) {
