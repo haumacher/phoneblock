@@ -58,8 +58,18 @@ public class EMailVerificationServlet extends HttpServlet {
 	public static final String CAPTCHA_MESSAGE_ATTR = "captchaMessage";
 	
 	public static final String LOGIN_WEB = "/login-web";
-	
+
 	public static final String LOGIN_MOBILE = "/login-mobile";
+
+	/**
+	 * Template path for the web signup code entry page.
+	 */
+	public static final String SIGNUP_CODE_PAGE = "/signup-code";
+
+	/**
+	 * Template path for the mobile code entry page.
+	 */
+	public static final String MOBILE_CODE_PAGE = "/mobile/code";
 	
 	
 	private static final Logger LOG = LoggerFactory.getLogger(EMailVerificationServlet.class);
@@ -204,10 +214,10 @@ public class EMailVerificationServlet extends HttpServlet {
 	private String successPage(HttpServletRequest req) {
 		switch (req.getServletPath()) {
 			case LOGIN_MOBILE:
-				return "/mobile/code";
+				return MOBILE_CODE_PAGE;
 			case LOGIN_WEB:
 			default:
-				return "/signup-code";
+				return SIGNUP_CODE_PAGE;
 		}
 	}
 

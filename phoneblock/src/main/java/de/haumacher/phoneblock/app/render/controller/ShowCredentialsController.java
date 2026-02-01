@@ -12,6 +12,11 @@ import jakarta.servlet.http.HttpSession;
  */
 public class ShowCredentialsController extends RequireLoginController {
 
+	/**
+	 * Template path for the credentials display page.
+	 */
+	public static final String SHOW_CREDENTIALS_PAGE = "/show-credentials";
+
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);
