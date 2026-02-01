@@ -189,11 +189,14 @@ class FritzBoxService {
       // Determine call type
       final callType = _convertCallType(entry.type);
 
-      // Determine phone number based on call direction
-      final phoneNumber = callType == FritzBoxCallType.outgoing ||
-              callType == FritzBoxCallType.activeOutgoing
-          ? entry.called
-          : entry.caller;
+      // Skip outgoing calls - they cannot be spam
+      if (callType == FritzBoxCallType.outgoing ||
+          callType == FritzBoxCallType.activeOutgoing) {
+        continue;
+      }
+
+      // Get caller phone number (incoming calls only at this point)
+      final phoneNumber = entry.caller;
 
       // Skip if no phone number
       if (phoneNumber.isEmpty) continue;
