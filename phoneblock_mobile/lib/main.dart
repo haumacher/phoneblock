@@ -1462,6 +1462,24 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                   ),
+                // Fritz!Box source indicator
+                if (sourceIndicator == CallSource.fritzbox)
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.router,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
               ],
             ),
             title: Row(
@@ -1520,6 +1538,28 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
+                    // Fritz!Box source badge
+                    if (sourceIndicator == CallSource.fritzbox) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.router, size: 10, color: Colors.grey[600]),
+                            const SizedBox(width: 2),
+                            Text(
+                              AppLocalizations.of(context)!.sourceFritzbox,
+                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     Icon(
                       wasBlocked ? Icons.block : Icons.check_circle_outline,
                       size: 14,
@@ -1542,6 +1582,14 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
+                    // Duration for Fritz!Box calls
+                    if (call.duration != null && call.duration! > 0) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDuration(call.duration!),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -2400,6 +2448,13 @@ class _MainScreenState extends State<MainScreen> {
     } else {
       return '${dateFormat.format(timestamp)}, ${timeFormat.format(timestamp)}';
     }
+  }
+
+  /// Formats duration in seconds to a readable string (M:SS).
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '$minutes:${secs.toString().padLeft(2, '0')}';
   }
 }
 
