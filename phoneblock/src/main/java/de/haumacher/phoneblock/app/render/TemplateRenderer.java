@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.app.render.controller.MobileLoginController;
 import de.haumacher.phoneblock.app.render.controller.PhoneInfoController;
 import de.haumacher.phoneblock.app.render.controller.RequireLoginController;
 import de.haumacher.phoneblock.app.render.controller.SettingsController;
+import de.haumacher.phoneblock.app.render.controller.ShowApiKeyController;
 import de.haumacher.phoneblock.app.render.controller.ShowCredentialsController;
 import de.haumacher.phoneblock.app.render.controller.StatusController;
 import jakarta.servlet.ServletContext;
@@ -36,6 +37,7 @@ public class TemplateRenderer {
         controllersByURL.put("/phone-info", new PhoneInfoController());
         controllersByURL.put("/support-banktransfer", new RequireLoginController());
         controllersByURL.put("/show-credentials", new ShowCredentialsController());
+        controllersByURL.put(ShowApiKeyController.SHOW_API_KEY_PAGE, new ShowApiKeyController());
     }
     
 	private JakartaServletWebApplication _application;
