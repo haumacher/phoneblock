@@ -563,4 +563,169 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Ύποπτες κλήσεις';
+
+  @override
+  String get fritzboxTitle => 'Fritz!Box';
+
+  @override
+  String get fritzboxConnected => 'Συνδεδεμένο';
+
+  @override
+  String get fritzboxOffline => 'Δεν είναι διαθέσιμο';
+
+  @override
+  String get fritzboxError => 'Σφάλμα σύνδεσης';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'Δεν έχει ρυθμιστεί';
+
+  @override
+  String get fritzboxNotConfigured => 'Δεν έχει ρυθμιστεί το Fritz!Box';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Συνδέστε το Fritz!Box για να βλέπετε κλήσεις από το σταθερό σας τηλέφωνο.';
+
+  @override
+  String get fritzboxConnect => 'Συνδέστε το Fritz!Box';
+
+  @override
+  String get fritzboxDisconnect => 'Αποσυνδέστε το Fritz!Box';
+
+  @override
+  String get fritzboxDisconnectTitle => 'Αποσυνδέστε το κουτί Fritz!';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'Οι αποθηκευμένες κλήσεις και τα δεδομένα πρόσβασης διαγράφονται.';
+
+  @override
+  String get fritzboxSyncNow => 'Συγχρονισμός τώρα';
+
+  @override
+  String get fritzboxSyncDescription =>
+      'Ανάκτηση της λίστας κλήσεων από το Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count συγχρονισμένων νέων κλήσεων',
+      one: '1 νέα συγχρονισμένη κλήση',
+      zero: 'Δεν υπάρχουν νέες κλήσεις',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Σφάλμα κατά τον συγχρονισμό';
+
+  @override
+  String get fritzboxVersion => 'Έκδοση FRITZ!OS';
+
+  @override
+  String get fritzboxHost => 'Διεύθυνση';
+
+  @override
+  String get fritzboxCachedCalls => 'Αποθηκευμένες κλήσεις';
+
+  @override
+  String get fritzboxLastSync => 'Τελευταίος συγχρονισμός';
+
+  @override
+  String get fritzboxJustNow => 'Μόλις τώρα';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Πριν από $count λεπτά',
+      one: '1 λεπτό πριν',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ώρες πριν',
+      one: '1 ώρα πριν',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Συνδέστε το Fritz!Box';
+
+  @override
+  String get fritzboxStepDetection => 'Βρείτε το Fritz!Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Αυτόματη αναζήτηση στο δίκτυο';
+
+  @override
+  String get fritzboxStepLogin => 'Συνδεθείτε';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Εισαγωγή δεδομένων πρόσβασης';
+
+  @override
+  String get fritzboxSearching => 'Αναζήτηση για Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => 'Fritz!Box δεν βρέθηκε';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'Το Fritz!Box δεν βρέθηκε αυτόματα. Παρακαλούμε εισάγετε τη διεύθυνση χειροκίνητα.';
+
+  @override
+  String get fritzboxHostLabel => 'Διεύθυνση Fritz!Box';
+
+  @override
+  String get fritzboxRetrySearch => 'Αναζήτηση ξανά';
+
+  @override
+  String get fritzboxManualConnect => 'Συνδέστε το';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Εισάγετε τα δεδομένα πρόσβασης του Fritz!Box. Μπορείτε να τα βρείτε στο περιβάλλον εργασίας χρήστη του Fritz!Box στην ενότητα Σύστημα > Fritz!Box user.';
+
+  @override
+  String get fritzboxUsernameLabel => 'Όνομα χρήστη';
+
+  @override
+  String get fritzboxUsernameHint => 'admin ή ο χρήστης του Fritz!Box σας';
+
+  @override
+  String get fritzboxPasswordLabel => 'Κωδικός πρόσβασης';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Τα δεδομένα πρόσβασής σας αποθηκεύονται με ασφάλεια στη συσκευή σας.';
+
+  @override
+  String get fritzboxTestAndSave => 'Δοκιμές και αποθήκευση';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Η σύνδεση απέτυχε. Ελέγξτε τα δεδομένα πρόσβασης.';
+
+  @override
+  String get fritzboxFillAllFields => 'Παρακαλούμε συμπληρώστε όλα τα πεδία.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz! κουτί δεν είναι προσβάσιμο - εμφάνιση αποθηκευμένων κλήσεων';
+
+  @override
+  String get sourceMobile => 'Κινητό';
+
+  @override
+  String get sourceFritzbox => 'Fritz!Box';
 }

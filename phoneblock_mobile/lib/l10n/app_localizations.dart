@@ -1045,6 +1045,270 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verdächtige Anrufe'**
   String get suspiciousCallsCount;
+
+  /// Fritz!Box menu title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box'**
+  String get fritzboxTitle;
+
+  /// Fritz!Box connected status
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden'**
+  String get fritzboxConnected;
+
+  /// Fritz!Box offline status
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht erreichbar'**
+  String get fritzboxOffline;
+
+  /// Fritz!Box error status
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindungsfehler'**
+  String get fritzboxError;
+
+  /// Fritz!Box not configured - short
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht eingerichtet'**
+  String get fritzboxNotConfiguredShort;
+
+  /// Fritz!Box not configured title
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Fritz!Box eingerichtet'**
+  String get fritzboxNotConfigured;
+
+  /// Fritz!Box not configured description
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden Sie Ihre Fritz!Box, um Anrufe aus Ihrem Festnetz zu sehen.'**
+  String get fritzboxNotConfiguredDescription;
+
+  /// Connect Fritz!Box button
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box verbinden'**
+  String get fritzboxConnect;
+
+  /// Disconnect Fritz!Box button
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box trennen'**
+  String get fritzboxDisconnect;
+
+  /// Disconnect confirmation title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box trennen?'**
+  String get fritzboxDisconnectTitle;
+
+  /// Disconnect confirmation message
+  ///
+  /// In de, this message translates to:
+  /// **'Die gespeicherten Anrufe und Zugangsdaten werden gelöscht.'**
+  String get fritzboxDisconnectMessage;
+
+  /// Sync now button
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get fritzboxSyncNow;
+
+  /// Sync description
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufliste von der Fritz!Box abrufen'**
+  String get fritzboxSyncDescription;
+
+  /// Sync complete message
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine neuen Anrufe} =1{1 neuer Anruf synchronisiert} other{{count} neue Anrufe synchronisiert}}'**
+  String fritzboxSyncComplete(int count);
+
+  /// Sync error message
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Synchronisieren'**
+  String get fritzboxSyncError;
+
+  /// Fritz!OS version label
+  ///
+  /// In de, this message translates to:
+  /// **'FRITZ!OS Version'**
+  String get fritzboxVersion;
+
+  /// Fritz!Box host address label
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse'**
+  String get fritzboxHost;
+
+  /// Cached calls count label
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeicherte Anrufe'**
+  String get fritzboxCachedCalls;
+
+  /// Last sync label
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Synchronisierung'**
+  String get fritzboxLastSync;
+
+  /// Just now time label
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade eben'**
+  String get fritzboxJustNow;
+
+  /// Minutes ago label
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Vor 1 Minute} other{Vor {count} Minuten}}'**
+  String fritzboxMinutesAgo(int count);
+
+  /// Hours ago label
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Vor 1 Stunde} other{Vor {count} Stunden}}'**
+  String fritzboxHoursAgo(int count);
+
+  /// Wizard title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box verbinden'**
+  String get fritzboxWizardTitle;
+
+  /// Detection step title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box finden'**
+  String get fritzboxStepDetection;
+
+  /// Detection step subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Suche im Netzwerk'**
+  String get fritzboxStepDetectionSubtitle;
+
+  /// Login step title
+  ///
+  /// In de, this message translates to:
+  /// **'Anmelden'**
+  String get fritzboxStepLogin;
+
+  /// Login step subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'Zugangsdaten eingeben'**
+  String get fritzboxStepLoginSubtitle;
+
+  /// Searching message
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nach Fritz!Box...'**
+  String get fritzboxSearching;
+
+  /// Not found message
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box nicht gefunden'**
+  String get fritzboxNotFound;
+
+  /// Not found description
+  ///
+  /// In de, this message translates to:
+  /// **'Die Fritz!Box konnte nicht automatisch gefunden werden. Bitte geben Sie die Adresse manuell ein.'**
+  String get fritzboxNotFoundDescription;
+
+  /// Host field label
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box Adresse'**
+  String get fritzboxHostLabel;
+
+  /// Retry search button
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut suchen'**
+  String get fritzboxRetrySearch;
+
+  /// Manual connect button
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden'**
+  String get fritzboxManualConnect;
+
+  /// Login description
+  ///
+  /// In de, this message translates to:
+  /// **'Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.'**
+  String get fritzboxLoginDescription;
+
+  /// Username field label
+  ///
+  /// In de, this message translates to:
+  /// **'Benutzername'**
+  String get fritzboxUsernameLabel;
+
+  /// Username field hint
+  ///
+  /// In de, this message translates to:
+  /// **'admin oder Ihr Fritz!Box-Benutzer'**
+  String get fritzboxUsernameHint;
+
+  /// Password field label
+  ///
+  /// In de, this message translates to:
+  /// **'Kennwort'**
+  String get fritzboxPasswordLabel;
+
+  /// Credentials security note
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Zugangsdaten werden sicher auf Ihrem Gerät gespeichert.'**
+  String get fritzboxCredentialsNote;
+
+  /// Test and save button
+  ///
+  /// In de, this message translates to:
+  /// **'Testen und Speichern'**
+  String get fritzboxTestAndSave;
+
+  /// Connection failed message
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung fehlgeschlagen. Bitte überprüfen Sie die Zugangsdaten.'**
+  String get fritzboxConnectionFailed;
+
+  /// Fill all fields message
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte füllen Sie alle Felder aus.'**
+  String get fritzboxFillAllFields;
+
+  /// Offline banner message
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box nicht erreichbar - zeige gespeicherte Anrufe'**
+  String get fritzboxOfflineBanner;
+
+  /// Mobile source label
+  ///
+  /// In de, this message translates to:
+  /// **'Mobil'**
+  String get sourceMobile;
+
+  /// Fritz!Box source label
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box'**
+  String get sourceFritzbox;
 }
 
 class _AppLocalizationsDelegate

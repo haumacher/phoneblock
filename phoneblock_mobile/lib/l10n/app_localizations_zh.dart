@@ -514,4 +514,143 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => '可疑电话';
+
+  @override
+  String get fritzboxTitle => '弗里茨盒子';
+
+  @override
+  String get fritzboxConnected => '已连接';
+
+  @override
+  String get fritzboxOffline => '不详';
+
+  @override
+  String get fritzboxError => '连接错误';
+
+  @override
+  String get fritzboxNotConfiguredShort => '未设置';
+
+  @override
+  String get fritzboxNotConfigured => '无 Fritz！Box 设置';
+
+  @override
+  String get fritzboxNotConfiguredDescription => '连接 Fritz！Box，查看座机来电。';
+
+  @override
+  String get fritzboxConnect => '连接 Fritz！Box';
+
+  @override
+  String get fritzboxDisconnect => '断开 Fritz！Box';
+
+  @override
+  String get fritzboxDisconnectTitle => '断开弗里茨！盒子？';
+
+  @override
+  String get fritzboxDisconnectMessage => '保存的通话和访问数据将被删除。';
+
+  @override
+  String get fritzboxSyncNow => '立即同步';
+
+  @override
+  String get fritzboxSyncDescription => '从 Fritz 读取通话清单！';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
+  String get fritzboxSyncError => '同步过程中出现错误';
+
+  @override
+  String get fritzboxVersion => 'FRITZ！OS 版本';
+
+  @override
+  String get fritzboxHost => '地址';
+
+  @override
+  String get fritzboxCachedCalls => '保存的通话';
+
+  @override
+  String get fritzboxLastSync => '上次同步';
+
+  @override
+  String get fritzboxJustNow => '现在';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
+  String get fritzboxWizardTitle => '连接 Fritz！Box';
+
+  @override
+  String get fritzboxStepDetection => '查找 Fritz！Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => '网络自动搜索';
+
+  @override
+  String get fritzboxStepLogin => '登录';
+
+  @override
+  String get fritzboxStepLoginSubtitle => '输入访问数据';
+
+  @override
+  String get fritzboxSearching => '搜索 Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => '未找到 Fritz!Box';
+
+  @override
+  String get fritzboxNotFoundDescription => '无法自动找到 Fritz！Box。请手动输入地址。';
+
+  @override
+  String get fritzboxHostLabel => '弗里茨信箱地址';
+
+  @override
+  String get fritzboxRetrySearch => '再次搜索';
+
+  @override
+  String get fritzboxManualConnect => '连接';
+
+  @override
+  String get fritzboxLoginDescription =>
+      '输入您的 Fritz!Box 访问数据。您可以在 Fritz!Box 用户界面的系统 > Fritz!Box 用户下找到它们。';
+
+  @override
+  String get fritzboxUsernameLabel => '用户名';
+
+  @override
+  String get fritzboxUsernameHint => '管理员或您的 Fritz!Box 用户';
+
+  @override
+  String get fritzboxPasswordLabel => '密码';
+
+  @override
+  String get fritzboxCredentialsNote => '您的访问数据会安全地存储在您的设备上。';
+
+  @override
+  String get fritzboxTestAndSave => '测试和保存';
+
+  @override
+  String get fritzboxConnectionFailed => '连接失败。请检查访问数据。';
+
+  @override
+  String get fritzboxFillAllFields => '请填写所有栏目。';
+
+  @override
+  String get fritzboxOfflineBanner => '弗里茨！盒子无法接通 - 显示已保存的呼叫';
+
+  @override
+  String get sourceMobile => '移动电话';
+
+  @override
+  String get sourceFritzbox => '弗里茨盒子';
 }

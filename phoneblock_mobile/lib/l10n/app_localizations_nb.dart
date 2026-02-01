@@ -562,4 +562,168 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Mistenkelige samtaler';
+
+  @override
+  String get fritzboxTitle => 'Fritz!Box';
+
+  @override
+  String get fritzboxConnected => 'Tilkoblet';
+
+  @override
+  String get fritzboxOffline => 'Ikke tilgjengelig';
+
+  @override
+  String get fritzboxError => 'Feil i tilkoblingen';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'Ikke satt opp';
+
+  @override
+  String get fritzboxNotConfigured => 'Ingen Fritz!Box satt opp';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Koble til Fritz!Box for å se samtaler fra fasttelefonen din.';
+
+  @override
+  String get fritzboxConnect => 'Koble til Fritz!Box';
+
+  @override
+  String get fritzboxDisconnect => 'Koble fra Fritz!Box';
+
+  @override
+  String get fritzboxDisconnectTitle => 'Koble fra Fritz!-boksen?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'Lagrede anrop og tilgangsdata slettes.';
+
+  @override
+  String get fritzboxSyncNow => 'Synkroniser nå';
+
+  @override
+  String get fritzboxSyncDescription => 'Hente samtalelisten fra Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nye anrop synkronisert',
+      one: '1 ny samtale synkronisert',
+      zero: 'Ingen nye samtaler',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Feil under synkronisering';
+
+  @override
+  String get fritzboxVersion => 'FRITZ!OS-versjon';
+
+  @override
+  String get fritzboxHost => 'Adresse';
+
+  @override
+  String get fritzboxCachedCalls => 'Lagrede anrop';
+
+  @override
+  String get fritzboxLastSync => 'Siste synkronisering';
+
+  @override
+  String get fritzboxJustNow => 'Akkurat nå';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Før $count minutter',
+      one: '1 minutt siden',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count timer siden',
+      one: '1 time siden',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Koble til Fritz!Box';
+
+  @override
+  String get fritzboxStepDetection => 'Finn Fritz!Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Automatisk søk i nettverket';
+
+  @override
+  String get fritzboxStepLogin => 'Logg inn';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Angi tilgangsdata';
+
+  @override
+  String get fritzboxSearching => 'Søk etter Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => 'Fritz!Box ble ikke funnet';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'Fritz!Box ble ikke funnet automatisk. Vennligst skriv inn adressen manuelt.';
+
+  @override
+  String get fritzboxHostLabel => 'Fritz!Box-adresse';
+
+  @override
+  String get fritzboxRetrySearch => 'Søk igjen';
+
+  @override
+  String get fritzboxManualConnect => 'Koble til';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Skriv inn dine Fritz!Box-tilgangsdata. Du finner dem i Fritz!Box-brukergrensesnittet under System > Fritz!Box-bruker.';
+
+  @override
+  String get fritzboxUsernameLabel => 'Brukernavn';
+
+  @override
+  String get fritzboxUsernameHint => 'admin eller Fritz!Box-brukeren din';
+
+  @override
+  String get fritzboxPasswordLabel => 'Passord';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Tilgangsdataene dine lagres sikkert på enheten din.';
+
+  @override
+  String get fritzboxTestAndSave => 'Testing og lagring';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Tilkoblingen mislyktes. Vennligst sjekk tilgangsdataene.';
+
+  @override
+  String get fritzboxFillAllFields => 'Vennligst fyll ut alle feltene.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz!-boksen er ikke tilgjengelig - vis lagrede anrop';
+
+  @override
+  String get sourceMobile => 'Mobil';
+
+  @override
+  String get sourceFritzbox => 'Fritz!Box';
 }

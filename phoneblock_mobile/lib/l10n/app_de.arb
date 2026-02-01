@@ -858,5 +858,240 @@
   "@suspiciousCallsCount": {
     "description": "Label for total suspicious calls count",
     "x-translated": "6b4288ff"
+  },
+  "fritzboxTitle": "Fritz!Box",
+  "@fritzboxTitle": {
+    "description": "Fritz!Box menu title",
+    "x-translated": "4f2059d2"
+  },
+  "fritzboxConnected": "Verbunden",
+  "@fritzboxConnected": {
+    "description": "Fritz!Box connected status",
+    "x-translated": "5614b210"
+  },
+  "fritzboxOffline": "Nicht erreichbar",
+  "@fritzboxOffline": {
+    "description": "Fritz!Box offline status",
+    "x-translated": "8bb28786"
+  },
+  "fritzboxError": "Verbindungsfehler",
+  "@fritzboxError": {
+    "description": "Fritz!Box error status",
+    "x-translated": "197b41d0"
+  },
+  "fritzboxNotConfiguredShort": "Nicht eingerichtet",
+  "@fritzboxNotConfiguredShort": {
+    "description": "Fritz!Box not configured - short",
+    "x-translated": "9732dbb3"
+  },
+  "fritzboxNotConfigured": "Keine Fritz!Box eingerichtet",
+  "@fritzboxNotConfigured": {
+    "description": "Fritz!Box not configured title",
+    "x-translated": "7de41ddc"
+  },
+  "fritzboxNotConfiguredDescription": "Verbinden Sie Ihre Fritz!Box, um Anrufe aus Ihrem Festnetz zu sehen.",
+  "@fritzboxNotConfiguredDescription": {
+    "description": "Fritz!Box not configured description",
+    "x-translated": "f91f0a4e"
+  },
+  "fritzboxConnect": "Fritz!Box verbinden",
+  "@fritzboxConnect": {
+    "description": "Connect Fritz!Box button",
+    "x-translated": "f50bfaa7"
+  },
+  "fritzboxDisconnect": "Fritz!Box trennen",
+  "@fritzboxDisconnect": {
+    "description": "Disconnect Fritz!Box button",
+    "x-translated": "9701bffc"
+  },
+  "fritzboxDisconnectTitle": "Fritz!Box trennen?",
+  "@fritzboxDisconnectTitle": {
+    "description": "Disconnect confirmation title",
+    "x-translated": "d0f87d38"
+  },
+  "fritzboxDisconnectMessage": "Die gespeicherten Anrufe und Zugangsdaten werden gelöscht.",
+  "@fritzboxDisconnectMessage": {
+    "description": "Disconnect confirmation message",
+    "x-translated": "d4cac1a3"
+  },
+  "fritzboxSyncNow": "Jetzt synchronisieren",
+  "@fritzboxSyncNow": {
+    "description": "Sync now button",
+    "x-translated": "72f38e94"
+  },
+  "fritzboxSyncDescription": "Anrufliste von der Fritz!Box abrufen",
+  "@fritzboxSyncDescription": {
+    "description": "Sync description",
+    "x-translated": "1f4f20bd"
+  },
+  "fritzboxSyncComplete": "{count, plural, =0{Keine neuen Anrufe} =1{1 neuer Anruf synchronisiert} other{{count} neue Anrufe synchronisiert}}",
+  "@fritzboxSyncComplete": {
+    "description": "Sync complete message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "c78c1848"
+  },
+  "fritzboxSyncError": "Fehler beim Synchronisieren",
+  "@fritzboxSyncError": {
+    "description": "Sync error message",
+    "x-translated": "11725b94"
+  },
+  "fritzboxVersion": "FRITZ!OS Version",
+  "@fritzboxVersion": {
+    "description": "Fritz!OS version label",
+    "x-translated": "301c402d"
+  },
+  "fritzboxHost": "Adresse",
+  "@fritzboxHost": {
+    "description": "Fritz!Box host address label",
+    "x-translated": "ce2318a"
+  },
+  "fritzboxCachedCalls": "Gespeicherte Anrufe",
+  "@fritzboxCachedCalls": {
+    "description": "Cached calls count label",
+    "x-translated": "aea1e7c8"
+  },
+  "fritzboxLastSync": "Letzte Synchronisierung",
+  "@fritzboxLastSync": {
+    "description": "Last sync label",
+    "x-translated": "ee34a570"
+  },
+  "fritzboxJustNow": "Gerade eben",
+  "@fritzboxJustNow": {
+    "description": "Just now time label",
+    "x-translated": "72042b1b"
+  },
+  "fritzboxMinutesAgo": "{count, plural, =1{Vor 1 Minute} other{Vor {count} Minuten}}",
+  "@fritzboxMinutesAgo": {
+    "description": "Minutes ago label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "1776ec06"
+  },
+  "fritzboxHoursAgo": "{count, plural, =1{Vor 1 Stunde} other{Vor {count} Stunden}}",
+  "@fritzboxHoursAgo": {
+    "description": "Hours ago label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "eac10c1c"
+  },
+  "fritzboxWizardTitle": "Fritz!Box verbinden",
+  "@fritzboxWizardTitle": {
+    "description": "Wizard title",
+    "x-translated": "f50bfaa7"
+  },
+  "fritzboxStepDetection": "Fritz!Box finden",
+  "@fritzboxStepDetection": {
+    "description": "Detection step title",
+    "x-translated": "2b9203d4"
+  },
+  "fritzboxStepDetectionSubtitle": "Automatische Suche im Netzwerk",
+  "@fritzboxStepDetectionSubtitle": {
+    "description": "Detection step subtitle",
+    "x-translated": "4e6f2680"
+  },
+  "fritzboxStepLogin": "Anmelden",
+  "@fritzboxStepLogin": {
+    "description": "Login step title",
+    "x-translated": "328a36e1"
+  },
+  "fritzboxStepLoginSubtitle": "Zugangsdaten eingeben",
+  "@fritzboxStepLoginSubtitle": {
+    "description": "Login step subtitle",
+    "x-translated": "74ea80e7"
+  },
+  "fritzboxSearching": "Suche nach Fritz!Box...",
+  "@fritzboxSearching": {
+    "description": "Searching message",
+    "x-translated": "4727fc1d"
+  },
+  "fritzboxNotFound": "Fritz!Box nicht gefunden",
+  "@fritzboxNotFound": {
+    "description": "Not found message",
+    "x-translated": "836ad27a"
+  },
+  "fritzboxNotFoundDescription": "Die Fritz!Box konnte nicht automatisch gefunden werden. Bitte geben Sie die Adresse manuell ein.",
+  "@fritzboxNotFoundDescription": {
+    "description": "Not found description",
+    "x-translated": "928b3160"
+  },
+  "fritzboxHostLabel": "Fritz!Box Adresse",
+  "@fritzboxHostLabel": {
+    "description": "Host field label",
+    "x-translated": "22a04460"
+  },
+  "fritzboxRetrySearch": "Erneut suchen",
+  "@fritzboxRetrySearch": {
+    "description": "Retry search button",
+    "x-translated": "6e0b282f"
+  },
+  "fritzboxManualConnect": "Verbinden",
+  "@fritzboxManualConnect": {
+    "description": "Manual connect button",
+    "x-translated": "f304c893"
+  },
+  "fritzboxLoginDescription": "Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.",
+  "@fritzboxLoginDescription": {
+    "description": "Login description",
+    "x-translated": "56387e18"
+  },
+  "fritzboxUsernameLabel": "Benutzername",
+  "@fritzboxUsernameLabel": {
+    "description": "Username field label",
+    "x-translated": "375afb70"
+  },
+  "fritzboxUsernameHint": "admin oder Ihr Fritz!Box-Benutzer",
+  "@fritzboxUsernameHint": {
+    "description": "Username field hint",
+    "x-translated": "8bc8949a"
+  },
+  "fritzboxPasswordLabel": "Kennwort",
+  "@fritzboxPasswordLabel": {
+    "description": "Password field label",
+    "x-translated": "23a57fff"
+  },
+  "fritzboxCredentialsNote": "Ihre Zugangsdaten werden sicher auf Ihrem Gerät gespeichert.",
+  "@fritzboxCredentialsNote": {
+    "description": "Credentials security note",
+    "x-translated": "136e0436"
+  },
+  "fritzboxTestAndSave": "Testen und Speichern",
+  "@fritzboxTestAndSave": {
+    "description": "Test and save button",
+    "x-translated": "d56e72a1"
+  },
+  "fritzboxConnectionFailed": "Verbindung fehlgeschlagen. Bitte überprüfen Sie die Zugangsdaten.",
+  "@fritzboxConnectionFailed": {
+    "description": "Connection failed message",
+    "x-translated": "a620921c"
+  },
+  "fritzboxFillAllFields": "Bitte füllen Sie alle Felder aus.",
+  "@fritzboxFillAllFields": {
+    "description": "Fill all fields message",
+    "x-translated": "ea8c5c9f"
+  },
+  "fritzboxOfflineBanner": "Fritz!Box nicht erreichbar - zeige gespeicherte Anrufe",
+  "@fritzboxOfflineBanner": {
+    "description": "Offline banner message",
+    "x-translated": "1582617c"
+  },
+  "sourceMobile": "Mobil",
+  "@sourceMobile": {
+    "description": "Mobile source label",
+    "x-translated": "be6c6e63"
+  },
+  "sourceFritzbox": "Fritz!Box",
+  "@sourceFritzbox": {
+    "description": "Fritz!Box source label",
+    "x-translated": "4f2059d2"
   }
 }

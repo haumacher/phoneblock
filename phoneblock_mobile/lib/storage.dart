@@ -111,7 +111,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -138,6 +138,50 @@ class ScreenedCallsDatabase {
       CREATE INDEX idx_screened_calls_timestamp
       ON screened_calls(timestamp DESC)
     ''');
+
+    // Fritz!Box configuration table (single row)
+    await db.execute('''
+      CREATE TABLE fritzbox_config (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        host TEXT,
+        fritzos_version TEXT,
+        username TEXT,
+        password TEXT,
+        blocklist_mode TEXT DEFAULT 'none',
+        answerbot_enabled INTEGER DEFAULT 0,
+        last_fetch_timestamp INTEGER,
+        blocklist_version TEXT,
+        phonebook_id TEXT,
+        sip_device_id TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Fritz!Box call history cache
+    await db.execute('''
+      CREATE TABLE fritzbox_calls (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fritzbox_id TEXT UNIQUE,
+        phone_number TEXT NOT NULL,
+        name TEXT,
+        timestamp INTEGER NOT NULL,
+        duration INTEGER DEFAULT 0,
+        call_type INTEGER NOT NULL,
+        device TEXT,
+        votes INTEGER DEFAULT 0,
+        votes_wildcard INTEGER DEFAULT 0,
+        rating TEXT,
+        label TEXT,
+        location TEXT,
+        synced_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_fritzbox_calls_timestamp
+      ON fritzbox_calls(timestamp DESC)
+    ''');
   }
 
   /// Upgrades the database schema.
@@ -154,6 +198,50 @@ class ScreenedCallsDatabase {
       // Add label and location columns in version 4
       await db.execute('ALTER TABLE screened_calls ADD COLUMN label TEXT');
       await db.execute('ALTER TABLE screened_calls ADD COLUMN location TEXT');
+    }
+    if (oldVersion < 5) {
+      // Add Fritz!Box tables in version 5
+      await db.execute('''
+        CREATE TABLE fritzbox_config (
+          id INTEGER PRIMARY KEY CHECK (id = 1),
+          host TEXT,
+          fritzos_version TEXT,
+          username TEXT,
+          password TEXT,
+          blocklist_mode TEXT DEFAULT 'none',
+          answerbot_enabled INTEGER DEFAULT 0,
+          last_fetch_timestamp INTEGER,
+          blocklist_version TEXT,
+          phonebook_id TEXT,
+          sip_device_id TEXT,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE fritzbox_calls (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          fritzbox_id TEXT UNIQUE,
+          phone_number TEXT NOT NULL,
+          name TEXT,
+          timestamp INTEGER NOT NULL,
+          duration INTEGER DEFAULT 0,
+          call_type INTEGER NOT NULL,
+          device TEXT,
+          votes INTEGER DEFAULT 0,
+          votes_wildcard INTEGER DEFAULT 0,
+          rating TEXT,
+          label TEXT,
+          location TEXT,
+          synced_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE INDEX idx_fritzbox_calls_timestamp
+        ON fritzbox_calls(timestamp DESC)
+      ''');
     }
   }
 

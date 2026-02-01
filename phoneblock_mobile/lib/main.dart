@@ -20,6 +20,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_settings.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
@@ -533,6 +537,7 @@ void main() async {
   // Clean up old screened calls based on retention period
   final retentionDays = await getRetentionDays();
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
+  await FritzBoxStorage.instance.deleteOldCalls(retentionDays);
 
   // Set up auth provider for shared answerbot components
   setAuthProvider(getAuthToken);
@@ -1063,8 +1068,11 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
+  List<UnifiedCall> _unifiedCalls = [];
   bool _isLoading = true;
   bool _answerbotEnabled = false;
+  FritzBoxConnectionState _fritzboxState = FritzBoxConnectionState.notConfigured;
+  final bool _showFritzboxCalls = true;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
   Offset _lastTapPosition = Offset.zero;
 
@@ -1075,6 +1083,81 @@ class _MainScreenState extends State<MainScreen> {
     _setupCallScreeningListener();
     _checkPendingSharedNumber();
     _loadAnswerbotEnabled();
+    _initFritzBox();
+  }
+
+  /// Initializes Fritz!Box service and loads Fritz!Box calls.
+  Future<void> _initFritzBox() async {
+    await FritzBoxService.instance.initialize();
+    await _checkFritzBoxConnection();
+    await _loadFritzBoxCalls();
+  }
+
+  /// Checks Fritz!Box connection status.
+  Future<void> _checkFritzBoxConnection() async {
+    await FritzBoxService.instance.checkConnection();
+    if (mounted) {
+      setState(() {
+        _fritzboxState = FritzBoxService.instance.connectionState;
+      });
+    }
+  }
+
+  /// Loads Fritz!Box calls and merges with mobile calls.
+  Future<void> _loadFritzBoxCalls() async {
+    final fritzboxCalls = await FritzBoxStorage.instance.getAllCalls();
+    _mergeCallsIntoTimeline(fritzboxCalls);
+  }
+
+  /// Merges mobile and Fritz!Box calls into a unified timeline.
+  void _mergeCallsIntoTimeline(List<FritzBoxCall> fritzboxCalls) {
+    final unified = <UnifiedCall>[];
+
+    // Add mobile calls
+    for (final call in _screenedCalls) {
+      unified.add(UnifiedCall(
+        source: CallSource.mobile,
+        phoneNumber: call.phoneNumber,
+        timestamp: call.timestamp,
+        wasBlocked: call.wasBlocked,
+        votes: call.votes,
+        votesWildcard: call.votesWildcard,
+        rating: call.rating,
+        label: call.label,
+        location: call.location,
+        mobileCallId: call.id,
+      ));
+    }
+
+    // Add Fritz!Box calls
+    if (_showFritzboxCalls) {
+      for (final call in fritzboxCalls) {
+        unified.add(UnifiedCall(
+          source: CallSource.fritzbox,
+          phoneNumber: call.phoneNumber,
+          timestamp: call.timestamp,
+          wasBlocked: call.isSpam,
+          votes: call.votes,
+          votesWildcard: call.votesWildcard,
+          rating: call.rating,
+          label: call.label,
+          location: call.location,
+          duration: call.duration,
+          device: call.device,
+          fritzboxCallType: call.callType,
+          fritzboxCallId: call.id,
+        ));
+      }
+    }
+
+    // Sort by timestamp descending
+    unified.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+    if (mounted) {
+      setState(() {
+        _unifiedCalls = unified;
+      });
+    }
   }
 
   /// Loads the answerbot enabled setting.
@@ -1124,10 +1207,12 @@ class _MainScreenState extends State<MainScreen> {
 
     try {
       final calls = await ScreenedCallsDatabase.instance.getAllScreenedCalls();
+      final fritzboxCalls = await FritzBoxStorage.instance.getAllCalls();
       setState(() {
         _screenedCalls = calls;
         _isLoading = false;
       });
+      _mergeCallsIntoTimeline(fritzboxCalls);
     } catch (e) {
       if (kDebugMode) {
         print('Error loading screened calls: $e');
@@ -1187,9 +1272,19 @@ class _MainScreenState extends State<MainScreen> {
         drawer: _buildDrawer(context),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : _screenedCalls.isEmpty
-                ? _buildEmptyState()
-                : _buildCallsList(),
+            : Column(
+                children: [
+                  // Fritz!Box offline banner
+                  if (_fritzboxState == FritzBoxConnectionState.offline)
+                    _buildFritzBoxOfflineBanner(context),
+                  // Calls list
+                  Expanded(
+                    child: _unifiedCalls.isEmpty
+                        ? _buildEmptyState()
+                        : _buildUnifiedCallsList(),
+                  ),
+                ],
+              ),
         floatingActionButton: _screenedCalls.isNotEmpty
             ? FloatingActionButton(
                 onPressed: _deleteAllCalls,
@@ -1199,6 +1294,239 @@ class _MainScreenState extends State<MainScreen> {
             : null,
       ),
     );
+  }
+
+  /// Builds the Fritz!Box offline banner.
+  Widget _buildFritzBoxOfflineBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.orange.withValues(alpha: 0.1),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off, size: 18, color: Colors.orange),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context)!.fritzboxOfflineBanner,
+              style: const TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the unified calls list with source indicators.
+  Widget _buildUnifiedCallsList() {
+    return ListView.builder(
+      itemCount: _unifiedCalls.length,
+      itemBuilder: (context, index) {
+        final call = _unifiedCalls[index];
+        return _buildUnifiedCallListItem(call);
+      },
+    );
+  }
+
+  /// Builds a unified call list item with source indicator.
+  Widget _buildUnifiedCallListItem(UnifiedCall call) {
+    // Convert to ScreenedCall for mobile calls to reuse existing rendering
+    if (call.source == CallSource.mobile) {
+      final mobileCall = _screenedCalls.firstWhere(
+        (c) => c.id == call.mobileCallId,
+        orElse: () => ScreenedCall(
+          id: call.mobileCallId,
+          phoneNumber: call.phoneNumber,
+          timestamp: call.timestamp,
+          wasBlocked: call.wasBlocked,
+          votes: call.votes,
+          votesWildcard: call.votesWildcard,
+          rating: call.rating,
+          label: call.label,
+          location: call.location,
+        ),
+      );
+      return _buildCallListItem(mobileCall, sourceIndicator: CallSource.mobile);
+    }
+
+    // Fritz!Box call rendering
+    return _buildFritzBoxCallListItem(call);
+  }
+
+  /// Builds a Fritz!Box call list item.
+  Widget _buildFritzBoxCallListItem(UnifiedCall call) {
+    final effectiveRating = call.effectiveRating;
+    final color = bgColor(effectiveRating);
+    final ratingText = (label(context, effectiveRating) as Text).data!;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ListTile(
+        leading: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            buildRatingAvatar(effectiveRating),
+            // Fritz!Box source indicator
+            Positioned(
+              right: -4,
+              bottom: -4,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.router,
+                  size: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+          ],
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                call.displayName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: color, width: 1),
+              ),
+              child: Text(
+                call.hasSpamIndicators ? ratingText : context.l10n.ratingLegitimate,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (call.location != null) ...[
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    call.location!,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                // Fritz!Box source badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.router, size: 10, color: Colors.grey[600]),
+                      const SizedBox(width: 2),
+                      Text(
+                        AppLocalizations.of(context)!.sourceFritzbox,
+                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _formatTimestamp(call.timestamp),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                if (call.duration != null && call.duration! > 0) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatDuration(call.duration!),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ],
+            ),
+            if (call.votes > 0 || call.votesWildcard > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                _buildReportsTextFromUnified(call),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ],
+        ),
+        onTap: () => _viewFritzBoxCallOnPhoneBlock(call),
+      ),
+    );
+  }
+
+  /// Formats duration in seconds to a readable string.
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  /// Builds reports text for a unified call.
+  String _buildReportsTextFromUnified(UnifiedCall call) {
+    final parts = <String>[];
+    if (call.votes > 0) {
+      parts.add(context.l10n.reportsCount(call.votes));
+    }
+    if (call.votesWildcard > 0) {
+      parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
+    }
+    return parts.join(' + ');
+  }
+
+  /// Opens a Fritz!Box call on PhoneBlock website.
+  Future<void> _viewFritzBoxCallOnPhoneBlock(UnifiedCall call) async {
+    String? token = await getAuthToken();
+    if (token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.notLoggedInShort),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhoneBlockWebView(
+            title: call.phoneNumber,
+            path: '/nums/${call.phoneNumber}',
+            authToken: token,
+          ),
+        ),
+      );
+    }
   }
 
   /// Builds the empty state when no calls have been screened yet.
@@ -1236,19 +1564,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// Builds the list of screened calls.
-  Widget _buildCallsList() {
-    return ListView.builder(
-      itemCount: _screenedCalls.length,
-      itemBuilder: (context, index) {
-        final call = _screenedCalls[index];
-        return _buildCallListItem(call);
-      },
-    );
-  }
-
   /// Builds a single call list item.
-  Widget _buildCallListItem(ScreenedCall call) {
+  Widget _buildCallListItem(ScreenedCall call, {CallSource? sourceIndicator}) {
     final wasBlocked = call.wasBlocked;
 
     // Check if call is new (not yet seen by user)
@@ -1381,6 +1698,24 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.blue,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+                // Mobile source indicator (shown when Fritz!Box calls are also in timeline)
+                if (sourceIndicator == CallSource.mobile && _fritzboxState != FritzBoxConnectionState.notConfigured)
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.phone_android,
+                        size: 14,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ),
@@ -2063,6 +2398,28 @@ class _MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
+          // Fritz!Box menu item
+          ListTile(
+            leading: Icon(
+              Icons.router,
+              color: _getFritzBoxIconColor(),
+            ),
+            title: Text(AppLocalizations.of(context)!.fritzboxTitle),
+            subtitle: Text(_getFritzBoxStatusText(context)),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FritzBoxSettingsScreen()),
+              );
+              // Reload Fritz!Box state when returning from settings
+              if (mounted) {
+                await _checkFritzBoxConnection();
+                await _loadFritzBoxCalls();
+              }
+            },
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.block),
             title: Text(context.l10n.blacklistTitle),
@@ -2231,6 +2588,34 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         newCallIds.remove(call.id);
       });
+    }
+  }
+
+  /// Gets the icon color for Fritz!Box based on connection state.
+  Color _getFritzBoxIconColor() {
+    switch (_fritzboxState) {
+      case FritzBoxConnectionState.connected:
+        return Colors.green;
+      case FritzBoxConnectionState.offline:
+        return Colors.orange;
+      case FritzBoxConnectionState.error:
+        return Colors.red;
+      case FritzBoxConnectionState.notConfigured:
+        return Colors.grey;
+    }
+  }
+
+  /// Gets the status text for Fritz!Box.
+  String _getFritzBoxStatusText(BuildContext context) {
+    switch (_fritzboxState) {
+      case FritzBoxConnectionState.connected:
+        return AppLocalizations.of(context)!.fritzboxConnected;
+      case FritzBoxConnectionState.offline:
+        return AppLocalizations.of(context)!.fritzboxOffline;
+      case FritzBoxConnectionState.error:
+        return AppLocalizations.of(context)!.fritzboxError;
+      case FritzBoxConnectionState.notConfigured:
+        return AppLocalizations.of(context)!.fritzboxNotConfiguredShort;
     }
   }
 
@@ -2848,6 +3233,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       // Clean up old calls immediately when retention period changes
       await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(value);
+      await FritzBoxStorage.instance.deleteOldCalls(value);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

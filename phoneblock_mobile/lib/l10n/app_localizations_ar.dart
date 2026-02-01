@@ -561,4 +561,168 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'المكالمات المشبوهة';
+
+  @override
+  String get fritzboxTitle => 'فريتز!بوكس';
+
+  @override
+  String get fritzboxConnected => 'متصل';
+
+  @override
+  String get fritzboxOffline => 'غير متوفر';
+
+  @override
+  String get fritzboxError => 'خطأ في الاتصال';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'لم يتم إعداده';
+
+  @override
+  String get fritzboxNotConfigured => 'لا يوجد صندوق فريتز!';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'قم بتوصيل جهاز Fritz!Box الخاص بك لمشاهدة المكالمات من خطك الأرضي.';
+
+  @override
+  String get fritzboxConnect => 'توصيل فريتز!بوكس';
+
+  @override
+  String get fritzboxDisconnect => 'قطع الاتصال فريتز!';
+
+  @override
+  String get fritzboxDisconnectTitle => 'افصل صندوق فريتز';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'يتم حذف المكالمات المحفوظة وبيانات الوصول.';
+
+  @override
+  String get fritzboxSyncNow => 'المزامنة الآن';
+
+  @override
+  String get fritzboxSyncDescription => 'استرداد قائمة المكالمات من فريتز!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<x1> عدد المكالمات الجديدة المتزامنة',
+      one: 'تمت مزامنة 1 مكالمة جديدة',
+      zero: 'لا توجد مكالمات جديدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'خطأ أثناء المزامنة';
+
+  @override
+  String get fritzboxVersion => 'إصدار FRITZ!OS';
+
+  @override
+  String get fritzboxHost => 'العنوان';
+
+  @override
+  String get fritzboxCachedCalls => 'المكالمات المحفوظة';
+
+  @override
+  String get fritzboxLastSync => 'آخر مزامنة';
+
+  @override
+  String get fritzboxJustNow => 'الآن فقط';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count دقيقة',
+      one: 'منذ 1 دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countمنذ ساعات مضت',
+      one: 'منذ 1 ساعة مضت',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'توصيل فريتز!بوكس';
+
+  @override
+  String get fritzboxStepDetection => 'ابحث عن فريتز!';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'البحث التلقائي في الشبكة';
+
+  @override
+  String get fritzboxStepLogin => 'تسجيل الدخول';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'إدخال بيانات الوصول';
+
+  @override
+  String get fritzboxSearching => 'ابحث عن Fritz!Box!';
+
+  @override
+  String get fritzboxNotFound => 'فريتز! الصندوق غير موجود';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'تعذر العثور على Fritz!Box تلقائياً. الرجاء إدخال العنوان يدوياً.';
+
+  @override
+  String get fritzboxHostLabel => 'عنوان صندوق فريتز';
+
+  @override
+  String get fritzboxRetrySearch => 'البحث مرة أخرى';
+
+  @override
+  String get fritzboxManualConnect => 'الاتصال';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'أدخل بيانات وصولك إلى Fritz!Box. يمكنك العثور عليها في واجهة مستخدم Fritz!Box ضمن النظام > مستخدم Fritz!Box.';
+
+  @override
+  String get fritzboxUsernameLabel => 'اسم المستخدم';
+
+  @override
+  String get fritzboxUsernameHint => 'المشرف أو مستخدم Fritz!Box الخاص بك';
+
+  @override
+  String get fritzboxPasswordLabel => 'كلمة المرور';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'يتم تخزين بيانات الوصول الخاصة بك بشكل آمن على جهازك.';
+
+  @override
+  String get fritzboxTestAndSave => 'الاختبار والحفظ';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'فشل الاتصال. يرجى التحقق من بيانات الوصول.';
+
+  @override
+  String get fritzboxFillAllFields => 'يرجى ملء جميع الحقول.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'لا يمكن الوصول إلى صندوق فريتز! - إظهار المكالمات المحفوظة';
+
+  @override
+  String get sourceMobile => 'الهاتف المحمول';
+
+  @override
+  String get sourceFritzbox => 'فريتز!بوكس';
 }

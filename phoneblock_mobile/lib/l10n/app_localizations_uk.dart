@@ -561,4 +561,169 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Підозрілі дзвінки';
+
+  @override
+  String get fritzboxTitle => 'Фріц! Коробка!';
+
+  @override
+  String get fritzboxConnected => 'Підключено';
+
+  @override
+  String get fritzboxOffline => 'Немає в наявності';
+
+  @override
+  String get fritzboxError => 'Помилка підключення';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'Не налаштований.';
+
+  @override
+  String get fritzboxNotConfigured => 'Ніякого Фріца! Ящик не налаштований';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Підключіть Fritz!Box, щоб бачити дзвінки зі стаціонарного телефону.';
+
+  @override
+  String get fritzboxConnect => 'Підключіть Fritz!Box';
+
+  @override
+  String get fritzboxDisconnect => 'Відключіть Fritz!Box';
+
+  @override
+  String get fritzboxDisconnectTitle => 'Від\'єднати коробку Фріца?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'Збережені дзвінки та дані доступу видаляються.';
+
+  @override
+  String get fritzboxSyncNow => 'Синхронізуйте зараз';
+
+  @override
+  String get fritzboxSyncDescription => 'Отримання списку викликів з Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count нових викликів синхронізовано',
+      one: 'Синхронізовано 1 новий дзвінок',
+      zero: 'Нових дзвінків немає',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Помилка під час синхронізації';
+
+  @override
+  String get fritzboxVersion => 'Версія FRITZ!OS';
+
+  @override
+  String get fritzboxHost => 'Адреса';
+
+  @override
+  String get fritzboxCachedCalls => 'Збережені дзвінки';
+
+  @override
+  String get fritzboxLastSync => 'Остання синхронізація';
+
+  @override
+  String get fritzboxJustNow => 'Щойно';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'До $count хвилин',
+      one: '1 хвилину тому',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count годин тому',
+      one: '1 годину тому',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Підключіть Fritz!Box';
+
+  @override
+  String get fritzboxStepDetection => 'Знайди Фріц! Коробку';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Автоматичний пошук в мережі';
+
+  @override
+  String get fritzboxStepLogin => 'Увійдіть в систему';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Введіть дані доступу';
+
+  @override
+  String get fritzboxSearching => 'Шукайте Фріц!Бокс...';
+
+  @override
+  String get fritzboxNotFound => 'Фріц! Скриньку не знайдено';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'Скриньку Fritz!Box не вдалося знайти автоматично. Будь ласка, введіть адресу вручну.';
+
+  @override
+  String get fritzboxHostLabel => 'Фріц! Адреса скриньки';
+
+  @override
+  String get fritzboxRetrySearch => 'Шукайте ще раз';
+
+  @override
+  String get fritzboxManualConnect => 'Підключіться';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Введіть дані доступу до Fritz!Box. Ви можете знайти їх в інтерфейсі користувача Fritz!Box в розділі Система > Користувач Fritz!Box.';
+
+  @override
+  String get fritzboxUsernameLabel => 'Ім\'я користувача';
+
+  @override
+  String get fritzboxUsernameHint =>
+      'адміністратор або ваш користувач Fritz!Box';
+
+  @override
+  String get fritzboxPasswordLabel => 'Пароль';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Ваші дані доступу надійно зберігаються на вашому пристрої.';
+
+  @override
+  String get fritzboxTestAndSave => 'Тестування та збереження';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Не вдалося з\'єднатися. Будь ласка, перевірте дані доступу.';
+
+  @override
+  String get fritzboxFillAllFields => 'Будь ласка, заповніть усі поля.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Скринька \"Фріц!\" недоступна - показати збережені дзвінки';
+
+  @override
+  String get sourceMobile => 'Мобільний';
+
+  @override
+  String get sourceFritzbox => 'Фріц! Коробка!';
 }

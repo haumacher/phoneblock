@@ -563,4 +563,168 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Verdächtige Anrufe';
+
+  @override
+  String get fritzboxTitle => 'Fritz!Box';
+
+  @override
+  String get fritzboxConnected => 'Verbunden';
+
+  @override
+  String get fritzboxOffline => 'Nicht erreichbar';
+
+  @override
+  String get fritzboxError => 'Verbindungsfehler';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'Nicht eingerichtet';
+
+  @override
+  String get fritzboxNotConfigured => 'Keine Fritz!Box eingerichtet';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Verbinden Sie Ihre Fritz!Box, um Anrufe aus Ihrem Festnetz zu sehen.';
+
+  @override
+  String get fritzboxConnect => 'Fritz!Box verbinden';
+
+  @override
+  String get fritzboxDisconnect => 'Fritz!Box trennen';
+
+  @override
+  String get fritzboxDisconnectTitle => 'Fritz!Box trennen?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'Die gespeicherten Anrufe und Zugangsdaten werden gelöscht.';
+
+  @override
+  String get fritzboxSyncNow => 'Jetzt synchronisieren';
+
+  @override
+  String get fritzboxSyncDescription => 'Anrufliste von der Fritz!Box abrufen';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count neue Anrufe synchronisiert',
+      one: '1 neuer Anruf synchronisiert',
+      zero: 'Keine neuen Anrufe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Fehler beim Synchronisieren';
+
+  @override
+  String get fritzboxVersion => 'FRITZ!OS Version';
+
+  @override
+  String get fritzboxHost => 'Adresse';
+
+  @override
+  String get fritzboxCachedCalls => 'Gespeicherte Anrufe';
+
+  @override
+  String get fritzboxLastSync => 'Letzte Synchronisierung';
+
+  @override
+  String get fritzboxJustNow => 'Gerade eben';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Vor $count Minuten',
+      one: 'Vor 1 Minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Vor $count Stunden',
+      one: 'Vor 1 Stunde',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Fritz!Box verbinden';
+
+  @override
+  String get fritzboxStepDetection => 'Fritz!Box finden';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Automatische Suche im Netzwerk';
+
+  @override
+  String get fritzboxStepLogin => 'Anmelden';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Zugangsdaten eingeben';
+
+  @override
+  String get fritzboxSearching => 'Suche nach Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => 'Fritz!Box nicht gefunden';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'Die Fritz!Box konnte nicht automatisch gefunden werden. Bitte geben Sie die Adresse manuell ein.';
+
+  @override
+  String get fritzboxHostLabel => 'Fritz!Box Adresse';
+
+  @override
+  String get fritzboxRetrySearch => 'Erneut suchen';
+
+  @override
+  String get fritzboxManualConnect => 'Verbinden';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.';
+
+  @override
+  String get fritzboxUsernameLabel => 'Benutzername';
+
+  @override
+  String get fritzboxUsernameHint => 'admin oder Ihr Fritz!Box-Benutzer';
+
+  @override
+  String get fritzboxPasswordLabel => 'Kennwort';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Ihre Zugangsdaten werden sicher auf Ihrem Gerät gespeichert.';
+
+  @override
+  String get fritzboxTestAndSave => 'Testen und Speichern';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Verbindung fehlgeschlagen. Bitte überprüfen Sie die Zugangsdaten.';
+
+  @override
+  String get fritzboxFillAllFields => 'Bitte füllen Sie alle Felder aus.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz!Box nicht erreichbar - zeige gespeicherte Anrufe';
+
+  @override
+  String get sourceMobile => 'Mobil';
+
+  @override
+  String get sourceFritzbox => 'Fritz!Box';
 }

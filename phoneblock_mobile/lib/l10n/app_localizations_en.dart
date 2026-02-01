@@ -560,4 +560,169 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Suspicious calls';
+
+  @override
+  String get fritzboxTitle => 'Fritz!Box';
+
+  @override
+  String get fritzboxConnected => 'Connected';
+
+  @override
+  String get fritzboxOffline => 'Not available';
+
+  @override
+  String get fritzboxError => 'Connection error';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'Not set up';
+
+  @override
+  String get fritzboxNotConfigured => 'No Fritz!Box set up';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Connect your Fritz!Box to see calls from your landline.';
+
+  @override
+  String get fritzboxConnect => 'Connect Fritz!Box';
+
+  @override
+  String get fritzboxDisconnect => 'Disconnect Fritz!Box';
+
+  @override
+  String get fritzboxDisconnectTitle => 'Disconnect Fritz! box?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'The saved calls and access data are deleted.';
+
+  @override
+  String get fritzboxSyncNow => 'Synchronize now';
+
+  @override
+  String get fritzboxSyncDescription =>
+      'Retrieving the call list from the Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new calls synchronized',
+      one: '1 new call synchronized',
+      zero: 'No new calls',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Error during synchronization';
+
+  @override
+  String get fritzboxVersion => 'FRITZ!OS version';
+
+  @override
+  String get fritzboxHost => 'Address';
+
+  @override
+  String get fritzboxCachedCalls => 'Saved calls';
+
+  @override
+  String get fritzboxLastSync => 'Last synchronization';
+
+  @override
+  String get fritzboxJustNow => 'Just now';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Before $count minutes',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Connect Fritz!Box';
+
+  @override
+  String get fritzboxStepDetection => 'Find Fritz!Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Automatic search in the network';
+
+  @override
+  String get fritzboxStepLogin => 'Log in';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Enter access data';
+
+  @override
+  String get fritzboxSearching => 'Search for Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => 'Fritz!Box not found';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'The Fritz!Box could not be found automatically. Please enter the address manually.';
+
+  @override
+  String get fritzboxHostLabel => 'Fritz!Box address';
+
+  @override
+  String get fritzboxRetrySearch => 'Search again';
+
+  @override
+  String get fritzboxManualConnect => 'Connect';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Enter your Fritz!Box access data. You can find them in the Fritz!Box user interface under System > Fritz!Box user.';
+
+  @override
+  String get fritzboxUsernameLabel => 'User name';
+
+  @override
+  String get fritzboxUsernameHint => 'admin or your Fritz!Box user';
+
+  @override
+  String get fritzboxPasswordLabel => 'Password';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Your access data is stored securely on your device.';
+
+  @override
+  String get fritzboxTestAndSave => 'Testing and saving';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Connection failed. Please check the access data.';
+
+  @override
+  String get fritzboxFillAllFields => 'Please fill in all fields.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz! box not reachable - show saved calls';
+
+  @override
+  String get sourceMobile => 'Mobile';
+
+  @override
+  String get sourceFritzbox => 'Fritz!Box';
 }

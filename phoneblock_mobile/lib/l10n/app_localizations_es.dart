@@ -561,4 +561,169 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Llamadas sospechosas';
+
+  @override
+  String get fritzboxTitle => 'Caja Fritz';
+
+  @override
+  String get fritzboxConnected => 'Conectado';
+
+  @override
+  String get fritzboxOffline => 'No disponible';
+
+  @override
+  String get fritzboxError => 'Error de conexión';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'No configurado';
+
+  @override
+  String get fritzboxNotConfigured => 'No se ha configurado Fritz Box';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Conecta tu Fritz Box para ver las llamadas de tu teléfono fijo.';
+
+  @override
+  String get fritzboxConnect => 'Conectar Fritz Box';
+
+  @override
+  String get fritzboxDisconnect => 'Desconectar Fritz Box';
+
+  @override
+  String get fritzboxDisconnectTitle => '¿Desconectar la caja de Fritz?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'Se borran las llamadas guardadas y los datos de acceso.';
+
+  @override
+  String get fritzboxSyncNow => 'Sincronizar ahora';
+
+  @override
+  String get fritzboxSyncDescription =>
+      '¡Recuperar la lista de llamadas del Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nuevas llamadas sincronizadas.',
+      one: '1 nueva llamada sincronizada',
+      zero: 'No hay nuevas llamadas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Error durante la sincronización';
+
+  @override
+  String get fritzboxVersion => 'Versión FRITZ OS';
+
+  @override
+  String get fritzboxHost => 'Dirección';
+
+  @override
+  String get fritzboxCachedCalls => 'Llamadas guardadas';
+
+  @override
+  String get fritzboxLastSync => 'Última sincronización';
+
+  @override
+  String get fritzboxJustNow => 'Ahora mismo';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Antes de $count minutos',
+      one: 'hace 1 minuto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas atrás',
+      one: 'hace 1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Conectar Fritz Box';
+
+  @override
+  String get fritzboxStepDetection => 'Encontrar Fritz Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Búsqueda automática en la red';
+
+  @override
+  String get fritzboxStepLogin => 'Conectarse';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Introducir datos de acceso';
+
+  @override
+  String get fritzboxSearching => 'Busca Fritz Box...';
+
+  @override
+  String get fritzboxNotFound => 'Caja no encontrada';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'No se ha podido encontrar el Fritz!Box automáticamente. Por favor, introduzca la dirección manualmente.';
+
+  @override
+  String get fritzboxHostLabel => 'Dirección del buzón';
+
+  @override
+  String get fritzboxRetrySearch => 'Buscar de nuevo';
+
+  @override
+  String get fritzboxManualConnect => 'Conectar';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Introduzca sus datos de acceso a Fritz!Box. Puede encontrarlos en la interfaz de usuario de Fritz!Box en Sistema > Usuario de Fritz!Box.';
+
+  @override
+  String get fritzboxUsernameLabel => 'Nombre de usuario';
+
+  @override
+  String get fritzboxUsernameHint => 'admin o su usuario de Fritz!Box';
+
+  @override
+  String get fritzboxPasswordLabel => 'Contraseña';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Tus datos de acceso se almacenan de forma segura en tu dispositivo.';
+
+  @override
+  String get fritzboxTestAndSave => 'Pruebas y ahorro';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Error de conexión. Por favor, compruebe los datos de acceso.';
+
+  @override
+  String get fritzboxFillAllFields => 'Rellene todos los campos.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz! buzón no localizable - mostrar llamadas guardadas';
+
+  @override
+  String get sourceMobile => 'Móvil';
+
+  @override
+  String get sourceFritzbox => 'Caja Fritz';
 }
