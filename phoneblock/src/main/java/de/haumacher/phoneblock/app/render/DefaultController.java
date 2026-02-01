@@ -327,7 +327,7 @@ public class DefaultController implements WebController {
 			session.removeAttribute(CARD_DAV_TOKEN_ATTR);
 			session.removeAttribute(API_KEY_ATTR);
 
-			ctx.setVariable(TOKEN_VAR, password);
+			ctx.setVariable(PASSWORD_ATTR, password);
 			ctx.setVariable(CARD_DAV_TOKEN_ATTR, cardDavToken);
 			ctx.setVariable(API_KEY_ATTR, apiKey);
 		}
