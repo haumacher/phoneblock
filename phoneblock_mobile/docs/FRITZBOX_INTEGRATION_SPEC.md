@@ -48,10 +48,18 @@ Currently, there is no direct connection between the Fritz!Box router and the mo
    - This approach avoids reading the user's address book for privacy
    - Display spam status from PhoneBlock database for each call
    - Indicate which calls were blocked vs. rang through
-2. **Simplified Setup** - Provide easy one-tap setup for PhoneBlock integration with three user-selectable options:
-   - **Option A: CardDAV Blocklist Only** - Configure a CardDAV phonebook connected to PhoneBlock and create a call blocking rule
-   - **Option B: Answer Bot Only** - Automatically register a PhoneBlock Answer Bot as a SIP device on the Fritz!Box
-   - **Option C: Both (Recommended)** - Set up both CardDAV blocklist AND Answer Bot. This shows "SPAM:" markers in local phone call logs while also engaging spam callers with the bot
+2. **Simplified Setup** - Provide easy one-tap setup for PhoneBlock integration with user-selectable options:
+
+   **Blocklist Options (choose one):**
+   - **CardDAV Blocklist** - Fritz!Box syncs directly with PhoneBlock CardDAV server (requires FRITZ!OS 7.20+)
+   - **App-Managed Blocklist** - App syncs blocklist incrementally from PhoneBlock and updates Fritz!Box phonebook via TR-064. More efficient than CardDAV (reduces server load). Works with all FRITZ!OS versions.
+
+   **Answer Bot Option (FRITZ!OS 7.20+ only):**
+   - **Answer Bot** - Register PhoneBlock Answer Bot as SIP device. Only available for FRITZ!OS 7.20+ due to VoIP connectivity requirements for external SIP devices.
+
+   **Recommended combinations:**
+   - FRITZ!OS 7.20+: App-Managed Blocklist + Answer Bot
+   - FRITZ!OS < 7.20: App-Managed Blocklist only
 
 ### Connectivity Mode
 
@@ -73,6 +81,8 @@ Currently, there is no direct connection between the Fritz!Box router and the mo
    - Used for all subsequent call log fetches
 
 ### Answer Bot Details
+
+**Requires FRITZ!OS 7.20+** - Older boxes have problems with VoIP phones connecting over the internet.
 
 The Answer Bot option registers the Fritz!Box to use **PhoneBlock's hosted cloud answer bot service**:
 - Requires external access to Fritz!Box for SIP connections
@@ -105,9 +115,10 @@ This feature combines **call log display** with **simplified setup** for Fritz!B
 | Merged Timeline | Show Fritz!Box and mobile calls together with source indicator |
 | Offline Cache | View previously synced calls when away from home network |
 | Full Rating | Rate Fritz!Box calls with same spam categories as mobile |
-| CardDAV Setup | One-tap configuration of PhoneBlock blocklist sync |
-| Answer Bot Setup | One-tap registration of PhoneBlock cloud answer bot |
-| Combined Setup | Both CardDAV + Answer Bot (recommended for SPAM markers in call logs) |
+| App-Managed Blocklist | Efficient incremental blocklist sync via TR-064 (all FRITZ!OS versions) |
+| CardDAV Setup | Direct CardDAV sync (FRITZ!OS 7.20+ only, less efficient) |
+| Answer Bot Setup | Cloud answer bot registration (FRITZ!OS 7.20+ only) |
+| Combined Setup | App-Managed Blocklist + Answer Bot (recommended for 7.20+) |
 | App User | Automatic creation of restricted Fritz!Box user for secure ongoing access |
 
 ---
@@ -135,9 +146,22 @@ Fritz!Box exposes management APIs via TR-064 (SOAP-based protocol):
 
 ### Fritz!Box Requirements
 
-- **Minimum FRITZ!OS: 7.20** - Required for CardDAV sync with custom servers (PhoneBlock)
+- **FRITZ!OS 7.20+** - Required for:
+  - CardDAV sync with custom servers
+  - Answer Bot (external VoIP/SIP connectivity)
+- **Any FRITZ!OS version** - Supported via app-managed blocklist sync (TR-064 phonebook updates)
 - TR-064 protocol supported from the beginning
 - Note: CardDAV sync from server occurs once every 24 hours (midnight); changes to Fritz!Box are immediate
+
+### App-Managed Blocklist
+
+Efficient alternative to CardDAV sync, works with all FRITZ!OS versions:
+- App maintains local copy of blocklist on phone
+- Uses **incremental sync** with PhoneBlock API (`/api/blocklist?since=version`)
+- Only fetches changes since last sync, reducing server load significantly
+- Updates Fritz!Box phonebook via TR-064 `X_AVM-DE_Phonebook` service
+- Runs once per day via Android WorkManager when connected to home network
+- More efficient than CardDAV which does full sync and hammers the server
 
 ---
 
@@ -148,8 +172,11 @@ Fritz!Box exposes management APIs via TR-064 (SOAP-based protocol):
 **US-1: First-time Fritz!Box Setup**
 > As a user, I want to connect my Fritz!Box to PhoneBlock through the mobile app so that I can protect my landline from spam calls.
 
-**US-2: Choose CardDAV Protection**
-> As a user, I want to set up CardDAV blocklist sync so that my Fritz!Box automatically blocks known spam numbers.
+**US-2: Choose App-Managed Blocklist (Recommended)**
+> As a user, I want the app to efficiently sync the blocklist to my Fritz!Box so that spam calls are blocked with minimal server load.
+
+**US-2a: Choose CardDAV Protection**
+> As a user with FRITZ!OS 7.20+, I want to optionally use CardDAV sync if I prefer the Fritz!Box to manage the blocklist directly.
 
 **US-3: Choose Answer Bot Protection**
 > As a user, I want to register the PhoneBlock Answer Bot so that spam callers are engaged by an automated system instead of bothering me.
@@ -235,14 +262,28 @@ CREATE TABLE fritzbox_calls (
 CREATE TABLE fritzbox_config (
   id INTEGER PRIMARY KEY,
   host TEXT,                  -- Fritz!Box hostname/IP
+  fritzos_version TEXT,       -- Detected FRITZ!OS version
   app_username TEXT,          -- App user created during setup (encrypted)
   app_password TEXT,          -- App user password (encrypted)
-  protection_mode TEXT,       -- 'carddav', 'answerbot', or 'both'
-  last_fetch_timestamp INTEGER, -- Timestamp of newest call from last fetch (for incremental sync)
-  phonebook_id TEXT,          -- CardDAV phonebook ID if configured
+  blocklist_mode TEXT,        -- 'app_managed', 'carddav', or 'none'
+  answerbot_enabled INTEGER,  -- 1 if answer bot is configured (FRITZ!OS 7.20+ only)
+  last_fetch_timestamp INTEGER, -- Timestamp of newest call from last fetch (for call log sync)
+  blocklist_version TEXT,     -- PhoneBlock blocklist version for incremental sync
+  phonebook_id TEXT,          -- Phonebook ID (for CardDAV or app-managed blocklist)
   sip_device_id TEXT          -- Answer bot SIP device ID if configured
 );
 ```
+
+**New SQLite table: `fritzbox_blocklist`** (for app-managed mode)
+```sql
+CREATE TABLE fritzbox_blocklist (
+  id INTEGER PRIMARY KEY,
+  phone_number TEXT UNIQUE,   -- Blocked phone number
+  added_at INTEGER,           -- When added to local blocklist
+  synced_to_box INTEGER       -- 1 if synced to Fritz!Box phonebook
+);
+```
+This local blocklist enables efficient incremental sync with PhoneBlock API.
 
 **Note:** Admin credentials are NOT stored. Only the app-specific user credentials (with restricted call log access) are persisted.
 
@@ -321,17 +362,26 @@ When not connected to the home network:
    - Explain that admin access is only needed for initial setup
 
 3. **Choose Protection Method**
-   - **Option A: CardDAV Blocklist Only**
-     - Creates PhoneBlock CardDAV phonebook on Fritz!Box
-     - Sets up call blocking rule for numbers in blocklist
-   - **Option B: Answer Bot Only**
+   - App detects FRITZ!OS version and shows appropriate options:
+
+   **Blocklist Method (choose one):**
+   - **App-Managed Blocklist (Recommended)**
+     - App syncs blocklist incrementally and updates Fritz!Box phonebook
+     - More efficient than CardDAV, reduces PhoneBlock server load
+     - Works with all FRITZ!OS versions
+   - **CardDAV Blocklist** (FRITZ!OS 7.20+ only)
+     - Fritz!Box syncs directly with PhoneBlock CardDAV server
+     - Less efficient (full sync every 24h)
+
+   **Answer Bot (FRITZ!OS 7.20+ only):**
+   - **Enable Answer Bot**
      - Registers PhoneBlock cloud answer bot as SIP device
-     - Configures call forwarding for spam numbers to bot
-   - **Option C: Both (Recommended)**
-     - Sets up CardDAV blocklist AND Answer Bot
+     - Engages spam callers with automated conversation
      - Shows "SPAM:" markers in local phone call logs
-     - Spam callers are engaged by the bot
-   - Default selection: Option C
+
+   **Recommended setup:**
+   - FRITZ!OS 7.20+: App-Managed Blocklist + Answer Bot
+   - FRITZ!OS < 7.20: App-Managed Blocklist only
 
 4. **App User Creation**
    - App automatically creates a dedicated Fritz!Box user "PhoneBlock"
@@ -396,37 +446,52 @@ Users can rate Fritz!Box calls with the **same spam categories** as mobile calls
 - Modified call history UI with source indicators
 - Local SQLite schema for Fritz!Box data
 
-### Phase 2: CardDAV Setup
+### Phase 2: Blocklist Setup
 
 **Scope:**
-- Create PhoneBlock CardDAV phonebook on Fritz!Box
-- Configure blocking rule for phonebook
+- Detect FRITZ!OS version to determine available options
+- **App-managed mode (Recommended, all versions):**
+  - Create local phonebook on Fritz!Box via TR-064
+  - Maintain local blocklist in SQLite for incremental sync
+  - Fetch blocklist incrementally from PhoneBlock (`/api/blocklist?since=version`)
+  - Update Fritz!Box phonebook with changes only
+  - Set up daily background sync task (Android WorkManager)
+  - Configure blocking rule for phonebook
+- **CardDAV mode (FRITZ!OS 7.20+ only, optional):**
+  - Create PhoneBlock CardDAV phonebook on Fritz!Box
+  - Configure blocking rule for phonebook
 - Display setup status and sync info
-- Support standalone or combined with Answer Bot
+- Support standalone or combined with Answer Bot (7.20+ only)
 
 **Deliverables:**
-- CardDAV configuration wizard (step 3, 5, 6)
+- FRITZ!OS version detection
+- App-managed blocklist with local SQLite storage
+- Incremental sync with PhoneBlock API
+- Android WorkManager periodic task for daily sync
+- CardDAV configuration (optional, 7.20+)
 - Phonebook creation via TR-064
 - Blocking rule configuration
 - Status display in settings
 
-### Phase 3: Answer Bot Registration
+### Phase 3: Answer Bot Registration (FRITZ!OS 7.20+ only)
 
 **Scope:**
+- Only offered for FRITZ!OS 7.20+ (older boxes have VoIP connectivity issues)
 - Detect external access method (MyFritz → existing DynDNS → PhoneBlock DynDNS)
 - Configure PhoneBlock Dynamic DNS if needed
 - Register PhoneBlock answer bot as SIP device
 - Configure call forwarding for spam numbers
-- Support standalone or combined with CardDAV (recommended)
+- Recommended combined with App-Managed Blocklist
 
 **Deliverables:**
+- FRITZ!OS version check (skip if < 7.20)
 - Answer bot setup wizard (step 3, 5, 6)
 - External access detection and configuration
 - PhoneBlock Dynamic DNS integration
 - SIP device registration via TR-064
 - Server-side answer bot provisioning integration
 - Call forwarding rule configuration
-- Combined setup flow (both CardDAV + Answer Bot)
+- Combined setup flow (App-Managed Blocklist + Answer Bot)
 
 ### Phase 4: Rating & Reporting
 
