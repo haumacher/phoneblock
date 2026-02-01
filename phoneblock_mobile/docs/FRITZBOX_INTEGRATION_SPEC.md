@@ -133,6 +133,12 @@ Fritz!Box exposes management APIs via TR-064 (SOAP-based protocol):
 - Network permissions required
 - Local network access may require user approval (Android 10+)
 
+### Fritz!Box Requirements
+
+- **Minimum FRITZ!OS: 7.20** - Required for CardDAV sync with custom servers (PhoneBlock)
+- TR-064 protocol supported from the beginning
+- Note: CardDAV sync from server occurs once every 24 hours (midnight); changes to Fritz!Box are immediate
+
 ---
 
 ## User Stories
@@ -187,6 +193,7 @@ The app communicates with Fritz!Box using the **TR-064 protocol** (SOAP over HTT
 - `X_AVM-DE_OnTel` - Call list retrieval
 - `X_AVM-DE_TAM` - Answering machine (for answer bot registration)
 - `X_AVM-DE_Phonebook` - Phonebook management (for CardDAV setup)
+- `LANConfigSecurity` - User management (**needs implementation in fritz_tr64 library**)
 
 **Key Operations:**
 ```
@@ -364,7 +371,7 @@ Users can rate Fritz!Box calls with the **same spam categories** as mobile calls
 - App tracks the timestamp of the last successful fetch
 - On sync, only fetches calls that arrived after the last fetch timestamp
 - Reduces data transfer and processing time
-- Initial sync fetches recent history (e.g., last 30 days or configurable limit)
+- Initial sync fetches calls matching the app's **call history retention period** (default: 3 days, configurable: 1/3/7 days or infinite)
 
 ---
 
@@ -435,13 +442,17 @@ Users can rate Fritz!Box calls with the **same spam categories** as mobile calls
 
 ---
 
-## Open Questions
+## Open Questions (Resolved)
 
-1. **Minimum Fritz!Box firmware version** - Which FRITZ!OS version is required for TR-064 features used?
-2. **Multiple phones on Fritz!Box** - How to handle call log when Fritz!Box has multiple connected phones?
-3. **Initial sync limit** - How many days of history to fetch on first sync? (suggested: 30 days)
-4. **User creation API** - Which TR-064 service is used to create Fritz!Box users? Need to verify `fritz_tr64` library supports this.
-5. **PhoneBlock Dynamic DNS** - What is the API/protocol for the PhoneBlock dynamic DNS service? Does it already exist or need to be created?
+1. ~~**Minimum Fritz!Box firmware version**~~ **RESOLVED: FRITZ!OS 7.20** required for CardDAV sync with custom servers. TR-064 supported from the beginning.
+
+2. ~~**Multiple phones on Fritz!Box**~~ **RESOLVED:** Fritz!Box has a common call log for all connected phones - no special handling needed.
+
+3. ~~**Initial sync limit**~~ **RESOLVED:** Use the app's configured **call history retention period** (default: 3 days, options: 1/3/7 days or infinite). This keeps Fritz!Box sync consistent with mobile call retention.
+
+4. **User creation API** - **NEEDS IMPLEMENTATION:** The `fritz_tr64` library does not yet support user creation. The `LANConfigSecurity` TR-064 service (which handles user management) is listed as "not yet implemented" in the library. This service needs to be added to support creating the restricted PhoneBlock app user.
+
+5. ~~**PhoneBlock Dynamic DNS**~~ **RESOLVED:** Already fully implemented and available for manual Answer Bot setup in the app.
 
 ---
 
