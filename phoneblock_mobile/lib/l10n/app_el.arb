@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Παρακαλούμε συμπληρώστε όλα τα πεδία.",
   "fritzboxOfflineBanner": "Fritz! κουτί δεν είναι προσβάσιμο - εμφάνιση αποθηκευμένων κλήσεων",
   "sourceMobile": "Κινητό",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Missed"
 }

@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Rellene todos los campos.",
   "fritzboxOfflineBanner": "Fritz! buzón no localizable - mostrar llamadas guardadas",
   "sourceMobile": "Móvil",
-  "sourceFritzbox": "Caja Fritz"
+  "sourceFritzbox": "Caja Fritz",
+  "missed": "Falta"
 }

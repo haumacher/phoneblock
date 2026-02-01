@@ -30,7 +30,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accepted => '已接受';
 
   @override
-  String get missed => 'Verpasst';
+  String get missed => '错过';
 
   @override
   String votes(int count) {

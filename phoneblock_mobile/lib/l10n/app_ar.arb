@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "يرجى ملء جميع الحقول.",
   "fritzboxOfflineBanner": "لا يمكن الوصول إلى صندوق فريتز! - إظهار المكالمات المحفوظة",
   "sourceMobile": "الهاتف المحمول",
-  "sourceFritzbox": "فريتز!بوكس"
+  "sourceFritzbox": "فريتز!بوكس",
+  "missed": "فائتة"
 }

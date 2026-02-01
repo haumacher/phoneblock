@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "请填写所有栏目。",
   "fritzboxOfflineBanner": "弗里茨！盒子无法接通 - 显示已保存的呼叫",
   "sourceMobile": "移动电话",
-  "sourceFritzbox": "弗里茨盒子"
+  "sourceFritzbox": "弗里茨盒子",
+  "missed": "错过"
 }

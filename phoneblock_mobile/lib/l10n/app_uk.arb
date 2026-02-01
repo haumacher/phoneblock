@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Будь ласка, заповніть усі поля.",
   "fritzboxOfflineBanner": "Скринька \"Фріц!\" недоступна - показати збережені дзвінки",
   "sourceMobile": "Мобільний",
-  "sourceFritzbox": "Фріц! Коробка!"
+  "sourceFritzbox": "Фріц! Коробка!",
+  "missed": "Промахнувся."
 }

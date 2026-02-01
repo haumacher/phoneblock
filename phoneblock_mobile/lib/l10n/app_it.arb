@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Compilare tutti i campi.",
   "fritzboxOfflineBanner": "Fritz! casella non raggiungibile - mostra le chiamate salvate",
   "sourceMobile": "Mobile",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Mancato"
 }

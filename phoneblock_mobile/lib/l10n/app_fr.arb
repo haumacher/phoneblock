@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Veuillez remplir tous les champs.",
   "fritzboxOfflineBanner": "Fritz!Box injoignable - afficher les appels enregistrés",
   "sourceMobile": "Mobile",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Manqué"
 }

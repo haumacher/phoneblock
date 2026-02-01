@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Udfyld venligst alle felter.",
   "fritzboxOfflineBanner": "Fritz! boksen kan ikke nås - vis gemte opkald",
   "sourceMobile": "Mobil",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Ubesvaret"
 }

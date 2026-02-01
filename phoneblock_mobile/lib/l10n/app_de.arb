@@ -37,7 +37,8 @@
   },
   "missed": "Verpasst",
   "@missed": {
-    "description": "Label for missed calls"
+    "description": "Label for missed calls",
+    "x-translated": "168ad310"
   },
   "votes": "{count} Stimmen",
   "@votes": {

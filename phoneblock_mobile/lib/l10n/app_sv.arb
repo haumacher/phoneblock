@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Vänligen fyll i alla fält.",
   "fritzboxOfflineBanner": "Fritz! box ej nåbar - visa sparade samtal",
   "sourceMobile": "Mobil",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Missad"
 }

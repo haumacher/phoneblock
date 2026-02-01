@@ -31,7 +31,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accepted => 'Accepterad';
 
   @override
-  String get missed => 'Verpasst';
+  String get missed => 'Missad';
 
   @override
   String votes(int count) {

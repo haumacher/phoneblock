@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Vul alle velden in.",
   "fritzboxOfflineBanner": "Fritz! box niet bereikbaar - opgeslagen oproepen tonen",
   "sourceMobile": "Mobiel",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Gemist"
 }

@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Vennligst fyll ut alle feltene.",
   "fritzboxOfflineBanner": "Fritz!-boksen er ikke tilgjengelig - vis lagrede anrop",
   "sourceMobile": "Mobil",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Bommet"
 }

@@ -31,7 +31,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get accepted => 'Accepteret';
 
   @override
-  String get missed => 'Verpasst';
+  String get missed => 'Ubesvaret';
 
   @override
   String votes(int count) {

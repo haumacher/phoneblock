@@ -197,5 +197,6 @@
   "fritzboxFillAllFields": "Prosimy o wypełnienie wszystkich pól.",
   "fritzboxOfflineBanner": "Skrzynka Fritz! nieosiągalna - pokaż zapisane połączenia",
   "sourceMobile": "Mobilny",
-  "sourceFritzbox": "Fritz!Box"
+  "sourceFritzbox": "Fritz!Box",
+  "missed": "Brakuje"
 }
