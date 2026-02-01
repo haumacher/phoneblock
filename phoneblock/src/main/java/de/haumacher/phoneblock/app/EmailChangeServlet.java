@@ -182,9 +182,8 @@ public class EmailChangeServlet extends HttpServlet {
 				return;
 			}
 
-			// Get locale from request (authenticated user's preference or browser locale)
-			String locale = I18N.getUserLocale(req);
-			mailService.sendEmailChangeMail(newEmail, code, locale);
+			// Get language from request (authenticated user's preference or browser locale)
+			mailService.sendEmailChangeMail(newEmail, code, I18N.getUserLanguage(req));
 		} catch (AddressException ex) {
 			LOG.warn("Failed to send message: " + ex.getMessage());
 			showError(req, resp, CHANGE_PAGE, "error.email.change.send-failed", ex.getMessage());

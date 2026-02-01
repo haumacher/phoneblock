@@ -28,6 +28,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
+import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.I18N;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
@@ -94,22 +95,18 @@ public class MailServiceImpl implements MailService {
 	}
 
 	/**
-	 * Get the user's locale preference.
+	 * Get the user's language preference.
 	 *
 	 * @param userSettings The user settings
-	 * @return The locale string (e.g., "de", "en-US"), defaults to "de" if not set
+	 * @return The {@link Language}, defaults to {@link Language#getDefault()} if not set
 	 */
-	private String getUserLocale(UserSettings userSettings) {
-		String locale = userSettings.getLang();
-		if (locale == null || locale.isEmpty()) {
-			return "de"; // Default to German
-		}
-		return locale;
+	private Language getUserLanguage(UserSettings userSettings) {
+		return Language.fromTag(userSettings.getLang());
 	}
 
 
 	@Override
-	public void sendActivationMail(String receiver, String code, String locale)
+	public void sendActivationMail(String receiver, String code, Language language)
 			throws MessagingException, IOException, AddressException {
 
 		if (receiver == null || receiver.isBlank()) {
@@ -124,22 +121,18 @@ public class MailServiceImpl implements MailService {
     		throw new AddressException("Please do not use disposable e-mail addresses.");
     	}
 
-		// Use provided locale (from request/browser or user settings)
-		if (locale == null || locale.isEmpty()) {
-			locale = "de"; // Fallback to German
-		}
-		LOG.info("Sending activation mail to '{}' in locale '{}'.", receiver, locale);
+		LOG.info("Sending activation mail to '{}' in language '{}'.", receiver, language.tag);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("name", DB.toDisplayName(address.getAddress()));
 		variables.put("code", code);
 		variables.put("image", _appLogoSvg);
 
-		sendMail("mail.subject.activation", address, locale, "mail-template", variables);
+		sendMail("mail.subject.activation", address, language, "mail-template", variables);
 	}
 
 	@Override
-	public void sendEmailChangeMail(String receiver, String code, String locale)
+	public void sendEmailChangeMail(String receiver, String code, Language language)
 			throws MessagingException, IOException, AddressException {
 
 		if (receiver == null || receiver.isBlank()) {
@@ -154,18 +147,14 @@ public class MailServiceImpl implements MailService {
 			throw new AddressException("Please do not use disposable e-mail addresses.");
 		}
 
-		// Use provided locale (from request/browser or user settings)
-		if (locale == null || locale.isEmpty()) {
-			locale = "de"; // Fallback to German
-		}
-		LOG.info("Sending email change verification mail to '{}' in locale '{}'.", receiver, locale);
+		LOG.info("Sending email change verification mail to '{}' in language '{}'.", receiver, language.tag);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("name", DB.toDisplayName(address.getAddress()));
 		variables.put("code", code);
 		variables.put("image", _appLogoSvg);
 
-		sendMail("mail.subject.email-change", address, locale, "email-change-mail", variables);
+		sendMail("mail.subject.email-change", address, language, "email-change-mail", variables);
 	}
 
 	public boolean sendHelpMail(UserSettings userSettings) {
@@ -175,11 +164,11 @@ public class MailServiceImpl implements MailService {
 			return true;
 		}
 
-		String locale = getUserLocale(userSettings);
-		LOG.info("Sending help mail to '{}' in locale '{}'.", receiver, locale);
+		Language language = getUserLanguage(userSettings);
+		LOG.info("Sending help mail to '{}' in language '{}'.", receiver, language.tag);
 
 		try {
-			sendMail("mail.subject.help", new InternetAddress(receiver), locale, "help-mail", buildVariables(userSettings));
+			sendMail("mail.subject.help", new InternetAddress(receiver), language, "help-mail", buildVariables(userSettings));
 			return true;
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send help mail to: " + receiver, ex);
@@ -195,8 +184,8 @@ public class MailServiceImpl implements MailService {
 			return true;
 		}
 
-		String locale = getUserLocale(userSettings);
-		LOG.info("Sending thanks mail to '{}' in locale '{}'.", receiver, locale);
+		Language language = getUserLanguage(userSettings);
+		LOG.info("Sending thanks mail to '{}' in language '{}'.", receiver, language.tag);
 
 		try {
 			Map<String, Object> variables = buildVariables(userSettings);
@@ -210,7 +199,7 @@ public class MailServiceImpl implements MailService {
 			variables.put("attribute", attribute);
 			variables.put("name", donator);
 
-			sendMail("mail.subject.thanks", new InternetAddress(receiver), locale, "thanks-mail", variables);
+			sendMail("mail.subject.thanks", new InternetAddress(receiver), language, "thanks-mail", variables);
 			return true;
 		} catch (Exception ex) {
 			LOG.error("Failed to send thanks mail to: " + receiver, ex);
@@ -225,11 +214,11 @@ public class MailServiceImpl implements MailService {
 			return true;
 		}
 
-		String locale = getUserLocale(userSettings);
-		LOG.info("Sending answerbot disable mail to '{}' in locale '{}'.", receiver, locale);
+		Language language = getUserLanguage(userSettings);
+		LOG.info("Sending answerbot disable mail to '{}' in language '{}'.", receiver, language.tag);
 
 		try {
-			sendMail("mail.subject.ab-disable", new InternetAddress(receiver), locale, "ab-disable-mail", buildVariables(userSettings, answerbot));
+			sendMail("mail.subject.ab-disable", new InternetAddress(receiver), language, "ab-disable-mail", buildVariables(userSettings, answerbot));
 			return true;
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send answerbot disable mail to: " + receiver, ex);
@@ -257,11 +246,11 @@ public class MailServiceImpl implements MailService {
 			return;
 		}
 
-		String locale = getUserLocale(userSettings);
-		LOG.info("Sending welcome mail to '{}' in locale '{}'.", receiver, locale);
+		Language language = getUserLanguage(userSettings);
+		LOG.info("Sending welcome mail to '{}' in language '{}'.", receiver, language.tag);
 
 		try {
-			sendMail("mail.subject.welcome", new InternetAddress(receiver), locale, "welcome-mail", buildVariables(userSettings));
+			sendMail("mail.subject.welcome", new InternetAddress(receiver), language, "welcome-mail", buildVariables(userSettings));
 		} catch (MessagingException | IOException ex) {
 			LOG.error("Failed to send welcome mail to: " + receiver, ex);
 		}
@@ -276,15 +265,15 @@ public class MailServiceImpl implements MailService {
 			return;
 		}
 
-		String locale = getUserLocale(userSettings);
+		Language language = getUserLanguage(userSettings);
 
 		// Use localized fallback if no device label provided
 		if (deviceLabel == null || deviceLabel.isEmpty()) {
-			deviceLabel = I18N.getMessage(locale, "mail.defaultDeviceLabel");
+			deviceLabel = I18N.getMessage(language, "mail.defaultDeviceLabel");
 		}
 
-		LOG.info("Sending mobile welcome mail to '{}' for device '{}' in locale '{}'.",
-		         receiver, deviceLabel, locale);
+		LOG.info("Sending mobile welcome mail to '{}' for device '{}' in language '{}'.",
+		         receiver, deviceLabel, language.tag);
 
 		try {
 			Map<String, Object> variables = buildVariables(userSettings);
@@ -292,7 +281,7 @@ public class MailServiceImpl implements MailService {
 
 			sendMail("mail.subject.mobile-welcome",
 			         new InternetAddress(receiver),
-			         locale,
+			         language,
 			         "mobile-welcome-mail",
 			         variables);
 		} catch (MessagingException | IOException ex) {
@@ -453,16 +442,16 @@ public class MailServiceImpl implements MailService {
 		return result.toString();
 	}
 
-	private void sendMail(String subjectKey, InternetAddress receiver, String locale, String template, Map<String, Object> variables)
+	private void sendMail(String subjectKey, InternetAddress receiver, Language language, String template, Map<String, Object> variables)
 			throws MessagingException, IOException {
 		MimeMessage msg = createMessage();
 
 		// Load localized subject from properties
-		String subject = I18N.getMessage(locale, subjectKey);
+		String subject = I18N.getMessage(language, subjectKey);
 		msg.setSubject(subject);
 
 		// Process template with Thymeleaf
-		String htmlContent = MailTemplateEngine.getInstance().processTemplate(locale, template, variables);
+		String htmlContent = MailTemplateEngine.getInstance().processTemplate(language, template, variables);
 
 		// Generate plain text version from HTML
 		String plainTextContent = htmlToPlainText(htmlContent);

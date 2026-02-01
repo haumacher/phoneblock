@@ -153,9 +153,8 @@ public class EMailVerificationServlet extends HttpServlet {
 				return;
 			}
 
-			// Get locale from request (browser locale or authenticated user's preference)
-			String locale = I18N.getUserLocale(req);
-			mailService.sendActivationMail(email, code, locale);
+			// Get language from request (browser locale or authenticated user's preference)
+			mailService.sendActivationMail(email, code, I18N.getUserLanguage(req));
 		} catch (AddressException ex) {
 			LOG.warn("Failed to send message: " + ex.getMessage());
 			sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.send-failed", ex.getMessage()));

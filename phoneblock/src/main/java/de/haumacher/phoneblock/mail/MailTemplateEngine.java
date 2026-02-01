@@ -40,32 +40,35 @@ public class MailTemplateEngine {
 	/**
 	 * Process a mail template with the given variables.
 	 *
-	 * @param locale The locale for template resolution (e.g., "de", "en-US")
+	 * @param language The language for template resolution
 	 * @param templateName The template name without path prefix or suffix (e.g., "mail-template")
 	 * @param variables The template variables
 	 * @return The processed HTML content
 	 */
-	public String processTemplate(String locale, String templateName, Map<String, Object> variables) {
-		// Normalize locale to a supported language tag using Language class
-		String normalizedLocale = normalizeLocale(locale);
+	public String processTemplate(Language language, String templateName, Map<String, Object> variables) {
+		String templatePath = resolveTemplatePath(language, templateName);
 
-		// Build template engine with current classloader context
 		TemplateEngine templateEngine = buildTemplateEngine();
-
 		Context context = new Context();
 		context.setVariables(variables);
 
-		String templatePath = normalizedLocale + "/" + templateName;
+		return templateEngine.process(templatePath, context);
+	}
+
+	/**
+	 * Resolves the template path for the given language, with fallback to German.
+	 */
+	private String resolveTemplatePath(Language language, String templateName) {
+		String templatePath = language.tag + "/" + templateName;
 		if (templateExists(templatePath)) {
-			return templateEngine.process(templatePath, context);
+			return templatePath;
 		}
 
-		// Final fallback to German if normalized locale template doesn't exist
-		if (!"de".equals(normalizedLocale)) {
-			String fallbackTemplate = "de/" + templateName;
-			if (templateExists(fallbackTemplate)) {
+		if (!"de".equals(language.tag)) {
+			String fallbackPath = "de/" + templateName;
+			if (templateExists(fallbackPath)) {
 				LOG.warn("Mail template not found: {}, falling back to German", templatePath);
-				return templateEngine.process(fallbackTemplate, context);
+				return fallbackPath;
 			}
 		}
 
@@ -73,17 +76,15 @@ public class MailTemplateEngine {
 	}
 
 	/**
-	 * Normalizes a locale string to a supported language tag.
+	 * Process a mail template with the given variables.
 	 *
-	 * @param locale The locale string (e.g., "de-DE", "en-GB", "fr")
-	 * @return The normalized language tag (e.g., "de", "en-US", "fr")
+	 * @param locale The locale for template resolution (e.g., "de", "en-US")
+	 * @param templateName The template name without path prefix or suffix (e.g., "mail-template")
+	 * @param variables The template variables
+	 * @return The processed HTML content
 	 */
-	private String normalizeLocale(String locale) {
-		Language language = Language.fromTag(locale);
-		if (locale != null && !locale.isEmpty() && !locale.equals(language.tag)) {
-			LOG.debug("Normalized mail locale '{}' to '{}'", locale, language.tag);
-		}
-		return language.tag;
+	public String processTemplate(String locale, String templateName, Map<String, Object> variables) {
+		return processTemplate(Language.fromTag(locale), templateName, variables);
 	}
 
 	/**

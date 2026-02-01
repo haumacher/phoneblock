@@ -18,6 +18,7 @@ import de.haumacher.phoneblock.captcha.Captcha;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -79,9 +80,8 @@ public class RegisterServlet extends HttpServlet {
 		}
 		
 		try {
-			// Get locale from request (browser Accept-Language header)
-			String locale = req.getLocale().toLanguageTag();
-			mailService.sendActivationMail(registration.getEmail(), code, locale);
+			// Get language from request (browser Accept-Language header)
+			mailService.sendActivationMail(registration.getEmail(), code, I18N.getUserLanguage(req));
 		} catch (AddressException ex) {
 			removeSession(sessionId);
 			ServletUtil.sendError(resp, "Invalid e-mail address: " + ex.getMessage());

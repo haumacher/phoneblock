@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
 
@@ -14,9 +15,9 @@ import jakarta.mail.internet.AddressException;
  * Test-only implementation of {@link MailService}.
  */
 public class DummyMailService implements MailService {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(DummyMailService.class);
-	
+
 	public static final MailService INSTANCE = new DummyMailService();
 
 	@Override
@@ -25,15 +26,15 @@ public class DummyMailService implements MailService {
 	}
 
 	@Override
-	public void sendActivationMail(String receiver, String code, String locale)
+	public void sendActivationMail(String receiver, String code, Language language)
 			throws MessagingException, IOException, AddressException {
-		LOG.info("Send activation to {} in locale {}: {}", receiver, locale, code);
+		LOG.info("Send activation to {} in language {}: {}", receiver, language.tag, code);
 	}
 
 	@Override
-	public void sendEmailChangeMail(String receiver, String code, String locale)
+	public void sendEmailChangeMail(String receiver, String code, Language language)
 			throws MessagingException, IOException, AddressException {
-		LOG.info("Send email change verification to {} in locale {}: {}", receiver, locale, code);
+		LOG.info("Send email change verification to {} in language {}: {}", receiver, language.tag, code);
 	}
 
 	@Override

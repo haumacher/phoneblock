@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import de.haumacher.phoneblock.shared.Language;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
 
@@ -11,8 +12,8 @@ public interface MailService {
 
 	void startUp();
 
-	void sendActivationMail(String receiver, String code, String locale) throws MessagingException, IOException, AddressException;
-	void sendEmailChangeMail(String receiver, String code, String locale) throws MessagingException, IOException, AddressException;
+	void sendActivationMail(String receiver, String code, Language language) throws MessagingException, IOException, AddressException;
+	void sendEmailChangeMail(String receiver, String code, Language language) throws MessagingException, IOException, AddressException;
 	void sendWelcomeMail(UserSettings userSettings);
 
 	/**
