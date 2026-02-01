@@ -20,6 +20,7 @@ import org.pac4j.jee.context.session.JEESessionStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.RegistrationServlet;
@@ -126,7 +127,7 @@ public class OAuthLoginServlet extends HttpServlet {
 		if (login == null) {
 			// Create new account.
 			login = UUID.randomUUID().toString();
-			
+
 			if (displayName == null) {
 				if (email == null) {
 					displayName = login;
@@ -134,9 +135,9 @@ public class OAuthLoginServlet extends HttpServlet {
 					displayName = email;
 				}
 			}
-			
+
 			String dialPrefix = DefaultController.selectDialPrefix(req, language);
-			
+
 			String passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 			db.setGoogleId(login, googleId, null);
 			if (email != null) {
@@ -146,11 +147,21 @@ public class OAuthLoginServlet extends HttpServlet {
 					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
 				}
 			}
-			
+
+			// Check if this is a mobile app linking flow (skip credentials page)
+			String targetPath = location.isPresent() ? (String) location.get() : null;
+			if (targetPath != null && targetPath.startsWith(CreateAuthTokenServlet.MOBILE_LOGIN)) {
+				// For mobile flows, redirect directly to token creation without showing credentials
+				LoginFilter.setSessionUser(req, db.createMasterLoginToken(login));
+				resp.sendRedirect(req.getContextPath() + targetPath);
+				return;
+			}
+
+			// For web registration, show credentials page
 			if (location.isPresent()) {
 				req.setAttribute(LoginServlet.LOCATION_ATTRIBUTE, location.get());
 			}
-			
+
 			RegistrationServlet.startSetup(req, resp, login, passwd);
 			return;
 		}
