@@ -614,14 +614,25 @@ class FritzBoxService {
       print('_getOnlinePhonebooks: numberOfEntries=$numberOfEntries');
     }
 
+    // Online phonebook indices are 1-based (1 to numberOfEntries)
     final List<(int, OnlinePhonebookInfo)> phonebooks = [];
-    for (int index = 0; index < numberOfEntries; index++) {
-      final info = await onTelService.getInfoByIndex(index);
+    for (int index = 1; index <= numberOfEntries; index++) {
       if (kDebugMode) {
-        print(
-            '_getOnlinePhonebooks: [$index] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}"');
+        print('_getOnlinePhonebooks: fetching index $index...');
       }
-      phonebooks.add((index, info));
+      try {
+        final info = await onTelService.getInfoByIndex(index);
+        if (kDebugMode) {
+          print(
+              '_getOnlinePhonebooks: [$index] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}"');
+        }
+        phonebooks.add((index, info));
+      } catch (e) {
+        if (kDebugMode) {
+          print('_getOnlinePhonebooks: ERROR at index $index: $e');
+        }
+        rethrow;
+      }
     }
     return phonebooks;
   }
@@ -649,7 +660,7 @@ class FritzBoxService {
   /// Gets the next available online phonebook index.
   ///
   /// Fritz!Box supports up to 10 online phonebook accounts.
-  /// This method finds the first empty slot or the next index after existing entries.
+  /// Indices are 1-based. To create a new entry, use numberOfEntries + 1.
   int _getNextOnlinePhonebookIndex(List<(int, OnlinePhonebookInfo)> phonebooks) {
     // Look for empty slot (URL is empty)
     for (final (index, info) in phonebooks) {
@@ -661,8 +672,8 @@ class FritzBoxService {
       }
     }
 
-    // No empty slot - use the next index after existing entries
-    final nextIndex = phonebooks.length;
+    // No empty slot - use numberOfEntries + 1 to create new entry (1-based indices)
+    final nextIndex = phonebooks.length + 1;
     if (kDebugMode) {
       print('_getNextOnlinePhonebookIndex: Using next index $nextIndex');
     }
