@@ -834,23 +834,25 @@ class FritzBoxService {
     try {
       final info = await onTelService.getInfoByIndex(index);
 
+      if (kDebugMode) {
+        print('verifyCardDav: index=$index enable=${info.enable} status="${info.status}" lastConnect="${info.lastConnect}"');
+      }
+
       if (!info.enable) {
         return CardDavStatus.disabled;
       }
 
-      // Check status string from Fritz!Box
-      // Common values: "ok", "error", "" (pending)
-      final status = info.status.toLowerCase();
-      if (status == 'ok' || status.contains('success')) {
+      // Fritz!Box returns "0" for success
+      if (info.status == '0') {
         return CardDavStatus.synced;
-      } else if (status.contains('error') || status.contains('fail')) {
-        return CardDavStatus.error;
+      } else if (info.lastConnect.isNotEmpty) {
+        return CardDavStatus.synced;
       } else {
         return CardDavStatus.syncPending;
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error verifying CardDAV status: $e');
+        print('verifyCardDav: ERROR $e');
       }
       return CardDavStatus.error;
     }

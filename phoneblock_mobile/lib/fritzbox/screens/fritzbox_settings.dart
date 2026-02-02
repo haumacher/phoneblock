@@ -495,12 +495,10 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           leading: Icon(statusIcon, color: statusColor),
           title: Text(l10n.fritzboxCardDavStatus),
           subtitle: Text(statusText),
-          trailing: _cardDavStatus == CardDavStatus.error
-              ? IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: _loadData,
-                )
-              : null,
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadData,
+          ),
         ),
         // Note about sync frequency
         ListTile(
