@@ -600,45 +600,46 @@ class FritzBoxService {
     return 0;
   }
 
-  /// Maximum number of online phonebook accounts supported by Fritz!Box.
-  static const int _maxOnlinePhonebooks = 10;
-
   /// Gets all configured online phonebooks from Fritz!Box.
   ///
   /// Returns a list of (index, info) tuples for all existing online phonebooks.
-  /// Fritz!Box supports up to 10 online phonebook accounts (indices 1-10).
-  /// Entries with empty URLs are skipped (deleted/empty slots).
+  /// Uses getPhonebookList() to get the list of phonebook IDs, then queries
+  /// online phonebook info for each potential index.
   Future<List<(int, OnlinePhonebookInfo)>> _getOnlinePhonebooks() async {
     final onTelService = _client?.onTel();
     if (onTelService == null) {
       throw Exception('OnTel service not available');
     }
 
-    // Online phonebook indices are 1-based (1 to max)
-    // We iterate through all possible slots because indices can have gaps
-    // (deleted entries leave empty slots)
+    // Get the list of phonebook IDs to determine valid indices
+    final phonebookIds = await onTelService.getPhonebookList();
+    if (kDebugMode) {
+      print('_getOnlinePhonebooks: phonebookIds=$phonebookIds');
+    }
+
+    // Online phonebook indices correspond to phonebook IDs
+    // Query each ID as an online phonebook index
     final List<(int, OnlinePhonebookInfo)> phonebooks = [];
-    for (int index = 1; index <= _maxOnlinePhonebooks; index++) {
+    for (final id in phonebookIds) {
       try {
-        final info = await onTelService.getInfoByIndex(index);
-        // Skip empty slots (deleted phonebooks leave empty entries)
+        final info = await onTelService.getInfoByIndex(id);
+        // Skip entries without URL (not an online phonebook)
         if (info.url.isEmpty) {
           if (kDebugMode) {
-            print('_getOnlinePhonebooks: [$index] empty slot (no URL)');
+            print('_getOnlinePhonebooks: [$id] no URL (not an online phonebook)');
           }
           continue;
         }
         if (kDebugMode) {
           print(
-              '_getOnlinePhonebooks: [$index] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status="${info.status}"');
+              '_getOnlinePhonebooks: [$id] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status="${info.status}"');
         }
-        phonebooks.add((index, info));
+        phonebooks.add((id, info));
       } catch (e) {
-        // Index doesn't exist - we've reached the end of configured phonebooks
+        // This phonebook ID doesn't have an online phonebook configuration
         if (kDebugMode) {
-          print('_getOnlinePhonebooks: [$index] not configured (end of list)');
+          print('_getOnlinePhonebooks: [$id] error: $e');
         }
-        break;
       }
     }
     return phonebooks;
@@ -667,27 +668,22 @@ class FritzBoxService {
 
   /// Gets the next available online phonebook index.
   ///
-  /// Fritz!Box supports up to 10 online phonebook accounts.
-  /// Indices are 1-based. Finds the first unused index.
-  int _getNextOnlinePhonebookIndex(List<(int, OnlinePhonebookInfo)> phonebooks) {
-    // Get all used indices
-    final usedIndices = phonebooks.map((p) => p.$1).toSet();
-
-    // Find first unused index (1 to max)
-    for (int index = 1; index <= _maxOnlinePhonebooks; index++) {
-      if (!usedIndices.contains(index)) {
-        if (kDebugMode) {
-          print('_getNextOnlinePhonebookIndex: Found unused index $index');
-        }
-        return index;
-      }
+  /// To create a new online phonebook, use the next index after the highest
+  /// existing phonebook ID.
+  Future<int> _getNextOnlinePhonebookIndex() async {
+    final onTelService = _client?.onTel();
+    if (onTelService == null) {
+      throw Exception('OnTel service not available');
     }
 
-    // All slots are used (shouldn't happen normally)
+    final phonebookIds = await onTelService.getPhonebookList();
+    // New online phonebook goes at max ID + 1
+    final maxId = phonebookIds.isEmpty ? 0 : phonebookIds.reduce((a, b) => a > b ? a : b);
+    final nextIndex = maxId + 1;
     if (kDebugMode) {
-      print('_getNextOnlinePhonebookIndex: All slots used, returning max+1');
+      print('_getNextOnlinePhonebookIndex: phonebookIds=$phonebookIds, next=$nextIndex');
     }
-    return _maxOnlinePhonebooks + 1;
+    return nextIndex;
   }
 
   /// Configures CardDAV online phonebook on Fritz!Box.
@@ -728,7 +724,7 @@ class FritzBoxService {
         print('configureCardDav: Reusing existing slot at index $index');
       }
     } else {
-      index = _getNextOnlinePhonebookIndex(phonebooks);
+      index = await _getNextOnlinePhonebookIndex();
       if (kDebugMode) {
         print('configureCardDav: Using new slot at index $index');
       }
