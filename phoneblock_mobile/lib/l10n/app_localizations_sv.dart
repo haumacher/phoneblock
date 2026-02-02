@@ -729,4 +729,102 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sourceFritzbox => 'Fritz!Box';
+
+  @override
+  String get fritzboxStepBlocklist => 'Skydd mot skräppost';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'Upprätta blocklista';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'Välj hur din Fritz!Box ska skyddas mot spam-samtal.';
+
+  @override
+  String get fritzboxCardDavTitle => 'CardDAV blocklista';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz!Box synkroniserar blockeringslistan direkt med PhoneBlock. Rekommenderas för FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'Ställ in senare';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'Du kan aktivera skräppostskyddet senare i inställningarna.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV kräver FRITZ!OS 7.20 eller nyare. Din Fritz!Box har en äldre version.';
+
+  @override
+  String get fritzboxFinishSetup => 'Slutföra installationen';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'Vänligen logga in på PhoneBlock först.';
+
+  @override
+  String get fritzboxCannotGetUsername =>
+      'PhoneBlock-användarnamnet kunde inte hämtas.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed =>
+      'Blocklistan kunde inte sättas upp.';
+
+  @override
+  String get fritzboxCardDavStatus => 'CardDAV-status';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'Synkroniserad';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'Synkronisering pågår';
+
+  @override
+  String get fritzboxCardDavStatusError => 'Synkroniseringsfel';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'Avaktiverad';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'Fritz!Box synkroniserar telefonboken en gång om dagen vid midnatt.';
+
+  @override
+  String get fritzboxBlocklistMode => 'Läge för skydd mot skräppost';
+
+  @override
+  String get fritzboxBlocklistModeCardDav =>
+      'CardDAV (automatisk synkronisering)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'Ej aktiverad';
+
+  @override
+  String get fritzboxEnableCardDav => 'Aktivera CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'Synkronisera blockeringslistan för skräppost direkt med Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled => 'CardDAV blocklista aktiverad';
+
+  @override
+  String get fritzboxDisableCardDav => 'Avaktivera CardDAV';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'Avaktivera CardDAV?';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      'Blocklistan CardDAV har tagits bort från Fritz!';
+
+  @override
+  String get fritzboxDisable => 'Avaktivera';
+
+  @override
+  String get fritzboxCardDavDisabled => 'CardDAV blocklista avaktiverad';
 }

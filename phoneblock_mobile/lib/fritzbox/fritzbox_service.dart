@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:fritz_tr064/fritz_tr064.dart';
@@ -8,6 +9,24 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
+
+/// Status of CardDAV synchronization.
+enum CardDavStatus {
+  /// CardDAV is not configured.
+  notConfigured,
+
+  /// CardDAV is configured but disabled.
+  disabled,
+
+  /// CardDAV is synced successfully.
+  synced,
+
+  /// CardDAV sync is pending.
+  syncPending,
+
+  /// CardDAV sync failed.
+  error,
+}
 
 /// Normalizes a phone number to international E.164 format.
 /// Uses the native Android libphonenumber library via MethodChannel.
@@ -551,6 +570,245 @@ class FritzBoxService {
     } catch (e) {
       _connectionState = FritzBoxConnectionState.offline;
       return false;
+    }
+  }
+
+  // -- CardDAV Configuration Methods --
+
+  /// Minimum FRITZ!OS version required for CardDAV support.
+  static const String _minCardDavVersion = '7.20';
+
+  /// Checks if the connected Fritz!Box supports CardDAV (FRITZ!OS 7.20+).
+  Future<bool> supportsCardDav() async {
+    final config = await FritzBoxStorage.instance.getConfig();
+    if (config?.fritzosVersion == null) return false;
+    return _compareVersion(config!.fritzosVersion!, _minCardDavVersion) >= 0;
+  }
+
+  /// Compares two version strings (e.g., "7.50" vs "7.20").
+  ///
+  /// Returns negative if v1 < v2, 0 if equal, positive if v1 > v2.
+  int _compareVersion(String v1, String v2) {
+    final parts1 = v1.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final parts2 = v2.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+    for (int i = 0; i < max(parts1.length, parts2.length); i++) {
+      final p1 = i < parts1.length ? parts1[i] : 0;
+      final p2 = i < parts2.length ? parts2[i] : 0;
+      if (p1 != p2) return p1 - p2;
+    }
+    return 0;
+  }
+
+  /// Finds an existing PhoneBlock CardDAV configuration on the Fritz!Box.
+  ///
+  /// Returns the index if found, null otherwise.
+  Future<int?> _findExistingCardDavConfig() async {
+    final onTelService = _client?.onTel();
+    if (onTelService == null) return null;
+
+    int index = 0;
+    while (true) {
+      try {
+        final info = await onTelService.getInfoByIndex(index);
+        // Check if this is a PhoneBlock CardDAV configuration
+        if (info.url.contains('phoneblock.net') ||
+            info.name.toLowerCase().contains('phoneblock')) {
+          return index;
+        }
+        index++;
+      } catch (e) {
+        // No more entries or error
+        return null;
+      }
+    }
+  }
+
+  /// Gets the next available online phonebook index.
+  Future<int> _getNextOnlinePhonebookIndex() async {
+    final onTelService = _client?.onTel();
+    if (onTelService == null) {
+      throw Exception('OnTel service not available');
+    }
+
+    int index = 0;
+    while (true) {
+      try {
+        await onTelService.getInfoByIndex(index);
+        index++;
+      } catch (e) {
+        // No more entries, this index is available
+        return index;
+      }
+    }
+  }
+
+  /// Configures CardDAV online phonebook on Fritz!Box.
+  ///
+  /// Creates or updates an online phonebook that syncs with PhoneBlock's
+  /// CardDAV server for spam contact blocklist.
+  ///
+  /// [phoneBlockUsername] - The user's PhoneBlock login name for the CardDAV URL.
+  /// [phoneBlockToken] - The user's PhoneBlock API token for authentication.
+  Future<void> configureCardDav({
+    required String phoneBlockUsername,
+    required String phoneBlockToken,
+  }) async {
+    if (!isConnected) {
+      throw Exception('Not connected to Fritz!Box');
+    }
+
+    final onTelService = _client?.onTel();
+    if (onTelService == null) {
+      throw Exception('OnTel service not available');
+    }
+
+    // Check for existing configuration
+    int? existingIndex = await _findExistingCardDavConfig();
+    int index = existingIndex ?? await _getNextOnlinePhonebookIndex();
+
+    // Build CardDAV URL using the app's context path
+    final carddavUrl =
+        'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
+
+    if (kDebugMode) {
+      print('Configuring CardDAV at index $index: $carddavUrl');
+    }
+
+    // Configure online phonebook
+    await onTelService.setConfigByIndex(
+      index: index,
+      enable: true,
+      url: carddavUrl,
+      serviceId: '', // Not required for CardDAV
+      username: phoneBlockUsername,
+      password: phoneBlockToken,
+      name: 'PhoneBlock SPAM',
+    );
+
+    // Save configuration to local storage
+    await FritzBoxStorage.instance.updateConfig(
+      blocklistMode: BlocklistMode.cardDav,
+      phonebookId: index.toString(),
+    );
+  }
+
+  /// Removes CardDAV configuration from Fritz!Box.
+  Future<void> removeCardDav() async {
+    final config = await FritzBoxStorage.instance.getConfig();
+    if (config?.blocklistMode != BlocklistMode.cardDav) {
+      // Not configured for CardDAV
+      return;
+    }
+
+    if (isConnected && config?.phonebookId != null) {
+      final onTelService = _client?.onTel();
+      if (onTelService != null) {
+        final index = int.tryParse(config!.phonebookId!);
+        if (index != null) {
+          try {
+            await onTelService.deleteByIndex(index);
+            if (kDebugMode) {
+              print('Removed CardDAV online phonebook at index $index');
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('Error removing CardDAV config: $e');
+            }
+            // Continue anyway to clear local config
+          }
+        }
+      }
+    }
+
+    // Clear local configuration
+    await FritzBoxStorage.instance.updateConfig(
+      blocklistMode: BlocklistMode.none,
+      phonebookId: null,
+    );
+  }
+
+  /// Verifies CardDAV configuration status on Fritz!Box.
+  ///
+  /// Returns the current sync status.
+  Future<CardDavStatus> verifyCardDav() async {
+    final config = await FritzBoxStorage.instance.getConfig();
+    if (config?.blocklistMode != BlocklistMode.cardDav ||
+        config?.phonebookId == null) {
+      return CardDavStatus.notConfigured;
+    }
+
+    if (!isConnected) {
+      // Can't verify when offline, assume it's pending
+      return CardDavStatus.syncPending;
+    }
+
+    final onTelService = _client?.onTel();
+    if (onTelService == null) {
+      return CardDavStatus.error;
+    }
+
+    final index = int.tryParse(config!.phonebookId!);
+    if (index == null) {
+      return CardDavStatus.error;
+    }
+
+    try {
+      final info = await onTelService.getInfoByIndex(index);
+
+      if (!info.enable) {
+        return CardDavStatus.disabled;
+      }
+
+      // Check status string from Fritz!Box
+      // Common values: "ok", "error", "" (pending)
+      final status = info.status.toLowerCase();
+      if (status == 'ok' || status.contains('success')) {
+        return CardDavStatus.synced;
+      } else if (status.contains('error') || status.contains('fail')) {
+        return CardDavStatus.error;
+      } else {
+        return CardDavStatus.syncPending;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error verifying CardDAV status: $e');
+      }
+      return CardDavStatus.error;
+    }
+  }
+
+  /// Gets detailed information about the current CardDAV configuration.
+  ///
+  /// Returns null if CardDAV is not configured or not connected.
+  Future<OnlinePhonebookInfo?> getCardDavInfo() async {
+    final config = await FritzBoxStorage.instance.getConfig();
+    if (config?.blocklistMode != BlocklistMode.cardDav ||
+        config?.phonebookId == null) {
+      return null;
+    }
+
+    if (!isConnected) {
+      return null;
+    }
+
+    final onTelService = _client?.onTel();
+    if (onTelService == null) {
+      return null;
+    }
+
+    final index = int.tryParse(config!.phonebookId!);
+    if (index == null) {
+      return null;
+    }
+
+    try {
+      return await onTelService.getInfoByIndex(index);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting CardDAV info: $e');
+      }
+      return null;
     }
   }
 }

@@ -145,6 +145,72 @@ Future<void> updateAccountSettings(String authToken, Map<String, String> setting
   }
 }
 
+/// Account settings returned from the PhoneBlock API.
+class AccountSettings {
+  /// The user's login name (used for CardDAV URL construction).
+  final String? login;
+
+  /// The user's preferred language tag.
+  final String? lang;
+
+  /// The user's country dial prefix.
+  final String? dialPrefix;
+
+  /// The user's display name.
+  final String? displayName;
+
+  /// The user's email address.
+  final String? email;
+
+  AccountSettings({
+    this.login,
+    this.lang,
+    this.dialPrefix,
+    this.displayName,
+    this.email,
+  });
+
+  factory AccountSettings.fromJson(Map<String, dynamic> json) {
+    return AccountSettings(
+      login: json['login'] as String?,
+      lang: json['lang'] as String?,
+      dialPrefix: json['dialPrefix'] as String?,
+      displayName: json['displayName'] as String?,
+      email: json['email'] as String?,
+    );
+  }
+}
+
+/// Fetches user account settings from the server.
+/// Returns null if the request fails.
+Future<AccountSettings?> fetchAccountSettings(String authToken) async {
+  try {
+    final url = '$pbBaseUrl/api/account';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $authToken',
+        'User-Agent': 'PhoneBlockMobile/$appVersion',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return AccountSettings.fromJson(data);
+    } else {
+      if (kDebugMode) {
+        print('Failed to fetch account settings: ${response.statusCode}');
+      }
+      return null;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error fetching account settings: $e');
+    }
+    return null;
+  }
+}
+
 /// Builds the PhoneBlock login URL with device-specific token label parameter.
 Future<String> _getPhoneBlockLoginUrl() async {
   final deviceName = await _getDeviceName();

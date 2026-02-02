@@ -1315,6 +1315,180 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fritz!Box'**
   String get sourceFritzbox;
+
+  /// Wizard step title for blocklist configuration
+  ///
+  /// In de, this message translates to:
+  /// **'Spam-Schutz'**
+  String get fritzboxStepBlocklist;
+
+  /// Wizard step subtitle for blocklist configuration
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste einrichten'**
+  String get fritzboxStepBlocklistSubtitle;
+
+  /// Description text for blocklist setup step
+  ///
+  /// In de, this message translates to:
+  /// **'Wählen Sie, wie Ihre Fritz!Box vor Spam-Anrufen geschützt werden soll.'**
+  String get fritzboxBlocklistDescription;
+
+  /// Title for CardDAV blocklist option
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Blockliste'**
+  String get fritzboxCardDavTitle;
+
+  /// Description for CardDAV blocklist option
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box synchronisiert die Blockliste direkt mit PhoneBlock. Empfohlen für FRITZ!OS 7.20+.'**
+  String get fritzboxCardDavDescription;
+
+  /// Option to skip blocklist setup
+  ///
+  /// In de, this message translates to:
+  /// **'Später einrichten'**
+  String get fritzboxSkipBlocklist;
+
+  /// Description for skip option
+  ///
+  /// In de, this message translates to:
+  /// **'Sie können den Spam-Schutz später in den Einstellungen aktivieren.'**
+  String get fritzboxSkipBlocklistDescription;
+
+  /// Warning when FRITZ!OS version is too old for CardDAV
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV erfordert FRITZ!OS 7.20 oder neuer. Ihre Fritz!Box hat eine ältere Version.'**
+  String get fritzboxVersionTooOldForCardDav;
+
+  /// Button to finish wizard setup
+  ///
+  /// In de, this message translates to:
+  /// **'Einrichtung abschließen'**
+  String get fritzboxFinishSetup;
+
+  /// Error when PhoneBlock login is required
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte melden Sie sich zuerst bei PhoneBlock an.'**
+  String get fritzboxPhoneBlockNotLoggedIn;
+
+  /// Error when username cannot be retrieved
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock-Benutzername konnte nicht abgerufen werden.'**
+  String get fritzboxCannotGetUsername;
+
+  /// Error when blocklist configuration fails
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste konnte nicht eingerichtet werden.'**
+  String get fritzboxBlocklistConfigFailed;
+
+  /// CardDAV status label in settings
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Status'**
+  String get fritzboxCardDavStatus;
+
+  /// CardDAV status when synced
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert'**
+  String get fritzboxCardDavStatusSynced;
+
+  /// CardDAV status when sync is pending
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisierung ausstehend'**
+  String get fritzboxCardDavStatusPending;
+
+  /// CardDAV status when there is an error
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisierungsfehler'**
+  String get fritzboxCardDavStatusError;
+
+  /// CardDAV status when disabled
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktiviert'**
+  String get fritzboxCardDavStatusDisabled;
+
+  /// CardDAV sync frequency note
+  ///
+  /// In de, this message translates to:
+  /// **'Die Fritz!Box synchronisiert das Telefonbuch einmal täglich um Mitternacht.'**
+  String get fritzboxCardDavNote;
+
+  /// Blocklist mode setting label
+  ///
+  /// In de, this message translates to:
+  /// **'Spam-Schutz Modus'**
+  String get fritzboxBlocklistMode;
+
+  /// CardDAV blocklist mode description
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV (automatische Synchronisierung)'**
+  String get fritzboxBlocklistModeCardDav;
+
+  /// No blocklist mode description
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht aktiviert'**
+  String get fritzboxBlocklistModeNone;
+
+  /// Enable CardDAV button
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV aktivieren'**
+  String get fritzboxEnableCardDav;
+
+  /// Enable CardDAV description
+  ///
+  /// In de, this message translates to:
+  /// **'Spam-Blockliste direkt mit Fritz!Box synchronisieren'**
+  String get fritzboxEnableCardDavDescription;
+
+  /// CardDAV enabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Blockliste aktiviert'**
+  String get fritzboxCardDavEnabled;
+
+  /// Disable CardDAV button
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV deaktivieren'**
+  String get fritzboxDisableCardDav;
+
+  /// Disable CardDAV dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV deaktivieren?'**
+  String get fritzboxDisableCardDavTitle;
+
+  /// Disable CardDAV dialog message
+  ///
+  /// In de, this message translates to:
+  /// **'Die CardDAV-Blockliste wird von der Fritz!Box entfernt.'**
+  String get fritzboxDisableCardDavMessage;
+
+  /// Disable button
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktivieren'**
+  String get fritzboxDisable;
+
+  /// CardDAV disabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Blockliste deaktiviert'**
+  String get fritzboxCardDavDisabled;
 }
 
 class _AppLocalizationsDelegate

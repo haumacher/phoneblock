@@ -199,6 +199,7 @@ public class AccountManagementServlet extends HttpServlet {
 	 */
 	private void sendAccountSettings(HttpServletResponse resp, UserSettings settings) throws IOException {
 		AccountSettings response = AccountSettings.create()
+				.setLogin(settings.getLogin())
 				.setLang(settings.getLang())
 				.setDialPrefix(settings.getDialPrefix())
 				.setDisplayName(DB.toDisplayName(settings.getDisplayName()))

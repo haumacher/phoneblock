@@ -419,6 +419,10 @@ message UpdateAccountRequest extends AccountData {
 
 /** Response from account settings operations. */
 message AccountSettings extends AccountData {
+	/** The user's login name (used for CardDAV URL construction). */
+	@Nullable
+	string login;
+
 	/** The user's email address. */
 	@Nullable
 	string email;

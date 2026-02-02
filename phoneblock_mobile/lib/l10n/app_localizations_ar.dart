@@ -728,4 +728,99 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sourceFritzbox => 'فريتز!بوكس';
+
+  @override
+  String get fritzboxStepBlocklist => 'الحماية من الرسائل غير المرغوب فيها';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'إعداد قائمة الحظر';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'حدد كيفية حماية جهاز Fritz!Box الخاص بك من المكالمات غير المرغوب فيها.';
+
+  @override
+  String get fritzboxCardDavTitle => 'قائمة حظر CardDAV';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'يقوم Fritz!Box بمزامنة قائمة الحظر مباشرةً مع PhoneBlock. موصى به لـ FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'الإعداد لاحقاً';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'يمكنك تفعيل الحماية من الرسائل غير المرغوب فيها لاحقاً في الإعدادات.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'يتطلب CardDAV إصدار FRITZ!OS 7.20 أو أحدث. يحتوي Fritz!Box الخاص بك على إصدار أقدم.';
+
+  @override
+  String get fritzboxFinishSetup => 'إنهاء الإعداد النهائي';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'يرجى تسجيل الدخول إلى PhoneBlock أولاً.';
+
+  @override
+  String get fritzboxCannotGetUsername => 'تعذر استرداد اسم مستخدم PhoneBlock.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed => 'تعذر إعداد قائمة الحظر.';
+
+  @override
+  String get fritzboxCardDavStatus => 'حالة CardDAV';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'متزامن';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'المزامنة معلقة';
+
+  @override
+  String get fritzboxCardDavStatusError => 'خطأ في المزامنة';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'معطلة';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'يقوم Fritz!Box بمزامنة دفتر الهاتف مرة واحدة يومياً في منتصف الليل.';
+
+  @override
+  String get fritzboxBlocklistMode => 'وضع الحماية من الرسائل غير المرغوب فيها';
+
+  @override
+  String get fritzboxBlocklistModeCardDav => 'CardDAV (المزامنة التلقائية)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'غير مفعل';
+
+  @override
+  String get fritzboxEnableCardDav => 'تنشيط CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'مزامنة قائمة حظر الرسائل غير المرغوب فيها مباشرة مع Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled => 'تم تنشيط قائمة حظر CardDAV';
+
+  @override
+  String get fritzboxDisableCardDav => 'إلغاء تنشيط CardDAV';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'إلغاء تنشيط CardDAV؟';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      'تمت إزالة قائمة حظر CardDAV من Fritz!';
+
+  @override
+  String get fritzboxDisable => 'إلغاء التنشيط';
+
+  @override
+  String get fritzboxCardDavDisabled => 'تم إلغاء تنشيط قائمة حظر CardDAV';
 }

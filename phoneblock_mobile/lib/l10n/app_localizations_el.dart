@@ -731,4 +731,103 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get sourceFritzbox => 'Fritz!Box';
+
+  @override
+  String get fritzboxStepBlocklist => 'Προστασία από spam';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'Ρύθμιση λίστας μπλοκαρίσματος';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'Επιλέξτε τον τρόπο με τον οποίο το Fritz!Box σας θα πρέπει να προστατεύεται από κλήσεις spam.';
+
+  @override
+  String get fritzboxCardDavTitle => 'Λίστα αποκλεισμού CardDAV';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Το Fritz!Box συγχρονίζει τη λίστα αποκλεισμού απευθείας με το PhoneBlock. Συνιστάται για το FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'Ρύθμιση αργότερα';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'Μπορείτε να ενεργοποιήσετε την προστασία από ανεπιθύμητη αλληλογραφία αργότερα στις ρυθμίσεις.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'Το CardDAV απαιτεί FRITZ!OS 7.20 ή νεότερη έκδοση. Το Fritz!Box σας έχει παλαιότερη έκδοση.';
+
+  @override
+  String get fritzboxFinishSetup => 'Οριστικοποίηση της εγκατάστασης';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'Συνδεθείτε πρώτα στο PhoneBlock.';
+
+  @override
+  String get fritzboxCannotGetUsername =>
+      'Το όνομα χρήστη PhoneBlock δεν μπόρεσε να ανακτηθεί.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed =>
+      'Η λίστα αποκλεισμού δεν μπόρεσε να δημιουργηθεί.';
+
+  @override
+  String get fritzboxCardDavStatus => 'Κατάσταση CardDAV';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'Συγχρονισμένο';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'Εκκρεμεί ο συγχρονισμός';
+
+  @override
+  String get fritzboxCardDavStatusError => 'Σφάλμα συγχρονισμού';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'Απενεργοποιημένο';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'Το Fritz!Box συγχρονίζει τον τηλεφωνικό κατάλογο μία φορά την ημέρα τα μεσάνυχτα.';
+
+  @override
+  String get fritzboxBlocklistMode => 'Λειτουργία προστασίας από spam';
+
+  @override
+  String get fritzboxBlocklistModeCardDav => 'CardDAV (αυτόματος συγχρονισμός)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'Δεν έχει ενεργοποιηθεί';
+
+  @override
+  String get fritzboxEnableCardDav => 'Ενεργοποίηση CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'Συγχρονισμός της λίστας αποκλεισμού spam απευθείας με το Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled =>
+      'Ενεργοποιημένη λίστα αποκλεισμού CardDAV';
+
+  @override
+  String get fritzboxDisableCardDav => 'Απενεργοποίηση CardDAV';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'Απενεργοποίηση του CardDAV;';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      'Η λίστα αποκλεισμού CardDAV αφαιρείται από το Fritz!';
+
+  @override
+  String get fritzboxDisable => 'Απενεργοποίηση';
+
+  @override
+  String get fritzboxCardDavDisabled =>
+      'Απενεργοποιημένη λίστα αποκλεισμού CardDAV';
 }

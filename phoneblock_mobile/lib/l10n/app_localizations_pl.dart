@@ -732,4 +732,102 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get sourceFritzbox => 'Fritz!Box';
+
+  @override
+  String get fritzboxStepBlocklist => 'Ochrona przed spamem';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'Konfigurowanie listy bloków';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'Wybierz sposób ochrony urządzenia Fritz!Box przed połączeniami spamowymi.';
+
+  @override
+  String get fritzboxCardDavTitle => 'Lista bloków CardDAV';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz!Box synchronizuje listę blokad bezpośrednio z PhoneBlock. Zalecane dla FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'Konfiguracja późniejsza';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'Ochronę przed spamem można aktywować później w ustawieniach.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV wymaga FRITZ!OS 7.20 lub nowszej wersji. Twój Fritz!Box ma starszą wersję.';
+
+  @override
+  String get fritzboxFinishSetup => 'Zakończenie konfiguracji';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'Zaloguj się najpierw do PhoneBlock.';
+
+  @override
+  String get fritzboxCannotGetUsername =>
+      'Nie można pobrać nazwy użytkownika PhoneBlock.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed =>
+      'Nie można skonfigurować listy bloków.';
+
+  @override
+  String get fritzboxCardDavStatus => 'Status CardDAV';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'Zsynchronizowane';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'Synchronizacja w toku';
+
+  @override
+  String get fritzboxCardDavStatusError => 'Błąd synchronizacji';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'Dezaktywowany';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'Fritz!Box synchronizuje książkę telefoniczną raz dziennie o północy.';
+
+  @override
+  String get fritzboxBlocklistMode => 'Tryb ochrony przed spamem';
+
+  @override
+  String get fritzboxBlocklistModeCardDav =>
+      'CardDAV (automatyczna synchronizacja)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'Nie aktywowano';
+
+  @override
+  String get fritzboxEnableCardDav => 'Aktywacja CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'Synchronizacja listy blokowania spamu bezpośrednio z Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled => 'Aktywowano listę bloków CardDAV';
+
+  @override
+  String get fritzboxDisableCardDav => 'Dezaktywacja CardDAV';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'Dezaktywować CardDAV?';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      'Lista bloków CardDAV została usunięta z Fritz!';
+
+  @override
+  String get fritzboxDisable => 'Dezaktywuj';
+
+  @override
+  String get fritzboxCardDavDisabled => 'Lista bloków CardDAV wyłączona';
 }

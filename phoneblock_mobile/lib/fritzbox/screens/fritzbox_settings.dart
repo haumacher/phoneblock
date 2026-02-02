@@ -4,7 +4,8 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
-import 'package:phoneblock_mobile/main.dart' show newCallIds;
+import 'package:phoneblock_mobile/main.dart'
+    show newCallIds, getAuthToken, fetchAccountSettings;
 import 'package:phoneblock_mobile/storage.dart';
 
 /// Settings screen for Fritz!Box integration.
@@ -18,10 +19,13 @@ class FritzBoxSettingsScreen extends StatefulWidget {
 class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
   bool _isLoading = true;
   bool _isSyncing = false;
+  bool _isConfiguringCardDav = false;
   FritzBoxConfig? _config;
-  FritzBoxConnectionState _connectionState = FritzBoxConnectionState.notConfigured;
+  FritzBoxConnectionState _connectionState =
+      FritzBoxConnectionState.notConfigured;
   FritzBoxDeviceInfo? _deviceInfo;
   int _callCount = 0;
+  CardDavStatus _cardDavStatus = CardDavStatus.notConfigured;
 
   @override
   void initState() {
@@ -36,15 +40,23 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     try {
       final config = await FritzBoxStorage.instance.getConfig();
-      final callCount = await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
+      final callCount =
+          await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
 
       // Check connection state
       await FritzBoxService.instance.checkConnection();
       final connectionState = FritzBoxService.instance.connectionState;
 
       FritzBoxDeviceInfo? deviceInfo;
+      CardDavStatus cardDavStatus = CardDavStatus.notConfigured;
+
       if (connectionState == FritzBoxConnectionState.connected) {
         deviceInfo = await FritzBoxService.instance.getDeviceInfo();
+
+        // Check CardDAV status if configured
+        if (config?.blocklistMode == BlocklistMode.cardDav) {
+          cardDavStatus = await FritzBoxService.instance.verifyCardDav();
+        }
       }
 
       if (mounted) {
@@ -53,6 +65,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           _connectionState = connectionState;
           _deviceInfo = deviceInfo;
           _callCount = callCount;
+          _cardDavStatus = cardDavStatus;
           _isLoading = false;
         });
       }
@@ -76,7 +89,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       final newIds = await FritzBoxService.instance.syncCallList();
       // Track synced calls as new
       newCallIds.addAll(newIds);
-      final callCount = await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
+      final callCount =
+          await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
 
       if (mounted) {
         setState(() {
@@ -86,7 +100,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.fritzboxSyncComplete(newIds.length)),
+            content: Text(
+                AppLocalizations.of(context)!.fritzboxSyncComplete(newIds.length)),
           ),
         );
       }
@@ -147,6 +162,108 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     }
   }
 
+  Future<void> _enableCardDav() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    setState(() {
+      _isConfiguringCardDav = true;
+    });
+
+    try {
+      // Get PhoneBlock credentials
+      final authToken = await getAuthToken();
+      if (authToken == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.fritzboxPhoneBlockNotLoggedIn),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Fetch PhoneBlock username
+      final accountSettings = await fetchAccountSettings(authToken);
+      if (accountSettings?.login == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.fritzboxCannotGetUsername),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Configure CardDAV
+      await FritzBoxService.instance.configureCardDav(
+        phoneBlockUsername: accountSettings!.login!,
+        phoneBlockToken: authToken,
+      );
+
+      if (mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxCardDavEnabled)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.fritzboxBlocklistConfigFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isConfiguringCardDav = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _disableCardDav() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.fritzboxDisableCardDavTitle),
+        content: Text(l10n.fritzboxDisableCardDavMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.fritzboxDisable),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await FritzBoxService.instance.removeCardDav();
+      if (mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxCardDavDisabled)),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -171,6 +288,10 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         // Connection status card
         _buildConnectionCard(context, l10n),
 
+        // CardDAV/Blocklist section
+        const Divider(),
+        _buildBlocklistSection(context, l10n),
+
         // Sync section
         if (_connectionState == FritzBoxConnectionState.connected) ...[
           const Divider(),
@@ -180,7 +301,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         // Disconnect option
         const Divider(),
         ListTile(
-          leading: Icon(Icons.link_off, color: Colors.red),
+          leading: const Icon(Icons.link_off, color: Colors.red),
           title: Text(
             l10n.fritzboxDisconnect,
             style: const TextStyle(color: Colors.red),
@@ -252,7 +373,9 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _deviceInfo?.modelName ?? _config?.host ?? l10n.fritzboxTitle,
+                        _deviceInfo?.modelName ??
+                            _config?.host ??
+                            l10n.fritzboxTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 4),
@@ -304,6 +427,143 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildBlocklistSection(BuildContext context, AppLocalizations l10n) {
+    final isCardDavEnabled = _config?.blocklistMode == BlocklistMode.cardDav;
+
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(
+            Icons.shield,
+            color: isCardDavEnabled ? Colors.green : Colors.grey,
+          ),
+          title: Text(l10n.fritzboxBlocklistMode),
+          subtitle: Text(
+            isCardDavEnabled
+                ? l10n.fritzboxBlocklistModeCardDav
+                : l10n.fritzboxBlocklistModeNone,
+          ),
+        ),
+        if (isCardDavEnabled) ...[
+          // Show CardDAV status
+          _buildCardDavStatusTile(context, l10n),
+        ] else ...[
+          // Show option to enable CardDAV
+          if (_connectionState == FritzBoxConnectionState.connected)
+            FutureBuilder<bool>(
+              future: FritzBoxService.instance.supportsCardDav(),
+              builder: (context, snapshot) {
+                final supportsCardDav = snapshot.data ?? false;
+
+                if (!supportsCardDav) {
+                  return ListTile(
+                    leading: const Icon(Icons.info_outline, color: Colors.orange),
+                    title: Text(l10n.fritzboxVersionTooOldForCardDav),
+                    dense: true,
+                  );
+                }
+
+                return ListTile(
+                  leading: _isConfiguringCardDav
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_sync),
+                  title: Text(l10n.fritzboxEnableCardDav),
+                  subtitle: Text(l10n.fritzboxEnableCardDavDescription),
+                  onTap: _isConfiguringCardDav ? null : _enableCardDav,
+                );
+              },
+            ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCardDavStatusTile(BuildContext context, AppLocalizations l10n) {
+    final statusIcon = _getCardDavStatusIcon();
+    final statusColor = _getCardDavStatusColor();
+    final statusText = _getCardDavStatusText(l10n);
+
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(statusIcon, color: statusColor),
+          title: Text(l10n.fritzboxCardDavStatus),
+          subtitle: Text(statusText),
+          trailing: _cardDavStatus == CardDavStatus.error
+              ? IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _loadData,
+                )
+              : null,
+        ),
+        // Note about sync frequency
+        ListTile(
+          leading: const Icon(Icons.info_outline, color: Colors.grey),
+          title: Text(
+            l10n.fritzboxCardDavNote,
+            style: const TextStyle(fontSize: 14),
+          ),
+          dense: true,
+        ),
+        // Disable option
+        ListTile(
+          leading: const Icon(Icons.remove_circle_outline, color: Colors.orange),
+          title: Text(l10n.fritzboxDisableCardDav),
+          onTap: _disableCardDav,
+        ),
+      ],
+    );
+  }
+
+  IconData _getCardDavStatusIcon() {
+    switch (_cardDavStatus) {
+      case CardDavStatus.synced:
+        return Icons.check_circle;
+      case CardDavStatus.syncPending:
+        return Icons.pending;
+      case CardDavStatus.error:
+        return Icons.error;
+      case CardDavStatus.disabled:
+        return Icons.pause_circle;
+      case CardDavStatus.notConfigured:
+        return Icons.help_outline;
+    }
+  }
+
+  Color _getCardDavStatusColor() {
+    switch (_cardDavStatus) {
+      case CardDavStatus.synced:
+        return Colors.green;
+      case CardDavStatus.syncPending:
+        return Colors.orange;
+      case CardDavStatus.error:
+        return Colors.red;
+      case CardDavStatus.disabled:
+        return Colors.grey;
+      case CardDavStatus.notConfigured:
+        return Colors.grey;
+    }
+  }
+
+  String _getCardDavStatusText(AppLocalizations l10n) {
+    switch (_cardDavStatus) {
+      case CardDavStatus.synced:
+        return l10n.fritzboxCardDavStatusSynced;
+      case CardDavStatus.syncPending:
+        return l10n.fritzboxCardDavStatusPending;
+      case CardDavStatus.error:
+        return l10n.fritzboxCardDavStatusError;
+      case CardDavStatus.disabled:
+        return l10n.fritzboxCardDavStatusDisabled;
+      case CardDavStatus.notConfigured:
+        return l10n.fritzboxBlocklistModeNone;
+    }
   }
 
   Widget _buildSyncSection(BuildContext context, AppLocalizations l10n) {

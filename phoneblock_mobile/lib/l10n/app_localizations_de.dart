@@ -730,4 +730,102 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sourceFritzbox => 'Fritz!Box';
+
+  @override
+  String get fritzboxStepBlocklist => 'Spam-Schutz';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'Blockliste einrichten';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'Wählen Sie, wie Ihre Fritz!Box vor Spam-Anrufen geschützt werden soll.';
+
+  @override
+  String get fritzboxCardDavTitle => 'CardDAV-Blockliste';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz!Box synchronisiert die Blockliste direkt mit PhoneBlock. Empfohlen für FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'Später einrichten';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'Sie können den Spam-Schutz später in den Einstellungen aktivieren.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV erfordert FRITZ!OS 7.20 oder neuer. Ihre Fritz!Box hat eine ältere Version.';
+
+  @override
+  String get fritzboxFinishSetup => 'Einrichtung abschließen';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'Bitte melden Sie sich zuerst bei PhoneBlock an.';
+
+  @override
+  String get fritzboxCannotGetUsername =>
+      'PhoneBlock-Benutzername konnte nicht abgerufen werden.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed =>
+      'Blockliste konnte nicht eingerichtet werden.';
+
+  @override
+  String get fritzboxCardDavStatus => 'CardDAV-Status';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'Synchronisiert';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'Synchronisierung ausstehend';
+
+  @override
+  String get fritzboxCardDavStatusError => 'Synchronisierungsfehler';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'Deaktiviert';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'Die Fritz!Box synchronisiert das Telefonbuch einmal täglich um Mitternacht.';
+
+  @override
+  String get fritzboxBlocklistMode => 'Spam-Schutz Modus';
+
+  @override
+  String get fritzboxBlocklistModeCardDav =>
+      'CardDAV (automatische Synchronisierung)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'Nicht aktiviert';
+
+  @override
+  String get fritzboxEnableCardDav => 'CardDAV aktivieren';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'Spam-Blockliste direkt mit Fritz!Box synchronisieren';
+
+  @override
+  String get fritzboxCardDavEnabled => 'CardDAV-Blockliste aktiviert';
+
+  @override
+  String get fritzboxDisableCardDav => 'CardDAV deaktivieren';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'CardDAV deaktivieren?';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      'Die CardDAV-Blockliste wird von der Fritz!Box entfernt.';
+
+  @override
+  String get fritzboxDisable => 'Deaktivieren';
+
+  @override
+  String get fritzboxCardDavDisabled => 'CardDAV-Blockliste deaktiviert';
 }

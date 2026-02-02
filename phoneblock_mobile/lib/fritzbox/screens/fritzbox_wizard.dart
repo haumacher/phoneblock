@@ -3,7 +3,8 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_discovery.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
-import 'package:phoneblock_mobile/main.dart' show newCallIds;
+import 'package:phoneblock_mobile/main.dart'
+    show newCallIds, getAuthToken, fetchAccountSettings;
 
 /// Wizard steps for Fritz!Box connection.
 enum _WizardStep {
@@ -12,6 +13,9 @@ enum _WizardStep {
 
   /// Entering login credentials.
   login,
+
+  /// Configuring blocklist (CardDAV).
+  blocklist,
 }
 
 /// Connection wizard for Fritz!Box integration.
@@ -26,6 +30,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
   _WizardStep _currentStep = _WizardStep.detection;
   bool _isSearching = true;
   bool _isConnecting = false;
+  bool _isConfiguring = false;
   FritzBoxDeviceInfo? _deviceInfo;
   String? _errorMessage;
 
@@ -33,6 +38,10 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _showPassword = false;
+
+  // Blocklist step state
+  bool _supportsCardDav = false;
+  BlocklistMode _selectedMode = BlocklistMode.none;
 
   @override
   void initState() {
@@ -122,20 +131,88 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
 
     if (mounted) {
       if (success) {
-        // Perform initial sync
-        final newIds = await FritzBoxService.instance.syncCallList();
-        // Track synced calls as new
-        newCallIds.addAll(newIds);
+        // Check if CardDAV is supported
+        final supportsCardDav = await FritzBoxService.instance.supportsCardDav();
 
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
+        setState(() {
+          _isConnecting = false;
+          _supportsCardDav = supportsCardDav;
+          _selectedMode =
+              supportsCardDav ? BlocklistMode.cardDav : BlocklistMode.none;
+          _currentStep = _WizardStep.blocklist;
+        });
       } else {
         setState(() {
           _isConnecting = false;
-          _errorMessage = AppLocalizations.of(context)!.fritzboxConnectionFailed;
+          _errorMessage =
+              AppLocalizations.of(context)!.fritzboxConnectionFailed;
         });
       }
+    }
+  }
+
+  Future<void> _configureBlocklist() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (_selectedMode == BlocklistMode.none) {
+      // Skip - just finish wizard with initial sync
+      await _finishWizard();
+      return;
+    }
+
+    setState(() {
+      _isConfiguring = true;
+      _errorMessage = null;
+    });
+
+    try {
+      if (_selectedMode == BlocklistMode.cardDav) {
+        // Get PhoneBlock credentials
+        final authToken = await getAuthToken();
+        if (authToken == null) {
+          setState(() {
+            _errorMessage = l10n.fritzboxPhoneBlockNotLoggedIn;
+            _isConfiguring = false;
+          });
+          return;
+        }
+
+        // Fetch PhoneBlock username
+        final accountSettings = await fetchAccountSettings(authToken);
+        if (accountSettings?.login == null) {
+          setState(() {
+            _errorMessage = l10n.fritzboxCannotGetUsername;
+            _isConfiguring = false;
+          });
+          return;
+        }
+
+        // Configure CardDAV
+        await FritzBoxService.instance.configureCardDav(
+          phoneBlockUsername: accountSettings!.login!,
+          phoneBlockToken: authToken,
+        );
+      }
+
+      await _finishWizard();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = l10n.fritzboxBlocklistConfigFailed;
+          _isConfiguring = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _finishWizard() async {
+    // Perform initial sync
+    final newIds = await FritzBoxService.instance.syncCallList();
+    // Track synced calls as new
+    newCallIds.addAll(newIds);
+
+    if (mounted) {
+      Navigator.pop(context, true);
     }
   }
 
@@ -154,10 +231,10 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           return const SizedBox.shrink();
         },
         onStepTapped: (step) {
-          // Only allow going back to detection step
-          if (step == 0 && _currentStep == _WizardStep.login) {
+          // Only allow going back to previous steps
+          if (step < _currentStep.index) {
             setState(() {
-              _currentStep = _WizardStep.detection;
+              _currentStep = _WizardStep.values[step];
               _errorMessage = null;
             });
           }
@@ -175,9 +252,20 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           Step(
             title: Text(l10n.fritzboxStepLogin),
             subtitle: Text(l10n.fritzboxStepLoginSubtitle),
-            isActive: _currentStep == _WizardStep.login,
-            state: StepState.indexed,
+            isActive: _currentStep.index >= _WizardStep.login.index,
+            state: _currentStep == _WizardStep.login
+                ? StepState.indexed
+                : _currentStep.index > _WizardStep.login.index
+                    ? StepState.complete
+                    : StepState.indexed,
             content: _buildLoginStep(context, l10n),
+          ),
+          Step(
+            title: Text(l10n.fritzboxStepBlocklist),
+            subtitle: Text(l10n.fritzboxStepBlocklistSubtitle),
+            isActive: _currentStep == _WizardStep.blocklist,
+            state: StepState.indexed,
+            content: _buildBlocklistStep(context, l10n),
           ),
         ],
       ),
@@ -328,7 +416,8 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
             prefixIcon: const Icon(Icons.lock),
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+              icon:
+                  Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
               onPressed: () {
                 setState(() {
                   _showPassword = !_showPassword;
@@ -376,6 +465,163 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildBlocklistStep(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.fritzboxBlocklistDescription,
+          style: const TextStyle(color: Colors.grey),
+        ),
+        const SizedBox(height: 16),
+
+        // CardDAV option (only for FRITZ!OS 7.20+)
+        if (_supportsCardDav) ...[
+          _buildBlocklistOption(
+            title: l10n.fritzboxCardDavTitle,
+            subtitle: l10n.fritzboxCardDavDescription,
+            icon: Icons.cloud_sync,
+            selected: _selectedMode == BlocklistMode.cardDav,
+            onTap: () => setState(() => _selectedMode = BlocklistMode.cardDav),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Skip option (configure later)
+        _buildBlocklistOption(
+          title: l10n.fritzboxSkipBlocklist,
+          subtitle: l10n.fritzboxSkipBlocklistDescription,
+          icon: Icons.skip_next,
+          selected: _selectedMode == BlocklistMode.none,
+          onTap: () => setState(() => _selectedMode = BlocklistMode.none),
+        ),
+
+        // Version warning for older FRITZ!OS
+        if (!_supportsCardDav) ...[
+          const SizedBox(height: 16),
+          _buildVersionWarning(l10n),
+        ],
+
+        if (_errorMessage != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            _errorMessage!,
+            style: const TextStyle(color: Colors.red),
+          ),
+        ],
+
+        const SizedBox(height: 24),
+
+        // Configure button
+        Row(
+          children: [
+            Expanded(
+              child: _isConfiguring
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton.icon(
+                      onPressed: _configureBlocklist,
+                      icon: const Icon(Icons.check),
+                      label: Text(l10n.fritzboxFinishSetup),
+                    ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBlocklistOption({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: selected ? 4 : 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: selected ? Theme.of(context).primaryColor : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: selected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey[600],
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight:
+                            selected ? FontWeight.bold : FontWeight.normal,
+                        color: selected
+                            ? Theme.of(context).primaryColor
+                            : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).primaryColor,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVersionWarning(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.orange[700]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              l10n.fritzboxVersionTooOldForCardDav,
+              style: TextStyle(color: Colors.orange[900]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

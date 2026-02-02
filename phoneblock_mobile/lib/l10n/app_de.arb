@@ -1098,5 +1098,150 @@
   "@sourceFritzbox": {
     "description": "Fritz!Box source label",
     "x-translated": "4f2059d2"
+  },
+  "fritzboxStepBlocklist": "Spam-Schutz",
+  "@fritzboxStepBlocklist": {
+    "description": "Wizard step title for blocklist configuration",
+    "x-translated": "d1add1c3"
+  },
+  "fritzboxStepBlocklistSubtitle": "Blockliste einrichten",
+  "@fritzboxStepBlocklistSubtitle": {
+    "description": "Wizard step subtitle for blocklist configuration",
+    "x-translated": "a9381237"
+  },
+  "fritzboxBlocklistDescription": "Wählen Sie, wie Ihre Fritz!Box vor Spam-Anrufen geschützt werden soll.",
+  "@fritzboxBlocklistDescription": {
+    "description": "Description text for blocklist setup step",
+    "x-translated": "c5ae1afe"
+  },
+  "fritzboxCardDavTitle": "CardDAV-Blockliste",
+  "@fritzboxCardDavTitle": {
+    "description": "Title for CardDAV blocklist option",
+    "x-translated": "3ef92632"
+  },
+  "fritzboxCardDavDescription": "Fritz!Box synchronisiert die Blockliste direkt mit PhoneBlock. Empfohlen für FRITZ!OS 7.20+.",
+  "@fritzboxCardDavDescription": {
+    "description": "Description for CardDAV blocklist option",
+    "x-translated": "99b10bdd"
+  },
+  "fritzboxSkipBlocklist": "Später einrichten",
+  "@fritzboxSkipBlocklist": {
+    "description": "Option to skip blocklist setup",
+    "x-translated": "539b25a3"
+  },
+  "fritzboxSkipBlocklistDescription": "Sie können den Spam-Schutz später in den Einstellungen aktivieren.",
+  "@fritzboxSkipBlocklistDescription": {
+    "description": "Description for skip option",
+    "x-translated": "764d126a"
+  },
+  "fritzboxVersionTooOldForCardDav": "CardDAV erfordert FRITZ!OS 7.20 oder neuer. Ihre Fritz!Box hat eine ältere Version.",
+  "@fritzboxVersionTooOldForCardDav": {
+    "description": "Warning when FRITZ!OS version is too old for CardDAV",
+    "x-translated": "3fff95d7"
+  },
+  "fritzboxFinishSetup": "Einrichtung abschließen",
+  "@fritzboxFinishSetup": {
+    "description": "Button to finish wizard setup",
+    "x-translated": "ce30c85e"
+  },
+  "fritzboxPhoneBlockNotLoggedIn": "Bitte melden Sie sich zuerst bei PhoneBlock an.",
+  "@fritzboxPhoneBlockNotLoggedIn": {
+    "description": "Error when PhoneBlock login is required",
+    "x-translated": "366f39c9"
+  },
+  "fritzboxCannotGetUsername": "PhoneBlock-Benutzername konnte nicht abgerufen werden.",
+  "@fritzboxCannotGetUsername": {
+    "description": "Error when username cannot be retrieved",
+    "x-translated": "b2ee2740"
+  },
+  "fritzboxBlocklistConfigFailed": "Blockliste konnte nicht eingerichtet werden.",
+  "@fritzboxBlocklistConfigFailed": {
+    "description": "Error when blocklist configuration fails",
+    "x-translated": "cfac5abc"
+  },
+  "fritzboxCardDavStatus": "CardDAV-Status",
+  "@fritzboxCardDavStatus": {
+    "description": "CardDAV status label in settings",
+    "x-translated": "b98f81ed"
+  },
+  "fritzboxCardDavStatusSynced": "Synchronisiert",
+  "@fritzboxCardDavStatusSynced": {
+    "description": "CardDAV status when synced",
+    "x-translated": "a2185f24"
+  },
+  "fritzboxCardDavStatusPending": "Synchronisierung ausstehend",
+  "@fritzboxCardDavStatusPending": {
+    "description": "CardDAV status when sync is pending",
+    "x-translated": "83885782"
+  },
+  "fritzboxCardDavStatusError": "Synchronisierungsfehler",
+  "@fritzboxCardDavStatusError": {
+    "description": "CardDAV status when there is an error",
+    "x-translated": "5f9b601b"
+  },
+  "fritzboxCardDavStatusDisabled": "Deaktiviert",
+  "@fritzboxCardDavStatusDisabled": {
+    "description": "CardDAV status when disabled",
+    "x-translated": "ff5c9d69"
+  },
+  "fritzboxCardDavNote": "Die Fritz!Box synchronisiert das Telefonbuch einmal täglich um Mitternacht.",
+  "@fritzboxCardDavNote": {
+    "description": "CardDAV sync frequency note",
+    "x-translated": "fb83d46a"
+  },
+  "fritzboxBlocklistMode": "Spam-Schutz Modus",
+  "@fritzboxBlocklistMode": {
+    "description": "Blocklist mode setting label",
+    "x-translated": "b171b5dd"
+  },
+  "fritzboxBlocklistModeCardDav": "CardDAV (automatische Synchronisierung)",
+  "@fritzboxBlocklistModeCardDav": {
+    "description": "CardDAV blocklist mode description",
+    "x-translated": "79c4728c"
+  },
+  "fritzboxBlocklistModeNone": "Nicht aktiviert",
+  "@fritzboxBlocklistModeNone": {
+    "description": "No blocklist mode description",
+    "x-translated": "8b95179d"
+  },
+  "fritzboxEnableCardDav": "CardDAV aktivieren",
+  "@fritzboxEnableCardDav": {
+    "description": "Enable CardDAV button",
+    "x-translated": "48707d3e"
+  },
+  "fritzboxEnableCardDavDescription": "Spam-Blockliste direkt mit Fritz!Box synchronisieren",
+  "@fritzboxEnableCardDavDescription": {
+    "description": "Enable CardDAV description",
+    "x-translated": "cda7fad0"
+  },
+  "fritzboxCardDavEnabled": "CardDAV-Blockliste aktiviert",
+  "@fritzboxCardDavEnabled": {
+    "description": "CardDAV enabled success message",
+    "x-translated": "ecc69a38"
+  },
+  "fritzboxDisableCardDav": "CardDAV deaktivieren",
+  "@fritzboxDisableCardDav": {
+    "description": "Disable CardDAV button",
+    "x-translated": "7ce72a3d"
+  },
+  "fritzboxDisableCardDavTitle": "CardDAV deaktivieren?",
+  "@fritzboxDisableCardDavTitle": {
+    "description": "Disable CardDAV dialog title",
+    "x-translated": "3c70698b"
+  },
+  "fritzboxDisableCardDavMessage": "Die CardDAV-Blockliste wird von der Fritz!Box entfernt.",
+  "@fritzboxDisableCardDavMessage": {
+    "description": "Disable CardDAV dialog message",
+    "x-translated": "bf007732"
+  },
+  "fritzboxDisable": "Deaktivieren",
+  "@fritzboxDisable": {
+    "description": "Disable button",
+    "x-translated": "1f4005a3"
+  },
+  "fritzboxCardDavDisabled": "CardDAV-Blockliste deaktiviert",
+  "@fritzboxCardDavDisabled": {
+    "description": "CardDAV disabled success message",
+    "x-translated": "ed32efd9"
   }
 }

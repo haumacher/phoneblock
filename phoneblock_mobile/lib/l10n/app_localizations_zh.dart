@@ -656,4 +656,93 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sourceFritzbox => '弗里茨盒子';
+
+  @override
+  String get fritzboxStepBlocklist => '垃圾邮件防护';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => '设置拦截列表';
+
+  @override
+  String get fritzboxBlocklistDescription => '选择如何保护您的 Fritz!';
+
+  @override
+  String get fritzboxCardDavTitle => 'CardDAV 封锁列表';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz！Box 可直接与 PhoneBlock 同步拦截列表。建议使用 FRITZ!OS 7.20 以上版本。';
+
+  @override
+  String get fritzboxSkipBlocklist => '稍后设置';
+
+  @override
+  String get fritzboxSkipBlocklistDescription => '您可以稍后在设置中激活垃圾邮件保护功能。';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV 需要 FRITZ!OS 7.20 或更新版本。您的 Fritz！Box 使用的是旧版本。';
+
+  @override
+  String get fritzboxFinishSetup => '完成设置';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn => '请先登录 PhoneBlock。';
+
+  @override
+  String get fritzboxCannotGetUsername => '无法检索 PhoneBlock 用户名。';
+
+  @override
+  String get fritzboxBlocklistConfigFailed => '无法设置拦截列表。';
+
+  @override
+  String get fritzboxCardDavStatus => 'CardDAV 状态';
+
+  @override
+  String get fritzboxCardDavStatusSynced => '同步';
+
+  @override
+  String get fritzboxCardDavStatusPending => '待同步';
+
+  @override
+  String get fritzboxCardDavStatusError => '同步错误';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => '已停用';
+
+  @override
+  String get fritzboxCardDavNote => 'Fritz!Box 每天午夜同步电话簿一次。';
+
+  @override
+  String get fritzboxBlocklistMode => '垃圾邮件保护模式';
+
+  @override
+  String get fritzboxBlocklistModeCardDav => 'CardDAV（自动同步）';
+
+  @override
+  String get fritzboxBlocklistModeNone => '未启动';
+
+  @override
+  String get fritzboxEnableCardDav => '激活 CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription => '直接与 Fritz!Box 同步垃圾邮件拦截列表';
+
+  @override
+  String get fritzboxCardDavEnabled => '已激活 CardDAV 封锁列表';
+
+  @override
+  String get fritzboxDisableCardDav => '停用 CardDAV';
+
+  @override
+  String get fritzboxDisableCardDavTitle => '停用 CardDAV？';
+
+  @override
+  String get fritzboxDisableCardDavMessage => '从 Fritz 中移除 CardDAV blocklist！';
+
+  @override
+  String get fritzboxDisable => '停用';
+
+  @override
+  String get fritzboxCardDavDisabled => '已停用 CardDAV 封锁列表';
 }
