@@ -635,30 +635,31 @@ class FritzBoxService {
       }
     }
 
-    // Online phonebook indices correspond to phonebook IDs
-    // Skip ID 0 (internal/default phonebook)
-    // Query each ID as an online phonebook index
+    // Online phonebook index = phonebook ID - 1
+    // Skip ID 0 (internal/default phonebook, has no online config)
+    // Returns list of (phonebookId, info) tuples
     final List<(int, OnlinePhonebookInfo)> phonebooks = [];
     for (final id in phonebookIds) {
       if (id == 0) continue;
+      final index = id - 1; // Convert phonebook ID to online phonebook index
       try {
-        final info = await onTelService.getInfoByIndex(id);
+        final info = await onTelService.getInfoByIndex(index);
         // Skip entries without URL (not an online phonebook)
         if (info.url.isEmpty) {
           if (kDebugMode) {
-            print('_getOnlinePhonebooks: [$id] no URL (not an online phonebook)');
+            print('_getOnlinePhonebooks: id=$id index=$index no URL (not an online phonebook)');
           }
           continue;
         }
         if (kDebugMode) {
           print(
-              '_getOnlinePhonebooks: [$id] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status="${info.status}"');
+              '_getOnlinePhonebooks: id=$id index=$index name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status="${info.status}"');
         }
-        phonebooks.add((id, info));
+        phonebooks.add((id, info)); // Store phonebook ID, not index
       } catch (e) {
         // This phonebook ID doesn't have an online phonebook configuration
         if (kDebugMode) {
-          print('_getOnlinePhonebooks: [$id] error: $e');
+          print('_getOnlinePhonebooks: id=$id index=$index error: $e');
         }
       }
     }
@@ -668,16 +669,16 @@ class FritzBoxService {
   /// Finds an existing PhoneBlock CardDAV configuration on the Fritz!Box.
   ///
   /// Matches by URL including context path (test vs prod environment).
-  /// Returns the index if found, null otherwise.
+  /// Returns the phonebook ID if found, null otherwise.
   int? _findExistingCardDavConfig(List<(int, OnlinePhonebookInfo)> phonebooks) {
     // Match URL pattern: https://phoneblock.net{contextPath}/contacts/
     final urlPattern = 'phoneblock.net$contextPath/contacts/';
-    for (final (index, info) in phonebooks) {
+    for (final (phonebookId, info) in phonebooks) {
       if (info.url.contains(urlPattern)) {
         if (kDebugMode) {
-          print('_findExistingCardDavConfig: Found at index $index');
+          print('_findExistingCardDavConfig: Found phonebook ID $phonebookId');
         }
-        return index;
+        return phonebookId;
       }
     }
     if (kDebugMode) {
@@ -750,12 +751,12 @@ class FritzBoxService {
 
     // Check for existing PhoneBlock configuration
     final phonebooks = await _getOnlinePhonebooks();
-    int? existingIndex = _findExistingCardDavConfig(phonebooks);
+    int? existingId = _findExistingCardDavConfig(phonebooks);
 
     // Determine which phonebook ID to use
     int phonebookId;
-    if (existingIndex != null) {
-      phonebookId = existingIndex;
+    if (existingId != null) {
+      phonebookId = existingId;
       if (kDebugMode) {
         print('configureCardDav: Reusing existing phonebook ID $phonebookId');
       }
@@ -767,12 +768,15 @@ class FritzBoxService {
       }
     }
 
+    // Online phonebook index = phonebook ID - 1
+    final onlineIndex = phonebookId - 1;
+
     // Build CardDAV URL using the app's context path
     final carddavUrl =
         'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
 
     if (kDebugMode) {
-      print('configureCardDav: Setting config for phonebook $phonebookId');
+      print('configureCardDav: Setting config for phonebook ID $phonebookId (index $onlineIndex)');
       print('  url: $carddavUrl');
       print('  serviceId: carddav.generic');
       print('  username: $phoneBlockUsername');
@@ -782,7 +786,7 @@ class FritzBoxService {
     // serviceId identifies the provider type: 'carddav.generic' = CardDAV-Anbieter
     try {
       await onTelService.setConfigByIndex(
-        index: phonebookId,
+        index: onlineIndex,
         enable: true,
         url: carddavUrl,
         serviceId: 'carddav.generic',
@@ -795,7 +799,7 @@ class FritzBoxService {
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('configureCardDav: setConfigByIndex FAILED for phonebook $phonebookId');
+        print('configureCardDav: setConfigByIndex FAILED for phonebook ID $phonebookId (index $onlineIndex)');
         print('  Error: $e');
         print('  Stack: $stackTrace');
       }
@@ -824,14 +828,16 @@ class FritzBoxService {
       final onTelService = _client?.onTel();
       if (onTelService != null) {
         try {
-          // Find the PhoneBlock phonebook by URL/name (indices can shift)
+          // Find the PhoneBlock phonebook by URL
           final phonebooks = await _getOnlinePhonebooks();
-          final phoneBlockIndex = _findExistingCardDavConfig(phonebooks);
+          final phonebookId = _findExistingCardDavConfig(phonebooks);
 
-          if (phoneBlockIndex != null) {
-            await onTelService.deleteByIndex(phoneBlockIndex);
+          if (phonebookId != null) {
+            // Online phonebook index = phonebook ID - 1
+            final onlineIndex = phonebookId - 1;
+            await onTelService.deleteByIndex(onlineIndex);
             if (kDebugMode) {
-              print('Removed CardDAV online phonebook at index $phoneBlockIndex');
+              print('Removed CardDAV phonebook ID $phonebookId (index $onlineIndex)');
             }
           } else {
             if (kDebugMode) {
@@ -866,16 +872,16 @@ class FritzBoxService {
     try {
       // Find PhoneBlock phonebook by URL (may be configured manually)
       final phonebooks = await _getOnlinePhonebooks();
-      final index = _findExistingCardDavConfig(phonebooks);
+      final phonebookId = _findExistingCardDavConfig(phonebooks);
 
-      if (index == null) {
+      if (phonebookId == null) {
         return CardDavStatus.notConfigured;
       }
 
-      final info = phonebooks.firstWhere((p) => p.$1 == index).$2;
+      final info = phonebooks.firstWhere((p) => p.$1 == phonebookId).$2;
 
       if (kDebugMode) {
-        print('verifyCardDav: index=$index enable=${info.enable} status="${info.status}" lastConnect="${info.lastConnect}"');
+        print('verifyCardDav: phonebookId=$phonebookId enable=${info.enable} status="${info.status}" lastConnect="${info.lastConnect}"');
       }
 
       if (!info.enable) {
@@ -916,13 +922,13 @@ class FritzBoxService {
 
     try {
       final phonebooks = await _getOnlinePhonebooks();
-      final index = _findExistingCardDavConfig(phonebooks);
+      final phonebookId = _findExistingCardDavConfig(phonebooks);
 
-      if (index == null) {
+      if (phonebookId == null) {
         return null;
       }
 
-      return phonebooks.firstWhere((p) => p.$1 == index).$2;
+      return phonebooks.firstWhere((p) => p.$1 == phonebookId).$2;
     } catch (e) {
       if (kDebugMode) {
         print('Error getting CardDAV info: $e');
