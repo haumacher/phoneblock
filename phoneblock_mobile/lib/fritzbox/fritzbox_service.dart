@@ -612,9 +612,27 @@ class FritzBoxService {
     }
 
     // Get the list of phonebook IDs to determine valid indices
-    final phonebookIds = await onTelService.getPhonebookList();
+    var phonebookIds = await onTelService.getPhonebookList();
     if (kDebugMode) {
       print('_getOnlinePhonebooks: phonebookIds=$phonebookIds');
+    }
+
+    // If phonebook list is empty, connection might be stale - try reconnecting
+    if (phonebookIds.isEmpty) {
+      if (kDebugMode) {
+        print('_getOnlinePhonebooks: empty list, attempting reconnect...');
+      }
+      final credentials = await FritzBoxStorage.instance.getCredentials();
+      if (credentials != null) {
+        await _connect(credentials);
+        final reconnectedService = _client?.onTel();
+        if (reconnectedService != null) {
+          phonebookIds = await reconnectedService.getPhonebookList();
+          if (kDebugMode) {
+            print('_getOnlinePhonebooks: after reconnect phonebookIds=$phonebookIds');
+          }
+        }
+      }
     }
 
     // Online phonebook indices correspond to phonebook IDs
