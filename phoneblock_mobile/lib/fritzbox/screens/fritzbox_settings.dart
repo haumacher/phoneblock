@@ -53,10 +53,9 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       if (connectionState == FritzBoxConnectionState.connected) {
         deviceInfo = await FritzBoxService.instance.getDeviceInfo();
 
-        // Check CardDAV status if configured
-        if (config?.blocklistMode == BlocklistMode.cardDav) {
-          cardDavStatus = await FritzBoxService.instance.verifyCardDav();
-        }
+        // Always check CardDAV status - phonebook may be configured on Fritz!Box
+        // even if local config doesn't reflect it (e.g., manually configured)
+        cardDavStatus = await FritzBoxService.instance.verifyCardDav();
       }
 
       if (mounted) {
