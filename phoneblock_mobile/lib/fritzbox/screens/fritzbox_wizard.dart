@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_discovery.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
@@ -195,10 +196,14 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
       }
 
       await _finishWizard();
-    } catch (e) {
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('CardDAV configuration failed: $e');
+        print('Stack trace: $stackTrace');
+      }
       if (mounted) {
         setState(() {
-          _errorMessage = l10n.fritzboxBlocklistConfigFailed;
+          _errorMessage = '${l10n.fritzboxBlocklistConfigFailed}: $e';
           _isConfiguring = false;
         });
       }
