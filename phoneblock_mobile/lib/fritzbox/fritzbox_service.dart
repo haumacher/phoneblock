@@ -618,9 +618,11 @@ class FritzBoxService {
     }
 
     // Online phonebook indices correspond to phonebook IDs
+    // Skip ID 0 (internal/default phonebook)
     // Query each ID as an online phonebook index
     final List<(int, OnlinePhonebookInfo)> phonebooks = [];
     for (final id in phonebookIds) {
+      if (id == 0) continue;
       try {
         final info = await onTelService.getInfoByIndex(id);
         // Skip entries without URL (not an online phonebook)
@@ -666,24 +668,42 @@ class FritzBoxService {
     return null;
   }
 
-  /// Gets the next available online phonebook index.
+  /// Creates a new phonebook and returns its ID.
   ///
-  /// To create a new online phonebook, use the next index after the highest
-  /// existing phonebook ID.
-  Future<int> _getNextOnlinePhonebookIndex() async {
+  /// Uses AddPhonebook to create a new phonebook, then finds its ID
+  /// by comparing phonebook lists before and after creation.
+  Future<int> _createPhonebook(String name) async {
     final onTelService = _client?.onTel();
     if (onTelService == null) {
       throw Exception('OnTel service not available');
     }
 
-    final phonebookIds = await onTelService.getPhonebookList();
-    // New online phonebook goes at max ID + 1
-    final maxId = phonebookIds.isEmpty ? 0 : phonebookIds.reduce((a, b) => a > b ? a : b);
-    final nextIndex = maxId + 1;
+    // Get phonebook list before creation
+    final beforeIds = await onTelService.getPhonebookList();
     if (kDebugMode) {
-      print('_getNextOnlinePhonebookIndex: phonebookIds=$phonebookIds, next=$nextIndex');
+      print('_createPhonebook: before=$beforeIds');
     }
-    return nextIndex;
+
+    // Create new phonebook
+    await onTelService.addPhonebook(name);
+
+    // Get phonebook list after creation to find new ID
+    final afterIds = await onTelService.getPhonebookList();
+    if (kDebugMode) {
+      print('_createPhonebook: after=$afterIds');
+    }
+
+    // Find the new ID (present in after but not in before)
+    final newIds = afterIds.where((id) => !beforeIds.contains(id)).toList();
+    if (newIds.isEmpty) {
+      throw Exception('Failed to create phonebook: no new ID found');
+    }
+
+    final newId = newIds.first;
+    if (kDebugMode) {
+      print('_createPhonebook: created phonebook "$name" with ID $newId');
+    }
+    return newId;
   }
 
   /// Configures CardDAV online phonebook on Fritz!Box.
@@ -710,23 +730,22 @@ class FritzBoxService {
       throw Exception('OnTel service not available');
     }
 
-    // Get all existing online phonebooks
-    final phonebooks = await _getOnlinePhonebooks();
-
     // Check for existing PhoneBlock configuration
+    final phonebooks = await _getOnlinePhonebooks();
     int? existingIndex = _findExistingCardDavConfig(phonebooks);
 
-    // Determine which index to use
-    int index;
+    // Determine which phonebook ID to use
+    int phonebookId;
     if (existingIndex != null) {
-      index = existingIndex;
+      phonebookId = existingIndex;
       if (kDebugMode) {
-        print('configureCardDav: Reusing existing slot at index $index');
+        print('configureCardDav: Reusing existing phonebook ID $phonebookId');
       }
     } else {
-      index = await _getNextOnlinePhonebookIndex();
+      // Create a new phonebook using AddPhonebook
+      phonebookId = await _createPhonebook('PhoneBlock SPAM');
       if (kDebugMode) {
-        print('configureCardDav: Using new slot at index $index');
+        print('configureCardDav: Created new phonebook ID $phonebookId');
       }
     }
 
@@ -735,18 +754,17 @@ class FritzBoxService {
         'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
 
     if (kDebugMode) {
-      print('configureCardDav: Setting config at index $index');
+      print('configureCardDav: Setting config for phonebook $phonebookId');
       print('  url: $carddavUrl');
       print('  serviceId: carddav.generic');
       print('  username: $phoneBlockUsername');
-      print('  name: PhoneBlock SPAM');
     }
 
-    // Configure online phonebook
+    // Configure the phonebook as CardDAV online phonebook
     // serviceId identifies the provider type: 'carddav.generic' = CardDAV-Anbieter
     try {
       await onTelService.setConfigByIndex(
-        index: index,
+        index: phonebookId,
         enable: true,
         url: carddavUrl,
         serviceId: 'carddav.generic',
@@ -759,7 +777,7 @@ class FritzBoxService {
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('configureCardDav: setConfigByIndex FAILED at index $index');
+        print('configureCardDav: setConfigByIndex FAILED for phonebook $phonebookId');
         print('  Error: $e');
         print('  Stack: $stackTrace');
       }
