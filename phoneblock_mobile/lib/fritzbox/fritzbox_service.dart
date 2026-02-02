@@ -635,31 +635,29 @@ class FritzBoxService {
       }
     }
 
-    // Online phonebook index = phonebook ID - 1
-    // Skip ID 0 (internal/default phonebook, has no online config)
+    // Phonebook ID and online phonebook index are the same
+    // Skip ID 0 (internal/default phonebook)
     // Returns list of (phonebookId, info) tuples
     final List<(int, OnlinePhonebookInfo)> phonebooks = [];
     for (final id in phonebookIds) {
       if (id == 0) continue;
-      final index = id - 1; // Convert phonebook ID to online phonebook index
       try {
-        final info = await onTelService.getInfoByIndex(index);
+        final info = await onTelService.getInfoByIndex(id);
         // Skip entries without URL (not an online phonebook)
         if (info.url.isEmpty) {
           if (kDebugMode) {
-            print('_getOnlinePhonebooks: id=$id index=$index no URL (not an online phonebook)');
+            print('_getOnlinePhonebooks: [$id] no URL (not an online phonebook)');
           }
           continue;
         }
         if (kDebugMode) {
           print(
-              '_getOnlinePhonebooks: id=$id index=$index name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status="${info.status}"');
+              '_getOnlinePhonebooks: [$id] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status="${info.status}"');
         }
-        phonebooks.add((id, info)); // Store phonebook ID, not index
+        phonebooks.add((id, info));
       } catch (e) {
-        // This phonebook ID doesn't have an online phonebook configuration
         if (kDebugMode) {
-          print('_getOnlinePhonebooks: id=$id index=$index error: $e');
+          print('_getOnlinePhonebooks: [$id] error: $e');
         }
       }
     }
@@ -768,25 +766,23 @@ class FritzBoxService {
       }
     }
 
-    // Online phonebook index = phonebook ID - 1
-    final onlineIndex = phonebookId - 1;
-
     // Build CardDAV URL using the app's context path
     final carddavUrl =
         'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
 
     if (kDebugMode) {
-      print('configureCardDav: Setting config for phonebook ID $phonebookId (index $onlineIndex)');
+      print('configureCardDav: Setting config for phonebook $phonebookId');
       print('  url: $carddavUrl');
       print('  serviceId: carddav.generic');
       print('  username: $phoneBlockUsername');
     }
 
     // Configure the phonebook as CardDAV online phonebook
+    // Phonebook ID and online phonebook index are the same
     // serviceId identifies the provider type: 'carddav.generic' = CardDAV-Anbieter
     try {
       await onTelService.setConfigByIndex(
-        index: onlineIndex,
+        index: phonebookId,
         enable: true,
         url: carddavUrl,
         serviceId: 'carddav.generic',
@@ -799,7 +795,7 @@ class FritzBoxService {
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('configureCardDav: setConfigByIndex FAILED for phonebook ID $phonebookId (index $onlineIndex)');
+        print('configureCardDav: setConfigByIndex FAILED for phonebook $phonebookId');
         print('  Error: $e');
         print('  Stack: $stackTrace');
       }
@@ -833,11 +829,10 @@ class FritzBoxService {
           final phonebookId = _findExistingCardDavConfig(phonebooks);
 
           if (phonebookId != null) {
-            // Online phonebook index = phonebook ID - 1
-            final onlineIndex = phonebookId - 1;
-            await onTelService.deleteByIndex(onlineIndex);
+            // Phonebook ID and online phonebook index are the same
+            await onTelService.deleteByIndex(phonebookId);
             if (kDebugMode) {
-              print('Removed CardDAV phonebook ID $phonebookId (index $onlineIndex)');
+              print('Removed CardDAV phonebook $phonebookId');
             }
           } else {
             if (kDebugMode) {
@@ -881,7 +876,7 @@ class FritzBoxService {
       final info = phonebooks.firstWhere((p) => p.$1 == phonebookId).$2;
 
       if (kDebugMode) {
-        print('verifyCardDav: phonebookId=$phonebookId enable=${info.enable} status="${info.status}" lastConnect="${info.lastConnect}"');
+        print('verifyCardDav: [$phonebookId] enable=${info.enable} status="${info.status}" lastConnect="${info.lastConnect}"');
       }
 
       if (!info.enable) {
