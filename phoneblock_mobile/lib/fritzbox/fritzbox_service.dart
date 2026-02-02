@@ -709,11 +709,12 @@ class FritzBoxService {
     }
 
     // Configure online phonebook
+    // serviceId identifies the provider type: 'carddav.generic' = CardDAV-Anbieter
     await onTelService.setConfigByIndex(
       index: index,
       enable: true,
       url: carddavUrl,
-      serviceId: '', // Not required for CardDAV
+      serviceId: 'carddav.generic',
       username: phoneBlockUsername,
       password: phoneBlockToken,
       name: 'PhoneBlock SPAM',
