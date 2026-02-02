@@ -608,26 +608,38 @@ class FritzBoxService {
   /// Returns the index if found, null otherwise.
   Future<int?> _findExistingCardDavConfig() async {
     final onTelService = _client?.onTel();
-    if (onTelService == null) return null;
+    if (onTelService == null) {
+      if (kDebugMode) {
+        print('_findExistingCardDavConfig: OnTel service not available');
+      }
+      return null;
+    }
 
     for (int index = 0; index < _maxOnlinePhonebooks; index++) {
       try {
         final info = await onTelService.getInfoByIndex(index);
+        if (kDebugMode) {
+          print(
+              '_findExistingCardDavConfig: index=$index name="${info.name}" url="${info.url}" serviceId="${info.serviceId}"');
+        }
         // Check if this is a PhoneBlock CardDAV configuration
         if (info.url.contains('phoneblock.net') ||
             info.name.toLowerCase().contains('phoneblock')) {
           if (kDebugMode) {
-            print('Found existing PhoneBlock config at index $index');
+            print('_findExistingCardDavConfig: Found PhoneBlock config at index $index');
           }
           return index;
         }
       } catch (e) {
-        // No more entries or error, stop searching
+        // Index doesn't exist - this is expected when we reach the end
         if (kDebugMode) {
-          print('No more online phonebooks after index ${index - 1}');
+          print('_findExistingCardDavConfig: index=$index error: $e');
         }
-        return null;
+        // Continue searching - don't break on first error
       }
+    }
+    if (kDebugMode) {
+      print('_findExistingCardDavConfig: No existing PhoneBlock config found');
     }
     return null;
   }
@@ -643,37 +655,68 @@ class FritzBoxService {
       throw Exception('OnTel service not available');
     }
 
-    int existingCount = 0;
+    // First, get the number of configured online phonebooks
+    int numberOfEntries = 0;
+    try {
+      numberOfEntries = await onTelService.getNumberOfEntries();
+      if (kDebugMode) {
+        print('_getNextOnlinePhonebookIndex: numberOfEntries=$numberOfEntries');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('_getNextOnlinePhonebookIndex: getNumberOfEntries failed: $e');
+      }
+    }
 
+    // Scan for empty slots within existing entries
+    int? firstEmptySlot;
     for (int index = 0; index < _maxOnlinePhonebooks; index++) {
       try {
         final info = await onTelService.getInfoByIndex(index);
-        // Check if this slot is empty (no URL configured)
-        if (info.url.isEmpty) {
-          if (kDebugMode) {
-            print('Found empty online phonebook slot at index $index');
-          }
-          return index;
-        }
-        existingCount++;
         if (kDebugMode) {
-          print('Online phonebook at index $index: ${info.name} (${info.url})');
+          print(
+              '_getNextOnlinePhonebookIndex: index=$index name="${info.name}" url="${info.url}" serviceId="${info.serviceId}"');
+        }
+        // Check if this slot is empty (no URL configured)
+        if (info.url.isEmpty && firstEmptySlot == null) {
+          firstEmptySlot = index;
+          if (kDebugMode) {
+            print('_getNextOnlinePhonebookIndex: Found empty slot at index $index');
+          }
         }
       } catch (e) {
-        // Index doesn't exist yet, use this one
+        // Index doesn't exist - we've reached the end of configured entries
         if (kDebugMode) {
-          print('No online phonebook at index $index, using it');
+          print('_getNextOnlinePhonebookIndex: index=$index error: $e');
+        }
+        // If we found an empty slot earlier, use that
+        if (firstEmptySlot != null) {
+          if (kDebugMode) {
+            print('_getNextOnlinePhonebookIndex: Using empty slot at index $firstEmptySlot');
+          }
+          return firstEmptySlot;
+        }
+        // Otherwise use this index (first non-existing)
+        if (kDebugMode) {
+          print('_getNextOnlinePhonebookIndex: Using first non-existing index $index');
         }
         return index;
       }
     }
 
-    // All slots are full, try using the count as the next index
-    // (Fritz!Box may allow creating at numberOfEntries)
-    if (kDebugMode) {
-      print('All $_maxOnlinePhonebooks slots checked, using index $existingCount');
+    // All slots checked - use empty slot if found, otherwise use numberOfEntries
+    if (firstEmptySlot != null) {
+      if (kDebugMode) {
+        print('_getNextOnlinePhonebookIndex: Using empty slot $firstEmptySlot');
+      }
+      return firstEmptySlot;
     }
-    return existingCount;
+
+    if (kDebugMode) {
+      print(
+          '_getNextOnlinePhonebookIndex: All $_maxOnlinePhonebooks slots full, using numberOfEntries=$numberOfEntries');
+    }
+    return numberOfEntries;
   }
 
   /// Configures CardDAV online phonebook on Fritz!Box.
@@ -687,6 +730,10 @@ class FritzBoxService {
     required String phoneBlockUsername,
     required String phoneBlockToken,
   }) async {
+    if (kDebugMode) {
+      print('configureCardDav: Starting configuration for user $phoneBlockUsername');
+    }
+
     if (!isConnected) {
       throw Exception('Not connected to Fritz!Box');
     }
@@ -697,34 +744,75 @@ class FritzBoxService {
     }
 
     // Check for existing configuration
+    if (kDebugMode) {
+      print('configureCardDav: Searching for existing PhoneBlock configuration...');
+    }
     int? existingIndex = await _findExistingCardDavConfig();
-    int index = existingIndex ?? await _getNextOnlinePhonebookIndex();
+    if (kDebugMode) {
+      print('configureCardDav: existingIndex=$existingIndex');
+    }
+
+    int index;
+    if (existingIndex != null) {
+      index = existingIndex;
+      if (kDebugMode) {
+        print('configureCardDav: Reusing existing slot at index $index');
+      }
+    } else {
+      if (kDebugMode) {
+        print('configureCardDav: Finding next available slot...');
+      }
+      index = await _getNextOnlinePhonebookIndex();
+      if (kDebugMode) {
+        print('configureCardDav: Will use index $index');
+      }
+    }
 
     // Build CardDAV URL using the app's context path
     final carddavUrl =
         'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
 
     if (kDebugMode) {
-      print('Configuring CardDAV at index $index: $carddavUrl');
+      print('configureCardDav: Setting config at index $index');
+      print('  url: $carddavUrl');
+      print('  serviceId: carddav.generic');
+      print('  username: $phoneBlockUsername');
+      print('  name: PhoneBlock SPAM');
     }
 
     // Configure online phonebook
     // serviceId identifies the provider type: 'carddav.generic' = CardDAV-Anbieter
-    await onTelService.setConfigByIndex(
-      index: index,
-      enable: true,
-      url: carddavUrl,
-      serviceId: 'carddav.generic',
-      username: phoneBlockUsername,
-      password: phoneBlockToken,
-      name: 'PhoneBlock SPAM',
-    );
+    try {
+      await onTelService.setConfigByIndex(
+        index: index,
+        enable: true,
+        url: carddavUrl,
+        serviceId: 'carddav.generic',
+        username: phoneBlockUsername,
+        password: phoneBlockToken,
+        name: 'PhoneBlock SPAM',
+      );
+      if (kDebugMode) {
+        print('configureCardDav: setConfigByIndex succeeded');
+      }
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('configureCardDav: setConfigByIndex FAILED at index $index');
+        print('  Error: $e');
+        print('  Stack: $stackTrace');
+      }
+      rethrow;
+    }
 
     // Save configuration to local storage
     await FritzBoxStorage.instance.updateConfig(
       blocklistMode: BlocklistMode.cardDav,
       phonebookId: index.toString(),
     );
+
+    if (kDebugMode) {
+      print('configureCardDav: Configuration complete, saved phonebookId=$index');
+    }
   }
 
   /// Removes CardDAV configuration from Fritz!Box.
