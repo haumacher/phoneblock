@@ -802,6 +802,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => '注册 SIP 设备...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess => '激活互联网接入...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => '激活答录机...';
 
   @override

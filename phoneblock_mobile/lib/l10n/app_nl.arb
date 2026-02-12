@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "DynDNS configureren...",
   "fritzboxAnswerbotStepWaitingDynDns": "Wachten op DynDNS-registratie...",
   "fritzboxAnswerbotStepSip": "SIP-apparaat registreren...",
+  "fritzboxAnswerbotStepInternetAccess": "Activeer internettoegang...",
   "fritzboxAnswerbotStepEnabling": "Antwoordapparaat activeren...",
   "fritzboxAnswerbotStepWaiting": "Wachten op registratie...",
   "fritzboxAnswerbotSetupTitle": "Een antwoordapparaat instellen",

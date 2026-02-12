@@ -890,6 +890,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'SIP-apparaat registreren...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Activeer internettoegang...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'Antwoordapparaat activeren...';
 
   @override

@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Διαμόρφωση του DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "Αναμονή για εγγραφή στο DynDNS...",
   "fritzboxAnswerbotStepSip": "Εγγραφή συσκευής SIP...",
+  "fritzboxAnswerbotStepInternetAccess": "Ενεργοποιήστε την πρόσβαση στο Internet...",
   "fritzboxAnswerbotStepEnabling": "Ενεργοποίηση τηλεφωνητή...",
   "fritzboxAnswerbotStepWaiting": "Αναμονή για εγγραφή...",
   "fritzboxAnswerbotSetupTitle": "Ρύθμιση τηλεφωνητή",

@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Налаштування DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "Очікуємо на реєстрацію DynDNS...",
   "fritzboxAnswerbotStepSip": "Зареєструвати SIP-пристрій...",
+  "fritzboxAnswerbotStepInternetAccess": "Активувати доступ до Інтернету...",
   "fritzboxAnswerbotStepEnabling": "Увімкнути автовідповідач...",
   "fritzboxAnswerbotStepWaiting": "Очікуємо на реєстрацію...",
   "fritzboxAnswerbotSetupTitle": "Налаштування автовідповідача",

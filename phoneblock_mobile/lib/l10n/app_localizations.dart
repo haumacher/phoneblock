@@ -1598,6 +1598,12 @@ abstract class AppLocalizations {
   /// **'Registriere SIP-Gerät...'**
   String get fritzboxAnswerbotStepSip;
 
+  /// Progress step: enabling internet access for the SIP device
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere Internetzugriff...'**
+  String get fritzboxAnswerbotStepInternetAccess;
+
   /// Progress step: enabling answer bot
   ///
   /// In de, this message translates to:

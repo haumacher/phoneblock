@@ -882,6 +882,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'تسجيل جهاز SIP...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'قم بتفعيل الوصول إلى الإنترنت...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'تنشيط جهاز الرد الآلي...';
 
   @override

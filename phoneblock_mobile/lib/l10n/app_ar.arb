@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "تكوين DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "في انتظار تسجيل DynDNS...",
   "fritzboxAnswerbotStepSip": "تسجيل جهاز SIP...",
+  "fritzboxAnswerbotStepInternetAccess": "قم بتفعيل الوصول إلى الإنترنت...",
   "fritzboxAnswerbotStepEnabling": "تنشيط جهاز الرد الآلي...",
   "fritzboxAnswerbotStepWaiting": "في انتظار التسجيل...",
   "fritzboxAnswerbotSetupTitle": "إعداد جهاز الرد الآلي",

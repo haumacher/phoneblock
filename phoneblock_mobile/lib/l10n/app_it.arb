@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Configurare DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "In attesa della registrazione DynDNS...",
   "fritzboxAnswerbotStepSip": "Registrare il dispositivo SIP...",
+  "fritzboxAnswerbotStepInternetAccess": "Attivare l'accesso a Internet...",
   "fritzboxAnswerbotStepEnabling": "Attivare la segreteria telefonica...",
   "fritzboxAnswerbotStepWaiting": "In attesa della registrazione...",
   "fritzboxAnswerbotSetupTitle": "Impostazione di una segreteria telefonica",

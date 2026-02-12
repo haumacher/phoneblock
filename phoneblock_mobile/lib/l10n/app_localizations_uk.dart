@@ -888,6 +888,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'Зареєструвати SIP-пристрій...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Активувати доступ до Інтернету...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'Увімкнути автовідповідач...';
 
   @override

@@ -893,6 +893,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'Εγγραφή συσκευής SIP...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Ενεργοποιήστε την πρόσβαση στο Internet...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'Ενεργοποίηση τηλεφωνητή...';
 
   @override

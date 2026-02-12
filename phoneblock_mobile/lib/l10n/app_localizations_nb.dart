@@ -888,6 +888,10 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'Registrer SIP-enhet...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Aktiver Internett-tilgang...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'Aktiver telefonsvareren...';
 
   @override

@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "配置 DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "等待 DynDNS 注册...",
   "fritzboxAnswerbotStepSip": "注册 SIP 设备...",
+  "fritzboxAnswerbotStepInternetAccess": "激活互联网接入...",
   "fritzboxAnswerbotStepEnabling": "激活答录机...",
   "fritzboxAnswerbotStepWaiting": "等待注册...",
   "fritzboxAnswerbotSetupTitle": "设置答录机",

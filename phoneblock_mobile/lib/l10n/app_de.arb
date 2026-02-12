@@ -1334,6 +1334,11 @@
     "description": "Progress step: registering SIP device",
     "x-translated": "4940b42"
   },
+  "fritzboxAnswerbotStepInternetAccess": "Aktiviere Internetzugriff...",
+  "@fritzboxAnswerbotStepInternetAccess": {
+    "description": "Progress step: enabling internet access for the SIP device",
+    "x-translated": "95b14136"
+  },
   "fritzboxAnswerbotStepEnabling": "Aktiviere Anrufbeantworter...",
   "@fritzboxAnswerbotStepEnabling": {
     "description": "Progress step: enabling answer bot",

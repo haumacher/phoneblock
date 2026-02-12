@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Configure DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "Waiting for DynDNS registration...",
   "fritzboxAnswerbotStepSip": "Register SIP device...",
+  "fritzboxAnswerbotStepInternetAccess": "Activate Internet access...",
   "fritzboxAnswerbotStepEnabling": "Activate answering machine...",
   "fritzboxAnswerbotStepWaiting": "Waiting for registration...",
   "fritzboxAnswerbotSetupTitle": "Setting up an answering machine",

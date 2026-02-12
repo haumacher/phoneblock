@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Configurer DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "En attente d'enregistrement DynDNS...",
   "fritzboxAnswerbotStepSip": "Enregistrer un appareil SIP...",
+  "fritzboxAnswerbotStepInternetAccess": "Activer l'accès à Internet...",
   "fritzboxAnswerbotStepEnabling": "Activer le répondeur...",
   "fritzboxAnswerbotStepWaiting": "En attente d'enregistrement...",
   "fritzboxAnswerbotSetupTitle": "Configurer un répondeur téléphonique",

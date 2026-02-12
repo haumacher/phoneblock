@@ -150,6 +150,8 @@ class _FritzBoxAnswerbotSetupScreenState
         return l10n.fritzboxAnswerbotStepSip;
       case AnswerbotSetupStep.confirmingSecondFactor:
         return l10n.fritzboxAnswerbotStepSecondFactor;
+      case AnswerbotSetupStep.enablingInternetAccess:
+        return l10n.fritzboxAnswerbotStepInternetAccess;
       case AnswerbotSetupStep.enablingBot:
         return l10n.fritzboxAnswerbotStepEnabling;
       case AnswerbotSetupStep.waitingForRegistration:

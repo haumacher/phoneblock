@@ -1025,7 +1025,6 @@ class FritzBoxService {
         }
         throw Exception('Second factor authentication timed out');
       } finally {
-        _client!.secondFactorToken = null;
         _activeAuthService = null;
       }
     }
@@ -1175,6 +1174,30 @@ class FritzBoxService {
         print('setupAnswerBot: SIP device registered with internal number: $internalNumber');
       }
 
+      // Enable external registration in a second step (SetClient4 does not
+      // support ExternalRegistration per the SCPD spec — SetClient3 does).
+      onProgress(AnswerbotSetupStep.enablingInternetAccess);
+      await _withSecondFactor(
+        onProgress: onProgress,
+        onSecondFactorMethods: onSecondFactorMethods,
+        action: () => voipService.setClient3(
+          clientIndex: clientIndex,
+          password: creation.password,
+          phoneName: _answerbotPhoneName,
+          clientId: '',
+          outGoingNumber: '',
+          inComingNumbers: '',
+          externalRegistration: true,
+        ),
+      );
+
+      if (kDebugMode) {
+        print('setupAnswerBot: External registration enabled');
+      }
+
+      // Clear 2FA token after all protected TR-064 operations are done.
+      _client!.secondFactorToken = null;
+
       // Step 5: Enable bot and wait for SIP registration
       onProgress(AnswerbotSetupStep.enablingBot);
       final enableResponse = await sendRequest(
@@ -1314,6 +1337,9 @@ enum AnswerbotSetupStep {
 
   /// Waiting for second factor authentication on the Fritz!Box.
   confirmingSecondFactor,
+
+  /// Enabling internet access for the SIP device.
+  enablingInternetAccess,
 
   /// Enabling the bot on the server.
   enablingBot,

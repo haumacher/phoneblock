@@ -885,6 +885,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'Registrer SIP-enhed...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess => 'Aktivér internetadgang...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'Aktivér telefonsvareren...';
 
   @override

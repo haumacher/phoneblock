@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Configurar DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "Esperando el registro de DynDNS...",
   "fritzboxAnswerbotStepSip": "Registrar dispositivo SIP...",
+  "fritzboxAnswerbotStepInternetAccess": "Activar el acceso a Internet...",
   "fritzboxAnswerbotStepEnabling": "Activar contestador automático...",
   "fritzboxAnswerbotStepWaiting": "A la espera del registro...",
   "fritzboxAnswerbotSetupTitle": "Configurar un contestador automático",

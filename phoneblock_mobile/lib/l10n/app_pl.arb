@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Konfiguracja DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "Czekam na rejestrację DynDNS...",
   "fritzboxAnswerbotStepSip": "Zarejestruj urządzenie SIP...",
+  "fritzboxAnswerbotStepInternetAccess": "Aktywacja dostępu do Internetu...",
   "fritzboxAnswerbotStepEnabling": "Aktywuj automatyczną sekretarkę...",
   "fritzboxAnswerbotStepWaiting": "Czekam na rejestrację...",
   "fritzboxAnswerbotSetupTitle": "Konfigurowanie automatycznej sekretarki",

@@ -246,6 +246,7 @@
   "fritzboxAnswerbotStepDynDns": "Konfigurer DynDNS...",
   "fritzboxAnswerbotStepWaitingDynDns": "Venter på DynDNS-registrering...",
   "fritzboxAnswerbotStepSip": "Registrer SIP-enhed...",
+  "fritzboxAnswerbotStepInternetAccess": "Aktivér internetadgang...",
   "fritzboxAnswerbotStepEnabling": "Aktivér telefonsvareren...",
   "fritzboxAnswerbotStepWaiting": "Venter på at blive registreret...",
   "fritzboxAnswerbotSetupTitle": "Opsætning af en telefonsvarer",

@@ -890,6 +890,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
 
   @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Aktiviere Internetzugriff...';
+
+  @override
   String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
 
   @override
