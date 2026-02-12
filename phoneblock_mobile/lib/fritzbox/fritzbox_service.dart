@@ -728,7 +728,7 @@ class FritzBoxService {
         serviceId: OnlinePhonebookServiceId.cardDav,
         username: phoneBlockUsername,
         password: phoneBlockToken,
-        name: 'PhoneBlock SPAM',
+        name: kDebugMode ? 'PhoneBlock SPAM (Test)' : 'PhoneBlock SPAM',
       );
       if (kDebugMode) {
         print('configureCardDav: setConfigByIndex succeeded');
