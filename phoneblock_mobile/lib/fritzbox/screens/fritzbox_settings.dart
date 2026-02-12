@@ -39,7 +39,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     });
 
     try {
-      final config = await FritzBoxStorage.instance.getConfig();
+      var config = await FritzBoxStorage.instance.getConfig();
       final callCount =
           await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
 
@@ -56,6 +56,16 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         // Always check CardDAV status - phonebook may be configured on Fritz!Box
         // even if local config doesn't reflect it (e.g., manually configured)
         cardDavStatus = await FritzBoxService.instance.verifyCardDav();
+
+        // If Fritz!Box reports no CardDAV but local config thinks it's enabled,
+        // correct the local state to match reality
+        if (cardDavStatus == CardDavStatus.notConfigured &&
+            config?.blocklistMode == BlocklistMode.cardDav) {
+          await FritzBoxStorage.instance.updateConfig(
+            blocklistMode: BlocklistMode.none,
+          );
+          config = await FritzBoxStorage.instance.getConfig();
+        }
       }
 
       if (mounted) {
