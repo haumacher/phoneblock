@@ -8,11 +8,12 @@ enum _StepStatus { pending, inProgress, completed, failed }
 
 /// Tracks the state of a single setup step.
 class _SetupStepInfo {
+  final AnswerbotSetupStep step;
   final String label;
   _StepStatus status;
   String? errorMessage;
 
-  _SetupStepInfo({required this.label, this.status = _StepStatus.pending});
+  _SetupStepInfo({required this.step, required this.label, this.status = _StepStatus.pending});
 }
 
 /// Dedicated screen that shows step-by-step progress for answerbot setup.
@@ -31,6 +32,11 @@ class _FritzBoxAnswerbotSetupScreenState
   final List<_SetupStepInfo> _steps = [];
   bool _finished = false;
   bool _succeeded = false;
+
+  bool get _isWaitingForSecondFactor =>
+      _steps.isNotEmpty &&
+      _steps.last.status == _StepStatus.inProgress &&
+      _steps.last.step == AnswerbotSetupStep.confirmingSecondFactor;
 
   @override
   void initState() {
@@ -85,6 +91,7 @@ class _FritzBoxAnswerbotSetupScreenState
     // Add new step as in-progress.
     final l10n = AppLocalizations.of(context)!;
     _steps.add(_SetupStepInfo(
+      step: step,
       label: _stepLabel(l10n, step),
       status: _StepStatus.inProgress,
     ));
@@ -155,6 +162,16 @@ class _FritzBoxAnswerbotSetupScreenState
                   },
                 ),
               ),
+              if (_isWaitingForSecondFactor && !_finished)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      FritzBoxService.instance.cancelSecondFactor();
+                    },
+                    child: Text(l10n.cancel),
+                  ),
+                ),
               if (_finished) ...[
                 _buildResultCard(l10n),
                 const SizedBox(height: 16),

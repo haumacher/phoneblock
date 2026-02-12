@@ -945,6 +945,20 @@ class FritzBoxService {
   /// UPnP error code for "second factor authentication required".
   static const String _secondFactorErrorCode = '866';
 
+  /// The auth service used during an active 2FA challenge, if any.
+  AuthService? _activeAuthService;
+
+  /// Cancels an active second factor authentication challenge.
+  ///
+  /// The polling loop in [_withSecondFactor] will see the [SecondFactorState.stopped]
+  /// state and abort the setup.
+  Future<void> cancelSecondFactor() async {
+    if (kDebugMode) {
+      print('cancelSecondFactor: Stopping active 2FA challenge');
+    }
+    await _activeAuthService?.setConfig('stop');
+  }
+
   /// Executes a Fritz!Box TR-064 action with second factor authentication
   /// retry.
   ///
@@ -963,26 +977,50 @@ class FritzBoxService {
       }
 
       // Start 2FA process
+      if (kDebugMode) {
+        print('_withSecondFactor: Error 866 detected, starting 2FA challenge');
+        print('  faultCode=${e.faultCode} faultString=${e.faultString} detail=${e.detail}');
+      }
+
       final authService = _client!.auth();
-      if (authService == null) rethrow;
+      if (authService == null) {
+        if (kDebugMode) {
+          print('_withSecondFactor: Auth service not available');
+        }
+        rethrow;
+      }
 
       onProgress(AnswerbotSetupStep.confirmingSecondFactor);
-      await authService.setConfig('start');
+      _activeAuthService = authService;
+      try {
+        final config = await authService.setConfig('start');
+        if (kDebugMode) {
+          print('_withSecondFactor: 2FA started, state=${config.state.name} methods=${config.methods}');
+        }
 
-      // Poll for authentication (up to 2 minutes)
-      for (int i = 0; i < 60; i++) {
-        await Future.delayed(const Duration(seconds: 2));
-        final state = await authService.getState();
-        if (state == SecondFactorState.authenticated) {
-          return await action();
+        // Poll for authentication (up to 2 minutes)
+        for (int i = 0; i < 60; i++) {
+          await Future.delayed(const Duration(seconds: 2));
+          final state = await authService.getState();
+          if (kDebugMode) {
+            print('_withSecondFactor: Poll #$i state=${state.name}');
+          }
+          if (state == SecondFactorState.authenticated) {
+            if (kDebugMode) {
+              print('_withSecondFactor: 2FA confirmed, retrying action');
+            }
+            return await action();
+          }
+          if (state == SecondFactorState.stopped ||
+              state == SecondFactorState.blocked ||
+              state == SecondFactorState.failure) {
+            throw Exception('Second factor authentication failed: ${state.name}');
+          }
         }
-        if (state == SecondFactorState.stopped ||
-            state == SecondFactorState.blocked ||
-            state == SecondFactorState.failure) {
-          throw Exception('Second factor authentication failed: ${state.name}');
-        }
+        throw Exception('Second factor authentication timed out');
+      } finally {
+        _activeAuthService = null;
       }
-      throw Exception('Second factor authentication timed out');
     }
   }
 
