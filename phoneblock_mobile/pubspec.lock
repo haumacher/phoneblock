@@ -200,11 +200,10 @@ packages:
   fritz_tr064:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: f651c3f49ac300040340a108567da117ff5ccd4c
-      url: "https://github.com/haumacher/fritz_tr64"
-    source: git
+      name: fritz_tr064
+      sha256: d9dc8067bd3ebe7dc53933e351d22ea3bcb76ed398700f47b21dd6f013bd5123
+      url: "https://pub.dev"
+    source: hosted
     version: "0.2.0"
   glob:
     dependency: transitive
