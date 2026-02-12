@@ -1025,6 +1025,7 @@ class FritzBoxService {
         }
         throw Exception('Second factor authentication timed out');
       } finally {
+        _client!.secondFactorToken = null;
         _activeAuthService = null;
       }
     }
@@ -1194,9 +1195,6 @@ class FritzBoxService {
       if (kDebugMode) {
         print('setupAnswerBot: External registration enabled');
       }
-
-      // Clear 2FA token after all protected TR-064 operations are done.
-      _client!.secondFactorToken = null;
 
       // Step 5: Enable bot and wait for SIP registration
       onProgress(AnswerbotSetupStep.enablingBot);

@@ -106,9 +106,9 @@ class _FritzBoxAnswerbotSetupScreenState
   }
 
   void _onSecondFactorMethods(List<AuthMethod> methods) {
-    // Find the 2FA step and set its detail to describe the available methods.
     for (final step in _steps) {
-      if (step.step == AnswerbotSetupStep.confirmingSecondFactor) {
+      if (step.step == AnswerbotSetupStep.confirmingSecondFactor &&
+          step.status == _StepStatus.inProgress) {
         step.detail = _formatAuthMethods(methods);
         break;
       }
