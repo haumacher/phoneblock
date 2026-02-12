@@ -449,9 +449,6 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           onChanged: (value) {
             setState(() {
               _showUsername = value;
-              if (!value) {
-                _usernameController.clear();
-              }
             });
           },
         ),
