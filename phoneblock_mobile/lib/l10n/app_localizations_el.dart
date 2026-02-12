@@ -913,4 +913,13 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'Επιβεβαιώστε την πρόσβαση στο Fritz!Box σας...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Πατήστε οποιοδήποτε κουμπί στο Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Ή πληκτρολογήστε $code σε ένα συνδεδεμένο τηλέφωνο.';
+  }
 }

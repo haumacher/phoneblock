@@ -906,4 +906,13 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'Bekræft venligst adgang på din Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Tryk på en vilkårlig knap på Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Eller ring $code på en tilsluttet telefon';
+  }
 }

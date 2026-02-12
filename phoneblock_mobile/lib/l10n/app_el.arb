@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Ρύθμιση τηλεφωνητή",
   "fritzboxAnswerbotSetupSuccess": "Ο αυτόματος τηλεφωνητής έχει ρυθμιστεί με επιτυχία και είναι τώρα ενεργός.",
   "fritzboxAnswerbotSetupErrorDetail": "Σφάλμα: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Επιβεβαιώστε την πρόσβαση στο Fritz!Box σας..."
+  "fritzboxAnswerbotStepSecondFactor": "Επιβεβαιώστε την πρόσβαση στο Fritz!Box σας...",
+  "fritzboxSecondFactorButton": "Πατήστε οποιοδήποτε κουμπί στο Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Ή πληκτρολογήστε {code} σε ένα συνδεδεμένο τηλέφωνο."
 }

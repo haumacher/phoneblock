@@ -916,4 +916,13 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'Potwierdź dostęp do Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Naciśnij dowolny przycisk na urządzeniu Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Lub wybierz $code na podłączonym telefonie';
+  }
 }

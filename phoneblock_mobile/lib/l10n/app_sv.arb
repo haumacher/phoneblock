@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Konfigurera en telefonsvarare",
   "fritzboxAnswerbotSetupSuccess": "Telefonsvararen har konfigurerats framgångsrikt och är nu aktiv.",
   "fritzboxAnswerbotSetupErrorDetail": "Fel: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Vänligen bekräfta åtkomst på din Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Vänligen bekräfta åtkomst på din Fritz!Box...",
+  "fritzboxSecondFactorButton": "Tryck på valfri knapp på Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Eller slå {code} på en ansluten telefon"
 }

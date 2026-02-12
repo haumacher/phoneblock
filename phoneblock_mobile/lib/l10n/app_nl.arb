@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Een antwoordapparaat instellen",
   "fritzboxAnswerbotSetupSuccess": "Het antwoordapparaat is met succes ingesteld en is nu actief.",
   "fritzboxAnswerbotSetupErrorDetail": "Fout: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Bevestig toegang op uw Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Bevestig toegang op uw Fritz!Box...",
+  "fritzboxSecondFactorButton": "Druk op een willekeurige knop op de Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Of kies {code} op een aangesloten telefoon."
 }

@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Налаштування автовідповідача",
   "fritzboxAnswerbotSetupSuccess": "Автовідповідач було успішно налаштовано і тепер він активний.",
   "fritzboxAnswerbotSetupErrorDetail": "Помилка: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Будь ласка, підтвердьте доступ на вашому Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Будь ласка, підтвердьте доступ на вашому Fritz!Box...",
+  "fritzboxSecondFactorButton": "Натисніть будь-яку кнопку на Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Або наберіть {code} на підключеному телефоні"
 }

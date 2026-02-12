@@ -1633,6 +1633,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bitte bestätigen Sie den Zugang an Ihrer Fritz!Box...'**
   String get fritzboxAnswerbotStepSecondFactor;
+
+  /// 2FA method: press any button on the Fritz!Box device
+  ///
+  /// In de, this message translates to:
+  /// **'Drücken Sie eine beliebige Taste an der Fritz!Box'**
+  String get fritzboxSecondFactorButton;
+
+  /// 2FA method: dial DTMF code on a connected phone
+  ///
+  /// In de, this message translates to:
+  /// **'Oder wählen Sie {code} an einem angeschlossenen Telefon'**
+  String fritzboxSecondFactorDtmf(String code);
 }
 
 class _AppLocalizationsDelegate

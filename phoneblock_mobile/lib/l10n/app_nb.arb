@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Sette opp en telefonsvarer",
   "fritzboxAnswerbotSetupSuccess": "Telefonsvareren er nå satt opp og er aktiv.",
   "fritzboxAnswerbotSetupErrorDetail": "Feil: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Vennligst bekreft tilgangen på Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Vennligst bekreft tilgangen på Fritz!Box...",
+  "fritzboxSecondFactorButton": "Trykk på en hvilken som helst knapp på Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Eller slå {code} på en tilkoblet telefon"
 }

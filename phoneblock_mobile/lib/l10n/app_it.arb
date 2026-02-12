@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Impostazione di una segreteria telefonica",
   "fritzboxAnswerbotSetupSuccess": "La segreteria telefonica è stata configurata con successo ed è ora attiva.",
   "fritzboxAnswerbotSetupErrorDetail": "Errore: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Confermare l'accesso al Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Confermare l'accesso al Fritz!Box...",
+  "fritzboxSecondFactorButton": "Premete un tasto qualsiasi del Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Oppure comporre {code} su un telefono connesso"
 }

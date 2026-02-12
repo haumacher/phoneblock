@@ -968,6 +968,7 @@ class FritzBoxService {
   Future<T> _withSecondFactor<T>({
     required Future<T> Function() action,
     required void Function(AnswerbotSetupStep) onProgress,
+    void Function(List<AuthMethod>)? onSecondFactorMethods,
   }) async {
     try {
       return await action();
@@ -997,6 +998,7 @@ class FritzBoxService {
         if (kDebugMode) {
           print('_withSecondFactor: 2FA started, state=${config.state.name} methods=${config.methods}');
         }
+        onSecondFactorMethods?.call(config.methods);
 
         // Poll for authentication (up to 2 minutes)
         for (int i = 0; i < 60; i++) {
@@ -1041,6 +1043,7 @@ class FritzBoxService {
   /// Throws on failure; cleans up the server-side bot if partially created.
   Future<void> setupAnswerBot({
     required void Function(AnswerbotSetupStep) onProgress,
+    void Function(List<AuthMethod>)? onSecondFactorMethods,
   }) async {
     if (!isConnected || _client == null) {
       throw Exception('Not connected to Fritz!Box');
@@ -1151,6 +1154,7 @@ class FritzBoxService {
 
       final internalNumber = await _withSecondFactor(
         onProgress: onProgress,
+        onSecondFactorMethods: onSecondFactorMethods,
         action: () => voipService.setClient4(
           clientIndex: clientIndex,
           password: creation.password,

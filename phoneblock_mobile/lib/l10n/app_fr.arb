@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Configurer un répondeur téléphonique",
   "fritzboxAnswerbotSetupSuccess": "Le répondeur a été configuré avec succès et est maintenant actif.",
   "fritzboxAnswerbotSetupErrorDetail": "Erreur : {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Veuillez confirmer l'accès sur votre Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Veuillez confirmer l'accès sur votre Fritz!Box...",
+  "fritzboxSecondFactorButton": "Appuyez sur n'importe quelle touche de la Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Ou sélectionnez {code} sur un téléphone connecté"
 }

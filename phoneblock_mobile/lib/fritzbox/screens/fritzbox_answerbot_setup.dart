@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:fritz_tr064/fritz_tr064.dart' show AuthMethod, AuthMethodButton, AuthMethodDtmf;
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 
@@ -11,6 +12,7 @@ class _SetupStepInfo {
   final AnswerbotSetupStep step;
   final String label;
   _StepStatus status;
+  String? detail;
   String? errorMessage;
 
   _SetupStepInfo({required this.step, required this.label, this.status = _StepStatus.pending});
@@ -55,6 +57,12 @@ class _FritzBoxAnswerbotSetupScreenState
             _onProgress(step);
           });
         },
+        onSecondFactorMethods: (methods) {
+          if (!mounted) return;
+          setState(() {
+            _onSecondFactorMethods(methods);
+          });
+        },
       );
 
       if (mounted) {
@@ -95,6 +103,29 @@ class _FritzBoxAnswerbotSetupScreenState
       label: _stepLabel(l10n, step),
       status: _StepStatus.inProgress,
     ));
+  }
+
+  void _onSecondFactorMethods(List<AuthMethod> methods) {
+    // Find the 2FA step and set its detail to describe the available methods.
+    for (final step in _steps) {
+      if (step.step == AnswerbotSetupStep.confirmingSecondFactor) {
+        step.detail = _formatAuthMethods(methods);
+        break;
+      }
+    }
+  }
+
+  String _formatAuthMethods(List<AuthMethod> methods) {
+    final l10n = AppLocalizations.of(context)!;
+    final parts = <String>[];
+    for (final method in methods) {
+      if (method is AuthMethodButton) {
+        parts.add(l10n.fritzboxSecondFactorButton);
+      } else if (method is AuthMethodDtmf) {
+        parts.add(l10n.fritzboxSecondFactorDtmf(method.sequence));
+      }
+    }
+    return parts.join('\n');
   }
 
   void _markCurrentCompleted() {
@@ -157,7 +188,9 @@ class _FritzBoxAnswerbotSetupScreenState
                                   step.errorMessage!),
                               style: const TextStyle(color: Colors.red),
                             )
-                          : null,
+                          : step.detail != null
+                              ? Text(step.detail!)
+                              : null,
                     );
                   },
                 ),

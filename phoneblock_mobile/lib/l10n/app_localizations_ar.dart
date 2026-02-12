@@ -902,4 +902,12 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس...';
+
+  @override
+  String get fritzboxSecondFactorButton => 'اضغط على أي زر في صندوق فريتز!';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'أو اطلب <x1> الرمز <x1> على هاتف متصل';
+  }
 }

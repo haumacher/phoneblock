@@ -918,4 +918,13 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'Veuillez confirmer l\'accès sur votre Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Appuyez sur n\'importe quelle touche de la Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Ou sélectionnez $code sur un téléphone connecté';
+  }
 }

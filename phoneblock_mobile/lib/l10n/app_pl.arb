@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Konfigurowanie automatycznej sekretarki",
   "fritzboxAnswerbotSetupSuccess": "Automatyczna sekretarka została pomyślnie skonfigurowana i jest teraz aktywna.",
   "fritzboxAnswerbotSetupErrorDetail": "Błąd: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Potwierdź dostęp do Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Potwierdź dostęp do Fritz!Box...",
+  "fritzboxSecondFactorButton": "Naciśnij dowolny przycisk na urządzeniu Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Lub wybierz {code} na podłączonym telefonie"
 }

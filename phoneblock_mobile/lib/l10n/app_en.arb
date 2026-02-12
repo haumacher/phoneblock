@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Setting up an answering machine",
   "fritzboxAnswerbotSetupSuccess": "The answering machine has been set up successfully and is now active.",
   "fritzboxAnswerbotSetupErrorDetail": "Error: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Please confirm access on your Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Please confirm access on your Fritz!Box...",
+  "fritzboxSecondFactorButton": "Press any button on the Fritz!Box",
+  "fritzboxSecondFactorDtmf": "Or dial {code} on a connected telephone"
 }

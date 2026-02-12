@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "Configurar un contestador automático",
   "fritzboxAnswerbotSetupSuccess": "El contestador automático se ha configurado correctamente y ya está activo.",
   "fritzboxAnswerbotSetupErrorDetail": "Error: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "Por favor, confirme el acceso en su Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "Por favor, confirme el acceso en su Fritz!Box...",
+  "fritzboxSecondFactorButton": "Pulsa cualquier botón del Fritz!Box",
+  "fritzboxSecondFactorDtmf": "O marque {code} en un teléfono conectado"
 }

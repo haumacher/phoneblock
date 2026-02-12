@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "设置答录机",
   "fritzboxAnswerbotSetupSuccess": "答录机已成功设置，现在处于激活状态。",
   "fritzboxAnswerbotSetupErrorDetail": "错误：<x1>错误</x1",
-  "fritzboxAnswerbotStepSecondFactor": "请确认您的 Fritz!Box..."
+  "fritzboxAnswerbotStepSecondFactor": "请确认您的 Fritz!Box...",
+  "fritzboxSecondFactorButton": "按下 Fritz!Box 上的任意按钮",
+  "fritzboxSecondFactorDtmf": "或在已连接的电话上拨打 <x1> 代码</x1"
 }

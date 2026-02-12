@@ -1368,5 +1368,20 @@
   "@fritzboxAnswerbotStepSecondFactor": {
     "description": "Progress step: waiting for second factor authentication on Fritz!Box",
     "x-translated": "de7d8e34"
+  },
+  "fritzboxSecondFactorButton": "Drücken Sie eine beliebige Taste an der Fritz!Box",
+  "@fritzboxSecondFactorButton": {
+    "description": "2FA method: press any button on the Fritz!Box device",
+    "x-translated": "df2421e9"
+  },
+  "fritzboxSecondFactorDtmf": "Oder wählen Sie {code} an einem angeschlossenen Telefon",
+  "@fritzboxSecondFactorDtmf": {
+    "description": "2FA method: dial DTMF code on a connected phone",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    },
+    "x-translated": "d7f061cc"
   }
 }

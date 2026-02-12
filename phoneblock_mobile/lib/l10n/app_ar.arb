@@ -251,5 +251,7 @@
   "fritzboxAnswerbotSetupTitle": "إعداد جهاز الرد الآلي",
   "fritzboxAnswerbotSetupSuccess": "تم إعداد جهاز الرد الآلي بنجاح وهو الآن نشط.",
   "fritzboxAnswerbotSetupErrorDetail": "خطأ: {error}",
-  "fritzboxAnswerbotStepSecondFactor": "يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس..."
+  "fritzboxAnswerbotStepSecondFactor": "يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس...",
+  "fritzboxSecondFactorButton": "اضغط على أي زر في صندوق فريتز!",
+  "fritzboxSecondFactorDtmf": "أو اطلب <x1> الرمز <x1> على هاتف متصل"
 }

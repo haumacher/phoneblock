@@ -908,4 +908,13 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'Будь ласка, підтвердьте доступ на вашому Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Натисніть будь-яку кнопку на Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Або наберіть $code на підключеному телефоні';
+  }
 }

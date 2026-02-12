@@ -906,4 +906,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get fritzboxAnswerbotStepSecondFactor =>
       'Please confirm access on your Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton => 'Press any button on the Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Or dial $code on a connected telephone';
+  }
 }

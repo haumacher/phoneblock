@@ -820,4 +820,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fritzboxAnswerbotStepSecondFactor => '请确认您的 Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton => '按下 Fritz!Box 上的任意按钮';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return '或在已连接的电话上拨打 <x1> 代码</x1';
+  }
 }
