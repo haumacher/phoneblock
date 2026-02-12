@@ -223,6 +223,11 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
   }
 
   Future<void> _finishWizard() async {
+    // Sync local blocklistMode with actual Fritz!Box state, so even if the
+    // user chose "skip", the local config reflects any pre-existing CardDAV
+    // configuration on the Fritz!Box.
+    await FritzBoxService.instance.syncBlocklistMode();
+
     // Perform initial sync
     final newIds = await FritzBoxService.instance.syncCallList();
     // Track synced calls as new

@@ -1171,7 +1171,7 @@ class _MainScreenState extends State<MainScreen> {
 
     CardDavStatus cardDavStatus = CardDavStatus.notConfigured;
     if (connectionState == FritzBoxConnectionState.connected) {
-      cardDavStatus = await FritzBoxService.instance.verifyCardDav();
+      cardDavStatus = await FritzBoxService.instance.syncBlocklistMode();
     }
 
     if (mounted) {

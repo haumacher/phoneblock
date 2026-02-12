@@ -827,6 +827,37 @@ class FritzBoxService {
     );
   }
 
+  /// Syncs the local blocklistMode config with the actual Fritz!Box state.
+  ///
+  /// Calls [verifyCardDav] and updates local config bidirectionally:
+  /// - If CardDAV is active on Fritz!Box but local config says [BlocklistMode.none],
+  ///   updates local config to [BlocklistMode.cardDav].
+  /// - If CardDAV is not configured on Fritz!Box but local config says
+  ///   [BlocklistMode.cardDav], updates local config to [BlocklistMode.none].
+  ///
+  /// Returns the [CardDavStatus] from the Fritz!Box.
+  Future<CardDavStatus> syncBlocklistMode() async {
+    final cardDavStatus = await verifyCardDav();
+    final config = await FritzBoxStorage.instance.getConfig();
+    final localMode = config?.blocklistMode ?? BlocklistMode.none;
+
+    if (cardDavStatus == CardDavStatus.notConfigured &&
+        localMode == BlocklistMode.cardDav) {
+      // Fritz!Box says not configured, but local thinks it is → reset local
+      await FritzBoxStorage.instance.updateConfig(
+        blocklistMode: BlocklistMode.none,
+      );
+    } else if (cardDavStatus != CardDavStatus.notConfigured &&
+        localMode == BlocklistMode.none) {
+      // Fritz!Box has CardDAV configured, but local doesn't know → update local
+      await FritzBoxStorage.instance.updateConfig(
+        blocklistMode: BlocklistMode.cardDav,
+      );
+    }
+
+    return cardDavStatus;
+  }
+
   /// Verifies CardDAV configuration status on Fritz!Box.
   ///
   /// Checks Fritz!Box directly for PhoneBlock phonebook (may have been
