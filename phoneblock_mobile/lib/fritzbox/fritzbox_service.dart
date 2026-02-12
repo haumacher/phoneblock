@@ -996,8 +996,12 @@ class FritzBoxService {
       try {
         final config = await authService.setConfig('start');
         if (kDebugMode) {
-          print('_withSecondFactor: 2FA started, state=${config.state.name} methods=${config.methods}');
+          print('_withSecondFactor: 2FA started, token=${config.token} state=${config.state.name} methods=${config.methods}');
         }
+
+        // Include 2FA token in all subsequent SOAP requests per AVM spec section 6.4
+        _client!.secondFactorToken = config.token;
+
         onSecondFactorMethods?.call(config.methods);
 
         // Poll for authentication (up to 2 minutes)
@@ -1021,6 +1025,7 @@ class FritzBoxService {
         }
         throw Exception('Second factor authentication timed out');
       } finally {
+        _client!.secondFactorToken = null;
         _activeAuthService = null;
       }
     }

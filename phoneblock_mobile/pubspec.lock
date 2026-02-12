@@ -200,10 +200,9 @@ packages:
   fritz_tr064:
     dependency: "direct main"
     description:
-      name: fritz_tr064
-      sha256: "092ebadd21c4f0d621b7345b70fa9d25f0dba80a8e1fddde63e7722b74637e9b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../fritz_tr64"
+      relative: true
+    source: path
     version: "0.2.1"
   glob:
     dependency: transitive
