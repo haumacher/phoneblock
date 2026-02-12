@@ -704,10 +704,10 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wprowadź dane dostępu do Fritz!Box. Można je znaleźć w interfejsie użytkownika Fritz!Box w sekcji System > Użytkownik Fritz!Box.';
 
   @override
-  String get fritzboxUsernameLabel => 'Nazwa użytkownika';
+  String get fritzboxShowUsername => 'Wprowadź nazwę użytkownika';
 
   @override
-  String get fritzboxUsernameHint => 'administrator lub użytkownik Fritz!Box';
+  String get fritzboxUsernameLabel => 'Nazwa użytkownika';
 
   @override
   String get fritzboxPasswordLabel => 'Hasło';

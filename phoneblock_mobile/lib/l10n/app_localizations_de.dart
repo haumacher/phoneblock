@@ -702,10 +702,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.';
 
   @override
-  String get fritzboxUsernameLabel => 'Benutzername';
+  String get fritzboxShowUsername => 'Benutzername eingeben';
 
   @override
-  String get fritzboxUsernameHint => 'Leer für Standardbenutzer';
+  String get fritzboxUsernameLabel => 'Benutzername';
 
   @override
   String get fritzboxPasswordLabel => 'Kennwort';

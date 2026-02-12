@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Misstänkta samtal",
   "fritzboxTitle": "Fritz!Box",
   "fritzboxConnected": "Ansluten",
+  "fritzboxConnectedNotProtected": "Ansluten, men inte skyddad",
   "fritzboxOffline": "Ej tillgänglig",
   "fritzboxError": "Fel i anslutningen",
   "fritzboxNotConfiguredShort": "Inte konfigurerad",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Anslut",
   "fritzboxLoginDescription": "Ange dina Fritz!Box-åtkomstuppgifter. Du hittar dem i Fritz!Box användargränssnitt under System > Fritz!Box-användare.",
   "fritzboxUsernameLabel": "Användarens namn",
-  "fritzboxUsernameHint": "administratör eller din Fritz!Box-användare",
   "fritzboxPasswordLabel": "Lösenord",
   "fritzboxCredentialsNote": "Dina åtkomstuppgifter lagras på ett säkert sätt på din enhet.",
   "fritzboxTestAndSave": "Testning och sparande",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "Blocklistan CardDAV har tagits bort från Fritz!",
   "fritzboxDisable": "Avaktivera",
   "fritzboxCardDavDisabled": "CardDAV blocklista avaktiverad",
-  "fritzboxConnectedNotProtected": "Ansluten, men inte skyddad"
+  "fritzboxShowUsername": "Ange användarnamn"
 }

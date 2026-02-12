@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Підозрілі дзвінки",
   "fritzboxTitle": "Фріц! Коробка!",
   "fritzboxConnected": "Підключено",
+  "fritzboxConnectedNotProtected": "Підключено, але не захищено",
   "fritzboxOffline": "Немає в наявності",
   "fritzboxError": "Помилка підключення",
   "fritzboxNotConfiguredShort": "Не налаштований.",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Підключіться",
   "fritzboxLoginDescription": "Введіть дані доступу до Fritz!Box. Ви можете знайти їх в інтерфейсі користувача Fritz!Box в розділі Система > Користувач Fritz!Box.",
   "fritzboxUsernameLabel": "Ім'я користувача",
-  "fritzboxUsernameHint": "адміністратор або ваш користувач Fritz!Box",
   "fritzboxPasswordLabel": "Пароль",
   "fritzboxCredentialsNote": "Ваші дані доступу надійно зберігаються на вашому пристрої.",
   "fritzboxTestAndSave": "Тестування та збереження",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "Блок-лист CardDAV видалено з Fritz!",
   "fritzboxDisable": "Деактивувати",
   "fritzboxCardDavDisabled": "Блокування CardDAV деактивовано",
-  "fritzboxConnectedNotProtected": "Підключено, але не захищено"
+  "fritzboxShowUsername": "Введіть ім'я користувача"
 }

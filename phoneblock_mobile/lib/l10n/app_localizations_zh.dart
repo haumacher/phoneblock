@@ -631,10 +631,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '输入您的 Fritz!Box 访问数据。您可以在 Fritz!Box 用户界面的系统 > Fritz!Box 用户下找到它们。';
 
   @override
-  String get fritzboxUsernameLabel => '用户名';
+  String get fritzboxShowUsername => '输入用户名';
 
   @override
-  String get fritzboxUsernameHint => '管理员或您的 Fritz!Box 用户';
+  String get fritzboxUsernameLabel => '用户名';
 
   @override
   String get fritzboxPasswordLabel => '密码';

@@ -1054,15 +1054,15 @@
     "description": "Login description",
     "x-translated": "56387e18"
   },
+  "fritzboxShowUsername": "Benutzername eingeben",
+  "@fritzboxShowUsername": {
+    "description": "Switch label to show the username field in the login step",
+    "x-translated": "c2627574"
+  },
   "fritzboxUsernameLabel": "Benutzername",
   "@fritzboxUsernameLabel": {
     "description": "Username field label",
     "x-translated": "375afb70"
-  },
-  "fritzboxUsernameHint": "Leer für Standardbenutzer",
-  "@fritzboxUsernameHint": {
-    "description": "Username field hint",
-    "x-translated": "490bb819"
   },
   "fritzboxPasswordLabel": "Kennwort",
   "@fritzboxPasswordLabel": {

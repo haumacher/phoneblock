@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Podejrzane połączenia",
   "fritzboxTitle": "Fritz!Box",
   "fritzboxConnected": "Połączony",
+  "fritzboxConnectedNotProtected": "Połączony, ale nie chroniony",
   "fritzboxOffline": "Niedostępne",
   "fritzboxError": "Błąd połączenia",
   "fritzboxNotConfiguredShort": "Nie skonfigurowano",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Połączenie",
   "fritzboxLoginDescription": "Wprowadź dane dostępu do Fritz!Box. Można je znaleźć w interfejsie użytkownika Fritz!Box w sekcji System > Użytkownik Fritz!Box.",
   "fritzboxUsernameLabel": "Nazwa użytkownika",
-  "fritzboxUsernameHint": "administrator lub użytkownik Fritz!Box",
   "fritzboxPasswordLabel": "Hasło",
   "fritzboxCredentialsNote": "Dane dostępu są bezpiecznie przechowywane na urządzeniu.",
   "fritzboxTestAndSave": "Testowanie i zapisywanie",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "Lista bloków CardDAV została usunięta z Fritz!",
   "fritzboxDisable": "Dezaktywuj",
   "fritzboxCardDavDisabled": "Lista bloków CardDAV wyłączona",
-  "fritzboxConnectedNotProtected": "Połączony, ale nie chroniony"
+  "fritzboxShowUsername": "Wprowadź nazwę użytkownika"
 }

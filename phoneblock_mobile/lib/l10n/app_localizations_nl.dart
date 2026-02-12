@@ -703,10 +703,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Voer uw Fritz!Box toegangsgegevens in. Je vindt ze in de Fritz!Box gebruikersinterface onder Systeem > Fritz!Box gebruiker.';
 
   @override
-  String get fritzboxUsernameLabel => 'Gebruikersnaam';
+  String get fritzboxShowUsername => 'Gebruikersnaam invoeren';
 
   @override
-  String get fritzboxUsernameHint => 'admin of uw Fritz!Box gebruiker';
+  String get fritzboxUsernameLabel => 'Gebruikersnaam';
 
   @override
   String get fritzboxPasswordLabel => 'Wachtwoord';

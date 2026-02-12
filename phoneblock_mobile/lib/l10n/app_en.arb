@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Suspicious calls",
   "fritzboxTitle": "Fritz!Box",
   "fritzboxConnected": "Connected",
+  "fritzboxConnectedNotProtected": "Connected, not protected",
   "fritzboxOffline": "Not available",
   "fritzboxError": "Connection error",
   "fritzboxNotConfiguredShort": "Not set up",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Connect",
   "fritzboxLoginDescription": "Enter your Fritz!Box access data. You can find them in the Fritz!Box user interface under System > Fritz!Box user.",
   "fritzboxUsernameLabel": "User name",
-  "fritzboxUsernameHint": "Leave empty for default user",
   "fritzboxPasswordLabel": "Password",
   "fritzboxCredentialsNote": "Your access data is stored securely on your device.",
   "fritzboxTestAndSave": "Testing and saving",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "The CardDAV blocklist is removed from the Fritz!",
   "fritzboxDisable": "Deactivate",
   "fritzboxCardDavDisabled": "CardDAV blocklist deactivated",
-  "fritzboxConnectedNotProtected": "Connected, not protected"
+  "fritzboxShowUsername": "Enter user name"
 }

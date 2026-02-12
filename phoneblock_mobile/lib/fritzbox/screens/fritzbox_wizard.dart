@@ -39,6 +39,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _showPassword = false;
+  bool _showUsername = false;
 
   // Blocklist step state
   bool _supportsCardDav = false;
@@ -416,20 +417,6 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
         ),
         const SizedBox(height: 16),
 
-        // Username field
-        TextField(
-          controller: _usernameController,
-          decoration: InputDecoration(
-            labelText: l10n.fritzboxUsernameLabel,
-            hintText: l10n.fritzboxUsernameHint,
-            prefixIcon: const Icon(Icons.person),
-            border: const OutlineInputBorder(),
-          ),
-          textInputAction: TextInputAction.next,
-          autocorrect: false,
-        ),
-        const SizedBox(height: 16),
-
         // Password field
         TextField(
           controller: _passwordController,
@@ -452,6 +439,35 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           onSubmitted: (_) => _connect(),
         ),
         const SizedBox(height: 8),
+
+        // Username toggle and field
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.fritzboxShowUsername),
+          value: _showUsername,
+          onChanged: (value) {
+            setState(() {
+              _showUsername = value;
+              if (!value) {
+                _usernameController.clear();
+              }
+            });
+          },
+        ),
+        if (_showUsername) ...[
+          TextField(
+            controller: _usernameController,
+            decoration: InputDecoration(
+              labelText: l10n.fritzboxUsernameLabel,
+              prefixIcon: const Icon(Icons.person),
+              border: const OutlineInputBorder(),
+            ),
+            textInputAction: TextInputAction.done,
+            autocorrect: false,
+            onSubmitted: (_) => _connect(),
+          ),
+          const SizedBox(height: 8),
+        ],
 
         // Credentials note
         Text(

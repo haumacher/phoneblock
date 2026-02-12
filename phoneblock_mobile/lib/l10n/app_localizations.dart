@@ -1262,17 +1262,17 @@ abstract class AppLocalizations {
   /// **'Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.'**
   String get fritzboxLoginDescription;
 
+  /// Switch label to show the username field in the login step
+  ///
+  /// In de, this message translates to:
+  /// **'Benutzername eingeben'**
+  String get fritzboxShowUsername;
+
   /// Username field label
   ///
   /// In de, this message translates to:
   /// **'Benutzername'**
   String get fritzboxUsernameLabel;
-
-  /// Username field hint
-  ///
-  /// In de, this message translates to:
-  /// **'Leer für Standardbenutzer'**
-  String get fritzboxUsernameHint;
 
   /// Password field label
   ///

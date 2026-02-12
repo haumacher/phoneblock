@@ -700,10 +700,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter your Fritz!Box access data. You can find them in the Fritz!Box user interface under System > Fritz!Box user.';
 
   @override
-  String get fritzboxUsernameLabel => 'User name';
+  String get fritzboxShowUsername => 'Enter user name';
 
   @override
-  String get fritzboxUsernameHint => 'Leave empty for default user';
+  String get fritzboxUsernameLabel => 'User name';
 
   @override
   String get fritzboxPasswordLabel => 'Password';

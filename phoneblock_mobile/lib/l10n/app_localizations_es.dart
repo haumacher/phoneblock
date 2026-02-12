@@ -701,10 +701,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Introduzca sus datos de acceso a Fritz!Box. Puede encontrarlos en la interfaz de usuario de Fritz!Box en Sistema > Usuario de Fritz!Box.';
 
   @override
-  String get fritzboxUsernameLabel => 'Nombre de usuario';
+  String get fritzboxShowUsername => 'Introduzca el nombre de usuario';
 
   @override
-  String get fritzboxUsernameHint => 'admin o su usuario de Fritz!Box';
+  String get fritzboxUsernameLabel => 'Nombre de usuario';
 
   @override
   String get fritzboxPasswordLabel => 'Contraseña';

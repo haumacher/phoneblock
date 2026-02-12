@@ -703,10 +703,10 @@ class AppLocalizationsEl extends AppLocalizations {
       'Εισάγετε τα δεδομένα πρόσβασης του Fritz!Box. Μπορείτε να τα βρείτε στο περιβάλλον εργασίας χρήστη του Fritz!Box στην ενότητα Σύστημα > Fritz!Box user.';
 
   @override
-  String get fritzboxUsernameLabel => 'Όνομα χρήστη';
+  String get fritzboxShowUsername => 'Εισάγετε το όνομα χρήστη';
 
   @override
-  String get fritzboxUsernameHint => 'admin ή ο χρήστης του Fritz!Box σας';
+  String get fritzboxUsernameLabel => 'Όνομα χρήστη';
 
   @override
   String get fritzboxPasswordLabel => 'Κωδικός πρόσβασης';

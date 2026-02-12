@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "المكالمات المشبوهة",
   "fritzboxTitle": "فريتز!بوكس",
   "fritzboxConnected": "متصل",
+  "fritzboxConnectedNotProtected": "متصلة، غير محمية",
   "fritzboxOffline": "غير متوفر",
   "fritzboxError": "خطأ في الاتصال",
   "fritzboxNotConfiguredShort": "لم يتم إعداده",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "الاتصال",
   "fritzboxLoginDescription": "أدخل بيانات وصولك إلى Fritz!Box. يمكنك العثور عليها في واجهة مستخدم Fritz!Box ضمن النظام > مستخدم Fritz!Box.",
   "fritzboxUsernameLabel": "اسم المستخدم",
-  "fritzboxUsernameHint": "المشرف أو مستخدم Fritz!Box الخاص بك",
   "fritzboxPasswordLabel": "كلمة المرور",
   "fritzboxCredentialsNote": "يتم تخزين بيانات الوصول الخاصة بك بشكل آمن على جهازك.",
   "fritzboxTestAndSave": "الاختبار والحفظ",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "تمت إزالة قائمة حظر CardDAV من Fritz!",
   "fritzboxDisable": "إلغاء التنشيط",
   "fritzboxCardDavDisabled": "تم إلغاء تنشيط قائمة حظر CardDAV",
-  "fritzboxConnectedNotProtected": "متصلة، غير محمية"
+  "fritzboxShowUsername": "أدخل اسم المستخدم"
 }

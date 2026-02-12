@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Llamadas sospechosas",
   "fritzboxTitle": "Caja Fritz",
   "fritzboxConnected": "Conectado",
+  "fritzboxConnectedNotProtected": "Conectado, no protegido",
   "fritzboxOffline": "No disponible",
   "fritzboxError": "Error de conexión",
   "fritzboxNotConfiguredShort": "No configurado",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Conectar",
   "fritzboxLoginDescription": "Introduzca sus datos de acceso a Fritz!Box. Puede encontrarlos en la interfaz de usuario de Fritz!Box en Sistema > Usuario de Fritz!Box.",
   "fritzboxUsernameLabel": "Nombre de usuario",
-  "fritzboxUsernameHint": "admin o su usuario de Fritz!Box",
   "fritzboxPasswordLabel": "Contraseña",
   "fritzboxCredentialsNote": "Tus datos de acceso se almacenan de forma segura en tu dispositivo.",
   "fritzboxTestAndSave": "Pruebas y ahorro",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "¡La lista de bloqueo CardDAV se elimina de la base de datos de Fritz!",
   "fritzboxDisable": "Desactivar",
   "fritzboxCardDavDisabled": "Lista de bloqueo CardDAV desactivada",
-  "fritzboxConnectedNotProtected": "Conectado, no protegido"
+  "fritzboxShowUsername": "Introduzca el nombre de usuario"
 }

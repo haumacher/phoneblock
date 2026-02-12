@@ -709,10 +709,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Inserite i vostri dati di accesso al Fritz!Box. Li trovate nell\'interfaccia utente del Fritz!Box alla voce Sistema > Utente Fritz!Box.';
 
   @override
-  String get fritzboxUsernameLabel => 'Nome utente';
+  String get fritzboxShowUsername => 'Inserire il nome utente';
 
   @override
-  String get fritzboxUsernameHint => 'admin o il vostro utente Fritz!Box';
+  String get fritzboxUsernameLabel => 'Nome utente';
 
   @override
   String get fritzboxPasswordLabel => 'Password';

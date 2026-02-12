@@ -700,11 +700,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Ange dina Fritz!Box-åtkomstuppgifter. Du hittar dem i Fritz!Box användargränssnitt under System > Fritz!Box-användare.';
 
   @override
-  String get fritzboxUsernameLabel => 'Användarens namn';
+  String get fritzboxShowUsername => 'Ange användarnamn';
 
   @override
-  String get fritzboxUsernameHint =>
-      'administratör eller din Fritz!Box-användare';
+  String get fritzboxUsernameLabel => 'Användarens namn';
 
   @override
   String get fritzboxPasswordLabel => 'Lösenord';

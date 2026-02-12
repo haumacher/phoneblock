@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Ύποπτες κλήσεις",
   "fritzboxTitle": "Fritz!Box",
   "fritzboxConnected": "Συνδεδεμένο",
+  "fritzboxConnectedNotProtected": "Συνδεδεμένο, όχι προστατευμένο",
   "fritzboxOffline": "Δεν είναι διαθέσιμο",
   "fritzboxError": "Σφάλμα σύνδεσης",
   "fritzboxNotConfiguredShort": "Δεν έχει ρυθμιστεί",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Συνδέστε το",
   "fritzboxLoginDescription": "Εισάγετε τα δεδομένα πρόσβασης του Fritz!Box. Μπορείτε να τα βρείτε στο περιβάλλον εργασίας χρήστη του Fritz!Box στην ενότητα Σύστημα > Fritz!Box user.",
   "fritzboxUsernameLabel": "Όνομα χρήστη",
-  "fritzboxUsernameHint": "admin ή ο χρήστης του Fritz!Box σας",
   "fritzboxPasswordLabel": "Κωδικός πρόσβασης",
   "fritzboxCredentialsNote": "Τα δεδομένα πρόσβασής σας αποθηκεύονται με ασφάλεια στη συσκευή σας.",
   "fritzboxTestAndSave": "Δοκιμές και αποθήκευση",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "Η λίστα αποκλεισμού CardDAV αφαιρείται από το Fritz!",
   "fritzboxDisable": "Απενεργοποίηση",
   "fritzboxCardDavDisabled": "Απενεργοποιημένη λίστα αποκλεισμού CardDAV",
-  "fritzboxConnectedNotProtected": "Συνδεδεμένο, όχι προστατευμένο"
+  "fritzboxShowUsername": "Εισάγετε το όνομα χρήστη"
 }

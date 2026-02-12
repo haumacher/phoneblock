@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Mistenkelige samtaler",
   "fritzboxTitle": "Fritz!Box",
   "fritzboxConnected": "Tilkoblet",
+  "fritzboxConnectedNotProtected": "Tilkoblet, ikke beskyttet",
   "fritzboxOffline": "Ikke tilgjengelig",
   "fritzboxError": "Feil i tilkoblingen",
   "fritzboxNotConfiguredShort": "Ikke satt opp",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Koble til",
   "fritzboxLoginDescription": "Skriv inn dine Fritz!Box-tilgangsdata. Du finner dem i Fritz!Box-brukergrensesnittet under System > Fritz!Box-bruker.",
   "fritzboxUsernameLabel": "Brukernavn",
-  "fritzboxUsernameHint": "admin eller Fritz!Box-brukeren din",
   "fritzboxPasswordLabel": "Passord",
   "fritzboxCredentialsNote": "Tilgangsdataene dine lagres sikkert på enheten din.",
   "fritzboxTestAndSave": "Testing og lagring",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "CardDAV-blokklisten er fjernet fra Fritz!",
   "fritzboxDisable": "Deaktiver",
   "fritzboxCardDavDisabled": "CardDAV-blokkliste deaktivert",
-  "fritzboxConnectedNotProtected": "Tilkoblet, ikke beskyttet"
+  "fritzboxShowUsername": "Skriv inn brukernavn"
 }

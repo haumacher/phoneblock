@@ -157,6 +157,7 @@
   "suspiciousCallsCount": "Verdachte telefoontjes",
   "fritzboxTitle": "Fritz!Box",
   "fritzboxConnected": "Aangesloten",
+  "fritzboxConnectedNotProtected": "Aangesloten, niet beschermd",
   "fritzboxOffline": "Niet beschikbaar",
   "fritzboxError": "Fout bij verbinding",
   "fritzboxNotConfiguredShort": "Niet ingesteld",
@@ -190,7 +191,6 @@
   "fritzboxManualConnect": "Maak verbinding met",
   "fritzboxLoginDescription": "Voer uw Fritz!Box toegangsgegevens in. Je vindt ze in de Fritz!Box gebruikersinterface onder Systeem > Fritz!Box gebruiker.",
   "fritzboxUsernameLabel": "Gebruikersnaam",
-  "fritzboxUsernameHint": "admin of uw Fritz!Box gebruiker",
   "fritzboxPasswordLabel": "Wachtwoord",
   "fritzboxCredentialsNote": "Je toegangsgegevens worden veilig opgeslagen op je apparaat.",
   "fritzboxTestAndSave": "Testen en opslaan",
@@ -228,5 +228,5 @@
   "fritzboxDisableCardDavMessage": "De CardDAV-blokkeringslijst is verwijderd uit de Fritz!",
   "fritzboxDisable": "Deactiveer",
   "fritzboxCardDavDisabled": "CardDAV blokkadelijst gedeactiveerd",
-  "fritzboxConnectedNotProtected": "Aangesloten, niet beschermd"
+  "fritzboxShowUsername": "Gebruikersnaam invoeren"
 }

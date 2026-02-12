@@ -701,10 +701,10 @@ class AppLocalizationsNb extends AppLocalizations {
       'Skriv inn dine Fritz!Box-tilgangsdata. Du finner dem i Fritz!Box-brukergrensesnittet under System > Fritz!Box-bruker.';
 
   @override
-  String get fritzboxUsernameLabel => 'Brukernavn';
+  String get fritzboxShowUsername => 'Skriv inn brukernavn';
 
   @override
-  String get fritzboxUsernameHint => 'admin eller Fritz!Box-brukeren din';
+  String get fritzboxUsernameLabel => 'Brukernavn';
 
   @override
   String get fritzboxPasswordLabel => 'Passord';
