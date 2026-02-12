@@ -1136,6 +1136,7 @@ class _MainScreenState extends State<MainScreen> {
   bool _isLoading = true;
   bool _answerbotEnabled = false;
   FritzBoxConnectionState _fritzboxState = FritzBoxConnectionState.notConfigured;
+  CardDavStatus _cardDavStatus = CardDavStatus.notConfigured;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
   Offset _lastTapPosition = Offset.zero;
 
@@ -1163,12 +1164,20 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Checks Fritz!Box connection status.
+  /// Checks Fritz!Box connection and CardDAV protection status.
   Future<void> _checkFritzBoxConnection() async {
     await FritzBoxService.instance.checkConnection();
+    final connectionState = FritzBoxService.instance.connectionState;
+
+    CardDavStatus cardDavStatus = CardDavStatus.notConfigured;
+    if (connectionState == FritzBoxConnectionState.connected) {
+      cardDavStatus = await FritzBoxService.instance.verifyCardDav();
+    }
+
     if (mounted) {
       setState(() {
-        _fritzboxState = FritzBoxService.instance.connectionState;
+        _fritzboxState = connectionState;
+        _cardDavStatus = cardDavStatus;
       });
     }
   }
@@ -2251,10 +2260,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           // Fritz!Box menu item
           ListTile(
-            leading: Icon(
-              Icons.router,
-              color: _getFritzBoxIconColor(),
-            ),
+            leading: _buildFritzBoxIcon(),
             title: Text(AppLocalizations.of(context)!.fritzboxTitle),
             subtitle: Text(_getFritzBoxStatusText(context)),
             onTap: () async {
@@ -2443,10 +2449,44 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Gets the icon color for Fritz!Box based on connection state.
+  /// Builds the Fritz!Box drawer icon with shield badge for protection status.
+  Widget _buildFritzBoxIcon() {
+    final routerColor = _getFritzBoxIconColor();
+    final isProtected = _cardDavStatus == CardDavStatus.synced;
+    final isConnected = _fritzboxState == FritzBoxConnectionState.connected;
+
+    if (isConnected) {
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(Icons.router, color: routerColor),
+          Positioned(
+            right: -6,
+            bottom: -6,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(1),
+              child: Icon(
+                isProtected ? Icons.shield : Icons.shield_outlined,
+                size: 16,
+                color: isProtected ? Colors.green : Colors.grey,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Icon(Icons.router, color: routerColor);
+  }
+
   Color _getFritzBoxIconColor() {
     switch (_fritzboxState) {
       case FritzBoxConnectionState.connected:
-        return Colors.green;
+        return _cardDavStatus == CardDavStatus.synced ? Colors.green : Colors.orange;
       case FritzBoxConnectionState.offline:
         return Colors.orange;
       case FritzBoxConnectionState.error:
@@ -2458,15 +2498,19 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Gets the status text for Fritz!Box.
   String _getFritzBoxStatusText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (_fritzboxState) {
       case FritzBoxConnectionState.connected:
-        return AppLocalizations.of(context)!.fritzboxConnected;
+        if (_cardDavStatus == CardDavStatus.synced) {
+          return l10n.fritzboxConnected;
+        }
+        return l10n.fritzboxConnectedNotProtected;
       case FritzBoxConnectionState.offline:
-        return AppLocalizations.of(context)!.fritzboxOffline;
+        return l10n.fritzboxOffline;
       case FritzBoxConnectionState.error:
-        return AppLocalizations.of(context)!.fritzboxError;
+        return l10n.fritzboxError;
       case FritzBoxConnectionState.notConfigured:
-        return AppLocalizations.of(context)!.fritzboxNotConfiguredShort;
+        return l10n.fritzboxNotConfiguredShort;
     }
   }
 

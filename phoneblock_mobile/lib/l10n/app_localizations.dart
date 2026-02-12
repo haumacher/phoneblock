@@ -1058,11 +1058,17 @@ abstract class AppLocalizations {
   /// **'Fritz!Box'**
   String get fritzboxTitle;
 
-  /// Fritz!Box connected status
+  /// Fritz!Box connected and spam-protected status
   ///
   /// In de, this message translates to:
-  /// **'Verbunden'**
+  /// **'Verbunden und geschützt'**
   String get fritzboxConnected;
+
+  /// Fritz!Box connected but CardDAV spam protection not active
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden, nicht geschützt'**
+  String get fritzboxConnectedNotProtected;
 
   /// Fritz!Box offline status
   ///

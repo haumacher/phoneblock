@@ -869,10 +869,13 @@
     "description": "Fritz!Box menu title",
     "x-translated": "4f2059d2"
   },
-  "fritzboxConnected": "Verbunden",
+  "fritzboxConnected": "Verbunden und geschützt",
   "@fritzboxConnected": {
-    "description": "Fritz!Box connected status",
-    "x-translated": "5614b210"
+    "description": "Fritz!Box connected and spam-protected status"
+  },
+  "fritzboxConnectedNotProtected": "Verbunden, nicht geschützt",
+  "@fritzboxConnectedNotProtected": {
+    "description": "Fritz!Box connected but CardDAV spam protection not active"
   },
   "fritzboxOffline": "Nicht erreichbar",
   "@fritzboxOffline": {

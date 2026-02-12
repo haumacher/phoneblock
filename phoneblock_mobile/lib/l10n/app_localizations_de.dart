@@ -571,7 +571,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxTitle => 'Fritz!Box';
 
   @override
-  String get fritzboxConnected => 'Verbunden';
+  String get fritzboxConnected => 'Verbunden und geschützt';
+
+  @override
+  String get fritzboxConnectedNotProtected => 'Verbunden, nicht geschützt';
 
   @override
   String get fritzboxOffline => 'Nicht erreichbar';
