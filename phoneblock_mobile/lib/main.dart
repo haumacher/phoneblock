@@ -2524,7 +2524,7 @@ class _MainScreenState extends State<MainScreen> {
       parts.add(context.l10n.legitimateReportsCount(call.votes.abs()));
     }
 
-    if (call.votesWildcard > 0) {
+    if (call.votesWildcard > call.votes) {
       parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
     }
 
