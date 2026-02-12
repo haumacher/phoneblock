@@ -170,6 +170,40 @@ class FritzBoxService {
     await ScreenedCallsDatabase.instance.deleteFritzBoxCalls();
   }
 
+  /// Discovers the default username for the Fritz!Box at the given host.
+  ///
+  /// Connects anonymously (without credentials) and queries the
+  /// LANConfigSecurity service for the default login username.
+  /// Returns null if the username cannot be determined.
+  Future<String?> getDefaultUsername(String host) async {
+    final anonClient = Tr64Client(
+      host: host,
+      username: '',
+      password: '',
+    );
+
+    try {
+      await anonClient.connect();
+
+      final security = anonClient.lanConfigSecurity();
+      if (security == null) {
+        if (kDebugMode) {
+          print('LANConfigSecurity service not available');
+        }
+        return null;
+      }
+
+      return await security.getDefaultUsername();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error discovering default username: $e');
+      }
+      return null;
+    } finally {
+      anonClient.close();
+    }
+  }
+
   /// Gets device information from Fritz!Box.
   Future<FritzBoxDeviceInfo?> getDeviceInfo() async {
     if (_client == null) return null;

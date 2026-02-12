@@ -101,10 +101,22 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
     }
   }
 
-  void _proceedToLogin() {
-    setState(() {
-      _currentStep = _WizardStep.login;
-    });
+  Future<void> _proceedToLogin() async {
+    final host = _hostController.text.trim();
+
+    // Discover the default username if the user hasn't entered one yet
+    if (_usernameController.text.isEmpty && host.isNotEmpty) {
+      final defaultUsername = await FritzBoxService.instance.getDefaultUsername(host);
+      if (defaultUsername != null && defaultUsername.isNotEmpty) {
+        _usernameController.text = defaultUsername;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _currentStep = _WizardStep.login;
+      });
+    }
   }
 
   Future<void> _connect() async {
