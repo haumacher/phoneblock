@@ -202,10 +202,10 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "6767c1547814e158d789535cf66fd4ae41a0c42e"
+      resolved-ref: f651c3f49ac300040340a108567da117ff5ccd4c
       url: "https://github.com/haumacher/fritz_tr64"
     source: git
-    version: "0.1.0"
+    version: "0.2.0"
   glob:
     dependency: transitive
     description:
