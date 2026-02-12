@@ -2590,9 +2590,9 @@ class _MainScreenState extends State<MainScreen> {
         label = context.l10n.missed;
         color = Colors.orange[400]!;
       } else {
-        // Answered call
+        // Answered call - show device name if available
         icon = Icons.phone_callback;
-        label = context.l10n.accepted;
+        label = call.device ?? context.l10n.accepted;
         color = Colors.green[400]!;
       }
     } else {
