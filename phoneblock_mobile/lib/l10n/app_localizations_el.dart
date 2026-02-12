@@ -839,61 +839,74 @@ class AppLocalizationsEl extends AppLocalizations {
       'Απενεργοποιημένη λίστα αποκλεισμού CardDAV';
 
   @override
-  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+  String get fritzboxAnswerbotTitle => 'Τηλεφωνητής';
 
   @override
-  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+  String get fritzboxAnswerbotActive => 'Ενεργός τηλεφωνητής';
 
   @override
   String get fritzboxAnswerbotDescription =>
-      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+      'Οι κλήσεις SPAM απαντώνται αυτόματα από τον τηλεφωνητή του PhoneBlock.';
 
   @override
-  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+  String get fritzboxEnableAnswerbot => 'Ενεργοποίηση τηλεφωνητή';
 
   @override
   String get fritzboxEnableAnswerbotDescription =>
-      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+      'Να απαντούν αυτόματα οι κλήσεις SPAM από τον τηλεφωνητή του PhoneBlock';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => 'Απενεργοποίηση τηλεφωνητή';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle => 'Απενεργοποίηση τηλεφωνητή;';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
-      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+      'Ο τηλεφωνητής PhoneBlock αφαιρείται από το Fritz!Box και απενεργοποιείται στο διακομιστή.';
 
   @override
-  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+  String get fritzboxAnswerbotEnabled => 'Ενεργοποιημένος τηλεφωνητής';
 
   @override
-  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+  String get fritzboxAnswerbotDisabled => 'Απενεργοποιημένος τηλεφωνητής';
 
   @override
   String get fritzboxAnswerbotSetupFailed =>
-      'Anrufbeantworter konnte nicht eingerichtet werden.';
+      'Ο τηλεφωνητής δεν μπορούσε να ρυθμιστεί.';
 
   @override
-  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+  String get fritzboxAnswerbotStepCreating => 'Δημιουργία τηλεφωνητή...';
 
   @override
-  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+  String get fritzboxAnswerbotStepDetecting =>
+      'Ελέγξτε την εξωτερική πρόσβαση...';
 
   @override
-  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+  String get fritzboxAnswerbotStepDynDns => 'Διαμόρφωση του DynDNS...';
 
   @override
   String get fritzboxAnswerbotStepWaitingDynDns =>
-      'Warte auf DynDNS-Registrierung...';
+      'Αναμονή για εγγραφή στο DynDNS...';
 
   @override
-  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+  String get fritzboxAnswerbotStepSip => 'Εγγραφή συσκευής SIP...';
 
   @override
-  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+  String get fritzboxAnswerbotStepEnabling => 'Ενεργοποίηση τηλεφωνητή...';
 
   @override
-  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+  String get fritzboxAnswerbotStepWaiting => 'Αναμονή για εγγραφή...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => 'Ρύθμιση τηλεφωνητή';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'Ο αυτόματος τηλεφωνητής έχει ρυθμιστεί με επιτυχία και είναι τώρα ενεργός.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Σφάλμα: $error';
+  }
 }

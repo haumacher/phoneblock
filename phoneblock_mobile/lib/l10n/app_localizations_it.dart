@@ -844,61 +844,78 @@ class AppLocalizationsIt extends AppLocalizations {
   String get fritzboxCardDavDisabled => 'Elenco di blocco CardDAV disattivato';
 
   @override
-  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+  String get fritzboxAnswerbotTitle => 'Segreteria telefonica';
 
   @override
-  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+  String get fritzboxAnswerbotActive => 'Segreteria telefonica attiva';
 
   @override
   String get fritzboxAnswerbotDescription =>
-      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+      'Alle chiamate SPAM risponde automaticamente la segreteria telefonica di PhoneBlock.';
 
   @override
-  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+  String get fritzboxEnableAnswerbot => 'Attivare la segreteria telefonica';
 
   @override
   String get fritzboxEnableAnswerbotDescription =>
-      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+      'Le chiamate SPAM ricevono automaticamente la risposta dalla segreteria telefonica di PhoneBlock.';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => 'Disattivare la segreteria telefonica';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle =>
+      'Disattivare la segreteria telefonica?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
-      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+      'La segreteria telefonica PhoneBlock viene rimossa dal Fritz!Box e disattivata sul server.';
 
   @override
-  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+  String get fritzboxAnswerbotEnabled => 'Segreteria telefonica attivata';
 
   @override
-  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+  String get fritzboxAnswerbotDisabled => 'Segreteria telefonica disattivata';
 
   @override
   String get fritzboxAnswerbotSetupFailed =>
-      'Anrufbeantworter konnte nicht eingerichtet werden.';
+      'Non è stato possibile impostare la segreteria telefonica.';
 
   @override
-  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+  String get fritzboxAnswerbotStepCreating =>
+      'Creare una segreteria telefonica...';
 
   @override
-  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+  String get fritzboxAnswerbotStepDetecting =>
+      'Controllare l\'accesso esterno...';
 
   @override
-  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+  String get fritzboxAnswerbotStepDynDns => 'Configurare DynDNS...';
 
   @override
   String get fritzboxAnswerbotStepWaitingDynDns =>
-      'Warte auf DynDNS-Registrierung...';
+      'In attesa della registrazione DynDNS...';
 
   @override
-  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+  String get fritzboxAnswerbotStepSip => 'Registrare il dispositivo SIP...';
 
   @override
-  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+  String get fritzboxAnswerbotStepEnabling =>
+      'Attivare la segreteria telefonica...';
 
   @override
-  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+  String get fritzboxAnswerbotStepWaiting => 'In attesa della registrazione...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle =>
+      'Impostazione di una segreteria telefonica';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'La segreteria telefonica è stata configurata con successo ed è ora attiva.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Errore: $error';
+  }
 }

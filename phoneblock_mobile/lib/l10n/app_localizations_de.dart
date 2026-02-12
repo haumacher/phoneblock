@@ -894,4 +894,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => 'Anrufbeantworter einrichten';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'Der Anrufbeantworter wurde erfolgreich eingerichtet und ist jetzt aktiv.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Fehler: $error';
+  }
 }

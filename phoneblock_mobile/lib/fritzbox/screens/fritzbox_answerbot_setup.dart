@@ -1,0 +1,217 @@
+import 'package:flutter/material.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/l10n/app_localizations.dart';
+
+/// Status of a single setup step.
+enum _StepStatus { pending, inProgress, completed, failed }
+
+/// Tracks the state of a single setup step.
+class _SetupStepInfo {
+  final String label;
+  _StepStatus status;
+  String? errorMessage;
+
+  _SetupStepInfo({required this.label, this.status = _StepStatus.pending});
+}
+
+/// Dedicated screen that shows step-by-step progress for answerbot setup.
+///
+/// Returns `true` via [Navigator.pop] on success, `false` on failure.
+class FritzBoxAnswerbotSetupScreen extends StatefulWidget {
+  const FritzBoxAnswerbotSetupScreen({super.key});
+
+  @override
+  State<FritzBoxAnswerbotSetupScreen> createState() =>
+      _FritzBoxAnswerbotSetupScreenState();
+}
+
+class _FritzBoxAnswerbotSetupScreenState
+    extends State<FritzBoxAnswerbotSetupScreen> {
+  final List<_SetupStepInfo> _steps = [];
+  bool _finished = false;
+  bool _succeeded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _runSetup();
+  }
+
+  Future<void> _runSetup() async {
+    try {
+      await FritzBoxService.instance.setupAnswerBot(
+        onProgress: (step) {
+          if (!mounted) return;
+          setState(() {
+            _onProgress(step);
+          });
+        },
+      );
+
+      if (mounted) {
+        setState(() {
+          // Mark last in-progress step as completed.
+          _markCurrentCompleted();
+          _succeeded = true;
+          _finished = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          // Mark current in-progress step as failed.
+          for (final step in _steps) {
+            if (step.status == _StepStatus.inProgress) {
+              step.status = _StepStatus.failed;
+              step.errorMessage = e.toString();
+              break;
+            }
+          }
+          _finished = true;
+        });
+      }
+    }
+  }
+
+  void _onProgress(AnswerbotSetupStep step) {
+    if (step == AnswerbotSetupStep.complete) return;
+
+    // Mark previous in-progress step as completed.
+    _markCurrentCompleted();
+
+    // Add new step as in-progress.
+    final l10n = AppLocalizations.of(context)!;
+    _steps.add(_SetupStepInfo(
+      label: _stepLabel(l10n, step),
+      status: _StepStatus.inProgress,
+    ));
+  }
+
+  void _markCurrentCompleted() {
+    for (final step in _steps) {
+      if (step.status == _StepStatus.inProgress) {
+        step.status = _StepStatus.completed;
+      }
+    }
+  }
+
+  String _stepLabel(AppLocalizations l10n, AnswerbotSetupStep step) {
+    switch (step) {
+      case AnswerbotSetupStep.creatingBot:
+        return l10n.fritzboxAnswerbotStepCreating;
+      case AnswerbotSetupStep.detectingAccess:
+        return l10n.fritzboxAnswerbotStepDetecting;
+      case AnswerbotSetupStep.configuringDynDns:
+        return l10n.fritzboxAnswerbotStepDynDns;
+      case AnswerbotSetupStep.waitingForDynDns:
+        return l10n.fritzboxAnswerbotStepWaitingDynDns;
+      case AnswerbotSetupStep.registeringSipDevice:
+        return l10n.fritzboxAnswerbotStepSip;
+      case AnswerbotSetupStep.enablingBot:
+        return l10n.fritzboxAnswerbotStepEnabling;
+      case AnswerbotSetupStep.waitingForRegistration:
+        return l10n.fritzboxAnswerbotStepWaiting;
+      case AnswerbotSetupStep.complete:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return PopScope(
+      canPop: _finished,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.fritzboxAnswerbotSetupTitle),
+          automaticallyImplyLeading: _finished,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _steps.length,
+                  itemBuilder: (context, index) {
+                    final step = _steps[index];
+                    return ListTile(
+                      leading: _buildStepIcon(step),
+                      title: Text(step.label),
+                      subtitle: step.errorMessage != null
+                          ? Text(
+                              l10n.fritzboxAnswerbotSetupErrorDetail(
+                                  step.errorMessage!),
+                              style: const TextStyle(color: Colors.red),
+                            )
+                          : null,
+                    );
+                  },
+                ),
+              ),
+              if (_finished) ...[
+                _buildResultCard(l10n),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, _succeeded),
+                    child: Text(_succeeded ? l10n.done : l10n.cancel),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepIcon(_SetupStepInfo step) {
+    switch (step.status) {
+      case _StepStatus.pending:
+        return const Icon(Icons.radio_button_unchecked, color: Colors.grey);
+      case _StepStatus.inProgress:
+        return const SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        );
+      case _StepStatus.completed:
+        return const Icon(Icons.check_circle, color: Colors.green);
+      case _StepStatus.failed:
+        return const Icon(Icons.error, color: Colors.red);
+    }
+  }
+
+  Widget _buildResultCard(AppLocalizations l10n) {
+    return Card(
+      color: _succeeded ? Colors.green.shade50 : Colors.red.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(
+              _succeeded ? Icons.check_circle : Icons.error,
+              color: _succeeded ? Colors.green : Colors.red,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _succeeded
+                    ? l10n.fritzboxAnswerbotSetupSuccess
+                    : l10n.fritzboxAnswerbotSetupFailed,
+                style: TextStyle(
+                  color: _succeeded
+                      ? Colors.green.shade900
+                      : Colors.red.shade900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

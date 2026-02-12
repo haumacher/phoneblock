@@ -753,61 +753,68 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxCardDavDisabled => '已停用 CardDAV 封锁列表';
 
   @override
-  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+  String get fritzboxAnswerbotTitle => '答录机';
 
   @override
-  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+  String get fritzboxAnswerbotActive => '应答机已激活';
 
   @override
-  String get fritzboxAnswerbotDescription =>
-      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+  String get fritzboxAnswerbotDescription => '垃圾电话由 PhoneBlock 应答机自动接听。';
 
   @override
-  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+  String get fritzboxEnableAnswerbot => '激活答录机';
 
   @override
-  String get fritzboxEnableAnswerbotDescription =>
-      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+  String get fritzboxEnableAnswerbotDescription => '由 PhoneBlock 应答机自动应答垃圾电话';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => '停用答录机';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle => '停用答录机？';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
-      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+      '从 Fritz!Box 中移除 PhoneBlock 应答机，并在服务器上停用。';
 
   @override
-  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+  String get fritzboxAnswerbotEnabled => '已启动应答机';
 
   @override
-  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+  String get fritzboxAnswerbotDisabled => '应答机已停用';
 
   @override
-  String get fritzboxAnswerbotSetupFailed =>
-      'Anrufbeantworter konnte nicht eingerichtet werden.';
+  String get fritzboxAnswerbotSetupFailed => '无法设置应答机。';
 
   @override
-  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+  String get fritzboxAnswerbotStepCreating => '创建应答机...';
 
   @override
-  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+  String get fritzboxAnswerbotStepDetecting => '检查外部接入...';
 
   @override
-  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+  String get fritzboxAnswerbotStepDynDns => '配置 DynDNS...';
 
   @override
-  String get fritzboxAnswerbotStepWaitingDynDns =>
-      'Warte auf DynDNS-Registrierung...';
+  String get fritzboxAnswerbotStepWaitingDynDns => '等待 DynDNS 注册...';
 
   @override
-  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+  String get fritzboxAnswerbotStepSip => '注册 SIP 设备...';
 
   @override
-  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+  String get fritzboxAnswerbotStepEnabling => '激活答录机...';
 
   @override
-  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+  String get fritzboxAnswerbotStepWaiting => '等待注册...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => '设置答录机';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess => '答录机已成功设置，现在处于激活状态。';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return '错误：<x1>错误</x1';
+  }
 }

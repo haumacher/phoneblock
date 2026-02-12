@@ -835,61 +835,73 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxCardDavDisabled => 'CardDAV-blokkliste deaktivert';
 
   @override
-  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+  String get fritzboxAnswerbotTitle => 'Telefonsvarer';
 
   @override
-  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+  String get fritzboxAnswerbotActive => 'Telefonsvarer aktiv';
 
   @override
   String get fritzboxAnswerbotDescription =>
-      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+      'SPAM-anrop besvares automatisk av PhoneBlock-telefonsvareren.';
 
   @override
-  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+  String get fritzboxEnableAnswerbot => 'Aktiver telefonsvareren';
 
   @override
   String get fritzboxEnableAnswerbotDescription =>
-      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+      'Få SPAM-anrop automatisk besvart av PhoneBlock-telefonsvareren';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => 'Deaktiver telefonsvareren';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle => 'Deaktivere telefonsvareren?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
-      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+      'PhoneBlock-telefonsvareren fjernes fra Fritz!Box og deaktiveres på serveren.';
 
   @override
-  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+  String get fritzboxAnswerbotEnabled => 'Telefonsvareren er aktivert';
 
   @override
-  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+  String get fritzboxAnswerbotDisabled => 'Telefonsvareren er deaktivert';
 
   @override
   String get fritzboxAnswerbotSetupFailed =>
-      'Anrufbeantworter konnte nicht eingerichtet werden.';
+      'Telefonsvareren kunne ikke settes opp.';
 
   @override
-  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+  String get fritzboxAnswerbotStepCreating => 'Opprett telefonsvarer...';
 
   @override
-  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+  String get fritzboxAnswerbotStepDetecting => 'Sjekk ekstern tilgang...';
 
   @override
-  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+  String get fritzboxAnswerbotStepDynDns => 'Konfigurere DynDNS ...';
 
   @override
   String get fritzboxAnswerbotStepWaitingDynDns =>
-      'Warte auf DynDNS-Registrierung...';
+      'Venter på DynDNS-registrering...';
 
   @override
-  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+  String get fritzboxAnswerbotStepSip => 'Registrer SIP-enhet...';
 
   @override
-  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+  String get fritzboxAnswerbotStepEnabling => 'Aktiver telefonsvareren...';
 
   @override
-  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+  String get fritzboxAnswerbotStepWaiting => 'Venter på registrering...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => 'Sette opp en telefonsvarer';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'Telefonsvareren er nå satt opp og er aktiv.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Feil: $error';
+  }
 }

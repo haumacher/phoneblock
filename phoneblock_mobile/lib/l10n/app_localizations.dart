@@ -1609,6 +1609,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Warte auf Registrierung...'**
   String get fritzboxAnswerbotStepWaiting;
+
+  /// Title for the answer bot setup screen
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter einrichten'**
+  String get fritzboxAnswerbotSetupTitle;
+
+  /// Success message after answer bot setup completes
+  ///
+  /// In de, this message translates to:
+  /// **'Der Anrufbeantworter wurde erfolgreich eingerichtet und ist jetzt aktiv.'**
+  String get fritzboxAnswerbotSetupSuccess;
+
+  /// Error detail shown for a failed setup step
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {error}'**
+  String fritzboxAnswerbotSetupErrorDetail(String error);
 }
 
 class _AppLocalizationsDelegate

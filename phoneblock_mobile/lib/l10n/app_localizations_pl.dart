@@ -839,61 +839,77 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fritzboxCardDavDisabled => 'Lista bloków CardDAV wyłączona';
 
   @override
-  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+  String get fritzboxAnswerbotTitle => 'Automatyczna sekretarka';
 
   @override
-  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+  String get fritzboxAnswerbotActive => 'Aktywna automatyczna sekretarka';
 
   @override
   String get fritzboxAnswerbotDescription =>
-      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+      'Połączenia SPAM są automatycznie odbierane przez automatyczną sekretarkę PhoneBlock.';
 
   @override
-  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+  String get fritzboxEnableAnswerbot => 'Aktywacja automatycznej sekretarki';
 
   @override
   String get fritzboxEnableAnswerbotDescription =>
-      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+      'Automatyczne odbieranie połączeń SPAM przez automatyczną sekretarkę PhoneBlock';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => 'Wyłącz automatyczną sekretarkę';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle =>
+      'Dezaktywować automatyczną sekretarkę?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
-      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+      'Automatyczna sekretarka PhoneBlock jest usuwana z urządzenia Fritz!Box i dezaktywowana na serwerze.';
 
   @override
-  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+  String get fritzboxAnswerbotEnabled => 'Włączona automatyczna sekretarka';
 
   @override
-  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+  String get fritzboxAnswerbotDisabled => 'Automatyczna sekretarka wyłączona';
 
   @override
   String get fritzboxAnswerbotSetupFailed =>
-      'Anrufbeantworter konnte nicht eingerichtet werden.';
+      'Nie można skonfigurować automatycznej sekretarki.';
 
   @override
-  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+  String get fritzboxAnswerbotStepCreating =>
+      'Utwórz automatyczną sekretarkę...';
 
   @override
-  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+  String get fritzboxAnswerbotStepDetecting => 'Sprawdź dostęp zewnętrzny...';
 
   @override
-  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+  String get fritzboxAnswerbotStepDynDns => 'Konfiguracja DynDNS...';
 
   @override
   String get fritzboxAnswerbotStepWaitingDynDns =>
-      'Warte auf DynDNS-Registrierung...';
+      'Czekam na rejestrację DynDNS...';
 
   @override
-  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+  String get fritzboxAnswerbotStepSip => 'Zarejestruj urządzenie SIP...';
 
   @override
-  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+  String get fritzboxAnswerbotStepEnabling =>
+      'Aktywuj automatyczną sekretarkę...';
 
   @override
-  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+  String get fritzboxAnswerbotStepWaiting => 'Czekam na rejestrację...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle =>
+      'Konfigurowanie automatycznej sekretarki';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'Automatyczna sekretarka została pomyślnie skonfigurowana i jest teraz aktywna.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Błąd: $error';
+  }
 }

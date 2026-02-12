@@ -1256,74 +1256,112 @@
   },
   "fritzboxAnswerbotTitle": "Anrufbeantworter",
   "@fritzboxAnswerbotTitle": {
-    "description": "Answer bot section title in Fritz!Box settings"
+    "description": "Answer bot section title in Fritz!Box settings",
+    "x-translated": "3877c928"
   },
   "fritzboxAnswerbotActive": "Anrufbeantworter aktiv",
   "@fritzboxAnswerbotActive": {
-    "description": "Answer bot active status"
+    "description": "Answer bot active status",
+    "x-translated": "73d06ffd"
   },
   "fritzboxAnswerbotDescription": "SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.",
   "@fritzboxAnswerbotDescription": {
-    "description": "Answer bot active description"
+    "description": "Answer bot active description",
+    "x-translated": "67350f6"
   },
   "fritzboxEnableAnswerbot": "Anrufbeantworter aktivieren",
   "@fritzboxEnableAnswerbot": {
-    "description": "Enable answer bot button"
+    "description": "Enable answer bot button",
+    "x-translated": "e177e62f"
   },
   "fritzboxEnableAnswerbotDescription": "SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen",
   "@fritzboxEnableAnswerbotDescription": {
-    "description": "Enable answer bot description"
+    "description": "Enable answer bot description",
+    "x-translated": "b508b9a0"
   },
   "fritzboxDisableAnswerbot": "Anrufbeantworter deaktivieren",
   "@fritzboxDisableAnswerbot": {
-    "description": "Disable answer bot button"
+    "description": "Disable answer bot button",
+    "x-translated": "48e3eae6"
   },
   "fritzboxDisableAnswerbotTitle": "Anrufbeantworter deaktivieren?",
   "@fritzboxDisableAnswerbotTitle": {
-    "description": "Disable answer bot confirmation title"
+    "description": "Disable answer bot confirmation title",
+    "x-translated": "2d456617"
   },
   "fritzboxDisableAnswerbotMessage": "Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.",
   "@fritzboxDisableAnswerbotMessage": {
-    "description": "Disable answer bot confirmation message"
+    "description": "Disable answer bot confirmation message",
+    "x-translated": "2c8e4c4"
   },
   "fritzboxAnswerbotEnabled": "Anrufbeantworter aktiviert",
   "@fritzboxAnswerbotEnabled": {
-    "description": "Answer bot enabled success message"
+    "description": "Answer bot enabled success message",
+    "x-translated": "1ca467f1"
   },
   "fritzboxAnswerbotDisabled": "Anrufbeantworter deaktiviert",
   "@fritzboxAnswerbotDisabled": {
-    "description": "Answer bot disabled success message"
+    "description": "Answer bot disabled success message",
+    "x-translated": "3406fd1d"
   },
   "fritzboxAnswerbotSetupFailed": "Anrufbeantworter konnte nicht eingerichtet werden.",
   "@fritzboxAnswerbotSetupFailed": {
-    "description": "Answer bot setup failed error message"
+    "description": "Answer bot setup failed error message",
+    "x-translated": "6b477928"
   },
   "fritzboxAnswerbotStepCreating": "Erstelle Anrufbeantworter...",
   "@fritzboxAnswerbotStepCreating": {
-    "description": "Progress step: creating answer bot on server"
+    "description": "Progress step: creating answer bot on server",
+    "x-translated": "8a82d32f"
   },
   "fritzboxAnswerbotStepDetecting": "Prüfe externen Zugang...",
   "@fritzboxAnswerbotStepDetecting": {
-    "description": "Progress step: detecting external access"
+    "description": "Progress step: detecting external access",
+    "x-translated": "2288bb77"
   },
   "fritzboxAnswerbotStepDynDns": "Konfiguriere DynDNS...",
   "@fritzboxAnswerbotStepDynDns": {
-    "description": "Progress step: configuring DynDNS"
+    "description": "Progress step: configuring DynDNS",
+    "x-translated": "79369b05"
   },
   "fritzboxAnswerbotStepWaitingDynDns": "Warte auf DynDNS-Registrierung...",
   "@fritzboxAnswerbotStepWaitingDynDns": {
-    "description": "Progress step: waiting for DynDNS"
+    "description": "Progress step: waiting for DynDNS",
+    "x-translated": "230e16f0"
   },
   "fritzboxAnswerbotStepSip": "Registriere SIP-Gerät...",
   "@fritzboxAnswerbotStepSip": {
-    "description": "Progress step: registering SIP device"
+    "description": "Progress step: registering SIP device",
+    "x-translated": "4940b42"
   },
   "fritzboxAnswerbotStepEnabling": "Aktiviere Anrufbeantworter...",
   "@fritzboxAnswerbotStepEnabling": {
-    "description": "Progress step: enabling answer bot"
+    "description": "Progress step: enabling answer bot",
+    "x-translated": "ae36b8f6"
   },
   "fritzboxAnswerbotStepWaiting": "Warte auf Registrierung...",
   "@fritzboxAnswerbotStepWaiting": {
-    "description": "Progress step: waiting for SIP registration"
+    "description": "Progress step: waiting for SIP registration",
+    "x-translated": "6509225"
+  },
+  "fritzboxAnswerbotSetupTitle": "Anrufbeantworter einrichten",
+  "@fritzboxAnswerbotSetupTitle": {
+    "description": "Title for the answer bot setup screen",
+    "x-translated": "1f8784"
+  },
+  "fritzboxAnswerbotSetupSuccess": "Der Anrufbeantworter wurde erfolgreich eingerichtet und ist jetzt aktiv.",
+  "@fritzboxAnswerbotSetupSuccess": {
+    "description": "Success message after answer bot setup completes",
+    "x-translated": "a08d7556"
+  },
+  "fritzboxAnswerbotSetupErrorDetail": "Fehler: {error}",
+  "@fritzboxAnswerbotSetupErrorDetail": {
+    "description": "Error detail shown for a failed setup step",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "x-translated": "5b16793b"
   }
 }

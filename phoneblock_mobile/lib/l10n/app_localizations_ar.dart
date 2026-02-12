@@ -831,61 +831,71 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxCardDavDisabled => 'تم إلغاء تنشيط قائمة حظر CardDAV';
 
   @override
-  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+  String get fritzboxAnswerbotTitle => 'جهاز الرد الآلي';
 
   @override
-  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+  String get fritzboxAnswerbotActive => 'جهاز الرد الآلي نشط';
 
   @override
   String get fritzboxAnswerbotDescription =>
-      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+      'يتم الرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف.';
 
   @override
-  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+  String get fritzboxEnableAnswerbot => 'تنشيط جهاز الرد على المكالمات';
 
   @override
   String get fritzboxEnableAnswerbotDescription =>
-      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+      'قم بالرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => 'إلغاء تنشيط جهاز الرد الآلي';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle => 'إلغاء تنشيط جهاز الرد الآلي؟';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
-      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+      'تتم إزالة جهاز الرد الآلي PhoneBlock من Fritz!Box وإلغاء تنشيطه على الخادم.';
 
   @override
-  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+  String get fritzboxAnswerbotEnabled => 'تم تنشيط جهاز الرد الآلي';
 
   @override
-  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+  String get fritzboxAnswerbotDisabled => 'تم إلغاء تنشيط جهاز الرد الآلي';
 
   @override
-  String get fritzboxAnswerbotSetupFailed =>
-      'Anrufbeantworter konnte nicht eingerichtet werden.';
+  String get fritzboxAnswerbotSetupFailed => 'تعذر إعداد جهاز الرد الآلي.';
 
   @override
-  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+  String get fritzboxAnswerbotStepCreating => 'إنشاء جهاز الرد الآلي...';
 
   @override
-  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+  String get fritzboxAnswerbotStepDetecting => 'تحقق من الوصول الخارجي...';
 
   @override
-  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+  String get fritzboxAnswerbotStepDynDns => 'تكوين DynDNS...';
 
   @override
-  String get fritzboxAnswerbotStepWaitingDynDns =>
-      'Warte auf DynDNS-Registrierung...';
+  String get fritzboxAnswerbotStepWaitingDynDns => 'في انتظار تسجيل DynDNS...';
 
   @override
-  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+  String get fritzboxAnswerbotStepSip => 'تسجيل جهاز SIP...';
 
   @override
-  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+  String get fritzboxAnswerbotStepEnabling => 'تنشيط جهاز الرد الآلي...';
 
   @override
-  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
+  String get fritzboxAnswerbotStepWaiting => 'في انتظار التسجيل...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => 'إعداد جهاز الرد الآلي';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'تم إعداد جهاز الرد الآلي بنجاح وهو الآن نشط.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'خطأ: $error';
+  }
 }
