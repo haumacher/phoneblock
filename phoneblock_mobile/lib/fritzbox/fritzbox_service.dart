@@ -1023,7 +1023,7 @@ class FritzBoxService {
           throw Exception('RemoteAccess service not available on Fritz!Box');
         }
 
-        final updateUrl = '${basePath}api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>';
+        final updateUrl = '$basePath/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>';
         await remoteAccessService.setDDNSConfig(
           enabled: true,
           providerName: 'Benutzerdefiniert',
