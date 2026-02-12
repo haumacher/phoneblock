@@ -835,4 +835,63 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get fritzboxCardDavDisabled => 'CardDAV-Blockliste deaktiviert';
+
+  @override
+  String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
+
+  @override
+  String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+
+  @override
+  String get fritzboxAnswerbotDescription =>
+      'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
+
+  @override
+  String get fritzboxEnableAnswerbot => 'Anrufbeantworter aktivieren';
+
+  @override
+  String get fritzboxEnableAnswerbotDescription =>
+      'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
+
+  @override
+  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+
+  @override
+  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+
+  @override
+  String get fritzboxDisableAnswerbotMessage =>
+      'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.';
+
+  @override
+  String get fritzboxAnswerbotEnabled => 'Anrufbeantworter aktiviert';
+
+  @override
+  String get fritzboxAnswerbotDisabled => 'Anrufbeantworter deaktiviert';
+
+  @override
+  String get fritzboxAnswerbotSetupFailed =>
+      'Anrufbeantworter konnte nicht eingerichtet werden.';
+
+  @override
+  String get fritzboxAnswerbotStepCreating => 'Erstelle Anrufbeantworter...';
+
+  @override
+  String get fritzboxAnswerbotStepDetecting => 'Prüfe externen Zugang...';
+
+  @override
+  String get fritzboxAnswerbotStepDynDns => 'Konfiguriere DynDNS...';
+
+  @override
+  String get fritzboxAnswerbotStepWaitingDynDns =>
+      'Warte auf DynDNS-Registrierung...';
+
+  @override
+  String get fritzboxAnswerbotStepSip => 'Registriere SIP-Gerät...';
+
+  @override
+  String get fritzboxAnswerbotStepEnabling => 'Aktiviere Anrufbeantworter...';
+
+  @override
+  String get fritzboxAnswerbotStepWaiting => 'Warte auf Registrierung...';
 }

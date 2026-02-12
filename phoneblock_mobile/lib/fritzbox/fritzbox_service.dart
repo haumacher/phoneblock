@@ -4,11 +4,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:http/http.dart' as http;
+import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
 
 /// Status of CardDAV synchronization.
 enum CardDavStatus {
@@ -937,4 +939,289 @@ class FritzBoxService {
       return null;
     }
   }
+
+  // -- Answer Bot Setup Methods --
+
+  /// Phone name used for the SIP device on Fritz!Box.
+  static const String _answerbotPhoneName = 'PhoneBlock Answerbot';
+
+  /// Sets up the PhoneBlock answer bot on the connected Fritz!Box.
+  ///
+  /// This automates the full setup flow:
+  /// 1. Creates a new bot on the PhoneBlock server
+  /// 2. Detects or configures external access (MyFritz or PhoneBlock DynDNS)
+  /// 3. Registers a SIP device on Fritz!Box
+  /// 4. Enables the bot and waits for SIP registration
+  ///
+  /// [onProgress] is called with each setup step for progress UI.
+  /// Throws on failure; cleans up the server-side bot if partially created.
+  Future<void> setupAnswerBot({
+    required void Function(AnswerbotSetupStep) onProgress,
+  }) async {
+    if (!isConnected || _client == null) {
+      throw Exception('Not connected to Fritz!Box');
+    }
+
+    int? createdBotId;
+
+    try {
+      // Step 1: Create bot on server
+      onProgress(AnswerbotSetupStep.creatingBot);
+      final createResponse = await sendRequest(CreateAnswerBot());
+      if (createResponse.statusCode != 200) {
+        throw Exception('Failed to create answer bot: ${createResponse.body}');
+      }
+      final creation = CreateAnswerbotResponse.read(
+        JsonReader.fromString(createResponse.body),
+      );
+      createdBotId = creation.id;
+
+      // Step 2: Detect external access via MyFritz
+      onProgress(AnswerbotSetupStep.detectingAccess);
+      bool hostConfigured = false;
+
+      try {
+        final myFritzService = _client!.myFritz();
+        if (myFritzService != null) {
+          final myFritzInfo = await myFritzService.getInfo();
+          if (myFritzInfo.enabled && myFritzInfo.dynDNSName.isNotEmpty) {
+            // Use MyFritz DynDNS name
+            final enterHostResponse = await sendRequest(
+              EnterHostName(id: creation.id, hostName: myFritzInfo.dynDNSName),
+            );
+            if (enterHostResponse.statusCode == 200) {
+              hostConfigured = true;
+              if (kDebugMode) {
+                print('setupAnswerBot: Using MyFritz domain: ${myFritzInfo.dynDNSName}');
+              }
+            }
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('setupAnswerBot: MyFritz detection failed: $e');
+        }
+      }
+
+      // Step 3: Fallback to PhoneBlock DynDNS
+      if (!hostConfigured) {
+        onProgress(AnswerbotSetupStep.configuringDynDns);
+
+        final dynDnsResponse = await sendRequest(
+          SetupDynDns(id: creation.id),
+        );
+        if (dynDnsResponse.statusCode != 200) {
+          throw Exception('Failed to setup DynDNS: ${dynDnsResponse.body}');
+        }
+        final dynDns = SetupDynDnsResponse.read(
+          JsonReader.fromString(dynDnsResponse.body),
+        );
+
+        // Configure Fritz!Box DynDNS via TR-064
+        final remoteAccessService = _client!.remoteAccess();
+        if (remoteAccessService == null) {
+          throw Exception('RemoteAccess service not available on Fritz!Box');
+        }
+
+        final updateUrl = '${basePath}api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>';
+        await remoteAccessService.setDDNSConfig(
+          enabled: true,
+          providerName: 'Benutzerdefiniert',
+          updateURL: updateUrl,
+          serverIPv4: '',
+          serverIPv6: '',
+          domain: dynDns.dyndnsDomain,
+          username: dynDns.dyndnsUser,
+          password: dynDns.dyndnsPassword,
+          mode: DDNSMode.both,
+        );
+
+        // Wait for DynDNS registration
+        onProgress(AnswerbotSetupStep.waitingForDynDns);
+        bool dynDnsReady = false;
+        for (int i = 0; i < 12; i++) {
+          await Future.delayed(const Duration(milliseconds: 2500));
+          final checkResponse = await sendRequest(
+            CheckDynDns(id: creation.id),
+          );
+          if (checkResponse.statusCode == 200) {
+            dynDnsReady = true;
+            break;
+          }
+        }
+        if (!dynDnsReady) {
+          throw Exception('DynDNS registration timed out');
+        }
+      }
+
+      // Step 4: Register SIP device on Fritz!Box
+      onProgress(AnswerbotSetupStep.registeringSipDevice);
+      final voipService = _client!.voip();
+      if (voipService == null) {
+        throw Exception('VoIP service not available on Fritz!Box');
+      }
+
+      // Find next available client index
+      final numberOfClients = await voipService.getNumberOfClients();
+      final clientIndex = numberOfClients; // 0-based, next slot
+
+      final internalNumber = await voipService.setClient4(
+        clientIndex: clientIndex,
+        password: creation.password,
+        clientUsername: creation.userName,
+        phoneName: _answerbotPhoneName,
+        clientId: '',
+        outGoingNumber: '',
+        inComingNumbers: '',
+      );
+
+      if (kDebugMode) {
+        print('setupAnswerBot: SIP device registered with internal number: $internalNumber');
+      }
+
+      // Step 5: Enable bot and wait for SIP registration
+      onProgress(AnswerbotSetupStep.enablingBot);
+      final enableResponse = await sendRequest(
+        EnableAnswerBot(id: creation.id),
+      );
+      if (enableResponse.statusCode != 200) {
+        throw Exception('Failed to enable answer bot: ${enableResponse.body}');
+      }
+
+      onProgress(AnswerbotSetupStep.waitingForRegistration);
+      const int maxAttempts = 20;
+      for (int n = 0; n < maxAttempts; n++) {
+        final checkResponse = await sendRequest(
+          CheckAnswerBot(id: creation.id),
+        );
+        if (checkResponse.statusCode == 200) {
+          break;
+        }
+        if (checkResponse.statusCode != 409 || n == maxAttempts - 1) {
+          throw Exception('Answer bot registration failed: ${checkResponse.body}');
+        }
+        await Future.delayed(const Duration(milliseconds: 2500));
+      }
+
+      // Step 6: Save config
+      onProgress(AnswerbotSetupStep.complete);
+      await FritzBoxStorage.instance.updateConfig(
+        answerbotEnabled: true,
+        answerbotId: creation.id,
+        sipDeviceId: internalNumber,
+      );
+    } catch (e) {
+      // Clean up server-side bot on failure
+      if (createdBotId != null) {
+        try {
+          await sendRequest(DeleteAnswerBot(id: createdBotId));
+        } catch (_) {
+          // Best effort cleanup
+        }
+      }
+      rethrow;
+    }
+  }
+
+  /// Removes the PhoneBlock answer bot from Fritz!Box and the server.
+  Future<void> removeAnswerBot() async {
+    final config = await FritzBoxStorage.instance.getConfig();
+    final botId = config?.answerbotId;
+
+    // Disable and delete on server
+    if (botId != null) {
+      try {
+        await sendRequest(DisableAnswerBot(id: botId));
+      } catch (e) {
+        if (kDebugMode) {
+          print('removeAnswerBot: Failed to disable bot on server: $e');
+        }
+      }
+      try {
+        await sendRequest(DeleteAnswerBot(id: botId));
+      } catch (e) {
+        if (kDebugMode) {
+          print('removeAnswerBot: Failed to delete bot on server: $e');
+        }
+      }
+    }
+
+    // Remove SIP device from Fritz!Box
+    if (isConnected && _client != null) {
+      final voipService = _client!.voip();
+      if (voipService != null) {
+        try {
+          final numberOfClients = await voipService.getNumberOfClients();
+          for (int i = 0; i < numberOfClients; i++) {
+            try {
+              final client = await voipService.getClient3(i);
+              if (client.phoneName == _answerbotPhoneName) {
+                await voipService.deleteClient(i);
+                if (kDebugMode) {
+                  print('removeAnswerBot: Removed SIP device at index $i');
+                }
+                break;
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                print('removeAnswerBot: Error checking client $i: $e');
+              }
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('removeAnswerBot: Error listing SIP clients: $e');
+          }
+        }
+      }
+    }
+
+    // Clear local config
+    final existing = await FritzBoxStorage.instance.getConfig();
+    if (existing != null) {
+      await FritzBoxStorage.instance.saveConfig(FritzBoxConfig(
+        id: existing.id,
+        host: existing.host,
+        fritzosVersion: existing.fritzosVersion,
+        username: existing.username,
+        password: existing.password,
+        blocklistMode: existing.blocklistMode,
+        answerbotEnabled: false,
+        answerbotId: null,
+        lastFetchTimestamp: existing.lastFetchTimestamp,
+        blocklistVersion: existing.blocklistVersion,
+        phonebookId: existing.phonebookId,
+        sipDeviceId: null,
+        createdAt: existing.createdAt,
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
+      ));
+    }
+  }
+}
+
+/// Progress steps for the answer bot setup flow.
+enum AnswerbotSetupStep {
+  /// Creating the bot on the server.
+  creatingBot,
+
+  /// Detecting external access (MyFritz).
+  detectingAccess,
+
+  /// Configuring DynDNS on the Fritz!Box.
+  configuringDynDns,
+
+  /// Waiting for DynDNS registration to propagate.
+  waitingForDynDns,
+
+  /// Registering SIP device on the Fritz!Box.
+  registeringSipDevice,
+
+  /// Enabling the bot on the server.
+  enablingBot,
+
+  /// Waiting for SIP registration to complete.
+  waitingForRegistration,
+
+  /// Setup completed successfully.
+  complete,
 }

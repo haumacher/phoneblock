@@ -154,7 +154,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -203,6 +203,7 @@ class ScreenedCallsDatabase {
         password TEXT,
         blocklist_mode TEXT DEFAULT 'none',
         answerbot_enabled INTEGER DEFAULT 0,
+        answerbot_id INTEGER,
         last_fetch_timestamp INTEGER,
         blocklist_version TEXT,
         phonebook_id TEXT,
@@ -293,6 +294,10 @@ class ScreenedCallsDatabase {
       } catch (e) {
         // Table doesn't exist, nothing to migrate
       }
+    }
+    if (oldVersion < 7) {
+      // Add answerbot_id column for tracking server-side bot ID
+      await db.execute('ALTER TABLE fritzbox_config ADD COLUMN answerbot_id INTEGER');
     }
   }
 

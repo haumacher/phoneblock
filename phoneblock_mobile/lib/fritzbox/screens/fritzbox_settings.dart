@@ -7,6 +7,7 @@ import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 import 'package:phoneblock_mobile/main.dart'
     show newCallIds, getAuthToken, fetchAccountSettings;
 import 'package:phoneblock_mobile/storage.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 
 /// Settings screen for Fritz!Box integration.
 class FritzBoxSettingsScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
   bool _isLoading = true;
   bool _isSyncing = false;
   bool _isConfiguringCardDav = false;
+  bool _isConfiguringAnswerbot = false;
   FritzBoxConfig? _config;
   FritzBoxConnectionState _connectionState =
       FritzBoxConnectionState.notConfigured;
@@ -291,6 +293,21 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         const Divider(),
         _buildBlocklistSection(context, l10n),
 
+        // Answer Bot section
+        if (_connectionState == FritzBoxConnectionState.connected)
+          FutureBuilder<bool>(
+            future: FritzBoxService.instance.supportsCardDav(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  const Divider(),
+                  _buildAnswerbotSection(context, l10n),
+                ],
+              );
+            },
+          ),
+
         // Sync section
         if (_connectionState == FritzBoxConnectionState.connected) ...[
           const Divider(),
@@ -560,6 +577,139 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         return l10n.fritzboxCardDavStatusDisabled;
       case CardDavStatus.notConfigured:
         return l10n.fritzboxBlocklistModeNone;
+    }
+  }
+
+  Widget _buildAnswerbotSection(BuildContext context, AppLocalizations l10n) {
+    final isAnswerbotEnabled = _config?.answerbotEnabled ?? false;
+
+    if (isAnswerbotEnabled) {
+      return Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.smart_toy, color: Colors.green),
+            title: Text(l10n.fritzboxAnswerbotActive),
+            subtitle: Text(l10n.fritzboxAnswerbotDescription),
+          ),
+          ListTile(
+            leading: const Icon(Icons.remove_circle_outline, color: Colors.orange),
+            title: Text(l10n.fritzboxDisableAnswerbot),
+            onTap: _disableAnswerbot,
+          ),
+        ],
+      );
+    }
+
+    return ListTile(
+      leading: _isConfiguringAnswerbot
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.smart_toy),
+      title: Text(l10n.fritzboxEnableAnswerbot),
+      subtitle: Text(l10n.fritzboxEnableAnswerbotDescription),
+      onTap: _isConfiguringAnswerbot ? null : _enableAnswerbot,
+    );
+  }
+
+  Future<void> _enableAnswerbot() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    setState(() {
+      _isConfiguringAnswerbot = true;
+    });
+
+    ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(max: 100, msg: l10n.fritzboxAnswerbotStepCreating);
+
+    try {
+      await FritzBoxService.instance.setupAnswerBot(
+        onProgress: (step) {
+          if (!context.mounted) return;
+          switch (step) {
+            case AnswerbotSetupStep.creatingBot:
+              pd.update(value: 10, msg: l10n.fritzboxAnswerbotStepCreating);
+            case AnswerbotSetupStep.detectingAccess:
+              pd.update(value: 25, msg: l10n.fritzboxAnswerbotStepDetecting);
+            case AnswerbotSetupStep.configuringDynDns:
+              pd.update(value: 35, msg: l10n.fritzboxAnswerbotStepDynDns);
+            case AnswerbotSetupStep.waitingForDynDns:
+              pd.update(value: 45, msg: l10n.fritzboxAnswerbotStepWaitingDynDns);
+            case AnswerbotSetupStep.registeringSipDevice:
+              pd.update(value: 60, msg: l10n.fritzboxAnswerbotStepSip);
+            case AnswerbotSetupStep.enablingBot:
+              pd.update(value: 75, msg: l10n.fritzboxAnswerbotStepEnabling);
+            case AnswerbotSetupStep.waitingForRegistration:
+              pd.update(value: 85, msg: l10n.fritzboxAnswerbotStepWaiting);
+            case AnswerbotSetupStep.complete:
+              pd.update(value: 100, msg: l10n.fritzboxAnswerbotEnabled);
+          }
+        },
+      );
+
+      pd.close();
+
+      if (context.mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxAnswerbotEnabled)),
+          );
+        }
+      }
+    } catch (e) {
+      pd.close();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.fritzboxAnswerbotSetupFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isConfiguringAnswerbot = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _disableAnswerbot() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.fritzboxDisableAnswerbotTitle),
+        content: Text(l10n.fritzboxDisableAnswerbotMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.fritzboxDisable),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await FritzBoxService.instance.removeAnswerBot();
+      if (context.mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxAnswerbotDisabled)),
+          );
+        }
+      }
     }
   }
 

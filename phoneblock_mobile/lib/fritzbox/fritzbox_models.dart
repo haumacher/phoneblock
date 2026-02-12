@@ -77,6 +77,7 @@ class FritzBoxConfig {
   final String? password;
   final BlocklistMode blocklistMode;
   final bool answerbotEnabled;
+  final int? answerbotId;
   final int? lastFetchTimestamp;
   final String? blocklistVersion;
   final String? phonebookId;
@@ -92,6 +93,7 @@ class FritzBoxConfig {
     this.password,
     this.blocklistMode = BlocklistMode.none,
     this.answerbotEnabled = false,
+    this.answerbotId,
     this.lastFetchTimestamp,
     this.blocklistVersion,
     this.phonebookId,
@@ -110,6 +112,7 @@ class FritzBoxConfig {
       password: map['password'] as String?,
       blocklistMode: _parseBlocklistMode(map['blocklist_mode'] as String?),
       answerbotEnabled: (map['answerbot_enabled'] as int?) == 1,
+      answerbotId: map['answerbot_id'] as int?,
       lastFetchTimestamp: map['last_fetch_timestamp'] as int?,
       blocklistVersion: map['blocklist_version'] as String?,
       phonebookId: map['phonebook_id'] as String?,
@@ -129,6 +132,7 @@ class FritzBoxConfig {
       'password': password,
       'blocklist_mode': blocklistMode.name,
       'answerbot_enabled': answerbotEnabled ? 1 : 0,
+      'answerbot_id': answerbotId,
       'last_fetch_timestamp': lastFetchTimestamp,
       'blocklist_version': blocklistVersion,
       'phonebook_id': phonebookId,
@@ -147,6 +151,7 @@ class FritzBoxConfig {
     String? password,
     BlocklistMode? blocklistMode,
     bool? answerbotEnabled,
+    int? answerbotId,
     int? lastFetchTimestamp,
     String? blocklistVersion,
     String? phonebookId,
@@ -162,6 +167,7 @@ class FritzBoxConfig {
       password: password ?? this.password,
       blocklistMode: blocklistMode ?? this.blocklistMode,
       answerbotEnabled: answerbotEnabled ?? this.answerbotEnabled,
+      answerbotId: answerbotId ?? this.answerbotId,
       lastFetchTimestamp: lastFetchTimestamp ?? this.lastFetchTimestamp,
       blocklistVersion: blocklistVersion ?? this.blocklistVersion,
       phonebookId: phonebookId ?? this.phonebookId,

@@ -1501,6 +1501,114 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'CardDAV-Blockliste deaktiviert'**
   String get fritzboxCardDavDisabled;
+
+  /// Answer bot section title in Fritz!Box settings
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter'**
+  String get fritzboxAnswerbotTitle;
+
+  /// Answer bot active status
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter aktiv'**
+  String get fritzboxAnswerbotActive;
+
+  /// Answer bot active description
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.'**
+  String get fritzboxAnswerbotDescription;
+
+  /// Enable answer bot button
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter aktivieren'**
+  String get fritzboxEnableAnswerbot;
+
+  /// Enable answer bot description
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen'**
+  String get fritzboxEnableAnswerbotDescription;
+
+  /// Disable answer bot button
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter deaktivieren'**
+  String get fritzboxDisableAnswerbot;
+
+  /// Disable answer bot confirmation title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter deaktivieren?'**
+  String get fritzboxDisableAnswerbotTitle;
+
+  /// Disable answer bot confirmation message
+  ///
+  /// In de, this message translates to:
+  /// **'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.'**
+  String get fritzboxDisableAnswerbotMessage;
+
+  /// Answer bot enabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter aktiviert'**
+  String get fritzboxAnswerbotEnabled;
+
+  /// Answer bot disabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter deaktiviert'**
+  String get fritzboxAnswerbotDisabled;
+
+  /// Answer bot setup failed error message
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter konnte nicht eingerichtet werden.'**
+  String get fritzboxAnswerbotSetupFailed;
+
+  /// Progress step: creating answer bot on server
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle Anrufbeantworter...'**
+  String get fritzboxAnswerbotStepCreating;
+
+  /// Progress step: detecting external access
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe externen Zugang...'**
+  String get fritzboxAnswerbotStepDetecting;
+
+  /// Progress step: configuring DynDNS
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguriere DynDNS...'**
+  String get fritzboxAnswerbotStepDynDns;
+
+  /// Progress step: waiting for DynDNS
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf DynDNS-Registrierung...'**
+  String get fritzboxAnswerbotStepWaitingDynDns;
+
+  /// Progress step: registering SIP device
+  ///
+  /// In de, this message translates to:
+  /// **'Registriere SIP-Gerät...'**
+  String get fritzboxAnswerbotStepSip;
+
+  /// Progress step: enabling answer bot
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere Anrufbeantworter...'**
+  String get fritzboxAnswerbotStepEnabling;
+
+  /// Progress step: waiting for SIP registration
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf Registrierung...'**
+  String get fritzboxAnswerbotStepWaiting;
 }
 
 class _AppLocalizationsDelegate
