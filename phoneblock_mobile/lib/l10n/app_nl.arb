@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "Opnieuw zoeken",
   "fritzboxManualConnect": "Maak verbinding met",
   "fritzboxLoginDescription": "Voer uw Fritz!Box toegangsgegevens in. Je vindt ze in de Fritz!Box gebruikersinterface onder Systeem > Fritz!Box gebruiker.",
+  "fritzboxShowUsername": "Gebruikersnaam invoeren",
   "fritzboxUsernameLabel": "Gebruikersnaam",
   "fritzboxPasswordLabel": "Wachtwoord",
   "fritzboxCredentialsNote": "Je toegangsgegevens worden veilig opgeslagen op je apparaat.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "De CardDAV-blokkeringslijst is verwijderd uit de Fritz!",
   "fritzboxDisable": "Deactiveer",
   "fritzboxCardDavDisabled": "CardDAV blokkadelijst gedeactiveerd",
-  "fritzboxShowUsername": "Gebruikersnaam invoeren"
+  "fritzboxShowUsernameHint": "Normaal wordt de standaardgebruiker gebruikt"
 }

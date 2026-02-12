@@ -712,6 +712,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fritzboxShowUsername => 'Saisir le nom d\'utilisateur';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Normalement, l\'utilisateur par défaut est utilisé';
+
+  @override
   String get fritzboxUsernameLabel => 'Nom d\'utilisateur';
 
   @override

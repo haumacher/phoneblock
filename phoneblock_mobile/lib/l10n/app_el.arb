@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "Αναζήτηση ξανά",
   "fritzboxManualConnect": "Συνδέστε το",
   "fritzboxLoginDescription": "Εισάγετε τα δεδομένα πρόσβασης του Fritz!Box. Μπορείτε να τα βρείτε στο περιβάλλον εργασίας χρήστη του Fritz!Box στην ενότητα Σύστημα > Fritz!Box user.",
+  "fritzboxShowUsername": "Εισάγετε το όνομα χρήστη",
   "fritzboxUsernameLabel": "Όνομα χρήστη",
   "fritzboxPasswordLabel": "Κωδικός πρόσβασης",
   "fritzboxCredentialsNote": "Τα δεδομένα πρόσβασής σας αποθηκεύονται με ασφάλεια στη συσκευή σας.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "Η λίστα αποκλεισμού CardDAV αφαιρείται από το Fritz!",
   "fritzboxDisable": "Απενεργοποίηση",
   "fritzboxCardDavDisabled": "Απενεργοποιημένη λίστα αποκλεισμού CardDAV",
-  "fritzboxShowUsername": "Εισάγετε το όνομα χρήστη"
+  "fritzboxShowUsernameHint": "Συνήθως χρησιμοποιείται ο προεπιλεγμένος χρήστης"
 }

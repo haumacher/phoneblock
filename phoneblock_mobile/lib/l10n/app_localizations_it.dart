@@ -712,6 +712,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get fritzboxShowUsername => 'Inserire il nome utente';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Normalmente si utilizza l\'utente predefinito';
+
+  @override
   String get fritzboxUsernameLabel => 'Nome utente';
 
   @override

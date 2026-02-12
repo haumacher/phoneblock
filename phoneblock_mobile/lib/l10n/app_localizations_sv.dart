@@ -703,6 +703,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get fritzboxShowUsername => 'Ange användarnamn';
 
   @override
+  String get fritzboxShowUsernameHint => 'Standardanvändaren används normalt';
+
+  @override
   String get fritzboxUsernameLabel => 'Användarens namn';
 
   @override

@@ -703,6 +703,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxShowUsername => 'أدخل اسم المستخدم';
 
   @override
+  String get fritzboxShowUsernameHint => 'يتم استخدام المستخدم الافتراضي عادةً';
+
+  @override
   String get fritzboxUsernameLabel => 'اسم المستخدم';
 
   @override

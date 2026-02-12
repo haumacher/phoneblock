@@ -705,6 +705,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxShowUsername => 'Benutzername eingeben';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Normalerweise wird der Standardbenutzer verwendet';
+
+  @override
   String get fritzboxUsernameLabel => 'Benutzername';
 
   @override

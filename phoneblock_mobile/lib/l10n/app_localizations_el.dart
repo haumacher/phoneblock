@@ -706,6 +706,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get fritzboxShowUsername => 'Εισάγετε το όνομα χρήστη';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Συνήθως χρησιμοποιείται ο προεπιλεγμένος χρήστης';
+
+  @override
   String get fritzboxUsernameLabel => 'Όνομα χρήστη';
 
   @override

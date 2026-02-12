@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "再次搜索",
   "fritzboxManualConnect": "连接",
   "fritzboxLoginDescription": "输入您的 Fritz!Box 访问数据。您可以在 Fritz!Box 用户界面的系统 > Fritz!Box 用户下找到它们。",
+  "fritzboxShowUsername": "输入用户名",
   "fritzboxUsernameLabel": "用户名",
   "fritzboxPasswordLabel": "密码",
   "fritzboxCredentialsNote": "您的访问数据会安全地存储在您的设备上。",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "从 Fritz 中移除 CardDAV blocklist！",
   "fritzboxDisable": "停用",
   "fritzboxCardDavDisabled": "已停用 CardDAV 封锁列表",
-  "fritzboxShowUsername": "输入用户名"
+  "fritzboxShowUsernameHint": "通常使用默认用户"
 }

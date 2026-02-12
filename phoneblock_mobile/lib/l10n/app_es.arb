@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "Buscar de nuevo",
   "fritzboxManualConnect": "Conectar",
   "fritzboxLoginDescription": "Introduzca sus datos de acceso a Fritz!Box. Puede encontrarlos en la interfaz de usuario de Fritz!Box en Sistema > Usuario de Fritz!Box.",
+  "fritzboxShowUsername": "Introduzca el nombre de usuario",
   "fritzboxUsernameLabel": "Nombre de usuario",
   "fritzboxPasswordLabel": "Contraseña",
   "fritzboxCredentialsNote": "Tus datos de acceso se almacenan de forma segura en tu dispositivo.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "¡La lista de bloqueo CardDAV se elimina de la base de datos de Fritz!",
   "fritzboxDisable": "Desactivar",
   "fritzboxCardDavDisabled": "Lista de bloqueo CardDAV desactivada",
-  "fritzboxShowUsername": "Introduzca el nombre de usuario"
+  "fritzboxShowUsernameHint": "Normalmente se utiliza el usuario por defecto"
 }

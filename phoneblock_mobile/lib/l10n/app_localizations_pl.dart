@@ -707,6 +707,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fritzboxShowUsername => 'Wprowadź nazwę użytkownika';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Zazwyczaj używany jest domyślny użytkownik';
+
+  @override
   String get fritzboxUsernameLabel => 'Nazwa użytkownika';
 
   @override

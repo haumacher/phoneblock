@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "Søg igen",
   "fritzboxManualConnect": "Opret forbindelse",
   "fritzboxLoginDescription": "Indtast dine Fritz!Box-adgangsdata. Du kan finde dem i Fritz!Box-brugergrænsefladen under System > Fritz!Box-bruger.",
+  "fritzboxShowUsername": "Indtast brugernavn",
   "fritzboxUsernameLabel": "Brugernavn",
   "fritzboxPasswordLabel": "Adgangskode",
   "fritzboxCredentialsNote": "Dine adgangsdata gemmes sikkert på din enhed.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "CardDAV-blokeringslisten er fjernet fra Fritz!",
   "fritzboxDisable": "Deaktiver",
   "fritzboxCardDavDisabled": "CardDAV-blokeringsliste deaktiveret",
-  "fritzboxShowUsername": "Indtast brugernavn"
+  "fritzboxShowUsernameHint": "Standardbrugeren bruges normalt"
 }

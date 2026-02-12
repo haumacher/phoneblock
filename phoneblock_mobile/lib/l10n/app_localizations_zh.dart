@@ -634,6 +634,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxShowUsername => '输入用户名';
 
   @override
+  String get fritzboxShowUsernameHint => '通常使用默认用户';
+
+  @override
   String get fritzboxUsernameLabel => '用户名';
 
   @override

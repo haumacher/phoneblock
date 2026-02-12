@@ -704,6 +704,9 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxShowUsername => 'Skriv inn brukernavn';
 
   @override
+  String get fritzboxShowUsernameHint => 'Standardbrukeren brukes normalt';
+
+  @override
   String get fritzboxUsernameLabel => 'Brukernavn';
 
   @override

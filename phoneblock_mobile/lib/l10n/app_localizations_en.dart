@@ -703,6 +703,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxShowUsername => 'Enter user name';
 
   @override
+  String get fritzboxShowUsernameHint => 'The default user is normally used';
+
+  @override
   String get fritzboxUsernameLabel => 'User name';
 
   @override

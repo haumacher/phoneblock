@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "Шукайте ще раз",
   "fritzboxManualConnect": "Підключіться",
   "fritzboxLoginDescription": "Введіть дані доступу до Fritz!Box. Ви можете знайти їх в інтерфейсі користувача Fritz!Box в розділі Система > Користувач Fritz!Box.",
+  "fritzboxShowUsername": "Введіть ім'я користувача",
   "fritzboxUsernameLabel": "Ім'я користувача",
   "fritzboxPasswordLabel": "Пароль",
   "fritzboxCredentialsNote": "Ваші дані доступу надійно зберігаються на вашому пристрої.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "Блок-лист CardDAV видалено з Fritz!",
   "fritzboxDisable": "Деактивувати",
   "fritzboxCardDavDisabled": "Блокування CardDAV деактивовано",
-  "fritzboxShowUsername": "Введіть ім'я користувача"
+  "fritzboxShowUsernameHint": "Зазвичай використовується користувач за замовчуванням"
 }

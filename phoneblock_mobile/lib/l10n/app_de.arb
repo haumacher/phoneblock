@@ -1059,6 +1059,11 @@
     "description": "Switch label to show the username field in the login step",
     "x-translated": "c2627574"
   },
+  "fritzboxShowUsernameHint": "Normalerweise wird der Standardbenutzer verwendet",
+  "@fritzboxShowUsernameHint": {
+    "description": "Hint below the username toggle explaining that the default user is used automatically",
+    "x-translated": "abdf7e2b"
+  },
   "fritzboxUsernameLabel": "Benutzername",
   "@fritzboxUsernameLabel": {
     "description": "Username field label",

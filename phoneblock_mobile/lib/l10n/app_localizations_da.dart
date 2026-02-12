@@ -701,6 +701,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get fritzboxShowUsername => 'Indtast brugernavn';
 
   @override
+  String get fritzboxShowUsernameHint => 'Standardbrugeren bruges normalt';
+
+  @override
   String get fritzboxUsernameLabel => 'Brugernavn';
 
   @override

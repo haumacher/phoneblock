@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "Sök igen",
   "fritzboxManualConnect": "Anslut",
   "fritzboxLoginDescription": "Ange dina Fritz!Box-åtkomstuppgifter. Du hittar dem i Fritz!Box användargränssnitt under System > Fritz!Box-användare.",
+  "fritzboxShowUsername": "Ange användarnamn",
   "fritzboxUsernameLabel": "Användarens namn",
   "fritzboxPasswordLabel": "Lösenord",
   "fritzboxCredentialsNote": "Dina åtkomstuppgifter lagras på ett säkert sätt på din enhet.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "Blocklistan CardDAV har tagits bort från Fritz!",
   "fritzboxDisable": "Avaktivera",
   "fritzboxCardDavDisabled": "CardDAV blocklista avaktiverad",
-  "fritzboxShowUsername": "Ange användarnamn"
+  "fritzboxShowUsernameHint": "Standardanvändaren används normalt"
 }

@@ -444,6 +444,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(l10n.fritzboxShowUsername),
+          subtitle: Text(l10n.fritzboxShowUsernameHint),
           value: _showUsername,
           onChanged: (value) {
             setState(() {

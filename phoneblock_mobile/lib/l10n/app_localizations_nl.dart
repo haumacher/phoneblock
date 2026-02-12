@@ -706,6 +706,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get fritzboxShowUsername => 'Gebruikersnaam invoeren';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Normaal wordt de standaardgebruiker gebruikt';
+
+  @override
   String get fritzboxUsernameLabel => 'Gebruikersnaam';
 
   @override

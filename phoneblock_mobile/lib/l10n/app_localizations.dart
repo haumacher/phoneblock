@@ -1268,6 +1268,12 @@ abstract class AppLocalizations {
   /// **'Benutzername eingeben'**
   String get fritzboxShowUsername;
 
+  /// Hint below the username toggle explaining that the default user is used automatically
+  ///
+  /// In de, this message translates to:
+  /// **'Normalerweise wird der Standardbenutzer verwendet'**
+  String get fritzboxShowUsernameHint;
+
   /// Username field label
   ///
   /// In de, this message translates to:

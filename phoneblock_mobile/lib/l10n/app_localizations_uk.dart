@@ -703,6 +703,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxShowUsername => 'Введіть ім\'я користувача';
 
   @override
+  String get fritzboxShowUsernameHint =>
+      'Зазвичай використовується користувач за замовчуванням';
+
+  @override
   String get fritzboxUsernameLabel => 'Ім\'я користувача';
 
   @override

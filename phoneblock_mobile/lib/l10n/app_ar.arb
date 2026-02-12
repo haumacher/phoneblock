@@ -190,6 +190,7 @@
   "fritzboxRetrySearch": "البحث مرة أخرى",
   "fritzboxManualConnect": "الاتصال",
   "fritzboxLoginDescription": "أدخل بيانات وصولك إلى Fritz!Box. يمكنك العثور عليها في واجهة مستخدم Fritz!Box ضمن النظام > مستخدم Fritz!Box.",
+  "fritzboxShowUsername": "أدخل اسم المستخدم",
   "fritzboxUsernameLabel": "اسم المستخدم",
   "fritzboxPasswordLabel": "كلمة المرور",
   "fritzboxCredentialsNote": "يتم تخزين بيانات الوصول الخاصة بك بشكل آمن على جهازك.",
@@ -228,5 +229,5 @@
   "fritzboxDisableCardDavMessage": "تمت إزالة قائمة حظر CardDAV من Fritz!",
   "fritzboxDisable": "إلغاء التنشيط",
   "fritzboxCardDavDisabled": "تم إلغاء تنشيط قائمة حظر CardDAV",
-  "fritzboxShowUsername": "أدخل اسم المستخدم"
+  "fritzboxShowUsernameHint": "يتم استخدام المستخدم الافتراضي عادةً"
 }
