@@ -436,7 +436,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         ListTile(
           leading: Icon(
             Icons.shield,
-            color: isCardDavEnabled ? Colors.green : Colors.grey,
+            color: _cardDavStatus == CardDavStatus.synced ? Colors.green : Colors.grey,
           ),
           title: Text(l10n.fritzboxBlocklistMode),
           subtitle: Text(
