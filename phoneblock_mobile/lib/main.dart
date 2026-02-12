@@ -2439,11 +2439,16 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Marks a call as seen (removes from new calls set).
+  /// Marks all calls with the same phone number as seen.
   void _markCallAsSeen(ScreenedCall call) {
-    if (call.id != null && newCallIds.contains(call.id)) {
+    final idsToRemove = _screenedCalls
+        .where((c) => c.id != null && c.phoneNumber == call.phoneNumber && newCallIds.contains(c.id))
+        .map((c) => c.id!)
+        .toList();
+
+    if (idsToRemove.isNotEmpty) {
       setState(() {
-        newCallIds.remove(call.id);
+        newCallIds.removeAll(idsToRemove);
       });
     }
   }
