@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "Venter på at blive registreret...",
   "fritzboxAnswerbotSetupTitle": "Opsætning af en telefonsvarer",
   "fritzboxAnswerbotSetupSuccess": "Telefonsvareren er blevet sat op og er nu aktiv.",
-  "fritzboxAnswerbotSetupErrorDetail": "Fejl: {error}."
+  "fritzboxAnswerbotSetupErrorDetail": "Fejl: {error}.",
+  "fritzboxAnswerbotStepSecondFactor": "Bekræft venligst adgang på din Fritz!Box..."
 }

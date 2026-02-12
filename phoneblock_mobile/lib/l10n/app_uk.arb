@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "Очікуємо на реєстрацію...",
   "fritzboxAnswerbotSetupTitle": "Налаштування автовідповідача",
   "fritzboxAnswerbotSetupSuccess": "Автовідповідач було успішно налаштовано і тепер він активний.",
-  "fritzboxAnswerbotSetupErrorDetail": "Помилка: {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "Помилка: {error}",
+  "fritzboxAnswerbotStepSecondFactor": "Будь ласка, підтвердьте доступ на вашому Fritz!Box..."
 }

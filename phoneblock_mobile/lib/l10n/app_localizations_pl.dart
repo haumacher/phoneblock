@@ -912,4 +912,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String fritzboxAnswerbotSetupErrorDetail(String error) {
     return 'Błąd: $error';
   }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor =>
+      'Potwierdź dostęp do Fritz!Box...';
 }

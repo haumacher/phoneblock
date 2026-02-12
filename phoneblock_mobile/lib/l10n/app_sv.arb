@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "Väntar på registrering...",
   "fritzboxAnswerbotSetupTitle": "Konfigurera en telefonsvarare",
   "fritzboxAnswerbotSetupSuccess": "Telefonsvararen har konfigurerats framgångsrikt och är nu aktiv.",
-  "fritzboxAnswerbotSetupErrorDetail": "Fel: {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "Fel: {error}",
+  "fritzboxAnswerbotStepSecondFactor": "Vänligen bekräfta åtkomst på din Fritz!Box..."
 }

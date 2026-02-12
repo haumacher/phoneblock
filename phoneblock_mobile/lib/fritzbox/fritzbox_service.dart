@@ -940,6 +940,52 @@ class FritzBoxService {
     }
   }
 
+  // -- Second Factor Authentication --
+
+  /// UPnP error code for "second factor authentication required".
+  static const String _secondFactorErrorCode = '866';
+
+  /// Executes a Fritz!Box TR-064 action with second factor authentication
+  /// retry.
+  ///
+  /// If the action fails with UPnP error 866, starts the 2FA challenge,
+  /// reports [AnswerbotSetupStep.confirmingSecondFactor] via [onProgress],
+  /// waits for the user to confirm on the Fritz!Box, and retries the action.
+  Future<T> _withSecondFactor<T>({
+    required Future<T> Function() action,
+    required void Function(AnswerbotSetupStep) onProgress,
+  }) async {
+    try {
+      return await action();
+    } on SoapFaultException catch (e) {
+      if (e.detail == null || !e.detail!.contains(_secondFactorErrorCode)) {
+        rethrow;
+      }
+
+      // Start 2FA process
+      final authService = _client!.auth();
+      if (authService == null) rethrow;
+
+      onProgress(AnswerbotSetupStep.confirmingSecondFactor);
+      await authService.setConfig('start');
+
+      // Poll for authentication (up to 2 minutes)
+      for (int i = 0; i < 60; i++) {
+        await Future.delayed(const Duration(seconds: 2));
+        final state = await authService.getState();
+        if (state == SecondFactorState.authenticated) {
+          return await action();
+        }
+        if (state == SecondFactorState.stopped ||
+            state == SecondFactorState.blocked ||
+            state == SecondFactorState.failure) {
+          throw Exception('Second factor authentication failed: ${state.name}');
+        }
+      }
+      throw Exception('Second factor authentication timed out');
+    }
+  }
+
   // -- Answer Bot Setup Methods --
 
   /// Phone name used for the SIP device on Fritz!Box.
@@ -1065,14 +1111,17 @@ class FritzBoxService {
       final numberOfClients = await voipService.getNumberOfClients();
       final clientIndex = numberOfClients; // 0-based, next slot
 
-      final internalNumber = await voipService.setClient4(
-        clientIndex: clientIndex,
-        password: creation.password,
-        clientUsername: creation.userName,
-        phoneName: _answerbotPhoneName,
-        clientId: '',
-        outGoingNumber: '',
-        inComingNumbers: '',
+      final internalNumber = await _withSecondFactor(
+        onProgress: onProgress,
+        action: () => voipService.setClient4(
+          clientIndex: clientIndex,
+          password: creation.password,
+          clientUsername: creation.userName,
+          phoneName: _answerbotPhoneName,
+          clientId: '',
+          outGoingNumber: '',
+          inComingNumbers: '',
+        ),
       );
 
       if (kDebugMode) {
@@ -1215,6 +1264,9 @@ enum AnswerbotSetupStep {
 
   /// Registering SIP device on the Fritz!Box.
   registeringSipDevice,
+
+  /// Waiting for second factor authentication on the Fritz!Box.
+  confirmingSecondFactor,
 
   /// Enabling the bot on the server.
   enablingBot,

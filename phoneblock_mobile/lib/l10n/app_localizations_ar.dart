@@ -898,4 +898,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String fritzboxAnswerbotSetupErrorDetail(String error) {
     return 'خطأ: $error';
   }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor =>
+      'يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس...';
 }

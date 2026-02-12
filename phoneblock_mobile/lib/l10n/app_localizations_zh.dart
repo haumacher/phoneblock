@@ -817,4 +817,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String fritzboxAnswerbotSetupErrorDetail(String error) {
     return '错误：<x1>错误</x1';
   }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor => '请确认您的 Fritz!Box...';
 }

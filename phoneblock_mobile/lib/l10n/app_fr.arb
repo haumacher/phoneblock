@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "En attente d'enregistrement...",
   "fritzboxAnswerbotSetupTitle": "Configurer un répondeur téléphonique",
   "fritzboxAnswerbotSetupSuccess": "Le répondeur a été configuré avec succès et est maintenant actif.",
-  "fritzboxAnswerbotSetupErrorDetail": "Erreur : {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "Erreur : {error}",
+  "fritzboxAnswerbotStepSecondFactor": "Veuillez confirmer l'accès sur votre Fritz!Box..."
 }

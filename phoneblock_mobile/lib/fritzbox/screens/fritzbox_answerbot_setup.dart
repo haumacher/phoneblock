@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 
@@ -34,7 +35,9 @@ class _FritzBoxAnswerbotSetupScreenState
   @override
   void initState() {
     super.initState();
-    _runSetup();
+    // Defer to after the first frame so setState works correctly
+    // (setupAnswerBot calls onProgress synchronously before its first await).
+    SchedulerBinding.instance.addPostFrameCallback((_) => _runSetup());
   }
 
   Future<void> _runSetup() async {
@@ -107,6 +110,8 @@ class _FritzBoxAnswerbotSetupScreenState
         return l10n.fritzboxAnswerbotStepWaitingDynDns;
       case AnswerbotSetupStep.registeringSipDevice:
         return l10n.fritzboxAnswerbotStepSip;
+      case AnswerbotSetupStep.confirmingSecondFactor:
+        return l10n.fritzboxAnswerbotStepSecondFactor;
       case AnswerbotSetupStep.enablingBot:
         return l10n.fritzboxAnswerbotStepEnabling;
       case AnswerbotSetupStep.waitingForRegistration:

@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "في انتظار التسجيل...",
   "fritzboxAnswerbotSetupTitle": "إعداد جهاز الرد الآلي",
   "fritzboxAnswerbotSetupSuccess": "تم إعداد جهاز الرد الآلي بنجاح وهو الآن نشط.",
-  "fritzboxAnswerbotSetupErrorDetail": "خطأ: {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "خطأ: {error}",
+  "fritzboxAnswerbotStepSecondFactor": "يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس..."
 }

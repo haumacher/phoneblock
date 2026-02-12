@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "Czekam na rejestrację...",
   "fritzboxAnswerbotSetupTitle": "Konfigurowanie automatycznej sekretarki",
   "fritzboxAnswerbotSetupSuccess": "Automatyczna sekretarka została pomyślnie skonfigurowana i jest teraz aktywna.",
-  "fritzboxAnswerbotSetupErrorDetail": "Błąd: {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "Błąd: {error}",
+  "fritzboxAnswerbotStepSecondFactor": "Potwierdź dostęp do Fritz!Box..."
 }

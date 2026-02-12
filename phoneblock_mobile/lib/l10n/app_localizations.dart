@@ -1627,6 +1627,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fehler: {error}'**
   String fritzboxAnswerbotSetupErrorDetail(String error);
+
+  /// Progress step: waiting for second factor authentication on Fritz!Box
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte bestätigen Sie den Zugang an Ihrer Fritz!Box...'**
+  String get fritzboxAnswerbotStepSecondFactor;
 }
 
 class _AppLocalizationsDelegate

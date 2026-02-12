@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "等待注册...",
   "fritzboxAnswerbotSetupTitle": "设置答录机",
   "fritzboxAnswerbotSetupSuccess": "答录机已成功设置，现在处于激活状态。",
-  "fritzboxAnswerbotSetupErrorDetail": "错误：<x1>错误</x1"
+  "fritzboxAnswerbotSetupErrorDetail": "错误：<x1>错误</x1",
+  "fritzboxAnswerbotStepSecondFactor": "请确认您的 Fritz!Box..."
 }

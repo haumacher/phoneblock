@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "Wachten op registratie...",
   "fritzboxAnswerbotSetupTitle": "Een antwoordapparaat instellen",
   "fritzboxAnswerbotSetupSuccess": "Het antwoordapparaat is met succes ingesteld en is nu actief.",
-  "fritzboxAnswerbotSetupErrorDetail": "Fout: {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "Fout: {error}",
+  "fritzboxAnswerbotStepSecondFactor": "Bevestig toegang op uw Fritz!Box..."
 }

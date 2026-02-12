@@ -250,5 +250,6 @@
   "fritzboxAnswerbotStepWaiting": "Αναμονή για εγγραφή...",
   "fritzboxAnswerbotSetupTitle": "Ρύθμιση τηλεφωνητή",
   "fritzboxAnswerbotSetupSuccess": "Ο αυτόματος τηλεφωνητής έχει ρυθμιστεί με επιτυχία και είναι τώρα ενεργός.",
-  "fritzboxAnswerbotSetupErrorDetail": "Σφάλμα: {error}"
+  "fritzboxAnswerbotSetupErrorDetail": "Σφάλμα: {error}",
+  "fritzboxAnswerbotStepSecondFactor": "Επιβεβαιώστε την πρόσβαση στο Fritz!Box σας..."
 }
