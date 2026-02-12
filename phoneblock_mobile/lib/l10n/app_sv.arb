@@ -227,5 +227,6 @@
   "fritzboxDisableCardDavTitle": "Avaktivera CardDAV?",
   "fritzboxDisableCardDavMessage": "Blocklistan CardDAV har tagits bort från Fritz!",
   "fritzboxDisable": "Avaktivera",
-  "fritzboxCardDavDisabled": "CardDAV blocklista avaktiverad"
+  "fritzboxCardDavDisabled": "CardDAV blocklista avaktiverad",
+  "fritzboxConnectedNotProtected": "Ansluten, men inte skyddad"
 }

@@ -227,5 +227,6 @@
   "fritzboxDisableCardDavTitle": "إلغاء تنشيط CardDAV؟",
   "fritzboxDisableCardDavMessage": "تمت إزالة قائمة حظر CardDAV من Fritz!",
   "fritzboxDisable": "إلغاء التنشيط",
-  "fritzboxCardDavDisabled": "تم إلغاء تنشيط قائمة حظر CardDAV"
+  "fritzboxCardDavDisabled": "تم إلغاء تنشيط قائمة حظر CardDAV",
+  "fritzboxConnectedNotProtected": "متصلة، غير محمية"
 }

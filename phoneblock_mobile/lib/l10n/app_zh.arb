@@ -227,5 +227,6 @@
   "fritzboxDisableCardDavTitle": "停用 CardDAV？",
   "fritzboxDisableCardDavMessage": "从 Fritz 中移除 CardDAV blocklist！",
   "fritzboxDisable": "停用",
-  "fritzboxCardDavDisabled": "已停用 CardDAV 封锁列表"
+  "fritzboxCardDavDisabled": "已停用 CardDAV 封锁列表",
+  "fritzboxConnectedNotProtected": "已连接，未受保护"
 }

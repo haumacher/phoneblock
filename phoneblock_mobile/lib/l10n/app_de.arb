@@ -871,11 +871,13 @@
   },
   "fritzboxConnected": "Verbunden und geschützt",
   "@fritzboxConnected": {
-    "description": "Fritz!Box connected and spam-protected status"
+    "description": "Fritz!Box connected and spam-protected status",
+    "x-translated": "33ee3c29"
   },
   "fritzboxConnectedNotProtected": "Verbunden, nicht geschützt",
   "@fritzboxConnectedNotProtected": {
-    "description": "Fritz!Box connected but CardDAV spam protection not active"
+    "description": "Fritz!Box connected but CardDAV spam protection not active",
+    "x-translated": "b6387cfb"
   },
   "fritzboxOffline": "Nicht erreichbar",
   "@fritzboxOffline": {

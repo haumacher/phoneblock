@@ -571,6 +571,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxConnected => 'Connected';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Connected, not protected';
+
+  @override
   String get fritzboxOffline => 'Not available';
 
   @override

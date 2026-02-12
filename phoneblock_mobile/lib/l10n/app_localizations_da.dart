@@ -570,6 +570,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get fritzboxConnected => 'Forbundet';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Forbundet, ikke beskyttet';
+
+  @override
   String get fritzboxOffline => 'Ikke tilgængelig';
 
   @override

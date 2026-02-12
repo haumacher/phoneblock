@@ -227,5 +227,6 @@
   "fritzboxDisableCardDavTitle": "Απενεργοποίηση του CardDAV;",
   "fritzboxDisableCardDavMessage": "Η λίστα αποκλεισμού CardDAV αφαιρείται από το Fritz!",
   "fritzboxDisable": "Απενεργοποίηση",
-  "fritzboxCardDavDisabled": "Απενεργοποιημένη λίστα αποκλεισμού CardDAV"
+  "fritzboxCardDavDisabled": "Απενεργοποιημένη λίστα αποκλεισμού CardDAV",
+  "fritzboxConnectedNotProtected": "Συνδεδεμένο, όχι προστατευμένο"
 }

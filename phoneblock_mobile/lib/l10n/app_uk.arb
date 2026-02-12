@@ -227,5 +227,6 @@
   "fritzboxDisableCardDavTitle": "Деактивувати CardDAV?",
   "fritzboxDisableCardDavMessage": "Блок-лист CardDAV видалено з Fritz!",
   "fritzboxDisable": "Деактивувати",
-  "fritzboxCardDavDisabled": "Блокування CardDAV деактивовано"
+  "fritzboxCardDavDisabled": "Блокування CardDAV деактивовано",
+  "fritzboxConnectedNotProtected": "Підключено, але не захищено"
 }

@@ -572,6 +572,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxConnected => 'Підключено';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Підключено, але не захищено';
+
+  @override
   String get fritzboxOffline => 'Немає в наявності';
 
   @override

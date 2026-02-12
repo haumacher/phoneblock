@@ -572,6 +572,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get fritzboxConnected => 'Ansluten';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Ansluten, men inte skyddad';
+
+  @override
   String get fritzboxOffline => 'Ej tillgänglig';
 
   @override

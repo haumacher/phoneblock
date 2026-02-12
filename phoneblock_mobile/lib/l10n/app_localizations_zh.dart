@@ -525,6 +525,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxConnected => '已连接';
 
   @override
+  String get fritzboxConnectedNotProtected => '已连接，未受保护';
+
+  @override
   String get fritzboxOffline => '不详';
 
   @override

@@ -574,6 +574,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get fritzboxConnected => 'Aangesloten';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Aangesloten, niet beschermd';
+
+  @override
   String get fritzboxOffline => 'Niet beschikbaar';
 
   @override

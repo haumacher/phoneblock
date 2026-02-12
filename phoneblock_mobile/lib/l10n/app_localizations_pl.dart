@@ -575,6 +575,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fritzboxConnected => 'Połączony';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Połączony, ale nie chroniony';
+
+  @override
   String get fritzboxOffline => 'Niedostępne';
 
   @override

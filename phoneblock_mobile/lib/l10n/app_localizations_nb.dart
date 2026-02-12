@@ -573,6 +573,9 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxConnected => 'Tilkoblet';
 
   @override
+  String get fritzboxConnectedNotProtected => 'Tilkoblet, ikke beskyttet';
+
+  @override
   String get fritzboxOffline => 'Ikke tilgjengelig';
 
   @override

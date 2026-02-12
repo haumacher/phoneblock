@@ -227,5 +227,6 @@
   "fritzboxDisableCardDavTitle": "Disattivare CardDAV?",
   "fritzboxDisableCardDavMessage": "La lista di blocco CardDAV è stata rimossa dal Fritz!",
   "fritzboxDisable": "Disattivare",
-  "fritzboxCardDavDisabled": "Elenco di blocco CardDAV disattivato"
+  "fritzboxCardDavDisabled": "Elenco di blocco CardDAV disattivato",
+  "fritzboxConnectedNotProtected": "Collegato, non protetto"
 }
