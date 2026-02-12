@@ -1157,27 +1157,8 @@ class FritzBoxService {
       final numberOfClients = await voipService.getNumberOfClients();
       final clientIndex = numberOfClients; // 0-based, next slot
 
-      final internalNumber = await _withSecondFactor(
-        onProgress: onProgress,
-        onSecondFactorMethods: onSecondFactorMethods,
-        action: () => voipService.setClient4(
-          clientIndex: clientIndex,
-          password: creation.password,
-          clientUsername: creation.userName,
-          phoneName: _answerbotPhoneName,
-          clientId: '',
-          outGoingNumber: '',
-          inComingNumbers: '',
-        ),
-      );
-
-      if (kDebugMode) {
-        print('setupAnswerBot: SIP device registered with internal number: $internalNumber');
-      }
-
-      // Enable external registration in a second step (SetClient4 does not
-      // support ExternalRegistration per the SCPD spec — SetClient3 does).
-      onProgress(AnswerbotSetupStep.enablingInternetAccess);
+      // Step 4a: First create device with external registration via SetClient3
+      // (SetClient3 has ExternalRegistration but no ClientUsername).
       await _withSecondFactor(
         onProgress: onProgress,
         onSecondFactorMethods: onSecondFactorMethods,
@@ -1193,7 +1174,28 @@ class FritzBoxService {
       );
 
       if (kDebugMode) {
-        print('setupAnswerBot: External registration enabled');
+        print('setupAnswerBot: SIP device created with external registration');
+      }
+
+      // Step 4b: Then set the username via SetClient4
+      // (SetClient4 has ClientUsername but no ExternalRegistration).
+      onProgress(AnswerbotSetupStep.enablingInternetAccess);
+      final internalNumber = await _withSecondFactor(
+        onProgress: onProgress,
+        onSecondFactorMethods: onSecondFactorMethods,
+        action: () => voipService.setClient4(
+          clientIndex: clientIndex,
+          password: creation.password,
+          clientUsername: creation.userName,
+          phoneName: _answerbotPhoneName,
+          clientId: '',
+          outGoingNumber: '',
+          inComingNumbers: '',
+        ),
+      );
+
+      if (kDebugMode) {
+        print('setupAnswerBot: SIP username set, internal number: $internalNumber');
       }
 
       // Step 5: Enable bot and wait for SIP registration
