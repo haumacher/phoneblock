@@ -1,0 +1,9 @@
+* Show list of blocked/suspicious calls in notification
+* "New" indicator for calls received while app was closed
+* Display range votes in call list
+* Display formatted phone number and caller location in call list
+* Statistics section in settings showing total blocked and suspicious calls
+* Improved notifications with PhoneBlock branding and call details
+* Improved call list display to show actual rating and blocked status
+* Fixed "Open in App" button on mobile response page for Firefox
+* Fixed WebView loading indicator during content loading
