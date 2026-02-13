@@ -1,0 +1,61 @@
+AntiFeatures:
+  NonFreeNet:
+    en-US: Requires the phoneblock.net server for spam number lookups.
+Categories:
+  - Phone & SMS
+  - Security
+License: GPL-3.0-only
+AuthorName: Bernhard Haumacher
+AuthorWebSite: https://phoneblock.net
+SourceCode: https://github.com/haumacher/phoneblock
+IssueTracker: https://github.com/haumacher/phoneblock/issues
+Changelog: 
+  https://github.com/haumacher/phoneblock/blob/master/phoneblock_mobile/CHANGELOG.md
+Donate: https://phoneblock.net/phoneblock/support
+
+AutoName: PhoneBlock Mobile
+Description: |
+  PhoneBlock Mobile identifies and blocks spam phone calls using a
+  community-maintained database. When someone calls, the app checks
+  the number against the PhoneBlock database and blocks known spam
+  callers automatically.
+
+  Features:
+  * Automatic call screening using Android's CallScreeningService
+  * Community-driven spam database with thousands of reported numbers
+  * Call history with spam ratings, caller location, and labels
+  * Configurable blocking threshold
+  * Personal black/white lists synced with the server
+  * Dark mode support
+
+  Requires a free PhoneBlock account at phoneblock.net.
+
+RepoType: git
+Repo: https://github.com/haumacher/phoneblock.git
+
+Builds:
+  - versionName: 1.1.1
+    versionCode: 7
+    commit: pb-mobile-1.1.1
+    output: phoneblock_mobile/build/app/outputs/flutter-apk/app-release.apk
+    srclibs:
+      - flutter@3.38.5
+    prebuild:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - sed -i '/auto-translate-gradle-plugin/d' phoneblock_mobile/android/build.gradle
+      - $$flutter$$/bin/flutter config --no-analytics
+      - cd phoneblock_mobile && $$flutter$$/bin/flutter pub get
+    scanignore:
+      - phoneblock_shared/pubspec.yaml
+      - phoneblock/fbclient/package.json
+    scandelete:
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - cd phoneblock_mobile && $$flutter$$/bin/flutter build apk
+
+AutoUpdateMode: None
+UpdateCheckMode: Tags .*pb-mobile-.*
+UpdateCheckData: phoneblock_mobile/pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 1.1.1
+CurrentVersionCode: 7
