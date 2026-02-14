@@ -59,8 +59,19 @@ jobs:
         working-directory: phoneblock_mobile
         run: flutter build apk --debug
 
+      - name: Extract changelog
+        if: startsWith(github.ref, 'refs/tags/')
+        id: changelog
+        run: |
+          VERSION_CODE=$(sed -n -E 's/^version:.+\+([0-9]+)$/\1/p' phoneblock_mobile/pubspec.yaml)
+          CHANGELOG_FILE="fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
+          if [ -f "$CHANGELOG_FILE" ]; then
+            echo "body_path=$CHANGELOG_FILE" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          body_path: ${{ steps.changelog.outputs.body_path }}
           files: phoneblock_mobile/build/app/outputs/flutter-apk/app-release.apk
