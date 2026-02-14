@@ -82,6 +82,7 @@ class FritzBoxConfig {
   final String? blocklistVersion;
   final String? phonebookId;
   final String? sipDeviceId;
+  final String? sipUsername;
   final int createdAt;
   final int updatedAt;
 
@@ -98,6 +99,7 @@ class FritzBoxConfig {
     this.blocklistVersion,
     this.phonebookId,
     this.sipDeviceId,
+    this.sipUsername,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -117,6 +119,7 @@ class FritzBoxConfig {
       blocklistVersion: map['blocklist_version'] as String?,
       phonebookId: map['phonebook_id'] as String?,
       sipDeviceId: map['sip_device_id'] as String?,
+      sipUsername: map['sip_username'] as String?,
       createdAt: map['created_at'] as int,
       updatedAt: map['updated_at'] as int,
     );
@@ -137,6 +140,7 @@ class FritzBoxConfig {
       'blocklist_version': blocklistVersion,
       'phonebook_id': phonebookId,
       'sip_device_id': sipDeviceId,
+      'sip_username': sipUsername,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
@@ -156,6 +160,7 @@ class FritzBoxConfig {
     String? blocklistVersion,
     String? phonebookId,
     String? sipDeviceId,
+    String? sipUsername,
     int? createdAt,
     int? updatedAt,
   }) {
@@ -172,6 +177,7 @@ class FritzBoxConfig {
       blocklistVersion: blocklistVersion ?? this.blocklistVersion,
       phonebookId: phonebookId ?? this.phonebookId,
       sipDeviceId: sipDeviceId ?? this.sipDeviceId,
+      sipUsername: sipUsername ?? this.sipUsername,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

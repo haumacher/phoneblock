@@ -120,6 +120,7 @@ class FritzBoxStorage {
     String? blocklistVersion,
     String? phonebookId,
     String? sipDeviceId,
+    String? sipUsername,
   }) async {
     final existing = await getConfig();
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -134,6 +135,7 @@ class FritzBoxStorage {
       blocklistVersion: blocklistVersion,
       phonebookId: phonebookId,
       sipDeviceId: sipDeviceId,
+      sipUsername: sipUsername,
       updatedAt: now,
     ) ?? FritzBoxConfig(
       host: host,
@@ -145,6 +147,7 @@ class FritzBoxStorage {
       blocklistVersion: blocklistVersion,
       phonebookId: phonebookId,
       sipDeviceId: sipDeviceId,
+      sipUsername: sipUsername,
       createdAt: now,
       updatedAt: now,
     );

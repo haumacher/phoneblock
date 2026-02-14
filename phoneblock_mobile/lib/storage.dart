@@ -154,7 +154,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -208,6 +208,7 @@ class ScreenedCallsDatabase {
         blocklist_version TEXT,
         phonebook_id TEXT,
         sip_device_id TEXT,
+        sip_username TEXT,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       )
@@ -298,6 +299,10 @@ class ScreenedCallsDatabase {
     if (oldVersion < 7) {
       // Add answerbot_id column for tracking server-side bot ID
       await db.execute('ALTER TABLE fritzbox_config ADD COLUMN answerbot_id INTEGER');
+    }
+    if (oldVersion < 8) {
+      // Add sip_username column for identifying the SIP device by username
+      await db.execute('ALTER TABLE fritzbox_config ADD COLUMN sip_username TEXT');
     }
   }
 

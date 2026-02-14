@@ -1266,6 +1266,7 @@ class FritzBoxService {
         answerbotEnabled: true,
         answerbotId: creation.id,
         sipDeviceId: internalNumber,
+        sipUsername: creation.userName,
       );
     } catch (e) {
       // Clean up server-side bot on failure
@@ -1304,31 +1305,27 @@ class FritzBoxService {
     }
 
     // Remove SIP device from Fritz!Box
-    if (isConnected && _client != null) {
-      final voipService = _client!.voip();
-      if (voipService != null) {
-        try {
+    final sipUsername = config?.sipUsername;
+    if (isConnected && _client != null && sipUsername != null) {
+      try {
+        await _withReconnect(() async {
+          final voipService = _client!.voip();
+          if (voipService == null) return;
           final numberOfClients = await voipService.getNumberOfClients();
           for (int i = 0; i < numberOfClients; i++) {
-            try {
-              final client = await voipService.getClient3(i);
-              if (client.phoneName == _answerbotPhoneName) {
-                await voipService.deleteClient(i);
-                if (kDebugMode) {
-                  print('removeAnswerBot: Removed SIP device at index $i');
-                }
-                break;
-              }
-            } catch (e) {
+            final client = await voipService.getClient3(i);
+            if (client.clientUsername == sipUsername) {
+              await voipService.deleteClient(i);
               if (kDebugMode) {
-                print('removeAnswerBot: Error checking client $i: $e');
+                print('removeAnswerBot: Removed SIP device at index $i (username: $sipUsername)');
               }
+              break;
             }
           }
-        } catch (e) {
-          if (kDebugMode) {
-            print('removeAnswerBot: Error listing SIP clients: $e');
-          }
+        });
+      } catch (e) {
+        if (kDebugMode) {
+          print('removeAnswerBot: Error removing SIP device: $e');
         }
       }
     }
@@ -1349,6 +1346,7 @@ class FritzBoxService {
         blocklistVersion: existing.blocklistVersion,
         phonebookId: existing.phonebookId,
         sipDeviceId: null,
+        sipUsername: null,
         createdAt: existing.createdAt,
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ));
