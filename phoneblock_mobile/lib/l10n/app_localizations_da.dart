@@ -845,6 +845,14 @@ class AppLocalizationsDa extends AppLocalizations {
       'Telefonsvareren er ikke tilsluttet';
 
   @override
+  String get fritzboxAnswerbotEnabling => 'Aktivér telefonsvareren...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'Vent på registrering: $message.';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'SPAM-opkald besvares automatisk af PhoneBlocks telefonsvarer.';
 

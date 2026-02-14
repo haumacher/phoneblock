@@ -1274,6 +1274,21 @@
     "description": "Answer bot enabled but SIP registration not successful",
     "x-translated": "9c95e851"
   },
+  "fritzboxAnswerbotEnabling": "Aktiviere Anrufbeantworter...",
+  "@fritzboxAnswerbotEnabling": {
+    "description": "Progress message while enabling answerbot and waiting for SIP registration",
+    "x-translated": "ae36b8f6"
+  },
+  "fritzboxAnswerbotRegistering": "Warte auf Registrierung: {message}",
+  "@fritzboxAnswerbotRegistering": {
+    "description": "Progress message during SIP registration polling with server status",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    },
+    "x-translated": "4e964622"
+  },
   "fritzboxAnswerbotDescription": "SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.",
   "@fritzboxAnswerbotDescription": {
     "description": "Answer bot active description",

@@ -851,6 +851,14 @@ class AppLocalizationsEl extends AppLocalizations {
       'Ο αυτόματος τηλεφωνητής δεν είναι συνδεδεμένος';
 
   @override
+  String get fritzboxAnswerbotEnabling => 'Ενεργοποίηση τηλεφωνητή...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'Αναμονή για εγγραφή: $message';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'Οι κλήσεις SPAM απαντώνται αυτόματα από τον τηλεφωνητή του PhoneBlock.';
 

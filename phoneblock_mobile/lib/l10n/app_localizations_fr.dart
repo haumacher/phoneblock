@@ -856,6 +856,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fritzboxAnswerbotNotRegistered => 'Répondeur non connecté';
 
   @override
+  String get fritzboxAnswerbotEnabling => 'Activer le répondeur...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'En attente d\'enregistrement : $message';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'Les appels SPAM sont automatiquement traités par le répondeur PhoneBlock.';
 

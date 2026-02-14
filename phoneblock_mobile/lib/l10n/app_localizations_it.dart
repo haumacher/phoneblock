@@ -857,6 +857,15 @@ class AppLocalizationsIt extends AppLocalizations {
       'Segreteria telefonica non collegata';
 
   @override
+  String get fritzboxAnswerbotEnabling =>
+      'Attivare la segreteria telefonica...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'Attendere la registrazione: $message';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'Alle chiamate SPAM risponde automaticamente la segreteria telefonica di PhoneBlock.';
 

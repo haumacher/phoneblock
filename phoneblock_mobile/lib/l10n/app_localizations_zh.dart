@@ -765,6 +765,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxAnswerbotNotRegistered => '答录机未连接';
 
   @override
+  String get fritzboxAnswerbotEnabling => '激活答录机...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return '等待注册：<x1>消息</x1';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription => '垃圾电话由 PhoneBlock 应答机自动接听。';
 
   @override

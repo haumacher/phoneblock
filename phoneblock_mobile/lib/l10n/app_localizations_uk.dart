@@ -847,6 +847,14 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxAnswerbotNotRegistered => 'Автовідповідач не підключено';
 
   @override
+  String get fritzboxAnswerbotEnabling => 'Увімкнути автовідповідач...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'Чекайте на реєстрацію: $message';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'Дзвінки зі спамом автоматично переадресовуються на автовідповідач PhoneBlock.';
 

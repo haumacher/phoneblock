@@ -849,6 +849,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Contestador automático no conectado';
 
   @override
+  String get fritzboxAnswerbotEnabling => 'Activar contestador automático...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'Esperar registro: $message';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'Las llamadas SPAM son contestadas automáticamente por el contestador automático PhoneBlock.';
 

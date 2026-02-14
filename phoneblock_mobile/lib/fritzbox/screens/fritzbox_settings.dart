@@ -12,6 +12,7 @@ import 'package:phoneblock_mobile/main.dart'
     show newCallIds, getAuthToken, fetchAccountSettings;
 import 'package:phoneblock_mobile/storage.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
+import 'package:sn_progress_dialog/progress_dialog.dart';
 
 /// Settings screen for Fritz!Box integration.
 class FritzBoxSettingsScreen extends StatefulWidget {
@@ -684,6 +685,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     return null;
   }
 
+  static const int _maxRetry = 20;
+
   Future<void> _toggleAnswerbot(bool enabled) async {
     final botId = _config?.answerbotId;
     if (botId == null) return;
@@ -693,27 +696,18 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     });
 
     try {
-      final response = await sendRequest(
-        enabled ? EnableAnswerBot(id: botId) : DisableAnswerBot(id: botId),
-      );
-
-      if (response.statusCode == 200) {
-        // Re-fetch actual state from server instead of assuming success.
-        final info = await _fetchAnswerbotInfo(botId);
-        if (mounted) {
-          setState(() {
-            _answerbotInfo = info ?? _answerbotInfo;
-          });
-        }
+      if (enabled) {
+        await _enableAnswerbotOnServer(botId);
       } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.fritzboxSyncError),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        await sendRequest(DisableAnswerBot(id: botId));
+      }
+
+      // Re-fetch actual state from server.
+      final info = await _fetchAnswerbotInfo(botId);
+      if (mounted) {
+        setState(() {
+          _answerbotInfo = info ?? _answerbotInfo;
+        });
       }
     } catch (e) {
       if (context.mounted) {
@@ -730,6 +724,50 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           _isTogglingAnswerbot = false;
         });
       }
+    }
+  }
+
+  /// Enables the answerbot and polls for SIP registration to complete.
+  Future<void> _enableAnswerbotOnServer(int botId) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final response = await sendRequest(EnableAnswerBot(id: botId));
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+
+    if (!context.mounted) return;
+
+    // Poll with CheckAnswerBot until registered (200) or failed.
+    final pd = ProgressDialog(context: context);
+    pd.show(max: _maxRetry, msg: l10n.fritzboxAnswerbotEnabling);
+
+    try {
+      for (int n = 0; n < _maxRetry; n++) {
+        final check = await sendRequest(CheckAnswerBot()..id = botId);
+        if (!context.mounted) return;
+
+        if (check.statusCode == 200) {
+          pd.close();
+          return;
+        }
+
+        if (check.statusCode != 409) {
+          pd.close();
+          throw Exception(check.body);
+        }
+
+        // 409 = still connecting, retry after delay
+        await Future.delayed(const Duration(milliseconds: 2500));
+        if (!context.mounted) return;
+        pd.update(value: n + 1, msg: l10n.fritzboxAnswerbotRegistering(check.body));
+      }
+
+      // Max retries exhausted
+      pd.close();
+    } catch (e) {
+      pd.close();
+      rethrow;
     }
   }
 

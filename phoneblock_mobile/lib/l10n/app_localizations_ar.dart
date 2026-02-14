@@ -842,6 +842,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxAnswerbotNotRegistered => 'جهاز الرد الآلي غير متصل';
 
   @override
+  String get fritzboxAnswerbotEnabling => 'تفعيل جهاز الرد الآلي...';
+
+  @override
+  String fritzboxAnswerbotRegistering(String message) {
+    return 'انتظار التسجيل: <x1>رسالة<x1>';
+  }
+
+  @override
   String get fritzboxAnswerbotDescription =>
       'يتم الرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف.';
 

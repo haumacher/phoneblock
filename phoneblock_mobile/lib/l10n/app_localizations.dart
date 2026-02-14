@@ -1526,6 +1526,18 @@ abstract class AppLocalizations {
   /// **'Anrufbeantworter nicht verbunden'**
   String get fritzboxAnswerbotNotRegistered;
 
+  /// Progress message while enabling answerbot and waiting for SIP registration
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere Anrufbeantworter...'**
+  String get fritzboxAnswerbotEnabling;
+
+  /// Progress message during SIP registration polling with server status
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf Registrierung: {message}'**
+  String fritzboxAnswerbotRegistering(String message);
+
   /// Answer bot active description
   ///
   /// In de, this message translates to:
