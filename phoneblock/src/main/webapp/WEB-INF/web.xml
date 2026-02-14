@@ -149,6 +149,10 @@
 		<url-pattern>*.jspf</url-pattern>
 	</servlet-mapping>
 
+	<session-config>
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
+
 	<error-page>
 		<error-code>405</error-code>
 		<location>/error-not-allowed</location>

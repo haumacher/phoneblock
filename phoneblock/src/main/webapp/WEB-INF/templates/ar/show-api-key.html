@@ -9,8 +9,6 @@
 	<div class="content">
 		<h1 data-tx="t0001:166405f7">مفتاح API جديد</h1>
 		
-		<form method="get" th:action="@{/settings#myAPIKeys}">
-
 		<article class="message is-info">
 		  <div class="message-header">
 		    <p data-tx="t0002:17f84315">تم إنشاء واجهة برمجة التطبيقات الجديدة الخاصة بك. يرجى نسخ القيمة، حيث لا يمكن عرضها بعد الآن بمجرد مغادرة هذه الصفحة.</p>
@@ -31,11 +29,9 @@
 		
 		<div class="field is-grouped">
 		  <p class="control">
-		    <button class="button is-primary" data-tx="t0005:ad5e318d" type="submit">المزيد</button>
+		    <a class="button is-primary" data-tx="t0005:ad5e318d" th:href="@{/settings#myAPIKeys}">المزيد</a>
 		  </p>
 		</div>
-		
-		</form>
 	</div>
 </section>
 

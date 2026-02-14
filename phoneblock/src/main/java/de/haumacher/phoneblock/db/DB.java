@@ -792,8 +792,8 @@ public class DB {
 
 				return new AuthContext(result, userSettings);
 			}
-		} catch (IOException e) {
-			LOG.info("Failed to parse authorization token: {}", token);
+		} catch (IOException | RuntimeException e) {
+			LOG.info("Failed to parse authorization token '{}': {}", token, e.getMessage());
 			return null;
 		}
 	}

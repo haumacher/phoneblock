@@ -1,25 +1,15 @@
+plugins {
+    id "de.haumacher.auto-translate-arb"
+}
+
 allprojects {
     repositories {
         google()
         mavenCentral()
-        mavenLocal()
     }
 }
 
 rootProject.buildDir = '../build'
-
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'de.haumacher:auto-translate-gradle-plugin:1.0.2'
-    }
-}
-
-dependencies {
-}
 
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"

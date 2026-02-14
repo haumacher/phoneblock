@@ -1,0 +1,11 @@
+Version 1.2.0:
+* Fritz!Box mobile integration: sync call logs from Fritz!Box to the app
+* CardDAV blocklist setup for Fritz!Box with automatic phonebook configuration
+* Automated answerbot SIP device setup from Fritz!Box settings
+* Fritz!Box second factor authentication (2FA) support during setup
+* Enable/disable toggle for answerbot with SIP registration status display
+* Fritz!Box connection and protection status indicator in navigation drawer
+* Missed call category for Fritz!Box calls
+* Stale TR-064 connection handling with automatic reconnect
+* Normalize Fritz!Box phone numbers to international format
+* Various bug fixes and UI improvements

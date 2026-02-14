@@ -1,0 +1,14 @@
+PhoneBlock Mobile identifies and blocks spam phone calls using a
+community-maintained database. When someone calls, the app checks
+the number against the PhoneBlock database and blocks known spam
+callers automatically.
+
+Features:
+* Automatic call screening using Android's CallScreeningService
+* Community-driven spam database with thousands of reported numbers
+* Call history with spam ratings, caller location, and labels
+* Configurable blocking threshold
+* Personal black/white lists synced with the server
+* Dark mode support
+
+Requires a free PhoneBlock account at phoneblock.net.

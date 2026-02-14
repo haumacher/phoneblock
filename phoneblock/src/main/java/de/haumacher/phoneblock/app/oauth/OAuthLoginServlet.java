@@ -20,12 +20,14 @@ import org.pac4j.jee.context.session.JEESessionStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.LoginServlet;
 import de.haumacher.phoneblock.app.RegistrationServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.util.I18N;
@@ -93,8 +95,16 @@ public class OAuthLoginServlet extends HttpServlet {
 		
 		String googleId = userProfile.getId();
 		
+		// Try session first (set by PhoneBlockConfigFactory during OAuth redirect),
+		// then fall back to URL parameter (present when pac4j redirects back after callback)
 		Optional<Object> location = sessionStore.get(context, LoginServlet.LOCATION_ATTRIBUTE);
-		
+		if (location.isEmpty()) {
+			String locationParam = req.getParameter(LoginServlet.LOCATION_ATTRIBUTE);
+			if (locationParam != null && !locationParam.isEmpty()) {
+				location = Optional.of(locationParam);
+			}
+		}
+
 		DB db = DBService.getInstance();
 		String login = db.getGoogleLogin(googleId);
 		if (login == null) {
@@ -117,7 +127,7 @@ public class OAuthLoginServlet extends HttpServlet {
 		if (login == null) {
 			// Create new account.
 			login = UUID.randomUUID().toString();
-			
+
 			if (displayName == null) {
 				if (email == null) {
 					displayName = login;
@@ -125,9 +135,9 @@ public class OAuthLoginServlet extends HttpServlet {
 					displayName = email;
 				}
 			}
-			
+
 			String dialPrefix = DefaultController.selectDialPrefix(req, language);
-			
+
 			String passwd = db.createUser(login, displayName, language.tag, dialPrefix);
 			db.setGoogleId(login, googleId, null);
 			if (email != null) {
@@ -137,11 +147,21 @@ public class OAuthLoginServlet extends HttpServlet {
 					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
 				}
 			}
-			
+
+			// Check if this is a mobile app linking flow (skip credentials page)
+			String targetPath = location.isPresent() ? (String) location.get() : null;
+			if (targetPath != null && targetPath.startsWith(CreateAuthTokenServlet.MOBILE_LOGIN)) {
+				// For mobile flows, redirect directly to token creation without showing credentials
+				LoginFilter.setSessionUser(req, db.createMasterLoginToken(login));
+				resp.sendRedirect(req.getContextPath() + targetPath);
+				return;
+			}
+
+			// For web registration, show credentials page
 			if (location.isPresent()) {
 				req.setAttribute(LoginServlet.LOCATION_ATTRIBUTE, location.get());
 			}
-			
+
 			RegistrationServlet.startSetup(req, resp, login, passwd);
 			return;
 		}
@@ -162,7 +182,7 @@ public class OAuthLoginServlet extends HttpServlet {
 	 */
 	public static void sendFailure(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("error", I18N.getMessage(req, "error.login.failed"));
-		TemplateRenderer.getInstance(req).process("/login", req, resp);
+		TemplateRenderer.getInstance(req).process(LoginController.LOGIN_PAGE, req, resp);
 	}
 
 }

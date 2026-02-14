@@ -17,6 +17,11 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class StatusController extends DefaultController {
 
+	/**
+	 * Template path for the status page.
+	 */
+	public static final String STATUS_PAGE = "/status";
+
 	@Override
 	protected void fillContext(WebContext ctx, HttpServletRequest request) {
 		super.fillContext(ctx, request);

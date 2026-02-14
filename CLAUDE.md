@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PhoneBlock is a community-driven spam call blocking system for Fritz!Box routers and mobile phones. It provides three main components:
+PhoneBlock is a community-driven spam call blocking system for Fritz!Box routers and mobile phones. It provides several main components:
 
 1. **Web Application** (`phoneblock/`) - Central web service for managing spam phone numbers
 2. **Answer Bot** (`phoneblock-ab/`) - SIP-based answering machine that engages spam callers
 3. **Mobile App** (`phoneblock_mobile/`) - Android/Flutter app for call screening on mobile devices
+4. **Accounting Tool** (`phoneblock-accounting/`) - Command-line tool for importing contribution data from bank CSV exports
 
 The system uses a community-maintained database where users report spam numbers, which are then shared with all PhoneBlock users through downloadable blocklists, CardDAV integration, or real-time API queries.
 
@@ -82,6 +83,21 @@ cd phoneblock-ab
 docker build -t phoneblock/answerbot .
 ```
 
+### Accounting Tool
+
+**Build standalone JAR:**
+```bash
+cd phoneblock-accounting
+mvn clean package
+```
+Creates `phoneblock-accounting-*-jar-with-dependencies.jar` in target/
+
+**Run locally:**
+```bash
+java -jar phoneblock-accounting/target/phoneblock-accounting-*-jar-with-dependencies.jar <csv-file>
+```
+Imports contribution data from CSV bank exports for accounting purposes.
+
 ### Flutter Applications
 
 **Answer Bot UI:**
@@ -117,6 +133,7 @@ npx webpack
 
 - **phoneblock-shared/** - Common data models using msgbuf protocol definitions
 - **phoneblock-ab/** - SIP answering bot implementation using mjSIP library
+- **phoneblock-accounting/** - Command-line tool for importing contribution accounting data from CSV bank exports
 - **phoneblock/** - Main web application (WAR deployment)
 - **phoneblock_mobile/** - Flutter Android app
 - **phoneblock_answerbot_ui/** - Flutter web UI for answer bot management

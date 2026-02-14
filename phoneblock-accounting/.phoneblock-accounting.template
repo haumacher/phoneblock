@@ -1,0 +1,14 @@
+# PhoneBlock Accounting Importer Configuration
+# Copy this file to ~/.phoneblock-accounting or specify with -c/--config option
+
+# Character encoding for CSV files (default: ISO-8859-1)
+# Common values: ISO-8859-1, UTF-8, Windows-1252
+charset=ISO-8859-1
+
+# Database connection settings
+# JDBC URL to the PhoneBlock database (default: jdbc:h2:./phoneblock)
+db.url=jdbc:h2:./phoneblock
+
+# Database credentials (default: phone/block)
+db.user=phone
+db.password=block

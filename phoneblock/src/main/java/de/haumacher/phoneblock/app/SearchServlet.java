@@ -32,6 +32,7 @@ import de.haumacher.phoneblock.app.api.model.SearchResult;
 import de.haumacher.phoneblock.app.api.model.UserComment;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.PhoneInfoController;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBNumberInfo;
@@ -616,7 +617,7 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("searchLabels", searchLabels.toString());
 		req.setAttribute("searchData", searchData.toString());
 		
-		TemplateRenderer.getInstance(req).process("/phone-info", req, resp);
+		TemplateRenderer.getInstance(req).process(PhoneInfoController.PHONE_INFO_PAGE, req, resp);
 	}
 
 	private static void jsString(StringBuilder js, String txt) {

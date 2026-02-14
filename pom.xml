@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock-parent</artifactId>
-	<version>1.9.2-SNAPSHOT</version>
+	<version>1.9.3-SNAPSHOT</version>
 	
 	<name>PhoneBlock Aggregator</name>
 	<description>Maven aggregator building all parts of PhoneBlock</description>
@@ -36,6 +36,7 @@
 	
 	<modules>
 		<module>phoneblock-ab</module>
+		<module>phoneblock-accounting</module>
 		<module>phoneblock-shared</module>
 		<module>phoneblock</module>
 	</modules>

@@ -10,6 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class LoginController extends AbstractLoginController {
 
+	/**
+	 * Template path for the login page.
+	 */
+	public static final String LOGIN_PAGE = "/login";
+
 	private String _defaultLocation;
 
 	public LoginController(String defaultLocation) {

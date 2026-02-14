@@ -15,6 +15,7 @@ import org.xbill.DNS.Record;
 import org.xbill.DNS.Type;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
+import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Users;
@@ -65,7 +66,7 @@ public class EmailChangeServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
-			resp.sendRedirect(req.getContextPath() + "/login");
+			resp.sendRedirect(req.getContextPath() + LoginController.LOGIN_PAGE);
 			return;
 		}
 
@@ -87,7 +88,7 @@ public class EmailChangeServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req);
 		if (userName == null) {
-			resp.sendRedirect(req.getContextPath() + "/login");
+			resp.sendRedirect(req.getContextPath() + LoginController.LOGIN_PAGE);
 			return;
 		}
 
