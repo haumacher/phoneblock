@@ -739,64 +739,66 @@ class FritzBoxService {
       throw Exception('Not connected to Fritz!Box');
     }
 
-    final onTelService = _client?.onTel();
-    if (onTelService == null) {
-      throw Exception('OnTel service not available');
-    }
-
-    // Check for existing PhoneBlock configuration
-    final phonebooks = await _getOnlinePhonebooks();
-    final existingIndex = _findExistingCardDavConfig(phonebooks);
-
-    // Determine which online phonebook index to use
-    int onlineIndex;
-    if (existingIndex != null) {
-      onlineIndex = existingIndex;
-      if (kDebugMode) {
-        print('configureCardDav: Reusing existing online index $onlineIndex');
+    await _withReconnect(() async {
+      final onTelService = _client?.onTel();
+      if (onTelService == null) {
+        throw Exception('OnTel service not available');
       }
-    } else {
-      // Create new online phonebook: use numberOfEntries + 1
-      final numberOfEntries = await onTelService.getNumberOfEntries();
-      onlineIndex = numberOfEntries + 1;
-      if (kDebugMode) {
-        print('configureCardDav: Creating new online phonebook at index $onlineIndex');
-      }
-    }
 
-    // Build CardDAV URL using the app's context path
-    final carddavUrl =
-        'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
+      // Check for existing PhoneBlock configuration
+      final phonebooks = await _getOnlinePhonebooks();
+      final existingIndex = _findExistingCardDavConfig(phonebooks);
 
-    if (kDebugMode) {
-      print('configureCardDav: Setting config for online index $onlineIndex');
-      print('  url: $carddavUrl');
-      print('  serviceId: ${OnlinePhonebookServiceId.cardDav}');
-      print('  username: $phoneBlockUsername');
-    }
+      // Determine which online phonebook index to use
+      int onlineIndex;
+      if (existingIndex != null) {
+        onlineIndex = existingIndex;
+        if (kDebugMode) {
+          print('configureCardDav: Reusing existing online index $onlineIndex');
+        }
+      } else {
+        // Create new online phonebook: use numberOfEntries + 1
+        final numberOfEntries = await onTelService.getNumberOfEntries();
+        onlineIndex = numberOfEntries + 1;
+        if (kDebugMode) {
+          print('configureCardDav: Creating new online phonebook at index $onlineIndex');
+        }
+      }
 
-    // Configure the online phonebook as CardDAV phonebook
-    try {
-      await onTelService.setConfigByIndex(
-        index: onlineIndex,
-        enable: true,
-        url: carddavUrl,
-        serviceId: OnlinePhonebookServiceId.cardDav,
-        username: phoneBlockUsername,
-        password: phoneBlockToken,
-        name: kDebugMode ? 'PhoneBlock SPAM (Test)' : 'PhoneBlock SPAM',
-      );
+      // Build CardDAV URL using the app's context path
+      final carddavUrl =
+          'https://phoneblock.net$contextPath/contacts/addresses/$phoneBlockUsername/';
+
       if (kDebugMode) {
-        print('configureCardDav: setConfigByIndex succeeded');
+        print('configureCardDav: Setting config for online index $onlineIndex');
+        print('  url: $carddavUrl');
+        print('  serviceId: ${OnlinePhonebookServiceId.cardDav}');
+        print('  username: $phoneBlockUsername');
       }
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        print('configureCardDav: setConfigByIndex FAILED for index $onlineIndex');
-        print('  Error: $e');
-        print('  Stack: $stackTrace');
+
+      // Configure the online phonebook as CardDAV phonebook
+      try {
+        await onTelService.setConfigByIndex(
+          index: onlineIndex,
+          enable: true,
+          url: carddavUrl,
+          serviceId: OnlinePhonebookServiceId.cardDav,
+          username: phoneBlockUsername,
+          password: phoneBlockToken,
+          name: kDebugMode ? 'PhoneBlock SPAM (Test)' : 'PhoneBlock SPAM',
+        );
+        if (kDebugMode) {
+          print('configureCardDav: setConfigByIndex succeeded');
+        }
+      } catch (e, stackTrace) {
+        if (kDebugMode) {
+          print('configureCardDav: setConfigByIndex FAILED for index $onlineIndex');
+          print('  Error: $e');
+          print('  Stack: $stackTrace');
+        }
+        rethrow;
       }
-      rethrow;
-    }
+    });
 
     // Save configuration to local storage
     await FritzBoxStorage.instance.updateConfig(
@@ -816,10 +818,12 @@ class FritzBoxService {
       return;
     }
 
-    if (isConnected) {
-      final onTelService = _client?.onTel();
-      if (onTelService != null) {
-        try {
+    if (isConnected && _client != null) {
+      try {
+        await _withReconnect(() async {
+          final onTelService = _client?.onTel();
+          if (onTelService == null) return;
+
           // Find the PhoneBlock online phonebook by URL
           final phonebooks = await _getOnlinePhonebooks();
           final onlineIndex = _findExistingCardDavConfig(phonebooks);
@@ -834,12 +838,12 @@ class FritzBoxService {
               print('PhoneBlock phonebook not found, nothing to delete');
             }
           }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error removing CardDAV config: $e');
-          }
-          // Continue anyway to clear local config
+        });
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error removing CardDAV config: $e');
         }
+        // Continue anyway to clear local config
       }
     }
 
