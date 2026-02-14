@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-02-14
+
+### Added
+- Fritz!Box mobile integration: sync call logs from Fritz!Box to the app
+- CardDAV blocklist setup for Fritz!Box with automatic phonebook configuration
+- Automated answerbot SIP device setup from Fritz!Box settings
+- Fritz!Box second factor authentication (2FA) support during setup
+- Enable/disable toggle for answerbot with SIP registration status display
+- Fritz!Box connection and protection status indicator in navigation drawer
+- Missed call category for Fritz!Box calls
+- Fritz!Box username can be hidden when using default box user
+
+### Changed
+- Unified call storage for mobile and Fritz!Box calls
+- Show device name instead of "Accepted" for Fritz!Box calls
+- Mark synced Fritz!Box calls as new
+- Rename "deactivate" to "remove" for blocklist and answerbot actions
+- Use trash can icon for remove actions
+- Use "Blockliste" instead of "CardDAV" in user-facing labels
+
+### Fixed
+- Stale TR-064 connection handling with automatic reconnect
+- Wrap CardDAV setup and removal in reconnect logic
+- Normalize Fritz!Box phone numbers to international format
+- Filter out outgoing calls from Fritz!Box sync
+- Fix blocked status: only rejected calls are marked as blocked
+- Fix location text overflow in call list
+- Mark all calls with the same number as seen when inspecting one
+
 ## [1.1.1] - 2026-01-31
 
 ### Added
@@ -81,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial tracked release.
 
-[Unreleased]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.1.1...HEAD
+[Unreleased]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.2.0...HEAD
+[1.2.0]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.1.1...pb-mobile-1.2.0
 [1.1.1]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.1.0...pb-mobile-1.1.1
 [1.1.0]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.0.5...pb-mobile-1.1.0
 [1.0.5]: https://github.com/haumacher/phoneblock/compare/pb-mobile-1.0.4...pb-mobile-1.0.5
