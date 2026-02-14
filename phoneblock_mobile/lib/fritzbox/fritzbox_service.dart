@@ -161,6 +161,25 @@ class FritzBoxService {
     }
   }
 
+  /// Executes a TR-064 action, reconnecting once if the connection is stale.
+  ///
+  /// If [action] throws (e.g. due to an HTTP 503 from a stale session),
+  /// re-establishes the TR-064 connection and retries the action once.
+  Future<T> _withReconnect<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } catch (e) {
+      if (kDebugMode) {
+        print('_withReconnect: Action failed ($e), attempting reconnect');
+      }
+      final credentials = await FritzBoxStorage.instance.getCredentials();
+      if (credentials == null) rethrow;
+      final success = await _connect(credentials);
+      if (!success) rethrow;
+      return await action();
+    }
+  }
+
   /// Disconnects from Fritz!Box and clears stored credentials.
   Future<void> disconnect() async {
     _client?.close();
@@ -1050,19 +1069,19 @@ class FritzBoxService {
       bool hostConfigured = false;
 
       try {
-        final myFritzService = _client!.myFritz();
-        if (myFritzService != null) {
-          final myFritzInfo = await myFritzService.getInfo();
-          if (myFritzInfo.enabled && myFritzInfo.dynDNSName.isNotEmpty) {
-            // Use MyFritz DynDNS name
-            final enterHostResponse = await sendRequest(
-              EnterHostName(id: creation.id, hostName: myFritzInfo.dynDNSName),
-            );
-            if (enterHostResponse.statusCode == 200) {
-              hostConfigured = true;
-              if (kDebugMode) {
-                print('setupAnswerBot: Using MyFritz domain: ${myFritzInfo.dynDNSName}');
-              }
+        final myFritzInfo = await _withReconnect(() async {
+          final svc = _client!.myFritz();
+          return svc != null ? await svc.getInfo() : null;
+        });
+        if (myFritzInfo != null && myFritzInfo.enabled && myFritzInfo.dynDNSName.isNotEmpty) {
+          // Use MyFritz DynDNS name
+          final enterHostResponse = await sendRequest(
+            EnterHostName(id: creation.id, hostName: myFritzInfo.dynDNSName),
+          );
+          if (enterHostResponse.statusCode == 200) {
+            hostConfigured = true;
+            if (kDebugMode) {
+              print('setupAnswerBot: Using MyFritz domain: ${myFritzInfo.dynDNSName}');
             }
           }
         }
@@ -1087,23 +1106,24 @@ class FritzBoxService {
         );
 
         // Configure Fritz!Box DynDNS via TR-064
-        final remoteAccessService = _client!.remoteAccess();
-        if (remoteAccessService == null) {
-          throw Exception('RemoteAccess service not available on Fritz!Box');
-        }
-
         final updateUrl = '$basePath/api/dynip?user=<username>&passwd=<passwd>&ip4=<ipaddr>&ip6=<ip6addr>';
-        await remoteAccessService.setDDNSConfig(
-          enabled: true,
-          providerName: 'Benutzerdefiniert',
-          updateURL: updateUrl,
-          serverIPv4: '',
-          serverIPv6: '',
-          domain: dynDns.dyndnsDomain,
-          username: dynDns.dyndnsUser,
-          password: dynDns.dyndnsPassword,
-          mode: DDNSMode.both,
-        );
+        await _withReconnect(() async {
+          final remoteAccessService = _client!.remoteAccess();
+          if (remoteAccessService == null) {
+            throw Exception('RemoteAccess service not available on Fritz!Box');
+          }
+          await remoteAccessService.setDDNSConfig(
+            enabled: true,
+            providerName: 'Benutzerdefiniert',
+            updateURL: updateUrl,
+            serverIPv4: '',
+            serverIPv6: '',
+            domain: dynDns.dyndnsDomain,
+            username: dynDns.dyndnsUser,
+            password: dynDns.dyndnsPassword,
+            mode: DDNSMode.both,
+          );
+        });
 
         // Wait for DynDNS registration
         onProgress(AnswerbotSetupStep.waitingForDynDns);
@@ -1194,26 +1214,21 @@ class FritzBoxService {
         }
 
         // Look up the internal number via TR-064 (needed for config)
-        final voipService = _client!.voip();
-        if (voipService != null) {
+        internalNumber = await _withReconnect(() async {
+          final voipService = _client!.voip();
+          if (voipService == null) return null;
           final numberOfClients = await voipService.getNumberOfClients();
           for (int i = 0; i < numberOfClients; i++) {
-            try {
-              final client = await voipService.getClient3(i);
-              if (client.clientUsername == creation.userName) {
-                internalNumber = client.internalNumber;
-                if (kDebugMode) {
-                  print('setupAnswerBot: Found SIP device at index $i, internal number: $internalNumber');
-                }
-                break;
-              }
-            } catch (e) {
+            final client = await voipService.getClient3(i);
+            if (client.clientUsername == creation.userName) {
               if (kDebugMode) {
-                print('setupAnswerBot: Error checking client $i: $e');
+                print('setupAnswerBot: Found SIP device at index $i, internal number: ${client.internalNumber}');
               }
+              return client.internalNumber;
             }
           }
-        }
+          return null;
+        });
       } finally {
         await webClient.close();
       }
