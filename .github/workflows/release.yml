@@ -41,13 +41,14 @@ jobs:
       - name: Setup signing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > phoneblock_mobile/android/keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > phoneblock_mobile/android/app/keystore.jks
           cat > phoneblock_mobile/android/key.properties <<EOL
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           storeFile=keystore.jks
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           EOL
+          sed -i 's/^ *//' phoneblock_mobile/android/key.properties
 
       - name: Build release APK
         if: startsWith(github.ref, 'refs/tags/')
