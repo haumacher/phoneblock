@@ -760,7 +760,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         // 409 = still connecting, retry after delay
         await Future.delayed(const Duration(milliseconds: 2500));
         if (!context.mounted) return;
-        pd.update(value: n + 1, msg: l10n.fritzboxAnswerbotEnabling);
+        pd.update(value: n + 1, msg: '${l10n.fritzboxAnswerbotEnabling}\n${check.body}');
       }
 
       // Max retries exhausted
