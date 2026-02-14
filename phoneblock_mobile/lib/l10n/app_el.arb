@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Επιβεβαιώστε την πρόσβαση στο Fritz!Box σας...",
   "fritzboxSecondFactorButton": "Πατήστε οποιοδήποτε κουμπί στο Fritz!Box",
   "fritzboxSecondFactorDtmf": "Ή πληκτρολογήστε {code} σε ένα συνδεδεμένο τηλέφωνο.",
-  "fritzboxAnswerbotEnabling": "Ενεργοποίηση τηλεφωνητή...",
-  "fritzboxAnswerbotRegistering": "Αναμονή για εγγραφή: {message}"
+  "fritzboxAnswerbotEnabling": "Ενεργοποίηση τηλεφωνητή..."
 }

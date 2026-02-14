@@ -853,11 +853,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get fritzboxAnswerbotEnabling => 'Antwoordapparaat activeren...';
 
   @override
-  String fritzboxAnswerbotRegistering(String message) {
-    return 'Wachten op registratie: $message';
-  }
-
-  @override
   String get fritzboxAnswerbotDescription =>
       'SPAM-oproepen worden automatisch beantwoord door het PhoneBlock antwoordapparaat.';
 

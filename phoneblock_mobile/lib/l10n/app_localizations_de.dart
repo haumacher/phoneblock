@@ -853,11 +853,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxAnswerbotEnabling => 'Aktiviere Anrufbeantworter...';
 
   @override
-  String fritzboxAnswerbotRegistering(String message) {
-    return 'Warte auf Registrierung: $message';
-  }
-
-  @override
   String get fritzboxAnswerbotDescription =>
       'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.';
 

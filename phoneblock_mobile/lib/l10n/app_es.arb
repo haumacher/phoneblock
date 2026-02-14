@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Por favor, confirme el acceso en su Fritz!Box...",
   "fritzboxSecondFactorButton": "Pulsa cualquier botón del Fritz!Box",
   "fritzboxSecondFactorDtmf": "O marque {code} en un teléfono conectado",
-  "fritzboxAnswerbotEnabling": "Activar contestador automático...",
-  "fritzboxAnswerbotRegistering": "Esperar registro: {message}"
+  "fritzboxAnswerbotEnabling": "Activar contestador automático..."
 }

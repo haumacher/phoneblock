@@ -854,11 +854,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get fritzboxAnswerbotEnabling => 'Ενεργοποίηση τηλεφωνητή...';
 
   @override
-  String fritzboxAnswerbotRegistering(String message) {
-    return 'Αναμονή για εγγραφή: $message';
-  }
-
-  @override
   String get fritzboxAnswerbotDescription =>
       'Οι κλήσεις SPAM απαντώνται αυτόματα από τον τηλεφωνητή του PhoneBlock.';
 

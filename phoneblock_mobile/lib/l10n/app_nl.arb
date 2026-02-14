@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Bevestig toegang op uw Fritz!Box...",
   "fritzboxSecondFactorButton": "Druk op een willekeurige knop op de Fritz!Box",
   "fritzboxSecondFactorDtmf": "Of kies {code} op een aangesloten telefoon.",
-  "fritzboxAnswerbotEnabling": "Antwoordapparaat activeren...",
-  "fritzboxAnswerbotRegistering": "Wachten op registratie: {message}"
+  "fritzboxAnswerbotEnabling": "Antwoordapparaat activeren..."
 }

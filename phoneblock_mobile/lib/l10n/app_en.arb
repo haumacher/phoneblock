@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Please confirm access on your Fritz!Box...",
   "fritzboxSecondFactorButton": "Press any button on the Fritz!Box",
   "fritzboxSecondFactorDtmf": "Or dial {code} on a connected telephone",
-  "fritzboxAnswerbotEnabling": "Activate answering machine...",
-  "fritzboxAnswerbotRegistering": "Wait for registration: {message}"
+  "fritzboxAnswerbotEnabling": "Activate answering machine..."
 }

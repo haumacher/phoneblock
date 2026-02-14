@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Potwierdź dostęp do Fritz!Box...",
   "fritzboxSecondFactorButton": "Naciśnij dowolny przycisk na urządzeniu Fritz!Box",
   "fritzboxSecondFactorDtmf": "Lub wybierz {code} na podłączonym telefonie",
-  "fritzboxAnswerbotEnabling": "Aktywuj automatyczną sekretarkę...",
-  "fritzboxAnswerbotRegistering": "Oczekiwanie na rejestrację: {message}"
+  "fritzboxAnswerbotEnabling": "Aktywuj automatyczną sekretarkę..."
 }

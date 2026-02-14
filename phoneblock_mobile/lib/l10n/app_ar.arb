@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس...",
   "fritzboxSecondFactorButton": "اضغط على أي زر في صندوق فريتز!",
   "fritzboxSecondFactorDtmf": "أو اطلب <x1> الرمز <x1> على هاتف متصل",
-  "fritzboxAnswerbotEnabling": "تفعيل جهاز الرد الآلي...",
-  "fritzboxAnswerbotRegistering": "انتظار التسجيل: <x1>رسالة<x1>"
+  "fritzboxAnswerbotEnabling": "تفعيل جهاز الرد الآلي..."
 }

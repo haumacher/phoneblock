@@ -1532,12 +1532,6 @@ abstract class AppLocalizations {
   /// **'Aktiviere Anrufbeantworter...'**
   String get fritzboxAnswerbotEnabling;
 
-  /// Progress message during SIP registration polling with server status
-  ///
-  /// In de, this message translates to:
-  /// **'Warte auf Registrierung: {message}'**
-  String fritzboxAnswerbotRegistering(String message);
-
   /// Answer bot active description
   ///
   /// In de, this message translates to:

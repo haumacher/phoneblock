@@ -848,11 +848,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get fritzboxAnswerbotEnabling => 'Aktivér telefonsvareren...';
 
   @override
-  String fritzboxAnswerbotRegistering(String message) {
-    return 'Vent på registrering: $message.';
-  }
-
-  @override
   String get fritzboxAnswerbotDescription =>
       'SPAM-opkald besvares automatisk af PhoneBlocks telefonsvarer.';
 

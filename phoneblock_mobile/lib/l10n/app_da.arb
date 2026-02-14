@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Bekræft venligst adgang på din Fritz!Box...",
   "fritzboxSecondFactorButton": "Tryk på en vilkårlig knap på Fritz!Box",
   "fritzboxSecondFactorDtmf": "Eller ring {code} på en tilsluttet telefon",
-  "fritzboxAnswerbotEnabling": "Aktivér telefonsvareren...",
-  "fritzboxAnswerbotRegistering": "Vent på registrering: {message}."
+  "fritzboxAnswerbotEnabling": "Aktivér telefonsvareren..."
 }

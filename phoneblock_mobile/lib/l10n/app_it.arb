@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Confermare l'accesso al Fritz!Box...",
   "fritzboxSecondFactorButton": "Premete un tasto qualsiasi del Fritz!Box",
   "fritzboxSecondFactorDtmf": "Oppure comporre {code} su un telefono connesso",
-  "fritzboxAnswerbotEnabling": "Attivare la segreteria telefonica...",
-  "fritzboxAnswerbotRegistering": "Attendere la registrazione: {message}"
+  "fritzboxAnswerbotEnabling": "Attivare la segreteria telefonica..."
 }

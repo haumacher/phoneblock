@@ -257,6 +257,5 @@
   "fritzboxAnswerbotStepSecondFactor": "Будь ласка, підтвердьте доступ на вашому Fritz!Box...",
   "fritzboxSecondFactorButton": "Натисніть будь-яку кнопку на Fritz!Box",
   "fritzboxSecondFactorDtmf": "Або наберіть {code} на підключеному телефоні",
-  "fritzboxAnswerbotEnabling": "Увімкнути автовідповідач...",
-  "fritzboxAnswerbotRegistering": "Чекайте на реєстрацію: {message}"
+  "fritzboxAnswerbotEnabling": "Увімкнути автовідповідач..."
 }

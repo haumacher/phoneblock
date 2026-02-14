@@ -855,11 +855,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fritzboxAnswerbotEnabling => 'Aktywuj automatyczną sekretarkę...';
 
   @override
-  String fritzboxAnswerbotRegistering(String message) {
-    return 'Oczekiwanie na rejestrację: $message';
-  }
-
-  @override
   String get fritzboxAnswerbotDescription =>
       'Połączenia SPAM są automatycznie odbierane przez automatyczną sekretarkę PhoneBlock.';
 

@@ -849,11 +849,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxAnswerbotEnabling => 'Activate answering machine...';
 
   @override
-  String fritzboxAnswerbotRegistering(String message) {
-    return 'Wait for registration: $message';
-  }
-
-  @override
   String get fritzboxAnswerbotDescription =>
       'SPAM calls are automatically answered by the PhoneBlock answering machine.';
 
