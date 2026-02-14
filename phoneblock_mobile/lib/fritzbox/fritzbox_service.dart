@@ -1168,6 +1168,7 @@ class FritzBoxService {
           name: _answerbotPhoneName,
           username: creation.userName,
           password: creation.password,
+          outgoingNumber: -1,
         );
 
         await _handleWebApi2FA(
