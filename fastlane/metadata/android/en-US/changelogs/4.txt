@@ -1,0 +1,7 @@
+Version 1.0.4:
+* Black/white list management pages in settings
+* Phone number search on main screen
+* Server settings page
+* Edit comments for numbers in black/white lists
+* Use device SIM country code for dial prefix detection
+* Fixed UI inconsistency when number removal fails

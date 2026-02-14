@@ -1,0 +1,9 @@
+Version 1.0.5:
+* Help message for empty black/white list display
+* Webpages displayed in device locale
+* Improved display for legitimate numbers
+* Consistent rating icons in personalized number lists
+* Blacklist/whitelist displays user rating
+* Better contrast for advertising label (darker orange)
+* Fixed back button on setup page only shows when navigation is possible
+* Fixed menu options consistent for all call types
