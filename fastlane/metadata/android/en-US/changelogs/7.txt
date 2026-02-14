@@ -1,3 +1,4 @@
+Version 1.1.1:
 * Show list of blocked/suspicious calls in notification
 * "New" indicator for calls received while app was closed
 * Display range votes in call list

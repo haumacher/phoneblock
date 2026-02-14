@@ -1,3 +1,4 @@
+Version 1.0.5:
 * Help message for empty black/white list display
 * Webpages displayed in device locale
 * Improved display for legitimate numbers

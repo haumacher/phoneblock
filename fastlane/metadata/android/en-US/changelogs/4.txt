@@ -1,3 +1,4 @@
+Version 1.0.4:
 * Black/white list management pages in settings
 * Phone number search on main screen
 * Server settings page
