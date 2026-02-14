@@ -942,92 +942,69 @@ class FritzBoxService {
 
   // -- Second Factor Authentication --
 
-  /// UPnP error code for "second factor authentication required".
-  static const String _secondFactorErrorCode = '866';
-
-  /// The auth service used during an active 2FA challenge, if any.
-  AuthService? _activeAuthService;
+  /// The web API two-factor handler used during an active 2FA challenge, if any.
+  WebTwoFactor? _activeWebTwoFactor;
 
   /// Cancels an active second factor authentication challenge.
-  ///
-  /// The polling loop in [_withSecondFactor] will see the [SecondFactorState.stopped]
-  /// state and abort the setup.
   Future<void> cancelSecondFactor() async {
     if (kDebugMode) {
       print('cancelSecondFactor: Stopping active 2FA challenge');
     }
-    await _activeAuthService?.setConfig('stop');
+    await _activeWebTwoFactor?.cancel();
   }
 
-  /// Executes a Fritz!Box TR-064 action with second factor authentication
-  /// retry.
+  /// Handles a [FormResult] from a web API operation, including 2FA flow.
   ///
-  /// If the action fails with UPnP error 866, starts the 2FA challenge,
-  /// reports [AnswerbotSetupStep.confirmingSecondFactor] via [onProgress],
-  /// waits for the user to confirm on the Fritz!Box, and retries the action.
-  Future<T> _withSecondFactor<T>({
-    required Future<T> Function() action,
+  /// If the result is [FormOk], returns immediately.
+  /// If the result is [FormValError], throws an exception.
+  /// If the result is [FormTwoFactor], reports the step, invokes the
+  /// [onSecondFactorMethods] callback, polls for confirmation, and calls
+  /// [onConfirmed] to re-submit the form.
+  Future<void> _handleWebApi2FA({
+    required FormResult result,
+    required WebTwoFactor twoFactor,
     required void Function(AnswerbotSetupStep) onProgress,
+    required Future<FormResult> Function() onConfirmed,
     void Function(List<AuthMethod>)? onSecondFactorMethods,
   }) async {
-    try {
-      return await action();
-    } on SoapFaultException catch (e) {
-      if (e.detail == null || !e.detail!.contains(_secondFactorErrorCode)) {
-        rethrow;
-      }
+    switch (result) {
+      case FormOk():
+        return;
+      case FormValError():
+        throw Exception('Fritz!Box validation error: ${result.alert}');
+      case FormTwoFactor():
+        onProgress(AnswerbotSetupStep.confirmingSecondFactor);
+        final methods = twoFactor.parseMethods(result.methods);
+        _activeWebTwoFactor = twoFactor;
+        try {
+          onSecondFactorMethods?.call(methods);
 
-      // Start 2FA process
-      if (kDebugMode) {
-        print('_withSecondFactor: Error 866 detected, starting 2FA challenge');
-        print('  faultCode=${e.faultCode} faultString=${e.faultString} detail=${e.detail}');
-      }
-
-      final authService = _client!.auth();
-      if (authService == null) {
-        if (kDebugMode) {
-          print('_withSecondFactor: Auth service not available');
-        }
-        rethrow;
-      }
-
-      onProgress(AnswerbotSetupStep.confirmingSecondFactor);
-      _activeAuthService = authService;
-      try {
-        final config = await authService.setConfig('start');
-        if (kDebugMode) {
-          print('_withSecondFactor: 2FA started, token=${config.token} state=${config.state.name} methods=${config.methods}');
-        }
-
-        // Include 2FA token in all subsequent SOAP requests per AVM spec section 6.4
-        _client!.secondFactorToken = config.token;
-
-        onSecondFactorMethods?.call(config.methods);
-
-        // Poll for authentication (up to 2 minutes)
-        for (int i = 0; i < 60; i++) {
-          await Future.delayed(const Duration(seconds: 2));
-          final state = await authService.getState();
-          if (kDebugMode) {
-            print('_withSecondFactor: Poll #$i state=${state.name}');
-          }
-          if (state == SecondFactorState.authenticated) {
+          // Poll for authentication (up to 2 minutes)
+          for (int i = 0; i < 60; i++) {
+            await Future.delayed(const Duration(seconds: 2));
+            final poll = await twoFactor.poll();
             if (kDebugMode) {
-              print('_withSecondFactor: 2FA confirmed, retrying action');
+              print('_handleWebApi2FA: Poll #$i done=${poll.done} active=${poll.active}');
             }
-            return await action();
+            if (poll.done) {
+              if (poll.active == true) {
+                if (kDebugMode) {
+                  print('_handleWebApi2FA: 2FA confirmed, re-submitting form');
+                }
+                final confirmResult = await onConfirmed();
+                if (confirmResult is FormValError) {
+                  throw Exception('Fritz!Box validation error after 2FA: ${confirmResult.alert}');
+                }
+                return;
+              } else {
+                throw Exception('Second factor authentication was rejected');
+              }
+            }
           }
-          if (state == SecondFactorState.stopped ||
-              state == SecondFactorState.blocked ||
-              state == SecondFactorState.failure) {
-            throw Exception('Second factor authentication failed: ${state.name}');
-          }
+          throw Exception('Second factor authentication timed out');
+        } finally {
+          _activeWebTwoFactor = null;
         }
-        throw Exception('Second factor authentication timed out');
-      } finally {
-        _client!.secondFactorToken = null;
-        _activeAuthService = null;
-      }
     }
   }
 
@@ -1146,54 +1123,99 @@ class FritzBoxService {
         }
       }
 
-      // Step 4: Register SIP device on Fritz!Box
+      // Step 4: Register SIP device on Fritz!Box via web API
       onProgress(AnswerbotSetupStep.registeringSipDevice);
-      final voipService = _client!.voip();
-      if (voipService == null) {
-        throw Exception('VoIP service not available on Fritz!Box');
+
+      final credentials = await FritzBoxStorage.instance.getCredentials();
+      if (credentials == null) {
+        throw Exception('Fritz!Box credentials not available');
       }
 
-      // Find next available client index
-      final numberOfClients = await voipService.getNumberOfClients();
-      final clientIndex = numberOfClients; // 0-based, next slot
-
-      final internalNumber = await _withSecondFactor(
-        onProgress: onProgress,
-        onSecondFactorMethods: onSecondFactorMethods,
-        action: () => voipService.setClient4(
-          clientIndex: clientIndex,
-          password: creation.password,
-          clientUsername: creation.userName,
-          phoneName: _answerbotPhoneName,
-          clientId: '',
-          outGoingNumber: '',
-          inComingNumbers: '',
-        ),
+      final webClient = FritzWebClient(
+        host: credentials.host,
+        username: credentials.username,
+        password: credentials.password,
       );
+      await webClient.login();
 
-      if (kDebugMode) {
-        print('setupAnswerBot: SIP device registered with internal number: $internalNumber');
-      }
+      String? internalNumber;
+      try {
+        final ipPhone = IpPhoneService(webClient);
+        final twoFactor = WebTwoFactor(webClient);
 
-      // Enable external registration in a second step (SetClient4 does not
-      // support ExternalRegistration per the SCPD spec — SetClient3 does).
-      onProgress(AnswerbotSetupStep.enablingInternetAccess);
-      await _withSecondFactor(
-        onProgress: onProgress,
-        onSecondFactorMethods: onSecondFactorMethods,
-        action: () => voipService.setClient3(
-          clientIndex: clientIndex,
+        // Create SIP device via web wizard
+        var createResult = await ipPhone.createIpPhone(
+          name: _answerbotPhoneName,
+          username: creation.userName,
           password: creation.password,
-          phoneName: _answerbotPhoneName,
-          clientId: '',
-          outGoingNumber: '',
-          inComingNumbers: '',
-          externalRegistration: true,
-        ),
-      );
+        );
 
-      if (kDebugMode) {
-        print('setupAnswerBot: External registration enabled');
+        await _handleWebApi2FA(
+          result: createResult,
+          twoFactor: twoFactor,
+          onProgress: onProgress,
+          onConfirmed: () => ipPhone.confirmCreate(),
+          onSecondFactorMethods: onSecondFactorMethods,
+        );
+
+        if (kDebugMode) {
+          print('setupAnswerBot: SIP device created via web API');
+        }
+
+        // Enable internet access for external registration
+        onProgress(AnswerbotSetupStep.enablingInternetAccess);
+        final ipIdx = await ipPhone.findIpIdx(creation.userName);
+        if (ipIdx == null) {
+          throw Exception('Could not find created SIP device');
+        }
+
+        var saveResult = await ipPhone.saveCredentials(
+          ipIdx: ipIdx,
+          username: creation.userName,
+          password: creation.password,
+          fromInet: true,
+        );
+
+        await _handleWebApi2FA(
+          result: saveResult,
+          twoFactor: twoFactor,
+          onProgress: onProgress,
+          onConfirmed: () => ipPhone.confirmAndSave(
+            ipIdx: ipIdx,
+            username: creation.userName,
+            password: creation.password,
+            fromInet: true,
+          ),
+          onSecondFactorMethods: onSecondFactorMethods,
+        );
+
+        if (kDebugMode) {
+          print('setupAnswerBot: Internet access enabled via web API');
+        }
+
+        // Look up the internal number via TR-064 (needed for config)
+        final voipService = _client!.voip();
+        if (voipService != null) {
+          final numberOfClients = await voipService.getNumberOfClients();
+          for (int i = 0; i < numberOfClients; i++) {
+            try {
+              final client = await voipService.getClient3(i);
+              if (client.clientUsername == creation.userName) {
+                internalNumber = client.internalNumber;
+                if (kDebugMode) {
+                  print('setupAnswerBot: Found SIP device at index $i, internal number: $internalNumber');
+                }
+                break;
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                print('setupAnswerBot: Error checking client $i: $e');
+              }
+            }
+          }
+        }
+      } finally {
+        await webClient.close();
       }
 
       // Step 5: Enable bot and wait for SIP registration
