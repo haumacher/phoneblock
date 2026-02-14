@@ -1,0 +1,47 @@
+name: Build PhoneBlock Mobile
+
+on:
+  push:
+    tags:
+      - 'pb-mobile-*'
+  pull_request:
+    paths:
+      - 'phoneblock_mobile/**'
+      - 'phoneblock_shared/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+
+      - name: Remove auto-translate plugin
+        run: |
+          sed -i '/auto-translate-arb/d' phoneblock_mobile/android/build.gradle
+          sed -i '/auto-translate-arb/d' phoneblock_mobile/android/settings.gradle
+
+      - name: Install dependencies
+        working-directory: phoneblock_mobile
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: phoneblock_mobile
+        run: flutter analyze
+
+      - name: Test
+        working-directory: phoneblock_mobile
+        run: flutter test
+
+      - name: Build APK
+        working-directory: phoneblock_mobile
+        run: flutter build apk
