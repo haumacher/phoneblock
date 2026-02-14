@@ -1,0 +1,4 @@
+* Dark mode support
+* AnswerBot management to control your Fritz!Box spam answering machine from the app
+* Navigation drawer for easier menu access
+* Share phone numbers from other apps to look them up in PhoneBlock
