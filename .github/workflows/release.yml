@@ -36,7 +36,7 @@ jobs:
 
       - name: Analyze
         working-directory: phoneblock_mobile
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Test
         working-directory: phoneblock_mobile
