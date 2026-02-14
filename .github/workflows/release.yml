@@ -38,6 +38,29 @@ jobs:
         working-directory: phoneblock_mobile
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-      - name: Build APK
+      - name: Setup signing
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > phoneblock_mobile/android/keystore.jks
+          cat > phoneblock_mobile/android/key.properties <<EOL
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          storeFile=keystore.jks
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          EOL
+
+      - name: Build release APK
+        if: startsWith(github.ref, 'refs/tags/')
         working-directory: phoneblock_mobile
         run: flutter build apk
+
+      - name: Build debug APK
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        working-directory: phoneblock_mobile
+        run: flutter build apk --debug
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: phoneblock_mobile/build/app/outputs/flutter-apk/app-release.apk
