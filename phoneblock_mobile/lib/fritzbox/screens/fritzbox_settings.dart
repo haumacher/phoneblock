@@ -740,7 +740,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     // Poll with CheckAnswerBot until registered (200) or failed.
     final pd = ProgressDialog(context: context);
-    pd.show(max: _maxRetry, msg: l10n.fritzboxAnswerbotEnabling);
+    pd.show(max: _maxRetry, msg: l10n.fritzboxAnswerbotEnabling, msgMaxLines: 2, msgFontSize: 14);
 
     try {
       for (int n = 0; n < _maxRetry; n++) {
