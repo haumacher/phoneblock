@@ -1031,7 +1031,8 @@ class FritzBoxService {
   // -- Answer Bot Setup Methods --
 
   /// Phone name used for the SIP device on Fritz!Box.
-  static const String _answerbotPhoneName = 'PhoneBlock Answerbot';
+  static final String _answerbotPhoneName =
+      kDebugMode ? 'PhoneBlock Answerbot (Test)' : 'PhoneBlock Answerbot';
 
   /// Sets up the PhoneBlock answer bot on the connected Fritz!Box.
   ///
