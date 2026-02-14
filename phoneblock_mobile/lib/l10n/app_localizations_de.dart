@@ -821,26 +821,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'CardDAV-Blockliste aktiviert';
 
   @override
-  String get fritzboxDisableCardDav => 'CardDAV deaktivieren';
+  String get fritzboxDisableCardDav => 'Blockliste entfernen';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'CardDAV deaktivieren?';
+  String get fritzboxDisableCardDavTitle => 'Blockliste entfernen?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'Die CardDAV-Blockliste wird von der Fritz!Box entfernt.';
+      'Die Blockliste wird von der Fritz!Box entfernt.';
 
   @override
-  String get fritzboxDisable => 'Deaktivieren';
+  String get fritzboxDisable => 'Entfernen';
 
   @override
-  String get fritzboxCardDavDisabled => 'CardDAV-Blockliste deaktiviert';
+  String get fritzboxCardDavDisabled => 'Blockliste entfernt';
 
   @override
   String get fritzboxAnswerbotTitle => 'Anrufbeantworter';
 
   @override
   String get fritzboxAnswerbotActive => 'Anrufbeantworter aktiv';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Anrufbeantworter pausiert';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Anrufbeantworter nicht verbunden';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -854,10 +861,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Anrufbeantworter deaktivieren';
+  String get fritzboxDisableAnswerbot => 'Anrufbeantworter entfernen';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter deaktivieren?';
+  String get fritzboxDisableAnswerbotTitle => 'Anrufbeantworter entfernen?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

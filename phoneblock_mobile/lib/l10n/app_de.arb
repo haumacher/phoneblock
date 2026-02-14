@@ -1229,30 +1229,30 @@
     "description": "CardDAV enabled success message",
     "x-translated": "ecc69a38"
   },
-  "fritzboxDisableCardDav": "CardDAV deaktivieren",
+  "fritzboxDisableCardDav": "Blockliste entfernen",
   "@fritzboxDisableCardDav": {
-    "description": "Disable CardDAV button",
-    "x-translated": "7ce72a3d"
+    "description": "Remove blocklist button",
+    "x-translated": "3729c561"
   },
-  "fritzboxDisableCardDavTitle": "CardDAV deaktivieren?",
+  "fritzboxDisableCardDavTitle": "Blockliste entfernen?",
   "@fritzboxDisableCardDavTitle": {
-    "description": "Disable CardDAV dialog title",
-    "x-translated": "3c70698b"
+    "description": "Remove blocklist dialog title",
+    "x-translated": "5ee6babb"
   },
-  "fritzboxDisableCardDavMessage": "Die CardDAV-Blockliste wird von der Fritz!Box entfernt.",
+  "fritzboxDisableCardDavMessage": "Die Blockliste wird von der Fritz!Box entfernt.",
   "@fritzboxDisableCardDavMessage": {
-    "description": "Disable CardDAV dialog message",
-    "x-translated": "bf007732"
+    "description": "Remove blocklist dialog message",
+    "x-translated": "45cecd5a"
   },
-  "fritzboxDisable": "Deaktivieren",
+  "fritzboxDisable": "Entfernen",
   "@fritzboxDisable": {
-    "description": "Disable button",
-    "x-translated": "1f4005a3"
+    "description": "Remove button",
+    "x-translated": "11ca5dad"
   },
-  "fritzboxCardDavDisabled": "CardDAV-Blockliste deaktiviert",
+  "fritzboxCardDavDisabled": "Blockliste entfernt",
   "@fritzboxCardDavDisabled": {
-    "description": "CardDAV disabled success message",
-    "x-translated": "ed32efd9"
+    "description": "Blocklist removed success message",
+    "x-translated": "9424c151"
   },
   "fritzboxAnswerbotTitle": "Anrufbeantworter",
   "@fritzboxAnswerbotTitle": {
@@ -1263,6 +1263,16 @@
   "@fritzboxAnswerbotActive": {
     "description": "Answer bot active status",
     "x-translated": "73d06ffd"
+  },
+  "fritzboxAnswerbotPaused": "Anrufbeantworter pausiert",
+  "@fritzboxAnswerbotPaused": {
+    "description": "Answer bot paused/disabled on server",
+    "x-translated": "df814e70"
+  },
+  "fritzboxAnswerbotNotRegistered": "Anrufbeantworter nicht verbunden",
+  "@fritzboxAnswerbotNotRegistered": {
+    "description": "Answer bot enabled but SIP registration not successful",
+    "x-translated": "9c95e851"
   },
   "fritzboxAnswerbotDescription": "SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.",
   "@fritzboxAnswerbotDescription": {
@@ -1279,19 +1289,19 @@
     "description": "Enable answer bot description",
     "x-translated": "b508b9a0"
   },
-  "fritzboxDisableAnswerbot": "Anrufbeantworter deaktivieren",
+  "fritzboxDisableAnswerbot": "Anrufbeantworter entfernen",
   "@fritzboxDisableAnswerbot": {
-    "description": "Disable answer bot button",
-    "x-translated": "48e3eae6"
+    "description": "Remove answer bot button",
+    "x-translated": "ac12258d"
   },
-  "fritzboxDisableAnswerbotTitle": "Anrufbeantworter deaktivieren?",
+  "fritzboxDisableAnswerbotTitle": "Anrufbeantworter entfernen?",
   "@fritzboxDisableAnswerbotTitle": {
-    "description": "Disable answer bot confirmation title",
-    "x-translated": "2d456617"
+    "description": "Remove answer bot confirmation title",
+    "x-translated": "f7c12f08"
   },
   "fritzboxDisableAnswerbotMessage": "Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.",
   "@fritzboxDisableAnswerbotMessage": {
-    "description": "Disable answer bot confirmation message",
+    "description": "Remove answer bot confirmation message",
     "x-translated": "2c8e4c4"
   },
   "fritzboxAnswerbotEnabled": "Anrufbeantworter aktiviert",

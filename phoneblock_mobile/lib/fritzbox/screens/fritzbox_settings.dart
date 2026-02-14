@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
@@ -8,6 +11,7 @@ import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_answerbot_setup.dart
 import 'package:phoneblock_mobile/main.dart'
     show newCallIds, getAuthToken, fetchAccountSettings;
 import 'package:phoneblock_mobile/storage.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
 
 /// Settings screen for Fritz!Box integration.
 class FritzBoxSettingsScreen extends StatefulWidget {
@@ -27,6 +31,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
   FritzBoxDeviceInfo? _deviceInfo;
   int _callCount = 0;
   CardDavStatus _cardDavStatus = CardDavStatus.notConfigured;
+  AnswerbotInfo? _answerbotInfo;
+  bool _isTogglingAnswerbot = false;
 
   @override
   void initState() {
@@ -59,6 +65,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         config = await FritzBoxStorage.instance.getConfig();
       }
 
+      final answerbotInfo = await _fetchAnswerbotInfo(config?.answerbotId);
+
       if (mounted) {
         setState(() {
           _config = config;
@@ -66,6 +74,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           _deviceInfo = deviceInfo;
           _callCount = callCount;
           _cardDavStatus = cardDavStatus;
+          _answerbotInfo = answerbotInfo;
           _isLoading = false;
         });
       }
@@ -524,9 +533,9 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           ),
           dense: true,
         ),
-        // Disable option
+        // Remove option
         ListTile(
-          leading: const Icon(Icons.remove_circle_outline, color: Colors.orange),
+          leading: const Icon(Icons.delete_outline, color: Colors.orange),
           title: Text(l10n.fritzboxDisableCardDav),
           onTap: _disableCardDav,
         ),
@@ -583,15 +592,45 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     final isAnswerbotEnabled = _config?.answerbotEnabled ?? false;
 
     if (isAnswerbotEnabled) {
+      final info = _answerbotInfo;
+      final serverEnabled = info?.enabled ?? false;
+      final registered = info?.registered ?? false;
+
+      // Determine display state
+      final String title;
+      final String subtitle;
+      final Color iconColor;
+      if (info == null || _isTogglingAnswerbot) {
+        title = l10n.fritzboxAnswerbotActive;
+        subtitle = l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.grey;
+      } else if (!serverEnabled) {
+        title = l10n.fritzboxAnswerbotPaused;
+        subtitle = l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.grey;
+      } else if (!registered) {
+        title = l10n.fritzboxAnswerbotNotRegistered;
+        subtitle = info.registerMsg ?? l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.orange;
+      } else {
+        title = l10n.fritzboxAnswerbotActive;
+        subtitle = l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.green;
+      }
+
       return Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.smart_toy, color: Colors.green),
-            title: Text(l10n.fritzboxAnswerbotActive),
-            subtitle: Text(l10n.fritzboxAnswerbotDescription),
+          SwitchListTile(
+            secondary: Icon(Icons.smart_toy, color: iconColor),
+            title: Text(title),
+            subtitle: Text(subtitle),
+            value: serverEnabled,
+            onChanged: info != null && !_isTogglingAnswerbot
+                ? _toggleAnswerbot
+                : null,
           ),
           ListTile(
-            leading: const Icon(Icons.remove_circle_outline, color: Colors.orange),
+            leading: const Icon(Icons.delete_outline, color: Colors.orange),
             title: Text(l10n.fritzboxDisableAnswerbot),
             onTap: _disableAnswerbot,
           ),
@@ -617,6 +656,80 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     if (result == true && mounted) {
       await _loadData();
+    }
+  }
+
+  /// Fetches the answerbot info from the server.
+  Future<AnswerbotInfo?> _fetchAnswerbotInfo(int? botId) async {
+    if (botId == null) return null;
+    try {
+      final headers = await apiHeaders();
+      final response = await http.get(
+        Uri.parse('$basePath/ab/list'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        final listResponse = ListAnswerbotResponse.read(
+          JsonReader.fromString(response.body),
+        );
+        return listResponse.bots.where(
+          (b) => b.id == botId,
+        ).firstOrNull;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to fetch answerbot status: $e');
+      }
+    }
+    return null;
+  }
+
+  Future<void> _toggleAnswerbot(bool enabled) async {
+    final botId = _config?.answerbotId;
+    if (botId == null) return;
+
+    setState(() {
+      _isTogglingAnswerbot = true;
+    });
+
+    try {
+      final response = await sendRequest(
+        enabled ? EnableAnswerBot(id: botId) : DisableAnswerBot(id: botId),
+      );
+
+      if (response.statusCode == 200) {
+        // Re-fetch actual state from server instead of assuming success.
+        final info = await _fetchAnswerbotInfo(botId);
+        if (mounted) {
+          setState(() {
+            _answerbotInfo = info ?? _answerbotInfo;
+          });
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.fritzboxSyncError),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.fritzboxSyncError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTogglingAnswerbot = false;
+        });
+      }
     }
   }
 

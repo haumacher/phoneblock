@@ -822,27 +822,33 @@ class AppLocalizationsEl extends AppLocalizations {
       'Ενεργοποιημένη λίστα αποκλεισμού CardDAV';
 
   @override
-  String get fritzboxDisableCardDav => 'Απενεργοποίηση CardDAV';
+  String get fritzboxDisableCardDav => 'Κατάργηση λίστας μπλοκ';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Απενεργοποίηση του CardDAV;';
+  String get fritzboxDisableCardDavTitle => 'Κατάργηση λίστας αποκλεισμού;';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'Η λίστα αποκλεισμού CardDAV αφαιρείται από το Fritz!';
+      'Η λίστα μπλοκαρίσματος αφαιρείται από το Fritz!';
 
   @override
-  String get fritzboxDisable => 'Απενεργοποίηση';
+  String get fritzboxDisable => 'Αφαιρέστε το';
 
   @override
-  String get fritzboxCardDavDisabled =>
-      'Απενεργοποιημένη λίστα αποκλεισμού CardDAV';
+  String get fritzboxCardDavDisabled => 'Η λίστα αποκλεισμού αφαιρέθηκε';
 
   @override
   String get fritzboxAnswerbotTitle => 'Τηλεφωνητής';
 
   @override
   String get fritzboxAnswerbotActive => 'Ενεργός τηλεφωνητής';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Ο αυτόματος τηλεφωνητής διακόπηκε';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Ο αυτόματος τηλεφωνητής δεν είναι συνδεδεμένος';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -856,10 +862,10 @@ class AppLocalizationsEl extends AppLocalizations {
       'Να απαντούν αυτόματα οι κλήσεις SPAM από τον τηλεφωνητή του PhoneBlock';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Απενεργοποίηση τηλεφωνητή';
+  String get fritzboxDisableAnswerbot => 'Αφαιρέστε τον τηλεφωνητή';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Απενεργοποίηση τηλεφωνητή;';
+  String get fritzboxDisableAnswerbotTitle => 'Να αφαιρέσετε τον τηλεφωνητή;';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

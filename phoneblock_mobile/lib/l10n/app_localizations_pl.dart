@@ -823,26 +823,33 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'Aktywowano listę bloków CardDAV';
 
   @override
-  String get fritzboxDisableCardDav => 'Dezaktywacja CardDAV';
+  String get fritzboxDisableCardDav => 'Usuń listę bloków';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Dezaktywować CardDAV?';
+  String get fritzboxDisableCardDavTitle => 'Usunąć listę blokad?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'Lista bloków CardDAV została usunięta z Fritz!';
+      'Lista bloków została usunięta z Fritz!';
 
   @override
-  String get fritzboxDisable => 'Dezaktywuj';
+  String get fritzboxDisable => 'Usunąć';
 
   @override
-  String get fritzboxCardDavDisabled => 'Lista bloków CardDAV wyłączona';
+  String get fritzboxCardDavDisabled => 'Lista zablokowanych usunięta';
 
   @override
   String get fritzboxAnswerbotTitle => 'Automatyczna sekretarka';
 
   @override
   String get fritzboxAnswerbotActive => 'Aktywna automatyczna sekretarka';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Automatyczna sekretarka wstrzymana';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Automatyczna sekretarka nie jest podłączona';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -856,11 +863,10 @@ class AppLocalizationsPl extends AppLocalizations {
       'Automatyczne odbieranie połączeń SPAM przez automatyczną sekretarkę PhoneBlock';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Wyłącz automatyczną sekretarkę';
+  String get fritzboxDisableAnswerbot => 'Usunięcie automatycznej sekretarki';
 
   @override
-  String get fritzboxDisableAnswerbotTitle =>
-      'Dezaktywować automatyczną sekretarkę?';
+  String get fritzboxDisableAnswerbotTitle => 'Usunąć automatyczną sekretarkę?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

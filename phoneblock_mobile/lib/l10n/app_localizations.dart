@@ -1472,34 +1472,34 @@ abstract class AppLocalizations {
   /// **'CardDAV-Blockliste aktiviert'**
   String get fritzboxCardDavEnabled;
 
-  /// Disable CardDAV button
+  /// Remove blocklist button
   ///
   /// In de, this message translates to:
-  /// **'CardDAV deaktivieren'**
+  /// **'Blockliste entfernen'**
   String get fritzboxDisableCardDav;
 
-  /// Disable CardDAV dialog title
+  /// Remove blocklist dialog title
   ///
   /// In de, this message translates to:
-  /// **'CardDAV deaktivieren?'**
+  /// **'Blockliste entfernen?'**
   String get fritzboxDisableCardDavTitle;
 
-  /// Disable CardDAV dialog message
+  /// Remove blocklist dialog message
   ///
   /// In de, this message translates to:
-  /// **'Die CardDAV-Blockliste wird von der Fritz!Box entfernt.'**
+  /// **'Die Blockliste wird von der Fritz!Box entfernt.'**
   String get fritzboxDisableCardDavMessage;
 
-  /// Disable button
+  /// Remove button
   ///
   /// In de, this message translates to:
-  /// **'Deaktivieren'**
+  /// **'Entfernen'**
   String get fritzboxDisable;
 
-  /// CardDAV disabled success message
+  /// Blocklist removed success message
   ///
   /// In de, this message translates to:
-  /// **'CardDAV-Blockliste deaktiviert'**
+  /// **'Blockliste entfernt'**
   String get fritzboxCardDavDisabled;
 
   /// Answer bot section title in Fritz!Box settings
@@ -1513,6 +1513,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Anrufbeantworter aktiv'**
   String get fritzboxAnswerbotActive;
+
+  /// Answer bot paused/disabled on server
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter pausiert'**
+  String get fritzboxAnswerbotPaused;
+
+  /// Answer bot enabled but SIP registration not successful
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter nicht verbunden'**
+  String get fritzboxAnswerbotNotRegistered;
 
   /// Answer bot active description
   ///
@@ -1532,19 +1544,19 @@ abstract class AppLocalizations {
   /// **'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen'**
   String get fritzboxEnableAnswerbotDescription;
 
-  /// Disable answer bot button
+  /// Remove answer bot button
   ///
   /// In de, this message translates to:
-  /// **'Anrufbeantworter deaktivieren'**
+  /// **'Anrufbeantworter entfernen'**
   String get fritzboxDisableAnswerbot;
 
-  /// Disable answer bot confirmation title
+  /// Remove answer bot confirmation title
   ///
   /// In de, this message translates to:
-  /// **'Anrufbeantworter deaktivieren?'**
+  /// **'Anrufbeantworter entfernen?'**
   String get fritzboxDisableAnswerbotTitle;
 
-  /// Disable answer bot confirmation message
+  /// Remove answer bot confirmation message
   ///
   /// In de, this message translates to:
   /// **'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.'**

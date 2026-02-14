@@ -821,26 +821,33 @@ class AppLocalizationsNl extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'CardDAV-blokkeringslijst geactiveerd';
 
   @override
-  String get fritzboxDisableCardDav => 'CardDAV deactiveren';
+  String get fritzboxDisableCardDav => 'Blokkadelijst verwijderen';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'CardDAV uitschakelen?';
+  String get fritzboxDisableCardDavTitle => 'Blokkadelijst verwijderen?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'De CardDAV-blokkeringslijst is verwijderd uit de Fritz!';
+      'De blokkadelijst is verwijderd uit de Fritz!';
 
   @override
-  String get fritzboxDisable => 'Deactiveer';
+  String get fritzboxDisable => 'Verwijder';
 
   @override
-  String get fritzboxCardDavDisabled => 'CardDAV blokkadelijst gedeactiveerd';
+  String get fritzboxCardDavDisabled => 'Bloklijst verwijderd';
 
   @override
   String get fritzboxAnswerbotTitle => 'Antwoordapparaat';
 
   @override
   String get fritzboxAnswerbotActive => 'Antwoordapparaat actief';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Antwoordapparaat gepauzeerd';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Antwoordapparaat niet aangesloten';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -854,10 +861,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'SPAM-oproepen automatisch laten beantwoorden door het PhoneBlock antwoordapparaat';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Antwoordapparaat uitschakelen';
+  String get fritzboxDisableAnswerbot => 'Antwoordapparaat verwijderen';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Antwoordapparaat uitschakelen?';
+  String get fritzboxDisableAnswerbotTitle => 'Antwoordapparaat verwijderen?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

@@ -828,26 +828,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'Liste de blocage CardDAV activée';
 
   @override
-  String get fritzboxDisableCardDav => 'Désactiver CardDAV';
+  String get fritzboxDisableCardDav => 'Supprimer la liste de blocage';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Désactiver CardDAV ?';
+  String get fritzboxDisableCardDavTitle => 'Supprimer la liste de blocage ?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'La liste de blocage CardDAV est supprimée de la Fritz!Box.';
+      'La liste de blocage est supprimée de la Fritz!Box.';
 
   @override
-  String get fritzboxDisable => 'Désactiver';
+  String get fritzboxDisable => 'Supprimer';
 
   @override
-  String get fritzboxCardDavDisabled => 'Liste de blocage CardDAV désactivée';
+  String get fritzboxCardDavDisabled => 'Liste des blocs supprimée';
 
   @override
   String get fritzboxAnswerbotTitle => 'Répondeur téléphonique';
 
   @override
   String get fritzboxAnswerbotActive => 'Répondeur actif';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Répondeur en pause';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered => 'Répondeur non connecté';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -861,10 +867,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Répondre automatiquement aux appels SPAM par la messagerie PhoneBlock';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Désactiver le répondeur';
+  String get fritzboxDisableAnswerbot => 'Supprimer le répondeur';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Désactiver le répondeur ?';
+  String get fritzboxDisableAnswerbotTitle => 'Supprimer le répondeur ?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

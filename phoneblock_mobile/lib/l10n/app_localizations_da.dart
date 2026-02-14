@@ -816,26 +816,33 @@ class AppLocalizationsDa extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'CardDAV-blokeringsliste aktiveret';
 
   @override
-  String get fritzboxDisableCardDav => 'Deaktiver CardDAV';
+  String get fritzboxDisableCardDav => 'Fjern blokeringsliste';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Deaktivere CardDAV?';
+  String get fritzboxDisableCardDavTitle => 'Fjerne blokeringsliste?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'CardDAV-blokeringslisten er fjernet fra Fritz!';
+      'Blokeringslisten er fjernet fra Fritz!';
 
   @override
-  String get fritzboxDisable => 'Deaktiver';
+  String get fritzboxDisable => 'Fjerne';
 
   @override
-  String get fritzboxCardDavDisabled => 'CardDAV-blokeringsliste deaktiveret';
+  String get fritzboxCardDavDisabled => 'Blokeringsliste fjernet';
 
   @override
   String get fritzboxAnswerbotTitle => 'Telefonsvarer';
 
   @override
   String get fritzboxAnswerbotActive => 'Telefonsvarer aktiv';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Telefonsvareren er sat på pause';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Telefonsvareren er ikke tilsluttet';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -849,10 +856,10 @@ class AppLocalizationsDa extends AppLocalizations {
       'Få SPAM-opkald automatisk besvaret af PhoneBlock-svareren';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Deaktiver telefonsvareren';
+  String get fritzboxDisableAnswerbot => 'Fjern telefonsvareren';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Deaktivere telefonsvareren?';
+  String get fritzboxDisableAnswerbotTitle => 'Fjerne telefonsvareren?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

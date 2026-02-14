@@ -819,26 +819,32 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'Блокування CardDAV активовано';
 
   @override
-  String get fritzboxDisableCardDav => 'Деактивувати CardDAV';
+  String get fritzboxDisableCardDav => 'Видалити список блокування';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Деактивувати CardDAV?';
+  String get fritzboxDisableCardDavTitle => 'Видалити список блокування?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'Блок-лист CardDAV видалено з Fritz!';
+      'Список блокування видалено з Fritz!';
 
   @override
-  String get fritzboxDisable => 'Деактивувати';
+  String get fritzboxDisable => 'Видалити';
 
   @override
-  String get fritzboxCardDavDisabled => 'Блокування CardDAV деактивовано';
+  String get fritzboxCardDavDisabled => 'Блокування видалено';
 
   @override
   String get fritzboxAnswerbotTitle => 'Автовідповідач';
 
   @override
   String get fritzboxAnswerbotActive => 'Автовідповідач активний';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Автовідповідач поставив на паузу';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered => 'Автовідповідач не підключено';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -855,7 +861,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxDisableAnswerbot => 'Вимкнути автовідповідач';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Вимкнути автовідповідач?';
+  String get fritzboxDisableAnswerbotTitle => 'Видалити автовідповідач?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

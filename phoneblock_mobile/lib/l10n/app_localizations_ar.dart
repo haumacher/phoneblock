@@ -815,26 +815,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'تم تنشيط قائمة حظر CardDAV';
 
   @override
-  String get fritzboxDisableCardDav => 'إلغاء تنشيط CardDAV';
+  String get fritzboxDisableCardDav => 'إزالة قائمة الحظر';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'إلغاء تنشيط CardDAV؟';
+  String get fritzboxDisableCardDavTitle => 'إزالة قائمة الحظر؟';
 
   @override
-  String get fritzboxDisableCardDavMessage =>
-      'تمت إزالة قائمة حظر CardDAV من Fritz!';
+  String get fritzboxDisableCardDavMessage => 'تمت إزالة قائمة الحظر من فريتز!';
 
   @override
-  String get fritzboxDisable => 'إلغاء التنشيط';
+  String get fritzboxDisable => 'إزالة';
 
   @override
-  String get fritzboxCardDavDisabled => 'تم إلغاء تنشيط قائمة حظر CardDAV';
+  String get fritzboxCardDavDisabled => 'تمت إزالة قائمة الحظر';
 
   @override
   String get fritzboxAnswerbotTitle => 'جهاز الرد الآلي';
 
   @override
   String get fritzboxAnswerbotActive => 'جهاز الرد الآلي نشط';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'تم إيقاف الرد الآلي مؤقتاً';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered => 'جهاز الرد الآلي غير متصل';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -848,10 +853,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'قم بالرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف';
 
   @override
-  String get fritzboxDisableAnswerbot => 'إلغاء تنشيط جهاز الرد الآلي';
+  String get fritzboxDisableAnswerbot => 'إزالة جهاز الرد على المكالمات';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'إلغاء تنشيط جهاز الرد الآلي؟';
+  String get fritzboxDisableAnswerbotTitle => 'إزالة جهاز الرد الآلي؟';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

@@ -738,25 +738,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxCardDavEnabled => '已激活 CardDAV 封锁列表';
 
   @override
-  String get fritzboxDisableCardDav => '停用 CardDAV';
+  String get fritzboxDisableCardDav => '删除区块列表';
 
   @override
-  String get fritzboxDisableCardDavTitle => '停用 CardDAV？';
+  String get fritzboxDisableCardDavTitle => '删除拦截列表？';
 
   @override
-  String get fritzboxDisableCardDavMessage => '从 Fritz 中移除 CardDAV blocklist！';
+  String get fritzboxDisableCardDavMessage => '从 Fritz 中删除拦截列表！';
 
   @override
-  String get fritzboxDisable => '停用';
+  String get fritzboxDisable => '移除';
 
   @override
-  String get fritzboxCardDavDisabled => '已停用 CardDAV 封锁列表';
+  String get fritzboxCardDavDisabled => '移除拦截名单';
 
   @override
   String get fritzboxAnswerbotTitle => '答录机';
 
   @override
   String get fritzboxAnswerbotActive => '应答机已激活';
+
+  @override
+  String get fritzboxAnswerbotPaused => '答录机暂停';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered => '答录机未连接';
 
   @override
   String get fritzboxAnswerbotDescription => '垃圾电话由 PhoneBlock 应答机自动接听。';
@@ -768,10 +774,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxEnableAnswerbotDescription => '由 PhoneBlock 应答机自动应答垃圾电话';
 
   @override
-  String get fritzboxDisableAnswerbot => '停用答录机';
+  String get fritzboxDisableAnswerbot => '移除答录机';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => '停用答录机？';
+  String get fritzboxDisableAnswerbotTitle => '移除答录机？';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

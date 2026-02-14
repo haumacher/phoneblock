@@ -820,26 +820,33 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'Lista de bloqueo CardDAV activada';
 
   @override
-  String get fritzboxDisableCardDav => 'Desactivar CardDAV';
+  String get fritzboxDisableCardDav => 'Eliminar lista de bloqueos';
 
   @override
-  String get fritzboxDisableCardDavTitle => '¿Desactivar CardDAV?';
+  String get fritzboxDisableCardDavTitle => '¿Quitar la lista de bloqueo?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      '¡La lista de bloqueo CardDAV se elimina de la base de datos de Fritz!';
+      '¡Se elimina la lista de bloqueos de Fritz!';
 
   @override
-  String get fritzboxDisable => 'Desactivar';
+  String get fritzboxDisable => 'Eliminar';
 
   @override
-  String get fritzboxCardDavDisabled => 'Lista de bloqueo CardDAV desactivada';
+  String get fritzboxCardDavDisabled => 'Lista de bloqueo eliminada';
 
   @override
   String get fritzboxAnswerbotTitle => 'Contestador automático';
 
   @override
   String get fritzboxAnswerbotActive => 'Contestador automático activo';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Contestador automático en pausa';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Contestador automático no conectado';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -853,11 +860,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Que las llamadas SPAM sean contestadas automáticamente por el contestador automático PhoneBlock';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Desactivar el contestador automático';
+  String get fritzboxDisableAnswerbot => 'Quitar el contestador automático';
 
   @override
   String get fritzboxDisableAnswerbotTitle =>
-      '¿Desactivar el contestador automático?';
+      '¿Quitar el contestador automático?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

@@ -817,26 +817,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'CardDAV blocklist activated';
 
   @override
-  String get fritzboxDisableCardDav => 'Deactivate CardDAV';
+  String get fritzboxDisableCardDav => 'Remove block list';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Deactivate CardDAV?';
+  String get fritzboxDisableCardDavTitle => 'Remove blocklist?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'The CardDAV blocklist is removed from the Fritz!';
+      'The block list is removed from the Fritz!';
 
   @override
-  String get fritzboxDisable => 'Deactivate';
+  String get fritzboxDisable => 'Remove';
 
   @override
-  String get fritzboxCardDavDisabled => 'CardDAV blocklist deactivated';
+  String get fritzboxCardDavDisabled => 'Blocklist removed';
 
   @override
   String get fritzboxAnswerbotTitle => 'Answering machine';
 
   @override
   String get fritzboxAnswerbotActive => 'Answering machine active';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Answering machine paused';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Answering machine not connected';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -850,10 +857,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Have SPAM calls automatically answered by the PhoneBlock answering machine';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Deactivate answering machine';
+  String get fritzboxDisableAnswerbot => 'Remove answering machine';
 
   @override
-  String get fritzboxDisableAnswerbotTitle => 'Deactivate answering machine?';
+  String get fritzboxDisableAnswerbotTitle => 'Remove answering machine?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>

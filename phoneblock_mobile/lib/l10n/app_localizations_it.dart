@@ -828,26 +828,33 @@ class AppLocalizationsIt extends AppLocalizations {
   String get fritzboxCardDavEnabled => 'Elenco di blocco CardDAV attivato';
 
   @override
-  String get fritzboxDisableCardDav => 'Disattivare CardDAV';
+  String get fritzboxDisableCardDav => 'Rimuovere l\'elenco dei blocchi';
 
   @override
-  String get fritzboxDisableCardDavTitle => 'Disattivare CardDAV?';
+  String get fritzboxDisableCardDavTitle => 'Rimuovere la lista di blocco?';
 
   @override
   String get fritzboxDisableCardDavMessage =>
-      'La lista di blocco CardDAV è stata rimossa dal Fritz!';
+      'L\'elenco dei blocchi viene rimosso dal Fritz!';
 
   @override
-  String get fritzboxDisable => 'Disattivare';
+  String get fritzboxDisable => 'Rimuovere';
 
   @override
-  String get fritzboxCardDavDisabled => 'Elenco di blocco CardDAV disattivato';
+  String get fritzboxCardDavDisabled => 'Lista di blocco rimossa';
 
   @override
   String get fritzboxAnswerbotTitle => 'Segreteria telefonica';
 
   @override
   String get fritzboxAnswerbotActive => 'Segreteria telefonica attiva';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Segreteria telefonica in pausa';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Segreteria telefonica non collegata';
 
   @override
   String get fritzboxAnswerbotDescription =>
@@ -861,11 +868,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Le chiamate SPAM ricevono automaticamente la risposta dalla segreteria telefonica di PhoneBlock.';
 
   @override
-  String get fritzboxDisableAnswerbot => 'Disattivare la segreteria telefonica';
+  String get fritzboxDisableAnswerbot => 'Rimuovere la segreteria telefonica';
 
   @override
   String get fritzboxDisableAnswerbotTitle =>
-      'Disattivare la segreteria telefonica?';
+      'Rimuovere la segreteria telefonica?';
 
   @override
   String get fritzboxDisableAnswerbotMessage =>
