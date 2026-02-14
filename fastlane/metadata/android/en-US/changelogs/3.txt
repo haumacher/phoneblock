@@ -1,1 +1,2 @@
+Version 1.0.3:
 * Black/white list synchronization with server
