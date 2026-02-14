@@ -603,29 +603,30 @@ class FritzBoxService {
   }
 
   /// Checks if currently on the home network (can reach Fritz!Box).
+  ///
+  /// If the existing connection is stale (e.g. HTTP 503), attempts to
+  /// re-establish it before returning false.
   Future<bool> checkConnection() async {
-    if (_client == null) {
-      final credentials = await FritzBoxStorage.instance.getCredentials();
-      if (credentials == null) {
-        _connectionState = FritzBoxConnectionState.notConfigured;
-        return false;
-      }
-
-      return await _connect(credentials);
-    }
-
-    try {
-      final deviceInfo = await getDeviceInfo();
-      if (deviceInfo != null) {
-        _connectionState = FritzBoxConnectionState.connected;
-        return true;
-      }
-      _connectionState = FritzBoxConnectionState.offline;
-      return false;
-    } catch (e) {
-      _connectionState = FritzBoxConnectionState.offline;
+    final credentials = await FritzBoxStorage.instance.getCredentials();
+    if (credentials == null) {
+      _connectionState = FritzBoxConnectionState.notConfigured;
       return false;
     }
+
+    if (_client != null) {
+      try {
+        final deviceInfo = await getDeviceInfo();
+        if (deviceInfo != null) {
+          _connectionState = FritzBoxConnectionState.connected;
+          return true;
+        }
+      } catch (_) {
+        // Connection stale, fall through to reconnect
+      }
+    }
+
+    // No client yet, or existing connection is stale — (re)connect
+    return await _connect(credentials);
   }
 
   // -- CardDAV Configuration Methods --
