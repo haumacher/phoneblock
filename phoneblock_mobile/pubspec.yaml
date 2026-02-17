@@ -55,8 +55,7 @@ dependencies:
   flutter_secure_storage: ^9.0.0
 
   # Fritz!Box TR-064 communication
-  fritz_tr064:
-    path: ../../fritz_tr64
+  fritz_tr064: ^0.3.0
 
   # Shared PhoneBlock components
   phoneblock_shared:
