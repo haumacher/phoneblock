@@ -487,7 +487,7 @@ Future<bool> _updatePersonalizedComment(PersonalizedListType listType, String ph
     final headers = <String, String>{
       "User-Agent": "PhoneBlockMobile/$appVersion",
       "Authorization": "Bearer $authToken",
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=UTF-8",
     };
 
     final body = json.encode({
@@ -1875,7 +1875,7 @@ class _MainScreenState extends State<MainScreen> {
         Uri.parse('$pbBaseUrl/api/rate'),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonBody,
       );
@@ -1977,7 +1977,7 @@ class _MainScreenState extends State<MainScreen> {
         Uri.parse('$pbBaseUrl/api/rate'),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonBody,
       );
