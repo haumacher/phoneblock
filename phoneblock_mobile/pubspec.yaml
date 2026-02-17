@@ -60,6 +60,7 @@ dependencies:
   # Shared PhoneBlock components
   phoneblock_shared:
     path: ../phoneblock_shared
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:

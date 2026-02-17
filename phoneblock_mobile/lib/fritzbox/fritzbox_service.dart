@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:http/http.dart' as http;
@@ -534,7 +535,8 @@ class FritzBoxService {
     if (authToken == null) return call;
 
     try {
-      final url = '$pbBaseUrl/api/num/${call.phoneNumber}?format=json';
+      final sha1Hash = sha1.convert(utf8.encode(call.phoneNumber)).toString().toUpperCase();
+      final url = '$pbBaseUrl/api/check?sha1=$sha1Hash&format=json';
       final response = await http.get(
         Uri.parse(url),
         headers: {
