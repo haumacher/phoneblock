@@ -39,7 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted) {
+  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds) {
     return '$newCalls new calls, $callsAccepted calls, $talkTimeSeconds s total talk time';
   }
 

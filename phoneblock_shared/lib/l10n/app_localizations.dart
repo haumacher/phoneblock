@@ -180,7 +180,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{newCalls} neue Anrufe, {callsAccepted} Anrufe, {talkTimeSeconds} s Gesprächszeit gesamt'**
-  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted);
+  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds);
 
   /// Status: active
   ///

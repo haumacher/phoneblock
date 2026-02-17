@@ -57,10 +57,10 @@
       "newCalls": {
         "type": "int"
       },
-      "talkTimeSeconds": {
+      "callsAccepted": {
         "type": "int"
       },
-      "callsAccepted": {
+      "talkTimeSeconds": {
         "type": "int"
       }
     },

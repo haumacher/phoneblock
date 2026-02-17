@@ -38,7 +38,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted) {
+  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds) {
     return '$newCalls新通话，$callsAccepted通话，$talkTimeSeconds总通话时间';
   }
 
