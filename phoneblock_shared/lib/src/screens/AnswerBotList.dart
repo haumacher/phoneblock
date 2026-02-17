@@ -232,7 +232,7 @@ class AnswerBotListState extends State<AnswerBotList> {
 
   bool setupComplete(AnswerbotInfo bot) => isSet(bot.host) || isSet(bot.ip4) || isSet(bot.ip6);
 
-  showAnswerBot(BuildContext context, AnswerbotInfo bot) {
+  void showAnswerBot(BuildContext context, AnswerbotInfo bot) {
     var result = Navigator.push(context, MaterialPageRoute(builder: (context) =>
         setupComplete(bot) ?
           CallListView(bot) :
@@ -246,7 +246,7 @@ class AnswerBotListState extends State<AnswerBotList> {
     });
   }
 
-  refreshBotList() {
+  void refreshBotList() {
     msg = '';
     requestBotList();
   }

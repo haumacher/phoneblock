@@ -8,7 +8,6 @@ import '../api/sendRequest.dart';
 import '../widgets/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../l10n_extensions.dart';
 
 class AnswerBotView extends StatefulWidget {
@@ -127,7 +126,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     labelText: context.answerbotL10n.minConfidence,
                     helperText: context.answerbotL10n.minConfidenceHelp
                 ),
-                value: bot.minVotes,
+                initialValue: bot.minVotes,
                 disabledHint: Text(context.answerbotL10n.cannotChangeWhileEnabled),
                 onChanged: (value) {
                   setState(() {
@@ -179,7 +178,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     labelText: context.answerbotL10n.automaticDeletion,
                     helperText: context.answerbotL10n.automaticDeletionHelp
                 ),
-                value: bot.retentionPeriod,
+                initialValue: bot.retentionPeriod,
                 onChanged: (value) {
                   setState(() {
                     bot.retentionPeriod = value ?? RetentionPeriod.never;
@@ -361,7 +360,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
       showErrorDialog(context, response, context.answerbotL10n.errorSavingRetentionSettings,
         context.answerbotL10n.savingFailed(response.body));
     } else {
-      String message = bot.retentionPeriod == "NEVER"
+      String message = bot.retentionPeriod == RetentionPeriod.never
         ? context.answerbotL10n.automaticDeletionDisabled
         : context.answerbotL10n.retentionSettingsSaved(_getRetentionDisplayName(bot.retentionPeriod));
 
@@ -378,7 +377,6 @@ class AnswerBotViewState extends State<AnswerBotView> {
       case RetentionPeriod.quarter: return context.answerbotL10n.threeMonths;
       case RetentionPeriod.year: return context.answerbotL10n.oneYear;
       case RetentionPeriod.never: return context.answerbotL10n.never;
-      default: return period.name;
     }
   }
 

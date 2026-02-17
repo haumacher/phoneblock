@@ -1,8 +1,7 @@
-/// PhoneBlock shared components library
-///
-/// This library contains shared code for PhoneBlock applications,
-/// including answerbot screens, API clients, and data models.
-library phoneblock_shared;
+// PhoneBlock shared components library
+//
+// This library contains shared code for PhoneBlock applications,
+// including answerbot screens, API clients, and data models.
 
 // Localization
 // Note: AppLocalizations is not exported to avoid name conflicts with consuming apps.
