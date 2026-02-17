@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Aktywna automatyczna sekretarka",
   "fritzboxAnswerbotPaused": "Automatyczna sekretarka wstrzymana",
   "fritzboxAnswerbotNotRegistered": "Automatyczna sekretarka nie jest podłączona",
+  "fritzboxAnswerbotEnabling": "Aktywuj automatyczną sekretarkę...",
   "fritzboxAnswerbotDescription": "Połączenia SPAM są automatycznie odbierane przez automatyczną sekretarkę PhoneBlock.",
   "fritzboxEnableAnswerbot": "Aktywacja automatycznej sekretarki",
   "fritzboxEnableAnswerbotDescription": "Automatyczne odbieranie połączeń SPAM przez automatyczną sekretarkę PhoneBlock",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Potwierdź dostęp do Fritz!Box...",
   "fritzboxSecondFactorButton": "Naciśnij dowolny przycisk na urządzeniu Fritz!Box",
   "fritzboxSecondFactorDtmf": "Lub wybierz {code} na podłączonym telefonie",
-  "fritzboxAnswerbotEnabling": "Aktywuj automatyczną sekretarkę..."
+  "reportProblem": "Zgłoś problem",
+  "reportProblemSubtitle": "Problemy GitHub"
 }

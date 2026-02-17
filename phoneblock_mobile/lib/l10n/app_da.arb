@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Telefonsvarer aktiv",
   "fritzboxAnswerbotPaused": "Telefonsvareren er sat på pause",
   "fritzboxAnswerbotNotRegistered": "Telefonsvareren er ikke tilsluttet",
+  "fritzboxAnswerbotEnabling": "Aktivér telefonsvareren...",
   "fritzboxAnswerbotDescription": "SPAM-opkald besvares automatisk af PhoneBlocks telefonsvarer.",
   "fritzboxEnableAnswerbot": "Aktivér telefonsvareren",
   "fritzboxEnableAnswerbotDescription": "Få SPAM-opkald automatisk besvaret af PhoneBlock-svareren",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Bekræft venligst adgang på din Fritz!Box...",
   "fritzboxSecondFactorButton": "Tryk på en vilkårlig knap på Fritz!Box",
   "fritzboxSecondFactorDtmf": "Eller ring {code} på en tilsluttet telefon",
-  "fritzboxAnswerbotEnabling": "Aktivér telefonsvareren..."
+  "reportProblem": "Rapporter et problem",
+  "reportProblemSubtitle": "GitHub-problemer"
 }

@@ -165,6 +165,16 @@
     "description": "Source code license",
     "x-translated": "f4f67bf4"
   },
+  "reportProblem": "Problem melden",
+  "@reportProblem": {
+    "description": "Report problem link label",
+    "x-translated": "4e0c17b5"
+  },
+  "reportProblemSubtitle": "GitHub Issues",
+  "@reportProblemSubtitle": {
+    "description": "Report problem link subtitle",
+    "x-translated": "32b3221b"
+  },
   "aboutDescription": "PhoneBlock ist ein Open-Source Projekt ohne Tracking und ohne Werbung. Der Dienst wird durch Spenden finanziert.",
   "@aboutDescription": {
     "description": "About description text",

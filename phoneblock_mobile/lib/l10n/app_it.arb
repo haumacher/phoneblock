@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Segreteria telefonica attiva",
   "fritzboxAnswerbotPaused": "Segreteria telefonica in pausa",
   "fritzboxAnswerbotNotRegistered": "Segreteria telefonica non collegata",
+  "fritzboxAnswerbotEnabling": "Attivare la segreteria telefonica...",
   "fritzboxAnswerbotDescription": "Alle chiamate SPAM risponde automaticamente la segreteria telefonica di PhoneBlock.",
   "fritzboxEnableAnswerbot": "Attivare la segreteria telefonica",
   "fritzboxEnableAnswerbotDescription": "Le chiamate SPAM ricevono automaticamente la risposta dalla segreteria telefonica di PhoneBlock.",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Confermare l'accesso al Fritz!Box...",
   "fritzboxSecondFactorButton": "Premete un tasto qualsiasi del Fritz!Box",
   "fritzboxSecondFactorDtmf": "Oppure comporre {code} su un telefono connesso",
-  "fritzboxAnswerbotEnabling": "Attivare la segreteria telefonica..."
+  "reportProblem": "Segnala un problema",
+  "reportProblemSubtitle": "Problemi di GitHub"
 }

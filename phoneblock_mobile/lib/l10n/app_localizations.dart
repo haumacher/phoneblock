@@ -302,6 +302,18 @@ abstract class AppLocalizations {
   /// **'Open Source (GPL-3.0)'**
   String get sourceCodeLicense;
 
+  /// Report problem link label
+  ///
+  /// In de, this message translates to:
+  /// **'Problem melden'**
+  String get reportProblem;
+
+  /// Report problem link subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'GitHub Issues'**
+  String get reportProblemSubtitle;
+
   /// About description text
   ///
   /// In de, this message translates to:

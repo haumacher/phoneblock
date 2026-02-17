@@ -105,6 +105,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceCodeLicense => '开放源代码（GPL-3.0）';
 
   @override
+  String get reportProblem => '报告问题';
+
+  @override
+  String get reportProblemSubtitle => 'GitHub 问题';
+
+  @override
   String get aboutDescription => 'PhoneBlock 是一个开放源代码项目，没有跟踪和广告。该服务由捐款资助。';
 
   @override

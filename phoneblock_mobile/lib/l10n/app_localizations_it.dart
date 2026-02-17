@@ -108,6 +108,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get sourceCodeLicense => 'Open Source (GPL-3.0)';
 
   @override
+  String get reportProblem => 'Segnala un problema';
+
+  @override
+  String get reportProblemSubtitle => 'Problemi di GitHub';
+
+  @override
   String get aboutDescription =>
       'PhoneBlock è un progetto open source senza tracciamento e senza pubblicità. Il servizio è finanziato dalle donazioni.';
 

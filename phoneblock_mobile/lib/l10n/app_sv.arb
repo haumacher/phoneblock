@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Telefonsvarare aktiv",
   "fritzboxAnswerbotPaused": "Telefonsvararen pausad",
   "fritzboxAnswerbotNotRegistered": "Telefonsvararen är inte ansluten",
+  "fritzboxAnswerbotEnabling": "Aktivera telefonsvararen...",
   "fritzboxAnswerbotDescription": "SPAM-samtal besvaras automatiskt av PhoneBlocks telefonsvarare.",
   "fritzboxEnableAnswerbot": "Aktivera telefonsvarare",
   "fritzboxEnableAnswerbotDescription": "Få SPAM-samtal automatiskt besvarade av PhoneBlocks telefonsvarare",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Vänligen bekräfta åtkomst på din Fritz!Box...",
   "fritzboxSecondFactorButton": "Tryck på valfri knapp på Fritz!Box",
   "fritzboxSecondFactorDtmf": "Eller slå {code} på en ansluten telefon",
-  "fritzboxAnswerbotEnabling": "Aktivera telefonsvararen..."
+  "reportProblem": "Rapportera ett problem",
+  "reportProblemSubtitle": "GitHub-problem"
 }

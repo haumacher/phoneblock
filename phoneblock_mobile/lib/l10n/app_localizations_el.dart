@@ -108,6 +108,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get sourceCodeLicense => 'Ανοιχτός κώδικας (GPL-3.0)';
 
   @override
+  String get reportProblem => 'Αναφέρετε ένα πρόβλημα';
+
+  @override
+  String get reportProblemSubtitle => 'Θέματα GitHub';
+
+  @override
   String get aboutDescription =>
       'Το PhoneBlock είναι ένα έργο ανοιχτού κώδικα χωρίς παρακολούθηση και χωρίς διαφήμιση. Η υπηρεσία χρηματοδοτείται από δωρεές.';
 

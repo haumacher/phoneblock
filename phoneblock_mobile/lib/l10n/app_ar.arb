@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "جهاز الرد الآلي نشط",
   "fritzboxAnswerbotPaused": "تم إيقاف الرد الآلي مؤقتاً",
   "fritzboxAnswerbotNotRegistered": "جهاز الرد الآلي غير متصل",
+  "fritzboxAnswerbotEnabling": "تفعيل جهاز الرد الآلي...",
   "fritzboxAnswerbotDescription": "يتم الرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف.",
   "fritzboxEnableAnswerbot": "تنشيط جهاز الرد على المكالمات",
   "fritzboxEnableAnswerbotDescription": "قم بالرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس...",
   "fritzboxSecondFactorButton": "اضغط على أي زر في صندوق فريتز!",
   "fritzboxSecondFactorDtmf": "أو اطلب <x1> الرمز <x1> على هاتف متصل",
-  "fritzboxAnswerbotEnabling": "تفعيل جهاز الرد الآلي..."
+  "reportProblem": "الإبلاغ عن مشكلة",
+  "reportProblemSubtitle": "مشكلات GitHub"
 }

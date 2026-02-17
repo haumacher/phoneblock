@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Автовідповідач активний",
   "fritzboxAnswerbotPaused": "Автовідповідач поставив на паузу",
   "fritzboxAnswerbotNotRegistered": "Автовідповідач не підключено",
+  "fritzboxAnswerbotEnabling": "Увімкнути автовідповідач...",
   "fritzboxAnswerbotDescription": "Дзвінки зі спамом автоматично переадресовуються на автовідповідач PhoneBlock.",
   "fritzboxEnableAnswerbot": "Увімкнути автовідповідач",
   "fritzboxEnableAnswerbotDescription": "Автоматично відповідати на СПАМ-дзвінки автовідповідачем PhoneBlock",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Будь ласка, підтвердьте доступ на вашому Fritz!Box...",
   "fritzboxSecondFactorButton": "Натисніть будь-яку кнопку на Fritz!Box",
   "fritzboxSecondFactorDtmf": "Або наберіть {code} на підключеному телефоні",
-  "fritzboxAnswerbotEnabling": "Увімкнути автовідповідач..."
+  "reportProblem": "Повідомити про проблему",
+  "reportProblemSubtitle": "Проблеми GitHub"
 }

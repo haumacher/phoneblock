@@ -107,6 +107,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get sourceCodeLicense => 'Відкритий вихідний код (GPL-3.0)';
 
   @override
+  String get reportProblem => 'Повідомити про проблему';
+
+  @override
+  String get reportProblemSubtitle => 'Проблеми GitHub';
+
+  @override
   String get aboutDescription =>
       'PhoneBlock - це проект з відкритим вихідним кодом, без трекінгу і без реклами. Сервіс фінансується за рахунок пожертвувань.';
 

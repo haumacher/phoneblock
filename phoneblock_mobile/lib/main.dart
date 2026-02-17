@@ -3605,6 +3605,18 @@ class AboutScreen extends StatelessWidget {
               }
             },
           ),
+          // Report problem
+          ListTile(
+            leading: const Icon(Icons.bug_report),
+            title: Text(context.l10n.reportProblem),
+            subtitle: Text(context.l10n.reportProblemSubtitle),
+            onTap: () async {
+              final url = Uri.parse('https://github.com/haumacher/phoneblock/issues');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
           const SizedBox(height: 32),
           // Donate button
           Padding(

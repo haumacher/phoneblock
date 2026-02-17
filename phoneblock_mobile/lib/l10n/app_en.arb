@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Answering machine active",
   "fritzboxAnswerbotPaused": "Answering machine paused",
   "fritzboxAnswerbotNotRegistered": "Answering machine not connected",
+  "fritzboxAnswerbotEnabling": "Activate answering machine...",
   "fritzboxAnswerbotDescription": "SPAM calls are automatically answered by the PhoneBlock answering machine.",
   "fritzboxEnableAnswerbot": "Activate answering machine",
   "fritzboxEnableAnswerbotDescription": "Have SPAM calls automatically answered by the PhoneBlock answering machine",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Please confirm access on your Fritz!Box...",
   "fritzboxSecondFactorButton": "Press any button on the Fritz!Box",
   "fritzboxSecondFactorDtmf": "Or dial {code} on a connected telephone",
-  "fritzboxAnswerbotEnabling": "Activate answering machine..."
+  "reportProblem": "Report a problem",
+  "reportProblemSubtitle": "GitHub Issues"
 }

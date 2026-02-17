@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Ενεργός τηλεφωνητής",
   "fritzboxAnswerbotPaused": "Ο αυτόματος τηλεφωνητής διακόπηκε",
   "fritzboxAnswerbotNotRegistered": "Ο αυτόματος τηλεφωνητής δεν είναι συνδεδεμένος",
+  "fritzboxAnswerbotEnabling": "Ενεργοποίηση τηλεφωνητή...",
   "fritzboxAnswerbotDescription": "Οι κλήσεις SPAM απαντώνται αυτόματα από τον τηλεφωνητή του PhoneBlock.",
   "fritzboxEnableAnswerbot": "Ενεργοποίηση τηλεφωνητή",
   "fritzboxEnableAnswerbotDescription": "Να απαντούν αυτόματα οι κλήσεις SPAM από τον τηλεφωνητή του PhoneBlock",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Επιβεβαιώστε την πρόσβαση στο Fritz!Box σας...",
   "fritzboxSecondFactorButton": "Πατήστε οποιοδήποτε κουμπί στο Fritz!Box",
   "fritzboxSecondFactorDtmf": "Ή πληκτρολογήστε {code} σε ένα συνδεδεμένο τηλέφωνο.",
-  "fritzboxAnswerbotEnabling": "Ενεργοποίηση τηλεφωνητή..."
+  "reportProblem": "Αναφέρετε ένα πρόβλημα",
+  "reportProblemSubtitle": "Θέματα GitHub"
 }

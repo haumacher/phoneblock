@@ -234,6 +234,7 @@
   "fritzboxAnswerbotActive": "Contestador automático activo",
   "fritzboxAnswerbotPaused": "Contestador automático en pausa",
   "fritzboxAnswerbotNotRegistered": "Contestador automático no conectado",
+  "fritzboxAnswerbotEnabling": "Activar contestador automático...",
   "fritzboxAnswerbotDescription": "Las llamadas SPAM son contestadas automáticamente por el contestador automático PhoneBlock.",
   "fritzboxEnableAnswerbot": "Activar el contestador automático",
   "fritzboxEnableAnswerbotDescription": "Que las llamadas SPAM sean contestadas automáticamente por el contestador automático PhoneBlock",
@@ -257,5 +258,6 @@
   "fritzboxAnswerbotStepSecondFactor": "Por favor, confirme el acceso en su Fritz!Box...",
   "fritzboxSecondFactorButton": "Pulsa cualquier botón del Fritz!Box",
   "fritzboxSecondFactorDtmf": "O marque {code} en un teléfono conectado",
-  "fritzboxAnswerbotEnabling": "Activar contestador automático..."
+  "reportProblem": "Informar de un problema",
+  "reportProblemSubtitle": "Problemas en GitHub"
 }
