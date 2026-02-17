@@ -1164,6 +1164,15 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  /// Syncs Fritz!Box calls (if connected) then reloads the call list.
+  Future<void> _refreshCalls() async {
+    if (FritzBoxService.instance.isConnected) {
+      final newIds = await FritzBoxService.instance.syncCallList();
+      newCallIds.addAll(newIds);
+    }
+    await _loadScreenedCalls();
+  }
+
   /// Checks Fritz!Box connection and CardDAV protection status.
   Future<void> _checkFritzBoxConnection() async {
     await FritzBoxService.instance.checkConnection();
@@ -1340,46 +1349,59 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds the calls list with source indicators.
   Widget _buildCallsList() {
-    return ListView.builder(
-      itemCount: _screenedCalls.length,
-      itemBuilder: (context, index) {
-        final call = _screenedCalls[index];
-        return _buildCallListItem(call);
-      },
+    return RefreshIndicator(
+      onRefresh: _refreshCalls,
+      child: ListView.builder(
+        itemCount: _screenedCalls.length,
+        itemBuilder: (context, index) {
+          final call = _screenedCalls[index];
+          return _buildCallListItem(call);
+        },
+      ),
     );
   }
 
   /// Builds the empty state when no calls have been screened yet.
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.phone_disabled,
-              size: 80,
-              color: Colors.grey[400],
+    return RefreshIndicator(
+      onRefresh: _refreshCalls,
+      child: ListView(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.phone_disabled,
+                      size: 80,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      context.l10n.noCallsYet,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      context.l10n.noCallsDescription,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              context.l10n.noCallsYet,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              context.l10n.noCallsDescription,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
