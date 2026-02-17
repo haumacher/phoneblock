@@ -324,6 +324,37 @@ Example - Adding conditional device name display:
 </p>
 ```
 
+### Flutter `use_build_context_synchronously` Warnings
+
+In `State` subclasses, the analyzer cannot link a `context.mounted` check to later `context` uses because each `context` access re-evaluates the `State.context` getter. To fix:
+
+1. **Add `BuildContext context` as an explicit parameter** to async methods that use `context` after an `await`:
+   ```dart
+   // WRONG — analyzer can't track State.context across awaits:
+   Future<void> doWork() async {
+     var response = await sendRequest(...);
+     if (!context.mounted) return;      // checks State.context
+     showDialog(context: context, ...); // re-evaluates State.context — warning!
+   }
+
+   // CORRECT — same variable checked and used:
+   Future<void> doWork(BuildContext context) async {
+     var response = await sendRequest(...);
+     if (!context.mounted) return;      // checks parameter
+     showDialog(context: context, ...); // uses same parameter — no warning
+   }
+   ```
+
+2. **Add `if (!context.mounted) return;`** after every `await` that introduces a new async gap (e.g. `Future.delayed`, `sendRequest`) before any subsequent `context` use.
+
+3. **In `.then()` callbacks**, check `context.mounted` before using `context`:
+   ```dart
+   deleteBot(context, bot).then((value) {
+     if (!context.mounted) return;
+     Navigator.pop(context);
+   });
+   ```
+
 ## Configuration Files
 
 **Required for local development:**
