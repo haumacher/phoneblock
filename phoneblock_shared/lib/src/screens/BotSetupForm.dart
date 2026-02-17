@@ -363,6 +363,7 @@ class BotSetupState extends State<BotSetupForm> {
                                   context.answerbotL10n.registrationFailed(errorMessage));
                             } else {
                               await Future.delayed(Duration(milliseconds: sleep));
+                              if (!context.mounted) return;
 
                               pd.update(value: n, msg: context.answerbotL10n.retryingMessage(errorMessage));
                             }
