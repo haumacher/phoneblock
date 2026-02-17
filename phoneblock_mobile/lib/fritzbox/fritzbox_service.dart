@@ -63,6 +63,9 @@ class FritzBoxService {
   /// Returns true if connected to Fritz!Box.
   bool get isConnected => _connectionState == FritzBoxConnectionState.connected;
 
+  /// Returns true if Fritz!Box credentials are stored (configured).
+  bool get isConfigured => _connectionState != FritzBoxConnectionState.notConfigured;
+
   /// Initializes the service by loading stored credentials.
   Future<void> initialize() async {
     final credentials = await FritzBoxStorage.instance.getCredentials();
@@ -70,6 +73,10 @@ class FritzBoxService {
       _connectionState = FritzBoxConnectionState.notConfigured;
       return;
     }
+
+    // Mark as configured (offline) before the slow connection attempt,
+    // so callers can distinguish "not configured" from "connecting".
+    _connectionState = FritzBoxConnectionState.offline;
 
     // Try to connect with stored credentials
     await _connect(credentials);

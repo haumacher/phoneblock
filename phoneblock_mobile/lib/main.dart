@@ -22,6 +22,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_settings.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
@@ -1152,7 +1153,19 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Initializes Fritz!Box service and syncs calls.
   Future<void> _initFritzBox() async {
+    // Quick check: if credentials exist, show "offline" immediately instead
+    // of "not configured" while the slow connection attempt runs.
+    if (await FritzBoxStorage.instance.getCredentials() != null && mounted) {
+      setState(() {
+        _fritzboxState = FritzBoxConnectionState.offline;
+      });
+    }
     await FritzBoxService.instance.initialize();
+    if (mounted) {
+      setState(() {
+        _fritzboxState = FritzBoxService.instance.connectionState;
+      });
+    }
     await _checkFritzBoxConnection();
     // Sync Fritz!Box calls if connected - they'll be loaded with mobile calls
     if (FritzBoxService.instance.isConnected) {
