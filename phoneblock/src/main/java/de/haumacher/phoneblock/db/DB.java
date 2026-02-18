@@ -1455,7 +1455,8 @@ public class DB {
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
 				.setVotes(normalizeVotesToThreshold(n.getVotes()))
-				.setRating(rating(n));
+				.setRating(rating(n))
+				.setLastActivity(n.getLastPing());
 	}
 
 	/**

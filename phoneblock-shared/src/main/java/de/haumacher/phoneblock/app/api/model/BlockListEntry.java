@@ -21,11 +21,16 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/** @see #getRating() */
 	public static final String RATING__PROP = "rating";
 
+	/** @see #getLastActivity() */
+	public static final String LAST_ACTIVITY__PROP = "lastActivity";
+
 	private String _phone = "";
 
 	private int _votes = 0;
 
 	private de.haumacher.phoneblock.app.api.model.Rating _rating = de.haumacher.phoneblock.app.api.model.Rating.A_LEGITIMATE;
+
+	private long _lastActivity = 0L;
 
 	/**
 	 * Creates a {@link BlockListEntry} instance.
@@ -100,6 +105,27 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		_rating = value;
 	}
 
+	/**
+	 * Timestamp (millis since epoch) of the last activity for this number.
+	 */
+	public final long getLastActivity() {
+		return _lastActivity;
+	}
+
+	/**
+	 * @see #getLastActivity()
+	 */
+	public de.haumacher.phoneblock.app.api.model.BlockListEntry setLastActivity(long value) {
+		internalSetLastActivity(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLastActivity()} without chain call utility. */
+	protected final void internalSetLastActivity(long value) {
+		_listener.beforeSet(this, LAST_ACTIVITY__PROP, value);
+		_lastActivity = value;
+	}
+
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
 
 	@Override
@@ -131,7 +157,8 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		java.util.Arrays.asList(
 			PHONE__PROP, 
 			VOTES__PROP, 
-			RATING__PROP));
+			RATING__PROP, 
+			LAST_ACTIVITY__PROP));
 
 	@Override
 	public java.util.List<String> properties() {
@@ -144,6 +171,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 			case PHONE__PROP: return getPhone();
 			case VOTES__PROP: return getVotes();
 			case RATING__PROP: return getRating();
+			case LAST_ACTIVITY__PROP: return getLastActivity();
 			default: return null;
 		}
 	}
@@ -154,6 +182,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 			case PHONE__PROP: internalSetPhone((String) value); break;
 			case VOTES__PROP: internalSetVotes((int) value); break;
 			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
+			case LAST_ACTIVITY__PROP: internalSetLastActivity((long) value); break;
 		}
 	}
 
@@ -178,6 +207,8 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		out.value(getVotes());
 		out.name(RATING__PROP);
 		getRating().writeTo(out);
+		out.name(LAST_ACTIVITY__PROP);
+		out.value(getLastActivity());
 	}
 
 	@Override
@@ -186,6 +217,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case VOTES__PROP: setVotes(in.nextInt()); break;
 			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
+			case LAST_ACTIVITY__PROP: setLastActivity(in.nextLong()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -201,6 +233,9 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** XML attribute or element name of a {@link #getRating} property. */
 	private static final String RATING__XML_ATTR = "rating";
+
+	/** XML attribute or element name of a {@link #getLastActivity} property. */
+	private static final String LAST_ACTIVITY__XML_ATTR = "last-activity";
 
 	@Override
 	public String getXmlTagName() {
@@ -218,6 +253,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
 		out.writeAttribute(VOTES__XML_ATTR, Integer.toString(getVotes()));
 		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
+		out.writeAttribute(LAST_ACTIVITY__XML_ATTR, Long.toString(getLastActivity()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -267,6 +303,10 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 				setRating(de.haumacher.phoneblock.app.api.model.Rating.valueOfProtocol(value));
 				break;
 			}
+			case LAST_ACTIVITY__XML_ATTR: {
+				setLastActivity(Long.parseLong(value));
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -286,6 +326,10 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 			}
 			case RATING__XML_ATTR: {
 				setRating(de.haumacher.phoneblock.app.api.model.Rating.valueOfProtocol(in.getElementText()));
+				break;
+			}
+			case LAST_ACTIVITY__XML_ATTR: {
+				setLastActivity(Long.parseLong(in.getElementText()));
 				break;
 			}
 			default: {

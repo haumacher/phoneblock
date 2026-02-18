@@ -259,12 +259,15 @@ message NumberHistory extends AbstractNumberInfo {
 message BlockListEntry {
 	/** The number being requested. */
 	string phone;
-	
+
 	/** The number of votes that support blocking the requested number. */
 	int votes;
-	
+
 	/** The rating for the requested phone number. */
 	Rating rating;
+
+	/** Timestamp (millis since epoch) of the last activity for this number. */
+	long lastActivity;
 }
 
 message Ratings {

@@ -288,6 +288,11 @@
 														"type": "integer",
 														"description": "Normalized vote count. Possible values: 0 (removed), 2, 4, 10, 20, 50, or 100. Normalization ensures consistency with when updates are triggered.",
 														"enum": [0, 2, 4, 10, 20, 50, 100]
+													},
+													"lastActivity": {
+														"type": "integer",
+														"format": "int64",
+														"description": "Timestamp (milliseconds since epoch) of the last activity for this number"
 													}
 												}
 											}
