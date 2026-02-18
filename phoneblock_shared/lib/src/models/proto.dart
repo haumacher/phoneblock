@@ -500,13 +500,17 @@ class UpdateAnswerBot extends BotRequest {
 	///  Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
 	bool wildcards;
 
+	/// Whether to accept calls from local phones (numbers starting with *).
+	bool acceptLocal;
+
 	/// Creates a UpdateAnswerBot.
 	UpdateAnswerBot({
-			super.id, 
-			this.enabled = false, 
-			this.preferIPv4 = false, 
-			this.minVotes = 0, 
-			this.wildcards = false, 
+			super.id,
+			this.enabled = false,
+			this.preferIPv4 = false,
+			this.minVotes = 0,
+			this.wildcards = false,
+			this.acceptLocal = false,
 	});
 
 	/// Parses a UpdateAnswerBot from a string source.
@@ -543,6 +547,10 @@ class UpdateAnswerBot extends BotRequest {
 				wildcards = json.expectBool();
 				break;
 			}
+			case "acceptLocal": {
+				acceptLocal = json.expectBool();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -562,6 +570,9 @@ class UpdateAnswerBot extends BotRequest {
 
 		json.addKey("wildcards");
 		json.addBool(wildcards);
+
+		json.addKey("acceptLocal");
+		json.addBool(acceptLocal);
 	}
 
 	@override
@@ -873,6 +884,9 @@ class AnswerbotInfo extends _JsonObject {
 	///  Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
 	bool wildcards;
 
+	/// Whether to accept calls from local phones (numbers starting with *).
+	bool acceptLocal;
+
 	///  Whether the bot has sucessfully registered (can accept calls).
 	bool registered;
 
@@ -920,19 +934,20 @@ class AnswerbotInfo extends _JsonObject {
 
 		/// Creates a AnswerbotInfo.
 		AnswerbotInfo({
-				this.id = 0, 
-				this.userId = 0, 
-				this.enabled = false, 
-				this.preferIPv4 = false, 
-				this.minVotes = 0, 
-				this.wildcards = false, 
-				this.registered = false, 
-				this.registerMsg, 
-				this.newCalls = 0, 
-				this.callsAccepted = 0, 
-				this.talkTime = 0, 
-				this.registrar = "", 
-				this.realm = "", 
+				this.id = 0,
+				this.userId = 0,
+				this.enabled = false,
+				this.preferIPv4 = false,
+				this.minVotes = 0,
+				this.wildcards = false,
+				this.acceptLocal = false,
+				this.registered = false,
+				this.registerMsg,
+				this.newCalls = 0,
+				this.callsAccepted = 0,
+				this.talkTime = 0,
+				this.registrar = "",
+				this.realm = "",
 				this.userName = "", 
 				this.password = "", 
 				this.host, 
@@ -983,6 +998,10 @@ class AnswerbotInfo extends _JsonObject {
 				}
 				case "wildcards": {
 					wildcards = json.expectBool();
+					break;
+				}
+				case "acceptLocal": {
+					acceptLocal = json.expectBool();
 					break;
 				}
 				case "registered": {
@@ -1070,6 +1089,9 @@ class AnswerbotInfo extends _JsonObject {
 
 			json.addKey("wildcards");
 			json.addBool(wildcards);
+
+			json.addKey("acceptLocal");
+			json.addBool(acceptLocal);
 
 			json.addKey("registered");
 			json.addBool(registered);

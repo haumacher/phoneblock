@@ -146,6 +146,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
                   });
                 }),
 
+              SwitchField(context.answerbotL10n.acceptLocalCalls, value: bot.acceptLocal,
+                help: context.answerbotL10n.acceptLocalCallsHelp,
+                onChanged: (bool value) {
+                  setState(() {
+                    bot.acceptLocal = value;
+                  });
+                }),
+
               SwitchField(context.answerbotL10n.preferIPv4, value: bot.preferIPv4,
                 help: context.answerbotL10n.preferIPv4Help,
                 onChanged: (bool value) {
@@ -274,6 +282,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
         preferIPv4: bot.preferIPv4,
         minVotes: bot.minVotes,
         wildcards: bot.wildcards,
+        acceptLocal: bot.acceptLocal,
       ));
 
     if (!context.mounted) return false;

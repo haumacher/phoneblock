@@ -203,6 +203,13 @@ class AppLocalizationsPl extends AppLocalizations {
       'Akceptuje połączenie nawet dla numeru, który nie jest jeszcze znany jako SPAM, jeśli istnieje powód, aby podejrzewać, że numer należy do połączenia systemowego, z którego pochodzi SPAM.';
 
   @override
+  String get acceptLocalCalls => 'Lokale Anrufe annehmen';
+
+  @override
+  String get acceptLocalCallsHelp =>
+      'Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.';
+
+  @override
   String get preferIPv4 => 'Korzystaj z komunikacji IPv4';
 
   @override

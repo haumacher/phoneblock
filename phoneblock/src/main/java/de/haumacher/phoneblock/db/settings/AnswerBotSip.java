@@ -42,6 +42,9 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** @see #isWildcards() */
 	public static final String WILDCARDS__PROP = "wildcards";
 
+	/** @see #isAcceptLocal() */
+	public static final String ACCEPT_LOCAL__PROP = "acceptLocal";
+
 	/** @see #isRegistered() */
 	public static final String REGISTERED__PROP = "registered";
 
@@ -87,17 +90,20 @@ public class AnswerBotSip extends AnswerBotSetting {
 	/** Identifier for the property {@link #isWildcards()} in binary format. */
 	static final int WILDCARDS__ID = 14;
 
+	/** Identifier for the property {@link #isAcceptLocal()} in binary format. */
+	static final int ACCEPT_LOCAL__ID = 15;
+
 	/** Identifier for the property {@link #isRegistered()} in binary format. */
-	static final int REGISTERED__ID = 15;
+	static final int REGISTERED__ID = 16;
 
 	/** Identifier for the property {@link #getRegisterMessage()} in binary format. */
-	static final int REGISTER_MESSAGE__ID = 16;
+	static final int REGISTER_MESSAGE__ID = 17;
 
 	/** Identifier for the property {@link #getLastSuccess()} in binary format. */
-	static final int LAST_SUCCESS__ID = 17;
+	static final int LAST_SUCCESS__ID = 18;
 
 	/** Identifier for the property {@link #getCallsAccepted()} in binary format. */
-	static final int CALLS_ACCEPTED__ID = 18;
+	static final int CALLS_ACCEPTED__ID = 19;
 
 	private String _host = "";
 
@@ -118,6 +124,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 	private int _minVotes = 0;
 
 	private boolean _wildcards = false;
+
+	private boolean _acceptLocal = false;
 
 	private boolean _registered = false;
 
@@ -352,6 +360,27 @@ public class AnswerBotSip extends AnswerBotSetting {
 	}
 
 	/**
+	 * Whether to accept calls from local phones (numbers starting with *).
+	 */
+	public final boolean isAcceptLocal() {
+		return _acceptLocal;
+	}
+
+	/**
+	 * @see #isAcceptLocal()
+	 */
+	public de.haumacher.phoneblock.db.settings.AnswerBotSip setAcceptLocal(boolean value) {
+		internalSetAcceptLocal(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isAcceptLocal()} without chain call utility. */
+	protected final void internalSetAcceptLocal(boolean value) {
+		_listener.beforeSet(this, ACCEPT_LOCAL__PROP, value);
+		_acceptLocal = value;
+	}
+
+	/**
 	 * Whether this answer bot is currently registered successfully.
 	 */
 	public final boolean isRegistered() {
@@ -476,6 +505,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			PASSWD__PROP, 
 			MIN_VOTES__PROP, 
 			WILDCARDS__PROP, 
+			ACCEPT_LOCAL__PROP, 
 			REGISTERED__PROP, 
 			REGISTER_MESSAGE__PROP, 
 			LAST_SUCCESS__PROP, 
@@ -499,6 +529,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__PROP: return getPasswd();
 			case MIN_VOTES__PROP: return getMinVotes();
 			case WILDCARDS__PROP: return isWildcards();
+			case ACCEPT_LOCAL__PROP: return isAcceptLocal();
 			case REGISTERED__PROP: return isRegistered();
 			case REGISTER_MESSAGE__PROP: return getRegisterMessage();
 			case LAST_SUCCESS__PROP: return getLastSuccess();
@@ -520,6 +551,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__PROP: internalSetPasswd((String) value); break;
 			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
+			case ACCEPT_LOCAL__PROP: internalSetAcceptLocal((boolean) value); break;
 			case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 			case REGISTER_MESSAGE__PROP: internalSetRegisterMessage((String) value); break;
 			case LAST_SUCCESS__PROP: internalSetLastSuccess((long) value); break;
@@ -558,6 +590,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getMinVotes());
 		out.name(WILDCARDS__PROP);
 		out.value(isWildcards());
+		out.name(ACCEPT_LOCAL__PROP);
+		out.value(isAcceptLocal());
 		out.name(REGISTERED__PROP);
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__PROP);
@@ -581,6 +615,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__PROP: setPasswd(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
+			case ACCEPT_LOCAL__PROP: setAcceptLocal(in.nextBoolean()); break;
 			case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__PROP: setRegisterMessage(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LAST_SUCCESS__PROP: setLastSuccess(in.nextLong()); break;
@@ -617,6 +652,8 @@ public class AnswerBotSip extends AnswerBotSetting {
 		out.value(getMinVotes());
 		out.name(WILDCARDS__ID);
 		out.value(isWildcards());
+		out.name(ACCEPT_LOCAL__ID);
+		out.value(isAcceptLocal());
 		out.name(REGISTERED__ID);
 		out.value(isRegistered());
 		out.name(REGISTER_MESSAGE__ID);
@@ -655,6 +692,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 			case PASSWD__ID: setPasswd(in.nextString()); break;
 			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
 			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
+			case ACCEPT_LOCAL__ID: setAcceptLocal(in.nextBoolean()); break;
 			case REGISTERED__ID: setRegistered(in.nextBoolean()); break;
 			case REGISTER_MESSAGE__ID: setRegisterMessage(in.nextString()); break;
 			case LAST_SUCCESS__ID: setLastSuccess(in.nextLong()); break;

@@ -221,7 +221,7 @@ public class AnswerBot extends MultipleUAS {
 			}
 		}
 		
-		if (from.startsWith("*") || (_botConfig.hasTestPrefix() && from.startsWith(_botConfig.getTestPrefix()))) {
+		if ((user.getAcceptLocal() && from.startsWith("*")) || (_botConfig.hasTestPrefix() && from.startsWith(_botConfig.getTestPrefix()))) {
 			Header header = msg.getHeader("P-Called-Party-ID");
 			String calledParty;
 			if (header != null) {

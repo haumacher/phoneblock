@@ -202,6 +202,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'قبول المكالمة حتى بالنسبة للرقم الذي لم يُعرف بعد أنه رسالة اقتحامية إذا كان هناك سبب للاشتباه في أن الرقم ينتمي إلى اتصال نظام تنشأ منه الرسائل الاقتحامية.';
 
   @override
+  String get acceptLocalCalls => 'Lokale Anrufe annehmen';
+
+  @override
+  String get acceptLocalCallsHelp =>
+      'Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.';
+
+  @override
   String get preferIPv4 => 'تفضيل اتصال IPv4';
 
   @override

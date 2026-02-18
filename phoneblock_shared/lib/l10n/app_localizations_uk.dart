@@ -202,6 +202,13 @@ class AppLocalizationsUk extends AppLocalizations {
       'Приймає виклик навіть на номер, про який ще не відомо, що він є спамом, якщо є підстави підозрювати, що номер належить до системного з\'єднання, з якого надходить спам.';
 
   @override
+  String get acceptLocalCalls => 'Lokale Anrufe annehmen';
+
+  @override
+  String get acceptLocalCallsHelp =>
+      'Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.';
+
+  @override
   String get preferIPv4 => 'Надавайте перевагу IPv4-зв\'язку';
 
   @override

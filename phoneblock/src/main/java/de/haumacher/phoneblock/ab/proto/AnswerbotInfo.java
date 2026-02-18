@@ -33,6 +33,9 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** @see #isWildcards() */
 	public static final String WILDCARDS__PROP = "wildcards";
 
+	/** @see #isAcceptLocal() */
+	public static final String ACCEPT_LOCAL__PROP = "acceptLocal";
+
 	/** @see #isRegistered() */
 	public static final String REGISTERED__PROP = "registered";
 
@@ -89,6 +92,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	private int _minVotes = 0;
 
 	private boolean _wildcards = false;
+
+	private boolean _acceptLocal = false;
 
 	private boolean _registered = false;
 
@@ -247,6 +252,26 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 	/** Internal setter for {@link #isWildcards()} without chain call utility. */
 	protected final void internalSetWildcards(boolean value) {
 		_wildcards = value;
+	}
+
+	/**
+	 * Whether to accept calls from local phones (numbers starting with *).
+	 */
+	public final boolean isAcceptLocal() {
+		return _acceptLocal;
+	}
+
+	/**
+	 * @see #isAcceptLocal()
+	 */
+	public de.haumacher.phoneblock.ab.proto.AnswerbotInfo setAcceptLocal(boolean value) {
+		internalSetAcceptLocal(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isAcceptLocal()} without chain call utility. */
+	protected final void internalSetAcceptLocal(boolean value) {
+		_acceptLocal = value;
 	}
 
 	/**
@@ -605,6 +630,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				PREFER_IPV_4__PROP, 
 				MIN_VOTES__PROP, 
 				WILDCARDS__PROP, 
+				ACCEPT_LOCAL__PROP, 
 				REGISTERED__PROP, 
 				REGISTER_MSG__PROP, 
 				NEW_CALLS__PROP, 
@@ -635,6 +661,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case PREFER_IPV_4__PROP: return isPreferIPv4();
 				case MIN_VOTES__PROP: return getMinVotes();
 				case WILDCARDS__PROP: return isWildcards();
+				case ACCEPT_LOCAL__PROP: return isAcceptLocal();
 				case REGISTERED__PROP: return isRegistered();
 				case REGISTER_MSG__PROP: return getRegisterMsg();
 				case NEW_CALLS__PROP: return getNewCalls();
@@ -663,6 +690,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case PREFER_IPV_4__PROP: internalSetPreferIPv4((boolean) value); break;
 				case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
 				case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
+				case ACCEPT_LOCAL__PROP: internalSetAcceptLocal((boolean) value); break;
 				case REGISTERED__PROP: internalSetRegistered((boolean) value); break;
 				case REGISTER_MSG__PROP: internalSetRegisterMsg((String) value); break;
 				case NEW_CALLS__PROP: internalSetNewCalls((int) value); break;
@@ -708,6 +736,8 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 			out.value(getMinVotes());
 			out.name(WILDCARDS__PROP);
 			out.value(isWildcards());
+			out.name(ACCEPT_LOCAL__PROP);
+			out.value(isAcceptLocal());
 			out.name(REGISTERED__PROP);
 			out.value(isRegistered());
 			if (hasRegisterMsg()) {
@@ -761,6 +791,7 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				case PREFER_IPV_4__PROP: setPreferIPv4(in.nextBoolean()); break;
 				case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
 				case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
+				case ACCEPT_LOCAL__PROP: setAcceptLocal(in.nextBoolean()); break;
 				case REGISTERED__PROP: setRegistered(in.nextBoolean()); break;
 				case REGISTER_MSG__PROP: setRegisterMsg(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 				case NEW_CALLS__PROP: setNewCalls(in.nextInt()); break;

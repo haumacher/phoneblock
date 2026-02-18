@@ -13,11 +13,11 @@ public class DBAnswerBotSip extends AnswerBotSip {
 	/** 
 	 * Creates a {@link DBAnswerBotSip}.
 	 */
-	public DBAnswerBotSip(long id, long userId, 
-			long updated, long lastSuccess, boolean registered, String registerMessage, 
-			String host, boolean preferV4, String ip4, String ip6, String registrar, String realm, 
+	public DBAnswerBotSip(long id, long userId,
+			long updated, long lastSuccess, boolean registered, String registerMessage,
+			String host, boolean preferV4, String ip4, String ip6, String registrar, String realm,
 			String userName, String passwd,
-			int minVotes, boolean wildcards
+			int minVotes, boolean wildcards, boolean acceptLocal
 	) {
 		setId(id);
 		setUserId(userId);
@@ -35,6 +35,7 @@ public class DBAnswerBotSip extends AnswerBotSip {
 		setPasswd(passwd);
 		setMinVotes(minVotes);
 		setWildcards(wildcards);
+		setAcceptLocal(acceptLocal);
 	}
 
 }

@@ -372,14 +372,14 @@ public interface Users {
 	void updateDynDns(long abId, String ip4, String ip6, long updated);
 	
 	@Select("""
-			select 
-				s.ID, s.USERID, 
-				s.UPDATED, s.LAST_SUCCESS, 
-				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, 
+			select
+				s.ID, s.USERID,
+				s.UPDATED, s.LAST_SUCCESS,
+				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6,
 				s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD,
-				s.MIN_VOTES, s.WILDCARDS 
-			from ANSWERBOT_SIP s  
-			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID  
+				s.MIN_VOTES, s.WILDCARDS, s.ACCEPT_LOCAL
+			from ANSWERBOT_SIP s
+			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID
 			where s.ENABLED = true
 			""")
 	List<DBAnswerBotSip> getEnabledAnswerBots();
@@ -401,48 +401,48 @@ public interface Users {
 	long getAnswerBotUserId(String sipUser);
 
 	@Select("""
-			select 
-				s.ID, s.USERID, 
-				s.UPDATED, s.LAST_SUCCESS, 
-				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6, 
+			select
+				s.ID, s.USERID,
+				s.UPDATED, s.LAST_SUCCESS,
+				s.REGISTERED, s.REGISTER_MSG, s.HOST, s.PREFER_V4, d.IP4, d.IP6,
 				s.REGISTRAR, s.REALM, s.USERNAME, s.PASSWD,
-				s.MIN_VOTES, s.WILDCARDS 
-			from ANSWERBOT_SIP s  
-			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID  
+				s.MIN_VOTES, s.WILDCARDS, s.ACCEPT_LOCAL
+			from ANSWERBOT_SIP s
+			left outer join ANSWERBOT_DYNDNS d on d.ABID=s.ID
 			where s.USERNAME = #{userName}
 			""")
 	DBAnswerBotSip getAnswerBotBySipUser(String userName);
 
 	@Select("""
-			select 
-				s.ID, s.USERID, 
-				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
-				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
-				s.REGISTERED, s.REGISTER_MSG, 
-				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
-				s.USERNAME, s.PASSWD, 
+			select
+				s.ID, s.USERID,
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, s.ACCEPT_LOCAL,
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM,
+				s.REGISTERED, s.REGISTER_MSG,
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME,
+				s.USERNAME, s.PASSWD,
 				s.RETENTION_PERIOD,
-				d.DYNDNS_USER, d.DYNDNS_PASSWD 
-			from ANSWERBOT_SIP s  
-			left outer join ANSWERBOT_DYNDNS d 
-			on d.ABID=s.ID  
+				d.DYNDNS_USER, d.DYNDNS_PASSWD
+			from ANSWERBOT_SIP s
+			left outer join ANSWERBOT_DYNDNS d
+			on d.ABID=s.ID
 			where s.USERID= #{userId}
 			""")
 	List<DBAnswerbotInfo> getAnswerBots(long userId);
 	
 	@Select("""
-			select 
-				s.ID, s.USERID, 
-				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
-				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
-				s.REGISTERED, s.REGISTER_MSG, 
-				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
-				s.USERNAME, s.PASSWD, 
+			select
+				s.ID, s.USERID,
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, s.ACCEPT_LOCAL,
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM,
+				s.REGISTERED, s.REGISTER_MSG,
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME,
+				s.USERNAME, s.PASSWD,
 				s.RETENTION_PERIOD,
-				d.DYNDNS_USER, d.DYNDNS_PASSWD 
-			from ANSWERBOT_SIP s  
-			left outer join ANSWERBOT_DYNDNS d 
-			on d.ABID=s.ID  
+				d.DYNDNS_USER, d.DYNDNS_PASSWD
+			from ANSWERBOT_SIP s
+			left outer join ANSWERBOT_DYNDNS d
+			on d.ABID=s.ID
 			where s.ID= #{id}
 			""")
 	DBAnswerbotInfo getAnswerBot(long id);
@@ -451,18 +451,18 @@ public interface Users {
 	 * Gets all answerbots that have retention enabled (period != 'NEVER') for cleanup.
 	 */
 	@Select("""
-			select 
-				s.ID, s.USERID, 
-				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, 
-				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM, 
-				s.REGISTERED, s.REGISTER_MSG, 
-				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME, 
-				s.USERNAME, s.PASSWD, 
+			select
+				s.ID, s.USERID,
+				s.ENABLED, s.PREFER_V4, s.MIN_VOTES, s.WILDCARDS, s.ACCEPT_LOCAL,
+				s.REGISTRAR, s.HOST, d.IP4, d.IP6, s.REALM,
+				s.REGISTERED, s.REGISTER_MSG,
+				s.NEW_CALLS, s.CALLS_ACCEPTED, s.TALK_TIME,
+				s.USERNAME, s.PASSWD,
 				s.RETENTION_PERIOD,
-				d.DYNDNS_USER, d.DYNDNS_PASSWD 
-			from ANSWERBOT_SIP s  
-			left outer join ANSWERBOT_DYNDNS d 
-			on d.ABID=s.ID  
+				d.DYNDNS_USER, d.DYNDNS_PASSWD
+			from ANSWERBOT_SIP s
+			left outer join ANSWERBOT_DYNDNS d
+			on d.ABID=s.ID
 			where s.RETENTION_PERIOD != 'NEVER'
 			""")
 	List<DBAnswerbotInfo> getAnswerbotsWithRetention();
@@ -472,11 +472,12 @@ public interface Users {
 			set
 				s.PREFER_V4=#{preferIPv4},
 				s.MIN_VOTES=#{minVotes},
-				s.WILDCARDS=#{wildcards}
+				s.WILDCARDS=#{wildcards},
+				s.ACCEPT_LOCAL=#{acceptLocal}
 			where
 				s.ID=#{id}
 			""")
-	void updateAnswerbot(long id, boolean preferIPv4, int minVotes, boolean wildcards);
+	void updateAnswerbot(long id, boolean preferIPv4, int minVotes, boolean wildcards, boolean acceptLocal);
 	
 	@Update("update ANSWERBOT_SIP set LAST_SUCCESS=#{lastSuccess}, REGISTERED=#{registered}, REGISTER_MSG=#{message} where ID=#{id}")
 	int updateSipRegistration(long id, boolean registered, String message, long lastSuccess);

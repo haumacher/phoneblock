@@ -6,22 +6,23 @@ import de.haumacher.phoneblock.ab.proto.RetentionPeriod;
 public class DBAnswerbotInfo extends AnswerbotInfo {
 	
 	public DBAnswerbotInfo(
-			long id, long userId, 
-			boolean enabled, boolean prepareIPv4, int minVotes, boolean wildcards, 
-			String registrar, String host, String ip4, String ip6, String realm, 
-			boolean registered, String msg, 
+			long id, long userId,
+			boolean enabled, boolean prepareIPv4, int minVotes, boolean wildcards, boolean acceptLocal,
+			String registrar, String host, String ip4, String ip6, String realm,
+			boolean registered, String msg,
 			int newCalls, int callsAccepted, long talkTime,
-			String userName, String password, 
+			String userName, String password,
 			RetentionPeriod retentionPeriod,
 			String dyndnsUser, String dyndnsPassword
 	) {
 		setId(id);
 		setUserId(userId);
-		
+
 		setEnabled(enabled);
 		setPreferIPv4(prepareIPv4);
 		setMinVotes(minVotes);
 		setWildcards(wildcards);
+		setAcceptLocal(acceptLocal);
 		
 		setRegistrar(registrar);
 		setHost(host);
