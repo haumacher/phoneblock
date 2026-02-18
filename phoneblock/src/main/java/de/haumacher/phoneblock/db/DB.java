@@ -537,7 +537,7 @@ public class DB {
 				int version = Integer.parseInt(users.getProperty("db.version"));
 				while (true) {
 					version++;
-					
+
 					String versionId = Integer.toString(version);
 					while (versionId.length() < 2) {
 						versionId = "0" + versionId;
@@ -548,8 +548,13 @@ public class DB {
 					if (script == null) {
 						break;
 					}
-					
+
 					runScript(connection, scriptName);
+
+					if (version == 13) {
+						populateAggregationHashes(reports);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -1001,14 +1006,15 @@ public class DB {
 
 	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
 		String prefix = prefix10(phone);
-		
+
 		int rows = reports.updateAggregation10(prefix, deltaCnt, deltaVotes);
 		if (rows == 0) {
 			if (deltaCnt > 0) {
-				reports.insertAggregation10(prefix, deltaCnt, deltaVotes);
+				byte[] hash = computePrefixHash(prefix);
+				reports.insertAggregation10WithHash(prefix, deltaCnt, deltaVotes, hash);
 			}
-			
-			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary. 
+
+			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary.
 		} else {
 			if (deltaCnt != 0) {
 				// Check, whether an update to the next aggregation level is necessary.
@@ -1037,7 +1043,8 @@ public class DB {
 		int rows = reports.updateAggregation100(prefix, deltaCnt, deltaVotes);
 		if (rows == 0) {
 			if (deltaCnt > 0) {
-				reports.insertAggregation100(prefix, deltaCnt, deltaVotes);
+				byte[] hash = computePrefixHash(prefix);
+				reports.insertAggregation100WithHash(prefix, deltaCnt, deltaVotes, hash);
 			}
 		}
 	}
@@ -1690,6 +1697,57 @@ public class DB {
 
 	public AggregationInfo notNull(String prefix, AggregationInfo result) {
 		return result == null ? new AggregationInfo(prefix, 0, 0) : result;
+	}
+
+	/**
+	 * Computes the SHA1 hash for an aggregation prefix.
+	 *
+	 * <p>
+	 * Converts the DB prefix (national format) to international format and hashes it.
+	 * </p>
+	 */
+	static byte[] computePrefixHash(String prefix) {
+		String internationalForm = NumberAnalyzer.toInternationalFormat(prefix);
+		return PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
+	}
+
+	/**
+	 * Computes wildcard votes from aggregation data alone (for numbers not in the DB).
+	 */
+	public int computeWildcardVotes(AggregationInfo aggregation10, AggregationInfo aggregation100) {
+		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
+			int votes = aggregation100.getVotes();
+			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
+				votes += aggregation10.getVotes();
+			}
+			return votes;
+		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
+			return aggregation10.getVotes();
+		}
+		return 0;
+	}
+
+	/**
+	 * Populates SHA1 hashes for all existing aggregation rows during migration to version 13.
+	 */
+	private void populateAggregationHashes(SpamReports reports) {
+		LOG.info("Populating SHA1 hashes for aggregation tables.");
+
+		int count = 0;
+		for (AggregationInfo a : reports.getAllAggregation10()) {
+			byte[] hash = computePrefixHash(a.getPrefix());
+			reports.updateAggregation10Hash(a.getPrefix(), hash);
+			count++;
+		}
+		LOG.info("Updated {} aggregation_10 hashes.", count);
+
+		count = 0;
+		for (AggregationInfo a : reports.getAllAggregation100()) {
+			byte[] hash = computePrefixHash(a.getPrefix());
+			reports.updateAggregation100Hash(a.getPrefix(), hash);
+			count++;
+		}
+		LOG.info("Updated {} aggregation_100 hashes.", count);
 	}
 
 	private String prefix10(String phone) {

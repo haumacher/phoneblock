@@ -77,12 +77,30 @@ public interface SpamReports {
 	
 	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation10(String prefix, int cnt, int votes);
-	
+
+	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES, SHA1) values (#{prefix}, #{cnt}, #{votes}, #{hash})")
+	int insertAggregation10WithHash(String prefix, int cnt, int votes, byte[] hash);
+
 	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation100(String prefix, int cnt, int votes);
-	
+
+	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1) values (#{prefix}, #{cnt}, #{votes}, #{hash})")
+	int insertAggregation100WithHash(String prefix, int cnt, int votes, byte[] hash);
+
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation10(String prefix);
+
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where SHA1 = #{hash}")
+	AggregationInfo getAggregation10ByHash(byte[] hash);
+
+	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where SHA1 = #{hash}")
+	AggregationInfo getAggregation100ByHash(byte[] hash);
+
+	@Update("update NUMBERS_AGGREGATION_10 set SHA1 = #{hash} where PREFIX = #{prefix}")
+	int updateAggregation10Hash(String prefix, byte[] hash);
+
+	@Update("update NUMBERS_AGGREGATION_100 set SHA1 = #{hash} where PREFIX = #{prefix}")
+	int updateAggregation100Hash(String prefix, byte[] hash);
 	
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10")
 	List<AggregationInfo> getAllAggregation10();

@@ -201,7 +201,16 @@ public class CallChecker extends CallScreeningService {
         // Compute SHA1 hash of the phone number for privacy
         String sha1Hash = PhoneNumberUtils.computeSHA1(number);
 
-        URL url = new URL(queryUrl.replace("{sha1}", sha1Hash));
+        String urlStr = queryUrl.replace("{sha1}", sha1Hash);
+
+        // Append prefix hashes for range-based spam detection
+        if (number.length() > 2) {
+            String prefix10Hash = PhoneNumberUtils.computeSHA1(number.substring(0, number.length() - 1));
+            String prefix100Hash = PhoneNumberUtils.computeSHA1(number.substring(0, number.length() - 2));
+            urlStr += "&prefix10=" + prefix10Hash + "&prefix100=" + prefix100Hash;
+        }
+
+        URL url = new URL(urlStr);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Authorization", "Bearer " + authToken);
         connection.setRequestProperty("User-Agent", "PhoneBlockMobile/" + appVersion);

@@ -90,7 +90,7 @@
 				"summary": "Checks a phone number hash against the SPAM database. This API provides better privacy than the direct lookup with the phone number.",
 				"responses": {
 					"200": {
-						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database.",
+						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database. If the exact number is not found but prefix hashes are provided, range-based detection is attempted.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -100,7 +100,12 @@
 											"type": "string"
 										},
 										"votes": {
-											"type": "integer"
+											"type": "integer",
+											"description": "Direct votes for the exact phone number."
+										},
+										"votesWildcard": {
+											"type": "integer",
+											"description": "Combined votes from the phone number's spam range. This value includes range-based aggregation and can be non-zero even when 'votes' is 0, indicating the number belongs to a known spam range."
 										},
 										"rating": {
 											"type": "string",
@@ -119,6 +124,7 @@
 								"example": {
 									"phone": "+49123456789",
 									"votes": 42,
+									"votesWildcard": 120,
 									"rating": "C_POLL"
 								}
 							}
@@ -141,6 +147,26 @@
 					"schema": {
 						"type": "string",
 						"example": "3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC"
+					}
+				},
+				{
+					"name": "prefix10",
+					"in": "query",
+					"description": "Optional hex-encoded SHA1 hash (40 hex digits) of the phone number with the last digit removed. Used for range-based spam detection when the exact number is not in the database.",
+					"required": false,
+					"schema": {
+						"type": "string",
+						"example": "A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2"
+					}
+				},
+				{
+					"name": "prefix100",
+					"in": "query",
+					"description": "Optional hex-encoded SHA1 hash (40 hex digits) of the phone number with the last two digits removed. Used for range-based spam detection when the exact number is not in the database.",
+					"required": false,
+					"schema": {
+						"type": "string",
+						"example": "B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3"
 					}
 				},
 				{
