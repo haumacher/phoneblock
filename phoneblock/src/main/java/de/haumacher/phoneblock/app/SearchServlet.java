@@ -310,7 +310,7 @@ public class SearchServlet extends HttpServlet {
 		}
 	}
 
-	private static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
+	static SearchResult analyzeDb(DB db, SqlSession session, PhoneNumer number, String dialPrefix, boolean isSeachHit, Set<String> langs) {
 		SpamReports reports = session.getMapper(SpamReports.class);
 		
 		String phoneId = NumberAnalyzer.getPhoneId(number);
