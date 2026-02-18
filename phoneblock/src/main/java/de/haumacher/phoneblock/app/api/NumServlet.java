@@ -76,7 +76,7 @@ public class NumServlet extends HttpServlet {
 
 			// Do not hand out any information for non-spam numbers, even if they have been
 			// (accidentally) recorded in the DB.
-			if (result.getVotes() == 0 && result.getVotesWildcard() == 0) {
+			if (result.getVotes() <= 0 && result.getVotesWildcard() <= 0) {
 				result.setArchived(false);
 				result.setDateAdded(0);
 				result.setLastUpdate(0);

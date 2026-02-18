@@ -81,7 +81,7 @@ public class SpamCheckServlet extends HttpServlet {
 		} else {
 			info = NumServlet.lookup(req, number);
 			
-			if (info.getVotes() == 0 && info.getVotesWildcard() == 0) {
+			if (info.getVotes() <= 0 && info.getVotesWildcard() <= 0) {
 				// Provide no additional information for non-SPAM numbers that have an
 				// accidental match in the DB (because they were recorded by a non-hashed
 				// lookup).

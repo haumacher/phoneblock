@@ -100,6 +100,13 @@ public class DB {
 	public static final int MIN_VOTES = 4;
 
 	/**
+	 * Minimum number of {@link Rating#A_LEGITIMATE} ratings required before details (comments, searches, rating
+	 * breakdown) are shown publicly. Numbers with fewer positive ratings are likely personal contacts, and showing
+	 * details would leak private information.
+	 */
+	public static final int MIN_LEGITIMATE = 4;
+
+	/**
 	 * Number of days a number stays on the blocklist when {@link #MIN_VOTES} are received. After that time limit,
 	 * {@link #WEEK_PER_VOTE} are substracted per week.
 	 */

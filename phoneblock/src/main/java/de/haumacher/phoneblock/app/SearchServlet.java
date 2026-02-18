@@ -397,18 +397,28 @@ public class SearchServlet extends HttpServlet {
 		
 		searches = db.getSearchHistory(reports, phoneId, 7);
 		aiSummary = reports.getSummary(phoneId);
-		
+
 		prev = reports.getPrevPhone(phoneId);
 		next = reports.getNextPhone(phoneId);
-		
+
 		if (commit) {
 			session.commit();
+		}
+
+		// Suppress details for numbers rated positively by only a few users to protect personal contacts.
+		boolean suppressDetails = !info.isWhiteListed()
+				&& info.getVotes() <= 0 && info.getVotesWildcard() <= 0
+				&& numberInfo.getRatingLegitimate() < DB.MIN_LEGITIMATE;
+		if (suppressDetails) {
+			comments = Collections.emptyList();
+			aiSummary = null;
+			searches = Collections.emptyList();
 		}
 
 		// Ensure that equal number of positive and negative comments are shown (white-listed numbers are an exception).
 		List<UserComment> positive = comments.stream().filter(c -> c.getRating() == Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
 		List<UserComment> negative = comments.stream().filter(c -> c.getRating() != Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
-		
+
 		int positiveCnt = positive.size();
 		int negativeCnt = negative.size();
 		if (info.isWhiteListed()) {
@@ -423,14 +433,19 @@ public class SearchServlet extends HttpServlet {
 		List<UserComment> shownComments = new ArrayList<>(positive.subList(0, positiveCnt));
 		shownComments.addAll(negative.subList(0, negativeCnt));
 		shownComments.sort(COMMENT_ORDER);
-		
-		Map<Rating, Integer> ratings = new HashMap<>();
-		ratings.put(Rating.A_LEGITIMATE, numberInfo.getRatingLegitimate());
-		ratings.put(Rating.C_PING, numberInfo.getRatingPing());
-		ratings.put(Rating.D_POLL, numberInfo.getRatingPoll());
-		ratings.put(Rating.E_ADVERTISING, numberInfo.getRatingAdvertising());
-		ratings.put(Rating.F_GAMBLE, numberInfo.getRatingGamble());
-		ratings.put(Rating.G_FRAUD, numberInfo.getRatingFraud());
+
+		Map<Rating, Integer> ratings;
+		if (suppressDetails) {
+			ratings = Collections.emptyMap();
+		} else {
+			ratings = new HashMap<>();
+			ratings.put(Rating.A_LEGITIMATE, numberInfo.getRatingLegitimate());
+			ratings.put(Rating.C_PING, numberInfo.getRatingPing());
+			ratings.put(Rating.D_POLL, numberInfo.getRatingPoll());
+			ratings.put(Rating.E_ADVERTISING, numberInfo.getRatingAdvertising());
+			ratings.put(Rating.F_GAMBLE, numberInfo.getRatingGamble());
+			ratings.put(Rating.G_FRAUD, numberInfo.getRatingFraud());
+		}
 		
 		Rating topRating = info.getRating();
 		
