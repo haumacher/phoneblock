@@ -12,10 +12,12 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final long _lastPing;
 
+	private final int _publishedVotes;
+
 	/**
 	 * Creates a {@link DBBlockListEntry}.
 	 */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing) {
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, int publishedVotes) {
 		setPhone(phone)
 		.setAdded(added)
 		.setUpdated(updated)
@@ -31,6 +33,7 @@ public class DBNumberInfo extends NumberInfo {
 		.setRatingFraud(fraud)
 		.setSearches(searches);
 		_lastPing = lastPing;
+		_publishedVotes = publishedVotes;
 	}
 
 	/**
@@ -38,6 +41,13 @@ public class DBNumberInfo extends NumberInfo {
 	 */
 	public long getLastPing() {
 		return _lastPing;
+	}
+
+	/**
+	 * The snapshot of votes at the time of version assignment (from PUBLISHED_VOTES).
+	 */
+	public int getPublishedVotes() {
+		return _publishedVotes;
 	}
 
 }

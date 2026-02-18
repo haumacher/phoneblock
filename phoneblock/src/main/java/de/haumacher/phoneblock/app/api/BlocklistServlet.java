@@ -24,23 +24,15 @@ import jakarta.servlet.http.HttpServletResponse;
  * {@link HttpServlet} serving the blocklist with optional incremental synchronization.
  *
  * <p>
- * <b>Vote Count Normalization:</b> All vote counts are normalized to predefined threshold
- * values (see {@link DB#BLOCKLIST_THRESHOLDS}). For example, a number with 5-9 votes is
- * transmitted as having 4 votes. This ensures consistency between when updates are triggered
- * (only at threshold crossings) and the vote counts clients receive.
+ * <b>Vote Counts:</b> Actual vote counts are transmitted. Numbers with fewer votes than the
+ * configured minimum threshold ({@link DB#getMinVisibleVotes()}) are excluded from the full
+ * blocklist and returned with votes=0 in incremental updates (indicating removal).
  * </p>
  *
  * <p>
- * <b>Incremental Synchronization:</b> Updates are only sent when numbers cross threshold
- * boundaries. A number going from 5 to 6 votes triggers no update (both normalize to 4),
- * but crossing from 9 to 10 votes triggers an update (4 → 10). Numbers dropping below
- * the minimum threshold are sent with 0 votes, indicating removal from the blocklist.
- * </p>
- *
- * <p>
- * <b>Client-Side Filtering:</b> Clients should filter by one of the predefined threshold
- * values to ensure consistency with the update mechanism. Filtering by arbitrary values
- * (e.g., minVotes=7) is not meaningful since no updates occur at non-threshold values.
+ * <b>Incremental Synchronization:</b> Updates are sent when numbers cross the minimum
+ * threshold or when recent activity is detected on already-published numbers.
+ * Numbers dropping below the minimum threshold are sent with votes=0, indicating removal.
  * </p>
  *
  * <p>

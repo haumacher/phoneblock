@@ -57,7 +57,8 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that version updates are triggered when votes cross the minVisibleVotes threshold.
+	 * Test that version updates are triggered when votes cross the minVisibleVotes threshold,
+	 * and that subsequent votes are picked up via recent-activity detection.
 	 */
 	@Test
 	void testVersionUpdateOnThresholdCrossing() {
@@ -73,8 +74,9 @@ public class TestIncrementalBlocklist {
 		}
 		// Now the number has 10 votes, crossing the threshold
 
-		// Assign version to pending updates
-		long version1 = assignVersions();
+		// Assign version to pending updates (lastAssignTime starts at 0, set to time after)
+		long assignTime1 = time;
+		long version1 = assignVersions(assignTime1);
 
 		// Get the full blocklist
 		Blocklist fullList = _db.getBlockListAPI();
@@ -82,14 +84,14 @@ public class TestIncrementalBlocklist {
 		assertEquals("+49123456789", fullList.getNumbers().get(0).getPhone());
 		assertEquals(10, fullList.getNumbers().get(0).getVotes());
 
-		// Add more votes to cross the 20 threshold
+		// Add more votes (no threshold crossing, picked up via recent-activity)
 		for (int i = 0; i < 5; i++) {
 			processVotes("0123456789", 2, time++);
 		}
 		// Now the number has 20 votes
 
-		long version2 = assignVersions();
-		assertTrue(version2 > version1, "Version should increment after threshold crossing");
+		long version2 = assignVersions(time);
+		assertTrue(version2 > version1, "Version should increment for recently-active number");
 
 		// Get incremental update since version1
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
@@ -344,7 +346,7 @@ public class TestIncrementalBlocklist {
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
 		assertEquals(1, update.getNumbers().size());
 		assertEquals("+49200300400", update.getNumbers().get(0).getPhone());
-		assertEquals(10, update.getNumbers().get(0).getVotes(), "Votes should be normalized to threshold 10");
+		assertEquals(12, update.getNumbers().get(0).getVotes(), "Votes should be the actual count");
 		assertTrue(update.getNumbers().get(0).getLastActivity() > 0, "lastActivity should be non-zero");
 	}
 
@@ -407,7 +409,7 @@ public class TestIncrementalBlocklist {
 			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
 			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
 
-			int updated = reports.assignVersionToPendingUpdates(currentVersion + 1, lastAssignTime);
+			int updated = reports.assignVersionToPendingUpdates(currentVersion + 1, lastAssignTime, _db.getMinVisibleVotes());
 
 			if (updated > 0) {
 				long newVersion = currentVersion + 1;

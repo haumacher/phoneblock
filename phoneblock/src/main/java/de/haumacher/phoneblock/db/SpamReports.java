@@ -196,14 +196,14 @@ public interface SpamReports {
 	void recordCall(String phone, long now);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			where UPDATED >= #{after} and VOTES > 0 and ACTIVE
 			order by UPDATED desc
 			""")
 	List<DBNumberInfo> getLatestReports(long after);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			where VOTES > 0 and ACTIVE
 			order by UPDATED desc
 			limit #{limit}
@@ -211,13 +211,13 @@ public interface SpamReports {
 	List<DBNumberInfo> getAll(int limit);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			where s.PHONE = #{phone}
 			""")
 	DBNumberInfo getPhoneInfo(String phone);
 	
 	@Select("""
-			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING)
+			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.VOTES) as PUBLISHED_VOTES
 			from NUMBERS s
 			where
 				s.PHONE > #{prefix}
@@ -243,26 +243,26 @@ public interface SpamReports {
 	String getPrevPhone(String phone);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			WHERE ACTIVE
 			ORDER BY s.VOTES DESC LIMIT #{cnt}
 			""")
 	List<DBNumberInfo> getTopSpammers(int cnt);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			ORDER BY s.SEARCHES DESC LIMIT #{cnt}
 			""")
 	List<DBNumberInfo> getTopSearchesOverall(int cnt);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			WHERE ACTIVE and VOTES >= #{minVotes} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
 			""")
 	List<DBNumberInfo> getLatestBlocklistEntries(int minVotes);
 
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES from NUMBERS s
 			where s.ACTIVE and s.VOTES > 0
 			order by s.PHONE
 			""")
@@ -307,7 +307,7 @@ public interface SpamReports {
 	@Select(
 		"""
 		<script>
-		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 		where s.PHONE in
 		    <foreach item="item" index="index" collection="numbers" open="(" separator="," close=")">
 		        #{item}
@@ -317,7 +317,7 @@ public interface SpamReports {
 	List<DBNumberInfo> getNumbers(Collection<String> numbers);
 
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
 			where ACTIVE
 			""")
 	List<DBNumberInfo> getReports();
@@ -555,18 +555,19 @@ public interface SpamReports {
 
 	/**
 	 * Assigns the given version to all pending updates (and recently-active numbers) and clears the PENDING_UPDATE flag.
-	 * Also snapshots LASTPING into PUBLISHED_LASTPING for consistent blocklist delivery.
+	 * Also snapshots LASTPING into PUBLISHED_LASTPING and VOTES into PUBLISHED_VOTES for consistent blocklist delivery.
 	 * @param version The version to assign.
 	 * @param since Timestamp; numbers with LASTPING > since are also included (recent activity trigger).
+	 * @param minVotes Minimum votes threshold; only recently-active numbers at or above this threshold are included.
 	 * @return The number of entries updated.
 	 */
 	@Update("""
 		update NUMBERS set VERSION = #{version}, PENDING_UPDATE = false,
-		       PUBLISHED_LASTPING = LASTPING
+		       PUBLISHED_LASTPING = LASTPING, PUBLISHED_VOTES = VOTES
 		where PENDING_UPDATE = true
-		   OR (ACTIVE AND VERSION > 0 AND LASTPING > #{since})
+		   OR (ACTIVE AND VERSION > 0 AND VOTES >= #{minVotes} AND LASTPING > #{since})
 		""")
-	int assignVersionToPendingUpdates(long version, long since);
+	int assignVersionToPendingUpdates(long version, long since, int minVotes);
 
 	/**
 	 * Gets all blocklist changes since the given version.
@@ -575,7 +576,8 @@ public interface SpamReports {
 	@Select("""
 		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS,
 		       CASE WHEN s.ACTIVE THEN s.VOTES ELSE 0 END as VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
-		       s.PUBLISHED_LASTPING as LASTPING
+		       s.PUBLISHED_LASTPING as LASTPING,
+		       CASE WHEN s.ACTIVE THEN s.PUBLISHED_VOTES ELSE 0 END as PUBLISHED_VOTES
 		from NUMBERS s
 		where s.VERSION > #{sinceVersion}
 		order by s.VERSION, s.PHONE

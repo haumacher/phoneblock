@@ -216,7 +216,7 @@ public class BlocklistVersionService implements ServletContextListener {
 			long newVersion = currentVersion + 1;
 
 			// Assign new version to all pending updates and recently-active numbers
-			int updated = reports.assignVersionToPendingUpdates(newVersion, lastAssignTime);
+			int updated = reports.assignVersionToPendingUpdates(newVersion, lastAssignTime, db.getMinVisibleVotes());
 
 			if (updated > 0) {
 				// Update global version counter

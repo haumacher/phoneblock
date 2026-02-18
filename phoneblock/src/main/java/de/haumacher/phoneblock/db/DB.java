@@ -133,18 +133,6 @@ public class DB {
 	public static final int MIN_AGGREGATE_100 = 3;
 
 	/**
-	 * Vote thresholds that trigger blocklist version updates.
-	 * When a number crosses any of these thresholds, it's marked for version assignment.
-	 *
-	 * <p>
-	 * These are the only valid values for the <code>minVotes</code> parameter in blocklist APIs.
-	 * Using other values will result in inconsistent incremental synchronization, as version
-	 * updates are only triggered when numbers cross these specific thresholds.
-	 * </p>
-	 */
-	public static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
-
-	/**
 	 * Initial version number for the blocklist.
 	 *
 	 * <p>
@@ -173,16 +161,10 @@ public class DB {
 
 	/**
 	 * Minimum votes threshold for blocklist visibility.
-	 * Only threshold crossings at or above this value trigger version updates.
+	 * Numbers crossing this threshold are marked for version updates.
 	 * Default: 10 (same as {@link #DEFAULT_MIN_VISIBLE_VOTES}).
 	 */
 	private int _minVisibleVotes = DEFAULT_MIN_VISIBLE_VOTES;
-
-	/**
-	 * Effective thresholds for version updates, containing only thresholds >= minVisibleVotes.
-	 * Precomputed for efficiency in {@link #crossesThreshold(int, int)}.
-	 */
-	private int[] _effectiveThresholds = computeEffectiveThresholds(DEFAULT_MIN_VISIBLE_VOTES);
 
 	/**
 	 * Default minimum votes threshold for blocklist visibility.
@@ -239,42 +221,19 @@ public class DB {
 	 * Sets the minimum votes threshold for blocklist visibility.
 	 *
 	 * <p>
-	 * Only threshold crossings at or above this value will trigger blocklist version updates.
+	 * Numbers crossing this threshold will be marked for blocklist version updates.
 	 * This should be called during initialization, before any votes are processed.
 	 * </p>
 	 *
-	 * @param minVisibleVotes The minimum votes threshold. Must be one of {@link #BLOCKLIST_THRESHOLDS}.
+	 * @param minVisibleVotes The minimum votes threshold. Must be a positive integer.
 	 */
 	public void setMinVisibleVotes(int minVisibleVotes) {
-		if (!isValidBlocklistThreshold(minVisibleVotes)) {
-			LOG.warn("Invalid minVisibleVotes {}, must be one of: {}. Using default {}",
-				minVisibleVotes, getBlocklistThresholdsString(), DEFAULT_MIN_VISIBLE_VOTES);
+		if (minVisibleVotes < 1) {
+			LOG.warn("Invalid minVisibleVotes {}, must be positive. Using default {}", minVisibleVotes, DEFAULT_MIN_VISIBLE_VOTES);
 			minVisibleVotes = DEFAULT_MIN_VISIBLE_VOTES;
 		}
 		_minVisibleVotes = minVisibleVotes;
-		_effectiveThresholds = computeEffectiveThresholds(minVisibleVotes);
 		LOG.info("Blocklist minVisibleVotes set to: {}", _minVisibleVotes);
-	}
-
-	/**
-	 * Computes the effective thresholds for version updates.
-	 * Returns an array containing only thresholds >= minVisibleVotes.
-	 */
-	private static int[] computeEffectiveThresholds(int minVisibleVotes) {
-		int count = 0;
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
-			if (threshold >= minVisibleVotes) {
-				count++;
-			}
-		}
-		int[] result = new int[count];
-		int index = 0;
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
-			if (threshold >= minVisibleVotes) {
-				result[index++] = threshold;
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -1209,63 +1168,13 @@ public class DB {
 	}
 
 	/**
-	 * Checks if the vote count crosses any visible blocklist threshold.
+	 * Checks if the vote count crosses the minimum visible votes threshold.
 	 * Returns true if the number should be marked for version update.
-	 *
-	 * <p>
-	 * Only thresholds at or above {@link #_minVisibleVotes} are considered,
-	 * since changes below this threshold are not visible to API clients.
-	 * Uses precomputed {@link #_effectiveThresholds} for efficiency.
-	 * </p>
 	 */
 	private boolean crossesThreshold(int oldVotes, int newVotes) {
-		for (int threshold : _effectiveThresholds) {
-			boolean wasBelowThreshold = oldVotes < threshold;
-			boolean isNowAtOrAbove = newVotes >= threshold;
-			// Crossed upward: was below and is now at-or-above
-			// Crossed downward: was at-or-above and is now below
-			if (wasBelowThreshold == isNowAtOrAbove) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Checks if the given minVotes value is a valid blocklist threshold.
-	 *
-	 * <p>
-	 * Only the predefined threshold values ({@link #BLOCKLIST_THRESHOLDS}) can be used
-	 * for consistent incremental synchronization, as version updates are only triggered
-	 * when numbers cross these specific thresholds.
-	 * </p>
-	 *
-	 * @param minVotes The minimum votes value to validate
-	 * @return true if the value is a valid threshold, false otherwise
-	 */
-	public static boolean isValidBlocklistThreshold(int minVotes) {
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
-			if (minVotes == threshold) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns a formatted string of valid blocklist thresholds for error messages.
-	 *
-	 * @return A comma-separated string of all values from {@link #BLOCKLIST_THRESHOLDS}
-	 */
-	public static String getBlocklistThresholdsString() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < BLOCKLIST_THRESHOLDS.length; i++) {
-			if (i > 0) {
-				sb.append(", ");
-			}
-			sb.append(BLOCKLIST_THRESHOLDS[i]);
-		}
-		return sb.toString();
+		boolean wasBelowThreshold = oldVotes < _minVisibleVotes;
+		boolean isNowBelowThreshold = newVotes < _minVisibleVotes;
+		return wasBelowThreshold != isNowBelowThreshold;
 	}
 
 	/**
@@ -1454,33 +1363,9 @@ public class DB {
 		}
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
-				.setVotes(normalizeVotesToThreshold(n.getVotes()))
+				.setVotes(n.getPublishedVotes())
 				.setRating(rating(n))
 				.setLastActivity(n.getLastPing());
-	}
-
-	/**
-	 * Normalizes a vote count to the nearest threshold value.
-	 *
-	 * <p>
-	 * This ensures consistency between when updates are triggered (at threshold crossings)
-	 * and the vote counts transmitted to clients. A number with 5 votes (between thresholds
-	 * 4 and 10) is normalized to 4, since no update would be sent until it reaches 10 votes.
-	 * </p>
-	 *
-	 * @param votes The actual vote count.
-	 * @return The normalized threshold value (0 if below the lowest threshold).
-	 */
-	private static int normalizeVotesToThreshold(int votes) {
-		// Find the highest threshold that votes meets or exceeds
-		// Search from high to low for efficiency (most numbers have higher votes)
-		for (int i = BLOCKLIST_THRESHOLDS.length - 1; i >= 0; i--) {
-			if (votes >= BLOCKLIST_THRESHOLDS[i]) {
-				return BLOCKLIST_THRESHOLDS[i];
-			}
-		}
-		// Below all thresholds
-		return 0;
 	}
 
 	public static Rating rating(NumberInfo n) {
