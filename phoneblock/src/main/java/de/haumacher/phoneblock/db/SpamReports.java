@@ -177,7 +177,7 @@ public interface SpamReports {
 	
 	@Update("""
 			update NUMBERS s
-			set ACTIVE=false
+			set ACTIVE=false, PENDING_UPDATE=true
 			where ACTIVE
 			and s.LASTPING < #{before}
 			and s.VOTES - (#{before} - s.LASTPING)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
@@ -566,9 +566,9 @@ public interface SpamReports {
 	 */
 	@Select("""
 		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS,
-		       s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES
+		       CASE WHEN s.ACTIVE THEN s.VOTES ELSE 0 END as VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES
 		from NUMBERS s
-		where s.VERSION > #{sinceVersion} and s.ACTIVE
+		where s.VERSION > #{sinceVersion}
 		order by s.VERSION, s.PHONE
 		""")
 	List<DBNumberInfo> getBlocklistChangesSince(long sinceVersion);

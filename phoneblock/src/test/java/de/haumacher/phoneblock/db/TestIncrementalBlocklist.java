@@ -262,6 +262,55 @@ public class TestIncrementalBlocklist {
 		assertEquals(version1, update.getVersion());
 	}
 
+	/**
+	 * Test that archived numbers appear in incremental sync with votes=0.
+	 */
+	@Test
+	void testArchivedNumbersAppearInIncrementalSync() {
+		_db.setMinVisibleVotes(10);
+
+		long time = 1000;
+
+		// Add a number with 10 votes (above minVisibleVotes)
+		for (int i = 0; i < 5; i++) {
+			processVotes("0333444555", 2, time++);
+		}
+
+		// Assign initial version
+		long version1 = assignVersions();
+
+		// Verify number is in full blocklist
+		Blocklist list1 = _db.getBlockListAPI();
+		assertEquals(1, list1.getNumbers().size());
+		assertEquals("+49333444555", list1.getNumbers().get(0).getPhone());
+		assertEquals(10, list1.getNumbers().get(0).getVotes());
+
+		// Archive the number by calling archiveReportsWithLowVotes with a far-future timestamp.
+		// The formula: VOTES - (before - LASTPING)/1000/60/60/24/7/weekPerVote < minVotes
+		// With a far-future 'before', the subtracted amount will exceed votes, making it < minVotes.
+		long farFuture = time + 365L * 24 * 60 * 60 * 1000; // ~1 year in the future
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			int archived = reports.archiveReportsWithLowVotes(farFuture, DB.MIN_VOTES, 3);
+			assertTrue(archived > 0, "Number should have been archived");
+			session.commit();
+		}
+
+		// Assign new version — the archive query now sets PENDING_UPDATE=true
+		long version2 = assignVersions();
+		assertTrue(version2 > version1, "Version should increment after archiving");
+
+		// Incremental update since version1 should return the archived number with votes=0
+		Blocklist update = _db.getBlocklistUpdateAPI(version1);
+		assertEquals(1, update.getNumbers().size());
+		assertEquals("+49333444555", update.getNumbers().get(0).getPhone());
+		assertEquals(0, update.getNumbers().get(0).getVotes(), "Archived number should have votes=0 in incremental sync");
+
+		// Full blocklist should no longer contain the archived number
+		Blocklist list2 = _db.getBlockListAPI();
+		assertTrue(list2.getNumbers().isEmpty(), "Archived number should not appear in full blocklist");
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}
