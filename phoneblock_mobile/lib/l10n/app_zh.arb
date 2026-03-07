@@ -278,5 +278,15 @@
   "commentHintWildcard": "为什么要屏蔽此号码范围？",
   "next": "更多",
   "add": "添加",
-  "wildcardBlocked": "通配符规则"
+  "wildcardBlocked": "通配符规则",
+  "blocklistCache": "拦截列表缓存",
+  "blocklistCachedEntries": "{count}数字",
+  "blocklistLastSync": "上次同步",
+  "blocklistLastSyncNever": "从不",
+  "blocklistLastSyncAgo": "在 {timeAgo} 之前",
+  "blocklistVersion": "版本",
+  "blocklistSyncNow": "立即同步",
+  "blocklistSyncing": "同步...",
+  "blocklistSyncSuccess": "拦截列表同步成功",
+  "blocklistSyncFailed": "拦截列表同步失败"
 }

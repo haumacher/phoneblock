@@ -1003,4 +1003,40 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Regla comodín';
+
+  @override
+  String get blocklistCache => 'Caché de la lista de bloqueos';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count números';
+  }
+
+  @override
+  String get blocklistLastSync => 'Última sincronización';
+
+  @override
+  String get blocklistLastSyncNever => 'Nunca';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'antes $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Versión';
+
+  @override
+  String get blocklistSyncNow => 'Sincronizar ahora';
+
+  @override
+  String get blocklistSyncing => 'Sincroniza...';
+
+  @override
+  String get blocklistSyncSuccess =>
+      'Sincronización correcta de la lista de bloqueo';
+
+  @override
+  String get blocklistSyncFailed =>
+      'Error de sincronización de la lista de bloqueo';
 }

@@ -996,4 +996,38 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Regel med jokertegn';
+
+  @override
+  String get blocklistCache => 'Blokliste-cache';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count tal';
+  }
+
+  @override
+  String get blocklistLastSync => 'Sidste synkronisering';
+
+  @override
+  String get blocklistLastSyncNever => 'Aldrig';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'før $timeAgo.';
+  }
+
+  @override
+  String get blocklistVersion => 'Version';
+
+  @override
+  String get blocklistSyncNow => 'Synkroniser nu';
+
+  @override
+  String get blocklistSyncing => 'Synkroniser...';
+
+  @override
+  String get blocklistSyncSuccess => 'Bloklistesynkronisering vellykket';
+
+  @override
+  String get blocklistSyncFailed => 'Bloklistesynkronisering mislykkedes';
 }

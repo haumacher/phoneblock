@@ -278,5 +278,15 @@
   "commentHintWildcard": "Γιατί μπλοκάρετε αυτή την περιοχή αριθμών;",
   "next": "Περαιτέρω",
   "add": "Προσθέστε",
-  "wildcardBlocked": "Κανόνας Wildcard"
+  "wildcardBlocked": "Κανόνας Wildcard",
+  "blocklistCache": "Προσωρινή μνήμη αποκλεισμού",
+  "blocklistCachedEntries": "{count} αριθμοί",
+  "blocklistLastSync": "Τελευταίος συγχρονισμός",
+  "blocklistLastSyncNever": "Ποτέ",
+  "blocklistLastSyncAgo": "πριν {timeAgo}",
+  "blocklistVersion": "Έκδοση",
+  "blocklistSyncNow": "Συγχρονισμός τώρα",
+  "blocklistSyncing": "Συγχρονισμός...",
+  "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
+  "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού"
 }

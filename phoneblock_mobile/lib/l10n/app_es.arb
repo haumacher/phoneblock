@@ -278,5 +278,15 @@
   "commentHintWildcard": "¿Por qué bloquea este rango de números?",
   "next": "Más información en",
   "add": "Añadir",
-  "wildcardBlocked": "Regla comodín"
+  "wildcardBlocked": "Regla comodín",
+  "blocklistCache": "Caché de la lista de bloqueos",
+  "blocklistCachedEntries": "{count} números",
+  "blocklistLastSync": "Última sincronización",
+  "blocklistLastSyncNever": "Nunca",
+  "blocklistLastSyncAgo": "antes {timeAgo}",
+  "blocklistVersion": "Versión",
+  "blocklistSyncNow": "Sincronizar ahora",
+  "blocklistSyncing": "Sincroniza...",
+  "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
+  "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo"
 }

@@ -1014,4 +1014,40 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Regola jolly';
+
+  @override
+  String get blocklistCache => 'Cache della lista di blocco';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count';
+  }
+
+  @override
+  String get blocklistLastSync => 'Ultima sincronizzazione';
+
+  @override
+  String get blocklistLastSyncNever => 'Mai';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'prima di $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Versione';
+
+  @override
+  String get blocklistSyncNow => 'Sincronizza ora';
+
+  @override
+  String get blocklistSyncing => 'Sincronizzare...';
+
+  @override
+  String get blocklistSyncSuccess =>
+      'Sincronizzazione della lista di blocco riuscita';
+
+  @override
+  String get blocklistSyncFailed =>
+      'Sincronizzazione della lista di blocco fallita';
 }

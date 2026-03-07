@@ -278,5 +278,15 @@
   "commentHintWildcard": "Hvorfor blokkerer du denne nummerserien?",
   "next": "Videre",
   "add": "Legg til",
-  "wildcardBlocked": "Jokerregel"
+  "wildcardBlocked": "Jokerregel",
+  "blocklistCache": "Cache for blokkeringslister",
+  "blocklistCachedEntries": "{count} tall",
+  "blocklistLastSync": "Siste synkronisering",
+  "blocklistLastSyncNever": "Aldri",
+  "blocklistLastSyncAgo": "før {timeAgo}",
+  "blocklistVersion": "Versjon",
+  "blocklistSyncNow": "Synkroniser nå",
+  "blocklistSyncing": "Synkroniser...",
+  "blocklistSyncSuccess": "Synkronisering av blokkliste vellykket",
+  "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes"
 }

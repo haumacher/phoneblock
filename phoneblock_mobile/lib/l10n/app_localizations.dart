@@ -1795,6 +1795,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Wildcard-Regel'**
   String get wildcardBlocked;
+
+  /// Blocklist cache section header in settings
+  ///
+  /// In de, this message translates to:
+  /// **'Blocklist-Cache'**
+  String get blocklistCache;
+
+  /// Number of cached blocklist entries
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Nummern'**
+  String blocklistCachedEntries(int count);
+
+  /// Label for last sync time
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Synchronisierung'**
+  String get blocklistLastSync;
+
+  /// Shown when blocklist has never been synced
+  ///
+  /// In de, this message translates to:
+  /// **'Nie'**
+  String get blocklistLastSyncNever;
+
+  /// Relative time since last blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'vor {timeAgo}'**
+  String blocklistLastSyncAgo(String timeAgo);
+
+  /// Label for blocklist version number
+  ///
+  /// In de, this message translates to:
+  /// **'Version'**
+  String get blocklistVersion;
+
+  /// Button to trigger manual blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get blocklistSyncNow;
+
+  /// Shown while blocklist sync is in progress
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiere...'**
+  String get blocklistSyncing;
+
+  /// Snackbar message after successful manual sync
+  ///
+  /// In de, this message translates to:
+  /// **'Blocklist-Synchronisierung erfolgreich'**
+  String get blocklistSyncSuccess;
+
+  /// Snackbar message after failed manual sync
+  ///
+  /// In de, this message translates to:
+  /// **'Blocklist-Synchronisierung fehlgeschlagen'**
+  String get blocklistSyncFailed;
 }
 
 class _AppLocalizationsDelegate

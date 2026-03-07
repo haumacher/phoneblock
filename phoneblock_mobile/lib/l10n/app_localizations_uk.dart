@@ -998,4 +998,38 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Правило підстановки символів';
+
+  @override
+  String get blocklistCache => 'Кеш блокчейну';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count чисел';
+  }
+
+  @override
+  String get blocklistLastSync => 'Остання синхронізація';
+
+  @override
+  String get blocklistLastSyncNever => 'Ніколи.';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'перед $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Версія';
+
+  @override
+  String get blocklistSyncNow => 'Синхронізуйте зараз';
+
+  @override
+  String get blocklistSyncing => 'Синхронізувати...';
+
+  @override
+  String get blocklistSyncSuccess => 'Синхронізація блокчейну успішна';
+
+  @override
+  String get blocklistSyncFailed => 'Не вдалося синхронізувати блокчейн';
 }

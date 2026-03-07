@@ -278,5 +278,15 @@
   "commentHintWildcard": "Чому ви блокуєте цей діапазон номерів?",
   "next": "Далі",
   "add": "Додати",
-  "wildcardBlocked": "Правило підстановки символів"
+  "wildcardBlocked": "Правило підстановки символів",
+  "blocklistCache": "Кеш блокчейну",
+  "blocklistCachedEntries": "{count} чисел",
+  "blocklistLastSync": "Остання синхронізація",
+  "blocklistLastSyncNever": "Ніколи.",
+  "blocklistLastSyncAgo": "перед {timeAgo}",
+  "blocklistVersion": "Версія",
+  "blocklistSyncNow": "Синхронізуйте зараз",
+  "blocklistSyncing": "Синхронізувати...",
+  "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
+  "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн"
 }

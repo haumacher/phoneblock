@@ -278,5 +278,15 @@
   "commentHintWildcard": "Why are you blocking this number range?",
   "next": "Next",
   "add": "Add",
-  "wildcardBlocked": "Wildcard rule"
+  "wildcardBlocked": "Wildcard rule",
+  "blocklistCache": "Blocklist cache",
+  "blocklistCachedEntries": "{count} numbers",
+  "blocklistLastSync": "Last synchronization",
+  "blocklistLastSyncNever": "Never",
+  "blocklistLastSyncAgo": "before {timeAgo}",
+  "blocklistVersion": "Version",
+  "blocklistSyncNow": "Synchronize now",
+  "blocklistSyncing": "Synchronize...",
+  "blocklistSyncSuccess": "Blocklist synchronization successful",
+  "blocklistSyncFailed": "Blocklist synchronization failed"
 }

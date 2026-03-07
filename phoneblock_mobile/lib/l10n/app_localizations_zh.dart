@@ -905,4 +905,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get wildcardBlocked => '通配符规则';
+
+  @override
+  String get blocklistCache => '拦截列表缓存';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count数字';
+  }
+
+  @override
+  String get blocklistLastSync => '上次同步';
+
+  @override
+  String get blocklistLastSyncNever => '从不';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return '在 $timeAgo 之前';
+  }
+
+  @override
+  String get blocklistVersion => '版本';
+
+  @override
+  String get blocklistSyncNow => '立即同步';
+
+  @override
+  String get blocklistSyncing => '同步...';
+
+  @override
+  String get blocklistSyncSuccess => '拦截列表同步成功';
+
+  @override
+  String get blocklistSyncFailed => '拦截列表同步失败';
 }

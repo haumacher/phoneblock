@@ -278,5 +278,15 @@
   "commentHintWildcard": "Waarom blokkeer je deze nummerreeks?",
   "next": "Verder",
   "add": "Voeg  toe",
-  "wildcardBlocked": "Wildcard-regel"
+  "wildcardBlocked": "Wildcard-regel",
+  "blocklistCache": "Cache voor blokkadelijst",
+  "blocklistCachedEntries": "{count}",
+  "blocklistLastSync": "Laatste synchronisatie",
+  "blocklistLastSyncNever": "Nooit",
+  "blocklistLastSyncAgo": "voor {timeAgo}",
+  "blocklistVersion": "Versie",
+  "blocklistSyncNow": "Nu synchroniseren",
+  "blocklistSyncing": "Synchroniseren...",
+  "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
+  "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt"
 }

@@ -1005,4 +1005,38 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Κανόνας Wildcard';
+
+  @override
+  String get blocklistCache => 'Προσωρινή μνήμη αποκλεισμού';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count αριθμοί';
+  }
+
+  @override
+  String get blocklistLastSync => 'Τελευταίος συγχρονισμός';
+
+  @override
+  String get blocklistLastSyncNever => 'Ποτέ';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'πριν $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Έκδοση';
+
+  @override
+  String get blocklistSyncNow => 'Συγχρονισμός τώρα';
+
+  @override
+  String get blocklistSyncing => 'Συγχρονισμός...';
+
+  @override
+  String get blocklistSyncSuccess => 'Επιτυχής συγχρονισμός λίστας αποκλεισμού';
+
+  @override
+  String get blocklistSyncFailed => 'Αποτυχία συγχρονισμού λίστας αποκλεισμού';
 }

@@ -1513,5 +1513,65 @@
   "@wildcardBlocked": {
     "description": "Rating label shown for calls blocked by a wildcard rule",
     "x-translated": "d3053ad6"
+  },
+  "blocklistCache": "Blocklist-Cache",
+  "@blocklistCache": {
+    "description": "Blocklist cache section header in settings",
+    "x-translated": "ea4963bc"
+  },
+  "blocklistCachedEntries": "{count} Nummern",
+  "@blocklistCachedEntries": {
+    "description": "Number of cached blocklist entries",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "711da254"
+  },
+  "blocklistLastSync": "Letzte Synchronisierung",
+  "@blocklistLastSync": {
+    "description": "Label for last sync time",
+    "x-translated": "ee34a570"
+  },
+  "blocklistLastSyncNever": "Nie",
+  "@blocklistLastSyncNever": {
+    "description": "Shown when blocklist has never been synced",
+    "x-translated": "ca23ce1"
+  },
+  "blocklistLastSyncAgo": "vor {timeAgo}",
+  "@blocklistLastSyncAgo": {
+    "description": "Relative time since last blocklist sync",
+    "placeholders": {
+      "timeAgo": {
+        "type": "String"
+      }
+    },
+    "x-translated": "a52b49b9"
+  },
+  "blocklistVersion": "Version",
+  "@blocklistVersion": {
+    "description": "Label for blocklist version number",
+    "x-translated": "70a1ea5f"
+  },
+  "blocklistSyncNow": "Jetzt synchronisieren",
+  "@blocklistSyncNow": {
+    "description": "Button to trigger manual blocklist sync",
+    "x-translated": "72f38e94"
+  },
+  "blocklistSyncing": "Synchronisiere...",
+  "@blocklistSyncing": {
+    "description": "Shown while blocklist sync is in progress",
+    "x-translated": "e3edb1b2"
+  },
+  "blocklistSyncSuccess": "Blocklist-Synchronisierung erfolgreich",
+  "@blocklistSyncSuccess": {
+    "description": "Snackbar message after successful manual sync",
+    "x-translated": "1917bcf6"
+  },
+  "blocklistSyncFailed": "Blocklist-Synchronisierung fehlgeschlagen",
+  "@blocklistSyncFailed": {
+    "description": "Snackbar message after failed manual sync",
+    "x-translated": "f21d616f"
   }
 }

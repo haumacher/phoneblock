@@ -1006,4 +1006,39 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Reguła symboli wieloznacznych';
+
+  @override
+  String get blocklistCache => 'Pamięć podręczna listy bloków';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count liczb';
+  }
+
+  @override
+  String get blocklistLastSync => 'Ostatnia synchronizacja';
+
+  @override
+  String get blocklistLastSyncNever => 'Nigdy';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'przed $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Wersja';
+
+  @override
+  String get blocklistSyncNow => 'Synchronizuj teraz';
+
+  @override
+  String get blocklistSyncing => 'Synchronizacja...';
+
+  @override
+  String get blocklistSyncSuccess => 'Synchronizacja listy bloków powiodła się';
+
+  @override
+  String get blocklistSyncFailed =>
+      'Synchronizacja listy bloków nie powiodła się';
 }

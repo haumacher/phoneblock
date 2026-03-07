@@ -989,4 +989,38 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'قاعدة أحرف البدل';
+
+  @override
+  String get blocklistCache => 'ذاكرة التخزين المؤقت لقائمة الحظر';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return 'العدد $count الأرقام';
+  }
+
+  @override
+  String get blocklistLastSync => 'آخر مزامنة';
+
+  @override
+  String get blocklistLastSyncNever => 'أبداً';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'قبل $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'الإصدار';
+
+  @override
+  String get blocklistSyncNow => 'المزامنة الآن';
+
+  @override
+  String get blocklistSyncing => 'مزامنة...';
+
+  @override
+  String get blocklistSyncSuccess => 'تمت مزامنة قائمة الحظر بنجاح';
+
+  @override
+  String get blocklistSyncFailed => 'فشل مزامنة قائمة الحظر';
 }

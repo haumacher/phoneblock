@@ -995,4 +995,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Wildcard rule';
+
+  @override
+  String get blocklistCache => 'Blocklist cache';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count numbers';
+  }
+
+  @override
+  String get blocklistLastSync => 'Last synchronization';
+
+  @override
+  String get blocklistLastSyncNever => 'Never';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'before $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Version';
+
+  @override
+  String get blocklistSyncNow => 'Synchronize now';
+
+  @override
+  String get blocklistSyncing => 'Synchronize...';
+
+  @override
+  String get blocklistSyncSuccess => 'Blocklist synchronization successful';
+
+  @override
+  String get blocklistSyncFailed => 'Blocklist synchronization failed';
 }

@@ -1001,4 +1001,38 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get wildcardBlocked => 'Wildcard-regel';
+
+  @override
+  String get blocklistCache => 'Cache voor blokkadelijst';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count';
+  }
+
+  @override
+  String get blocklistLastSync => 'Laatste synchronisatie';
+
+  @override
+  String get blocklistLastSyncNever => 'Nooit';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'voor $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Versie';
+
+  @override
+  String get blocklistSyncNow => 'Nu synchroniseren';
+
+  @override
+  String get blocklistSyncing => 'Synchroniseren...';
+
+  @override
+  String get blocklistSyncSuccess => 'Synchronisatie van bloklijst geslaagd';
+
+  @override
+  String get blocklistSyncFailed => 'Synchronisatie blokkadelijst mislukt';
 }

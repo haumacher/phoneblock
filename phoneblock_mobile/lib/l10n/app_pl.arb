@@ -278,5 +278,15 @@
   "commentHintWildcard": "Dlaczego blokujesz ten zakres numerów?",
   "next": "Dalej",
   "add": "Dodaj",
-  "wildcardBlocked": "Reguła symboli wieloznacznych"
+  "wildcardBlocked": "Reguła symboli wieloznacznych",
+  "blocklistCache": "Pamięć podręczna listy bloków",
+  "blocklistCachedEntries": "{count} liczb",
+  "blocklistLastSync": "Ostatnia synchronizacja",
+  "blocklistLastSyncNever": "Nigdy",
+  "blocklistLastSyncAgo": "przed {timeAgo}",
+  "blocklistVersion": "Wersja",
+  "blocklistSyncNow": "Synchronizuj teraz",
+  "blocklistSyncing": "Synchronizacja...",
+  "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
+  "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się"
 }

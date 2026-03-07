@@ -278,5 +278,15 @@
   "commentHintWildcard": "Pourquoi bloquer cette tranche de numéros ?",
   "next": "Continuer",
   "add": "Ajouter",
-  "wildcardBlocked": "Règle des wildcards"
+  "wildcardBlocked": "Règle des wildcards",
+  "blocklistCache": "Cache de la liste des blocs",
+  "blocklistCachedEntries": "{count} numéros",
+  "blocklistLastSync": "Dernière synchronisation",
+  "blocklistLastSyncNever": "Jamais",
+  "blocklistLastSyncAgo": "avant {timeAgo}",
+  "blocklistVersion": "Version",
+  "blocklistSyncNow": "Synchroniser maintenant",
+  "blocklistSyncing": "Synchroniser...",
+  "blocklistSyncSuccess": "Synchronisation des listes de blocage réussie",
+  "blocklistSyncFailed": "Échec de la synchronisation de la liste de blocage"
 }

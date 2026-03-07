@@ -278,5 +278,15 @@
   "commentHintWildcard": "لماذا تحجب هذا النطاق من الأرقام؟",
   "next": "المزيد",
   "add": "إضافة",
-  "wildcardBlocked": "قاعدة أحرف البدل"
+  "wildcardBlocked": "قاعدة أحرف البدل",
+  "blocklistCache": "ذاكرة التخزين المؤقت لقائمة الحظر",
+  "blocklistCachedEntries": "العدد {count} الأرقام",
+  "blocklistLastSync": "آخر مزامنة",
+  "blocklistLastSyncNever": "أبداً",
+  "blocklistLastSyncAgo": "قبل {timeAgo}",
+  "blocklistVersion": "الإصدار",
+  "blocklistSyncNow": "المزامنة الآن",
+  "blocklistSyncing": "مزامنة...",
+  "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
+  "blocklistSyncFailed": "فشل مزامنة قائمة الحظر"
 }

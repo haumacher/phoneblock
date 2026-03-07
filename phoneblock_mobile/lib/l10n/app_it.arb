@@ -278,5 +278,15 @@
   "commentHintWildcard": "Perché state bloccando questo numero?",
   "next": "Ulteriori",
   "add": "Aggiungi",
-  "wildcardBlocked": "Regola jolly"
+  "wildcardBlocked": "Regola jolly",
+  "blocklistCache": "Cache della lista di blocco",
+  "blocklistCachedEntries": "{count}",
+  "blocklistLastSync": "Ultima sincronizzazione",
+  "blocklistLastSyncNever": "Mai",
+  "blocklistLastSyncAgo": "prima di {timeAgo}",
+  "blocklistVersion": "Versione",
+  "blocklistSyncNow": "Sincronizza ora",
+  "blocklistSyncing": "Sincronizzare...",
+  "blocklistSyncSuccess": "Sincronizzazione della lista di blocco riuscita",
+  "blocklistSyncFailed": "Sincronizzazione della lista di blocco fallita"
 }
