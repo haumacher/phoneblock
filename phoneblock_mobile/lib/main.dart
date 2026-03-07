@@ -555,8 +555,9 @@ void main() async {
       final location = args['location'] as String?;
 
       // Parse rating if available
+      final isWildcard = ratingStr == 'WILDCARD';
       Rating? rating;
-      if (ratingStr != null) {
+      if (ratingStr != null && !isWildcard) {
         rating = _parseRatingFromService(ratingStr);
       }
 
@@ -570,6 +571,7 @@ void main() async {
         rating: rating,
         label: label,
         location: location,
+        isWildcardBlocked: isWildcard,
       );
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -737,8 +739,9 @@ Future<void> syncStoredScreeningResults() async {
         final ratingStr = data['rating'] as String?;
 
         // Parse rating if available
+        final isWildcard = ratingStr == 'WILDCARD';
         Rating? rating;
-        if (ratingStr != null) {
+        if (ratingStr != null && !isWildcard) {
           rating = _parseRatingFromService(ratingStr);
         }
 
@@ -751,6 +754,7 @@ Future<void> syncStoredScreeningResults() async {
           rating: rating,
           label: data['label'] as String?,
           location: data['location'] as String?,
+          isWildcardBlocked: isWildcard,
         );
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -1446,12 +1450,15 @@ class _MainScreenState extends State<MainScreen> {
       displayRating = Rating.aLEGITIMATE;
     }
 
-    final color = bgColor(displayRating);
+    final color = call.isWildcardBlocked ? Colors.orange : bgColor(displayRating);
     final String ratingText = labelText(context, displayRating);
 
     // Build the display text
     final String displayText;
-    if (isPotentialSpam) {
+    if (call.isWildcardBlocked) {
+      // Show "Wildcard-Regel" for wildcard-blocked calls
+      displayText = context.l10n.wildcardBlocked;
+    } else if (isPotentialSpam) {
       // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
       displayText = '$ratingText ?';
     } else if (wasBlocked) {
@@ -1542,7 +1549,12 @@ class _MainScreenState extends State<MainScreen> {
             leading: Stack(
               clipBehavior: Clip.none,
               children: [
-                buildRatingAvatar(displayRating),
+                call.isWildcardBlocked
+                    ? CircleAvatar(
+                        backgroundColor: Colors.orange.withValues(alpha: 0.1),
+                        child: const Icon(Icons.filter_alt, color: Colors.orange),
+                      )
+                    : buildRatingAvatar(displayRating),
                 if (isNew)
                   Positioned(
                     right: -2,

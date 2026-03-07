@@ -15,6 +15,7 @@ class ScreenedCall {
   final Rating? rating; // The type of spam (e.g., PING, POLL, ADVERTISING, etc.)
   final String? label; // Formatted phone number for display (e.g., "(DE) 030 12345678")
   final String? location; // City or region where the call originated (e.g., "Berlin")
+  final bool isWildcardBlocked; // true if blocked by a local wildcard prefix rule
 
   // Unified source tracking
   final CallSource source; // Where the call came from (mobile or fritzbox)
@@ -35,6 +36,7 @@ class ScreenedCall {
     this.rating,
     this.label,
     this.location,
+    this.isWildcardBlocked = false,
     this.source = CallSource.mobile,
     this.duration,
     this.device,
@@ -52,7 +54,8 @@ class ScreenedCall {
   factory ScreenedCall.fromMap(Map<String, dynamic> map) {
     Rating? rating;
     final ratingStr = map['rating'] as String?;
-    if (ratingStr != null) {
+    final isWildcard = ratingStr == 'WILDCARD';
+    if (ratingStr != null && !isWildcard) {
       rating = _parseRating(ratingStr);
     }
 
@@ -77,6 +80,7 @@ class ScreenedCall {
       rating: rating,
       label: map['label'] as String?,
       location: map['location'] as String?,
+      isWildcardBlocked: isWildcard,
       source: source,
       duration: map['duration'] as int?,
       device: map['device'] as String?,
@@ -94,7 +98,7 @@ class ScreenedCall {
       'wasBlocked': wasBlocked ? 1 : 0,
       'votes': votes,
       'votesWildcard': votesWildcard,
-      'rating': rating != null ? _ratingToString(rating!) : null,
+      'rating': isWildcardBlocked ? 'WILDCARD' : (rating != null ? _ratingToString(rating!) : null),
       'label': label,
       'location': location,
       'source': source.name,
