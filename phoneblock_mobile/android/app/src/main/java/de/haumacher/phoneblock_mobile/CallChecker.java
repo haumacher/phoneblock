@@ -13,6 +13,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -112,6 +115,20 @@ public class CallChecker extends CallScreeningService {
             }
         } catch (org.json.JSONException e) {
             Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
+        }
+
+        // Check local blocklist cache before server query
+        int localVotes = lookupLocalBlocklist(number);
+        if (localVotes >= minVotes) {
+            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by local blocklist: " + number + " with " + localVotes + " votes");
+            respondToCall(callDetails, new CallResponse.Builder()
+                .setDisallowCall(true)
+                .setRejectCall(true)
+                .setSkipCallLog(true)
+                .setSkipNotification(true)
+                .build());
+            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, localVotes, 0, null, null, null);
+            return;
         }
 
         AtomicBoolean canceled = new AtomicBoolean();
@@ -267,6 +284,42 @@ public class CallChecker extends CallScreeningService {
 
     private void acceptCall(@NonNull Call.Details callDetails) {
         respondToCall(callDetails, new CallResponse.Builder().build());
+    }
+
+    /**
+     * Looks up a phone number in the local blocklist cache.
+     *
+     * @param number The normalized phone number in E.164 format.
+     * @return The vote count if found, -1 if not found or on error.
+     */
+    private int lookupLocalBlocklist(String number) {
+        try {
+            java.io.File dbFile = getDatabasePath("screened_calls.db");
+            if (!dbFile.exists()) {
+                return -1;
+            }
+
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY);
+            try {
+                Cursor cursor = db.rawQuery(
+                    "SELECT votes FROM blocklist WHERE phone = ?",
+                    new String[]{number});
+                try {
+                    if (cursor.moveToFirst()) {
+                        return cursor.getInt(0);
+                    }
+                    return -1;
+                } finally {
+                    cursor.close();
+                }
+            } finally {
+                db.close();
+            }
+        } catch (Exception e) {
+            Log.w(CallChecker.class.getName(), "Error looking up local blocklist", e);
+            return -1;
+        }
     }
 
 }
