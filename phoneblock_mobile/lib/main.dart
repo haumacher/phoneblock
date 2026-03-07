@@ -2646,12 +2646,15 @@ class _MainScreenState extends State<MainScreen> {
     return [
       Icon(icon, size: 14, color: color),
       const SizedBox(width: 4),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: color,
-          fontWeight: FontWeight.w500,
+      Flexible(
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: color,
+            fontWeight: FontWeight.w500,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     ];
