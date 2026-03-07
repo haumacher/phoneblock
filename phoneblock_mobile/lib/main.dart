@@ -1447,19 +1447,19 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     final color = bgColor(displayRating);
-    final String ratingText = (label(context, displayRating) as Text).data!;
+    final String ratingText = labelText(context, displayRating);
 
-    // Build the label text
-    final String labelText;
+    // Build the display text
+    final String displayText;
     if (isPotentialSpam) {
       // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
-      labelText = '$ratingText ?';
+      displayText = '$ratingText ?';
     } else if (wasBlocked) {
       // Show the rating for blocked calls
-      labelText = ratingText;
+      displayText = ratingText;
     } else {
       // Show "Legitim" for non-blocked calls without spam indicators
-      labelText = context.l10n.ratingLegitimate;
+      displayText = context.l10n.ratingLegitimate;
     }
 
     return Dismissible(
@@ -1615,7 +1615,7 @@ class _MainScreenState extends State<MainScreen> {
                     border: Border.all(color: color, width: 1),
                   ),
                   child: Text(
-                    labelText,
+                    displayText,
                     style: TextStyle(
                       color: color,
                       fontWeight: FontWeight.bold,
@@ -2039,14 +2039,17 @@ class _MainScreenState extends State<MainScreen> {
               mainAxisSize: MainAxisSize.min,
               children: Rating.values
                   .where((r) => r != Rating.aLEGITIMATE) // Exclude legitimate
-                  .map((rating) => ListTile(
-                        leading: icon(rating),
-                        title: label(context, rating),
-                        tileColor: bgColor(rating).withValues(alpha: 0.1),
-                        onTap: () {
-                          Navigator.of(context).pop(rating);
-                        },
-                      ))
+                  .map((rating) {
+                    final color = bgColor(rating);
+                    return ListTile(
+                      leading: Icon(ratingIcon(rating), color: color),
+                      title: Text(labelText(context, rating), style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+                      tileColor: color.withValues(alpha: 0.1),
+                      onTap: () {
+                        Navigator.of(context).pop(rating);
+                      },
+                    );
+                  })
                   .toList(),
             ),
           ),
@@ -2819,15 +2822,15 @@ void registerPhoneBlock(BuildContext context) async {
   }
 }
 
-Widget label(BuildContext context, Rating rating) {
+String labelText(BuildContext context, Rating rating) {
   switch (rating) {
-    case Rating.aLEGITIMATE: return Text(context.l10n.ratingLegitimate, style: const TextStyle(color: Colors.white));
-    case Rating.aDVERTISING: return Text(context.l10n.ratingAdvertising, style: const TextStyle(color: Color.fromRGBO(0,0,0,.7)));
-    case Rating.uNKNOWN: return Text(context.l10n.ratingSpam, style: const TextStyle(color: Colors.white));
-    case Rating.pING: return Text(context.l10n.ratingPingCall, style: const TextStyle(color: Colors.white));
-    case Rating.gAMBLE: return Text(context.l10n.ratingGamble, style: const TextStyle(color: Colors.white));
-    case Rating.fRAUD: return Text(context.l10n.ratingFraud, style: const TextStyle(color: Colors.white));
-    case Rating.pOLL: return Text(context.l10n.ratingPoll, style: const TextStyle(color: Colors.white));
+    case Rating.aLEGITIMATE: return context.l10n.ratingLegitimate;
+    case Rating.aDVERTISING: return context.l10n.ratingAdvertising;
+    case Rating.uNKNOWN: return context.l10n.ratingSpam;
+    case Rating.pING: return context.l10n.ratingPingCall;
+    case Rating.gAMBLE: return context.l10n.ratingGamble;
+    case Rating.fRAUD: return context.l10n.ratingFraud;
+    case Rating.pOLL: return context.l10n.ratingPoll;
   }
 }
 
@@ -2843,15 +2846,15 @@ Color bgColor(Rating rating) {
   }
 }
 
-Icon icon(Rating rating) {
+IconData ratingIcon(Rating rating) {
   switch (rating) {
-    case Rating.aLEGITIMATE: return const Icon(Icons.check);
-    case Rating.uNKNOWN: return const Icon(Icons.question_mark);
-    case Rating.pING: return const Icon(Icons.block);
-    case Rating.pOLL: return const Icon(Icons.query_stats);
-    case Rating.aDVERTISING: return const Icon(Icons.ondemand_video);
-    case Rating.gAMBLE: return const Icon(Icons.videogame_asset_off);
-    case Rating.fRAUD: return const Icon(Icons.warning);
+    case Rating.aLEGITIMATE: return Icons.check;
+    case Rating.uNKNOWN: return Icons.question_mark;
+    case Rating.pING: return Icons.block;
+    case Rating.pOLL: return Icons.query_stats;
+    case Rating.aDVERTISING: return Icons.ondemand_video;
+    case Rating.gAMBLE: return Icons.videogame_asset_off;
+    case Rating.fRAUD: return Icons.warning;
   }
 }
 
@@ -2873,7 +2876,7 @@ Widget buildRatingAvatar(Rating rating) {
   final color = bgColor(rating);
   return CircleAvatar(
     backgroundColor: color.withValues(alpha: 0.1),
-    child: Icon(icon(rating).icon!, color: color),
+    child: Icon(ratingIcon(rating), color: color),
   );
 }
 
@@ -2898,11 +2901,13 @@ class RateScreen extends StatelessWidget {
   }
 
   Widget ratingButton(BuildContext context, Rating rating, Call call) {
+    final color = bgColor(rating);
     return Container(
       margin: const EdgeInsets.all(10),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor(rating),
+          backgroundColor: color.withValues(alpha: 0.1),
+          foregroundColor: color,
           shadowColor: Colors.blueGrey,
           elevation: 3,
           shape: RoundedRectangleBorder(
@@ -2914,8 +2919,8 @@ class RateScreen extends StatelessWidget {
           Navigator.pop(context);
         },
         child: Row(mainAxisSize: MainAxisSize.max, children: [
-          Padding(padding: const EdgeInsets.only(right: 10), child: icon(rating)),
-          label(context, rating)
+          Padding(padding: const EdgeInsets.only(right: 10), child: Icon(ratingIcon(rating))),
+          Text(labelText(context, rating), style: const TextStyle(fontWeight: FontWeight.w500)),
         ]),
       ),
     );
