@@ -2274,7 +2274,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
