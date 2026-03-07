@@ -550,7 +550,7 @@ void callbackDispatcher() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
+  await Workmanager().initialize(callbackDispatcher);
 
   // Initialize app version from package info
   final packageInfo = await PackageInfo.fromPlatform();
