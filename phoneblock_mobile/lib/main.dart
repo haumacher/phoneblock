@@ -3287,7 +3287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Save theme mode setting.
-  Future<void> _saveThemeMode(String value) async {
+  Future<void> _saveThemeMode(BuildContext context, String value) async {
     if (kDebugMode) {
       print("Saving themeMode: $value");
     }
@@ -3328,7 +3328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Save answerbot enabled setting.
-  Future<void> _saveAnswerbotEnabled(bool value) async {
+  Future<void> _saveAnswerbotEnabled(BuildContext context, bool value) async {
     if (kDebugMode) {
       print("Saving answerbotEnabled: $value");
     }
@@ -3501,7 +3501,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                     onChanged: (value) {
                       if (value != null) {
-                        _saveThemeMode(value);
+                        _saveThemeMode(context, value);
                       }
                     },
                   ),
@@ -3545,7 +3545,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(context.l10n.answerbotFeatureDescription),
                   value: _answerbotEnabled,
                   onChanged: (value) {
-                    _saveAnswerbotEnabled(value);
+                    _saveAnswerbotEnabled(context, value);
                   },
                 ),
                 const Divider(),

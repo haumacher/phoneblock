@@ -176,7 +176,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     }
   }
 
-  Future<void> _enableCardDav() async {
+  Future<void> _enableCardDav(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
 
     setState(() {
@@ -187,7 +187,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       // Get PhoneBlock credentials
       final authToken = await getAuthToken();
       if (authToken == null) {
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.fritzboxPhoneBlockNotLoggedIn),
@@ -201,7 +201,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       // Fetch PhoneBlock username
       final accountSettings = await fetchAccountSettings(authToken);
       if (accountSettings?.login == null) {
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.fritzboxCannotGetUsername),
@@ -218,7 +218,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         phoneBlockToken: authToken,
       );
 
-      if (mounted) {
+      if (context.mounted) {
         await _loadData();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -227,7 +227,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         }
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.fritzboxBlocklistConfigFailed),
@@ -244,7 +244,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     }
   }
 
-  Future<void> _disableCardDav() async {
+  Future<void> _disableCardDav(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
 
     final confirmed = await showDialog<bool>(
@@ -267,7 +267,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     if (confirmed == true) {
       await FritzBoxService.instance.removeCardDav();
-      if (mounted) {
+      if (context.mounted) {
         await _loadData();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -504,7 +504,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
                       : const Icon(Icons.cloud_sync),
                   title: Text(l10n.fritzboxEnableCardDav),
                   subtitle: Text(l10n.fritzboxEnableCardDavDescription),
-                  onTap: _isConfiguringCardDav ? null : _enableCardDav,
+                  onTap: _isConfiguringCardDav ? null : () => _enableCardDav(context),
                 );
               },
             ),
@@ -542,7 +542,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         ListTile(
           leading: const Icon(Icons.delete_outline, color: Colors.orange),
           title: Text(l10n.fritzboxDisableCardDav),
-          onTap: _disableCardDav,
+          onTap: () => _disableCardDav(context),
         ),
       ],
     );
@@ -631,7 +631,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
             subtitle: Text(subtitle),
             value: serverEnabled,
             onChanged: info != null && !_isTogglingAnswerbot
-                ? _toggleAnswerbot
+                ? (enabled) => _toggleAnswerbot(context, enabled)
                 : null,
           ),
           ListTile(
@@ -659,7 +659,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.orange),
             title: Text(l10n.fritzboxDisableAnswerbot),
-            onTap: _disableAnswerbot,
+            onTap: () => _disableAnswerbot(context),
           ),
         ],
       );
@@ -713,7 +713,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
   static const int _maxRetry = 20;
 
-  Future<void> _toggleAnswerbot(bool enabled) async {
+  Future<void> _toggleAnswerbot(BuildContext context, bool enabled) async {
     final botId = _config?.answerbotId;
     if (botId == null) return;
 
@@ -723,7 +723,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
 
     try {
       if (enabled) {
-        await _enableAnswerbotOnServer(botId);
+        await _enableAnswerbotOnServer(context, botId);
       } else {
         await sendRequest(DisableAnswerBot(id: botId));
       }
@@ -754,7 +754,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
   }
 
   /// Enables the answerbot and polls for SIP registration to complete.
-  Future<void> _enableAnswerbotOnServer(int botId) async {
+  Future<void> _enableAnswerbotOnServer(BuildContext context, int botId) async {
     final l10n = AppLocalizations.of(context)!;
 
     final response = await sendRequest(EnableAnswerBot(id: botId));
@@ -797,7 +797,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     }
   }
 
-  Future<void> _disableAnswerbot() async {
+  Future<void> _disableAnswerbot(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
 
     final confirmed = await showDialog<bool>(
