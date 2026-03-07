@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -72,9 +71,9 @@ public class CallChecker extends CallScreeningService {
         int minVotes = prefs.getInt("min_votes", 4);
         boolean blockRanges = prefs.getBoolean("block_ranges", true);
         int minRangeVotes = prefs.getInt("min_range_votes", 10);
+        String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
 
         if (authToken == null) {
-            // Not logged in, no screening possible.
             Log.d(CallChecker.class.getName(), "onScreenCall: No PhoneBlock authorization, cannot screen call.");
             acceptCall(callDetails);
             return;
@@ -82,149 +81,134 @@ public class CallChecker extends CallScreeningService {
 
         String rawNumber = handle.getSchemeSpecificPart();
 
-        // Get country code for normalization
         TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         String countryIso = tm != null ? tm.getNetworkCountryIso() : null;
-
-        // Normalize to international format for consistent hashing
         String number = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryIso);
         if (number == null) {
-            // Unable to normalize, accept the call
             Log.w(CallChecker.class.getName(), "Unable to normalize number: " + rawNumber);
             acceptCall(callDetails);
             return;
         }
 
-        // Check local wildcard blocking rules
-        String matchedPrefix = null;
-        String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
-        try {
-            org.json.JSONArray wildcardPrefixes = new org.json.JSONArray(wildcardPrefixesJson);
-            for (int i = 0; i < wildcardPrefixes.length(); i++) {
-                String prefix = wildcardPrefixes.getString(i);
-                if (number.startsWith(prefix)) {
-                    matchedPrefix = prefix;
-                    break;
+        AtomicBoolean responded = new AtomicBoolean();
+        final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
+
+        // Background thread: query API, fall back to local data, decide once
+        ScheduledFuture<?> queryFuture = _pool.schedule(() -> {
+            int votes = 0;
+            int votesWildcard = 0;
+            boolean archived = false;
+            String rating = null;
+            String label = null;
+            String location = null;
+
+            try {
+                JSONObject json = queryPhoneBlock(number, authToken);
+                votes = json.getInt("votes");
+                votesWildcard = json.optInt("votesWildcard", 0);
+                archived = json.getBoolean("archived");
+                rating = json.optString("rating", null);
+                label = json.optString("label", null);
+                location = json.optString("location", null);
+            } catch (Exception e) {
+                Log.d(CallChecker.class.getName(), "onScreenCall: API failed, using local data: " + number, e);
+                int localVotes = lookupLocalBlocklist(number);
+                if (localVotes > 0) {
+                    votes = localVotes;
                 }
             }
-        } catch (org.json.JSONException e) {
-            Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
+
+            final int fVotes = votes;
+            final int fVotesWildcard = votesWildcard;
+            final boolean fArchived = archived;
+            final String fRating = rating;
+            final String fLabel = label;
+            final String fLocation = location;
+
+            if (responded.compareAndSet(false, true)) {
+                if (timeoutFuture[0] != null) {
+                    timeoutFuture[0].cancel(false);
+                }
+                Handler.createAsync(Looper.getMainLooper()).post(() ->
+                    decideAndRespond(callDetails, rawNumber, number,
+                        fVotes, fVotesWildcard, fArchived, fRating, fLabel, fLocation,
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
+            }
+        }, 0, TimeUnit.MILLISECONDS);
+
+        // Timeout: use local data only
+        timeoutFuture[0] = _pool.schedule(() -> {
+            if (responded.compareAndSet(false, true)) {
+                queryFuture.cancel(true);
+                int localVotes = Math.max(0, lookupLocalBlocklist(number));
+
+                Handler.createAsync(Looper.getMainLooper()).post(() ->
+                    decideAndRespond(callDetails, rawNumber, number,
+                        localVotes, 0, false, null, null, null,
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
+            }
+        }, 4500, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Single decision point: checks votes, range votes, and wildcard filters,
+     * then either blocks or accepts the call and reports the result.
+     */
+    private void decideAndRespond(@NonNull Call.Details callDetails, String rawNumber, String number,
+            int votes, int votesWildcard, boolean archived, String rating, String label, String location,
+            int minVotes, boolean blockRanges, int minRangeVotes, String wildcardPrefixesJson) {
+
+        boolean block = false;
+        String matchedPrefix = null;
+
+        if (votes >= minVotes && !archived) {
+            block = true;
+        } else if (blockRanges && votesWildcard >= minRangeVotes) {
+            block = true;
+        } else {
+            matchedPrefix = findWildcardMatch(number, wildcardPrefixesJson);
+            if (matchedPrefix != null) {
+                block = true;
+            }
         }
 
-        // Check local blocklist cache
-        int localVotes = lookupLocalBlocklist(number);
-
-        // Determine if we should block immediately based on local data
-        final boolean locallyBlocked = matchedPrefix != null || localVotes >= minVotes;
-
-        if (locallyBlocked) {
-            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking locally: " + number
-                + (matchedPrefix != null ? " (wildcard " + matchedPrefix + "*)" : " (" + localVotes + " local votes)"));
+        if (block) {
+            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking: " + number
+                + " (votes=" + votes + ", rangeVotes=" + votesWildcard
+                + (matchedPrefix != null ? ", wildcard=" + matchedPrefix + "*" : "") + ")");
             respondToCall(callDetails, new CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
                 .setSkipCallLog(true)
                 .setSkipNotification(true)
                 .build());
-        }
-
-        // No local spam indicators at all — accept without querying the API
-        if (!locallyBlocked && localVotes <= 0) {
-            Log.d(CallChecker.class.getName(), "onScreenCall: No local spam data, accepting: " + number);
+        } else {
+            Log.d(CallChecker.class.getName(), "onScreenCall: Accepting: " + number
+                + " (votes=" + votes + ", rangeVotes=" + votesWildcard + ")");
             acceptCall(callDetails);
-            return;
         }
 
-        // Query the API (single location):
-        // - If locally blocked: for server tracking + enriching the call report
-        // - If local votes > 0 but below threshold: for a definitive blocking decision
-        final String blockedPrefix = matchedPrefix;
-        final int blockedLocalVotes = localVotes;
-        AtomicBoolean canceled = new AtomicBoolean();
-        final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
+        if (matchedPrefix != null) {
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, "WILDCARD", label, location, matchedPrefix);
+        } else {
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, rating, label, location);
+        }
+    }
 
-        ScheduledFuture<?> queryFuture = _pool.schedule(() -> {
-            try {
-                JSONObject json = queryPhoneBlock(number, authToken);
-                boolean archived = json.getBoolean("archived");
-                int votes = json.getInt("votes");
-                int votesWildcard = json.optInt("votesWildcard", 0);
-                String rating = json.optString("rating", null);
-                String label = json.optString("label", null);
-                String location = json.optString("location", null);
-
-                if (locallyBlocked) {
-                    // Already responded — just report with enriched API data
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                        if (blockedPrefix != null) {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, "WILDCARD", label, location, blockedPrefix);
-                        } else {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, rating, label, location);
-                        }
-                    });
-                    return;
-                }
-
-                // Not locally blocked — decide based on API response
-                final boolean shouldBlock = (votes >= minVotes && !archived)
-                    || (blockRanges && votesWildcard >= minRangeVotes);
-
-                if (canceled.compareAndSet(false, true)) {
-                    if (timeoutFuture[0] != null) {
-                        timeoutFuture[0].cancel(false);
-                    }
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                        if (shouldBlock) {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking by API: " + number + " (" + votes + " votes, " + votesWildcard + " range votes)");
-                            respondToCall(callDetails, new CallResponse.Builder()
-                                .setDisallowCall(true)
-                                .setRejectCall(true)
-                                .setSkipCallLog(true)
-                                .setSkipNotification(true)
-                                .build());
-                        } else {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Accepting by API: " + number + " (" + votes + " votes, " + votesWildcard + " range votes)");
-                            acceptCall(callDetails);
-                        }
-                        MainActivity.reportScreenedCall(CallChecker.this, rawNumber, shouldBlock, votes, votesWildcard, rating, label, location);
-                    });
-                }
-            } catch (Exception e) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: API query failed: " + number, e);
-
-                if (locallyBlocked) {
-                    // Already responded — report with local data only
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                        if (blockedPrefix != null) {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null, blockedPrefix);
-                        } else {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, blockedLocalVotes, 0, null, null, null);
-                        }
-                    });
-                    return;
-                }
-
-                if (canceled.compareAndSet(false, true)) {
-                    if (timeoutFuture[0] != null) {
-                        timeoutFuture[0].cancel(false);
-                    }
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> acceptCall(callDetails));
+    /** Finds the first wildcard prefix that matches the given number, or null. */
+    private static String findWildcardMatch(String number, String wildcardPrefixesJson) {
+        try {
+            org.json.JSONArray prefixes = new org.json.JSONArray(wildcardPrefixesJson);
+            for (int i = 0; i < prefixes.length(); i++) {
+                String prefix = prefixes.getString(i);
+                if (number.startsWith(prefix)) {
+                    return prefix;
                 }
             }
-        }, 0, TimeUnit.MILLISECONDS);
-
-        // Timeout only needed when the API decides (not locally blocked)
-        if (!locallyBlocked) {
-            timeoutFuture[0] = _pool.schedule(() -> {
-                if (canceled.compareAndSet(false, true)) {
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                        Log.d(CallChecker.class.getName(), "onScreenCall: API timeout, accepting: " + number);
-                        acceptCall(callDetails);
-                    });
-                }
-                queryFuture.cancel(true);
-            }, 4500, TimeUnit.MILLISECONDS);
+        } catch (org.json.JSONException e) {
+            Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
         }
+        return null;
     }
 
     private @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
