@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:phoneblock_mobile/api.dart' as api;
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 
@@ -680,6 +681,46 @@ class ScreenedCallsDatabase {
     await db.update('blocklist_sync', {
       'syncOffset': offsetMs,
     }, where: 'id = 1');
+  }
+
+  /// Applies a batch of blocklist updates in a single transaction.
+  ///
+  /// Entries with `votes > 0` are upserted, entries with `votes == 0` are
+  /// deleted. The sync metadata is updated atomically with the data changes.
+  Future<void> applyBlocklistUpdates(
+    List<api.BlockListEntry> entries,
+    String Function(api.BlockListEntry) ratingToString,
+    void Function(int upserted, int deleted) onComplete,
+    int newVersion,
+  ) async {
+    final db = await database;
+    int upserted = 0;
+    int deleted = 0;
+
+    await db.transaction((txn) async {
+      for (final entry in entries) {
+        if (entry.votes > 0) {
+          await txn.insert('blocklist', {
+            'phone': entry.phone,
+            'votes': entry.votes,
+            'rating': ratingToString(entry),
+            'lastActivity': entry.lastActivity,
+          }, conflictAlgorithm: ConflictAlgorithm.replace);
+          upserted++;
+        } else {
+          await txn.delete('blocklist',
+            where: 'phone = ?', whereArgs: [entry.phone]);
+          deleted++;
+        }
+      }
+
+      await txn.update('blocklist_sync', {
+        'version': newVersion,
+        'lastSyncTime': DateTime.now().millisecondsSinceEpoch,
+      }, where: 'id = 1');
+    });
+
+    onComplete(upserted, deleted);
   }
 
   /// Closes the database.

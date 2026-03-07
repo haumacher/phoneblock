@@ -75,24 +75,11 @@ class BlocklistSyncService {
       int upserted = 0;
       int deleted = 0;
 
-      for (final entry in blocklist.numbers) {
-        if (entry.votes > 0) {
-          await db.upsertBlocklistEntry(
-            entry.phone,
-            entry.votes,
-            _ratingToString(entry.rating),
-            entry.lastActivity,
-          );
-          upserted++;
-        } else {
-          await db.deleteBlocklistEntry(entry.phone);
-          deleted++;
-        }
-      }
-
-      await db.updateBlocklistSyncInfo(
+      await db.applyBlocklistUpdates(
+        blocklist.numbers,
+        (entry) => _ratingToString(entry.rating),
+        (u, d) { upserted = u; deleted = d; },
         blocklist.version,
-        DateTime.now().millisecondsSinceEpoch,
       );
 
       if (kDebugMode) {
