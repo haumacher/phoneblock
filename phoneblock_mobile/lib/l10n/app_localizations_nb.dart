@@ -31,7 +31,7 @@ class AppLocalizationsNb extends AppLocalizations {
   String get accepted => 'Godkjent';
 
   @override
-  String get notBlocked => 'Nicht blockiert';
+  String get notBlocked => 'Ikke blokkert';
 
   @override
   String get missed => 'Bommet';

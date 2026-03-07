@@ -288,5 +288,7 @@
   "blocklistSyncNow": "المزامنة الآن",
   "blocklistSyncing": "مزامنة...",
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
-  "blocklistSyncFailed": "فشل مزامنة قائمة الحظر"
+  "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
+  "notBlocked": "غير محجوب",
+  "matchedWildcardFilter": "التصفية: {prefix}"
 }

@@ -31,7 +31,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accepted => 'Accepterad';
 
   @override
-  String get notBlocked => 'Nicht blockiert';
+  String get notBlocked => 'Inte blockerad';
 
   @override
   String get missed => 'Missad';

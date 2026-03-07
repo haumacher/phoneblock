@@ -288,5 +288,7 @@
   "blocklistSyncNow": "Синхронізуйте зараз",
   "blocklistSyncing": "Синхронізувати...",
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
-  "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн"
+  "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
+  "notBlocked": "Не заблоковано",
+  "matchedWildcardFilter": "Фільтр: {prefix}"
 }

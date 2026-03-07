@@ -288,5 +288,7 @@
   "blocklistSyncNow": "Synkroniser nå",
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Synkronisering av blokkliste vellykket",
-  "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes"
+  "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes",
+  "notBlocked": "Ikke blokkert",
+  "matchedWildcardFilter": "Filter: {prefix}"
 }

@@ -37,7 +37,8 @@
   },
   "notBlocked": "Nicht blockiert",
   "@notBlocked": {
-    "description": "Label for mobile-screened calls that were let through (not blocked) by the call screener"
+    "description": "Label for mobile-screened calls that were let through (not blocked) by the call screener",
+    "x-translated": "e4ef9a20"
   },
   "missed": "Verpasst",
   "@missed": {
@@ -1526,7 +1527,8 @@
         "type": "String",
         "example": "+4930*"
       }
-    }
+    },
+    "x-translated": "89141bc"
   },
   "blocklistCache": "Blocklist-Cache",
   "@blocklistCache": {

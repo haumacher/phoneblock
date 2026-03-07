@@ -288,5 +288,7 @@
   "blocklistSyncNow": "Nu synchroniseren",
   "blocklistSyncing": "Synchroniseren...",
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
-  "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt"
+  "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
+  "notBlocked": "Niet geblokkeerd",
+  "matchedWildcardFilter": "Filter: {prefix}"
 }

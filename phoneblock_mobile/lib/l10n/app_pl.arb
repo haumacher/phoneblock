@@ -288,5 +288,7 @@
   "blocklistSyncNow": "Synchronizuj teraz",
   "blocklistSyncing": "Synchronizacja...",
   "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
-  "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się"
+  "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się",
+  "notBlocked": "Nie zablokowany",
+  "matchedWildcardFilter": "Filtr: {prefix}"
 }

@@ -30,7 +30,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accepted => '已接受';
 
   @override
-  String get notBlocked => 'Nicht blockiert';
+  String get notBlocked => '未封锁';
 
   @override
   String get missed => '错过';
@@ -911,7 +911,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String matchedWildcardFilter(String prefix) {
-    return 'Filter: $prefix';
+    return '过滤器：<x1>前缀</x1';
   }
 
   @override

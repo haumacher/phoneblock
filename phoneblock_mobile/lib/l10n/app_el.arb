@@ -288,5 +288,7 @@
   "blocklistSyncNow": "Συγχρονισμός τώρα",
   "blocklistSyncing": "Συγχρονισμός...",
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
-  "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού"
+  "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
+  "notBlocked": "Δεν έχει μπλοκαριστεί",
+  "matchedWildcardFilter": "Φίλτρο: {prefix}"
 }

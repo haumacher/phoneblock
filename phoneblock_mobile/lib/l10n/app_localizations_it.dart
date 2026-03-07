@@ -31,7 +31,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get accepted => 'Accettato';
 
   @override
-  String get notBlocked => 'Nicht blockiert';
+  String get notBlocked => 'Non bloccato';
 
   @override
   String get missed => 'Mancato';
@@ -1020,7 +1020,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String matchedWildcardFilter(String prefix) {
-    return 'Filter: $prefix';
+    return 'Filtro: $prefix';
   }
 
   @override

@@ -288,5 +288,7 @@
   "blocklistSyncNow": "立即同步",
   "blocklistSyncing": "同步...",
   "blocklistSyncSuccess": "拦截列表同步成功",
-  "blocklistSyncFailed": "拦截列表同步失败"
+  "blocklistSyncFailed": "拦截列表同步失败",
+  "notBlocked": "未封锁",
+  "matchedWildcardFilter": "过滤器：<x1>前缀</x1"
 }

@@ -1802,7 +1802,7 @@ abstract class AppLocalizations {
   /// **'Wildcard-Regel'**
   String get wildcardBlocked;
 
-  /// Reports text shown for calls blocked by a wildcard filter, with the matched prefix
+  /// Label shown for calls blocked by a wildcard filter, with the matched prefix
   ///
   /// In de, this message translates to:
   /// **'Filter: {prefix}'**

@@ -31,7 +31,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get accepted => 'Geaccepteerd';
 
   @override
-  String get notBlocked => 'Nicht blockiert';
+  String get notBlocked => 'Niet geblokkeerd';
 
   @override
   String get missed => 'Gemist';
