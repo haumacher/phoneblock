@@ -3148,6 +3148,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   int _blockedCallsCount = 0;
   int _suspiciousCallsCount = 0;
+  int _blocklistCount = 0;
+  int _blocklistVersion = 0;
+  int _blocklistLastSync = 0;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -3171,6 +3175,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final answerbotEnabledResult = await platform.invokeMethod("getAnswerbotEnabled");
       final blockedCallsCountResult = await platform.invokeMethod("getBlockedCallsCount");
       final suspiciousCallsCountResult = await platform.invokeMethod("getInspectedSuspiciousCount");
+      final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+      final blocklistCount = await ScreenedCallsDatabase.instance.getBlocklistCount();
 
       if (kDebugMode) {
         print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
@@ -3185,6 +3191,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _answerbotEnabled = answerbotEnabledResult ?? false;
         _blockedCallsCount = blockedCallsCountResult ?? 0;
         _suspiciousCallsCount = suspiciousCallsCountResult ?? 0;
+        _blocklistCount = blocklistCount;
+        _blocklistVersion = syncInfo['version'] as int;
+        _blocklistLastSync = syncInfo['lastSyncTime'] as int;
         _isLoading = false;
       });
 
@@ -3419,6 +3428,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Triggers a manual blocklist sync and updates the UI.
+  Future<void> _syncBlocklist(BuildContext context) async {
+    setState(() {
+      _isSyncing = true;
+    });
+
+    final success = await BlocklistSyncService.instance.sync();
+
+    if (!context.mounted) return;
+
+    if (success) {
+      final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+      final blocklistCount = await ScreenedCallsDatabase.instance.getBlocklistCount();
+
+      if (!context.mounted) return;
+
+      setState(() {
+        _blocklistCount = blocklistCount;
+        _blocklistVersion = syncInfo['version'] as int;
+        _blocklistLastSync = syncInfo['lastSyncTime'] as int;
+        _isSyncing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.blocklistSyncSuccess)),
+      );
+    } else {
+      setState(() {
+        _isSyncing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.blocklistSyncFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Formats a timestamp as a human-readable relative time string.
+  String _formatLastSync(BuildContext context, int timestampMs) {
+    if (timestampMs == 0) return context.l10n.blocklistLastSyncNever;
+    final now = DateTime.now();
+    final syncTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+    final diff = now.difference(syncTime);
+
+    String timeAgo;
+    if (diff.inDays > 0) {
+      timeAgo = '${diff.inDays}d';
+    } else if (diff.inHours > 0) {
+      timeAgo = '${diff.inHours}h';
+    } else if (diff.inMinutes > 0) {
+      timeAgo = '${diff.inMinutes}min';
+    } else {
+      timeAgo = '${diff.inSeconds}s';
+    }
+    return context.l10n.blocklistLastSyncAgo(timeAgo);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -3603,6 +3670,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (value) {
                     _saveAnswerbotEnabled(context, value);
                   },
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.blocklistCache,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.storage),
+                  title: Text(context.l10n.blocklistCachedEntries(_blocklistCount)),
+                  subtitle: Text('${context.l10n.blocklistLastSync}: ${_formatLastSync(context, _blocklistLastSync)}'),
+                  trailing: _blocklistVersion > 0 ? Text('v$_blocklistVersion') : null,
+                ),
+                ListTile(
+                  leading: _isSyncing
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.sync),
+                  title: Text(_isSyncing ? context.l10n.blocklistSyncing : context.l10n.blocklistSyncNow),
+                  onTap: _isSyncing ? null : () => _syncBlocklist(context),
                 ),
                 const Divider(),
                 Padding(
