@@ -1295,6 +1295,69 @@ class FritzBoxService {
     }
   }
 
+  /// Detects a pre-existing PhoneBlock answerbot on the connected Fritz!Box.
+  ///
+  /// Lists VoIP clients via TR-064 and matches their usernames against
+  /// bots from the PhoneBlock API. If a match is found and no answerbot
+  /// is currently configured locally, auto-adopts the bot.
+  Future<void> syncAnswerbotState() async {
+    final config = await FritzBoxStorage.instance.getConfig();
+    if (!isConnected || _client == null) return;
+    if (config?.answerbotEnabled ?? false) return;
+
+    try {
+      // Step 1: List VoIP clients from Fritz!Box via TR-064.
+      final voipClients = await _withReconnect(() async {
+        final voipService = _client!.voip();
+        if (voipService == null) return <({String username, String? internalNumber})>[];
+
+        final numberOfClients = await voipService.getNumberOfClients();
+        final clients = <({String username, String? internalNumber})>[];
+        for (int i = 0; i < numberOfClients; i++) {
+          final client = await voipService.getClient3(i);
+          clients.add((username: client.clientUsername, internalNumber: client.internalNumber));
+        }
+        return clients;
+      });
+
+      if (voipClients.isEmpty) return;
+
+      // Step 2: Fetch bots from PhoneBlock API.
+      final headers = await apiHeaders();
+      final response = await http.get(
+        Uri.parse('$basePath/ab/list'),
+        headers: headers,
+      );
+      if (response.statusCode != 200) return;
+
+      final listResponse = ListAnswerbotResponse.read(
+        JsonReader.fromString(response.body),
+      );
+
+      // Step 3: Match by username and auto-adopt.
+      for (final bot in listResponse.bots) {
+        for (final voipClient in voipClients) {
+          if (bot.userName == voipClient.username) {
+            await FritzBoxStorage.instance.updateConfig(
+              answerbotEnabled: true,
+              answerbotId: bot.id,
+              sipUsername: bot.userName,
+              sipDeviceId: voipClient.internalNumber,
+            );
+            if (kDebugMode) {
+              debugPrint('syncAnswerbotState: Adopted bot ${bot.id} (username: ${bot.userName}, device: ${voipClient.internalNumber})');
+            }
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('syncAnswerbotState: Error detecting answerbot: $e');
+      }
+    }
+  }
+
   /// Removes the PhoneBlock answer bot from Fritz!Box and the server.
   Future<void> removeAnswerBot() async {
     final config = await FritzBoxStorage.instance.getConfig();
