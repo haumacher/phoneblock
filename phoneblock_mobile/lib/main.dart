@@ -19,6 +19,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:phoneblock_mobile/blocklist_sync_service.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
@@ -531,8 +533,24 @@ Future<bool> updateWhitelistComment(String phone, String comment, String authTok
   return _updatePersonalizedComment(PersonalizedListType.whitelist, phone, comment, authToken);
 }
 
+/// WorkManager background task callback.
+///
+/// Must be a top-level function. Called by Android WorkManager when
+/// a scheduled background task fires.
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task == 'blocklistSync') {
+      return await BlocklistSyncService.instance.sync();
+    }
+    return Future.value(true);
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
 
   // Initialize app version from package info
   final packageInfo = await PackageInfo.fromPlatform();
@@ -851,6 +869,15 @@ class _AppLauncherState extends State<AppLauncher> {
 
     // Check if permission is granted
     bool hasPermission = await checkPermission();
+
+    // Trigger blocklist sync if cache is empty (migration or first run)
+    if (hasValidToken && hasPermission) {
+      final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+      if ((syncInfo['version'] as int) == 0) {
+        BlocklistSyncService.instance.sync();
+        registerBlocklistSync();
+      }
+    }
 
     // Navigate based on setup state
     if (mounted) {
@@ -2705,6 +2732,10 @@ class VerifyLoginState extends State<VerifyLogin> {
         // Token is valid, update account settings with device locale
         final localeSettings = await getDeviceLocaleSettings();
         await updateAccountSettings(token, localeSettings);
+
+        // Trigger initial blocklist sync and register periodic sync
+        BlocklistSyncService.instance.sync();
+        registerBlocklistSync();
       }
       return response;
     });
@@ -2797,6 +2828,31 @@ void setAuthToken(String token) {
 
 Future<String?> getAuthToken() async {
   return platform.invokeMethod("getAuthToken");
+}
+
+/// Registers the daily blocklist sync task with WorkManager.
+///
+/// Uses a randomized initial delay (0-24h) to distribute server load
+/// across all clients. The offset is persisted so the same device
+/// always syncs at roughly the same time of day.
+Future<void> registerBlocklistSync() async {
+  final db = ScreenedCallsDatabase.instance;
+  final syncInfo = await db.getBlocklistSyncInfo();
+  var offset = syncInfo['syncOffset'] as int;
+
+  if (offset == 0) {
+    offset = BlocklistSyncService.generateRandomOffset();
+    await db.setBlocklistSyncOffset(offset);
+  }
+
+  await Workmanager().registerPeriodicTask(
+    'blocklistSync',
+    'blocklistSync',
+    frequency: const Duration(hours: 24),
+    initialDelay: Duration(milliseconds: offset),
+    constraints: Constraints(networkType: NetworkType.connected),
+    existingWorkPolicy: ExistingWorkPolicy.keep,
+  );
 }
 
 /// Syncs wildcard prefixes from SQLite to SharedPreferences for CallChecker access.
