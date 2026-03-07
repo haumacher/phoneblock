@@ -3732,6 +3732,7 @@ class PersonalizedNumberListScreen extends StatefulWidget {
 
 class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScreen> {
   List<api.PersonalizedNumber> _numbers = [];
+  List<WildcardBlock> _wildcardBlocks = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -3743,7 +3744,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     _loadNumbers();
   }
 
-  /// Load the number list from the API.
+  /// Load the number list from the API and local wildcard blocks.
   Future<void> _loadNumbers() async {
     setState(() {
       _isLoading = true;
@@ -3755,9 +3756,15 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
           ? await fetchBlacklist(widget.authToken)
           : await fetchWhitelist(widget.authToken);
 
+      List<WildcardBlock> wildcards = [];
+      if (_isBlacklist) {
+        wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
+      }
+
       if (numberList != null) {
         setState(() {
           _numbers = numberList.numbers;
+          _wildcardBlocks = wildcards;
           _isLoading = false;
         });
       } else {
@@ -3816,7 +3823,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
       if (success) {
         setState(() {
-          // Update the comment in the local list
           personalizedNumber.comment = newComment;
         });
         scaffold.showSnackBar(
@@ -3836,6 +3842,585 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     }
   }
 
+  /// Edit the comment for a wildcard blocking rule.
+  Future<void> _editWildcardComment(WildcardBlock block) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    final localizations = context.l10n;
+    final textController = TextEditingController(text: block.comment ?? '');
+
+    final newComment = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localizations.editComment),
+        content: TextField(
+          controller: textController,
+          decoration: InputDecoration(
+            labelText: localizations.commentLabel,
+            hintText: localizations.commentHint,
+          ),
+          maxLines: 3,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(localizations.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(textController.text),
+            child: Text(localizations.save),
+          ),
+        ],
+      ),
+    );
+
+    if (newComment != null) {
+      await ScreenedCallsDatabase.instance.updateWildcardBlockComment(block.id!, newComment);
+      setState(() {
+        final index = _wildcardBlocks.indexOf(block);
+        if (index >= 0) {
+          _wildcardBlocks[index] = WildcardBlock(
+            id: block.id,
+            prefix: block.prefix,
+            comment: newComment,
+            created: block.created,
+          );
+        }
+      });
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(localizations.commentUpdated),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Shows a dialog to enter a phone number for blocking.
+  Future<void> _showAddNumberDialog(BuildContext context) async {
+    final phoneController = TextEditingController();
+    bool isWildcard = false;
+    String? errorText;
+
+    final result = await showDialog<({String phone, bool wildcard})>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(context.l10n.addNumber),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.phoneNumberLabel,
+                      hintText: context.l10n.phoneNumberHint,
+                      errorText: errorText,
+                      border: const OutlineInputBorder(),
+                      suffixText: isWildcard ? '*' : null,
+                      suffixStyle: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onChanged: (_) {
+                      if (errorText != null) {
+                        setDialogState(() => errorText = null);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    title: Text(context.l10n.wildcardToggle),
+                    subtitle: isWildcard ? Text(context.l10n.wildcardHint) : null,
+                    value: isWildcard,
+                    onChanged: (value) {
+                      setDialogState(() => isWildcard = value);
+                    },
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(context.l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final phone = phoneController.text.trim();
+                    if (phone.isEmpty) {
+                      setDialogState(() => errorText = context.l10n.invalidPhoneNumber);
+                      return;
+                    }
+                    Navigator.of(context).pop((phone: phone, wildcard: isWildcard));
+                  },
+                  child: Text(context.l10n.next),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+    if (!context.mounted) return;
+
+    if (result.wildcard) {
+      await _addWildcardNumber(context, result.phone);
+    } else {
+      await _addExactNumber(context, result.phone);
+    }
+  }
+
+  /// Validates a wildcard prefix and stores it locally.
+  Future<void> _addWildcardNumber(BuildContext context, String phoneInput) async {
+    final prefix = _normalizeWildcardPrefix(phoneInput);
+
+    if (prefix == null || prefix.length < 3) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.wildcardTooShort),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final exists = await ScreenedCallsDatabase.instance.wildcardPrefixExists(prefix);
+    if (exists) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.wildcardDuplicate),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+    final comment = await _showWildcardCommentDialog(context);
+    if (comment == null) return;
+
+    final block = WildcardBlock(
+      prefix: prefix,
+      comment: comment.isEmpty ? null : comment,
+      created: DateTime.now(),
+    );
+
+    await ScreenedCallsDatabase.instance.insertWildcardBlock(block);
+    await syncWildcardPrefixesToNative();
+    await _loadNumbers();
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.wildcardAdded),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  /// Normalizes user input to an international prefix format.
+  ///
+  /// Accepts formats like "0043", "+43", "0049123" and returns "+43", "+49123".
+  /// Returns null if the input cannot be normalized.
+  String? _normalizeWildcardPrefix(String input) {
+    var cleaned = input.replaceAll(RegExp(r'[\s\-\(\)\/]'), '');
+
+    // Handle 00XX format → +XX
+    if (cleaned.startsWith('00') && cleaned.length >= 4) {
+      cleaned = '+${cleaned.substring(2)}';
+    }
+
+    if (!cleaned.startsWith('+')) return null;
+
+    final afterPlus = cleaned.substring(1);
+    if (afterPlus.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(afterPlus)) {
+      return null;
+    }
+
+    return cleaned;
+  }
+
+  /// Shows a comment dialog for wildcard rules.
+  Future<String?> _showWildcardCommentDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.addCommentWildcard),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: context.l10n.commentHintWildcard,
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            maxLength: 500,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(context.l10n.add),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Adds an exact phone number via the server rating API.
+  Future<void> _addExactNumber(BuildContext context, String phone) async {
+    final rating = await _showBlocklistRatingDialog(context);
+    if (rating == null) return;
+
+    if (!context.mounted) return;
+    final comment = await _showBlocklistCommentDialog(context);
+    if (comment == null) return;
+
+    String? token = await getAuthToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.notLoggedIn),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final rateRequest = api.RateRequest(
+        phone: phone,
+        rating: _convertStateRatingToApi(rating),
+        comment: comment,
+      );
+
+      final buffer = StringBuffer();
+      final jsonWriter = jsonStringWriter(buffer);
+      rateRequest.writeContent(jsonWriter);
+      final jsonBody = buffer.toString();
+
+      final response = await http.post(
+        Uri.parse('$pbBaseUrl/api/rate'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonBody,
+      );
+
+      if (response.statusCode == 200) {
+        await _loadNumbers();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.numberAdded),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.reportError(response.statusCode.toString())),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding number: $e');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.reportError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Shows rating selection dialog.
+  Future<Rating?> _showBlocklistRatingDialog(BuildContext context) async {
+    return showDialog<Rating>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.selectSpamCategory),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: Rating.values
+                  .where((r) => r != Rating.aLEGITIMATE && r != Rating.uNKNOWN)
+                  .map((rating) {
+                    final color = bgColor(rating);
+                    return ListTile(
+                      leading: Icon(ratingIcon(rating), color: color),
+                      title: Text(labelText(context, rating),
+                          style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+                      tileColor: color.withValues(alpha: 0.1),
+                      onTap: () => Navigator.of(context).pop(rating),
+                    );
+                  })
+                  .toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(context.l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Shows comment input dialog.
+  Future<String?> _showBlocklistCommentDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.addCommentSpam),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: context.l10n.commentHintSpam,
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            maxLength: 500,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(context.l10n.report),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Converts state.Rating to api.Rating.
+  api.Rating _convertStateRatingToApi(Rating rating) {
+    switch (rating) {
+      case Rating.aLEGITIMATE: return api.Rating.aLegitimate;
+      case Rating.uNKNOWN: return api.Rating.bMissed;
+      case Rating.pING: return api.Rating.cPing;
+      case Rating.pOLL: return api.Rating.dPoll;
+      case Rating.aDVERTISING: return api.Rating.eAdvertising;
+      case Rating.gAMBLE: return api.Rating.fGamble;
+      case Rating.fRAUD: return api.Rating.gFraud;
+    }
+  }
+
+  Widget _buildNumberTile(
+    BuildContext context,
+    api.PersonalizedNumber personalizedNumber,
+    String Function(String) confirmRemoveMessage,
+    Icon defaultIcon,
+  ) {
+    final phone = personalizedNumber.phone;
+    final displayPhone = personalizedNumber.label ?? phone;
+    return Dismissible(
+      key: Key(phone),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              context.l10n.delete,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(Icons.delete, color: Colors.white, size: 32),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.confirmRemoval),
+            content: Text(confirmRemoveMessage(displayPhone)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(context.l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(context.l10n.remove),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return false;
+
+        final success = _isBlacklist
+            ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
+            : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                success
+                    ? context.l10n.numberRemovedFromList
+                    : context.l10n.errorRemovingNumber,
+              ),
+              backgroundColor: success ? null : Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
+        return success;
+      },
+      onDismissed: (direction) {
+        setState(() {
+          _numbers.remove(personalizedNumber);
+        });
+      },
+      child: ListTile(
+        leading: personalizedNumber.rating != null
+            ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
+            : defaultIcon,
+        title: Text(displayPhone),
+        subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
+            ? Text(
+                personalizedNumber.comment!,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              )
+            : null,
+        trailing: IconButton(
+          icon: const Icon(Icons.edit_outlined),
+          onPressed: () => _editComment(personalizedNumber),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWildcardTile(BuildContext context, WildcardBlock block) {
+    final displayPrefix = '${block.prefix}*';
+    return Dismissible(
+      key: Key('wildcard_${block.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              context.l10n.delete,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(Icons.delete, color: Colors.white, size: 32),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.confirmRemoval),
+            content: Text(context.l10n.confirmRemoveWildcard(block.prefix)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(context.l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(context.l10n.remove),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return false;
+
+        await ScreenedCallsDatabase.instance.deleteWildcardBlock(block.id!);
+        await syncWildcardPrefixesToNative();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.wildcardRemoved),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
+        return true;
+      },
+      onDismissed: (direction) {
+        setState(() {
+          _wildcardBlocks.remove(block);
+        });
+      },
+      child: ListTile(
+        leading: const Icon(Icons.filter_alt, color: Colors.orange),
+        title: Text(displayPrefix),
+        subtitle: block.comment != null && block.comment!.isNotEmpty
+            ? Text(
+                block.comment!,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              )
+            : null,
+        trailing: IconButton(
+          icon: const Icon(Icons.edit_outlined),
+          onPressed: () => _editWildcardComment(block),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = _isBlacklist ? context.l10n.blacklistTitle : context.l10n.whitelistTitle;
@@ -3852,6 +4437,12 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
       appBar: AppBar(
         title: Text(title),
       ),
+      floatingActionButton: _isBlacklist
+          ? FloatingActionButton(
+              onPressed: () => _showAddNumberDialog(context),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
@@ -3870,7 +4461,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                     ],
                   ),
                 )
-              : _numbers.isEmpty
+              : (_numbers.isEmpty && _wildcardBlocks.isEmpty)
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
@@ -3898,111 +4489,37 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                     )
                   : RefreshIndicator(
                       onRefresh: _loadNumbers,
-                      child: ListView.builder(
-                        itemCount: _numbers.length,
-                        itemBuilder: (context, index) {
-                          final personalizedNumber = _numbers[index];
-                          final phone = personalizedNumber.phone;
-                          // Use localized label for display, fallback to international format
-                          final displayPhone = personalizedNumber.label ?? phone;
-                          return Dismissible(
-                            key: Key(phone),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              color: Colors.red,
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    context.l10n.delete,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Icon(Icons.delete, color: Colors.white, size: 32),
-                                ],
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              // Show confirmation dialog
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text(context.l10n.confirmRemoval),
-                                  content: Text(confirmRemoveMessage(displayPhone)),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(context).pop(false),
-                                      child: Text(context.l10n.cancel),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
-                                      child: Text(context.l10n.remove),
-                                    ),
-                                  ],
+                      child: ListView(
+                        children: [
+                          if (_isBlacklist && _wildcardBlocks.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                context.l10n.wildcardRulesHeader,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-
-                              // If user cancelled, don't dismiss
-                              if (confirmed != true) {
-                                return false;
-                              }
-
-                              // User confirmed - attempt API call
-                              final success = _isBlacklist
-                                  ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
-                                  : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
-
-                              // Show appropriate feedback
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      success
-                                          ? context.l10n.numberRemovedFromList
-                                          : context.l10n.errorRemovingNumber,
-                                    ),
-                                    backgroundColor: success ? null : Colors.red,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-
-                              // Only dismiss if API call succeeded
-                              return success;
-                            },
-                            onDismissed: (direction) {
-                              // Update local state after successful dismissal
-                              setState(() {
-                                _numbers.remove(personalizedNumber);
-                              });
-                            },
-                            child: ListTile(
-                              leading: personalizedNumber.rating != null
-                                  ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
-                                  : defaultIcon,
-                              title: Text(displayPhone),
-                              subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
-                                  ? Text(
-                                      personalizedNumber.comment!,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    )
-                                  : null,
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit_outlined),
-                                onPressed: () => _editComment(personalizedNumber),
                               ),
                             ),
-                          );
-                        },
+                            ..._wildcardBlocks.map((block) => _buildWildcardTile(context, block)),
+                            const Divider(),
+                          ],
+                          if (_numbers.isNotEmpty) ...[
+                            if (_isBlacklist && _wildcardBlocks.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                child: Text(
+                                  context.l10n.blockedNumbersHeader,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ..._numbers.map((pn) => _buildNumberTile(context, pn, confirmRemoveMessage, defaultIcon)),
+                          ],
+                        ],
                       ),
                     ),
     );
