@@ -95,39 +95,71 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
-        // Check local wildcard blocking rules before server query
+        // Check local wildcard blocking rules first for fast blocking
+        String matchedPrefix = null;
         String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
         try {
             org.json.JSONArray wildcardPrefixes = new org.json.JSONArray(wildcardPrefixesJson);
             for (int i = 0; i < wildcardPrefixes.length(); i++) {
                 String prefix = wildcardPrefixes.getString(i);
                 if (number.startsWith(prefix)) {
-                    Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by wildcard rule: " + prefix + "* matches " + number);
-                    respondToCall(callDetails, new CallResponse.Builder()
-                        .setDisallowCall(true)
-                        .setRejectCall(true)
-                        .setSkipCallLog(true)
-                        .setSkipNotification(true)
-                        .build());
-                    MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null, prefix);
-                    return;
+                    matchedPrefix = prefix;
+                    break;
                 }
             }
         } catch (org.json.JSONException e) {
             Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
         }
 
-        // Check local blocklist cache before server query
+        // Check local blocklist cache
         int localVotes = lookupLocalBlocklist(number);
-        if (localVotes >= minVotes) {
-            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by local blocklist: " + number + " with " + localVotes + " votes");
+
+        if (matchedPrefix != null || localVotes >= minVotes) {
+            // Block immediately based on local data
+            if (matchedPrefix != null) {
+                Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by wildcard rule: " + matchedPrefix + "* matches " + number);
+            } else {
+                Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by local blocklist: " + number + " with " + localVotes + " votes");
+            }
             respondToCall(callDetails, new CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
                 .setSkipCallLog(true)
                 .setSkipNotification(true)
                 .build());
-            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, localVotes, 0, null, null, null);
+
+            final String blockedPrefix = matchedPrefix;
+            final int blockedLocalVotes = localVotes;
+
+            // Also query the API so the server can track spam activity
+            _pool.schedule(() -> {
+                try {
+                    JSONObject json = queryPhoneBlock(number, authToken);
+                    int votes = json.getInt("votes");
+                    int votesWildcard = json.optInt("votesWildcard", 0);
+                    String rating = json.optString("rating", null);
+                    String label = json.optString("label", null);
+                    String location = json.optString("location", null);
+
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                        if (blockedPrefix != null) {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, "WILDCARD", label, location, blockedPrefix);
+                        } else {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, rating, label, location);
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.d(CallChecker.class.getName(), "onScreenCall: API query for locally blocked call failed: " + number, e);
+                    // Report with local data only
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                        if (blockedPrefix != null) {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null, blockedPrefix);
+                        } else {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, blockedLocalVotes, 0, null, null, null);
+                        }
+                    });
+                }
+            }, 0, TimeUnit.MILLISECONDS);
             return;
         }
 
