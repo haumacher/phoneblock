@@ -127,8 +127,9 @@ class CallListViewState extends State<CallListView> {
     var calls = callInfo.calls;
     var dateFormat = relativeDate();
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return ListView.separated(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPadding),
       itemCount: calls.length,
       itemBuilder: (BuildContext context, int index) {
         var call = calls[index];
