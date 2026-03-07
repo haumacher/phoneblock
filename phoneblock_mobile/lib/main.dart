@@ -1456,6 +1456,7 @@ class _MainScreenState extends State<MainScreen> {
   /// Builds a single call list item.
   Widget _buildCallListItem(ScreenedCall call) {
     final wasBlocked = call.wasBlocked;
+    final serverBlocked = wasBlocked && !call.isWildcardBlocked;
     final source = call.source;
 
     // Check if call is new (not yet seen by user)
@@ -1503,6 +1504,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return Dismissible(
       key: Key('call_${call.id}'),
+      direction: DismissDirection.horizontal,
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
@@ -1530,12 +1532,12 @@ class _MainScreenState extends State<MainScreen> {
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: wasBlocked ? Colors.green : Colors.orange,
+        color: serverBlocked ? Colors.green : Colors.orange,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              wasBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
+              serverBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1544,7 +1546,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             SizedBox(width: 12),
             Icon(
-              wasBlocked ? Icons.check_circle : Icons.report,
+              serverBlocked ? Icons.check_circle : Icons.report,
               color: Colors.white,
               size: 32,
             ),
@@ -1554,11 +1556,11 @@ class _MainScreenState extends State<MainScreen> {
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.endToStart) {
           // Swipe left to report
-          if (wasBlocked) {
-            // SPAM number - report as legitimate
+          if (serverBlocked) {
+            // Server-blocked SPAM number - report as legitimate
             await _reportAsLegitimate(context, call);
           } else {
-            // Legitimate number - report as SPAM
+            // Not blocked by server (including wildcard) - report as SPAM
             await _reportAsSpam(context, call);
           }
           return false; // Don't dismiss, just report
