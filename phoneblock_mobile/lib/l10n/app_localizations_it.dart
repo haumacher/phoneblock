@@ -952,4 +952,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return 'Oppure comporre $code su un telefono connesso';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }

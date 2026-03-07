@@ -846,4 +846,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return '或在已连接的电话上拨打 <x1> 代码</x1';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }

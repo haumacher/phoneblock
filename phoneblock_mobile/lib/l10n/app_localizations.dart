@@ -1681,6 +1681,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Oder wählen Sie {code} an einem angeschlossenen Telefon'**
   String fritzboxSecondFactorDtmf(String code);
+
+  /// Answerbot settings link in Fritz!Box settings
+  ///
+  /// In de, this message translates to:
+  /// **'Answerbot-Einstellungen'**
+  String get fritzboxAnswerbotSettings;
 }
 
 class _AppLocalizationsDelegate

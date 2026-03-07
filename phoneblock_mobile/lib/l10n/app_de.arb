@@ -1413,5 +1413,9 @@
       }
     },
     "x-translated": "d7f061cc"
+  },
+  "fritzboxAnswerbotSettings": "Answerbot-Einstellungen",
+  "@fritzboxAnswerbotSettings": {
+    "description": "Answerbot settings link in Fritz!Box settings"
   }
 }

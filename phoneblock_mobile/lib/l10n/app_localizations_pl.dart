@@ -944,4 +944,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return 'Lub wybierz $code na podłączonym telefonie';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }

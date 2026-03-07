@@ -936,4 +936,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return 'Або наберіть $code на підключеному телефоні';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }

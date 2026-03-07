@@ -941,4 +941,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return 'O marque $code en un teléfono conectado';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }

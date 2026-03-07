@@ -631,6 +631,28 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
                 : null,
           ),
           ListTile(
+            leading: const Icon(Icons.settings),
+            title: Text(l10n.fritzboxAnswerbotSettings),
+            onTap: info != null
+                ? () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AnswerBotView(info),
+                      ),
+                    );
+                    if (mounted) {
+                      final refreshed = await _fetchAnswerbotInfo(_config?.answerbotId);
+                      if (mounted) {
+                        setState(() {
+                          _answerbotInfo = refreshed ?? _answerbotInfo;
+                        });
+                      }
+                    }
+                  }
+                : null,
+          ),
+          ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.orange),
             title: Text(l10n.fritzboxDisableAnswerbot),
             onTap: _disableAnswerbot,

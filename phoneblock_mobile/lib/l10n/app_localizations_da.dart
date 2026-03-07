@@ -934,4 +934,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return 'Eller ring $code på en tilsluttet telefon';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }

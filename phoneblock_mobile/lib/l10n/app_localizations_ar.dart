@@ -928,4 +928,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String fritzboxSecondFactorDtmf(String code) {
     return 'أو اطلب <x1> الرمز <x1> على هاتف متصل';
   }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
 }
