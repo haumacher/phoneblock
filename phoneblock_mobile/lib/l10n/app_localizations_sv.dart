@@ -937,5 +937,63 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Inställningar för Answerbot';
+
+  @override
+  String get wildcardRulesHeader => 'Regler för jokertecken';
+
+  @override
+  String get blockedNumbersHeader => 'Blockerade nummer';
+
+  @override
+  String get addNumber => 'Lägg till nummer';
+
+  @override
+  String get phoneNumberLabel => 'Telefonnummer';
+
+  @override
+  String get wildcardToggle => 'Blocknummerintervall';
+
+  @override
+  String get wildcardHint => 'Spärrar alla nummer som börjar med detta prefix';
+
+  @override
+  String get wildcardTooShort =>
+      'Prefixet måste innehålla minst en landskod (t.ex. +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Ogiltigt nummerformat. Vänligen använd en internationell uppringningskod (t.ex. +43 eller 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Den här nummerserien är redan blockerad.';
+
+  @override
+  String get wildcardAdded => 'Nummerintervall blockerat';
+
+  @override
+  String get wildcardRemoved => 'Wildcard-regel borttagen';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Ta verkligen bort jokerteckenregel $prefix *?';
+  }
+
+  @override
+  String get numberAdded => 'Nummer läggs till på svart lista';
+
+  @override
+  String get addCommentWildcard => 'Lägg till kommentar (valfritt)';
+
+  @override
+  String get commentHintWildcard => 'Varför blockerar du den här nummerserien?';
+
+  @override
+  String get next => 'Ytterligare';
+
+  @override
+  String get add => 'Lägg till';
+
+  @override
+  String get wildcardBlocked => 'Jokerteckenregel';
 }

@@ -943,5 +943,66 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Ρυθμίσεις Answerbot';
+
+  @override
+  String get wildcardRulesHeader => 'Κανόνες Wildcard';
+
+  @override
+  String get blockedNumbersHeader => 'Αποκλεισμένοι αριθμοί';
+
+  @override
+  String get addNumber => 'Προσθέστε αριθμό';
+
+  @override
+  String get phoneNumberLabel => 'Αριθμός τηλεφώνου';
+
+  @override
+  String get wildcardToggle => 'Εύρος αριθμού μπλοκ';
+
+  @override
+  String get wildcardHint =>
+      'Αποκλείει όλους τους αριθμούς που αρχίζουν με αυτό το πρόθεμα';
+
+  @override
+  String get wildcardTooShort =>
+      'Το πρόθεμα πρέπει να περιέχει τουλάχιστον έναν κωδικό χώρας (π.χ. +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Μη έγκυρη μορφή αριθμού. Χρησιμοποιήστε διεθνή κωδικό κλήσης (π.χ. +43 ή 0043).';
+
+  @override
+  String get wildcardDuplicate =>
+      'Αυτή η σειρά αριθμών είναι ήδη μπλοκαρισμένη.';
+
+  @override
+  String get wildcardAdded => 'Εύρος αριθμών μπλοκαρισμένο';
+
+  @override
+  String get wildcardRemoved => 'Ο κανόνας Wildcard καταργήθηκε';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Πραγματικά καταργήστε τον κανόνα μπαλαντέρ $prefix*;';
+  }
+
+  @override
+  String get numberAdded => 'Αριθμός που προστέθηκε στη μαύρη λίστα';
+
+  @override
+  String get addCommentWildcard => 'Προσθέστε σχόλιο (προαιρετικό)';
+
+  @override
+  String get commentHintWildcard =>
+      'Γιατί μπλοκάρετε αυτή την περιοχή αριθμών;';
+
+  @override
+  String get next => 'Περαιτέρω';
+
+  @override
+  String get add => 'Προσθέστε';
+
+  @override
+  String get wildcardBlocked => 'Κανόνας Wildcard';
 }

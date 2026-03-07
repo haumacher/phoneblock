@@ -824,10 +824,10 @@ abstract class AppLocalizations {
   /// **'Telefonnummer eingeben'**
   String get enterPhoneNumber;
 
-  /// Phone number hint text
+  /// Hint text for phone number input field
   ///
   /// In de, this message translates to:
-  /// **'z.B. +49 123 456789'**
+  /// **'z.B. +43 oder 0043123456'**
   String get phoneNumberHint;
 
   /// Search button
@@ -836,10 +836,10 @@ abstract class AppLocalizations {
   /// **'Suchen'**
   String get search;
 
-  /// Error message for invalid phone number
+  /// Validation error for an invalid exact phone number
   ///
   /// In de, this message translates to:
-  /// **'Bitte geben Sie eine gültige Telefonnummer ein'**
+  /// **'Ungültige Telefonnummer'**
   String get invalidPhoneNumber;
 
   /// Blacklist screen title
@@ -1687,6 +1687,114 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Answerbot-Einstellungen'**
   String get fritzboxAnswerbotSettings;
+
+  /// Section header for wildcard blocking rules in the blocklist view
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regeln'**
+  String get wildcardRulesHeader;
+
+  /// Section header for individually blocked numbers in the blocklist view
+  ///
+  /// In de, this message translates to:
+  /// **'Gesperrte Nummern'**
+  String get blockedNumbersHeader;
+
+  /// Title for the add-number dialog
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer hinzufügen'**
+  String get addNumber;
+
+  /// Label for phone number input field
+  ///
+  /// In de, this message translates to:
+  /// **'Telefonnummer'**
+  String get phoneNumberLabel;
+
+  /// Label for the wildcard toggle switch
+  ///
+  /// In de, this message translates to:
+  /// **'Nummernbereich sperren'**
+  String get wildcardToggle;
+
+  /// Help text shown when wildcard toggle is on
+  ///
+  /// In de, this message translates to:
+  /// **'Sperrt alle Nummern, die mit diesem Präfix beginnen'**
+  String get wildcardHint;
+
+  /// Validation error when wildcard prefix is too short
+  ///
+  /// In de, this message translates to:
+  /// **'Präfix muss mindestens eine Landesvorwahl enthalten (z.B. +43)'**
+  String get wildcardTooShort;
+
+  /// Validation error when wildcard prefix has invalid format
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiges Nummernformat. Bitte internationale Vorwahl verwenden (z.B. +43 oder 0043).'**
+  String get wildcardInvalidFormat;
+
+  /// Error when wildcard prefix already exists
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Nummernbereich ist bereits gesperrt.'**
+  String get wildcardDuplicate;
+
+  /// Success message when wildcard rule was added
+  ///
+  /// In de, this message translates to:
+  /// **'Nummernbereich gesperrt'**
+  String get wildcardAdded;
+
+  /// Success message when wildcard rule was removed
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regel entfernt'**
+  String get wildcardRemoved;
+
+  /// Confirmation dialog text for removing a wildcard rule
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regel {prefix}* wirklich entfernen?'**
+  String confirmRemoveWildcard(String prefix);
+
+  /// Success message when exact number was added to blocklist
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer zur Blacklist hinzugefügt'**
+  String get numberAdded;
+
+  /// Title for the comment dialog when adding a wildcard rule
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar hinzufügen (Optional)'**
+  String get addCommentWildcard;
+
+  /// Hint text for the comment field in wildcard dialog
+  ///
+  /// In de, this message translates to:
+  /// **'Warum sperren Sie diesen Nummernbereich?'**
+  String get commentHintWildcard;
+
+  /// Button label to proceed to next step in a dialog
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get next;
+
+  /// Button label to add/submit an entry
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get add;
+
+  /// Rating label shown for calls blocked by a wildcard rule
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regel'**
+  String get wildcardBlocked;
 }
 
 class _AppLocalizationsDelegate

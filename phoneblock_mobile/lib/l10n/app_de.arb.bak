@@ -675,20 +675,20 @@
     "description": "Enter phone number label",
     "x-translated": "90930660"
   },
-  "phoneNumberHint": "z.B. +43 oder 0043123456",
+  "phoneNumberHint": "z.B. +49 123 456789",
   "@phoneNumberHint": {
-    "description": "Hint text for phone number input field",
-    "x-translated": "6b041736"
+    "description": "Phone number hint text",
+    "x-translated": "eee7a6a7"
   },
   "search": "Suchen",
   "@search": {
     "description": "Search button",
     "x-translated": "d73da58d"
   },
-  "invalidPhoneNumber": "Ungültige Telefonnummer",
+  "invalidPhoneNumber": "Bitte geben Sie eine gültige Telefonnummer ein",
   "@invalidPhoneNumber": {
-    "description": "Validation error for an invalid exact phone number",
-    "x-translated": "c6f42ec3"
+    "description": "Error message for invalid phone number",
+    "x-translated": "6bf622dc"
   },
   "blacklistTitle": "Blacklist",
   "@blacklistTitle": {
@@ -1416,102 +1416,6 @@
   },
   "fritzboxAnswerbotSettings": "Answerbot-Einstellungen",
   "@fritzboxAnswerbotSettings": {
-    "description": "Answerbot settings link in Fritz!Box settings",
-    "x-translated": "7e6bae79"
-  },
-  "wildcardRulesHeader": "Wildcard-Regeln",
-  "@wildcardRulesHeader": {
-    "description": "Section header for wildcard blocking rules in the blocklist view",
-    "x-translated": "176bd109"
-  },
-  "blockedNumbersHeader": "Gesperrte Nummern",
-  "@blockedNumbersHeader": {
-    "description": "Section header for individually blocked numbers in the blocklist view",
-    "x-translated": "7984f5dc"
-  },
-  "addNumber": "Nummer hinzufügen",
-  "@addNumber": {
-    "description": "Title for the add-number dialog",
-    "x-translated": "185d754a"
-  },
-  "phoneNumberLabel": "Telefonnummer",
-  "@phoneNumberLabel": {
-    "description": "Label for phone number input field",
-    "x-translated": "ca834ffd"
-  },
-  "wildcardToggle": "Nummernbereich sperren",
-  "@wildcardToggle": {
-    "description": "Label for the wildcard toggle switch",
-    "x-translated": "471bcac0"
-  },
-  "wildcardHint": "Sperrt alle Nummern, die mit diesem Präfix beginnen",
-  "@wildcardHint": {
-    "description": "Help text shown when wildcard toggle is on",
-    "x-translated": "4d2e0f60"
-  },
-  "wildcardTooShort": "Präfix muss mindestens eine Landesvorwahl enthalten (z.B. +43)",
-  "@wildcardTooShort": {
-    "description": "Validation error when wildcard prefix is too short",
-    "x-translated": "ba512a4a"
-  },
-  "wildcardInvalidFormat": "Ungültiges Nummernformat. Bitte internationale Vorwahl verwenden (z.B. +43 oder 0043).",
-  "@wildcardInvalidFormat": {
-    "description": "Validation error when wildcard prefix has invalid format",
-    "x-translated": "4f630ec2"
-  },
-  "wildcardDuplicate": "Dieser Nummernbereich ist bereits gesperrt.",
-  "@wildcardDuplicate": {
-    "description": "Error when wildcard prefix already exists",
-    "x-translated": "e4aa1f1b"
-  },
-  "wildcardAdded": "Nummernbereich gesperrt",
-  "@wildcardAdded": {
-    "description": "Success message when wildcard rule was added",
-    "x-translated": "4ec13a02"
-  },
-  "wildcardRemoved": "Wildcard-Regel entfernt",
-  "@wildcardRemoved": {
-    "description": "Success message when wildcard rule was removed",
-    "x-translated": "e3a2bc73"
-  },
-  "confirmRemoveWildcard": "Wildcard-Regel {prefix}* wirklich entfernen?",
-  "@confirmRemoveWildcard": {
-    "description": "Confirmation dialog text for removing a wildcard rule",
-    "placeholders": {
-      "prefix": {
-        "type": "String"
-      }
-    },
-    "x-translated": "b10a696c"
-  },
-  "numberAdded": "Nummer zur Blacklist hinzugefügt",
-  "@numberAdded": {
-    "description": "Success message when exact number was added to blocklist",
-    "x-translated": "bd5bcb70"
-  },
-  "addCommentWildcard": "Kommentar hinzufügen (Optional)",
-  "@addCommentWildcard": {
-    "description": "Title for the comment dialog when adding a wildcard rule",
-    "x-translated": "fde75a7"
-  },
-  "commentHintWildcard": "Warum sperren Sie diesen Nummernbereich?",
-  "@commentHintWildcard": {
-    "description": "Hint text for the comment field in wildcard dialog",
-    "x-translated": "8b58a80f"
-  },
-  "next": "Weiter",
-  "@next": {
-    "description": "Button label to proceed to next step in a dialog",
-    "x-translated": "42cc9626"
-  },
-  "add": "Hinzufügen",
-  "@add": {
-    "description": "Button label to add/submit an entry",
-    "x-translated": "e53bcf68"
-  },
-  "wildcardBlocked": "Wildcard-Regel",
-  "@wildcardBlocked": {
-    "description": "Rating label shown for calls blocked by a wildcard rule",
-    "x-translated": "d3053ad6"
+    "description": "Answerbot settings link in Fritz!Box settings"
   }
 }

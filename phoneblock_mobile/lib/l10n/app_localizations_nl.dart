@@ -941,5 +941,64 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Answerbot instellingen';
+
+  @override
+  String get wildcardRulesHeader => 'Wildcard-regels';
+
+  @override
+  String get blockedNumbersHeader => 'Geblokkeerde nummers';
+
+  @override
+  String get addNumber => 'Aantal toevoegen';
+
+  @override
+  String get phoneNumberLabel => 'Telefoonnummer';
+
+  @override
+  String get wildcardToggle => 'Bereik bloknummer';
+
+  @override
+  String get wildcardHint =>
+      'Blokkeert alle nummers die beginnen met dit voorvoegsel';
+
+  @override
+  String get wildcardTooShort =>
+      'Het voorvoegsel moet ten minste één landcode bevatten (bijv. +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Ongeldig nummerformaat. Gebruik een internationaal kengetal (bijv. +43 of 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Dit nummerbereik is al geblokkeerd.';
+
+  @override
+  String get wildcardAdded => 'Nummerreeks geblokkeerd';
+
+  @override
+  String get wildcardRemoved => 'Wildcard-regel verwijderd';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Wil je echt de wildcardregel $prefix* verwijderen?';
+  }
+
+  @override
+  String get numberAdded => 'Nummer toegevoegd aan zwarte lijst';
+
+  @override
+  String get addCommentWildcard => 'Opmerking toevoegen (optioneel)';
+
+  @override
+  String get commentHintWildcard => 'Waarom blokkeer je deze nummerreeks?';
+
+  @override
+  String get next => 'Verder';
+
+  @override
+  String get add => 'Voeg  toe';
+
+  @override
+  String get wildcardBlocked => 'Wildcard-regel';
 }

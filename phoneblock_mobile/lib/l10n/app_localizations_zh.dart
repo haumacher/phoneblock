@@ -848,5 +848,61 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => '应答机器人设置';
+
+  @override
+  String get wildcardRulesHeader => '通配符规则';
+
+  @override
+  String get blockedNumbersHeader => '被屏蔽的号码';
+
+  @override
+  String get addNumber => '添加编号';
+
+  @override
+  String get phoneNumberLabel => '电话号码';
+
+  @override
+  String get wildcardToggle => '区块编号范围';
+
+  @override
+  String get wildcardHint => '屏蔽以此前缀开头的所有号码';
+
+  @override
+  String get wildcardTooShort => '前缀必须至少包含一个国家代码（如 +43）';
+
+  @override
+  String get wildcardInvalidFormat => '号码格式无效。请使用国际拨号代码（如 +43 或 0043）。';
+
+  @override
+  String get wildcardDuplicate => '此号码范围已被封锁。';
+
+  @override
+  String get wildcardAdded => '被封锁的号码范围';
+
+  @override
+  String get wildcardRemoved => '删除通配符规则';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return '真的要删除通配符规则 $prefix* 吗？';
+  }
+
+  @override
+  String get numberAdded => '加入黑名单的号码';
+
+  @override
+  String get addCommentWildcard => '添加评论（可选）';
+
+  @override
+  String get commentHintWildcard => '为什么要屏蔽此号码范围？';
+
+  @override
+  String get next => '更多';
+
+  @override
+  String get add => '添加';
+
+  @override
+  String get wildcardBlocked => '通配符规则';
 }

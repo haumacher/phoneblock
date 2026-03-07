@@ -946,5 +946,64 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Ustawienia Answerbota';
+
+  @override
+  String get wildcardRulesHeader => 'Zasady dotyczące symboli wieloznacznych';
+
+  @override
+  String get blockedNumbersHeader => 'Zablokowane numery';
+
+  @override
+  String get addNumber => 'Dodaj numer';
+
+  @override
+  String get phoneNumberLabel => 'Numer telefonu';
+
+  @override
+  String get wildcardToggle => 'Zakres numerów bloków';
+
+  @override
+  String get wildcardHint =>
+      'Blokuje wszystkie numery zaczynające się od tego prefiksu';
+
+  @override
+  String get wildcardTooShort =>
+      'Prefiks musi zawierać co najmniej jeden kod kraju (np. +43).';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Nieprawidłowy format numeru. Użyj międzynarodowego kodu wybierania (np. +43 lub 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Ten zakres numerów jest już zablokowany.';
+
+  @override
+  String get wildcardAdded => 'Zablokowany zakres numerów';
+
+  @override
+  String get wildcardRemoved => 'Usunięto regułę symboli wieloznacznych';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Naprawdę usunąć regułę wieloznaczną $prefix*?';
+  }
+
+  @override
+  String get numberAdded => 'Numer dodany do czarnej listy';
+
+  @override
+  String get addCommentWildcard => 'Dodaj komentarz (opcjonalnie)';
+
+  @override
+  String get commentHintWildcard => 'Dlaczego blokujesz ten zakres numerów?';
+
+  @override
+  String get next => 'Dalej';
+
+  @override
+  String get add => 'Dodaj';
+
+  @override
+  String get wildcardBlocked => 'Reguła symboli wieloznacznych';
 }

@@ -948,5 +948,65 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Paramètres d\'Answerbot';
+
+  @override
+  String get wildcardRulesHeader => 'Règles des wildcards';
+
+  @override
+  String get blockedNumbersHeader => 'Numéros bloqués';
+
+  @override
+  String get addNumber => 'Ajouter un numéro';
+
+  @override
+  String get phoneNumberLabel => 'Numéro de téléphone';
+
+  @override
+  String get wildcardToggle => 'Bloquer une plage de numéros';
+
+  @override
+  String get wildcardHint =>
+      'Bloque tous les numéros commençant par ce préfixe';
+
+  @override
+  String get wildcardTooShort =>
+      'Le préfixe doit contenir au moins un indicatif de pays (par ex. +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Format de numéro non valide. Veuillez utiliser l\'indicatif international (par ex. +43 ou 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Cette plage de numéros est déjà bloquée.';
+
+  @override
+  String get wildcardAdded => 'Plage de numéros bloquée';
+
+  @override
+  String get wildcardRemoved => 'Règle des wildcards supprimée';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Supprimer vraiment la règle joker $prefix* ?';
+  }
+
+  @override
+  String get numberAdded => 'Numéro ajouté à la liste noire';
+
+  @override
+  String get addCommentWildcard => 'Ajouter un commentaire (facultatif)';
+
+  @override
+  String get commentHintWildcard =>
+      'Pourquoi bloquer cette tranche de numéros ?';
+
+  @override
+  String get next => 'Continuer';
+
+  @override
+  String get add => 'Ajouter';
+
+  @override
+  String get wildcardBlocked => 'Règle des wildcards';
 }

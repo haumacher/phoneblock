@@ -444,14 +444,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get enterPhoneNumber => 'Telefonnummer eingeben';
 
   @override
-  String get phoneNumberHint => 'z.B. +49 123 456789';
+  String get phoneNumberHint => 'z.B. +43 oder 0043123456';
 
   @override
   String get search => 'Suchen';
 
   @override
-  String get invalidPhoneNumber =>
-      'Bitte geben Sie eine gültige Telefonnummer ein';
+  String get invalidPhoneNumber => 'Ungültige Telefonnummer';
 
   @override
   String get blacklistTitle => 'Blacklist';
@@ -942,4 +941,63 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+
+  @override
+  String get wildcardRulesHeader => 'Wildcard-Regeln';
+
+  @override
+  String get blockedNumbersHeader => 'Gesperrte Nummern';
+
+  @override
+  String get addNumber => 'Nummer hinzufügen';
+
+  @override
+  String get phoneNumberLabel => 'Telefonnummer';
+
+  @override
+  String get wildcardToggle => 'Nummernbereich sperren';
+
+  @override
+  String get wildcardHint =>
+      'Sperrt alle Nummern, die mit diesem Präfix beginnen';
+
+  @override
+  String get wildcardTooShort =>
+      'Präfix muss mindestens eine Landesvorwahl enthalten (z.B. +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Ungültiges Nummernformat. Bitte internationale Vorwahl verwenden (z.B. +43 oder 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Dieser Nummernbereich ist bereits gesperrt.';
+
+  @override
+  String get wildcardAdded => 'Nummernbereich gesperrt';
+
+  @override
+  String get wildcardRemoved => 'Wildcard-Regel entfernt';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Wildcard-Regel $prefix* wirklich entfernen?';
+  }
+
+  @override
+  String get numberAdded => 'Nummer zur Blacklist hinzugefügt';
+
+  @override
+  String get addCommentWildcard => 'Kommentar hinzufügen (Optional)';
+
+  @override
+  String get commentHintWildcard => 'Warum sperren Sie diesen Nummernbereich?';
+
+  @override
+  String get next => 'Weiter';
+
+  @override
+  String get add => 'Hinzufügen';
+
+  @override
+  String get wildcardBlocked => 'Wildcard-Regel';
 }

@@ -954,5 +954,64 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Impostazioni di Answerbot';
+
+  @override
+  String get wildcardRulesHeader => 'Regole del jolly';
+
+  @override
+  String get blockedNumbersHeader => 'Numeri bloccati';
+
+  @override
+  String get addNumber => 'Aggiungi numero';
+
+  @override
+  String get phoneNumberLabel => 'Numero di telefono';
+
+  @override
+  String get wildcardToggle => 'Gamma di numeri di blocco';
+
+  @override
+  String get wildcardHint =>
+      'Blocca tutti i numeri che iniziano con questo prefisso';
+
+  @override
+  String get wildcardTooShort =>
+      'Il prefisso deve contenere almeno un codice paese (ad es. +43).';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Formato del numero non valido. Utilizzare un prefisso internazionale (ad es. +43 o 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Questo numero è già bloccato.';
+
+  @override
+  String get wildcardAdded => 'Gamma di numeri bloccati';
+
+  @override
+  String get wildcardRemoved => 'Regola jolly rimossa';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Rimuovere davvero la regola jolly $prefix*?';
+  }
+
+  @override
+  String get numberAdded => 'Numero aggiunto alla lista nera';
+
+  @override
+  String get addCommentWildcard => 'Aggiungere un commento (facoltativo)';
+
+  @override
+  String get commentHintWildcard => 'Perché state bloccando questo numero?';
+
+  @override
+  String get next => 'Ulteriori';
+
+  @override
+  String get add => 'Aggiungi';
+
+  @override
+  String get wildcardBlocked => 'Regola jolly';
 }

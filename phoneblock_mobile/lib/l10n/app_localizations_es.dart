@@ -943,5 +943,64 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Configuración de Answerbot';
+
+  @override
+  String get wildcardRulesHeader => 'Reglas comodín';
+
+  @override
+  String get blockedNumbersHeader => 'Números bloqueados';
+
+  @override
+  String get addNumber => 'Añadir número';
+
+  @override
+  String get phoneNumberLabel => 'Número de teléfono';
+
+  @override
+  String get wildcardToggle => 'Intervalo de números de bloque';
+
+  @override
+  String get wildcardHint =>
+      'Bloquea todos los números que empiecen por este prefijo';
+
+  @override
+  String get wildcardTooShort =>
+      'El prefijo debe contener al menos un código de país (por ejemplo, +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Formato de número no válido. Utilice un prefijo internacional (por ejemplo, +43 o 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Este rango de números ya está bloqueado.';
+
+  @override
+  String get wildcardAdded => 'Intervalo de números bloqueado';
+
+  @override
+  String get wildcardRemoved => 'Regla comodín eliminada';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return '¿Quitar realmente la regla comodín $prefix*?';
+  }
+
+  @override
+  String get numberAdded => 'Número añadido a la lista negra';
+
+  @override
+  String get addCommentWildcard => 'Añadir comentario (opcional)';
+
+  @override
+  String get commentHintWildcard => '¿Por qué bloquea este rango de números?';
+
+  @override
+  String get next => 'Más información en';
+
+  @override
+  String get add => 'Añadir';
+
+  @override
+  String get wildcardBlocked => 'Regla comodín';
 }

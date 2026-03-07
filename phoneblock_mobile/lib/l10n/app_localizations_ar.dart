@@ -930,5 +930,63 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'إعدادات روبوت الإجابة';
+
+  @override
+  String get wildcardRulesHeader => 'قواعد أحرف البدل';
+
+  @override
+  String get blockedNumbersHeader => 'الأرقام المحظورة';
+
+  @override
+  String get addNumber => 'إضافة رقم';
+
+  @override
+  String get phoneNumberLabel => 'رقم الهاتف';
+
+  @override
+  String get wildcardToggle => 'نطاق رقم المربع';
+
+  @override
+  String get wildcardHint => 'يحظر جميع الأرقام التي تبدأ بهذه البادئة';
+
+  @override
+  String get wildcardTooShort =>
+      'يجب أن تحتوي البادئة على رمز بلد واحد على الأقل (على سبيل المثال +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'تنسيق الرقم غير صالح. يرجى استخدام رمز الاتصال الدولي (على سبيل المثال +43 أو 0043).';
+
+  @override
+  String get wildcardDuplicate => 'نطاق هذا الرقم محظور بالفعل.';
+
+  @override
+  String get wildcardAdded => 'تم حظر نطاق الأرقام';
+
+  @override
+  String get wildcardRemoved => 'تمت إزالة قاعدة أحرف البدل';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'حقًا إزالة قاعدة حرف البدل $prefix*؟';
+  }
+
+  @override
+  String get numberAdded => 'الرقم المضاف إلى القائمة السوداء';
+
+  @override
+  String get addCommentWildcard => 'إضافة تعليق (اختياري)';
+
+  @override
+  String get commentHintWildcard => 'لماذا تحجب هذا النطاق من الأرقام؟';
+
+  @override
+  String get next => 'المزيد';
+
+  @override
+  String get add => 'إضافة';
+
+  @override
+  String get wildcardBlocked => 'قاعدة أحرف البدل';
 }

@@ -938,5 +938,64 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get fritzboxAnswerbotSettings => 'Answerbot-Einstellungen';
+  String get fritzboxAnswerbotSettings => 'Налаштування автовідповідача';
+
+  @override
+  String get wildcardRulesHeader => 'Правила підстановки символів';
+
+  @override
+  String get blockedNumbersHeader => 'Заблоковані номери';
+
+  @override
+  String get addNumber => 'Додати номер';
+
+  @override
+  String get phoneNumberLabel => 'Номер телефону';
+
+  @override
+  String get wildcardToggle => 'Діапазон номерів блоків';
+
+  @override
+  String get wildcardHint =>
+      'Блокує всі номери, що починаються з цього префікса';
+
+  @override
+  String get wildcardTooShort =>
+      'Префікс повинен містити принаймні один код країни (наприклад, +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Неправильний формат номера. Будь ласка, використовуйте міжнародний код набору (наприклад, +43 або 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Цей діапазон номерів вже заблоковано.';
+
+  @override
+  String get wildcardAdded => 'Діапазон номерів заблоковано';
+
+  @override
+  String get wildcardRemoved => 'Видалено правило підстановки символів';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Чи справді видалити правило підстановки $prefix*?';
+  }
+
+  @override
+  String get numberAdded => 'Номер додано до чорного списку';
+
+  @override
+  String get addCommentWildcard => 'Додати коментар (необов\'язково)';
+
+  @override
+  String get commentHintWildcard => 'Чому ви блокуєте цей діапазон номерів?';
+
+  @override
+  String get next => 'Далі';
+
+  @override
+  String get add => 'Додати';
+
+  @override
+  String get wildcardBlocked => 'Правило підстановки символів';
 }
