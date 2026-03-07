@@ -180,7 +180,7 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'{newCalls} neue Anrufe, {callsAccepted} Anrufe, {talkTimeSeconds} s Gesprächszeit gesamt'**
-  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted);
+  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds);
 
   /// Status: active
   ///
@@ -475,6 +475,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nimmt das Gespräch auch für einen Nummer an, die selbst noch nicht als SPAM bekannt ist, wenn die Vermutung naheliegt, dass die Nummer zu einem Anlagenanschluss gehört, von dem SPAM ausgeht.'**
   String get blockNumberRangesHelp;
+
+  /// Accept local calls label
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Anrufe annehmen'**
+  String get acceptLocalCalls;
+
+  /// Accept local calls help text
+  ///
+  /// In de, this message translates to:
+  /// **'Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.'**
+  String get acceptLocalCallsHelp;
 
   /// Prefer IPv4 label
   ///

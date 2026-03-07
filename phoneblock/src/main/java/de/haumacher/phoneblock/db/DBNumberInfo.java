@@ -10,10 +10,14 @@ import de.haumacher.phoneblock.app.api.model.NumberInfo;
  */
 public class DBNumberInfo extends NumberInfo {
 
-	/** 
+	private final long _lastPing;
+
+	private final int _publishedVotes;
+
+	/**
 	 * Creates a {@link DBBlockListEntry}.
 	 */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, int publishedVotes) {
 		setPhone(phone)
 		.setAdded(added)
 		.setUpdated(updated)
@@ -28,6 +32,22 @@ public class DBNumberInfo extends NumberInfo {
 		.setRatingGamble(gamble)
 		.setRatingFraud(fraud)
 		.setSearches(searches);
+		_lastPing = lastPing;
+		_publishedVotes = publishedVotes;
+	}
+
+	/**
+	 * The last activity timestamp (from PUBLISHED_LASTPING).
+	 */
+	public long getLastPing() {
+		return _lastPing;
+	}
+
+	/**
+	 * The snapshot of votes at the time of version assignment (from PUBLISHED_VOTES).
+	 */
+	public int getPublishedVotes() {
+		return _publishedVotes;
 	}
 
 }

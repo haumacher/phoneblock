@@ -158,11 +158,23 @@ abstract class AppLocalizations {
   /// **'Blockiert'**
   String get blocked;
 
-  /// Label for accepted calls
+  /// Label for calls that were answered (Fritz!Box calls)
   ///
   /// In de, this message translates to:
   /// **'Angenommen'**
   String get accepted;
+
+  /// Label for mobile-screened calls that were let through (not blocked) by the call screener
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht blockiert'**
+  String get notBlocked;
+
+  /// Label for missed calls
+  ///
+  /// In de, this message translates to:
+  /// **'Verpasst'**
+  String get missed;
 
   /// Number of votes for a phone number
   ///
@@ -295,6 +307,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Open Source (GPL-3.0)'**
   String get sourceCodeLicense;
+
+  /// Report problem link label
+  ///
+  /// In de, this message translates to:
+  /// **'Problem melden'**
+  String get reportProblem;
+
+  /// Report problem link subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'GitHub Issues'**
+  String get reportProblemSubtitle;
 
   /// About description text
   ///
@@ -806,10 +830,10 @@ abstract class AppLocalizations {
   /// **'Telefonnummer eingeben'**
   String get enterPhoneNumber;
 
-  /// Phone number hint text
+  /// Hint text for phone number input field
   ///
   /// In de, this message translates to:
-  /// **'z.B. +49 123 456789'**
+  /// **'z.B. +43 oder 0043123456'**
   String get phoneNumberHint;
 
   /// Search button
@@ -818,10 +842,10 @@ abstract class AppLocalizations {
   /// **'Suchen'**
   String get search;
 
-  /// Error message for invalid phone number
+  /// Validation error for an invalid exact phone number
   ///
   /// In de, this message translates to:
-  /// **'Bitte geben Sie eine gültige Telefonnummer ein'**
+  /// **'Ungültige Telefonnummer'**
   String get invalidPhoneNumber;
 
   /// Blacklist screen title
@@ -1045,6 +1069,804 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verdächtige Anrufe'**
   String get suspiciousCallsCount;
+
+  /// Fritz!Box menu title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box'**
+  String get fritzboxTitle;
+
+  /// Fritz!Box connected and spam-protected status
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden und geschützt'**
+  String get fritzboxConnected;
+
+  /// Fritz!Box connected but CardDAV spam protection not active
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden, nicht geschützt'**
+  String get fritzboxConnectedNotProtected;
+
+  /// Fritz!Box offline status
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht erreichbar'**
+  String get fritzboxOffline;
+
+  /// Fritz!Box error status
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindungsfehler'**
+  String get fritzboxError;
+
+  /// Fritz!Box not configured - short
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht eingerichtet'**
+  String get fritzboxNotConfiguredShort;
+
+  /// Fritz!Box not configured title
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Fritz!Box eingerichtet'**
+  String get fritzboxNotConfigured;
+
+  /// Fritz!Box not configured description
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden Sie Ihre Fritz!Box, um Anrufe aus Ihrem Festnetz zu sehen.'**
+  String get fritzboxNotConfiguredDescription;
+
+  /// Connect Fritz!Box button
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box verbinden'**
+  String get fritzboxConnect;
+
+  /// Disconnect Fritz!Box button
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box trennen'**
+  String get fritzboxDisconnect;
+
+  /// Disconnect confirmation title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box trennen?'**
+  String get fritzboxDisconnectTitle;
+
+  /// Disconnect confirmation message
+  ///
+  /// In de, this message translates to:
+  /// **'Die gespeicherten Anrufe und Zugangsdaten werden gelöscht.'**
+  String get fritzboxDisconnectMessage;
+
+  /// Sync now button
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get fritzboxSyncNow;
+
+  /// Sync description
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufliste von der Fritz!Box abrufen'**
+  String get fritzboxSyncDescription;
+
+  /// Sync complete message
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine neuen Anrufe} =1{1 neuer Anruf synchronisiert} other{{count} neue Anrufe synchronisiert}}'**
+  String fritzboxSyncComplete(int count);
+
+  /// Sync error message
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Synchronisieren'**
+  String get fritzboxSyncError;
+
+  /// Fritz!OS version label
+  ///
+  /// In de, this message translates to:
+  /// **'FRITZ!OS Version'**
+  String get fritzboxVersion;
+
+  /// Fritz!Box host address label
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse'**
+  String get fritzboxHost;
+
+  /// Cached calls count label
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeicherte Anrufe'**
+  String get fritzboxCachedCalls;
+
+  /// Last sync label
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Synchronisierung'**
+  String get fritzboxLastSync;
+
+  /// Just now time label
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade eben'**
+  String get fritzboxJustNow;
+
+  /// Minutes ago label
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Vor 1 Minute} other{Vor {count} Minuten}}'**
+  String fritzboxMinutesAgo(int count);
+
+  /// Hours ago label
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Vor 1 Stunde} other{Vor {count} Stunden}}'**
+  String fritzboxHoursAgo(int count);
+
+  /// Wizard title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box verbinden'**
+  String get fritzboxWizardTitle;
+
+  /// Detection step title
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box finden'**
+  String get fritzboxStepDetection;
+
+  /// Detection step subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Suche im Netzwerk'**
+  String get fritzboxStepDetectionSubtitle;
+
+  /// Login step title
+  ///
+  /// In de, this message translates to:
+  /// **'Anmelden'**
+  String get fritzboxStepLogin;
+
+  /// Login step subtitle
+  ///
+  /// In de, this message translates to:
+  /// **'Zugangsdaten eingeben'**
+  String get fritzboxStepLoginSubtitle;
+
+  /// Searching message
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nach Fritz!Box...'**
+  String get fritzboxSearching;
+
+  /// Not found message
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box nicht gefunden'**
+  String get fritzboxNotFound;
+
+  /// Not found description
+  ///
+  /// In de, this message translates to:
+  /// **'Die Fritz!Box konnte nicht automatisch gefunden werden. Bitte geben Sie die Adresse manuell ein.'**
+  String get fritzboxNotFoundDescription;
+
+  /// Host field label
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box Adresse'**
+  String get fritzboxHostLabel;
+
+  /// Retry search button
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut suchen'**
+  String get fritzboxRetrySearch;
+
+  /// Manual connect button
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden'**
+  String get fritzboxManualConnect;
+
+  /// Login description
+  ///
+  /// In de, this message translates to:
+  /// **'Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.'**
+  String get fritzboxLoginDescription;
+
+  /// Switch label to show the username field in the login step
+  ///
+  /// In de, this message translates to:
+  /// **'Benutzername eingeben'**
+  String get fritzboxShowUsername;
+
+  /// Hint below the username toggle explaining that the default user is used automatically
+  ///
+  /// In de, this message translates to:
+  /// **'Normalerweise wird der Standardbenutzer verwendet'**
+  String get fritzboxShowUsernameHint;
+
+  /// Username field label
+  ///
+  /// In de, this message translates to:
+  /// **'Benutzername'**
+  String get fritzboxUsernameLabel;
+
+  /// Password field label
+  ///
+  /// In de, this message translates to:
+  /// **'Kennwort'**
+  String get fritzboxPasswordLabel;
+
+  /// Credentials security note
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Zugangsdaten werden sicher auf Ihrem Gerät gespeichert.'**
+  String get fritzboxCredentialsNote;
+
+  /// Test and save button
+  ///
+  /// In de, this message translates to:
+  /// **'Testen und Speichern'**
+  String get fritzboxTestAndSave;
+
+  /// Connection failed message
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung fehlgeschlagen. Bitte überprüfen Sie die Zugangsdaten.'**
+  String get fritzboxConnectionFailed;
+
+  /// Fill all fields message
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte füllen Sie alle Felder aus.'**
+  String get fritzboxFillAllFields;
+
+  /// Offline banner message
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box nicht erreichbar - zeige gespeicherte Anrufe'**
+  String get fritzboxOfflineBanner;
+
+  /// Mobile source label
+  ///
+  /// In de, this message translates to:
+  /// **'Mobil'**
+  String get sourceMobile;
+
+  /// Fritz!Box source label
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box'**
+  String get sourceFritzbox;
+
+  /// Wizard step title for blocklist configuration
+  ///
+  /// In de, this message translates to:
+  /// **'Spam-Schutz'**
+  String get fritzboxStepBlocklist;
+
+  /// Wizard step subtitle for blocklist configuration
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste einrichten'**
+  String get fritzboxStepBlocklistSubtitle;
+
+  /// Description text for blocklist setup step
+  ///
+  /// In de, this message translates to:
+  /// **'Wählen Sie, wie Ihre Fritz!Box vor Spam-Anrufen geschützt werden soll.'**
+  String get fritzboxBlocklistDescription;
+
+  /// Title for CardDAV blocklist option
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Blockliste'**
+  String get fritzboxCardDavTitle;
+
+  /// Description for CardDAV blocklist option
+  ///
+  /// In de, this message translates to:
+  /// **'Fritz!Box synchronisiert die Blockliste direkt mit PhoneBlock. Empfohlen für FRITZ!OS 7.20+.'**
+  String get fritzboxCardDavDescription;
+
+  /// Option to skip blocklist setup
+  ///
+  /// In de, this message translates to:
+  /// **'Später einrichten'**
+  String get fritzboxSkipBlocklist;
+
+  /// Description for skip option
+  ///
+  /// In de, this message translates to:
+  /// **'Sie können den Spam-Schutz später in den Einstellungen aktivieren.'**
+  String get fritzboxSkipBlocklistDescription;
+
+  /// Warning when FRITZ!OS version is too old for CardDAV
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV erfordert FRITZ!OS 7.20 oder neuer. Ihre Fritz!Box hat eine ältere Version.'**
+  String get fritzboxVersionTooOldForCardDav;
+
+  /// Button to finish wizard setup
+  ///
+  /// In de, this message translates to:
+  /// **'Einrichtung abschließen'**
+  String get fritzboxFinishSetup;
+
+  /// Error when PhoneBlock login is required
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte melden Sie sich zuerst bei PhoneBlock an.'**
+  String get fritzboxPhoneBlockNotLoggedIn;
+
+  /// Error when username cannot be retrieved
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock-Benutzername konnte nicht abgerufen werden.'**
+  String get fritzboxCannotGetUsername;
+
+  /// Error when blocklist configuration fails
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste konnte nicht eingerichtet werden.'**
+  String get fritzboxBlocklistConfigFailed;
+
+  /// CardDAV status label in settings
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Status'**
+  String get fritzboxCardDavStatus;
+
+  /// CardDAV status when synced
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert'**
+  String get fritzboxCardDavStatusSynced;
+
+  /// CardDAV status when sync is pending
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisierung ausstehend'**
+  String get fritzboxCardDavStatusPending;
+
+  /// CardDAV status when there is an error
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisierungsfehler'**
+  String get fritzboxCardDavStatusError;
+
+  /// CardDAV status when disabled
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktiviert'**
+  String get fritzboxCardDavStatusDisabled;
+
+  /// CardDAV sync frequency note
+  ///
+  /// In de, this message translates to:
+  /// **'Die Fritz!Box synchronisiert das Telefonbuch einmal täglich um Mitternacht.'**
+  String get fritzboxCardDavNote;
+
+  /// Blocklist mode setting label
+  ///
+  /// In de, this message translates to:
+  /// **'Spam-Schutz Modus'**
+  String get fritzboxBlocklistMode;
+
+  /// CardDAV blocklist mode description
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV (automatische Synchronisierung)'**
+  String get fritzboxBlocklistModeCardDav;
+
+  /// No blocklist mode description
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht aktiviert'**
+  String get fritzboxBlocklistModeNone;
+
+  /// Enable CardDAV button
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV aktivieren'**
+  String get fritzboxEnableCardDav;
+
+  /// Enable CardDAV description
+  ///
+  /// In de, this message translates to:
+  /// **'Spam-Blockliste direkt mit Fritz!Box synchronisieren'**
+  String get fritzboxEnableCardDavDescription;
+
+  /// CardDAV enabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'CardDAV-Blockliste aktiviert'**
+  String get fritzboxCardDavEnabled;
+
+  /// Remove blocklist button
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste entfernen'**
+  String get fritzboxDisableCardDav;
+
+  /// Remove blocklist dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste entfernen?'**
+  String get fritzboxDisableCardDavTitle;
+
+  /// Remove blocklist dialog message
+  ///
+  /// In de, this message translates to:
+  /// **'Die Blockliste wird von der Fritz!Box entfernt.'**
+  String get fritzboxDisableCardDavMessage;
+
+  /// Remove button
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get fritzboxDisable;
+
+  /// Blocklist removed success message
+  ///
+  /// In de, this message translates to:
+  /// **'Blockliste entfernt'**
+  String get fritzboxCardDavDisabled;
+
+  /// Answer bot section title in Fritz!Box settings
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter'**
+  String get fritzboxAnswerbotTitle;
+
+  /// Answer bot active status
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter aktiv'**
+  String get fritzboxAnswerbotActive;
+
+  /// Answer bot paused/disabled on server
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter pausiert'**
+  String get fritzboxAnswerbotPaused;
+
+  /// Answer bot enabled but SIP registration not successful
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter nicht verbunden'**
+  String get fritzboxAnswerbotNotRegistered;
+
+  /// Progress message while enabling answerbot and waiting for SIP registration
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere Anrufbeantworter...'**
+  String get fritzboxAnswerbotEnabling;
+
+  /// Answer bot active description
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.'**
+  String get fritzboxAnswerbotDescription;
+
+  /// Enable answer bot button
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter aktivieren'**
+  String get fritzboxEnableAnswerbot;
+
+  /// Enable answer bot description
+  ///
+  /// In de, this message translates to:
+  /// **'SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen'**
+  String get fritzboxEnableAnswerbotDescription;
+
+  /// Remove answer bot button
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter entfernen'**
+  String get fritzboxDisableAnswerbot;
+
+  /// Remove answer bot confirmation title
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter entfernen?'**
+  String get fritzboxDisableAnswerbotTitle;
+
+  /// Remove answer bot confirmation message
+  ///
+  /// In de, this message translates to:
+  /// **'Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.'**
+  String get fritzboxDisableAnswerbotMessage;
+
+  /// Answer bot enabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter aktiviert'**
+  String get fritzboxAnswerbotEnabled;
+
+  /// Answer bot disabled success message
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter deaktiviert'**
+  String get fritzboxAnswerbotDisabled;
+
+  /// Answer bot setup failed error message
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter konnte nicht eingerichtet werden.'**
+  String get fritzboxAnswerbotSetupFailed;
+
+  /// Progress step: creating answer bot on server
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle Anrufbeantworter...'**
+  String get fritzboxAnswerbotStepCreating;
+
+  /// Progress step: detecting external access
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe externen Zugang...'**
+  String get fritzboxAnswerbotStepDetecting;
+
+  /// Progress step: configuring DynDNS
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguriere DynDNS...'**
+  String get fritzboxAnswerbotStepDynDns;
+
+  /// Progress step: waiting for DynDNS
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf DynDNS-Registrierung...'**
+  String get fritzboxAnswerbotStepWaitingDynDns;
+
+  /// Progress step: registering SIP device
+  ///
+  /// In de, this message translates to:
+  /// **'Registriere SIP-Gerät...'**
+  String get fritzboxAnswerbotStepSip;
+
+  /// Progress step: enabling internet access for the SIP device
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere Internetzugriff...'**
+  String get fritzboxAnswerbotStepInternetAccess;
+
+  /// Progress step: enabling answer bot
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere Anrufbeantworter...'**
+  String get fritzboxAnswerbotStepEnabling;
+
+  /// Progress step: waiting for SIP registration
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf Registrierung...'**
+  String get fritzboxAnswerbotStepWaiting;
+
+  /// Title for the answer bot setup screen
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufbeantworter einrichten'**
+  String get fritzboxAnswerbotSetupTitle;
+
+  /// Success message after answer bot setup completes
+  ///
+  /// In de, this message translates to:
+  /// **'Der Anrufbeantworter wurde erfolgreich eingerichtet und ist jetzt aktiv.'**
+  String get fritzboxAnswerbotSetupSuccess;
+
+  /// Error detail shown for a failed setup step
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {error}'**
+  String fritzboxAnswerbotSetupErrorDetail(String error);
+
+  /// Progress step: waiting for second factor authentication on Fritz!Box
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte bestätigen Sie den Zugang an Ihrer Fritz!Box...'**
+  String get fritzboxAnswerbotStepSecondFactor;
+
+  /// 2FA method: press any button on the Fritz!Box device
+  ///
+  /// In de, this message translates to:
+  /// **'Drücken Sie eine beliebige Taste an der Fritz!Box'**
+  String get fritzboxSecondFactorButton;
+
+  /// 2FA method: dial DTMF code on a connected phone
+  ///
+  /// In de, this message translates to:
+  /// **'Oder wählen Sie {code} an einem angeschlossenen Telefon'**
+  String fritzboxSecondFactorDtmf(String code);
+
+  /// Answerbot settings link in Fritz!Box settings
+  ///
+  /// In de, this message translates to:
+  /// **'Answerbot-Einstellungen'**
+  String get fritzboxAnswerbotSettings;
+
+  /// Section header for wildcard blocking rules in the blocklist view
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regeln'**
+  String get wildcardRulesHeader;
+
+  /// Section header for individually blocked numbers in the blocklist view
+  ///
+  /// In de, this message translates to:
+  /// **'Gesperrte Nummern'**
+  String get blockedNumbersHeader;
+
+  /// Title for the add-number dialog
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer hinzufügen'**
+  String get addNumber;
+
+  /// Label for phone number input field
+  ///
+  /// In de, this message translates to:
+  /// **'Telefonnummer'**
+  String get phoneNumberLabel;
+
+  /// Label for the wildcard toggle switch
+  ///
+  /// In de, this message translates to:
+  /// **'Nummernbereich sperren'**
+  String get wildcardToggle;
+
+  /// Help text shown when wildcard toggle is on
+  ///
+  /// In de, this message translates to:
+  /// **'Sperrt alle Nummern, die mit diesem Präfix beginnen'**
+  String get wildcardHint;
+
+  /// Validation error when wildcard prefix is too short
+  ///
+  /// In de, this message translates to:
+  /// **'Präfix muss mindestens eine Landesvorwahl enthalten (z.B. +43)'**
+  String get wildcardTooShort;
+
+  /// Validation error when wildcard prefix has invalid format
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiges Nummernformat. Bitte internationale Vorwahl verwenden (z.B. +43 oder 0043).'**
+  String get wildcardInvalidFormat;
+
+  /// Error when wildcard prefix already exists
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Nummernbereich ist bereits gesperrt.'**
+  String get wildcardDuplicate;
+
+  /// Success message when wildcard rule was added
+  ///
+  /// In de, this message translates to:
+  /// **'Nummernbereich gesperrt'**
+  String get wildcardAdded;
+
+  /// Success message when wildcard rule was removed
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regel entfernt'**
+  String get wildcardRemoved;
+
+  /// Confirmation dialog text for removing a wildcard rule
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regel {prefix}* wirklich entfernen?'**
+  String confirmRemoveWildcard(String prefix);
+
+  /// Success message when exact number was added to blocklist
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer zur Blacklist hinzugefügt'**
+  String get numberAdded;
+
+  /// Title for the comment dialog when adding a wildcard rule
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar hinzufügen (Optional)'**
+  String get addCommentWildcard;
+
+  /// Hint text for the comment field in wildcard dialog
+  ///
+  /// In de, this message translates to:
+  /// **'Warum sperren Sie diesen Nummernbereich?'**
+  String get commentHintWildcard;
+
+  /// Button label to proceed to next step in a dialog
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get next;
+
+  /// Button label to add/submit an entry
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get add;
+
+  /// Rating label shown for calls blocked by a wildcard rule
+  ///
+  /// In de, this message translates to:
+  /// **'Wildcard-Regel'**
+  String get wildcardBlocked;
+
+  /// Label shown for calls blocked by a wildcard filter, with the matched prefix
+  ///
+  /// In de, this message translates to:
+  /// **'Filter: {prefix}'**
+  String matchedWildcardFilter(String prefix);
+
+  /// Blocklist cache section header in settings
+  ///
+  /// In de, this message translates to:
+  /// **'Blocklist-Cache'**
+  String get blocklistCache;
+
+  /// Number of cached blocklist entries
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Nummern'**
+  String blocklistCachedEntries(int count);
+
+  /// Label for last sync time
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Synchronisierung'**
+  String get blocklistLastSync;
+
+  /// Shown when blocklist has never been synced
+  ///
+  /// In de, this message translates to:
+  /// **'Nie'**
+  String get blocklistLastSyncNever;
+
+  /// Relative time since last blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'vor {timeAgo}'**
+  String blocklistLastSyncAgo(String timeAgo);
+
+  /// Label for blocklist version number
+  ///
+  /// In de, this message translates to:
+  /// **'Version'**
+  String get blocklistVersion;
+
+  /// Button to trigger manual blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get blocklistSyncNow;
+
+  /// Shown while blocklist sync is in progress
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiere...'**
+  String get blocklistSyncing;
+
+  /// Snackbar message after successful manual sync
+  ///
+  /// In de, this message translates to:
+  /// **'Blocklist-Synchronisierung erfolgreich'**
+  String get blocklistSyncSuccess;
+
+  /// Snackbar message after failed manual sync
+  ///
+  /// In de, this message translates to:
+  /// **'Blocklist-Synchronisierung fehlgeschlagen'**
+  String get blocklistSyncFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -199,6 +199,7 @@ public class BlocklistVersionService implements ServletContextListener {
 		LOG.info("Starting scheduled blocklist version assignment");
 
 		DB db = _dbService.db();
+		long now = System.currentTimeMillis();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -207,11 +208,15 @@ public class BlocklistVersionService implements ServletContextListener {
 			String versionStr = users.getProperty("blocklist.version");
 			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
 
+			// Get the last assignment time to detect recent activity
+			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
+			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
+
 			// Increment version
 			long newVersion = currentVersion + 1;
 
-			// Assign new version to all pending updates
-			int updated = reports.assignVersionToPendingUpdates(newVersion);
+			// Assign new version to all pending updates and recently-active numbers
+			int updated = reports.assignVersionToPendingUpdates(newVersion, lastAssignTime, db.getMinVisibleVotes());
 
 			if (updated > 0) {
 				// Update global version counter
@@ -219,6 +224,13 @@ public class BlocklistVersionService implements ServletContextListener {
 					users.updateProperty("blocklist.version", String.valueOf(newVersion));
 				} else {
 					users.addProperty("blocklist.version", String.valueOf(newVersion));
+				}
+
+				// Store the current time as the last assignment time
+				if (lastAssignTimeStr != null) {
+					users.updateProperty("blocklist.lastAssignTime", String.valueOf(now));
+				} else {
+					users.addProperty("blocklist.lastAssignTime", String.valueOf(now));
 				}
 
 				session.commit();

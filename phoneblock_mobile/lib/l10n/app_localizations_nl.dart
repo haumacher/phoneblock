@@ -31,6 +31,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get accepted => 'Geaccepteerd';
 
   @override
+  String get notBlocked => 'Niet geblokkeerd';
+
+  @override
+  String get missed => 'Gemist';
+
+  @override
   String votes(int count) {
     return '$count';
   }
@@ -104,6 +110,12 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get sourceCodeLicense => 'Open Source (GPL-3.0)';
+
+  @override
+  String get reportProblem => 'Een probleem melden';
+
+  @override
+  String get reportProblemSubtitle => 'GitHub problemen';
 
   @override
   String get aboutDescription =>
@@ -563,4 +575,472 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Verdachte telefoontjes';
+
+  @override
+  String get fritzboxTitle => 'Fritz!Box';
+
+  @override
+  String get fritzboxConnected => 'Aangesloten';
+
+  @override
+  String get fritzboxConnectedNotProtected => 'Aangesloten, niet beschermd';
+
+  @override
+  String get fritzboxOffline => 'Niet beschikbaar';
+
+  @override
+  String get fritzboxError => 'Fout bij verbinding';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'Niet ingesteld';
+
+  @override
+  String get fritzboxNotConfigured => 'Geen Fritz!Box opgezet';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Sluit je Fritz!Box aan om oproepen van je vaste lijn te zien.';
+
+  @override
+  String get fritzboxConnect => 'Fritz!Box aansluiten';
+
+  @override
+  String get fritzboxDisconnect => 'Ontkoppel Fritz!Box';
+
+  @override
+  String get fritzboxDisconnectTitle => 'Fritz! doos loskoppelen?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'De opgeslagen gesprekken en toegangsgegevens worden verwijderd.';
+
+  @override
+  String get fritzboxSyncNow => 'Nu synchroniseren';
+
+  @override
+  String get fritzboxSyncDescription => 'De bellijst ophalen uit de Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nieuwe gesynchroniseerde oproepen',
+      one: '1 nieuwe oproep gesynchroniseerd',
+      zero: 'Geen nieuwe oproepen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Fout tijdens synchronisatie';
+
+  @override
+  String get fritzboxVersion => 'FRITZ!OS-versie';
+
+  @override
+  String get fritzboxHost => 'Adres';
+
+  @override
+  String get fritzboxCachedCalls => 'Opgeslagen oproepen';
+
+  @override
+  String get fritzboxLastSync => 'Laatste synchronisatie';
+
+  @override
+  String get fritzboxJustNow => 'Zojuist';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Voor $count minuten',
+      one: '1 minuut geleden',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count uren geleden',
+      one: '1 uur geleden',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Fritz!Box aansluiten';
+
+  @override
+  String get fritzboxStepDetection => 'Vind Fritz!Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle =>
+      'Automatisch zoeken in het netwerk';
+
+  @override
+  String get fritzboxStepLogin => 'Inloggen';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Toegangsgegevens invoeren';
+
+  @override
+  String get fritzboxSearching => 'Zoeken naar Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => 'Fritz! Box niet gevonden';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'De Fritz!Box kon niet automatisch worden gevonden. Voer het adres handmatig in.';
+
+  @override
+  String get fritzboxHostLabel => 'Fritz!Box adres';
+
+  @override
+  String get fritzboxRetrySearch => 'Opnieuw zoeken';
+
+  @override
+  String get fritzboxManualConnect => 'Maak verbinding met';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Voer uw Fritz!Box toegangsgegevens in. Je vindt ze in de Fritz!Box gebruikersinterface onder Systeem > Fritz!Box gebruiker.';
+
+  @override
+  String get fritzboxShowUsername => 'Gebruikersnaam invoeren';
+
+  @override
+  String get fritzboxShowUsernameHint =>
+      'Normaal wordt de standaardgebruiker gebruikt';
+
+  @override
+  String get fritzboxUsernameLabel => 'Gebruikersnaam';
+
+  @override
+  String get fritzboxPasswordLabel => 'Wachtwoord';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Je toegangsgegevens worden veilig opgeslagen op je apparaat.';
+
+  @override
+  String get fritzboxTestAndSave => 'Testen en opslaan';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Verbinding mislukt. Controleer de toegangsgegevens.';
+
+  @override
+  String get fritzboxFillAllFields => 'Vul alle velden in.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz! box niet bereikbaar - opgeslagen oproepen tonen';
+
+  @override
+  String get sourceMobile => 'Mobiel';
+
+  @override
+  String get sourceFritzbox => 'Fritz!Box';
+
+  @override
+  String get fritzboxStepBlocklist => 'Bescherming tegen spam';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'Blokkadelijst instellen';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'Selecteer hoe je Fritz!Box moet worden beschermd tegen spamoproepen.';
+
+  @override
+  String get fritzboxCardDavTitle => 'CardDAV-blokkeringslijst';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz!Box synchroniseert de blokkadelijst rechtstreeks met PhoneBlock. Aanbevolen voor FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'Later instellen';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'U kunt spambeveiliging later activeren in de instellingen.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV vereist FRITZ!OS 7.20 of nieuwer. Uw Fritz!Box heeft een oudere versie.';
+
+  @override
+  String get fritzboxFinishSetup => 'Installatie afronden';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn => 'Log eerst in bij PhoneBlock.';
+
+  @override
+  String get fritzboxCannotGetUsername =>
+      'PhoneBlock-gebruikersnaam kon niet worden opgehaald.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed =>
+      'Blokkadelijst kon niet worden ingesteld.';
+
+  @override
+  String get fritzboxCardDavStatus => 'CardDAV status';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'Gesynchroniseerd';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'Synchronisatie in afwachting';
+
+  @override
+  String get fritzboxCardDavStatusError => 'Synchronisatiefout';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'Gedeactiveerd';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'De Fritz!Box synchroniseert het telefoonboek één keer per dag om middernacht.';
+
+  @override
+  String get fritzboxBlocklistMode => 'Spambeschermingsmodus';
+
+  @override
+  String get fritzboxBlocklistModeCardDav =>
+      'CardDAV (automatische synchronisatie)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'Niet geactiveerd';
+
+  @override
+  String get fritzboxEnableCardDav => 'CardDAV activeren';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'Spamblocklist direct synchroniseren met Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled => 'CardDAV-blokkeringslijst geactiveerd';
+
+  @override
+  String get fritzboxDisableCardDav => 'Blokkadelijst verwijderen';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'Blokkadelijst verwijderen?';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      'De blokkadelijst is verwijderd uit de Fritz!';
+
+  @override
+  String get fritzboxDisable => 'Verwijder';
+
+  @override
+  String get fritzboxCardDavDisabled => 'Bloklijst verwijderd';
+
+  @override
+  String get fritzboxAnswerbotTitle => 'Antwoordapparaat';
+
+  @override
+  String get fritzboxAnswerbotActive => 'Antwoordapparaat actief';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Antwoordapparaat gepauzeerd';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Antwoordapparaat niet aangesloten';
+
+  @override
+  String get fritzboxAnswerbotEnabling => 'Antwoordapparaat activeren...';
+
+  @override
+  String get fritzboxAnswerbotDescription =>
+      'SPAM-oproepen worden automatisch beantwoord door het PhoneBlock antwoordapparaat.';
+
+  @override
+  String get fritzboxEnableAnswerbot => 'Antwoordapparaat activeren';
+
+  @override
+  String get fritzboxEnableAnswerbotDescription =>
+      'SPAM-oproepen automatisch laten beantwoorden door het PhoneBlock antwoordapparaat';
+
+  @override
+  String get fritzboxDisableAnswerbot => 'Antwoordapparaat verwijderen';
+
+  @override
+  String get fritzboxDisableAnswerbotTitle => 'Antwoordapparaat verwijderen?';
+
+  @override
+  String get fritzboxDisableAnswerbotMessage =>
+      'Het PhoneBlock antwoordapparaat wordt verwijderd uit de Fritz!Box en gedeactiveerd op de server.';
+
+  @override
+  String get fritzboxAnswerbotEnabled => 'Antwoordapparaat geactiveerd';
+
+  @override
+  String get fritzboxAnswerbotDisabled => 'Antwoordapparaat uitgeschakeld';
+
+  @override
+  String get fritzboxAnswerbotSetupFailed =>
+      'Antwoordapparaat kon niet worden ingesteld.';
+
+  @override
+  String get fritzboxAnswerbotStepCreating => 'Antwoordapparaat maken...';
+
+  @override
+  String get fritzboxAnswerbotStepDetecting => 'Controleer externe toegang...';
+
+  @override
+  String get fritzboxAnswerbotStepDynDns => 'DynDNS configureren...';
+
+  @override
+  String get fritzboxAnswerbotStepWaitingDynDns =>
+      'Wachten op DynDNS-registratie...';
+
+  @override
+  String get fritzboxAnswerbotStepSip => 'SIP-apparaat registreren...';
+
+  @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Activeer internettoegang...';
+
+  @override
+  String get fritzboxAnswerbotStepEnabling => 'Antwoordapparaat activeren...';
+
+  @override
+  String get fritzboxAnswerbotStepWaiting => 'Wachten op registratie...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => 'Een antwoordapparaat instellen';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'Het antwoordapparaat is met succes ingesteld en is nu actief.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Fout: $error';
+  }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor =>
+      'Bevestig toegang op uw Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Druk op een willekeurige knop op de Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'Of kies $code op een aangesloten telefoon.';
+  }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Answerbot instellingen';
+
+  @override
+  String get wildcardRulesHeader => 'Wildcard-regels';
+
+  @override
+  String get blockedNumbersHeader => 'Geblokkeerde nummers';
+
+  @override
+  String get addNumber => 'Aantal toevoegen';
+
+  @override
+  String get phoneNumberLabel => 'Telefoonnummer';
+
+  @override
+  String get wildcardToggle => 'Bereik bloknummer';
+
+  @override
+  String get wildcardHint =>
+      'Blokkeert alle nummers die beginnen met dit voorvoegsel';
+
+  @override
+  String get wildcardTooShort =>
+      'Het voorvoegsel moet ten minste één landcode bevatten (bijv. +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Ongeldig nummerformaat. Gebruik een internationaal kengetal (bijv. +43 of 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Dit nummerbereik is al geblokkeerd.';
+
+  @override
+  String get wildcardAdded => 'Nummerreeks geblokkeerd';
+
+  @override
+  String get wildcardRemoved => 'Wildcard-regel verwijderd';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'Wil je echt de wildcardregel $prefix* verwijderen?';
+  }
+
+  @override
+  String get numberAdded => 'Nummer toegevoegd aan zwarte lijst';
+
+  @override
+  String get addCommentWildcard => 'Opmerking toevoegen (optioneel)';
+
+  @override
+  String get commentHintWildcard => 'Waarom blokkeer je deze nummerreeks?';
+
+  @override
+  String get next => 'Verder';
+
+  @override
+  String get add => 'Voeg  toe';
+
+  @override
+  String get wildcardBlocked => 'Wildcard-regel';
+
+  @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
+  String get blocklistCache => 'Cache voor blokkadelijst';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count';
+  }
+
+  @override
+  String get blocklistLastSync => 'Laatste synchronisatie';
+
+  @override
+  String get blocklistLastSyncNever => 'Nooit';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'voor $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Versie';
+
+  @override
+  String get blocklistSyncNow => 'Nu synchroniseren';
+
+  @override
+  String get blocklistSyncing => 'Synchroniseren...';
+
+  @override
+  String get blocklistSyncSuccess => 'Synchronisatie van bloklijst geslaagd';
+
+  @override
+  String get blocklistSyncFailed => 'Synchronisatie blokkadelijst mislukt';
 }

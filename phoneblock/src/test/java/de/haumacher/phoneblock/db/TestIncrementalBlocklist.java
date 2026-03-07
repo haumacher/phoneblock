@@ -57,7 +57,8 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that version updates are triggered when votes cross the minVisibleVotes threshold.
+	 * Test that version updates are triggered when votes cross the minVisibleVotes threshold,
+	 * and that subsequent votes are picked up via recent-activity detection.
 	 */
 	@Test
 	void testVersionUpdateOnThresholdCrossing() {
@@ -73,8 +74,9 @@ public class TestIncrementalBlocklist {
 		}
 		// Now the number has 10 votes, crossing the threshold
 
-		// Assign version to pending updates
-		long version1 = assignVersions();
+		// Assign version to pending updates (lastAssignTime starts at 0, set to time after)
+		long assignTime1 = time;
+		long version1 = assignVersions(assignTime1);
 
 		// Get the full blocklist
 		Blocklist fullList = _db.getBlockListAPI();
@@ -82,14 +84,14 @@ public class TestIncrementalBlocklist {
 		assertEquals("+49123456789", fullList.getNumbers().get(0).getPhone());
 		assertEquals(10, fullList.getNumbers().get(0).getVotes());
 
-		// Add more votes to cross the 20 threshold
+		// Add more votes (no threshold crossing, picked up via recent-activity)
 		for (int i = 0; i < 5; i++) {
 			processVotes("0123456789", 2, time++);
 		}
 		// Now the number has 20 votes
 
-		long version2 = assignVersions();
-		assertTrue(version2 > version1, "Version should increment after threshold crossing");
+		long version2 = assignVersions(time);
+		assertTrue(version2 > version1, "Version should increment for recently-active number");
 
 		// Get incremental update since version1
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
@@ -262,14 +264,141 @@ public class TestIncrementalBlocklist {
 		assertEquals(version1, update.getVersion());
 	}
 
+	/**
+	 * Test that archived numbers appear in incremental sync with votes=0.
+	 */
+	@Test
+	void testArchivedNumbersAppearInIncrementalSync() {
+		_db.setMinVisibleVotes(10);
+
+		long time = 1000;
+
+		// Add a number with 10 votes (above minVisibleVotes)
+		for (int i = 0; i < 5; i++) {
+			processVotes("0333444555", 2, time++);
+		}
+
+		// Assign initial version
+		long version1 = assignVersions();
+
+		// Verify number is in full blocklist
+		Blocklist list1 = _db.getBlockListAPI();
+		assertEquals(1, list1.getNumbers().size());
+		assertEquals("+49333444555", list1.getNumbers().get(0).getPhone());
+		assertEquals(10, list1.getNumbers().get(0).getVotes());
+
+		// Archive the number by calling archiveReportsWithLowVotes with a far-future timestamp.
+		// The formula: VOTES - (before - LASTPING)/1000/60/60/24/7/weekPerVote < minVotes
+		// With a far-future 'before', the subtracted amount will exceed votes, making it < minVotes.
+		long farFuture = time + 365L * 24 * 60 * 60 * 1000; // ~1 year in the future
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			int archived = reports.archiveReportsWithLowVotes(farFuture, DB.MIN_VOTES, 3);
+			assertTrue(archived > 0, "Number should have been archived");
+			session.commit();
+		}
+
+		// Assign new version — the archive query now sets PENDING_UPDATE=true
+		long version2 = assignVersions();
+		assertTrue(version2 > version1, "Version should increment after archiving");
+
+		// Incremental update since version1 should return the archived number with votes=0
+		Blocklist update = _db.getBlocklistUpdateAPI(version1);
+		assertEquals(1, update.getNumbers().size());
+		assertEquals("+49333444555", update.getNumbers().get(0).getPhone());
+		assertEquals(0, update.getNumbers().get(0).getVotes(), "Archived number should have votes=0 in incremental sync");
+
+		// Full blocklist should no longer contain the archived number
+		Blocklist list2 = _db.getBlockListAPI();
+		assertTrue(list2.getNumbers().isEmpty(), "Archived number should not appear in full blocklist");
+	}
+
+	/**
+	 * Test that recent activity (votes added without threshold crossing) triggers an incremental update.
+	 */
+	@Test
+	void testRecentActivityTriggersIncrementalUpdate() {
+		_db.setMinVisibleVotes(10);
+
+		long time = 1000;
+
+		// Create a number with 10 votes (crosses threshold 10)
+		for (int i = 0; i < 5; i++) {
+			processVotes("0200300400", 2, time++);
+		}
+		// time is now 1005, LASTPING is 1004
+
+		// Record lastAssignTime as time-1 (1004) so that lastAssignTime < LASTPING of next vote
+		long assignTime1 = time - 1;
+		long version1 = assignVersions(assignTime1);
+		assertTrue(version1 > DB.INITIAL_BLOCKLIST_VERSION);
+
+		// Add 2 more votes (12 total, no threshold crossing — next is at 20)
+		// This sets LASTPING to max(1004, 1005) = 1005
+		processVotes("0200300400", 2, time++);
+		// time is now 1006, LASTPING is 1005
+
+		// Assign version — lastAssignTime=1004 means LASTPING(1005) > 1004 triggers inclusion
+		long version2 = assignVersions(time);
+		assertTrue(version2 > version1, "Version should increment for recently-active number");
+
+		// Incremental update since version1 should return the number
+		Blocklist update = _db.getBlocklistUpdateAPI(version1);
+		assertEquals(1, update.getNumbers().size());
+		assertEquals("+49200300400", update.getNumbers().get(0).getPhone());
+		assertEquals(12, update.getNumbers().get(0).getVotes(), "Votes should be the actual count");
+		assertTrue(update.getNumbers().get(0).getLastActivity() > 0, "lastActivity should be non-zero");
+	}
+
+	/**
+	 * Test that lastActivity is consistent between full sync and incremental sync.
+	 */
+	@Test
+	void testLastActivityInFullAndIncrementalSync() {
+		_db.setMinVisibleVotes(10);
+
+		long time = 1000;
+
+		// Create a number with 10 votes
+		for (int i = 0; i < 5; i++) {
+			processVotes("0300400500", 2, time++);
+		}
+
+		long version1 = assignVersions();
+
+		// Full sync
+		Blocklist fullList = _db.getBlockListAPI();
+		assertEquals(1, fullList.getNumbers().size());
+		long fullLastActivity = fullList.getNumbers().get(0).getLastActivity();
+		assertTrue(fullLastActivity > 0, "Full sync should have non-zero lastActivity");
+
+		// Incremental sync since before the version
+		Blocklist update = _db.getBlocklistUpdateAPI(DB.INITIAL_BLOCKLIST_VERSION);
+		assertEquals(1, update.getNumbers().size());
+		long incLastActivity = update.getNumbers().get(0).getLastActivity();
+
+		assertEquals(fullLastActivity, incLastActivity, "Full and incremental sync should return the same lastActivity");
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}
 
 	/**
 	 * Assigns version numbers to pending updates (simulates BlocklistVersionService).
+	 * Uses Long.MAX_VALUE as "now" so that the since-based activity detection does not
+	 * interfere with tests that don't explicitly test it (their fake timestamps are always
+	 * less than MAX_VALUE, so all activity is caught on first call but none on subsequent
+	 * calls after lastAssignTime is set to MAX_VALUE).
 	 */
 	private long assignVersions() {
+		return assignVersions(Long.MAX_VALUE);
+	}
+
+	/**
+	 * Assigns version numbers to pending updates using the given timestamp as "now".
+	 */
+	private long assignVersions(long now) {
 		try (SqlSession session = _db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -277,7 +406,10 @@ public class TestIncrementalBlocklist {
 			String versionStr = users.getProperty("blocklist.version");
 			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
 
-			int updated = reports.assignVersionToPendingUpdates(currentVersion + 1);
+			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
+			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
+
+			int updated = reports.assignVersionToPendingUpdates(currentVersion + 1, lastAssignTime, _db.getMinVisibleVotes());
 
 			if (updated > 0) {
 				long newVersion = currentVersion + 1;
@@ -285,6 +417,11 @@ public class TestIncrementalBlocklist {
 					users.updateProperty("blocklist.version", String.valueOf(newVersion));
 				} else {
 					users.addProperty("blocklist.version", String.valueOf(newVersion));
+				}
+				if (lastAssignTimeStr != null) {
+					users.updateProperty("blocklist.lastAssignTime", String.valueOf(now));
+				} else {
+					users.addProperty("blocklist.lastAssignTime", String.valueOf(now));
 				}
 				session.commit();
 				return newVersion;

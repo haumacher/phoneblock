@@ -11,7 +11,7 @@ Future<http.Response> sendRequest(SetupRequest request) async {
     encoding: const Utf8Codec(),
     headers: (await apiHeaders())
       ..addAll({
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=UTF-8",
       }),
     body: request.toString(),
   );

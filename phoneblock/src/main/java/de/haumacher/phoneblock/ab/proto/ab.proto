@@ -62,11 +62,14 @@ message UpdateAnswerBot extends BotRequest {
 	 */
 	int minVotes;
 	
-	/** 
-	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	/**
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
 	 */
 	bool wildcards;
-	
+
+	/** Whether to accept calls from local phones (numbers starting with *). */
+	bool acceptLocal;
+
 }
 
 /** Switches the answer bot on. */
@@ -132,10 +135,13 @@ message AnswerbotInfo {
 	 */
 	int minVotes;
 	
-	/** 
-	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected. 
+	/**
+	 * Whether to block whole number ranges, when a great density of nearby SPAM numbers is detected.
 	 */
 	bool wildcards;
+
+	/** Whether to accept calls from local phones (numbers starting with *). */
+	bool acceptLocal;
 
 	/** Whether the bot has sucessfully registered (can accept calls). */
 	bool registered;

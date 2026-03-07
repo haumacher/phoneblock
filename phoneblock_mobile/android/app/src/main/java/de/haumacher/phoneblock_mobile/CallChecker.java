@@ -13,13 +13,15 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -69,9 +71,9 @@ public class CallChecker extends CallScreeningService {
         int minVotes = prefs.getInt("min_votes", 4);
         boolean blockRanges = prefs.getBoolean("block_ranges", true);
         int minRangeVotes = prefs.getInt("min_range_votes", 10);
+        String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
 
         if (authToken == null) {
-            // Not logged in, no screening possible.
             Log.d(CallChecker.class.getName(), "onScreenCall: No PhoneBlock authorization, cannot screen call.");
             acceptCall(callDetails);
             return;
@@ -79,118 +81,134 @@ public class CallChecker extends CallScreeningService {
 
         String rawNumber = handle.getSchemeSpecificPart();
 
-        // Get country code for normalization
         TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         String countryIso = tm != null ? tm.getNetworkCountryIso() : null;
-
-        // Normalize to international format for consistent hashing
         String number = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryIso);
         if (number == null) {
-            // Unable to normalize, accept the call
             Log.w(CallChecker.class.getName(), "Unable to normalize number: " + rawNumber);
             acceptCall(callDetails);
             return;
         }
 
-        AtomicBoolean canceled = new AtomicBoolean();
-
-        // Array to hold timeout future reference (needs to be final for lambda access)
+        AtomicBoolean responded = new AtomicBoolean();
         final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
 
+        // Background thread: query API, fall back to local data, decide once
         ScheduledFuture<?> queryFuture = _pool.schedule(() -> {
+            int votes = 0;
+            int votesWildcard = 0;
+            boolean archived = false;
+            String rating = null;
+            String label = null;
+            String location = null;
+
             try {
                 JSONObject json = queryPhoneBlock(number, authToken);
-                boolean archived = json.getBoolean("archived");
-                int votes = json.getInt("votes");
-                int votesWildcard = json.optInt("votesWildcard", 0);
-                String rating = json.optString("rating", null);
-                String label = json.optString("label", null);
-                String location = json.optString("location", null);
-
-                // Check if number should be blocked based on direct votes or range votes
-                final boolean shouldBlock;
-                final String blockReason;
-
-                if (votes >= minVotes && !archived) {
-                    shouldBlock = true;
-                    blockReason = votes + " votes";
-                } else if (blockRanges && votesWildcard >= minRangeVotes) {
-                    shouldBlock = true;
-                    blockReason = votesWildcard + " range votes";
-                } else {
-                    shouldBlock = false;
-                    blockReason = "";
+                votes = json.getInt("votes");
+                votesWildcard = json.optInt("votesWildcard", 0);
+                archived = json.getBoolean("archived");
+                rating = json.optString("rating", null);
+                label = json.optString("label", null);
+                location = json.optString("location", null);
+            } catch (Exception e) {
+                Log.d(CallChecker.class.getName(), "onScreenCall: API failed, using local data: " + number, e);
+                int localVotes = lookupLocalBlocklist(number);
+                if (localVotes > 0) {
+                    votes = localVotes;
                 }
-
-                // Capture final values for lambda
-                final int finalVotesWildcard = votesWildcard;
-                final String finalLabel = label;
-                final String finalLocation = location;
-
-                if (shouldBlock) {
-                    if (canceled.compareAndSet(false, true)) {
-                        // Cancel timeout since we got a result
-                        if (timeoutFuture[0] != null) {
-                            timeoutFuture[0].cancel(false);
-                        }
-                        Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + blockReason + ", rating: " + rating + ")");
-                            respondToCall(callDetails, new CallResponse.Builder()
-                                .setDisallowCall(true)
-                                .setRejectCall(true)
-                                .setSkipCallLog(true)
-                                .setSkipNotification(true)
-                                .build());
-                            // Report blocked call (persists even when app is not running)
-                            // Use rawNumber for display, normalized number is only for API queries
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, finalVotesWildcard, rating, finalLabel, finalLocation);
-                        });
-                    }
-                    return;
-                } else {
-                    if (canceled.compareAndSet(false, true)) {
-                        // Cancel timeout since we got a result
-                        if (timeoutFuture[0] != null) {
-                            timeoutFuture[0].cancel(false);
-                        }
-                        Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes, " + finalVotesWildcard + " range votes)");
-                            acceptCall(callDetails);
-                            // Report accepted call (persists even when app is not running)
-                            // Use rawNumber for display, normalized number is only for API queries
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, false, votes, finalVotesWildcard, rating, finalLabel, finalLocation);
-                        });
-                    }
-                    return;
-                }
-            } catch (MalformedURLException e) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock URL, cannot screen call: " + number);
-            } catch (IOException ex) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: failed to query PhoneBlock, cannot screen call: " + number, ex);
-            } catch (JSONException ex) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock result, cannot screen call: " + number, ex);
             }
 
-            if (canceled.compareAndSet(false, true)) {
-                // Cancel timeout since we're handling the error
+            final int fVotes = votes;
+            final int fVotesWildcard = votesWildcard;
+            final boolean fArchived = archived;
+            final String fRating = rating;
+            final String fLabel = label;
+            final String fLocation = location;
+
+            if (responded.compareAndSet(false, true)) {
                 if (timeoutFuture[0] != null) {
                     timeoutFuture[0].cancel(false);
                 }
-                Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                    acceptCall(callDetails);
-                });
+                Handler.createAsync(Looper.getMainLooper()).post(() ->
+                    decideAndRespond(callDetails, rawNumber, number,
+                        fVotes, fVotesWildcard, fArchived, fRating, fLabel, fLocation,
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
             }
         }, 0, TimeUnit.MILLISECONDS);
 
+        // Timeout: use local data only
         timeoutFuture[0] = _pool.schedule(() -> {
-            if (canceled.compareAndSet(false, true)) {
-                Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                    Log.d(CallChecker.class.getName(), "onScreenCall: PhoneBlock query timeout, cannot screen call: " + number);
-                    acceptCall(callDetails);
-                });
+            if (responded.compareAndSet(false, true)) {
+                queryFuture.cancel(true);
+                int localVotes = Math.max(0, lookupLocalBlocklist(number));
+
+                Handler.createAsync(Looper.getMainLooper()).post(() ->
+                    decideAndRespond(callDetails, rawNumber, number,
+                        localVotes, 0, false, null, null, null,
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
             }
-            queryFuture.cancel(true);
         }, 4500, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Single decision point: checks votes, range votes, and wildcard filters,
+     * then either blocks or accepts the call and reports the result.
+     */
+    private void decideAndRespond(@NonNull Call.Details callDetails, String rawNumber, String number,
+            int votes, int votesWildcard, boolean archived, String rating, String label, String location,
+            int minVotes, boolean blockRanges, int minRangeVotes, String wildcardPrefixesJson) {
+
+        boolean block = false;
+        String matchedPrefix = null;
+
+        if (votes >= minVotes && !archived) {
+            block = true;
+        } else if (blockRanges && votesWildcard >= minRangeVotes) {
+            block = true;
+        } else {
+            matchedPrefix = findWildcardMatch(number, wildcardPrefixesJson);
+            if (matchedPrefix != null) {
+                block = true;
+            }
+        }
+
+        if (block) {
+            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking: " + number
+                + " (votes=" + votes + ", rangeVotes=" + votesWildcard
+                + (matchedPrefix != null ? ", wildcard=" + matchedPrefix + "*" : "") + ")");
+            respondToCall(callDetails, new CallResponse.Builder()
+                .setDisallowCall(true)
+                .setRejectCall(true)
+                .setSkipCallLog(true)
+                .setSkipNotification(true)
+                .build());
+        } else {
+            Log.d(CallChecker.class.getName(), "onScreenCall: Accepting: " + number
+                + " (votes=" + votes + ", rangeVotes=" + votesWildcard + ")");
+            acceptCall(callDetails);
+        }
+
+        if (matchedPrefix != null) {
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, "WILDCARD", label, location, matchedPrefix);
+        } else {
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, rating, label, location);
+        }
+    }
+
+    /** Finds the first wildcard prefix that matches the given number, or null. */
+    private static String findWildcardMatch(String number, String wildcardPrefixesJson) {
+        try {
+            org.json.JSONArray prefixes = new org.json.JSONArray(wildcardPrefixesJson);
+            for (int i = 0; i < prefixes.length(); i++) {
+                String prefix = prefixes.getString(i);
+                if (number.startsWith(prefix)) {
+                    return prefix;
+                }
+            }
+        } catch (org.json.JSONException e) {
+            Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
+        }
+        return null;
     }
 
     private @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
@@ -201,7 +219,16 @@ public class CallChecker extends CallScreeningService {
         // Compute SHA1 hash of the phone number for privacy
         String sha1Hash = PhoneNumberUtils.computeSHA1(number);
 
-        URL url = new URL(queryUrl.replace("{sha1}", sha1Hash));
+        String urlStr = queryUrl.replace("{sha1}", sha1Hash);
+
+        // Append prefix hashes for range-based spam detection
+        if (number.length() > 2) {
+            String prefix10Hash = PhoneNumberUtils.computeSHA1(number.substring(0, number.length() - 1));
+            String prefix100Hash = PhoneNumberUtils.computeSHA1(number.substring(0, number.length() - 2));
+            urlStr += "&prefix10=" + prefix10Hash + "&prefix100=" + prefix100Hash;
+        }
+
+        URL url = new URL(urlStr);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Authorization", "Bearer " + authToken);
         connection.setRequestProperty("User-Agent", "PhoneBlockMobile/" + appVersion);
@@ -236,6 +263,42 @@ public class CallChecker extends CallScreeningService {
 
     private void acceptCall(@NonNull Call.Details callDetails) {
         respondToCall(callDetails, new CallResponse.Builder().build());
+    }
+
+    /**
+     * Looks up a phone number in the local blocklist cache.
+     *
+     * @param number The normalized phone number in E.164 format.
+     * @return The vote count if found, -1 if not found or on error.
+     */
+    private int lookupLocalBlocklist(String number) {
+        try {
+            java.io.File dbFile = getDatabasePath("screened_calls.db");
+            if (!dbFile.exists()) {
+                return -1;
+            }
+
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY);
+            try {
+                Cursor cursor = db.rawQuery(
+                    "SELECT votes FROM blocklist WHERE phone = ?",
+                    new String[]{number});
+                try {
+                    if (cursor.moveToFirst()) {
+                        return cursor.getInt(0);
+                    }
+                    return -1;
+                } finally {
+                    cursor.close();
+                }
+            } finally {
+                db.close();
+            }
+        } catch (Exception e) {
+            Log.w(CallChecker.class.getName(), "Error looking up local blocklist", e);
+            return -1;
+        }
     }
 
 }

@@ -31,6 +31,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accepted => 'Aceptado';
 
   @override
+  String get notBlocked => 'No bloqueado';
+
+  @override
+  String get missed => 'Falta';
+
+  @override
   String votes(int count) {
     return '$count votos';
   }
@@ -102,6 +108,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sourceCodeLicense => 'Código abierto (GPL-3.0)';
+
+  @override
+  String get reportProblem => 'Informar de un problema';
+
+  @override
+  String get reportProblemSubtitle => 'Problemas en GitHub';
 
   @override
   String get aboutDescription =>
@@ -561,4 +573,478 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'Llamadas sospechosas';
+
+  @override
+  String get fritzboxTitle => 'Caja Fritz';
+
+  @override
+  String get fritzboxConnected => 'Conectado';
+
+  @override
+  String get fritzboxConnectedNotProtected => 'Conectado, no protegido';
+
+  @override
+  String get fritzboxOffline => 'No disponible';
+
+  @override
+  String get fritzboxError => 'Error de conexión';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'No configurado';
+
+  @override
+  String get fritzboxNotConfigured => 'No se ha configurado Fritz Box';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'Conecta tu Fritz Box para ver las llamadas de tu teléfono fijo.';
+
+  @override
+  String get fritzboxConnect => 'Conectar Fritz Box';
+
+  @override
+  String get fritzboxDisconnect => 'Desconectar Fritz Box';
+
+  @override
+  String get fritzboxDisconnectTitle => '¿Desconectar la caja de Fritz?';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'Se borran las llamadas guardadas y los datos de acceso.';
+
+  @override
+  String get fritzboxSyncNow => 'Sincronizar ahora';
+
+  @override
+  String get fritzboxSyncDescription =>
+      '¡Recuperar la lista de llamadas del Fritz!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nuevas llamadas sincronizadas.',
+      one: '1 nueva llamada sincronizada',
+      zero: 'No hay nuevas llamadas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'Error durante la sincronización';
+
+  @override
+  String get fritzboxVersion => 'Versión FRITZ OS';
+
+  @override
+  String get fritzboxHost => 'Dirección';
+
+  @override
+  String get fritzboxCachedCalls => 'Llamadas guardadas';
+
+  @override
+  String get fritzboxLastSync => 'Última sincronización';
+
+  @override
+  String get fritzboxJustNow => 'Ahora mismo';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Antes de $count minutos',
+      one: 'hace 1 minuto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas atrás',
+      one: 'hace 1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'Conectar Fritz Box';
+
+  @override
+  String get fritzboxStepDetection => 'Encontrar Fritz Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'Búsqueda automática en la red';
+
+  @override
+  String get fritzboxStepLogin => 'Conectarse';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'Introducir datos de acceso';
+
+  @override
+  String get fritzboxSearching => 'Busca Fritz Box...';
+
+  @override
+  String get fritzboxNotFound => 'Caja no encontrada';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'No se ha podido encontrar el Fritz!Box automáticamente. Por favor, introduzca la dirección manualmente.';
+
+  @override
+  String get fritzboxHostLabel => 'Dirección del buzón';
+
+  @override
+  String get fritzboxRetrySearch => 'Buscar de nuevo';
+
+  @override
+  String get fritzboxManualConnect => 'Conectar';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'Introduzca sus datos de acceso a Fritz!Box. Puede encontrarlos en la interfaz de usuario de Fritz!Box en Sistema > Usuario de Fritz!Box.';
+
+  @override
+  String get fritzboxShowUsername => 'Introduzca el nombre de usuario';
+
+  @override
+  String get fritzboxShowUsernameHint =>
+      'Normalmente se utiliza el usuario por defecto';
+
+  @override
+  String get fritzboxUsernameLabel => 'Nombre de usuario';
+
+  @override
+  String get fritzboxPasswordLabel => 'Contraseña';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'Tus datos de acceso se almacenan de forma segura en tu dispositivo.';
+
+  @override
+  String get fritzboxTestAndSave => 'Pruebas y ahorro';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'Error de conexión. Por favor, compruebe los datos de acceso.';
+
+  @override
+  String get fritzboxFillAllFields => 'Rellene todos los campos.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'Fritz! buzón no localizable - mostrar llamadas guardadas';
+
+  @override
+  String get sourceMobile => 'Móvil';
+
+  @override
+  String get sourceFritzbox => 'Caja Fritz';
+
+  @override
+  String get fritzboxStepBlocklist => 'Protección contra el spam';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'Configurar la lista de bloqueo';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'Seleccione cómo debe protegerse su Fritz!Box contra las llamadas de spam.';
+
+  @override
+  String get fritzboxCardDavTitle => 'Lista de bloqueo CardDAV';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz!Box sincroniza la lista de bloqueo directamente con PhoneBlock. Recomendado para FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'Configurar más tarde';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'Puedes activar la protección antispam más adelante en los ajustes.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV requiere FRITZ!OS 7.20 o superior. Su Fritz!Box tiene una versión anterior.';
+
+  @override
+  String get fritzboxFinishSetup => 'Finalizar la configuración';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'Inicia sesión en PhoneBlock primero.';
+
+  @override
+  String get fritzboxCannotGetUsername =>
+      'No se ha podido recuperar el nombre de usuario de PhoneBlock.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed =>
+      'No se ha podido configurar la lista de bloqueo.';
+
+  @override
+  String get fritzboxCardDavStatus => 'Estado de CardDAV';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'Sincronizado';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'Sincronización pendiente';
+
+  @override
+  String get fritzboxCardDavStatusError => 'Error de sincronización';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'Desactivado';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'El Fritz!Box sincroniza la agenda telefónica una vez al día a medianoche.';
+
+  @override
+  String get fritzboxBlocklistMode => 'Modo de protección contra el spam';
+
+  @override
+  String get fritzboxBlocklistModeCardDav =>
+      'CardDAV (sincronización automática)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'No activado';
+
+  @override
+  String get fritzboxEnableCardDav => 'Activar CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'Sincroniza la lista de bloqueo de spam directamente con Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled => 'Lista de bloqueo CardDAV activada';
+
+  @override
+  String get fritzboxDisableCardDav => 'Eliminar lista de bloqueos';
+
+  @override
+  String get fritzboxDisableCardDavTitle => '¿Quitar la lista de bloqueo?';
+
+  @override
+  String get fritzboxDisableCardDavMessage =>
+      '¡Se elimina la lista de bloqueos de Fritz!';
+
+  @override
+  String get fritzboxDisable => 'Eliminar';
+
+  @override
+  String get fritzboxCardDavDisabled => 'Lista de bloqueo eliminada';
+
+  @override
+  String get fritzboxAnswerbotTitle => 'Contestador automático';
+
+  @override
+  String get fritzboxAnswerbotActive => 'Contestador automático activo';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'Contestador automático en pausa';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered =>
+      'Contestador automático no conectado';
+
+  @override
+  String get fritzboxAnswerbotEnabling => 'Activar contestador automático...';
+
+  @override
+  String get fritzboxAnswerbotDescription =>
+      'Las llamadas SPAM son contestadas automáticamente por el contestador automático PhoneBlock.';
+
+  @override
+  String get fritzboxEnableAnswerbot => 'Activar el contestador automático';
+
+  @override
+  String get fritzboxEnableAnswerbotDescription =>
+      'Que las llamadas SPAM sean contestadas automáticamente por el contestador automático PhoneBlock';
+
+  @override
+  String get fritzboxDisableAnswerbot => 'Quitar el contestador automático';
+
+  @override
+  String get fritzboxDisableAnswerbotTitle =>
+      '¿Quitar el contestador automático?';
+
+  @override
+  String get fritzboxDisableAnswerbotMessage =>
+      'El contestador automático PhoneBlock se retira del Fritz!Box y se desactiva en el servidor.';
+
+  @override
+  String get fritzboxAnswerbotEnabled => 'Contestador automático activado';
+
+  @override
+  String get fritzboxAnswerbotDisabled => 'Contestador automático desactivado';
+
+  @override
+  String get fritzboxAnswerbotSetupFailed =>
+      'No se ha podido configurar el contestador automático.';
+
+  @override
+  String get fritzboxAnswerbotStepCreating => 'Crear contestador automático...';
+
+  @override
+  String get fritzboxAnswerbotStepDetecting => 'Compruebe el acceso externo...';
+
+  @override
+  String get fritzboxAnswerbotStepDynDns => 'Configurar DynDNS...';
+
+  @override
+  String get fritzboxAnswerbotStepWaitingDynDns =>
+      'Esperando el registro de DynDNS...';
+
+  @override
+  String get fritzboxAnswerbotStepSip => 'Registrar dispositivo SIP...';
+
+  @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'Activar el acceso a Internet...';
+
+  @override
+  String get fritzboxAnswerbotStepEnabling =>
+      'Activar contestador automático...';
+
+  @override
+  String get fritzboxAnswerbotStepWaiting => 'A la espera del registro...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle =>
+      'Configurar un contestador automático';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'El contestador automático se ha configurado correctamente y ya está activo.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor =>
+      'Por favor, confirme el acceso en su Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton =>
+      'Pulsa cualquier botón del Fritz!Box';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'O marque $code en un teléfono conectado';
+  }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'Configuración de Answerbot';
+
+  @override
+  String get wildcardRulesHeader => 'Reglas comodín';
+
+  @override
+  String get blockedNumbersHeader => 'Números bloqueados';
+
+  @override
+  String get addNumber => 'Añadir número';
+
+  @override
+  String get phoneNumberLabel => 'Número de teléfono';
+
+  @override
+  String get wildcardToggle => 'Intervalo de números de bloque';
+
+  @override
+  String get wildcardHint =>
+      'Bloquea todos los números que empiecen por este prefijo';
+
+  @override
+  String get wildcardTooShort =>
+      'El prefijo debe contener al menos un código de país (por ejemplo, +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'Formato de número no válido. Utilice un prefijo internacional (por ejemplo, +43 o 0043).';
+
+  @override
+  String get wildcardDuplicate => 'Este rango de números ya está bloqueado.';
+
+  @override
+  String get wildcardAdded => 'Intervalo de números bloqueado';
+
+  @override
+  String get wildcardRemoved => 'Regla comodín eliminada';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return '¿Quitar realmente la regla comodín $prefix*?';
+  }
+
+  @override
+  String get numberAdded => 'Número añadido a la lista negra';
+
+  @override
+  String get addCommentWildcard => 'Añadir comentario (opcional)';
+
+  @override
+  String get commentHintWildcard => '¿Por qué bloquea este rango de números?';
+
+  @override
+  String get next => 'Más información en';
+
+  @override
+  String get add => 'Añadir';
+
+  @override
+  String get wildcardBlocked => 'Regla comodín';
+
+  @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filtro: $prefix';
+  }
+
+  @override
+  String get blocklistCache => 'Caché de la lista de bloqueos';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count números';
+  }
+
+  @override
+  String get blocklistLastSync => 'Última sincronización';
+
+  @override
+  String get blocklistLastSyncNever => 'Nunca';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'antes $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'Versión';
+
+  @override
+  String get blocklistSyncNow => 'Sincronizar ahora';
+
+  @override
+  String get blocklistSyncing => 'Sincroniza...';
+
+  @override
+  String get blocklistSyncSuccess =>
+      'Sincronización correcta de la lista de bloqueo';
+
+  @override
+  String get blocklistSyncFailed =>
+      'Error de sincronización de la lista de bloqueo';
 }

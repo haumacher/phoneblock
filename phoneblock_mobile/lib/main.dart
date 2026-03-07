@@ -19,7 +19,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:phoneblock_mobile/blocklist_sync_service.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_settings.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
 
@@ -139,6 +145,72 @@ Future<void> updateAccountSettings(String authToken, Map<String, String> setting
     if (kDebugMode) {
       print('Error updating account settings: $e');
     }
+  }
+}
+
+/// Account settings returned from the PhoneBlock API.
+class AccountSettings {
+  /// The user's login name (used for CardDAV URL construction).
+  final String? login;
+
+  /// The user's preferred language tag.
+  final String? lang;
+
+  /// The user's country dial prefix.
+  final String? dialPrefix;
+
+  /// The user's display name.
+  final String? displayName;
+
+  /// The user's email address.
+  final String? email;
+
+  AccountSettings({
+    this.login,
+    this.lang,
+    this.dialPrefix,
+    this.displayName,
+    this.email,
+  });
+
+  factory AccountSettings.fromJson(Map<String, dynamic> json) {
+    return AccountSettings(
+      login: json['login'] as String?,
+      lang: json['lang'] as String?,
+      dialPrefix: json['dialPrefix'] as String?,
+      displayName: json['displayName'] as String?,
+      email: json['email'] as String?,
+    );
+  }
+}
+
+/// Fetches user account settings from the server.
+/// Returns null if the request fails.
+Future<AccountSettings?> fetchAccountSettings(String authToken) async {
+  try {
+    final url = '$pbBaseUrl/api/account';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $authToken',
+        'User-Agent': 'PhoneBlockMobile/$appVersion',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return AccountSettings.fromJson(data);
+    } else {
+      if (kDebugMode) {
+        print('Failed to fetch account settings: ${response.statusCode}');
+      }
+      return null;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error fetching account settings: $e');
+    }
+    return null;
   }
 }
 
@@ -417,7 +489,7 @@ Future<bool> _updatePersonalizedComment(PersonalizedListType listType, String ph
     final headers = <String, String>{
       "User-Agent": "PhoneBlockMobile/$appVersion",
       "Authorization": "Bearer $authToken",
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=UTF-8",
     };
 
     final body = json.encode({
@@ -461,8 +533,24 @@ Future<bool> updateWhitelistComment(String phone, String comment, String authTok
   return _updatePersonalizedComment(PersonalizedListType.whitelist, phone, comment, authToken);
 }
 
+/// WorkManager background task callback.
+///
+/// Must be a top-level function. Called by Android WorkManager when
+/// a scheduled background task fires.
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task == 'blocklistSync') {
+      return await BlocklistSyncService.instance.sync();
+    }
+    return Future.value(true);
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Workmanager().initialize(callbackDispatcher);
 
   // Initialize app version from package info
   final packageInfo = await PackageInfo.fromPlatform();
@@ -483,10 +571,12 @@ void main() async {
       final ratingStr = args['rating'] as String?;
       final label = args['label'] as String?;
       final location = args['location'] as String?;
+      final matchedWildcard = args['matchedWildcard'] as String?;
 
       // Parse rating if available
+      final isWildcard = ratingStr == 'WILDCARD';
       Rating? rating;
-      if (ratingStr != null) {
+      if (ratingStr != null && !isWildcard) {
         rating = _parseRatingFromService(ratingStr);
       }
 
@@ -500,6 +590,8 @@ void main() async {
         rating: rating,
         label: label,
         location: location,
+        isWildcardBlocked: isWildcard,
+        matchedWildcard: matchedWildcard,
       );
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -531,6 +623,7 @@ void main() async {
   platform.invokeMethod("setQueryUrl", queryUrl);
 
   // Clean up old screened calls based on retention period
+  // (This includes both mobile and Fritz!Box calls in the unified table)
   final retentionDays = await getRetentionDays();
   await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(retentionDays);
 
@@ -666,8 +759,9 @@ Future<void> syncStoredScreeningResults() async {
         final ratingStr = data['rating'] as String?;
 
         // Parse rating if available
+        final isWildcard = ratingStr == 'WILDCARD';
         Rating? rating;
-        if (ratingStr != null) {
+        if (ratingStr != null && !isWildcard) {
           rating = _parseRatingFromService(ratingStr);
         }
 
@@ -680,6 +774,8 @@ Future<void> syncStoredScreeningResults() async {
           rating: rating,
           label: data['label'] as String?,
           location: data['location'] as String?,
+          isWildcardBlocked: isWildcard,
+          matchedWildcard: data['matchedWildcard'] as String?,
         );
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -776,6 +872,15 @@ class _AppLauncherState extends State<AppLauncher> {
 
     // Check if permission is granted
     bool hasPermission = await checkPermission();
+
+    // Trigger blocklist sync if cache is empty (migration or first run)
+    if (hasValidToken && hasPermission) {
+      final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+      if ((syncInfo['version'] as int) == 0) {
+        BlocklistSyncService.instance.sync();
+        registerBlocklistSync();
+      }
+    }
 
     // Navigate based on setup state
     if (mounted) {
@@ -1065,6 +1170,8 @@ class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
   bool _isLoading = true;
   bool _answerbotEnabled = false;
+  FritzBoxConnectionState _fritzboxState = FritzBoxConnectionState.notConfigured;
+  CardDavStatus _cardDavStatus = CardDavStatus.notConfigured;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
   Offset _lastTapPosition = Offset.zero;
 
@@ -1075,6 +1182,60 @@ class _MainScreenState extends State<MainScreen> {
     _setupCallScreeningListener();
     _checkPendingSharedNumber();
     _loadAnswerbotEnabled();
+    _initFritzBox();
+  }
+
+  /// Initializes Fritz!Box service and syncs calls.
+  Future<void> _initFritzBox() async {
+    // Quick check: if credentials exist, show "offline" immediately instead
+    // of "not configured" while the slow connection attempt runs.
+    if (await FritzBoxStorage.instance.getCredentials() != null && mounted) {
+      setState(() {
+        _fritzboxState = FritzBoxConnectionState.offline;
+      });
+    }
+    await FritzBoxService.instance.initialize();
+    if (mounted) {
+      setState(() {
+        _fritzboxState = FritzBoxService.instance.connectionState;
+      });
+    }
+    await _checkFritzBoxConnection();
+    // Sync Fritz!Box calls if connected - they'll be loaded with mobile calls
+    if (FritzBoxService.instance.isConnected) {
+      final newIds = await FritzBoxService.instance.syncCallList();
+      // Track synced calls as new
+      newCallIds.addAll(newIds);
+      // Refresh the call list to include new Fritz!Box calls
+      await _loadScreenedCalls();
+    }
+  }
+
+  /// Syncs Fritz!Box calls (if connected) then reloads the call list.
+  Future<void> _refreshCalls() async {
+    if (FritzBoxService.instance.isConnected) {
+      final newIds = await FritzBoxService.instance.syncCallList();
+      newCallIds.addAll(newIds);
+    }
+    await _loadScreenedCalls();
+  }
+
+  /// Checks Fritz!Box connection and CardDAV protection status.
+  Future<void> _checkFritzBoxConnection() async {
+    await FritzBoxService.instance.checkConnection();
+    final connectionState = FritzBoxService.instance.connectionState;
+
+    CardDavStatus cardDavStatus = CardDavStatus.notConfigured;
+    if (connectionState == FritzBoxConnectionState.connected) {
+      cardDavStatus = await FritzBoxService.instance.syncBlocklistMode();
+    }
+
+    if (mounted) {
+      setState(() {
+        _fritzboxState = connectionState;
+        _cardDavStatus = cardDavStatus;
+      });
+    }
   }
 
   /// Loads the answerbot enabled setting.
@@ -1117,6 +1278,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Loads screened calls from the database.
+  /// This includes both mobile and Fritz!Box calls from the unified table.
   Future<void> _loadScreenedCalls() async {
     setState(() {
       _isLoading = true;
@@ -1187,9 +1349,19 @@ class _MainScreenState extends State<MainScreen> {
         drawer: _buildDrawer(context),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : _screenedCalls.isEmpty
-                ? _buildEmptyState()
-                : _buildCallsList(),
+            : Column(
+                children: [
+                  // Fritz!Box offline banner
+                  if (_fritzboxState == FritzBoxConnectionState.offline)
+                    _buildFritzBoxOfflineBanner(context),
+                  // Calls list
+                  Expanded(
+                    child: _screenedCalls.isEmpty
+                        ? _buildEmptyState()
+                        : _buildCallsList(),
+                  ),
+                ],
+              ),
         floatingActionButton: _screenedCalls.isNotEmpty
             ? FloatingActionButton(
                 onPressed: _deleteAllCalls,
@@ -1201,55 +1373,91 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// Builds the empty state when no calls have been screened yet.
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.phone_disabled,
-              size: 80,
-              color: Colors.grey[400],
+  /// Builds the Fritz!Box offline banner.
+  Widget _buildFritzBoxOfflineBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.orange.withValues(alpha: 0.1),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off, size: 18, color: Colors.orange),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context)!.fritzboxOfflineBanner,
+              style: const TextStyle(fontSize: 12, color: Colors.orange),
             ),
-            const SizedBox(height: 24),
-            Text(
-              context.l10n.noCallsYet,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              context.l10n.noCallsDescription,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Builds the list of screened calls.
+  /// Builds the calls list with source indicators.
   Widget _buildCallsList() {
-    return ListView.builder(
-      itemCount: _screenedCalls.length,
-      itemBuilder: (context, index) {
-        final call = _screenedCalls[index];
-        return _buildCallListItem(call);
-      },
+    return RefreshIndicator(
+      onRefresh: _refreshCalls,
+      child: ListView.builder(
+        itemCount: _screenedCalls.length,
+        itemBuilder: (context, index) {
+          final call = _screenedCalls[index];
+          return _buildCallListItem(call);
+        },
+      ),
+    );
+  }
+
+  /// Builds the empty state when no calls have been screened yet.
+  Widget _buildEmptyState() {
+    return RefreshIndicator(
+      onRefresh: _refreshCalls,
+      child: ListView(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.phone_disabled,
+                      size: 80,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      context.l10n.noCallsYet,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      context.l10n.noCallsDescription,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   /// Builds a single call list item.
   Widget _buildCallListItem(ScreenedCall call) {
     final wasBlocked = call.wasBlocked;
+    final serverBlocked = wasBlocked && !call.isWildcardBlocked;
+    final source = call.source;
 
     // Check if call is new (not yet seen by user)
     final bool isNew = call.id != null && newCallIds.contains(call.id);
@@ -1273,24 +1481,30 @@ class _MainScreenState extends State<MainScreen> {
       displayRating = Rating.aLEGITIMATE;
     }
 
-    final color = bgColor(displayRating);
-    final String ratingText = (label(context, displayRating) as Text).data!;
+    final color = call.isWildcardBlocked ? Colors.orange : bgColor(displayRating);
+    final String ratingText = labelText(context, displayRating);
 
-    // Build the label text
-    final String labelText;
-    if (isPotentialSpam) {
+    // Build the display text
+    final String displayText;
+    if (call.isWildcardBlocked) {
+      final prefix = call.matchedWildcard;
+      displayText = (prefix != null && prefix.isNotEmpty)
+          ? context.l10n.matchedWildcardFilter('$prefix*')
+          : context.l10n.wildcardBlocked;
+    } else if (isPotentialSpam) {
       // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
-      labelText = '$ratingText ?';
+      displayText = '$ratingText ?';
     } else if (wasBlocked) {
       // Show the rating for blocked calls
-      labelText = ratingText;
+      displayText = ratingText;
     } else {
       // Show "Legitim" for non-blocked calls without spam indicators
-      labelText = context.l10n.ratingLegitimate;
+      displayText = context.l10n.ratingLegitimate;
     }
 
     return Dismissible(
       key: Key('call_${call.id}'),
+      direction: DismissDirection.horizontal,
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
@@ -1318,12 +1532,12 @@ class _MainScreenState extends State<MainScreen> {
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: wasBlocked ? Colors.green : Colors.orange,
+        color: serverBlocked ? Colors.green : Colors.orange,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              wasBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
+              serverBlocked ? context.l10n.reportAsLegitimate : context.l10n.reportAsSpam,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1332,7 +1546,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             SizedBox(width: 12),
             Icon(
-              wasBlocked ? Icons.check_circle : Icons.report,
+              serverBlocked ? Icons.check_circle : Icons.report,
               color: Colors.white,
               size: 32,
             ),
@@ -1342,11 +1556,11 @@ class _MainScreenState extends State<MainScreen> {
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.endToStart) {
           // Swipe left to report
-          if (wasBlocked) {
-            // SPAM number - report as legitimate
+          if (serverBlocked) {
+            // Server-blocked SPAM number - report as legitimate
             await _reportAsLegitimate(context, call);
           } else {
-            // Legitimate number - report as SPAM
+            // Not blocked by server (including wildcard) - report as SPAM
             await _reportAsSpam(context, call);
           }
           return false; // Don't dismiss, just report
@@ -1369,7 +1583,12 @@ class _MainScreenState extends State<MainScreen> {
             leading: Stack(
               clipBehavior: Clip.none,
               children: [
-                buildRatingAvatar(displayRating),
+                call.isWildcardBlocked
+                    ? CircleAvatar(
+                        backgroundColor: Colors.orange.withValues(alpha: 0.1),
+                        child: const Icon(Icons.filter_alt, color: Colors.orange),
+                      )
+                    : buildRatingAvatar(displayRating),
                 if (isNew)
                   Positioned(
                     right: -2,
@@ -1381,6 +1600,42 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.blue,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+                // Mobile source indicator (shown when Fritz!Box calls are also in timeline)
+                if (source == CallSource.mobile && _fritzboxState != FritzBoxConnectionState.notConfigured)
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.phone_android,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                // Fritz!Box source indicator
+                if (source == CallSource.fritzbox)
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.router,
+                        size: 14,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ),
@@ -1406,7 +1661,7 @@ class _MainScreenState extends State<MainScreen> {
                     border: Border.all(color: color, width: 1),
                   ),
                   child: Text(
-                    labelText,
+                    displayText,
                     style: TextStyle(
                       color: color,
                       fontWeight: FontWeight.bold,
@@ -1429,11 +1684,14 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.grey[600],
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        call.location!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                      Flexible(
+                        child: Text(
+                          call.location!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -1442,20 +1700,30 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      wasBlocked ? Icons.block : Icons.check_circle_outline,
-                      size: 14,
-                      color: wasBlocked ? Colors.red[400] : Colors.green[400],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      wasBlocked ? context.l10n.blocked : context.l10n.accepted,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: wasBlocked ? Colors.red[400] : Colors.green[400],
-                        fontWeight: FontWeight.w500,
+                    // Fritz!Box source badge
+                    if (source == CallSource.fritzbox) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.router, size: 10, color: Colors.grey[600]),
+                            const SizedBox(width: 2),
+                            Text(
+                              AppLocalizations.of(context)!.sourceFritzbox,
+                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                    ],
+                    // Call status icon and label
+                    ..._buildCallStatusBadge(context, call, source, wasBlocked),
                     const SizedBox(width: 8),
                     Text(
                       _formatTimestamp(call.timestamp),
@@ -1464,6 +1732,14 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
+                    // Duration for Fritz!Box calls
+                    if (call.duration != null && call.duration! > 0) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDuration(call.duration!),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -1645,7 +1921,7 @@ class _MainScreenState extends State<MainScreen> {
         Uri.parse('$pbBaseUrl/api/rate'),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonBody,
       );
@@ -1658,6 +1934,8 @@ class _MainScreenState extends State<MainScreen> {
             false, // Mark as not blocked/legitimate
             rating: Rating.aLEGITIMATE,
           );
+
+          _markCallAsSeen(call);
 
           // Reload the calls list to reflect the change
           await _loadScreenedCalls();
@@ -1747,7 +2025,7 @@ class _MainScreenState extends State<MainScreen> {
         Uri.parse('$pbBaseUrl/api/rate'),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonBody,
       );
@@ -1760,6 +2038,8 @@ class _MainScreenState extends State<MainScreen> {
             true, // Mark as blocked/SPAM
             rating: rating, // Store the rating type
           );
+
+          _markCallAsSeen(call);
 
           // Reload the calls list to reflect the change
           await _loadScreenedCalls();
@@ -1809,14 +2089,17 @@ class _MainScreenState extends State<MainScreen> {
               mainAxisSize: MainAxisSize.min,
               children: Rating.values
                   .where((r) => r != Rating.aLEGITIMATE) // Exclude legitimate
-                  .map((rating) => ListTile(
-                        leading: icon(rating),
-                        title: label(context, rating),
-                        tileColor: bgColor(rating).withValues(alpha: 0.1),
-                        onTap: () {
-                          Navigator.of(context).pop(rating);
-                        },
-                      ))
+                  .map((rating) {
+                    final color = bgColor(rating);
+                    return ListTile(
+                      leading: Icon(ratingIcon(rating), color: color),
+                      title: Text(labelText(context, rating), style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+                      tileColor: color.withValues(alpha: 0.1),
+                      onTap: () {
+                        Navigator.of(context).pop(rating);
+                      },
+                    );
+                  })
                   .toList(),
             ),
           ),
@@ -2037,7 +2320,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
@@ -2063,6 +2346,25 @@ class _MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
+          // Fritz!Box menu item
+          ListTile(
+            leading: _buildFritzBoxIcon(),
+            title: Text(AppLocalizations.of(context)!.fritzboxTitle),
+            subtitle: Text(_getFritzBoxStatusText(context)),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FritzBoxSettingsScreen()),
+              );
+              // Reload Fritz!Box state when returning from settings
+              if (mounted) {
+                await _checkFritzBoxConnection();
+                await _loadScreenedCalls();
+              }
+            },
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.block),
             title: Text(context.l10n.blacklistTitle),
@@ -2225,17 +2527,96 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Marks a call as seen (removes from new calls set).
+  /// Marks all calls with the same phone number as seen.
   void _markCallAsSeen(ScreenedCall call) {
-    if (call.id != null && newCallIds.contains(call.id)) {
+    final idsToRemove = _screenedCalls
+        .where((c) => c.id != null && c.phoneNumber == call.phoneNumber && newCallIds.contains(c.id))
+        .map((c) => c.id!)
+        .toList();
+
+    if (idsToRemove.isNotEmpty) {
       setState(() {
-        newCallIds.remove(call.id);
+        newCallIds.removeAll(idsToRemove);
       });
+    }
+  }
+
+  /// Gets the icon color for Fritz!Box based on connection state.
+  /// Builds the Fritz!Box drawer icon with shield badge for protection status.
+  Widget _buildFritzBoxIcon() {
+    final routerColor = _getFritzBoxIconColor();
+    final isProtected = _cardDavStatus == CardDavStatus.synced;
+    final isConnected = _fritzboxState == FritzBoxConnectionState.connected;
+
+    if (isConnected) {
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(Icons.router, color: routerColor),
+          Positioned(
+            right: -6,
+            bottom: -6,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(1),
+              child: Icon(
+                isProtected ? Icons.shield : Icons.shield_outlined,
+                size: 16,
+                color: isProtected ? Colors.green : Colors.grey,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Icon(Icons.router, color: routerColor);
+  }
+
+  Color _getFritzBoxIconColor() {
+    switch (_fritzboxState) {
+      case FritzBoxConnectionState.connected:
+        return _cardDavStatus == CardDavStatus.synced ? Colors.green : Colors.orange;
+      case FritzBoxConnectionState.offline:
+        return Colors.orange;
+      case FritzBoxConnectionState.error:
+        return Colors.red;
+      case FritzBoxConnectionState.notConfigured:
+        return Colors.grey;
+    }
+  }
+
+  /// Gets the status text for Fritz!Box.
+  String _getFritzBoxStatusText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (_fritzboxState) {
+      case FritzBoxConnectionState.connected:
+        if (_cardDavStatus == CardDavStatus.synced) {
+          return l10n.fritzboxConnected;
+        }
+        return l10n.fritzboxConnectedNotProtected;
+      case FritzBoxConnectionState.offline:
+        return l10n.fritzboxOffline;
+      case FritzBoxConnectionState.error:
+        return l10n.fritzboxError;
+      case FritzBoxConnectionState.notConfigured:
+        return l10n.fritzboxNotConfiguredShort;
     }
   }
 
   /// Builds the reports text showing votes and range votes.
   String _buildReportsText(ScreenedCall call) {
+    if (call.isWildcardBlocked) {
+      final prefix = call.matchedWildcard;
+      if (prefix != null && prefix.isNotEmpty) {
+        return context.l10n.matchedWildcardFilter('$prefix*');
+      }
+      return context.l10n.wildcardBlocked;
+    }
+
     final parts = <String>[];
 
     if (call.votes > 0) {
@@ -2244,7 +2625,7 @@ class _MainScreenState extends State<MainScreen> {
       parts.add(context.l10n.legitimateReportsCount(call.votes.abs()));
     }
 
-    if (call.votesWildcard > 0) {
+    if (call.votesWildcard > call.votes) {
       parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
     }
 
@@ -2273,6 +2654,72 @@ class _MainScreenState extends State<MainScreen> {
       return '${dateFormat.format(timestamp)}, ${timeFormat.format(timestamp)}';
     }
   }
+
+  /// Formats duration in seconds to a readable string (M:SS).
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '$minutes:${secs.toString().padLeft(2, '0')}';
+  }
+
+  /// Builds the call status badge (blocked/accepted/missed) based on source and call type.
+  List<Widget> _buildCallStatusBadge(
+    BuildContext context,
+    ScreenedCall call,
+    CallSource source,
+    bool wasBlocked,
+  ) {
+    IconData icon;
+    String label;
+    Color color;
+
+    if (source == CallSource.fritzbox) {
+      // Fritz!Box calls: show based on actual call type
+      if (wasBlocked) {
+        // Rejected by call barring
+        icon = Icons.block;
+        label = context.l10n.blocked;
+        color = Colors.red[400]!;
+      } else if (call.callType == FritzBoxCallType.missed) {
+        // Missed call
+        icon = Icons.phone_missed;
+        label = context.l10n.missed;
+        color = Colors.orange[400]!;
+      } else {
+        // Answered call - show device name if available
+        icon = Icons.phone_callback;
+        label = call.device ?? context.l10n.accepted;
+        color = Colors.green[400]!;
+      }
+    } else {
+      // Mobile calls: blocked/not blocked by call screening
+      if (wasBlocked) {
+        icon = Icons.block;
+        label = context.l10n.blocked;
+        color = Colors.red[400]!;
+      } else {
+        icon = Icons.check_circle_outline;
+        label = context.l10n.notBlocked;
+        color = Colors.green[400]!;
+      }
+    }
+
+    return [
+      Icon(icon, size: 14, color: color),
+      const SizedBox(width: 4),
+      Flexible(
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: color,
+            fontWeight: FontWeight.w500,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    ];
+  }
 }
 
 class VerifyLogin extends StatefulWidget {
@@ -2300,6 +2747,10 @@ class VerifyLoginState extends State<VerifyLogin> {
         // Token is valid, update account settings with device locale
         final localeSettings = await getDeviceLocaleSettings();
         await updateAccountSettings(token, localeSettings);
+
+        // Trigger initial blocklist sync and register periodic sync
+        BlocklistSyncService.instance.sync();
+        registerBlocklistSync();
       }
       return response;
     });
@@ -2394,6 +2845,37 @@ Future<String?> getAuthToken() async {
   return platform.invokeMethod("getAuthToken");
 }
 
+/// Registers the daily blocklist sync task with WorkManager.
+///
+/// Uses a randomized initial delay (0-24h) to distribute server load
+/// across all clients. The offset is persisted so the same device
+/// always syncs at roughly the same time of day.
+Future<void> registerBlocklistSync() async {
+  final db = ScreenedCallsDatabase.instance;
+  final syncInfo = await db.getBlocklistSyncInfo();
+  var offset = syncInfo['syncOffset'] as int;
+
+  if (offset == 0) {
+    offset = BlocklistSyncService.generateRandomOffset();
+    await db.setBlocklistSyncOffset(offset);
+  }
+
+  await Workmanager().registerPeriodicTask(
+    'blocklistSync',
+    'blocklistSync',
+    frequency: const Duration(hours: 24),
+    initialDelay: Duration(milliseconds: offset),
+    constraints: Constraints(networkType: NetworkType.connected),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+  );
+}
+
+/// Syncs wildcard prefixes from SQLite to SharedPreferences for CallChecker access.
+Future<void> syncWildcardPrefixesToNative() async {
+  final prefixes = await ScreenedCallsDatabase.instance.getWildcardPrefixes();
+  await platform.invokeMethod('setWildcardPrefixes', {'prefixes': prefixes});
+}
+
 Future<bool> checkPermission() async {
   try {
     return await platform.invokeMethod("checkPermission");
@@ -2433,15 +2915,15 @@ void registerPhoneBlock(BuildContext context) async {
   }
 }
 
-Widget label(BuildContext context, Rating rating) {
+String labelText(BuildContext context, Rating rating) {
   switch (rating) {
-    case Rating.aLEGITIMATE: return Text(context.l10n.ratingLegitimate, style: const TextStyle(color: Colors.white));
-    case Rating.aDVERTISING: return Text(context.l10n.ratingAdvertising, style: const TextStyle(color: Color.fromRGBO(0,0,0,.7)));
-    case Rating.uNKNOWN: return Text(context.l10n.ratingSpam, style: const TextStyle(color: Colors.white));
-    case Rating.pING: return Text(context.l10n.ratingPingCall, style: const TextStyle(color: Colors.white));
-    case Rating.gAMBLE: return Text(context.l10n.ratingGamble, style: const TextStyle(color: Colors.white));
-    case Rating.fRAUD: return Text(context.l10n.ratingFraud, style: const TextStyle(color: Colors.white));
-    case Rating.pOLL: return Text(context.l10n.ratingPoll, style: const TextStyle(color: Colors.white));
+    case Rating.aLEGITIMATE: return context.l10n.ratingLegitimate;
+    case Rating.aDVERTISING: return context.l10n.ratingAdvertising;
+    case Rating.uNKNOWN: return context.l10n.ratingSpam;
+    case Rating.pING: return context.l10n.ratingPingCall;
+    case Rating.gAMBLE: return context.l10n.ratingGamble;
+    case Rating.fRAUD: return context.l10n.ratingFraud;
+    case Rating.pOLL: return context.l10n.ratingPoll;
   }
 }
 
@@ -2457,15 +2939,15 @@ Color bgColor(Rating rating) {
   }
 }
 
-Icon icon(Rating rating) {
+IconData ratingIcon(Rating rating) {
   switch (rating) {
-    case Rating.aLEGITIMATE: return const Icon(Icons.check);
-    case Rating.uNKNOWN: return const Icon(Icons.question_mark);
-    case Rating.pING: return const Icon(Icons.block);
-    case Rating.pOLL: return const Icon(Icons.query_stats);
-    case Rating.aDVERTISING: return const Icon(Icons.ondemand_video);
-    case Rating.gAMBLE: return const Icon(Icons.videogame_asset_off);
-    case Rating.fRAUD: return const Icon(Icons.warning);
+    case Rating.aLEGITIMATE: return Icons.check;
+    case Rating.uNKNOWN: return Icons.question_mark;
+    case Rating.pING: return Icons.block;
+    case Rating.pOLL: return Icons.query_stats;
+    case Rating.aDVERTISING: return Icons.ondemand_video;
+    case Rating.gAMBLE: return Icons.videogame_asset_off;
+    case Rating.fRAUD: return Icons.warning;
   }
 }
 
@@ -2487,7 +2969,7 @@ Widget buildRatingAvatar(Rating rating) {
   final color = bgColor(rating);
   return CircleAvatar(
     backgroundColor: color.withValues(alpha: 0.1),
-    child: Icon(icon(rating).icon!, color: color),
+    child: Icon(ratingIcon(rating), color: color),
   );
 }
 
@@ -2512,11 +2994,13 @@ class RateScreen extends StatelessWidget {
   }
 
   Widget ratingButton(BuildContext context, Rating rating, Call call) {
+    final color = bgColor(rating);
     return Container(
       margin: const EdgeInsets.all(10),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor(rating),
+          backgroundColor: color.withValues(alpha: 0.1),
+          foregroundColor: color,
           shadowColor: Colors.blueGrey,
           elevation: 3,
           shape: RoundedRectangleBorder(
@@ -2528,8 +3012,8 @@ class RateScreen extends StatelessWidget {
           Navigator.pop(context);
         },
         child: Row(mainAxisSize: MainAxisSize.max, children: [
-          Padding(padding: const EdgeInsets.only(right: 10), child: icon(rating)),
-          label(context, rating)
+          Padding(padding: const EdgeInsets.only(right: 10), child: Icon(ratingIcon(rating))),
+          Text(labelText(context, rating), style: const TextStyle(fontWeight: FontWeight.w500)),
         ]),
       ),
     );
@@ -2679,6 +3163,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   int _blockedCallsCount = 0;
   int _suspiciousCallsCount = 0;
+  int _blocklistCount = 0;
+  int _blocklistVersion = 0;
+  int _blocklistLastSync = 0;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -2702,6 +3190,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final answerbotEnabledResult = await platform.invokeMethod("getAnswerbotEnabled");
       final blockedCallsCountResult = await platform.invokeMethod("getBlockedCallsCount");
       final suspiciousCallsCountResult = await platform.invokeMethod("getInspectedSuspiciousCount");
+      final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+      final blocklistCount = await ScreenedCallsDatabase.instance.getBlocklistCount();
 
       if (kDebugMode) {
         print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
@@ -2716,6 +3206,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _answerbotEnabled = answerbotEnabledResult ?? false;
         _blockedCallsCount = blockedCallsCountResult ?? 0;
         _suspiciousCallsCount = suspiciousCallsCountResult ?? 0;
+        _blocklistCount = blocklistCount;
+        _blocklistVersion = syncInfo['version'] as int;
+        _blocklistLastSync = syncInfo['lastSyncTime'] as int;
         _isLoading = false;
       });
 
@@ -2847,6 +3340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
 
       // Clean up old calls immediately when retention period changes
+      // (This handles both mobile and Fritz!Box calls in the unified table)
       await ScreenedCallsDatabase.instance.deleteOldScreenedCalls(value);
 
       if (mounted) {
@@ -2873,7 +3367,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Save theme mode setting.
-  Future<void> _saveThemeMode(String value) async {
+  Future<void> _saveThemeMode(BuildContext context, String value) async {
     if (kDebugMode) {
       print("Saving themeMode: $value");
     }
@@ -2914,7 +3408,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Save answerbot enabled setting.
-  Future<void> _saveAnswerbotEnabled(bool value) async {
+  Future<void> _saveAnswerbotEnabled(BuildContext context, bool value) async {
     if (kDebugMode) {
       print("Saving answerbotEnabled: $value");
     }
@@ -2947,6 +3441,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+
+  /// Triggers a manual blocklist sync and updates the UI.
+  Future<void> _syncBlocklist(BuildContext context) async {
+    setState(() {
+      _isSyncing = true;
+    });
+
+    final success = await BlocklistSyncService.instance.sync();
+
+    if (!context.mounted) return;
+
+    if (success) {
+      final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+      final blocklistCount = await ScreenedCallsDatabase.instance.getBlocklistCount();
+
+      if (!context.mounted) return;
+
+      setState(() {
+        _blocklistCount = blocklistCount;
+        _blocklistVersion = syncInfo['version'] as int;
+        _blocklistLastSync = syncInfo['lastSyncTime'] as int;
+        _isSyncing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.blocklistSyncSuccess)),
+      );
+    } else {
+      setState(() {
+        _isSyncing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.blocklistSyncFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Formats a timestamp as a human-readable relative time string.
+  String _formatLastSync(BuildContext context, int timestampMs) {
+    if (timestampMs == 0) return context.l10n.blocklistLastSyncNever;
+    final now = DateTime.now();
+    final syncTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+    final diff = now.difference(syncTime);
+
+    String timeAgo;
+    if (diff.inDays > 0) {
+      timeAgo = '${diff.inDays}d';
+    } else if (diff.inHours > 0) {
+      timeAgo = '${diff.inHours}h';
+    } else if (diff.inMinutes > 0) {
+      timeAgo = '${diff.inMinutes}min';
+    } else {
+      timeAgo = '${diff.inSeconds}s';
+    }
+    return context.l10n.blocklistLastSyncAgo(timeAgo);
   }
 
   @override
@@ -3087,7 +3639,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                     onChanged: (value) {
                       if (value != null) {
-                        _saveThemeMode(value);
+                        _saveThemeMode(context, value);
                       }
                     },
                   ),
@@ -3131,8 +3683,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(context.l10n.answerbotFeatureDescription),
                   value: _answerbotEnabled,
                   onChanged: (value) {
-                    _saveAnswerbotEnabled(value);
+                    _saveAnswerbotEnabled(context, value);
                   },
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    context.l10n.blocklistCache,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.storage),
+                  title: Text(context.l10n.blocklistCachedEntries(_blocklistCount)),
+                  subtitle: Text('${context.l10n.blocklistLastSync}: ${_formatLastSync(context, _blocklistLastSync)}'),
+                  trailing: _blocklistVersion > 0 ? Text('v$_blocklistVersion') : null,
+                ),
+                ListTile(
+                  leading: _isSyncing
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.sync),
+                  title: Text(_isSyncing ? context.l10n.blocklistSyncing : context.l10n.blocklistSyncNow),
+                  onTap: _isSyncing ? null : () => _syncBlocklist(context),
                 ),
                 const Divider(),
                 Padding(
@@ -3256,6 +3833,18 @@ class AboutScreen extends StatelessWidget {
               }
             },
           ),
+          // Report problem
+          ListTile(
+            leading: const Icon(Icons.bug_report),
+            title: Text(context.l10n.reportProblem),
+            subtitle: Text(context.l10n.reportProblemSubtitle),
+            onTap: () async {
+              final url = Uri.parse('https://github.com/haumacher/phoneblock/issues');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+          ),
           const SizedBox(height: 32),
           // Donate button
           Padding(
@@ -3318,6 +3907,7 @@ class PersonalizedNumberListScreen extends StatefulWidget {
 
 class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScreen> {
   List<api.PersonalizedNumber> _numbers = [];
+  List<WildcardBlock> _wildcardBlocks = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -3329,7 +3919,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     _loadNumbers();
   }
 
-  /// Load the number list from the API.
+  /// Load the number list from the API and local wildcard blocks.
   Future<void> _loadNumbers() async {
     setState(() {
       _isLoading = true;
@@ -3341,9 +3931,15 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
           ? await fetchBlacklist(widget.authToken)
           : await fetchWhitelist(widget.authToken);
 
+      List<WildcardBlock> wildcards = [];
+      if (_isBlacklist) {
+        wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
+      }
+
       if (numberList != null) {
         setState(() {
           _numbers = numberList.numbers;
+          _wildcardBlocks = wildcards;
           _isLoading = false;
         });
       } else {
@@ -3402,7 +3998,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
       if (success) {
         setState(() {
-          // Update the comment in the local list
           personalizedNumber.comment = newComment;
         });
         scaffold.showSnackBar(
@@ -3422,6 +4017,602 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     }
   }
 
+  /// Edit the comment for a wildcard blocking rule.
+  Future<void> _editWildcardComment(WildcardBlock block) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    final localizations = context.l10n;
+    final textController = TextEditingController(text: block.comment ?? '');
+
+    final newComment = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localizations.editComment),
+        content: TextField(
+          controller: textController,
+          decoration: InputDecoration(
+            labelText: localizations.commentLabel,
+            hintText: localizations.commentHint,
+          ),
+          maxLines: 3,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(localizations.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(textController.text),
+            child: Text(localizations.save),
+          ),
+        ],
+      ),
+    );
+
+    if (newComment != null) {
+      await ScreenedCallsDatabase.instance.updateWildcardBlockComment(block.id!, newComment);
+      setState(() {
+        final index = _wildcardBlocks.indexOf(block);
+        if (index >= 0) {
+          _wildcardBlocks[index] = WildcardBlock(
+            id: block.id,
+            prefix: block.prefix,
+            comment: newComment,
+            created: block.created,
+          );
+        }
+      });
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(localizations.commentUpdated),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Shows a dialog to enter a phone number for blocking.
+  Future<void> _showAddNumberDialog(BuildContext context) async {
+    final phoneController = TextEditingController();
+    bool isWildcard = false;
+    String? errorText;
+
+    final result = await showDialog<({String phone, bool wildcard})>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(context.l10n.addNumber),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.phoneNumberLabel,
+                      hintText: context.l10n.phoneNumberHint,
+                      errorText: errorText,
+                      border: const OutlineInputBorder(),
+                      suffixText: isWildcard ? '*' : null,
+                      suffixStyle: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onChanged: (_) {
+                      if (errorText != null) {
+                        setDialogState(() => errorText = null);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    title: Text(context.l10n.wildcardToggle),
+                    subtitle: isWildcard ? Text(context.l10n.wildcardHint) : null,
+                    value: isWildcard,
+                    onChanged: (value) {
+                      setDialogState(() => isWildcard = value);
+                    },
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(context.l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final phone = phoneController.text.trim();
+                    if (phone.isEmpty) {
+                      setDialogState(() => errorText = context.l10n.invalidPhoneNumber);
+                      return;
+                    }
+                    Navigator.of(context).pop((phone: phone, wildcard: isWildcard));
+                  },
+                  child: Text(context.l10n.next),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+    if (!context.mounted) return;
+
+    if (result.wildcard) {
+      await _addWildcardNumber(context, result.phone);
+    } else {
+      await _addExactNumber(context, result.phone);
+    }
+  }
+
+  /// Validates a wildcard prefix and stores it locally.
+  Future<void> _addWildcardNumber(BuildContext context, String phoneInput) async {
+    final prefix = await _normalizeWildcardPrefix(phoneInput);
+
+    if (prefix == null || prefix.length < 3) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.wildcardTooShort),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final exists = await ScreenedCallsDatabase.instance.wildcardPrefixExists(prefix);
+    if (exists) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.wildcardDuplicate),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+    final comment = await _showWildcardCommentDialog(context);
+    if (comment == null) return;
+
+    final block = WildcardBlock(
+      prefix: prefix,
+      comment: comment.isEmpty ? null : comment,
+      created: DateTime.now(),
+    );
+
+    await ScreenedCallsDatabase.instance.insertWildcardBlock(block);
+    await syncWildcardPrefixesToNative();
+    await _loadNumbers();
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.wildcardAdded),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  /// Normalizes user input to an international prefix format.
+  ///
+  /// Accepts formats like "0043", "+43", "0049123", "030" and returns "+43", "+49123", "+4930".
+  /// Uses Android's libphonenumber for national format normalization.
+  /// Returns null if the input cannot be normalized.
+  Future<String?> _normalizeWildcardPrefix(String input) async {
+    var cleaned = input.replaceAll(RegExp(r'[\s\-\(\)\/]'), '');
+
+    // Handle 00XX format → +XX
+    if (cleaned.startsWith('00') && cleaned.length >= 4) {
+      cleaned = '+${cleaned.substring(2)}';
+    }
+
+    if (cleaned.startsWith('+')) {
+      final afterPlus = cleaned.substring(1);
+      if (afterPlus.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(afterPlus)) {
+        return null;
+      }
+      return cleaned;
+    }
+
+    // National format (e.g. "030" for Berlin) — normalize via libphonenumber.
+    // Pad with zeros to form a plausible phone number, normalize, then trim back.
+    if (!RegExp(r'^[0-9]+$').hasMatch(cleaned) || cleaned.isEmpty) {
+      return null;
+    }
+    final padded = cleaned.padRight(11, '0');
+    final normalized = await normalizePhoneNumber(padded, countryCode: '');
+    if (normalized != null && normalized.startsWith('+')) {
+      // Trim back the padded zeros: the normalized prefix has the same
+      // number of meaningful digits as the original input.
+      final prefixLen = normalized.length - (padded.length - cleaned.length);
+      if (prefixLen > 1) {
+        return normalized.substring(0, prefixLen);
+      }
+    }
+    return null;
+  }
+
+  /// Shows a comment dialog for wildcard rules.
+  Future<String?> _showWildcardCommentDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.addCommentWildcard),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: context.l10n.commentHintWildcard,
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            maxLength: 500,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(context.l10n.add),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Adds an exact phone number via the server rating API.
+  Future<void> _addExactNumber(BuildContext context, String phone) async {
+    final rating = await _showBlocklistRatingDialog(context);
+    if (rating == null) return;
+
+    if (!context.mounted) return;
+    final comment = await _showBlocklistCommentDialog(context);
+    if (comment == null) return;
+
+    String? token = await getAuthToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.notLoggedIn),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final rateRequest = api.RateRequest(
+        phone: phone,
+        rating: _convertStateRatingToApi(rating),
+        comment: comment,
+      );
+
+      final buffer = StringBuffer();
+      final jsonWriter = jsonStringWriter(buffer);
+      rateRequest.writeContent(jsonWriter);
+      final jsonBody = buffer.toString();
+
+      final response = await http.post(
+        Uri.parse('$pbBaseUrl/api/rate'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonBody,
+      );
+
+      if (response.statusCode == 200) {
+        await _loadNumbers();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.numberAdded),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.reportError(response.statusCode.toString())),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding number: $e');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.reportError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Shows rating selection dialog.
+  Future<Rating?> _showBlocklistRatingDialog(BuildContext context) async {
+    return showDialog<Rating>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.selectSpamCategory),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: Rating.values
+                  .where((r) => r != Rating.aLEGITIMATE && r != Rating.uNKNOWN)
+                  .map((rating) {
+                    final color = bgColor(rating);
+                    return ListTile(
+                      leading: Icon(ratingIcon(rating), color: color),
+                      title: Text(labelText(context, rating),
+                          style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+                      tileColor: color.withValues(alpha: 0.1),
+                      onTap: () => Navigator.of(context).pop(rating),
+                    );
+                  })
+                  .toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(context.l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Shows comment input dialog.
+  Future<String?> _showBlocklistCommentDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.addCommentSpam),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: context.l10n.commentHintSpam,
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            maxLength: 500,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(context.l10n.report),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Converts state.Rating to api.Rating.
+  api.Rating _convertStateRatingToApi(Rating rating) {
+    switch (rating) {
+      case Rating.aLEGITIMATE: return api.Rating.aLegitimate;
+      case Rating.uNKNOWN: return api.Rating.bMissed;
+      case Rating.pING: return api.Rating.cPing;
+      case Rating.pOLL: return api.Rating.dPoll;
+      case Rating.aDVERTISING: return api.Rating.eAdvertising;
+      case Rating.gAMBLE: return api.Rating.fGamble;
+      case Rating.fRAUD: return api.Rating.gFraud;
+    }
+  }
+
+  Widget _buildNumberTile(
+    BuildContext context,
+    api.PersonalizedNumber personalizedNumber,
+    String Function(String) confirmRemoveMessage,
+    Icon defaultIcon,
+  ) {
+    final phone = personalizedNumber.phone;
+    final displayPhone = personalizedNumber.label ?? phone;
+    return Dismissible(
+      key: Key(phone),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              context.l10n.delete,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(Icons.delete, color: Colors.white, size: 32),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.confirmRemoval),
+            content: Text(confirmRemoveMessage(displayPhone)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(context.l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(context.l10n.remove),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return false;
+
+        final success = _isBlacklist
+            ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
+            : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                success
+                    ? context.l10n.numberRemovedFromList
+                    : context.l10n.errorRemovingNumber,
+              ),
+              backgroundColor: success ? null : Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
+        return success;
+      },
+      onDismissed: (direction) {
+        setState(() {
+          _numbers.remove(personalizedNumber);
+        });
+      },
+      child: ListTile(
+        leading: personalizedNumber.rating != null
+            ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
+            : defaultIcon,
+        title: Text(displayPhone),
+        subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
+            ? Text(
+                personalizedNumber.comment!,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              )
+            : null,
+        trailing: IconButton(
+          icon: const Icon(Icons.edit_outlined),
+          onPressed: () => _editComment(personalizedNumber),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWildcardTile(BuildContext context, WildcardBlock block) {
+    final displayPrefix = '${block.prefix}*';
+    return Dismissible(
+      key: Key('wildcard_${block.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              context.l10n.delete,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(Icons.delete, color: Colors.white, size: 32),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.confirmRemoval),
+            content: Text(context.l10n.confirmRemoveWildcard(block.prefix)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(context.l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(context.l10n.remove),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return false;
+
+        await ScreenedCallsDatabase.instance.deleteWildcardBlock(block.id!);
+        await syncWildcardPrefixesToNative();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.wildcardRemoved),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
+        return true;
+      },
+      onDismissed: (direction) {
+        setState(() {
+          _wildcardBlocks.remove(block);
+        });
+      },
+      child: ListTile(
+        leading: const Icon(Icons.filter_alt, color: Colors.orange),
+        title: Text(displayPrefix),
+        subtitle: block.comment != null && block.comment!.isNotEmpty
+            ? Text(
+                block.comment!,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              )
+            : null,
+        trailing: IconButton(
+          icon: const Icon(Icons.edit_outlined),
+          onPressed: () => _editWildcardComment(block),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = _isBlacklist ? context.l10n.blacklistTitle : context.l10n.whitelistTitle;
@@ -3438,6 +4629,12 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
       appBar: AppBar(
         title: Text(title),
       ),
+      floatingActionButton: _isBlacklist
+          ? FloatingActionButton(
+              onPressed: () => _showAddNumberDialog(context),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
@@ -3456,7 +4653,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                     ],
                   ),
                 )
-              : _numbers.isEmpty
+              : (_numbers.isEmpty && _wildcardBlocks.isEmpty)
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
@@ -3484,111 +4681,37 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                     )
                   : RefreshIndicator(
                       onRefresh: _loadNumbers,
-                      child: ListView.builder(
-                        itemCount: _numbers.length,
-                        itemBuilder: (context, index) {
-                          final personalizedNumber = _numbers[index];
-                          final phone = personalizedNumber.phone;
-                          // Use localized label for display, fallback to international format
-                          final displayPhone = personalizedNumber.label ?? phone;
-                          return Dismissible(
-                            key: Key(phone),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              color: Colors.red,
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    context.l10n.delete,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Icon(Icons.delete, color: Colors.white, size: 32),
-                                ],
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              // Show confirmation dialog
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text(context.l10n.confirmRemoval),
-                                  content: Text(confirmRemoveMessage(displayPhone)),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(context).pop(false),
-                                      child: Text(context.l10n.cancel),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
-                                      child: Text(context.l10n.remove),
-                                    ),
-                                  ],
+                      child: ListView(
+                        children: [
+                          if (_isBlacklist && _wildcardBlocks.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                context.l10n.wildcardRulesHeader,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-
-                              // If user cancelled, don't dismiss
-                              if (confirmed != true) {
-                                return false;
-                              }
-
-                              // User confirmed - attempt API call
-                              final success = _isBlacklist
-                                  ? await removeFromBlacklist(personalizedNumber.phone, widget.authToken)
-                                  : await removeFromWhitelist(personalizedNumber.phone, widget.authToken);
-
-                              // Show appropriate feedback
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      success
-                                          ? context.l10n.numberRemovedFromList
-                                          : context.l10n.errorRemovingNumber,
-                                    ),
-                                    backgroundColor: success ? null : Colors.red,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-
-                              // Only dismiss if API call succeeded
-                              return success;
-                            },
-                            onDismissed: (direction) {
-                              // Update local state after successful dismissal
-                              setState(() {
-                                _numbers.remove(personalizedNumber);
-                              });
-                            },
-                            child: ListTile(
-                              leading: personalizedNumber.rating != null
-                                  ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
-                                  : defaultIcon,
-                              title: Text(displayPhone),
-                              subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
-                                  ? Text(
-                                      personalizedNumber.comment!,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    )
-                                  : null,
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit_outlined),
-                                onPressed: () => _editComment(personalizedNumber),
                               ),
                             ),
-                          );
-                        },
+                            ..._wildcardBlocks.map((block) => _buildWildcardTile(context, block)),
+                            const Divider(),
+                          ],
+                          if (_numbers.isNotEmpty) ...[
+                            if (_isBlacklist && _wildcardBlocks.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                child: Text(
+                                  context.l10n.blockedNumbersHeader,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ..._numbers.map((pn) => _buildNumberTile(context, pn, confirmRemoveMessage, defaultIcon)),
+                          ],
+                        ],
                       ),
                     ),
     );

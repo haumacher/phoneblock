@@ -1,0 +1,864 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
+import 'package:phoneblock_mobile/l10n/app_localizations.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_answerbot_setup.dart';
+import 'package:phoneblock_mobile/main.dart'
+    show newCallIds, getAuthToken, fetchAccountSettings;
+import 'package:phoneblock_mobile/storage.dart';
+import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
+import 'package:sn_progress_dialog/progress_dialog.dart';
+
+/// Settings screen for Fritz!Box integration.
+class FritzBoxSettingsScreen extends StatefulWidget {
+  const FritzBoxSettingsScreen({super.key});
+
+  @override
+  State<FritzBoxSettingsScreen> createState() => _FritzBoxSettingsScreenState();
+}
+
+class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
+  bool _isLoading = true;
+  bool _isSyncing = false;
+  bool _isConfiguringCardDav = false;
+  FritzBoxConfig? _config;
+  FritzBoxConnectionState _connectionState =
+      FritzBoxConnectionState.notConfigured;
+  FritzBoxDeviceInfo? _deviceInfo;
+  int _callCount = 0;
+  CardDavStatus _cardDavStatus = CardDavStatus.notConfigured;
+  AnswerbotInfo? _answerbotInfo;
+  bool _isTogglingAnswerbot = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      var config = await FritzBoxStorage.instance.getConfig();
+      final callCount =
+          await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
+
+      // Check connection state
+      await FritzBoxService.instance.checkConnection();
+      final connectionState = FritzBoxService.instance.connectionState;
+
+      FritzBoxDeviceInfo? deviceInfo;
+      CardDavStatus cardDavStatus = CardDavStatus.notConfigured;
+
+      if (connectionState == FritzBoxConnectionState.connected) {
+        deviceInfo = await FritzBoxService.instance.getDeviceInfo();
+
+        // Sync local blocklistMode with actual Fritz!Box state (bidirectional)
+        cardDavStatus = await FritzBoxService.instance.syncBlocklistMode();
+        config = await FritzBoxStorage.instance.getConfig();
+
+        // Detect pre-existing answerbot setup
+        await FritzBoxService.instance.syncAnswerbotState();
+        config = await FritzBoxStorage.instance.getConfig();
+      }
+
+      final answerbotInfo = await _fetchAnswerbotInfo(config?.answerbotId);
+
+      if (mounted) {
+        setState(() {
+          _config = config;
+          _connectionState = connectionState;
+          _deviceInfo = deviceInfo;
+          _callCount = callCount;
+          _cardDavStatus = cardDavStatus;
+          _answerbotInfo = answerbotInfo;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _syncNow() async {
+    if (_isSyncing) return;
+
+    setState(() {
+      _isSyncing = true;
+    });
+
+    try {
+      final newIds = await FritzBoxService.instance.syncCallList();
+      // Track synced calls as new
+      newCallIds.addAll(newIds);
+      final callCount =
+          await ScreenedCallsDatabase.instance.getFritzBoxCallsCount();
+
+      if (mounted) {
+        setState(() {
+          _callCount = callCount;
+          _isSyncing = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                AppLocalizations.of(context)!.fritzboxSyncComplete(newIds.length)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.fritzboxSyncError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _disconnect() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.fritzboxDisconnectTitle),
+        content: Text(AppLocalizations.of(context)!.fritzboxDisconnectMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              AppLocalizations.of(context)!.fritzboxDisconnect,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await FritzBoxService.instance.disconnect();
+      if (mounted) {
+        await _loadData();
+      }
+    }
+  }
+
+  Future<void> _openWizard() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const FritzBoxWizard()),
+    );
+
+    if (result == true && mounted) {
+      await _loadData();
+    }
+  }
+
+  Future<void> _enableCardDav(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    setState(() {
+      _isConfiguringCardDav = true;
+    });
+
+    try {
+      // Get PhoneBlock credentials
+      final authToken = await getAuthToken();
+      if (authToken == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.fritzboxPhoneBlockNotLoggedIn),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Fetch PhoneBlock username
+      final accountSettings = await fetchAccountSettings(authToken);
+      if (accountSettings?.login == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.fritzboxCannotGetUsername),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Configure CardDAV
+      await FritzBoxService.instance.configureCardDav(
+        phoneBlockUsername: accountSettings!.login!,
+        phoneBlockToken: authToken,
+      );
+
+      if (context.mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxCardDavEnabled)),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.fritzboxBlocklistConfigFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isConfiguringCardDav = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _disableCardDav(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.fritzboxDisableCardDavTitle),
+        content: Text(l10n.fritzboxDisableCardDavMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.fritzboxDisable),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await FritzBoxService.instance.removeCardDav();
+      if (context.mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxCardDavDisabled)),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.fritzboxTitle),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildContent(context, l10n),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, AppLocalizations l10n) {
+    if (_connectionState == FritzBoxConnectionState.notConfigured) {
+      return _buildNotConfigured(context, l10n);
+    }
+
+    return ListView(
+      children: [
+        // Connection status card
+        _buildConnectionCard(context, l10n),
+
+        // CardDAV/Blocklist section
+        const Divider(),
+        _buildBlocklistSection(context, l10n),
+
+        // Answer Bot section
+        if (_connectionState == FritzBoxConnectionState.connected)
+          FutureBuilder<bool>(
+            future: FritzBoxService.instance.supportsCardDav(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  const Divider(),
+                  _buildAnswerbotSection(context, l10n),
+                ],
+              );
+            },
+          ),
+
+        // Sync section
+        if (_connectionState == FritzBoxConnectionState.connected) ...[
+          const Divider(),
+          _buildSyncSection(context, l10n),
+        ],
+
+        // Disconnect option
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.link_off, color: Colors.red),
+          title: Text(
+            l10n.fritzboxDisconnect,
+            style: const TextStyle(color: Colors.red),
+          ),
+          onTap: _disconnect,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotConfigured(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.router,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.fritzboxNotConfigured,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.fritzboxNotConfiguredDescription,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _openWizard,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.fritzboxConnect),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectionCard(BuildContext context, AppLocalizations l10n) {
+    final isConnected = _connectionState == FritzBoxConnectionState.connected;
+    final statusColor = isConnected ? Colors.green : Colors.orange;
+    final statusIcon = isConnected ? Icons.check_circle : Icons.cloud_off;
+
+    return Card(
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.router, size: 40, color: statusColor),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _deviceInfo?.modelName ??
+                            _config?.host ??
+                            l10n.fritzboxTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(statusIcon, size: 16, color: statusColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            isConnected
+                                ? l10n.fritzboxConnected
+                                : l10n.fritzboxOffline,
+                            style: TextStyle(color: statusColor),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (_deviceInfo?.fritzosVersion != null) ...[
+              const Divider(height: 24),
+              _buildInfoRow(l10n.fritzboxVersion, _deviceInfo!.fritzosVersion!),
+            ],
+            if (_config?.host != null) ...[
+              _buildInfoRow(l10n.fritzboxHost, _config!.host!),
+            ],
+            _buildInfoRow(l10n.fritzboxCachedCalls, _callCount.toString()),
+            if (_config?.lastFetchTimestamp != null) ...[
+              _buildInfoRow(
+                l10n.fritzboxLastSync,
+                _formatTimestamp(_config!.lastFetchTimestamp!),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlocklistSection(BuildContext context, AppLocalizations l10n) {
+    final isCardDavEnabled = _config?.blocklistMode == BlocklistMode.cardDav;
+
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(
+            Icons.shield,
+            color: _cardDavStatus == CardDavStatus.synced ? Colors.green : Colors.grey,
+          ),
+          title: Text(l10n.fritzboxBlocklistMode),
+          subtitle: Text(
+            isCardDavEnabled
+                ? l10n.fritzboxBlocklistModeCardDav
+                : l10n.fritzboxBlocklistModeNone,
+          ),
+        ),
+        if (isCardDavEnabled) ...[
+          // Show CardDAV status
+          _buildCardDavStatusTile(context, l10n),
+        ] else ...[
+          // Show option to enable CardDAV
+          if (_connectionState == FritzBoxConnectionState.connected)
+            FutureBuilder<bool>(
+              future: FritzBoxService.instance.supportsCardDav(),
+              builder: (context, snapshot) {
+                final supportsCardDav = snapshot.data ?? false;
+
+                if (!supportsCardDav) {
+                  return ListTile(
+                    leading: const Icon(Icons.info_outline, color: Colors.orange),
+                    title: Text(l10n.fritzboxVersionTooOldForCardDav),
+                    dense: true,
+                  );
+                }
+
+                return ListTile(
+                  leading: _isConfiguringCardDav
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_sync),
+                  title: Text(l10n.fritzboxEnableCardDav),
+                  subtitle: Text(l10n.fritzboxEnableCardDavDescription),
+                  onTap: _isConfiguringCardDav ? null : () => _enableCardDav(context),
+                );
+              },
+            ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCardDavStatusTile(BuildContext context, AppLocalizations l10n) {
+    final statusIcon = _getCardDavStatusIcon();
+    final statusColor = _getCardDavStatusColor();
+    final statusText = _getCardDavStatusText(l10n);
+
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(statusIcon, color: statusColor),
+          title: Text(l10n.fritzboxCardDavStatus),
+          subtitle: Text(statusText),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadData,
+          ),
+        ),
+        // Note about sync frequency
+        ListTile(
+          leading: const Icon(Icons.info_outline, color: Colors.grey),
+          title: Text(
+            l10n.fritzboxCardDavNote,
+            style: const TextStyle(fontSize: 14),
+          ),
+          dense: true,
+        ),
+        // Remove option
+        ListTile(
+          leading: const Icon(Icons.delete_outline, color: Colors.orange),
+          title: Text(l10n.fritzboxDisableCardDav),
+          onTap: () => _disableCardDav(context),
+        ),
+      ],
+    );
+  }
+
+  IconData _getCardDavStatusIcon() {
+    switch (_cardDavStatus) {
+      case CardDavStatus.synced:
+        return Icons.check_circle;
+      case CardDavStatus.syncPending:
+        return Icons.pending;
+      case CardDavStatus.error:
+        return Icons.error;
+      case CardDavStatus.disabled:
+        return Icons.pause_circle;
+      case CardDavStatus.notConfigured:
+        return Icons.help_outline;
+    }
+  }
+
+  Color _getCardDavStatusColor() {
+    switch (_cardDavStatus) {
+      case CardDavStatus.synced:
+        return Colors.green;
+      case CardDavStatus.syncPending:
+        return Colors.orange;
+      case CardDavStatus.error:
+        return Colors.red;
+      case CardDavStatus.disabled:
+        return Colors.grey;
+      case CardDavStatus.notConfigured:
+        return Colors.grey;
+    }
+  }
+
+  String _getCardDavStatusText(AppLocalizations l10n) {
+    switch (_cardDavStatus) {
+      case CardDavStatus.synced:
+        return l10n.fritzboxCardDavStatusSynced;
+      case CardDavStatus.syncPending:
+        return l10n.fritzboxCardDavStatusPending;
+      case CardDavStatus.error:
+        return l10n.fritzboxCardDavStatusError;
+      case CardDavStatus.disabled:
+        return l10n.fritzboxCardDavStatusDisabled;
+      case CardDavStatus.notConfigured:
+        return l10n.fritzboxBlocklistModeNone;
+    }
+  }
+
+  Widget _buildAnswerbotSection(BuildContext context, AppLocalizations l10n) {
+    final isAnswerbotEnabled = _config?.answerbotEnabled ?? false;
+
+    if (isAnswerbotEnabled) {
+      final info = _answerbotInfo;
+      final serverEnabled = info?.enabled ?? false;
+      final registered = info?.registered ?? false;
+
+      // Determine display state
+      final String title;
+      final String subtitle;
+      final Color iconColor;
+      if (info == null || _isTogglingAnswerbot) {
+        title = l10n.fritzboxAnswerbotActive;
+        subtitle = l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.grey;
+      } else if (!serverEnabled) {
+        title = l10n.fritzboxAnswerbotPaused;
+        subtitle = l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.grey;
+      } else if (!registered) {
+        title = l10n.fritzboxAnswerbotNotRegistered;
+        subtitle = info.registerMsg ?? l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.orange;
+      } else {
+        title = l10n.fritzboxAnswerbotActive;
+        subtitle = l10n.fritzboxAnswerbotDescription;
+        iconColor = Colors.green;
+      }
+
+      return Column(
+        children: [
+          SwitchListTile(
+            secondary: Icon(Icons.smart_toy, color: iconColor),
+            title: Text(title),
+            subtitle: Text(subtitle),
+            value: serverEnabled,
+            onChanged: info != null && !_isTogglingAnswerbot
+                ? (enabled) => _toggleAnswerbot(context, enabled)
+                : null,
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: Text(l10n.fritzboxAnswerbotSettings),
+            onTap: info != null
+                ? () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AnswerBotView(info),
+                      ),
+                    );
+                    if (mounted) {
+                      final refreshed = await _fetchAnswerbotInfo(_config?.answerbotId);
+                      if (mounted) {
+                        setState(() {
+                          _answerbotInfo = refreshed ?? _answerbotInfo;
+                        });
+                      }
+                    }
+                  }
+                : null,
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_outline, color: Colors.orange),
+            title: Text(l10n.fritzboxDisableAnswerbot),
+            onTap: () => _disableAnswerbot(context),
+          ),
+        ],
+      );
+    }
+
+    return ListTile(
+      leading: const Icon(Icons.smart_toy),
+      title: Text(l10n.fritzboxEnableAnswerbot),
+      subtitle: Text(l10n.fritzboxEnableAnswerbotDescription),
+      onTap: _enableAnswerbot,
+    );
+  }
+
+  Future<void> _enableAnswerbot() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const FritzBoxAnswerbotSetupScreen(),
+      ),
+    );
+
+    if (result == true && mounted) {
+      await _loadData();
+    }
+  }
+
+  /// Fetches the answerbot info from the server.
+  Future<AnswerbotInfo?> _fetchAnswerbotInfo(int? botId) async {
+    if (botId == null) return null;
+    try {
+      final headers = await apiHeaders();
+      final response = await http.get(
+        Uri.parse('$basePath/ab/list'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        final listResponse = ListAnswerbotResponse.read(
+          JsonReader.fromString(response.body),
+        );
+        return listResponse.bots.where(
+          (b) => b.id == botId,
+        ).firstOrNull;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to fetch answerbot status: $e');
+      }
+    }
+    return null;
+  }
+
+  static const int _maxRetry = 20;
+
+  Future<void> _toggleAnswerbot(BuildContext context, bool enabled) async {
+    final botId = _config?.answerbotId;
+    if (botId == null) return;
+
+    setState(() {
+      _isTogglingAnswerbot = true;
+    });
+
+    try {
+      if (enabled) {
+        await _enableAnswerbotOnServer(context, botId);
+      } else {
+        await sendRequest(DisableAnswerBot(id: botId));
+      }
+
+      // Re-fetch actual state from server.
+      final info = await _fetchAnswerbotInfo(botId);
+      if (mounted) {
+        setState(() {
+          _answerbotInfo = info ?? _answerbotInfo;
+        });
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.fritzboxSyncError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTogglingAnswerbot = false;
+        });
+      }
+    }
+  }
+
+  /// Enables the answerbot and polls for SIP registration to complete.
+  Future<void> _enableAnswerbotOnServer(BuildContext context, int botId) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final response = await sendRequest(EnableAnswerBot(id: botId));
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+
+    if (!context.mounted) return;
+
+    // Poll with CheckAnswerBot until registered (200) or failed.
+    final pd = ProgressDialog(context: context);
+    pd.show(max: _maxRetry, msg: l10n.fritzboxAnswerbotEnabling, msgMaxLines: 2, msgFontSize: 14);
+
+    try {
+      for (int n = 0; n < _maxRetry; n++) {
+        final check = await sendRequest(CheckAnswerBot()..id = botId);
+        if (!context.mounted) return;
+
+        if (check.statusCode == 200) {
+          pd.close();
+          return;
+        }
+
+        if (check.statusCode != 409) {
+          pd.close();
+          throw Exception(check.body);
+        }
+
+        // 409 = still connecting, retry after delay
+        await Future.delayed(const Duration(milliseconds: 2500));
+        if (!context.mounted) return;
+        pd.update(value: n + 1, msg: '${l10n.fritzboxAnswerbotEnabling}\n${check.body}');
+      }
+
+      // Max retries exhausted
+      pd.close();
+    } catch (e) {
+      pd.close();
+      rethrow;
+    }
+  }
+
+  Future<void> _disableAnswerbot(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.fritzboxDisableAnswerbotTitle),
+        content: Text(l10n.fritzboxDisableAnswerbotMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.fritzboxDisable),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await FritzBoxService.instance.removeAnswerBot();
+      if (context.mounted) {
+        await _loadData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.fritzboxAnswerbotDisabled)),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildSyncSection(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: _isSyncing
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.sync),
+      title: Text(l10n.fritzboxSyncNow),
+      subtitle: Text(l10n.fritzboxSyncDescription),
+      onTap: _isSyncing ? null : _syncNow,
+    );
+  }
+
+  String _formatTimestamp(int timestamp) {
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    if (diff.inMinutes < 1) {
+      return AppLocalizations.of(context)!.fritzboxJustNow;
+    } else if (diff.inHours < 1) {
+      return AppLocalizations.of(context)!.fritzboxMinutesAgo(diff.inMinutes);
+    } else if (diff.inDays < 1) {
+      return AppLocalizations.of(context)!.fritzboxHoursAgo(diff.inHours);
+    } else {
+      return '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+    }
+  }
+}

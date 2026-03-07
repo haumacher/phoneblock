@@ -39,7 +39,7 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted) {
+  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds) {
     return '$newCalls nuove chiamate, $callsAccepted chiamate, $talkTimeSeconds s tempo totale di conversazione';
   }
 
@@ -202,6 +202,13 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get blockNumberRangesHelp =>
       'Accetta la chiamata anche per un numero che non è ancora noto come SPAM se c\'è motivo di sospettare che il numero appartenga a una connessione di sistema da cui proviene lo SPAM.';
+
+  @override
+  String get acceptLocalCalls => 'Lokale Anrufe annehmen';
+
+  @override
+  String get acceptLocalCallsHelp =>
+      'Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.';
 
   @override
   String get preferIPv4 => 'Favorire la comunicazione IPv4';

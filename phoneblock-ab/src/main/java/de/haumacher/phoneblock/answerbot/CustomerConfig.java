@@ -50,6 +50,9 @@ public class CustomerConfig implements CustomerOptions {
 	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
 	private boolean _acceptAnonymous = false;
 
+	@Option(name = "--accept-local", handler = YesNoHandler.class, usage = "Whether to accept calls from local phones (numbers starting with *).")
+	private boolean _acceptLocal = true;
+
 	@Override
 	public SipURI getRegistrar() {
 		return registrar;
@@ -143,5 +146,17 @@ public class CustomerConfig implements CustomerOptions {
 	 */
 	public void setAcceptAnonymous(boolean acceptAnonymous) {
 		_acceptAnonymous = acceptAnonymous;
+	}
+
+	@Override
+	public boolean getAcceptLocal() {
+		return _acceptLocal;
+	}
+
+	/**
+	 * @see #getAcceptLocal()
+	 */
+	public void setAcceptLocal(boolean acceptLocal) {
+		_acceptLocal = acceptLocal;
 	}
 }

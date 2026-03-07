@@ -32,8 +32,18 @@
   },
   "accepted": "Angenommen",
   "@accepted": {
-    "description": "Label for accepted calls",
+    "description": "Label for calls that were answered (Fritz!Box calls)",
     "x-translated": "17acbe98"
+  },
+  "notBlocked": "Nicht blockiert",
+  "@notBlocked": {
+    "description": "Label for mobile-screened calls that were let through (not blocked) by the call screener",
+    "x-translated": "e4ef9a20"
+  },
+  "missed": "Verpasst",
+  "@missed": {
+    "description": "Label for missed calls",
+    "x-translated": "168ad310"
   },
   "votes": "{count} Stimmen",
   "@votes": {
@@ -159,6 +169,16 @@
   "@sourceCodeLicense": {
     "description": "Source code license",
     "x-translated": "f4f67bf4"
+  },
+  "reportProblem": "Problem melden",
+  "@reportProblem": {
+    "description": "Report problem link label",
+    "x-translated": "4e0c17b5"
+  },
+  "reportProblemSubtitle": "GitHub Issues",
+  "@reportProblemSubtitle": {
+    "description": "Report problem link subtitle",
+    "x-translated": "32b3221b"
   },
   "aboutDescription": "PhoneBlock ist ein Open-Source Projekt ohne Tracking und ohne Werbung. Der Dienst wird durch Spenden finanziert.",
   "@aboutDescription": {
@@ -660,20 +680,20 @@
     "description": "Enter phone number label",
     "x-translated": "90930660"
   },
-  "phoneNumberHint": "z.B. +49 123 456789",
+  "phoneNumberHint": "z.B. +43 oder 0043123456",
   "@phoneNumberHint": {
-    "description": "Phone number hint text",
-    "x-translated": "eee7a6a7"
+    "description": "Hint text for phone number input field",
+    "x-translated": "6b041736"
   },
   "search": "Suchen",
   "@search": {
     "description": "Search button",
     "x-translated": "d73da58d"
   },
-  "invalidPhoneNumber": "Bitte geben Sie eine gültige Telefonnummer ein",
+  "invalidPhoneNumber": "Ungültige Telefonnummer",
   "@invalidPhoneNumber": {
-    "description": "Error message for invalid phone number",
-    "x-translated": "6bf622dc"
+    "description": "Validation error for an invalid exact phone number",
+    "x-translated": "c6f42ec3"
   },
   "blacklistTitle": "Blacklist",
   "@blacklistTitle": {
@@ -858,5 +878,716 @@
   "@suspiciousCallsCount": {
     "description": "Label for total suspicious calls count",
     "x-translated": "6b4288ff"
+  },
+  "fritzboxTitle": "Fritz!Box",
+  "@fritzboxTitle": {
+    "description": "Fritz!Box menu title",
+    "x-translated": "4f2059d2"
+  },
+  "fritzboxConnected": "Verbunden und geschützt",
+  "@fritzboxConnected": {
+    "description": "Fritz!Box connected and spam-protected status",
+    "x-translated": "33ee3c29"
+  },
+  "fritzboxConnectedNotProtected": "Verbunden, nicht geschützt",
+  "@fritzboxConnectedNotProtected": {
+    "description": "Fritz!Box connected but CardDAV spam protection not active",
+    "x-translated": "b6387cfb"
+  },
+  "fritzboxOffline": "Nicht erreichbar",
+  "@fritzboxOffline": {
+    "description": "Fritz!Box offline status",
+    "x-translated": "8bb28786"
+  },
+  "fritzboxError": "Verbindungsfehler",
+  "@fritzboxError": {
+    "description": "Fritz!Box error status",
+    "x-translated": "197b41d0"
+  },
+  "fritzboxNotConfiguredShort": "Nicht eingerichtet",
+  "@fritzboxNotConfiguredShort": {
+    "description": "Fritz!Box not configured - short",
+    "x-translated": "9732dbb3"
+  },
+  "fritzboxNotConfigured": "Keine Fritz!Box eingerichtet",
+  "@fritzboxNotConfigured": {
+    "description": "Fritz!Box not configured title",
+    "x-translated": "7de41ddc"
+  },
+  "fritzboxNotConfiguredDescription": "Verbinden Sie Ihre Fritz!Box, um Anrufe aus Ihrem Festnetz zu sehen.",
+  "@fritzboxNotConfiguredDescription": {
+    "description": "Fritz!Box not configured description",
+    "x-translated": "f91f0a4e"
+  },
+  "fritzboxConnect": "Fritz!Box verbinden",
+  "@fritzboxConnect": {
+    "description": "Connect Fritz!Box button",
+    "x-translated": "f50bfaa7"
+  },
+  "fritzboxDisconnect": "Fritz!Box trennen",
+  "@fritzboxDisconnect": {
+    "description": "Disconnect Fritz!Box button",
+    "x-translated": "9701bffc"
+  },
+  "fritzboxDisconnectTitle": "Fritz!Box trennen?",
+  "@fritzboxDisconnectTitle": {
+    "description": "Disconnect confirmation title",
+    "x-translated": "d0f87d38"
+  },
+  "fritzboxDisconnectMessage": "Die gespeicherten Anrufe und Zugangsdaten werden gelöscht.",
+  "@fritzboxDisconnectMessage": {
+    "description": "Disconnect confirmation message",
+    "x-translated": "d4cac1a3"
+  },
+  "fritzboxSyncNow": "Jetzt synchronisieren",
+  "@fritzboxSyncNow": {
+    "description": "Sync now button",
+    "x-translated": "72f38e94"
+  },
+  "fritzboxSyncDescription": "Anrufliste von der Fritz!Box abrufen",
+  "@fritzboxSyncDescription": {
+    "description": "Sync description",
+    "x-translated": "1f4f20bd"
+  },
+  "fritzboxSyncComplete": "{count, plural, =0{Keine neuen Anrufe} =1{1 neuer Anruf synchronisiert} other{{count} neue Anrufe synchronisiert}}",
+  "@fritzboxSyncComplete": {
+    "description": "Sync complete message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "c78c1848"
+  },
+  "fritzboxSyncError": "Fehler beim Synchronisieren",
+  "@fritzboxSyncError": {
+    "description": "Sync error message",
+    "x-translated": "11725b94"
+  },
+  "fritzboxVersion": "FRITZ!OS Version",
+  "@fritzboxVersion": {
+    "description": "Fritz!OS version label",
+    "x-translated": "301c402d"
+  },
+  "fritzboxHost": "Adresse",
+  "@fritzboxHost": {
+    "description": "Fritz!Box host address label",
+    "x-translated": "ce2318a"
+  },
+  "fritzboxCachedCalls": "Gespeicherte Anrufe",
+  "@fritzboxCachedCalls": {
+    "description": "Cached calls count label",
+    "x-translated": "aea1e7c8"
+  },
+  "fritzboxLastSync": "Letzte Synchronisierung",
+  "@fritzboxLastSync": {
+    "description": "Last sync label",
+    "x-translated": "ee34a570"
+  },
+  "fritzboxJustNow": "Gerade eben",
+  "@fritzboxJustNow": {
+    "description": "Just now time label",
+    "x-translated": "72042b1b"
+  },
+  "fritzboxMinutesAgo": "{count, plural, =1{Vor 1 Minute} other{Vor {count} Minuten}}",
+  "@fritzboxMinutesAgo": {
+    "description": "Minutes ago label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "1776ec06"
+  },
+  "fritzboxHoursAgo": "{count, plural, =1{Vor 1 Stunde} other{Vor {count} Stunden}}",
+  "@fritzboxHoursAgo": {
+    "description": "Hours ago label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "eac10c1c"
+  },
+  "fritzboxWizardTitle": "Fritz!Box verbinden",
+  "@fritzboxWizardTitle": {
+    "description": "Wizard title",
+    "x-translated": "f50bfaa7"
+  },
+  "fritzboxStepDetection": "Fritz!Box finden",
+  "@fritzboxStepDetection": {
+    "description": "Detection step title",
+    "x-translated": "2b9203d4"
+  },
+  "fritzboxStepDetectionSubtitle": "Automatische Suche im Netzwerk",
+  "@fritzboxStepDetectionSubtitle": {
+    "description": "Detection step subtitle",
+    "x-translated": "4e6f2680"
+  },
+  "fritzboxStepLogin": "Anmelden",
+  "@fritzboxStepLogin": {
+    "description": "Login step title",
+    "x-translated": "328a36e1"
+  },
+  "fritzboxStepLoginSubtitle": "Zugangsdaten eingeben",
+  "@fritzboxStepLoginSubtitle": {
+    "description": "Login step subtitle",
+    "x-translated": "74ea80e7"
+  },
+  "fritzboxSearching": "Suche nach Fritz!Box...",
+  "@fritzboxSearching": {
+    "description": "Searching message",
+    "x-translated": "4727fc1d"
+  },
+  "fritzboxNotFound": "Fritz!Box nicht gefunden",
+  "@fritzboxNotFound": {
+    "description": "Not found message",
+    "x-translated": "836ad27a"
+  },
+  "fritzboxNotFoundDescription": "Die Fritz!Box konnte nicht automatisch gefunden werden. Bitte geben Sie die Adresse manuell ein.",
+  "@fritzboxNotFoundDescription": {
+    "description": "Not found description",
+    "x-translated": "928b3160"
+  },
+  "fritzboxHostLabel": "Fritz!Box Adresse",
+  "@fritzboxHostLabel": {
+    "description": "Host field label",
+    "x-translated": "22a04460"
+  },
+  "fritzboxRetrySearch": "Erneut suchen",
+  "@fritzboxRetrySearch": {
+    "description": "Retry search button",
+    "x-translated": "6e0b282f"
+  },
+  "fritzboxManualConnect": "Verbinden",
+  "@fritzboxManualConnect": {
+    "description": "Manual connect button",
+    "x-translated": "f304c893"
+  },
+  "fritzboxLoginDescription": "Geben Sie Ihre Fritz!Box Zugangsdaten ein. Sie finden diese in der Fritz!Box Benutzeroberfläche unter System > Fritz!Box-Benutzer.",
+  "@fritzboxLoginDescription": {
+    "description": "Login description",
+    "x-translated": "56387e18"
+  },
+  "fritzboxShowUsername": "Benutzername eingeben",
+  "@fritzboxShowUsername": {
+    "description": "Switch label to show the username field in the login step",
+    "x-translated": "c2627574"
+  },
+  "fritzboxShowUsernameHint": "Normalerweise wird der Standardbenutzer verwendet",
+  "@fritzboxShowUsernameHint": {
+    "description": "Hint below the username toggle explaining that the default user is used automatically",
+    "x-translated": "abdf7e2b"
+  },
+  "fritzboxUsernameLabel": "Benutzername",
+  "@fritzboxUsernameLabel": {
+    "description": "Username field label",
+    "x-translated": "375afb70"
+  },
+  "fritzboxPasswordLabel": "Kennwort",
+  "@fritzboxPasswordLabel": {
+    "description": "Password field label",
+    "x-translated": "23a57fff"
+  },
+  "fritzboxCredentialsNote": "Ihre Zugangsdaten werden sicher auf Ihrem Gerät gespeichert.",
+  "@fritzboxCredentialsNote": {
+    "description": "Credentials security note",
+    "x-translated": "136e0436"
+  },
+  "fritzboxTestAndSave": "Testen und Speichern",
+  "@fritzboxTestAndSave": {
+    "description": "Test and save button",
+    "x-translated": "d56e72a1"
+  },
+  "fritzboxConnectionFailed": "Verbindung fehlgeschlagen. Bitte überprüfen Sie die Zugangsdaten.",
+  "@fritzboxConnectionFailed": {
+    "description": "Connection failed message",
+    "x-translated": "a620921c"
+  },
+  "fritzboxFillAllFields": "Bitte füllen Sie alle Felder aus.",
+  "@fritzboxFillAllFields": {
+    "description": "Fill all fields message",
+    "x-translated": "ea8c5c9f"
+  },
+  "fritzboxOfflineBanner": "Fritz!Box nicht erreichbar - zeige gespeicherte Anrufe",
+  "@fritzboxOfflineBanner": {
+    "description": "Offline banner message",
+    "x-translated": "1582617c"
+  },
+  "sourceMobile": "Mobil",
+  "@sourceMobile": {
+    "description": "Mobile source label",
+    "x-translated": "be6c6e63"
+  },
+  "sourceFritzbox": "Fritz!Box",
+  "@sourceFritzbox": {
+    "description": "Fritz!Box source label",
+    "x-translated": "4f2059d2"
+  },
+  "fritzboxStepBlocklist": "Spam-Schutz",
+  "@fritzboxStepBlocklist": {
+    "description": "Wizard step title for blocklist configuration",
+    "x-translated": "d1add1c3"
+  },
+  "fritzboxStepBlocklistSubtitle": "Blockliste einrichten",
+  "@fritzboxStepBlocklistSubtitle": {
+    "description": "Wizard step subtitle for blocklist configuration",
+    "x-translated": "a9381237"
+  },
+  "fritzboxBlocklistDescription": "Wählen Sie, wie Ihre Fritz!Box vor Spam-Anrufen geschützt werden soll.",
+  "@fritzboxBlocklistDescription": {
+    "description": "Description text for blocklist setup step",
+    "x-translated": "c5ae1afe"
+  },
+  "fritzboxCardDavTitle": "CardDAV-Blockliste",
+  "@fritzboxCardDavTitle": {
+    "description": "Title for CardDAV blocklist option",
+    "x-translated": "3ef92632"
+  },
+  "fritzboxCardDavDescription": "Fritz!Box synchronisiert die Blockliste direkt mit PhoneBlock. Empfohlen für FRITZ!OS 7.20+.",
+  "@fritzboxCardDavDescription": {
+    "description": "Description for CardDAV blocklist option",
+    "x-translated": "99b10bdd"
+  },
+  "fritzboxSkipBlocklist": "Später einrichten",
+  "@fritzboxSkipBlocklist": {
+    "description": "Option to skip blocklist setup",
+    "x-translated": "539b25a3"
+  },
+  "fritzboxSkipBlocklistDescription": "Sie können den Spam-Schutz später in den Einstellungen aktivieren.",
+  "@fritzboxSkipBlocklistDescription": {
+    "description": "Description for skip option",
+    "x-translated": "764d126a"
+  },
+  "fritzboxVersionTooOldForCardDav": "CardDAV erfordert FRITZ!OS 7.20 oder neuer. Ihre Fritz!Box hat eine ältere Version.",
+  "@fritzboxVersionTooOldForCardDav": {
+    "description": "Warning when FRITZ!OS version is too old for CardDAV",
+    "x-translated": "3fff95d7"
+  },
+  "fritzboxFinishSetup": "Einrichtung abschließen",
+  "@fritzboxFinishSetup": {
+    "description": "Button to finish wizard setup",
+    "x-translated": "ce30c85e"
+  },
+  "fritzboxPhoneBlockNotLoggedIn": "Bitte melden Sie sich zuerst bei PhoneBlock an.",
+  "@fritzboxPhoneBlockNotLoggedIn": {
+    "description": "Error when PhoneBlock login is required",
+    "x-translated": "366f39c9"
+  },
+  "fritzboxCannotGetUsername": "PhoneBlock-Benutzername konnte nicht abgerufen werden.",
+  "@fritzboxCannotGetUsername": {
+    "description": "Error when username cannot be retrieved",
+    "x-translated": "b2ee2740"
+  },
+  "fritzboxBlocklistConfigFailed": "Blockliste konnte nicht eingerichtet werden.",
+  "@fritzboxBlocklistConfigFailed": {
+    "description": "Error when blocklist configuration fails",
+    "x-translated": "cfac5abc"
+  },
+  "fritzboxCardDavStatus": "CardDAV-Status",
+  "@fritzboxCardDavStatus": {
+    "description": "CardDAV status label in settings",
+    "x-translated": "b98f81ed"
+  },
+  "fritzboxCardDavStatusSynced": "Synchronisiert",
+  "@fritzboxCardDavStatusSynced": {
+    "description": "CardDAV status when synced",
+    "x-translated": "a2185f24"
+  },
+  "fritzboxCardDavStatusPending": "Synchronisierung ausstehend",
+  "@fritzboxCardDavStatusPending": {
+    "description": "CardDAV status when sync is pending",
+    "x-translated": "83885782"
+  },
+  "fritzboxCardDavStatusError": "Synchronisierungsfehler",
+  "@fritzboxCardDavStatusError": {
+    "description": "CardDAV status when there is an error",
+    "x-translated": "5f9b601b"
+  },
+  "fritzboxCardDavStatusDisabled": "Deaktiviert",
+  "@fritzboxCardDavStatusDisabled": {
+    "description": "CardDAV status when disabled",
+    "x-translated": "ff5c9d69"
+  },
+  "fritzboxCardDavNote": "Die Fritz!Box synchronisiert das Telefonbuch einmal täglich um Mitternacht.",
+  "@fritzboxCardDavNote": {
+    "description": "CardDAV sync frequency note",
+    "x-translated": "fb83d46a"
+  },
+  "fritzboxBlocklistMode": "Spam-Schutz Modus",
+  "@fritzboxBlocklistMode": {
+    "description": "Blocklist mode setting label",
+    "x-translated": "b171b5dd"
+  },
+  "fritzboxBlocklistModeCardDav": "CardDAV (automatische Synchronisierung)",
+  "@fritzboxBlocklistModeCardDav": {
+    "description": "CardDAV blocklist mode description",
+    "x-translated": "79c4728c"
+  },
+  "fritzboxBlocklistModeNone": "Nicht aktiviert",
+  "@fritzboxBlocklistModeNone": {
+    "description": "No blocklist mode description",
+    "x-translated": "8b95179d"
+  },
+  "fritzboxEnableCardDav": "CardDAV aktivieren",
+  "@fritzboxEnableCardDav": {
+    "description": "Enable CardDAV button",
+    "x-translated": "48707d3e"
+  },
+  "fritzboxEnableCardDavDescription": "Spam-Blockliste direkt mit Fritz!Box synchronisieren",
+  "@fritzboxEnableCardDavDescription": {
+    "description": "Enable CardDAV description",
+    "x-translated": "cda7fad0"
+  },
+  "fritzboxCardDavEnabled": "CardDAV-Blockliste aktiviert",
+  "@fritzboxCardDavEnabled": {
+    "description": "CardDAV enabled success message",
+    "x-translated": "ecc69a38"
+  },
+  "fritzboxDisableCardDav": "Blockliste entfernen",
+  "@fritzboxDisableCardDav": {
+    "description": "Remove blocklist button",
+    "x-translated": "3729c561"
+  },
+  "fritzboxDisableCardDavTitle": "Blockliste entfernen?",
+  "@fritzboxDisableCardDavTitle": {
+    "description": "Remove blocklist dialog title",
+    "x-translated": "5ee6babb"
+  },
+  "fritzboxDisableCardDavMessage": "Die Blockliste wird von der Fritz!Box entfernt.",
+  "@fritzboxDisableCardDavMessage": {
+    "description": "Remove blocklist dialog message",
+    "x-translated": "45cecd5a"
+  },
+  "fritzboxDisable": "Entfernen",
+  "@fritzboxDisable": {
+    "description": "Remove button",
+    "x-translated": "11ca5dad"
+  },
+  "fritzboxCardDavDisabled": "Blockliste entfernt",
+  "@fritzboxCardDavDisabled": {
+    "description": "Blocklist removed success message",
+    "x-translated": "9424c151"
+  },
+  "fritzboxAnswerbotTitle": "Anrufbeantworter",
+  "@fritzboxAnswerbotTitle": {
+    "description": "Answer bot section title in Fritz!Box settings",
+    "x-translated": "3877c928"
+  },
+  "fritzboxAnswerbotActive": "Anrufbeantworter aktiv",
+  "@fritzboxAnswerbotActive": {
+    "description": "Answer bot active status",
+    "x-translated": "73d06ffd"
+  },
+  "fritzboxAnswerbotPaused": "Anrufbeantworter pausiert",
+  "@fritzboxAnswerbotPaused": {
+    "description": "Answer bot paused/disabled on server",
+    "x-translated": "df814e70"
+  },
+  "fritzboxAnswerbotNotRegistered": "Anrufbeantworter nicht verbunden",
+  "@fritzboxAnswerbotNotRegistered": {
+    "description": "Answer bot enabled but SIP registration not successful",
+    "x-translated": "9c95e851"
+  },
+  "fritzboxAnswerbotEnabling": "Aktiviere Anrufbeantworter...",
+  "@fritzboxAnswerbotEnabling": {
+    "description": "Progress message while enabling answerbot and waiting for SIP registration",
+    "x-translated": "ae36b8f6"
+  },
+  "fritzboxAnswerbotDescription": "SPAM-Anrufe werden automatisch vom PhoneBlock-Anrufbeantworter beantwortet.",
+  "@fritzboxAnswerbotDescription": {
+    "description": "Answer bot active description",
+    "x-translated": "67350f6"
+  },
+  "fritzboxEnableAnswerbot": "Anrufbeantworter aktivieren",
+  "@fritzboxEnableAnswerbot": {
+    "description": "Enable answer bot button",
+    "x-translated": "e177e62f"
+  },
+  "fritzboxEnableAnswerbotDescription": "SPAM-Anrufe automatisch vom PhoneBlock-Anrufbeantworter beantworten lassen",
+  "@fritzboxEnableAnswerbotDescription": {
+    "description": "Enable answer bot description",
+    "x-translated": "b508b9a0"
+  },
+  "fritzboxDisableAnswerbot": "Anrufbeantworter entfernen",
+  "@fritzboxDisableAnswerbot": {
+    "description": "Remove answer bot button",
+    "x-translated": "ac12258d"
+  },
+  "fritzboxDisableAnswerbotTitle": "Anrufbeantworter entfernen?",
+  "@fritzboxDisableAnswerbotTitle": {
+    "description": "Remove answer bot confirmation title",
+    "x-translated": "f7c12f08"
+  },
+  "fritzboxDisableAnswerbotMessage": "Der PhoneBlock-Anrufbeantworter wird von der Fritz!Box entfernt und auf dem Server deaktiviert.",
+  "@fritzboxDisableAnswerbotMessage": {
+    "description": "Remove answer bot confirmation message",
+    "x-translated": "2c8e4c4"
+  },
+  "fritzboxAnswerbotEnabled": "Anrufbeantworter aktiviert",
+  "@fritzboxAnswerbotEnabled": {
+    "description": "Answer bot enabled success message",
+    "x-translated": "1ca467f1"
+  },
+  "fritzboxAnswerbotDisabled": "Anrufbeantworter deaktiviert",
+  "@fritzboxAnswerbotDisabled": {
+    "description": "Answer bot disabled success message",
+    "x-translated": "3406fd1d"
+  },
+  "fritzboxAnswerbotSetupFailed": "Anrufbeantworter konnte nicht eingerichtet werden.",
+  "@fritzboxAnswerbotSetupFailed": {
+    "description": "Answer bot setup failed error message",
+    "x-translated": "6b477928"
+  },
+  "fritzboxAnswerbotStepCreating": "Erstelle Anrufbeantworter...",
+  "@fritzboxAnswerbotStepCreating": {
+    "description": "Progress step: creating answer bot on server",
+    "x-translated": "8a82d32f"
+  },
+  "fritzboxAnswerbotStepDetecting": "Prüfe externen Zugang...",
+  "@fritzboxAnswerbotStepDetecting": {
+    "description": "Progress step: detecting external access",
+    "x-translated": "2288bb77"
+  },
+  "fritzboxAnswerbotStepDynDns": "Konfiguriere DynDNS...",
+  "@fritzboxAnswerbotStepDynDns": {
+    "description": "Progress step: configuring DynDNS",
+    "x-translated": "79369b05"
+  },
+  "fritzboxAnswerbotStepWaitingDynDns": "Warte auf DynDNS-Registrierung...",
+  "@fritzboxAnswerbotStepWaitingDynDns": {
+    "description": "Progress step: waiting for DynDNS",
+    "x-translated": "230e16f0"
+  },
+  "fritzboxAnswerbotStepSip": "Registriere SIP-Gerät...",
+  "@fritzboxAnswerbotStepSip": {
+    "description": "Progress step: registering SIP device",
+    "x-translated": "4940b42"
+  },
+  "fritzboxAnswerbotStepInternetAccess": "Aktiviere Internetzugriff...",
+  "@fritzboxAnswerbotStepInternetAccess": {
+    "description": "Progress step: enabling internet access for the SIP device",
+    "x-translated": "95b14136"
+  },
+  "fritzboxAnswerbotStepEnabling": "Aktiviere Anrufbeantworter...",
+  "@fritzboxAnswerbotStepEnabling": {
+    "description": "Progress step: enabling answer bot",
+    "x-translated": "ae36b8f6"
+  },
+  "fritzboxAnswerbotStepWaiting": "Warte auf Registrierung...",
+  "@fritzboxAnswerbotStepWaiting": {
+    "description": "Progress step: waiting for SIP registration",
+    "x-translated": "6509225"
+  },
+  "fritzboxAnswerbotSetupTitle": "Anrufbeantworter einrichten",
+  "@fritzboxAnswerbotSetupTitle": {
+    "description": "Title for the answer bot setup screen",
+    "x-translated": "1f8784"
+  },
+  "fritzboxAnswerbotSetupSuccess": "Der Anrufbeantworter wurde erfolgreich eingerichtet und ist jetzt aktiv.",
+  "@fritzboxAnswerbotSetupSuccess": {
+    "description": "Success message after answer bot setup completes",
+    "x-translated": "a08d7556"
+  },
+  "fritzboxAnswerbotSetupErrorDetail": "Fehler: {error}",
+  "@fritzboxAnswerbotSetupErrorDetail": {
+    "description": "Error detail shown for a failed setup step",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "x-translated": "5b16793b"
+  },
+  "fritzboxAnswerbotStepSecondFactor": "Bitte bestätigen Sie den Zugang an Ihrer Fritz!Box...",
+  "@fritzboxAnswerbotStepSecondFactor": {
+    "description": "Progress step: waiting for second factor authentication on Fritz!Box",
+    "x-translated": "de7d8e34"
+  },
+  "fritzboxSecondFactorButton": "Drücken Sie eine beliebige Taste an der Fritz!Box",
+  "@fritzboxSecondFactorButton": {
+    "description": "2FA method: press any button on the Fritz!Box device",
+    "x-translated": "df2421e9"
+  },
+  "fritzboxSecondFactorDtmf": "Oder wählen Sie {code} an einem angeschlossenen Telefon",
+  "@fritzboxSecondFactorDtmf": {
+    "description": "2FA method: dial DTMF code on a connected phone",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    },
+    "x-translated": "d7f061cc"
+  },
+  "fritzboxAnswerbotSettings": "Answerbot-Einstellungen",
+  "@fritzboxAnswerbotSettings": {
+    "description": "Answerbot settings link in Fritz!Box settings",
+    "x-translated": "7e6bae79"
+  },
+  "wildcardRulesHeader": "Wildcard-Regeln",
+  "@wildcardRulesHeader": {
+    "description": "Section header for wildcard blocking rules in the blocklist view",
+    "x-translated": "176bd109"
+  },
+  "blockedNumbersHeader": "Gesperrte Nummern",
+  "@blockedNumbersHeader": {
+    "description": "Section header for individually blocked numbers in the blocklist view",
+    "x-translated": "7984f5dc"
+  },
+  "addNumber": "Nummer hinzufügen",
+  "@addNumber": {
+    "description": "Title for the add-number dialog",
+    "x-translated": "185d754a"
+  },
+  "phoneNumberLabel": "Telefonnummer",
+  "@phoneNumberLabel": {
+    "description": "Label for phone number input field",
+    "x-translated": "ca834ffd"
+  },
+  "wildcardToggle": "Nummernbereich sperren",
+  "@wildcardToggle": {
+    "description": "Label for the wildcard toggle switch",
+    "x-translated": "471bcac0"
+  },
+  "wildcardHint": "Sperrt alle Nummern, die mit diesem Präfix beginnen",
+  "@wildcardHint": {
+    "description": "Help text shown when wildcard toggle is on",
+    "x-translated": "4d2e0f60"
+  },
+  "wildcardTooShort": "Präfix muss mindestens eine Landesvorwahl enthalten (z.B. +43)",
+  "@wildcardTooShort": {
+    "description": "Validation error when wildcard prefix is too short",
+    "x-translated": "ba512a4a"
+  },
+  "wildcardInvalidFormat": "Ungültiges Nummernformat. Bitte internationale Vorwahl verwenden (z.B. +43 oder 0043).",
+  "@wildcardInvalidFormat": {
+    "description": "Validation error when wildcard prefix has invalid format",
+    "x-translated": "4f630ec2"
+  },
+  "wildcardDuplicate": "Dieser Nummernbereich ist bereits gesperrt.",
+  "@wildcardDuplicate": {
+    "description": "Error when wildcard prefix already exists",
+    "x-translated": "e4aa1f1b"
+  },
+  "wildcardAdded": "Nummernbereich gesperrt",
+  "@wildcardAdded": {
+    "description": "Success message when wildcard rule was added",
+    "x-translated": "4ec13a02"
+  },
+  "wildcardRemoved": "Wildcard-Regel entfernt",
+  "@wildcardRemoved": {
+    "description": "Success message when wildcard rule was removed",
+    "x-translated": "e3a2bc73"
+  },
+  "confirmRemoveWildcard": "Wildcard-Regel {prefix}* wirklich entfernen?",
+  "@confirmRemoveWildcard": {
+    "description": "Confirmation dialog text for removing a wildcard rule",
+    "placeholders": {
+      "prefix": {
+        "type": "String"
+      }
+    },
+    "x-translated": "b10a696c"
+  },
+  "numberAdded": "Nummer zur Blacklist hinzugefügt",
+  "@numberAdded": {
+    "description": "Success message when exact number was added to blocklist",
+    "x-translated": "bd5bcb70"
+  },
+  "addCommentWildcard": "Kommentar hinzufügen (Optional)",
+  "@addCommentWildcard": {
+    "description": "Title for the comment dialog when adding a wildcard rule",
+    "x-translated": "fde75a7"
+  },
+  "commentHintWildcard": "Warum sperren Sie diesen Nummernbereich?",
+  "@commentHintWildcard": {
+    "description": "Hint text for the comment field in wildcard dialog",
+    "x-translated": "8b58a80f"
+  },
+  "next": "Weiter",
+  "@next": {
+    "description": "Button label to proceed to next step in a dialog",
+    "x-translated": "42cc9626"
+  },
+  "add": "Hinzufügen",
+  "@add": {
+    "description": "Button label to add/submit an entry",
+    "x-translated": "e53bcf68"
+  },
+  "wildcardBlocked": "Wildcard-Regel",
+  "@wildcardBlocked": {
+    "description": "Rating label shown for calls blocked by a wildcard rule",
+    "x-translated": "d3053ad6"
+  },
+  "matchedWildcardFilter": "Filter: {prefix}",
+  "@matchedWildcardFilter": {
+    "description": "Label shown for calls blocked by a wildcard filter, with the matched prefix",
+    "placeholders": {
+      "prefix": {
+        "type": "String",
+        "example": "+4930*"
+      }
+    },
+    "x-translated": "89141bc"
+  },
+  "blocklistCache": "Blocklist-Cache",
+  "@blocklistCache": {
+    "description": "Blocklist cache section header in settings",
+    "x-translated": "ea4963bc"
+  },
+  "blocklistCachedEntries": "{count} Nummern",
+  "@blocklistCachedEntries": {
+    "description": "Number of cached blocklist entries",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "x-translated": "711da254"
+  },
+  "blocklistLastSync": "Letzte Synchronisierung",
+  "@blocklistLastSync": {
+    "description": "Label for last sync time",
+    "x-translated": "ee34a570"
+  },
+  "blocklistLastSyncNever": "Nie",
+  "@blocklistLastSyncNever": {
+    "description": "Shown when blocklist has never been synced",
+    "x-translated": "ca23ce1"
+  },
+  "blocklistLastSyncAgo": "vor {timeAgo}",
+  "@blocklistLastSyncAgo": {
+    "description": "Relative time since last blocklist sync",
+    "placeholders": {
+      "timeAgo": {
+        "type": "String"
+      }
+    },
+    "x-translated": "a52b49b9"
+  },
+  "blocklistVersion": "Version",
+  "@blocklistVersion": {
+    "description": "Label for blocklist version number",
+    "x-translated": "70a1ea5f"
+  },
+  "blocklistSyncNow": "Jetzt synchronisieren",
+  "@blocklistSyncNow": {
+    "description": "Button to trigger manual blocklist sync",
+    "x-translated": "72f38e94"
+  },
+  "blocklistSyncing": "Synchronisiere...",
+  "@blocklistSyncing": {
+    "description": "Shown while blocklist sync is in progress",
+    "x-translated": "e3edb1b2"
+  },
+  "blocklistSyncSuccess": "Blocklist-Synchronisierung erfolgreich",
+  "@blocklistSyncSuccess": {
+    "description": "Snackbar message after successful manual sync",
+    "x-translated": "1917bcf6"
+  },
+  "blocklistSyncFailed": "Blocklist-Synchronisierung fehlgeschlagen",
+  "@blocklistSyncFailed": {
+    "description": "Snackbar message after failed manual sync",
+    "x-translated": "f21d616f"
   }
 }

@@ -780,9 +780,13 @@ class Blocklist extends _JsonObject {
 	///  Numbers in the blocklist.
 	List<BlockListEntry> numbers;
 
+	///  Current version of the blocklist for incremental synchronization.
+	int version;
+
 	/// Creates a Blocklist.
 	Blocklist({
-			this.numbers = const [], 
+			this.numbers = const [],
+			this.version = 0,
 	});
 
 	/// Parses a Blocklist from a string source.
@@ -816,6 +820,10 @@ class Blocklist extends _JsonObject {
 				}
 				break;
 			}
+			case "version": {
+				version = json.expectInt();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -830,6 +838,9 @@ class Blocklist extends _JsonObject {
 			_element.writeContent(json);
 		}
 		json.endArray();
+
+		json.addKey("version");
+		json.addNumber(version);
 	}
 
 }
@@ -1178,11 +1189,15 @@ class BlockListEntry extends _JsonObject {
 	///  The rating for the requested phone number.
 	Rating rating;
 
+	///  Timestamp (millis since epoch) of the last activity for this number.
+	int lastActivity;
+
 	/// Creates a BlockListEntry.
 	BlockListEntry({
-			this.phone = "", 
-			this.votes = 0, 
-			this.rating = Rating.aLegitimate, 
+			this.phone = "",
+			this.votes = 0,
+			this.rating = Rating.aLegitimate,
+			this.lastActivity = 0,
 	});
 
 	/// Parses a BlockListEntry from a string source.
@@ -1215,6 +1230,10 @@ class BlockListEntry extends _JsonObject {
 				rating = readRating(json);
 				break;
 			}
+			case "lastActivity": {
+				lastActivity = json.expectInt();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -1231,6 +1250,9 @@ class BlockListEntry extends _JsonObject {
 
 		json.addKey("rating");
 		writeRating(json, rating);
+
+		json.addKey("lastActivity");
+		json.addNumber(lastActivity);
 	}
 
 }

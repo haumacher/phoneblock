@@ -155,6 +155,11 @@ public class MainActivity extends FlutterActivity {
         super.onDestroy();
     }
 
+    /** Convenience overload without matchedWildcard parameter. */
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location) {
+        reportScreenedCall(context, phoneNumber, wasBlocked, votes, votesWildcard, rating, label, location, null);
+    }
+
     /**
      * Reports a screened call result to Flutter.
      * Called by CallChecker when a call is screened.
@@ -171,8 +176,9 @@ public class MainActivity extends FlutterActivity {
      * @param rating The rating/category of the call (e.g., "C_PING", "E_ADVERTISING", null for legitimate)
      * @param label Formatted phone number for display (e.g., "(DE) 030 12345678"), may be null
      * @param location City or region where the call originated (e.g., "Berlin"), may be null
+     * @param matchedWildcard The wildcard prefix that matched (e.g., "+4930"), null if not wildcard-blocked
      */
-    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location, String matchedWildcard) {
         long timestamp = System.currentTimeMillis();
 
         // Update call counters
@@ -201,6 +207,9 @@ public class MainActivity extends FlutterActivity {
             if (location != null) {
                 data.put("location", location);
             }
+            if (matchedWildcard != null) {
+                data.put("matchedWildcard", matchedWildcard);
+            }
 
             _instance._channel.invokeMethod("onCallScreened", data);
         } else {
@@ -227,6 +236,9 @@ public class MainActivity extends FlutterActivity {
                 }
                 if (location != null) {
                     callJson.put("location", location);
+                }
+                if (matchedWildcard != null) {
+                    callJson.put("matchedWildcard", matchedWildcard);
                 }
 
                 // Add to array
@@ -353,6 +365,27 @@ public class MainActivity extends FlutterActivity {
                 incrementSuspiciousCallsCount(this);
                 result.success(null);
                 break;
+
+            case "normalizePhoneNumber":
+                String rawNumber = methodCall.argument("phoneNumber");
+                String countryCode = methodCall.argument("countryCode");
+                if (countryCode == null || countryCode.isEmpty()) {
+                    countryCode = java.util.Locale.getDefault().getCountry();
+                }
+                String normalized = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryCode);
+                result.success(normalized);
+                break;
+
+            case "setWildcardPrefixes": {
+                java.util.List<String> prefixes = methodCall.argument("prefixes");
+                setWildcardPrefixes(prefixes);
+                result.success(null);
+                break;
+            }
+            case "getWildcardPrefixes": {
+                result.success(getWildcardPrefixes());
+                break;
+            }
         }
     }
 
@@ -558,6 +591,33 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(context);
         int current = prefs.getInt("suspicious_calls_count", 0);
         prefs.edit().putInt("suspicious_calls_count", current + 1).apply();
+    }
+
+    /**
+     * Stores wildcard prefixes in SharedPreferences for CallChecker access.
+     */
+    private void setWildcardPrefixes(java.util.List<String> prefixes) {
+        SharedPreferences prefs = getPreferences(this);
+        JSONArray jsonArray = new JSONArray(prefixes);
+        prefs.edit().putString("wildcard_prefixes", jsonArray.toString()).apply();
+    }
+
+    /**
+     * Retrieves wildcard prefixes from SharedPreferences.
+     */
+    private java.util.List<String> getWildcardPrefixes() {
+        SharedPreferences prefs = getPreferences(this);
+        String json = prefs.getString("wildcard_prefixes", "[]");
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            java.util.List<String> result = new java.util.ArrayList<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                result.add(jsonArray.getString(i));
+            }
+            return result;
+        } catch (JSONException e) {
+            return new java.util.ArrayList<>();
+        }
     }
 
     public static SharedPreferences getPreferences(Context context) {

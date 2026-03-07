@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../api/base_path.dart'
   if (dart.library.html) '../api/base_path_web.dart';
-import '../api/Api.dart';
 import './AnswerBotView.dart';
 import '../widgets/ErrorDialog.dart';
 import '../widgets/InfoField.dart';
@@ -54,7 +53,6 @@ class BotSetupState extends State<BotSetupForm> {
         return enableSip(context);
       case SetupState.finish:
         return sipFinish(context);
-      default: return showError(context);
     }
   }
 
@@ -216,7 +214,7 @@ class BotSetupState extends State<BotSetupForm> {
                     "$basePath/api/dynip?user=<username>&passwd=$pwdPlaceholder&ip4=<ipaddr>&ip6=<ip6addr>",
                     key: const Key("dynip.updateurl"),
                     help: context.answerbotL10n.updateUrlHelp2),
-                InfoField(context.answerbotL10n.domainname, "${dynDns!.dyndnsDomain}",
+                InfoField(context.answerbotL10n.domainname, dynDns!.dyndnsDomain,
                     key: const Key("dynip.domainname"),
                     help: context.answerbotL10n.domainNameHelp2),
                 InfoField(context.answerbotL10n.username, dynDns!.dyndnsUser,
@@ -365,6 +363,7 @@ class BotSetupState extends State<BotSetupForm> {
                                   context.answerbotL10n.registrationFailed(errorMessage));
                             } else {
                               await Future.delayed(Duration(milliseconds: sleep));
+                              if (!context.mounted) return;
 
                               pd.update(value: n, msg: context.answerbotL10n.retryingMessage(errorMessage));
                             }
@@ -423,7 +422,7 @@ class BotSetupState extends State<BotSetupForm> {
     );
   }
 
-  hintText(String hint, {String? helpUrl}) {
+  Widget hintText(String hint, {String? helpUrl}) {
     return             Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child:Row(

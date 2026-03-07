@@ -30,6 +30,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accepted => '已接受';
 
   @override
+  String get notBlocked => '未封锁';
+
+  @override
+  String get missed => '错过';
+
+  @override
   String votes(int count) {
     return '$count票数';
   }
@@ -100,6 +106,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sourceCodeLicense => '开放源代码（GPL-3.0）';
+
+  @override
+  String get reportProblem => '报告问题';
+
+  @override
+  String get reportProblemSubtitle => 'GitHub 问题';
 
   @override
   String get aboutDescription => 'PhoneBlock 是一个开放源代码项目，没有跟踪和广告。该服务由捐款资助。';
@@ -514,4 +526,425 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => '可疑电话';
+
+  @override
+  String get fritzboxTitle => '弗里茨盒子';
+
+  @override
+  String get fritzboxConnected => '已连接';
+
+  @override
+  String get fritzboxConnectedNotProtected => '已连接，未受保护';
+
+  @override
+  String get fritzboxOffline => '不详';
+
+  @override
+  String get fritzboxError => '连接错误';
+
+  @override
+  String get fritzboxNotConfiguredShort => '未设置';
+
+  @override
+  String get fritzboxNotConfigured => '无 Fritz！Box 设置';
+
+  @override
+  String get fritzboxNotConfiguredDescription => '连接 Fritz！Box，查看座机来电。';
+
+  @override
+  String get fritzboxConnect => '连接 Fritz！Box';
+
+  @override
+  String get fritzboxDisconnect => '断开 Fritz！Box';
+
+  @override
+  String get fritzboxDisconnectTitle => '断开弗里茨！盒子？';
+
+  @override
+  String get fritzboxDisconnectMessage => '保存的通话和访问数据将被删除。';
+
+  @override
+  String get fritzboxSyncNow => '立即同步';
+
+  @override
+  String get fritzboxSyncDescription => '从 Fritz 读取通话清单！';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
+  String get fritzboxSyncError => '同步过程中出现错误';
+
+  @override
+  String get fritzboxVersion => 'FRITZ！OS 版本';
+
+  @override
+  String get fritzboxHost => '地址';
+
+  @override
+  String get fritzboxCachedCalls => '保存的通话';
+
+  @override
+  String get fritzboxLastSync => '上次同步';
+
+  @override
+  String get fritzboxJustNow => '现在';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    return '<x1>计数</x1';
+  }
+
+  @override
+  String get fritzboxWizardTitle => '连接 Fritz！Box';
+
+  @override
+  String get fritzboxStepDetection => '查找 Fritz！Box';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => '网络自动搜索';
+
+  @override
+  String get fritzboxStepLogin => '登录';
+
+  @override
+  String get fritzboxStepLoginSubtitle => '输入访问数据';
+
+  @override
+  String get fritzboxSearching => '搜索 Fritz!Box...';
+
+  @override
+  String get fritzboxNotFound => '未找到 Fritz!Box';
+
+  @override
+  String get fritzboxNotFoundDescription => '无法自动找到 Fritz！Box。请手动输入地址。';
+
+  @override
+  String get fritzboxHostLabel => '弗里茨信箱地址';
+
+  @override
+  String get fritzboxRetrySearch => '再次搜索';
+
+  @override
+  String get fritzboxManualConnect => '连接';
+
+  @override
+  String get fritzboxLoginDescription =>
+      '输入您的 Fritz!Box 访问数据。您可以在 Fritz!Box 用户界面的系统 > Fritz!Box 用户下找到它们。';
+
+  @override
+  String get fritzboxShowUsername => '输入用户名';
+
+  @override
+  String get fritzboxShowUsernameHint => '通常使用默认用户';
+
+  @override
+  String get fritzboxUsernameLabel => '用户名';
+
+  @override
+  String get fritzboxPasswordLabel => '密码';
+
+  @override
+  String get fritzboxCredentialsNote => '您的访问数据会安全地存储在您的设备上。';
+
+  @override
+  String get fritzboxTestAndSave => '测试和保存';
+
+  @override
+  String get fritzboxConnectionFailed => '连接失败。请检查访问数据。';
+
+  @override
+  String get fritzboxFillAllFields => '请填写所有栏目。';
+
+  @override
+  String get fritzboxOfflineBanner => '弗里茨！盒子无法接通 - 显示已保存的呼叫';
+
+  @override
+  String get sourceMobile => '移动电话';
+
+  @override
+  String get sourceFritzbox => '弗里茨盒子';
+
+  @override
+  String get fritzboxStepBlocklist => '垃圾邮件防护';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => '设置拦截列表';
+
+  @override
+  String get fritzboxBlocklistDescription => '选择如何保护您的 Fritz!';
+
+  @override
+  String get fritzboxCardDavTitle => 'CardDAV 封锁列表';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'Fritz！Box 可直接与 PhoneBlock 同步拦截列表。建议使用 FRITZ!OS 7.20 以上版本。';
+
+  @override
+  String get fritzboxSkipBlocklist => '稍后设置';
+
+  @override
+  String get fritzboxSkipBlocklistDescription => '您可以稍后在设置中激活垃圾邮件保护功能。';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'CardDAV 需要 FRITZ!OS 7.20 或更新版本。您的 Fritz！Box 使用的是旧版本。';
+
+  @override
+  String get fritzboxFinishSetup => '完成设置';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn => '请先登录 PhoneBlock。';
+
+  @override
+  String get fritzboxCannotGetUsername => '无法检索 PhoneBlock 用户名。';
+
+  @override
+  String get fritzboxBlocklistConfigFailed => '无法设置拦截列表。';
+
+  @override
+  String get fritzboxCardDavStatus => 'CardDAV 状态';
+
+  @override
+  String get fritzboxCardDavStatusSynced => '同步';
+
+  @override
+  String get fritzboxCardDavStatusPending => '待同步';
+
+  @override
+  String get fritzboxCardDavStatusError => '同步错误';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => '已停用';
+
+  @override
+  String get fritzboxCardDavNote => 'Fritz!Box 每天午夜同步电话簿一次。';
+
+  @override
+  String get fritzboxBlocklistMode => '垃圾邮件保护模式';
+
+  @override
+  String get fritzboxBlocklistModeCardDav => 'CardDAV（自动同步）';
+
+  @override
+  String get fritzboxBlocklistModeNone => '未启动';
+
+  @override
+  String get fritzboxEnableCardDav => '激活 CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription => '直接与 Fritz!Box 同步垃圾邮件拦截列表';
+
+  @override
+  String get fritzboxCardDavEnabled => '已激活 CardDAV 封锁列表';
+
+  @override
+  String get fritzboxDisableCardDav => '删除区块列表';
+
+  @override
+  String get fritzboxDisableCardDavTitle => '删除拦截列表？';
+
+  @override
+  String get fritzboxDisableCardDavMessage => '从 Fritz 中删除拦截列表！';
+
+  @override
+  String get fritzboxDisable => '移除';
+
+  @override
+  String get fritzboxCardDavDisabled => '移除拦截名单';
+
+  @override
+  String get fritzboxAnswerbotTitle => '答录机';
+
+  @override
+  String get fritzboxAnswerbotActive => '应答机已激活';
+
+  @override
+  String get fritzboxAnswerbotPaused => '答录机暂停';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered => '答录机未连接';
+
+  @override
+  String get fritzboxAnswerbotEnabling => '激活答录机...';
+
+  @override
+  String get fritzboxAnswerbotDescription => '垃圾电话由 PhoneBlock 应答机自动接听。';
+
+  @override
+  String get fritzboxEnableAnswerbot => '激活答录机';
+
+  @override
+  String get fritzboxEnableAnswerbotDescription => '由 PhoneBlock 应答机自动应答垃圾电话';
+
+  @override
+  String get fritzboxDisableAnswerbot => '移除答录机';
+
+  @override
+  String get fritzboxDisableAnswerbotTitle => '移除答录机？';
+
+  @override
+  String get fritzboxDisableAnswerbotMessage =>
+      '从 Fritz!Box 中移除 PhoneBlock 应答机，并在服务器上停用。';
+
+  @override
+  String get fritzboxAnswerbotEnabled => '已启动应答机';
+
+  @override
+  String get fritzboxAnswerbotDisabled => '应答机已停用';
+
+  @override
+  String get fritzboxAnswerbotSetupFailed => '无法设置应答机。';
+
+  @override
+  String get fritzboxAnswerbotStepCreating => '创建应答机...';
+
+  @override
+  String get fritzboxAnswerbotStepDetecting => '检查外部接入...';
+
+  @override
+  String get fritzboxAnswerbotStepDynDns => '配置 DynDNS...';
+
+  @override
+  String get fritzboxAnswerbotStepWaitingDynDns => '等待 DynDNS 注册...';
+
+  @override
+  String get fritzboxAnswerbotStepSip => '注册 SIP 设备...';
+
+  @override
+  String get fritzboxAnswerbotStepInternetAccess => '激活互联网接入...';
+
+  @override
+  String get fritzboxAnswerbotStepEnabling => '激活答录机...';
+
+  @override
+  String get fritzboxAnswerbotStepWaiting => '等待注册...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => '设置答录机';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess => '答录机已成功设置，现在处于激活状态。';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return '错误：<x1>错误</x1';
+  }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor => '请确认您的 Fritz!Box...';
+
+  @override
+  String get fritzboxSecondFactorButton => '按下 Fritz!Box 上的任意按钮';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return '或在已连接的电话上拨打 <x1> 代码</x1';
+  }
+
+  @override
+  String get fritzboxAnswerbotSettings => '应答机器人设置';
+
+  @override
+  String get wildcardRulesHeader => '通配符规则';
+
+  @override
+  String get blockedNumbersHeader => '被屏蔽的号码';
+
+  @override
+  String get addNumber => '添加编号';
+
+  @override
+  String get phoneNumberLabel => '电话号码';
+
+  @override
+  String get wildcardToggle => '区块编号范围';
+
+  @override
+  String get wildcardHint => '屏蔽以此前缀开头的所有号码';
+
+  @override
+  String get wildcardTooShort => '前缀必须至少包含一个国家代码（如 +43）';
+
+  @override
+  String get wildcardInvalidFormat => '号码格式无效。请使用国际拨号代码（如 +43 或 0043）。';
+
+  @override
+  String get wildcardDuplicate => '此号码范围已被封锁。';
+
+  @override
+  String get wildcardAdded => '被封锁的号码范围';
+
+  @override
+  String get wildcardRemoved => '删除通配符规则';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return '真的要删除通配符规则 $prefix* 吗？';
+  }
+
+  @override
+  String get numberAdded => '加入黑名单的号码';
+
+  @override
+  String get addCommentWildcard => '添加评论（可选）';
+
+  @override
+  String get commentHintWildcard => '为什么要屏蔽此号码范围？';
+
+  @override
+  String get next => '更多';
+
+  @override
+  String get add => '添加';
+
+  @override
+  String get wildcardBlocked => '通配符规则';
+
+  @override
+  String matchedWildcardFilter(String prefix) {
+    return '过滤器：<x1>前缀</x1';
+  }
+
+  @override
+  String get blocklistCache => '拦截列表缓存';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return '$count数字';
+  }
+
+  @override
+  String get blocklistLastSync => '上次同步';
+
+  @override
+  String get blocklistLastSyncNever => '从不';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return '在 $timeAgo 之前';
+  }
+
+  @override
+  String get blocklistVersion => '版本';
+
+  @override
+  String get blocklistSyncNow => '立即同步';
+
+  @override
+  String get blocklistSyncing => '同步...';
+
+  @override
+  String get blocklistSyncSuccess => '拦截列表同步成功';
+
+  @override
+  String get blocklistSyncFailed => '拦截列表同步失败';
 }

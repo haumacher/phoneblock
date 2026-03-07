@@ -38,8 +38,11 @@ public interface CustomerOptions extends RegistrationOptions, UserOptions {
 	 */
 	boolean getWildcard();
 	
-	/** 
+	/**
 	 * Whether to accept anonymous calls.
 	 */
 	boolean getAcceptAnonymous();
+
+	/** Whether to accept calls from local phones (numbers starting with *). */
+	boolean getAcceptLocal();
 }

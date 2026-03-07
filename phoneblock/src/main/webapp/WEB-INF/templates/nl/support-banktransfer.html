@@ -19,7 +19,13 @@
 			<li><span data-tx="t0015:1b5215fe">BIC:</span> <code dir="ltr" id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" data-tx="t0011:3f7efe41" href="#" id="bic_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></li>
 			<li><span data-tx="t0016:8b109041">Beoogd gebruik:</span> <code dir="ltr" id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" data-tx="t0012:3f7efe41" href="#" id="purpose_" title="Kopiëren naar het klembord."><i class="fa-solid fa-copy"></i></a></li>
 		</ul>
-		
+
+		<p data-tx="t0017:927b3c78">Scan de QR-code met je bankieren-app:</p>
+
+		<figure class="image" style="max-width: 280px;">
+			<img alt="EPC QR-code voor bankoverschrijving" data-tx="t0018:abdc859f" th:src="@{/support-banktransfer/qr.png}"/>
+		</figure>
+
 		<p data-tx="t0008:b6f47ba0">Bedankt voor uw bijdrage aan het gebruik van PhoneBlock!</p>
 	</div>
 </section>

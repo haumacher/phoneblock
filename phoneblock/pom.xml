@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.haumacher</groupId>
 		<artifactId>phoneblock-parent</artifactId>
-		<version>1.9.3-SNAPSHOT</version>
+		<version>1.9.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>phoneblock</artifactId>
@@ -211,6 +211,12 @@
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>1.18.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.nayuki</groupId>
+			<artifactId>qrcodegen</artifactId>
+			<version>1.8.0</version>
 		</dependency>
 
 		<dependency>

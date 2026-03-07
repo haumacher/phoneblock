@@ -1,5 +1,43 @@
 # PhoneBlock Release Notes
 
+## Version 1.9.3 (2026-03-07)
+
+**Key Features:**
+- Prefix hash lookup for range-based spam detection in /api/check (#254)
+- Personal block/whitelist resolution by SHA1 hash in spam check API
+- Per-bot "Accept Local Calls" setting for answer bots (#131)
+- Last-activity date tracking for blocklist entries (#246)
+- Privacy protection: hide details for positively-rated numbers with few votes (#248)
+- EPC QR code on bank transfer donation page for easy payment (#261)
+
+**Improvements:**
+- Simplified vote normalization to single minimum threshold with published votes
+- Link "Fehler melden" to issues overview instead of new issue form
+
+**Bug Fixes:**
+- Fixed missing incremental update for archived SPAM reports (#250)
+- Fixed umlaut encoding in API requests (#247)
+
+## Version 1.9.2 (2026-02-01)
+
+**Improvements:**
+- Handle malformed auth tokens gracefully with better error logging
+- Skip credentials page for mobile OAuth flow to match email flow
+- Disable URL-based session tracking to prevent jsessionid in URLs
+- Centralize language/locale resolution with default fallback
+
+**Bug Fixes:**
+- Fixed password not shown during account setup
+- Fixed OGNL exception when navigating directly to /show-api-key
+- Fixed location parameter loss in OAuth flow
+- Fixed appId parameter loss during mobile login flow
+- Preserved location when returning from failed captcha in mobile login
+
+## Version 1.9.1 (2026-01-31)
+
+**Bug Fixes:**
+- Fixed blocklist incremental sync with `since=0` returning zero-vote entries
+
 ## Version 1.9.0 (2026-01-31)
 
 **Key Features:**

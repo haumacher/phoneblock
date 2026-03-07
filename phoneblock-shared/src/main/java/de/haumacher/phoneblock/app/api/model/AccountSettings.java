@@ -15,8 +15,13 @@ public class AccountSettings extends AccountData {
 	/** Identifier for the {@link de.haumacher.phoneblock.app.api.model.AccountSettings} type in JSON format. */
 	public static final String ACCOUNT_SETTINGS__TYPE = "AccountSettings";
 
+	/** @see #getLogin() */
+	public static final String LOGIN__PROP = "login";
+
 	/** @see #getEmail() */
 	public static final String EMAIL__PROP = "email";
+
+	private String _login = null;
 
 	private String _email = null;
 
@@ -32,6 +37,34 @@ public class AccountSettings extends AccountData {
 	@Override
 	public TypeKind kind() {
 		return TypeKind.ACCOUNT_SETTINGS;
+	}
+
+	/**
+	 * The user's login name (used for CardDAV URL construction).
+	 */
+	public final String getLogin() {
+		return _login;
+	}
+
+	/**
+	 * @see #getLogin()
+	 */
+	public de.haumacher.phoneblock.app.api.model.AccountSettings setLogin(String value) {
+		internalSetLogin(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLogin()} without chain call utility. */
+	protected final void internalSetLogin(String value) {
+		_listener.beforeSet(this, LOGIN__PROP, value);
+		_login = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getLogin()} has a value.
+	 */
+	public final boolean hasLogin() {
+		return _login != null;
 	}
 
 	/**
@@ -87,6 +120,7 @@ public class AccountSettings extends AccountData {
 
 	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
 		java.util.Arrays.asList(
+			LOGIN__PROP, 
 			EMAIL__PROP));
 
 	@Override
@@ -97,6 +131,7 @@ public class AccountSettings extends AccountData {
 	@Override
 	public Object get(String field) {
 		switch (field) {
+			case LOGIN__PROP: return getLogin();
 			case EMAIL__PROP: return getEmail();
 			default: return super.get(field);
 		}
@@ -105,6 +140,7 @@ public class AccountSettings extends AccountData {
 	@Override
 	public void set(String field, Object value) {
 		switch (field) {
+			case LOGIN__PROP: internalSetLogin((String) value); break;
 			case EMAIL__PROP: internalSetEmail((String) value); break;
 			default: super.set(field, value); break;
 		}
@@ -120,6 +156,10 @@ public class AccountSettings extends AccountData {
 	@Override
 	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
 		super.writeFields(out);
+		if (hasLogin()) {
+			out.name(LOGIN__PROP);
+			out.value(getLogin());
+		}
 		if (hasEmail()) {
 			out.name(EMAIL__PROP);
 			out.value(getEmail());
@@ -129,6 +169,7 @@ public class AccountSettings extends AccountData {
 	@Override
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
+			case LOGIN__PROP: setLogin(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
@@ -136,6 +177,9 @@ public class AccountSettings extends AccountData {
 
 	/** XML element name representing a {@link de.haumacher.phoneblock.app.api.model.AccountSettings} type. */
 	public static final String ACCOUNT_SETTINGS__XML_ELEMENT = "account-settings";
+
+	/** XML attribute or element name of a {@link #getLogin} property. */
+	private static final String LOGIN__XML_ATTR = "login";
 
 	/** XML attribute or element name of a {@link #getEmail} property. */
 	private static final String EMAIL__XML_ATTR = "email";
@@ -149,6 +193,7 @@ public class AccountSettings extends AccountData {
 	@Override
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		super.writeAttributes(out);
+		out.writeAttribute(LOGIN__XML_ATTR, getLogin());
 		out.writeAttribute(EMAIL__XML_ATTR, getEmail());
 	}
 
@@ -169,6 +214,10 @@ public class AccountSettings extends AccountData {
 	@Override
 	protected void readFieldXmlAttribute(String name, String value) {
 		switch (name) {
+			case LOGIN__XML_ATTR: {
+				setLogin(value);
+				break;
+			}
 			case EMAIL__XML_ATTR: {
 				setEmail(value);
 				break;
@@ -182,6 +231,10 @@ public class AccountSettings extends AccountData {
 	@Override
 	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
 		switch (localName) {
+			case LOGIN__XML_ATTR: {
+				setLogin(in.getElementText());
+				break;
+			}
 			case EMAIL__XML_ATTR: {
 				setEmail(in.getElementText());
 				break;

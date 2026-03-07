@@ -1,0 +1,12 @@
+Version 1.2.1:
+* Local blocklist cache with background sync for faster call screening (#264)
+* Wildcard prefix blocking: block entire number ranges from the blocklist screen (#260)
+* Pull-to-refresh on the call list screen
+* Detect existing answerbot and DynDNS config during Fritz!Box setup
+* Hash-based API for privacy-preserving Fritz!Box call enrichment (#254)
+* Show matched wildcard prefix in call list and rating badge
+* Clear new-call markers when rating a call
+* Improved rating screen readability
+* Fix umlaut encoding in API requests (#247)
+* Fix drawer status display and call list overflow
+* Various bug fixes and UI improvements

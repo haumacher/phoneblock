@@ -57,10 +57,10 @@
       "newCalls": {
         "type": "int"
       },
-      "talkTimeSeconds": {
+      "callsAccepted": {
         "type": "int"
       },
-      "callsAccepted": {
+      "talkTimeSeconds": {
         "type": "int"
       }
     },
@@ -323,6 +323,14 @@
   "@blockNumberRangesHelp": {
     "description": "Block number ranges help text",
     "x-translated": "5ca7cabf"
+  },
+  "acceptLocalCalls": "Lokale Anrufe annehmen",
+  "@acceptLocalCalls": {
+    "description": "Accept local calls label"
+  },
+  "acceptLocalCallsHelp": "Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.",
+  "@acceptLocalCallsHelp": {
+    "description": "Accept local calls help text"
   },
   "preferIPv4": "IPv4 Kommunikation bevorzugen",
   "@preferIPv4": {

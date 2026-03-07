@@ -31,6 +31,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accepted => 'مقبولة';
 
   @override
+  String get notBlocked => 'غير محجوب';
+
+  @override
+  String get missed => 'فائتة';
+
+  @override
   String votes(int count) {
     return '$countالأصوات';
   }
@@ -103,6 +109,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sourceCodeLicense => 'مفتوح المصدر (GPL-3.0)';
+
+  @override
+  String get reportProblem => 'الإبلاغ عن مشكلة';
+
+  @override
+  String get reportProblemSubtitle => 'مشكلات GitHub';
 
   @override
   String get aboutDescription =>
@@ -561,4 +573,462 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get suspiciousCallsCount => 'المكالمات المشبوهة';
+
+  @override
+  String get fritzboxTitle => 'فريتز!بوكس';
+
+  @override
+  String get fritzboxConnected => 'متصل';
+
+  @override
+  String get fritzboxConnectedNotProtected => 'متصلة، غير محمية';
+
+  @override
+  String get fritzboxOffline => 'غير متوفر';
+
+  @override
+  String get fritzboxError => 'خطأ في الاتصال';
+
+  @override
+  String get fritzboxNotConfiguredShort => 'لم يتم إعداده';
+
+  @override
+  String get fritzboxNotConfigured => 'لا يوجد صندوق فريتز!';
+
+  @override
+  String get fritzboxNotConfiguredDescription =>
+      'قم بتوصيل جهاز Fritz!Box الخاص بك لمشاهدة المكالمات من خطك الأرضي.';
+
+  @override
+  String get fritzboxConnect => 'توصيل فريتز!بوكس';
+
+  @override
+  String get fritzboxDisconnect => 'قطع الاتصال فريتز!';
+
+  @override
+  String get fritzboxDisconnectTitle => 'افصل صندوق فريتز';
+
+  @override
+  String get fritzboxDisconnectMessage =>
+      'يتم حذف المكالمات المحفوظة وبيانات الوصول.';
+
+  @override
+  String get fritzboxSyncNow => 'المزامنة الآن';
+
+  @override
+  String get fritzboxSyncDescription => 'استرداد قائمة المكالمات من فريتز!';
+
+  @override
+  String fritzboxSyncComplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<x1> عدد المكالمات الجديدة المتزامنة',
+      one: 'تمت مزامنة 1 مكالمة جديدة',
+      zero: 'لا توجد مكالمات جديدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxSyncError => 'خطأ أثناء المزامنة';
+
+  @override
+  String get fritzboxVersion => 'إصدار FRITZ!OS';
+
+  @override
+  String get fritzboxHost => 'العنوان';
+
+  @override
+  String get fritzboxCachedCalls => 'المكالمات المحفوظة';
+
+  @override
+  String get fritzboxLastSync => 'آخر مزامنة';
+
+  @override
+  String get fritzboxJustNow => 'الآن فقط';
+
+  @override
+  String fritzboxMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count دقيقة',
+      one: 'منذ 1 دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String fritzboxHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countمنذ ساعات مضت',
+      one: 'منذ 1 ساعة مضت',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fritzboxWizardTitle => 'توصيل فريتز!بوكس';
+
+  @override
+  String get fritzboxStepDetection => 'ابحث عن فريتز!';
+
+  @override
+  String get fritzboxStepDetectionSubtitle => 'البحث التلقائي في الشبكة';
+
+  @override
+  String get fritzboxStepLogin => 'تسجيل الدخول';
+
+  @override
+  String get fritzboxStepLoginSubtitle => 'إدخال بيانات الوصول';
+
+  @override
+  String get fritzboxSearching => 'ابحث عن Fritz!Box!';
+
+  @override
+  String get fritzboxNotFound => 'فريتز! الصندوق غير موجود';
+
+  @override
+  String get fritzboxNotFoundDescription =>
+      'تعذر العثور على Fritz!Box تلقائياً. الرجاء إدخال العنوان يدوياً.';
+
+  @override
+  String get fritzboxHostLabel => 'عنوان صندوق فريتز';
+
+  @override
+  String get fritzboxRetrySearch => 'البحث مرة أخرى';
+
+  @override
+  String get fritzboxManualConnect => 'الاتصال';
+
+  @override
+  String get fritzboxLoginDescription =>
+      'أدخل بيانات وصولك إلى Fritz!Box. يمكنك العثور عليها في واجهة مستخدم Fritz!Box ضمن النظام > مستخدم Fritz!Box.';
+
+  @override
+  String get fritzboxShowUsername => 'أدخل اسم المستخدم';
+
+  @override
+  String get fritzboxShowUsernameHint => 'يتم استخدام المستخدم الافتراضي عادةً';
+
+  @override
+  String get fritzboxUsernameLabel => 'اسم المستخدم';
+
+  @override
+  String get fritzboxPasswordLabel => 'كلمة المرور';
+
+  @override
+  String get fritzboxCredentialsNote =>
+      'يتم تخزين بيانات الوصول الخاصة بك بشكل آمن على جهازك.';
+
+  @override
+  String get fritzboxTestAndSave => 'الاختبار والحفظ';
+
+  @override
+  String get fritzboxConnectionFailed =>
+      'فشل الاتصال. يرجى التحقق من بيانات الوصول.';
+
+  @override
+  String get fritzboxFillAllFields => 'يرجى ملء جميع الحقول.';
+
+  @override
+  String get fritzboxOfflineBanner =>
+      'لا يمكن الوصول إلى صندوق فريتز! - إظهار المكالمات المحفوظة';
+
+  @override
+  String get sourceMobile => 'الهاتف المحمول';
+
+  @override
+  String get sourceFritzbox => 'فريتز!بوكس';
+
+  @override
+  String get fritzboxStepBlocklist => 'الحماية من الرسائل غير المرغوب فيها';
+
+  @override
+  String get fritzboxStepBlocklistSubtitle => 'إعداد قائمة الحظر';
+
+  @override
+  String get fritzboxBlocklistDescription =>
+      'حدد كيفية حماية جهاز Fritz!Box الخاص بك من المكالمات غير المرغوب فيها.';
+
+  @override
+  String get fritzboxCardDavTitle => 'قائمة حظر CardDAV';
+
+  @override
+  String get fritzboxCardDavDescription =>
+      'يقوم Fritz!Box بمزامنة قائمة الحظر مباشرةً مع PhoneBlock. موصى به لـ FRITZ!OS 7.20+.';
+
+  @override
+  String get fritzboxSkipBlocklist => 'الإعداد لاحقاً';
+
+  @override
+  String get fritzboxSkipBlocklistDescription =>
+      'يمكنك تفعيل الحماية من الرسائل غير المرغوب فيها لاحقاً في الإعدادات.';
+
+  @override
+  String get fritzboxVersionTooOldForCardDav =>
+      'يتطلب CardDAV إصدار FRITZ!OS 7.20 أو أحدث. يحتوي Fritz!Box الخاص بك على إصدار أقدم.';
+
+  @override
+  String get fritzboxFinishSetup => 'إنهاء الإعداد النهائي';
+
+  @override
+  String get fritzboxPhoneBlockNotLoggedIn =>
+      'يرجى تسجيل الدخول إلى PhoneBlock أولاً.';
+
+  @override
+  String get fritzboxCannotGetUsername => 'تعذر استرداد اسم مستخدم PhoneBlock.';
+
+  @override
+  String get fritzboxBlocklistConfigFailed => 'تعذر إعداد قائمة الحظر.';
+
+  @override
+  String get fritzboxCardDavStatus => 'حالة CardDAV';
+
+  @override
+  String get fritzboxCardDavStatusSynced => 'متزامن';
+
+  @override
+  String get fritzboxCardDavStatusPending => 'المزامنة معلقة';
+
+  @override
+  String get fritzboxCardDavStatusError => 'خطأ في المزامنة';
+
+  @override
+  String get fritzboxCardDavStatusDisabled => 'معطلة';
+
+  @override
+  String get fritzboxCardDavNote =>
+      'يقوم Fritz!Box بمزامنة دفتر الهاتف مرة واحدة يومياً في منتصف الليل.';
+
+  @override
+  String get fritzboxBlocklistMode => 'وضع الحماية من الرسائل غير المرغوب فيها';
+
+  @override
+  String get fritzboxBlocklistModeCardDav => 'CardDAV (المزامنة التلقائية)';
+
+  @override
+  String get fritzboxBlocklistModeNone => 'غير مفعل';
+
+  @override
+  String get fritzboxEnableCardDav => 'تنشيط CardDAV';
+
+  @override
+  String get fritzboxEnableCardDavDescription =>
+      'مزامنة قائمة حظر الرسائل غير المرغوب فيها مباشرة مع Fritz!Box';
+
+  @override
+  String get fritzboxCardDavEnabled => 'تم تنشيط قائمة حظر CardDAV';
+
+  @override
+  String get fritzboxDisableCardDav => 'إزالة قائمة الحظر';
+
+  @override
+  String get fritzboxDisableCardDavTitle => 'إزالة قائمة الحظر؟';
+
+  @override
+  String get fritzboxDisableCardDavMessage => 'تمت إزالة قائمة الحظر من فريتز!';
+
+  @override
+  String get fritzboxDisable => 'إزالة';
+
+  @override
+  String get fritzboxCardDavDisabled => 'تمت إزالة قائمة الحظر';
+
+  @override
+  String get fritzboxAnswerbotTitle => 'جهاز الرد الآلي';
+
+  @override
+  String get fritzboxAnswerbotActive => 'جهاز الرد الآلي نشط';
+
+  @override
+  String get fritzboxAnswerbotPaused => 'تم إيقاف الرد الآلي مؤقتاً';
+
+  @override
+  String get fritzboxAnswerbotNotRegistered => 'جهاز الرد الآلي غير متصل';
+
+  @override
+  String get fritzboxAnswerbotEnabling => 'تفعيل جهاز الرد الآلي...';
+
+  @override
+  String get fritzboxAnswerbotDescription =>
+      'يتم الرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف.';
+
+  @override
+  String get fritzboxEnableAnswerbot => 'تنشيط جهاز الرد على المكالمات';
+
+  @override
+  String get fritzboxEnableAnswerbotDescription =>
+      'قم بالرد على مكالمات الرسائل الاقتحامية (SPAM) تلقائياً بواسطة جهاز الرد الآلي على الهاتف';
+
+  @override
+  String get fritzboxDisableAnswerbot => 'إزالة جهاز الرد على المكالمات';
+
+  @override
+  String get fritzboxDisableAnswerbotTitle => 'إزالة جهاز الرد الآلي؟';
+
+  @override
+  String get fritzboxDisableAnswerbotMessage =>
+      'تتم إزالة جهاز الرد الآلي PhoneBlock من Fritz!Box وإلغاء تنشيطه على الخادم.';
+
+  @override
+  String get fritzboxAnswerbotEnabled => 'تم تنشيط جهاز الرد الآلي';
+
+  @override
+  String get fritzboxAnswerbotDisabled => 'تم إلغاء تنشيط جهاز الرد الآلي';
+
+  @override
+  String get fritzboxAnswerbotSetupFailed => 'تعذر إعداد جهاز الرد الآلي.';
+
+  @override
+  String get fritzboxAnswerbotStepCreating => 'إنشاء جهاز الرد الآلي...';
+
+  @override
+  String get fritzboxAnswerbotStepDetecting => 'تحقق من الوصول الخارجي...';
+
+  @override
+  String get fritzboxAnswerbotStepDynDns => 'تكوين DynDNS...';
+
+  @override
+  String get fritzboxAnswerbotStepWaitingDynDns => 'في انتظار تسجيل DynDNS...';
+
+  @override
+  String get fritzboxAnswerbotStepSip => 'تسجيل جهاز SIP...';
+
+  @override
+  String get fritzboxAnswerbotStepInternetAccess =>
+      'قم بتفعيل الوصول إلى الإنترنت...';
+
+  @override
+  String get fritzboxAnswerbotStepEnabling => 'تنشيط جهاز الرد الآلي...';
+
+  @override
+  String get fritzboxAnswerbotStepWaiting => 'في انتظار التسجيل...';
+
+  @override
+  String get fritzboxAnswerbotSetupTitle => 'إعداد جهاز الرد الآلي';
+
+  @override
+  String get fritzboxAnswerbotSetupSuccess =>
+      'تم إعداد جهاز الرد الآلي بنجاح وهو الآن نشط.';
+
+  @override
+  String fritzboxAnswerbotSetupErrorDetail(String error) {
+    return 'خطأ: $error';
+  }
+
+  @override
+  String get fritzboxAnswerbotStepSecondFactor =>
+      'يُرجى تأكيد الوصول إلى صندوق فريتز!بوكس...';
+
+  @override
+  String get fritzboxSecondFactorButton => 'اضغط على أي زر في صندوق فريتز!';
+
+  @override
+  String fritzboxSecondFactorDtmf(String code) {
+    return 'أو اطلب <x1> الرمز <x1> على هاتف متصل';
+  }
+
+  @override
+  String get fritzboxAnswerbotSettings => 'إعدادات روبوت الإجابة';
+
+  @override
+  String get wildcardRulesHeader => 'قواعد أحرف البدل';
+
+  @override
+  String get blockedNumbersHeader => 'الأرقام المحظورة';
+
+  @override
+  String get addNumber => 'إضافة رقم';
+
+  @override
+  String get phoneNumberLabel => 'رقم الهاتف';
+
+  @override
+  String get wildcardToggle => 'نطاق رقم المربع';
+
+  @override
+  String get wildcardHint => 'يحظر جميع الأرقام التي تبدأ بهذه البادئة';
+
+  @override
+  String get wildcardTooShort =>
+      'يجب أن تحتوي البادئة على رمز بلد واحد على الأقل (على سبيل المثال +43)';
+
+  @override
+  String get wildcardInvalidFormat =>
+      'تنسيق الرقم غير صالح. يرجى استخدام رمز الاتصال الدولي (على سبيل المثال +43 أو 0043).';
+
+  @override
+  String get wildcardDuplicate => 'نطاق هذا الرقم محظور بالفعل.';
+
+  @override
+  String get wildcardAdded => 'تم حظر نطاق الأرقام';
+
+  @override
+  String get wildcardRemoved => 'تمت إزالة قاعدة أحرف البدل';
+
+  @override
+  String confirmRemoveWildcard(String prefix) {
+    return 'حقًا إزالة قاعدة حرف البدل $prefix*؟';
+  }
+
+  @override
+  String get numberAdded => 'الرقم المضاف إلى القائمة السوداء';
+
+  @override
+  String get addCommentWildcard => 'إضافة تعليق (اختياري)';
+
+  @override
+  String get commentHintWildcard => 'لماذا تحجب هذا النطاق من الأرقام؟';
+
+  @override
+  String get next => 'المزيد';
+
+  @override
+  String get add => 'إضافة';
+
+  @override
+  String get wildcardBlocked => 'قاعدة أحرف البدل';
+
+  @override
+  String matchedWildcardFilter(String prefix) {
+    return 'التصفية: $prefix';
+  }
+
+  @override
+  String get blocklistCache => 'ذاكرة التخزين المؤقت لقائمة الحظر';
+
+  @override
+  String blocklistCachedEntries(int count) {
+    return 'العدد $count الأرقام';
+  }
+
+  @override
+  String get blocklistLastSync => 'آخر مزامنة';
+
+  @override
+  String get blocklistLastSyncNever => 'أبداً';
+
+  @override
+  String blocklistLastSyncAgo(String timeAgo) {
+    return 'قبل $timeAgo';
+  }
+
+  @override
+  String get blocklistVersion => 'الإصدار';
+
+  @override
+  String get blocklistSyncNow => 'المزامنة الآن';
+
+  @override
+  String get blocklistSyncing => 'مزامنة...';
+
+  @override
+  String get blocklistSyncSuccess => 'تمت مزامنة قائمة الحظر بنجاح';
+
+  @override
+  String get blocklistSyncFailed => 'فشل مزامنة قائمة الحظر';
 }

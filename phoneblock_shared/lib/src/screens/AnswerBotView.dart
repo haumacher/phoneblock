@@ -8,7 +8,6 @@ import '../api/sendRequest.dart';
 import '../widgets/switchIcon.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../l10n_extensions.dart';
 
 class AnswerBotView extends StatefulWidget {
@@ -57,7 +56,10 @@ class AnswerBotViewState extends State<AnswerBotView> {
                   ))
             ],
             onSelected: (value) {
-              AnswerBotViewState.deleteAnswerBot(context, bot).then((value) => Navigator.pop(context));
+              AnswerBotViewState.deleteAnswerBot(context, bot).then((value) {
+                if (!context.mounted) return;
+                Navigator.pop(context);
+              });
             },
           )
         ],
@@ -102,7 +104,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                             setState(() {
                               bot.enabled = true;
                             });
-                            bool ok = await enableAnswerBot(bot);
+                            bool ok = await enableAnswerBot(context, bot);
                             setState(() {
                               bot.registered = ok;
                             });
@@ -127,7 +129,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     labelText: context.answerbotL10n.minConfidence,
                     helperText: context.answerbotL10n.minConfidenceHelp
                 ),
-                value: bot.minVotes,
+                initialValue: bot.minVotes,
                 disabledHint: Text(context.answerbotL10n.cannotChangeWhileEnabled),
                 onChanged: (value) {
                   setState(() {
@@ -144,6 +146,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
                   });
                 }),
 
+              SwitchField(context.answerbotL10n.acceptLocalCalls, value: bot.acceptLocal,
+                help: context.answerbotL10n.acceptLocalCallsHelp,
+                onChanged: (bool value) {
+                  setState(() {
+                    bot.acceptLocal = value;
+                  });
+                }),
+
               SwitchField(context.answerbotL10n.preferIPv4, value: bot.preferIPv4,
                 help: context.answerbotL10n.preferIPv4Help,
                 onChanged: (bool value) {
@@ -154,7 +164,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
               ElevatedButton(
                 onPressed: () async {
-                  bool ok = await updateAnswerBot(bot);
+                  bool ok = await updateAnswerBot(context, bot);
                   setState(() {
                     bot.registered = ok;
                   });
@@ -179,7 +189,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
                     labelText: context.answerbotL10n.automaticDeletion,
                     helperText: context.answerbotL10n.automaticDeletionHelp
                 ),
-                value: bot.retentionPeriod,
+                initialValue: bot.retentionPeriod,
                 onChanged: (value) {
                   setState(() {
                     bot.retentionPeriod = value ?? RetentionPeriod.never;
@@ -189,7 +199,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
               ElevatedButton(
                 onPressed: () async {
-                  await updateRetentionPolicy(bot);
+                  await updateRetentionPolicy(context, bot);
                 },
                 child: Text(context.answerbotL10n.saveRetentionSettings),
               ),
@@ -260,7 +270,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
 
   final int maxRetry = 20;
 
-  Future<bool> updateAnswerBot(AnswerbotInfo bot) async {
+  Future<bool> updateAnswerBot(BuildContext context, AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
     pd.show(max: maxRetry, msg: context.answerbotL10n.savingSettings);
 
@@ -272,6 +282,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
         preferIPv4: bot.preferIPv4,
         minVotes: bot.minVotes,
         wildcards: bot.wildcards,
+        acceptLocal: bot.acceptLocal,
       ));
 
     if (!context.mounted) return false;
@@ -285,14 +296,14 @@ class AnswerBotViewState extends State<AnswerBotView> {
     }
 
     if (bot.enabled) {
-      return await waitForRegister(botId, pd, context.answerbotL10n.enableAfterSavingFailed);
+      return await waitForRegister(context, botId, pd, context.answerbotL10n.enableAfterSavingFailed);
     } else {
       pd.close();
       return false;
     }
   }
 
-  Future<bool> enableAnswerBot(AnswerbotInfo bot) async {
+  Future<bool> enableAnswerBot(BuildContext context, AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
     pd.show(max: maxRetry, msg: context.answerbotL10n.enablingAnswerbot);
 
@@ -309,10 +320,10 @@ class AnswerBotViewState extends State<AnswerBotView> {
       return false;
     }
 
-    return await waitForRegister(botId, pd, context.answerbotL10n.enablingFailed);
+    return await waitForRegister(context, botId, pd, context.answerbotL10n.enablingFailed);
   }
 
-  Future<bool> waitForRegister(int botId, ProgressDialog pd, String errorMessage) async {
+  Future<bool> waitForRegister(BuildContext context, int botId, ProgressDialog pd, String errorMessage) async {
     int sleep = 2500;
     int n = 0;
     while (true) {
@@ -336,6 +347,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
           return false;
         } else {
           await Future.delayed(Duration(milliseconds: sleep));
+          if (!context.mounted) return false;
 
           pd.update(value: n, msg: context.answerbotL10n.retryingMessage(errorMessage));
         }
@@ -343,7 +355,7 @@ class AnswerBotViewState extends State<AnswerBotView> {
     }
   }
 
-  Future<void> updateRetentionPolicy(AnswerbotInfo bot) async {
+  Future<void> updateRetentionPolicy(BuildContext context, AnswerbotInfo bot) async {
     ProgressDialog pd = ProgressDialog(context: context);
     pd.show(max: 1, msg: context.answerbotL10n.savingRetentionSettings);
 
@@ -361,9 +373,9 @@ class AnswerBotViewState extends State<AnswerBotView> {
       showErrorDialog(context, response, context.answerbotL10n.errorSavingRetentionSettings,
         context.answerbotL10n.savingFailed(response.body));
     } else {
-      String message = bot.retentionPeriod == "NEVER"
+      String message = bot.retentionPeriod == RetentionPeriod.never
         ? context.answerbotL10n.automaticDeletionDisabled
-        : context.answerbotL10n.retentionSettingsSaved(_getRetentionDisplayName(bot.retentionPeriod));
+        : context.answerbotL10n.retentionSettingsSaved(_getRetentionDisplayName(context, bot.retentionPeriod));
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -371,14 +383,13 @@ class AnswerBotViewState extends State<AnswerBotView> {
     }
   }
 
-  String _getRetentionDisplayName(RetentionPeriod period) {
+  String _getRetentionDisplayName(BuildContext context, RetentionPeriod period) {
     switch (period) {
       case RetentionPeriod.week: return context.answerbotL10n.oneWeek;
       case RetentionPeriod.month: return context.answerbotL10n.oneMonth;
       case RetentionPeriod.quarter: return context.answerbotL10n.threeMonths;
       case RetentionPeriod.year: return context.answerbotL10n.oneYear;
       case RetentionPeriod.never: return context.answerbotL10n.never;
-      default: return period.name;
     }
   }
 

@@ -38,7 +38,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String answerbotStats(int newCalls, int talkTimeSeconds, int callsAccepted) {
+  String answerbotStats(int newCalls, int callsAccepted, int talkTimeSeconds) {
     return '$newCalls新通话，$callsAccepted通话，$talkTimeSeconds总通话时间';
   }
 
@@ -195,6 +195,13 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get blockNumberRangesHelp =>
       '如果有理由怀疑某个号码属于垃圾邮件源的系统连接，即使该号码尚未被确认为垃圾邮件，也会接受呼叫。';
+
+  @override
+  String get acceptLocalCalls => 'Lokale Anrufe annehmen';
+
+  @override
+  String get acceptLocalCallsHelp =>
+      'Nimmt Anrufe von internen Telefonen an (Nummern die mit * beginnen). Dies ist nützlich zum Testen, kann aber zu Problemen mit Sammelrufen und Türklingeln führen.';
 
   @override
   String get preferIPv4 => '喜欢 IPv4 通信';

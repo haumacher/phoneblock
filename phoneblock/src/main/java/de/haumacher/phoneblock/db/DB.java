@@ -100,6 +100,13 @@ public class DB {
 	public static final int MIN_VOTES = 4;
 
 	/**
+	 * Minimum number of {@link Rating#A_LEGITIMATE} ratings required before details (comments, searches, rating
+	 * breakdown) are shown publicly. Numbers with fewer positive ratings are likely personal contacts, and showing
+	 * details would leak private information.
+	 */
+	public static final int MIN_LEGITIMATE = 4;
+
+	/**
 	 * Number of days a number stays on the blocklist when {@link #MIN_VOTES} are received. After that time limit,
 	 * {@link #WEEK_PER_VOTE} are substracted per week.
 	 */
@@ -124,18 +131,6 @@ public class DB {
 	public static final int MIN_AGGREGATE_10 = 4;
 	
 	public static final int MIN_AGGREGATE_100 = 3;
-
-	/**
-	 * Vote thresholds that trigger blocklist version updates.
-	 * When a number crosses any of these thresholds, it's marked for version assignment.
-	 *
-	 * <p>
-	 * These are the only valid values for the <code>minVotes</code> parameter in blocklist APIs.
-	 * Using other values will result in inconsistent incremental synchronization, as version
-	 * updates are only triggered when numbers cross these specific thresholds.
-	 * </p>
-	 */
-	public static final int[] BLOCKLIST_THRESHOLDS = {2, 4, 10, 20, 50, 100};
 
 	/**
 	 * Initial version number for the blocklist.
@@ -166,16 +161,10 @@ public class DB {
 
 	/**
 	 * Minimum votes threshold for blocklist visibility.
-	 * Only threshold crossings at or above this value trigger version updates.
+	 * Numbers crossing this threshold are marked for version updates.
 	 * Default: 10 (same as {@link #DEFAULT_MIN_VISIBLE_VOTES}).
 	 */
 	private int _minVisibleVotes = DEFAULT_MIN_VISIBLE_VOTES;
-
-	/**
-	 * Effective thresholds for version updates, containing only thresholds >= minVisibleVotes.
-	 * Precomputed for efficiency in {@link #crossesThreshold(int, int)}.
-	 */
-	private int[] _effectiveThresholds = computeEffectiveThresholds(DEFAULT_MIN_VISIBLE_VOTES);
 
 	/**
 	 * Default minimum votes threshold for blocklist visibility.
@@ -232,42 +221,19 @@ public class DB {
 	 * Sets the minimum votes threshold for blocklist visibility.
 	 *
 	 * <p>
-	 * Only threshold crossings at or above this value will trigger blocklist version updates.
+	 * Numbers crossing this threshold will be marked for blocklist version updates.
 	 * This should be called during initialization, before any votes are processed.
 	 * </p>
 	 *
-	 * @param minVisibleVotes The minimum votes threshold. Must be one of {@link #BLOCKLIST_THRESHOLDS}.
+	 * @param minVisibleVotes The minimum votes threshold. Must be a positive integer.
 	 */
 	public void setMinVisibleVotes(int minVisibleVotes) {
-		if (!isValidBlocklistThreshold(minVisibleVotes)) {
-			LOG.warn("Invalid minVisibleVotes {}, must be one of: {}. Using default {}",
-				minVisibleVotes, getBlocklistThresholdsString(), DEFAULT_MIN_VISIBLE_VOTES);
+		if (minVisibleVotes < 1) {
+			LOG.warn("Invalid minVisibleVotes {}, must be positive. Using default {}", minVisibleVotes, DEFAULT_MIN_VISIBLE_VOTES);
 			minVisibleVotes = DEFAULT_MIN_VISIBLE_VOTES;
 		}
 		_minVisibleVotes = minVisibleVotes;
-		_effectiveThresholds = computeEffectiveThresholds(minVisibleVotes);
 		LOG.info("Blocklist minVisibleVotes set to: {}", _minVisibleVotes);
-	}
-
-	/**
-	 * Computes the effective thresholds for version updates.
-	 * Returns an array containing only thresholds >= minVisibleVotes.
-	 */
-	private static int[] computeEffectiveThresholds(int minVisibleVotes) {
-		int count = 0;
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
-			if (threshold >= minVisibleVotes) {
-				count++;
-			}
-		}
-		int[] result = new int[count];
-		int index = 0;
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
-			if (threshold >= minVisibleVotes) {
-				result[index++] = threshold;
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -530,7 +496,7 @@ public class DB {
 				int version = Integer.parseInt(users.getProperty("db.version"));
 				while (true) {
 					version++;
-					
+
 					String versionId = Integer.toString(version);
 					while (versionId.length() < 2) {
 						versionId = "0" + versionId;
@@ -541,8 +507,17 @@ public class DB {
 					if (script == null) {
 						break;
 					}
-					
+
 					runScript(connection, scriptName);
+
+					if (version == 13) {
+						populateAggregationHashes(reports);
+					}
+
+					if (version == 17) {
+						populatePersonalizationHashes(session);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -994,14 +969,17 @@ public class DB {
 
 	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
 		String prefix = prefix10(phone);
-		
+
 		int rows = reports.updateAggregation10(prefix, deltaCnt, deltaVotes);
 		if (rows == 0) {
 			if (deltaCnt > 0) {
-				reports.insertAggregation10(prefix, deltaCnt, deltaVotes);
+				byte[] hash = computePrefixHash(prefix);
+				if (hash != null) {
+					reports.insertAggregation10WithHash(prefix, deltaCnt, deltaVotes, hash);
+				}
 			}
-			
-			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary. 
+
+			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary.
 		} else {
 			if (deltaCnt != 0) {
 				// Check, whether an update to the next aggregation level is necessary.
@@ -1030,7 +1008,10 @@ public class DB {
 		int rows = reports.updateAggregation100(prefix, deltaCnt, deltaVotes);
 		if (rows == 0) {
 			if (deltaCnt > 0) {
-				reports.insertAggregation100(prefix, deltaCnt, deltaVotes);
+				byte[] hash = computePrefixHash(prefix);
+				if (hash != null) {
+					reports.insertAggregation100WithHash(prefix, deltaCnt, deltaVotes, hash);
+				}
 			}
 		}
 	}
@@ -1065,23 +1046,30 @@ public class DB {
 				long userId = userIdOptional.longValue();
 				
 				Boolean state = blocklist.getPersonalizationState(userId, phone);
-				
+
 				boolean block = rating != Rating.A_LEGITIMATE;
-				
+
 				if (state != null && block == state.booleanValue()) {
 					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
 					recordVote = false;
 				} else {
+					byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
+
 					if (state != null) {
 						blocklist.removePersonalization(userId, phone);
 					}
 					if (block) {
-						blocklist.addPersonalization(userId, phone);
+						blocklist.addPersonalization(userId, phone, sha1);
 					} else {
-						blocklist.addExclude(userId, phone);
+						blocklist.addExclude(userId, phone, sha1);
 					}
 				}
 				
+				// Never record community votes for globally whitelisted numbers.
+				if (reports.isWhiteListed(phone)) {
+					recordVote = false;
+				}
+
 				DBUserSettings settings = users.getSettingsById(userId);
 				if (lang == null) {
 					lang = settings.getLang();
@@ -1195,63 +1183,13 @@ public class DB {
 	}
 
 	/**
-	 * Checks if the vote count crosses any visible blocklist threshold.
+	 * Checks if the vote count crosses the minimum visible votes threshold.
 	 * Returns true if the number should be marked for version update.
-	 *
-	 * <p>
-	 * Only thresholds at or above {@link #_minVisibleVotes} are considered,
-	 * since changes below this threshold are not visible to API clients.
-	 * Uses precomputed {@link #_effectiveThresholds} for efficiency.
-	 * </p>
 	 */
 	private boolean crossesThreshold(int oldVotes, int newVotes) {
-		for (int threshold : _effectiveThresholds) {
-			boolean wasBelowThreshold = oldVotes < threshold;
-			boolean isNowAtOrAbove = newVotes >= threshold;
-			// Crossed upward: was below and is now at-or-above
-			// Crossed downward: was at-or-above and is now below
-			if (wasBelowThreshold == isNowAtOrAbove) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Checks if the given minVotes value is a valid blocklist threshold.
-	 *
-	 * <p>
-	 * Only the predefined threshold values ({@link #BLOCKLIST_THRESHOLDS}) can be used
-	 * for consistent incremental synchronization, as version updates are only triggered
-	 * when numbers cross these specific thresholds.
-	 * </p>
-	 *
-	 * @param minVotes The minimum votes value to validate
-	 * @return true if the value is a valid threshold, false otherwise
-	 */
-	public static boolean isValidBlocklistThreshold(int minVotes) {
-		for (int threshold : BLOCKLIST_THRESHOLDS) {
-			if (minVotes == threshold) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns a formatted string of valid blocklist thresholds for error messages.
-	 *
-	 * @return A comma-separated string of all values from {@link #BLOCKLIST_THRESHOLDS}
-	 */
-	public static String getBlocklistThresholdsString() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < BLOCKLIST_THRESHOLDS.length; i++) {
-			if (i > 0) {
-				sb.append(", ");
-			}
-			sb.append(BLOCKLIST_THRESHOLDS[i]);
-		}
-		return sb.toString();
+		boolean wasBelowThreshold = oldVotes < _minVisibleVotes;
+		boolean isNowBelowThreshold = newVotes < _minVisibleVotes;
+		return wasBelowThreshold != isNowBelowThreshold;
 	}
 
 	/**
@@ -1440,32 +1378,9 @@ public class DB {
 		}
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
-				.setVotes(normalizeVotesToThreshold(n.getVotes()))
-				.setRating(rating(n));
-	}
-
-	/**
-	 * Normalizes a vote count to the nearest threshold value.
-	 *
-	 * <p>
-	 * This ensures consistency between when updates are triggered (at threshold crossings)
-	 * and the vote counts transmitted to clients. A number with 5 votes (between thresholds
-	 * 4 and 10) is normalized to 4, since no update would be sent until it reaches 10 votes.
-	 * </p>
-	 *
-	 * @param votes The actual vote count.
-	 * @return The normalized threshold value (0 if below the lowest threshold).
-	 */
-	private static int normalizeVotesToThreshold(int votes) {
-		// Find the highest threshold that votes meets or exceeds
-		// Search from high to low for efficiency (most numbers have higher votes)
-		for (int i = BLOCKLIST_THRESHOLDS.length - 1; i >= 0; i--) {
-			if (votes >= BLOCKLIST_THRESHOLDS[i]) {
-				return BLOCKLIST_THRESHOLDS[i];
-			}
-		}
-		// Below all thresholds
-		return 0;
+				.setVotes(n.getPublishedVotes())
+				.setRating(rating(n))
+				.setLastActivity(n.getLastPing());
 	}
 
 	public static Rating rating(NumberInfo n) {
@@ -1683,6 +1598,89 @@ public class DB {
 
 	public AggregationInfo notNull(String prefix, AggregationInfo result) {
 		return result == null ? new AggregationInfo(prefix, 0, 0) : result;
+	}
+
+	/**
+	 * Computes the SHA1 hash for an aggregation prefix.
+	 *
+	 * <p>
+	 * Converts the DB prefix (national format) to international format and hashes it.
+	 * </p>
+	 */
+	static byte[] computePrefixHash(String prefix) {
+		if (prefix == null || prefix.isEmpty()) {
+			return null;
+		}
+		String internationalForm = NumberAnalyzer.toInternationalFormat(prefix);
+		return PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
+	}
+
+	/**
+	 * Computes wildcard votes from aggregation data alone (for numbers not in the DB).
+	 */
+	public int computeWildcardVotes(AggregationInfo aggregation10, AggregationInfo aggregation100) {
+		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
+			int votes = aggregation100.getVotes();
+			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
+				votes += aggregation10.getVotes();
+			}
+			return votes;
+		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
+			return aggregation10.getVotes();
+		}
+		return 0;
+	}
+
+	/**
+	 * Populates SHA1 hashes for existing personalization rows during migration to version 17.
+	 */
+	private void populatePersonalizationHashes(SqlSession session) {
+		BlockList blocklist = session.getMapper(BlockList.class);
+		List<String> phones = blocklist.getPersonalizationsWithoutHash();
+		MessageDigest digest = PhoneHash.createPhoneDigest();
+		int updated = 0;
+		int skipped = 0;
+		for (String phone : phones) {
+			if (phone.contains("*") || phone.length() < 5) {
+				LOG.info("Skipping personalization with wildcard or too short: {}", phone);
+				skipped++;
+				continue;
+			}
+			String internationalForm = NumberAnalyzer.toInternationalFormat(phone);
+			byte[] hash = PhoneHash.getPhoneHash(digest, internationalForm);
+			digest.reset();
+			blocklist.updatePersonalizationHash(phone, hash);
+			updated++;
+		}
+		LOG.info("Backfilled SHA1 hashes for {} personalization entries, skipped {}.", updated, skipped);
+		session.commit();
+	}
+
+	/**
+	 * Populates SHA1 hashes for all existing aggregation rows during migration to version 13.
+	 */
+	private void populateAggregationHashes(SpamReports reports) {
+		LOG.info("Populating SHA1 hashes for aggregation tables.");
+
+		int count = 0;
+		for (AggregationInfo a : reports.getAllAggregation10()) {
+			byte[] hash = computePrefixHash(a.getPrefix());
+			if (hash != null) {
+				reports.updateAggregation10Hash(a.getPrefix(), hash);
+				count++;
+			}
+		}
+		LOG.info("Updated {} aggregation_10 hashes.", count);
+
+		count = 0;
+		for (AggregationInfo a : reports.getAllAggregation100()) {
+			byte[] hash = computePrefixHash(a.getPrefix());
+			if (hash != null) {
+				reports.updateAggregation100Hash(a.getPrefix(), hash);
+				count++;
+			}
+		}
+		LOG.info("Updated {} aggregation_100 hashes.", count);
 	}
 
 	private String prefix10(String phone) {
