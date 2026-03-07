@@ -163,6 +163,14 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
+        if (localVotes <= 0) {
+            // No local spam indicators - accept without querying the API to reduce server load
+            Log.d(CallChecker.class.getName(), "onScreenCall: No local spam data, accepting call: " + number);
+            acceptCall(callDetails);
+            return;
+        }
+
+        // Local votes exist but below minVotes threshold - query the API for a definitive answer
         AtomicBoolean canceled = new AtomicBoolean();
 
         // Array to hold timeout future reference (needs to be final for lambda access)
