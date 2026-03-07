@@ -514,6 +514,10 @@ public class DB {
 						populateAggregationHashes(reports);
 					}
 
+					if (version == 17) {
+						populatePersonalizationHashes(session);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -1042,23 +1046,30 @@ public class DB {
 				long userId = userIdOptional.longValue();
 				
 				Boolean state = blocklist.getPersonalizationState(userId, phone);
-				
+
 				boolean block = rating != Rating.A_LEGITIMATE;
-				
+
 				if (state != null && block == state.booleanValue()) {
 					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
 					recordVote = false;
 				} else {
+					byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
+
 					if (state != null) {
 						blocklist.removePersonalization(userId, phone);
 					}
 					if (block) {
-						blocklist.addPersonalization(userId, phone);
+						blocklist.addPersonalization(userId, phone, sha1);
 					} else {
-						blocklist.addExclude(userId, phone);
+						blocklist.addExclude(userId, phone, sha1);
 					}
 				}
 				
+				// Never record community votes for globally whitelisted numbers.
+				if (reports.isWhiteListed(phone)) {
+					recordVote = false;
+				}
+
 				DBUserSettings settings = users.getSettingsById(userId);
 				if (lang == null) {
 					lang = settings.getLang();
@@ -1618,6 +1629,31 @@ public class DB {
 			return aggregation10.getVotes();
 		}
 		return 0;
+	}
+
+	/**
+	 * Populates SHA1 hashes for existing personalization rows during migration to version 17.
+	 */
+	private void populatePersonalizationHashes(SqlSession session) {
+		BlockList blocklist = session.getMapper(BlockList.class);
+		List<String> phones = blocklist.getPersonalizationsWithoutHash();
+		MessageDigest digest = PhoneHash.createPhoneDigest();
+		int updated = 0;
+		int skipped = 0;
+		for (String phone : phones) {
+			if (phone.contains("*") || phone.length() < 5) {
+				LOG.info("Skipping personalization with wildcard or too short: {}", phone);
+				skipped++;
+				continue;
+			}
+			String internationalForm = NumberAnalyzer.toInternationalFormat(phone);
+			byte[] hash = PhoneHash.getPhoneHash(digest, internationalForm);
+			digest.reset();
+			blocklist.updatePersonalizationHash(phone, hash);
+			updated++;
+		}
+		LOG.info("Backfilled SHA1 hashes for {} personalization entries, skipped {}.", updated, skipped);
+		session.commit();
 	}
 
 	/**

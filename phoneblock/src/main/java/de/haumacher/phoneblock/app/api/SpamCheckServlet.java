@@ -13,9 +13,12 @@ import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.AggregationInfo;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -59,9 +62,35 @@ public class SpamCheckServlet extends HttpServlet {
 			return;
 		}
 
+		DB db = DBService.getInstance();
+
+		// Check user's personal block/whitelist by hash before global lookup.
+		AuthToken auth = LoginFilter.getAuthorization(req);
+		if (auth != null) {
+			try (SqlSession session = db.openSession()) {
+				BlockList blocklist = session.getMapper(BlockList.class);
+				DBPersonalization personalized = blocklist.resolvePersonalizationByHash(auth.getUserId(), hash);
+				if (personalized != null) {
+					if (personalized.isBlocked()) {
+						// User has personally blocked this number — use a high synthetic vote count
+						// that always exceeds any configurable minVotes threshold.
+						PhoneInfo info = NumberAnalyzer.phoneInfoFromId(personalized.getPhone())
+							.setRating(Rating.B_MISSED)
+							.setVotes(1000);
+						ServletUtil.sendResult(req, resp, info);
+					} else {
+						// User has personally whitelisted this number.
+						PhoneInfo info = NumberAnalyzer.phoneInfoFromId(personalized.getPhone())
+							.setRating(Rating.A_LEGITIMATE);
+						ServletUtil.sendResult(req, resp, info);
+					}
+					return;
+				}
+			}
+		}
+
 		String phoneId;
 
-		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 

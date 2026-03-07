@@ -144,10 +144,12 @@ public class AddressResource extends Resource {
 					Boolean state = blockList.getPersonalizationState(currentUser, phoneId);
 					if (state == null || !state.booleanValue()) {
 						LOG.info("Adding to block list: " + phoneId);
-						
+
+						byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
+
 						// Safety, prevent duplicate key constraint violation.
 						blockList.removePersonalization(currentUser, phoneId);
-						blockList.addPersonalization(currentUser, phoneId);
+						blockList.addPersonalization(currentUser, phoneId, sha1);
 						
 						db.processVotesAndPublish(spamreport, number, dialPrefix, 2, System.currentTimeMillis());
 					}

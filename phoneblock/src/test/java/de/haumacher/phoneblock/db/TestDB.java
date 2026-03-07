@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
@@ -238,26 +239,26 @@ public class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 			
-			blockList.addExclude(1, "012300000");
-			blockList.addExclude(2, "012300000");
-			blockList.addExclude(1, "034500000");
-			blockList.addExclude(1, "067800000");
-			blockList.addExclude(2, "099900000");
-			
+			blockList.addExclude(1, "012300000", null);
+			blockList.addExclude(2, "012300000", null);
+			blockList.addExclude(1, "034500000", null);
+			blockList.addExclude(1, "067800000", null);
+			blockList.addExclude(2, "099900000", null);
+
 			assertEquals(new HashSet<>(List.of("012300000", "034500000", "067800000")), blockList.getExcluded(1));
-			
+
 			blockList.removePersonalization(1, "034500000");
-			
+
 			assertEquals(new HashSet<>(List.of("012300000", "067800000")), blockList.getExcluded(1));
-			
+
 			blockList.removePersonalization(2, "012300000");
-			
+
 			assertEquals(new HashSet<>(List.of("012300000", "067800000")), blockList.getExcluded(1));
-			
-			blockList.addPersonalization(1, "065400000");
-			blockList.addPersonalization(1, "032100000");
-			blockList.addPersonalization(2, "032100000");
-			blockList.addPersonalization(2, "098700000");
+
+			blockList.addPersonalization(1, "065400000", null);
+			blockList.addPersonalization(1, "032100000", null);
+			blockList.addPersonalization(2, "032100000", null);
+			blockList.addPersonalization(2, "098700000", null);
 			
 			assertEquals(List.of("032100000", "065400000"), blockList.getPersonalizations(1));
 			
@@ -276,9 +277,9 @@ public class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 
-			blockList.addExclude(1, "012300000");
+			blockList.addExclude(1, "012300000", null);
 			try {
-				blockList.addExclude(1, "012300000");
+				blockList.addExclude(1, "012300000", null);
 				fail("Expecting duplicate key constraint violation.");
 			} catch (PersistenceException ex) {
 				// Expected.
@@ -727,6 +728,81 @@ public class TestDB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Long lastMeta = reports.getLastMetaSearch(phone);
 			assertNotNull(lastMeta, "Record should exist after concurrent merges");
+		}
+	}
+
+	@Test
+	void testPersonalizationByHash() {
+		_db.createUser("user1", "User 1", "de", "+49");
+
+		try (SqlSession session = _db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			long userId = users.getUserId("user1");
+
+			BlockList blocklist = session.getMapper(BlockList.class);
+
+			PhoneNumer number = NumberAnalyzer.analyzePhoneID("004912345678");
+			String phone = NumberAnalyzer.getPhoneId(number);
+			byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
+
+			// No personalization initially.
+			assertNull(blocklist.resolvePersonalizationByHash(userId, sha1));
+
+			// Add personal block.
+			blocklist.addPersonalization(userId, phone, sha1);
+			session.commit();
+
+			// Should find phone by hash, marked as blocked.
+			DBPersonalization blocked = blocklist.resolvePersonalizationByHash(userId, sha1);
+			assertNotNull(blocked);
+			assertEquals(phone, blocked.getPhone());
+			assertTrue(blocked.isBlocked());
+
+			// Remove and add as whitelist.
+			blocklist.removePersonalization(userId, phone);
+			blocklist.addExclude(userId, phone, sha1);
+			session.commit();
+
+			// Should still resolve by hash, now marked as not blocked.
+			DBPersonalization whitelisted = blocklist.resolvePersonalizationByHash(userId, sha1);
+			assertNotNull(whitelisted);
+			assertEquals(phone, whitelisted.getPhone());
+			assertFalse(whitelisted.isBlocked());
+		}
+	}
+
+	@Test
+	void testRatingWhitelistedNumber() throws Exception {
+		_db.createUser("user1", "User 1", "de", "+49");
+
+		PhoneNumer number = NumberAnalyzer.analyzePhoneID("004912345678");
+		String phone = NumberAnalyzer.getPhoneId(number);
+
+		// Add number to global whitelist using phone ID format.
+		try (SqlSession session = _db.openSession()) {
+			Connection conn = session.getConnection();
+			try (Statement stmt = conn.createStatement()) {
+				stmt.execute("INSERT INTO WHITELIST (PHONE) VALUES ('" + phone + "')");
+			}
+			session.commit();
+		}
+
+		// Rate the whitelisted number as spam.
+		_db.addRating("user1", number, "+49", Rating.G_FRAUD, "test", "de", System.currentTimeMillis());
+
+		// Personalization should exist.
+		try (SqlSession session = _db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			long userId = users.getUserId("user1");
+			BlockList blocklist = session.getMapper(BlockList.class);
+
+			Boolean state = blocklist.getPersonalizationState(userId, phone);
+			assertTrue(state, "Number should be personally blocked");
+
+			// NUMBERS table should NOT have this entry resolvable by hash.
+			SpamReports reports = session.getMapper(SpamReports.class);
+			assertNull(reports.resolvePhoneHash(NumberAnalyzer.getPhoneHash(number)),
+				"Whitelisted number must not be resolvable by hash");
 		}
 	}
 

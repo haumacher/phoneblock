@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * Query interface for the block list table.
@@ -54,10 +55,10 @@ public interface BlockList {
 	 * Adds a blocklist entry for the user with the given user ID.
 	 */
 	@Insert("""
-			insert into PERSONALIZATION (USERID, PHONE, BLOCKED) 
-			values (#{userId}, #{phone}, true)
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED)
+			values (#{userId}, #{phone}, #{sha1}, true)
 			""")
-	void addPersonalization(long userId, String phone);
+	void addPersonalization(long userId, String phone, byte[] sha1);
 	
 	/**
 	 * Removes a blocklist entry for the user with the given user ID.
@@ -84,9 +85,39 @@ public interface BlockList {
 	 * Adds an exclusion from the blocklist for the user with the given user ID.
 	 */
 	@Insert("""
-			insert into PERSONALIZATION (USERID, PHONE, BLOCKED) 
-			values (#{userId}, #{phone}, false)
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED)
+			values (#{userId}, #{phone}, #{sha1}, false)
 			""")
-	void addExclude(long userId, String phone);
-	
+	void addExclude(long userId, String phone, byte[] sha1);
+
+	/**
+	 * Resolves a personalization entry by its SHA1 hash.
+	 *
+	 * @return The phone ID and blocked state, or {@code null} if not personalized.
+	 */
+	@Select("""
+			select PHONE, BLOCKED
+			from PERSONALIZATION
+			where USERID=#{userId} and SHA1=#{sha1}
+			""")
+	DBPersonalization resolvePersonalizationByHash(long userId, byte[] sha1);
+
+	/**
+	 * All phone numbers in personalizations that do not yet have a SHA1 hash.
+	 */
+	@Select("""
+			select PHONE from PERSONALIZATION
+			where SHA1 is null
+			""")
+	List<String> getPersonalizationsWithoutHash();
+
+	/**
+	 * Updates the SHA1 hash for all personalization rows with the given phone number.
+	 */
+	@Update("""
+			update PERSONALIZATION set SHA1 = #{sha1}
+			where PHONE = #{phone}
+			""")
+	int updatePersonalizationHash(String phone, byte[] sha1);
+
 }
