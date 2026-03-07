@@ -92,6 +92,28 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
+        // Check local wildcard blocking rules before server query
+        String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
+        try {
+            org.json.JSONArray wildcardPrefixes = new org.json.JSONArray(wildcardPrefixesJson);
+            for (int i = 0; i < wildcardPrefixes.length(); i++) {
+                String prefix = wildcardPrefixes.getString(i);
+                if (number.startsWith(prefix)) {
+                    Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by wildcard rule: " + prefix + "* matches " + number);
+                    respondToCall(callDetails, new CallResponse.Builder()
+                        .setDisallowCall(true)
+                        .setRejectCall(true)
+                        .setSkipCallLog(true)
+                        .setSkipNotification(true)
+                        .build());
+                    MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null);
+                    return;
+                }
+            }
+        } catch (org.json.JSONException e) {
+            Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
+        }
+
         AtomicBoolean canceled = new AtomicBoolean();
 
         // Array to hold timeout future reference (needs to be final for lambda access)
