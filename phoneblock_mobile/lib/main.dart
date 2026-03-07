@@ -2787,6 +2787,12 @@ Future<String?> getAuthToken() async {
   return platform.invokeMethod("getAuthToken");
 }
 
+/// Syncs wildcard prefixes from SQLite to SharedPreferences for CallChecker access.
+Future<void> syncWildcardPrefixesToNative() async {
+  final prefixes = await ScreenedCallsDatabase.instance.getWildcardPrefixes();
+  await platform.invokeMethod('setWildcardPrefixes', {'prefixes': prefixes});
+}
+
 Future<bool> checkPermission() async {
   try {
     return await platform.invokeMethod("checkPermission");
