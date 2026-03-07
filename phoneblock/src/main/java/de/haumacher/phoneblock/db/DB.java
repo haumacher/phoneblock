@@ -970,7 +970,9 @@ public class DB {
 		if (rows == 0) {
 			if (deltaCnt > 0) {
 				byte[] hash = computePrefixHash(prefix);
-				reports.insertAggregation10WithHash(prefix, deltaCnt, deltaVotes, hash);
+				if (hash != null) {
+					reports.insertAggregation10WithHash(prefix, deltaCnt, deltaVotes, hash);
+				}
 			}
 
 			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary.
@@ -1003,7 +1005,9 @@ public class DB {
 		if (rows == 0) {
 			if (deltaCnt > 0) {
 				byte[] hash = computePrefixHash(prefix);
-				reports.insertAggregation100WithHash(prefix, deltaCnt, deltaVotes, hash);
+				if (hash != null) {
+					reports.insertAggregation100WithHash(prefix, deltaCnt, deltaVotes, hash);
+				}
 			}
 		}
 	}
@@ -1593,6 +1597,9 @@ public class DB {
 	 * </p>
 	 */
 	static byte[] computePrefixHash(String prefix) {
+		if (prefix == null || prefix.isEmpty()) {
+			return null;
+		}
 		String internationalForm = NumberAnalyzer.toInternationalFormat(prefix);
 		return PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
 	}
@@ -1622,16 +1629,20 @@ public class DB {
 		int count = 0;
 		for (AggregationInfo a : reports.getAllAggregation10()) {
 			byte[] hash = computePrefixHash(a.getPrefix());
-			reports.updateAggregation10Hash(a.getPrefix(), hash);
-			count++;
+			if (hash != null) {
+				reports.updateAggregation10Hash(a.getPrefix(), hash);
+				count++;
+			}
 		}
 		LOG.info("Updated {} aggregation_10 hashes.", count);
 
 		count = 0;
 		for (AggregationInfo a : reports.getAllAggregation100()) {
 			byte[] hash = computePrefixHash(a.getPrefix());
-			reports.updateAggregation100Hash(a.getPrefix(), hash);
-			count++;
+			if (hash != null) {
+				reports.updateAggregation100Hash(a.getPrefix(), hash);
+				count++;
+			}
 		}
 		LOG.info("Updated {} aggregation_100 hashes.", count);
 	}
