@@ -353,7 +353,7 @@ class FritzBoxService {
         device: entry.device.isEmpty ? null : entry.device,
         fritzboxId: entry.id.toString(),
         callType: callType,
-        label: name.isEmpty ? null : name,
+        label: null,
       ));
     }
 
@@ -473,7 +473,8 @@ class FritzBoxService {
         continue;
       }
 
-      // Create call with normalized phone number
+      // Create call with normalized phone number, keeping original as display label
+      final originalNumber = call.phoneNumber;
       final normalizedCall = ScreenedCall(
         id: call.id,
         phoneNumber: normalizedNumber,
@@ -482,7 +483,7 @@ class FritzBoxService {
         votes: call.votes,
         votesWildcard: call.votesWildcard,
         rating: call.rating,
-        label: call.label,
+        label: originalNumber != normalizedNumber ? originalNumber : null,
         location: call.location,
         source: call.source,
         duration: call.duration,
