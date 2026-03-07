@@ -31,6 +31,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get accepted => 'Przyjęte';
 
   @override
+  String get notBlocked => 'Nicht blockiert';
+
+  @override
   String get missed => 'Brakuje';
 
   @override

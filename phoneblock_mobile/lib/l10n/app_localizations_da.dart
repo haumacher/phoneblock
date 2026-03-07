@@ -31,6 +31,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get accepted => 'Accepteret';
 
   @override
+  String get notBlocked => 'Nicht blockiert';
+
+  @override
   String get missed => 'Ubesvaret';
 
   @override

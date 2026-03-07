@@ -30,6 +30,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get accepted => '已接受';
 
   @override
+  String get notBlocked => 'Nicht blockiert';
+
+  @override
   String get missed => '错过';
 
   @override

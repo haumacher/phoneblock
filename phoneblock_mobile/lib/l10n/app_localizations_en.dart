@@ -31,6 +31,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accepted => 'Accepted';
 
   @override
+  String get notBlocked => 'Nicht blockiert';
+
+  @override
   String get missed => 'Missed';
 
   @override

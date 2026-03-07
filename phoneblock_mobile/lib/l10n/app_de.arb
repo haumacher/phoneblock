@@ -32,8 +32,12 @@
   },
   "accepted": "Angenommen",
   "@accepted": {
-    "description": "Label for accepted calls",
+    "description": "Label for calls that were answered (Fritz!Box calls)",
     "x-translated": "17acbe98"
+  },
+  "notBlocked": "Nicht blockiert",
+  "@notBlocked": {
+    "description": "Label for mobile-screened calls that were let through (not blocked) by the call screener"
   },
   "missed": "Verpasst",
   "@missed": {

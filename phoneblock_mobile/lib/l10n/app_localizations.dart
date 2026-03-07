@@ -158,11 +158,17 @@ abstract class AppLocalizations {
   /// **'Blockiert'**
   String get blocked;
 
-  /// Label for accepted calls
+  /// Label for calls that were answered (Fritz!Box calls)
   ///
   /// In de, this message translates to:
   /// **'Angenommen'**
   String get accepted;
+
+  /// Label for mobile-screened calls that were let through (not blocked) by the call screener
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht blockiert'**
+  String get notBlocked;
 
   /// Label for missed calls
   ///

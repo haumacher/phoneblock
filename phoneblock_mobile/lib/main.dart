@@ -2685,14 +2685,14 @@ class _MainScreenState extends State<MainScreen> {
         color = Colors.green[400]!;
       }
     } else {
-      // Mobile calls: blocked/accepted by call screening
+      // Mobile calls: blocked/not blocked by call screening
       if (wasBlocked) {
         icon = Icons.block;
         label = context.l10n.blocked;
         color = Colors.red[400]!;
       } else {
         icon = Icons.check_circle_outline;
-        label = context.l10n.accepted;
+        label = context.l10n.notBlocked;
         color = Colors.green[400]!;
       }
     }

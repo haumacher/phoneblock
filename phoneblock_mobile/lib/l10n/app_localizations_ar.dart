@@ -31,6 +31,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accepted => 'مقبولة';
 
   @override
+  String get notBlocked => 'Nicht blockiert';
+
+  @override
   String get missed => 'فائتة';
 
   @override

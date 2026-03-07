@@ -31,6 +31,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get accepted => 'Прийнято';
 
   @override
+  String get notBlocked => 'Nicht blockiert';
+
+  @override
   String get missed => 'Промахнувся.';
 
   @override
