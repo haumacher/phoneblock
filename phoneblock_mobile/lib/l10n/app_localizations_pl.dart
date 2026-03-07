@@ -1008,6 +1008,11 @@ class AppLocalizationsPl extends AppLocalizations {
   String get wildcardBlocked => 'Reguła symboli wieloznacznych';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Pamięć podręczna listy bloków';
 
   @override

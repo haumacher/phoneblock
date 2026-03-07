@@ -1000,6 +1000,11 @@ class AppLocalizationsUk extends AppLocalizations {
   String get wildcardBlocked => 'Правило підстановки символів';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Кеш блокчейну';
 
   @override

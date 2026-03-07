@@ -998,6 +998,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get wildcardBlocked => 'Jokerteckenregel';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Blocklist cache';
 
   @override

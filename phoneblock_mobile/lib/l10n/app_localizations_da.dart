@@ -998,6 +998,11 @@ class AppLocalizationsDa extends AppLocalizations {
   String get wildcardBlocked => 'Regel med jokertegn';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Blokliste-cache';
 
   @override

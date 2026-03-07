@@ -1002,6 +1002,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get wildcardBlocked => 'Wildcard-Regel';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Blocklist-Cache';
 
   @override

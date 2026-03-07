@@ -1001,6 +1001,11 @@ class AppLocalizationsNb extends AppLocalizations {
   String get wildcardBlocked => 'Jokerregel';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Cache for blokkeringslister';
 
   @override

@@ -1638,7 +1638,7 @@ class _MainScreenState extends State<MainScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    call.label ?? call.phoneNumber,
+                    call.isWildcardBlocked ? call.phoneNumber : (call.label ?? call.phoneNumber),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -2602,6 +2602,14 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds the reports text showing votes and range votes.
   String _buildReportsText(ScreenedCall call) {
+    if (call.isWildcardBlocked) {
+      final prefix = call.label;
+      if (prefix != null && prefix.isNotEmpty) {
+        return context.l10n.matchedWildcardFilter('$prefix*');
+      }
+      return context.l10n.wildcardBlocked;
+    }
+
     final parts = <String>[];
 
     if (call.votes > 0) {

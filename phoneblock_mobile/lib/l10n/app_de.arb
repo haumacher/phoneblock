@@ -1514,6 +1514,16 @@
     "description": "Rating label shown for calls blocked by a wildcard rule",
     "x-translated": "d3053ad6"
   },
+  "matchedWildcardFilter": "Filter: {prefix}",
+  "@matchedWildcardFilter": {
+    "description": "Reports text shown for calls blocked by a wildcard filter, with the matched prefix",
+    "placeholders": {
+      "prefix": {
+        "type": "String",
+        "example": "+4930*"
+      }
+    }
+  },
   "blocklistCache": "Blocklist-Cache",
   "@blocklistCache": {
     "description": "Blocklist cache section header in settings",

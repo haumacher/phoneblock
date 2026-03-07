@@ -1005,6 +1005,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get wildcardBlocked => 'Regla comodín';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Caché de la lista de bloqueos';
 
   @override

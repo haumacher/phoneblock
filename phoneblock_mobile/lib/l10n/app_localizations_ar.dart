@@ -991,6 +991,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get wildcardBlocked => 'قاعدة أحرف البدل';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'ذاكرة التخزين المؤقت لقائمة الحظر';
 
   @override

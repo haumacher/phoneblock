@@ -1796,6 +1796,12 @@ abstract class AppLocalizations {
   /// **'Wildcard-Regel'**
   String get wildcardBlocked;
 
+  /// Reports text shown for calls blocked by a wildcard filter, with the matched prefix
+  ///
+  /// In de, this message translates to:
+  /// **'Filter: {prefix}'**
+  String matchedWildcardFilter(String prefix);
+
   /// Blocklist cache section header in settings
   ///
   /// In de, this message translates to:

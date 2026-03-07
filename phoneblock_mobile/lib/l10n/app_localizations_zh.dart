@@ -907,6 +907,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wildcardBlocked => '通配符规则';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => '拦截列表缓存';
 
   @override

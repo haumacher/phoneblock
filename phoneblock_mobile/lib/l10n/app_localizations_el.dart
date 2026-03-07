@@ -1007,6 +1007,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get wildcardBlocked => 'Κανόνας Wildcard';
 
   @override
+  String matchedWildcardFilter(String prefix) {
+    return 'Filter: $prefix';
+  }
+
+  @override
   String get blocklistCache => 'Προσωρινή μνήμη αποκλεισμού';
 
   @override

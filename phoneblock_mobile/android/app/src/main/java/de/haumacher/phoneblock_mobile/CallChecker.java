@@ -109,7 +109,7 @@ public class CallChecker extends CallScreeningService {
                         .setSkipCallLog(true)
                         .setSkipNotification(true)
                         .build());
-                    MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null);
+                    MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", prefix, null);
                     return;
                 }
             }
