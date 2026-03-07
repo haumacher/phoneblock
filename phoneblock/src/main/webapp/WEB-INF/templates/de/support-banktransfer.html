@@ -24,7 +24,15 @@
 			<li><span data-tx="t0015:1b5215fe">BIC:</span> <code dir="ltr" id="bic" th:text="${props.bank.bic}"></code><a class="copyToClipboard" data-tx="t0011:3f7efe41" href="#" id="bic_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
 			<li><span data-tx="t0016:8b109041">Verwendungszweck:</span> <code dir="ltr" id="purpose" th:text="${supporterId}"></code><a class="copyToClipboard" data-tx="t0012:3f7efe41" href="#" id="purpose_" title="In die Zwischenablage kopieren."><i class="fa-solid fa-copy"></i></a></li>
 		</ul>
-		
+
+		<p>
+			Scanne den QR-Code mit Deiner Banking-App:
+		</p>
+
+		<figure class="image" style="max-width: 280px;">
+			<img th:src="@{/support-banktransfer/qr.png}" alt="EPC QR-Code für Banküberweisung" />
+		</figure>
+
 		<p data-tx="t0008:b6f47ba0">
 			Vielen Dank, dass Du einen Beitrag für die Nutzung von PhoneBlock leistest! 
 		</p>
