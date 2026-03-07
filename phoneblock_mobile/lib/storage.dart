@@ -200,7 +200,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -268,6 +268,30 @@ class ScreenedCallsDatabase {
         comment TEXT,
         created INTEGER NOT NULL
       )
+    ''');
+
+    // Local blocklist cache table
+    await db.execute('''
+      CREATE TABLE blocklist (
+        phone TEXT PRIMARY KEY,
+        votes INTEGER NOT NULL,
+        rating TEXT,
+        lastActivity INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Blocklist sync metadata table (single row)
+    await db.execute('''
+      CREATE TABLE blocklist_sync (
+        id INTEGER PRIMARY KEY,
+        version INTEGER NOT NULL DEFAULT 0,
+        lastSyncTime INTEGER NOT NULL DEFAULT 0,
+        syncOffset INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      INSERT INTO blocklist_sync (id, version, lastSyncTime, syncOffset) VALUES (1, 0, 0, 0)
     ''');
   }
 
@@ -368,6 +392,31 @@ class ScreenedCallsDatabase {
           comment TEXT,
           created INTEGER NOT NULL
         )
+      ''');
+    }
+    if (oldVersion < 10) {
+      // Add local blocklist cache table
+      await db.execute('''
+        CREATE TABLE blocklist (
+          phone TEXT PRIMARY KEY,
+          votes INTEGER NOT NULL,
+          rating TEXT,
+          lastActivity INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+
+      // Add blocklist sync metadata table
+      await db.execute('''
+        CREATE TABLE blocklist_sync (
+          id INTEGER PRIMARY KEY,
+          version INTEGER NOT NULL DEFAULT 0,
+          lastSyncTime INTEGER NOT NULL DEFAULT 0,
+          syncOffset INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+
+      await db.execute('''
+        INSERT INTO blocklist_sync (id, version, lastSyncTime, syncOffset) VALUES (1, 0, 0, 0)
       ''');
     }
   }
@@ -560,6 +609,77 @@ class ScreenedCallsDatabase {
     final result = await db.query('wildcard_blocks',
         where: 'prefix = ?', whereArgs: [prefix], limit: 1);
     return result.isNotEmpty;
+  }
+
+  // --- Blocklist cache ---
+
+  /// Returns the number of entries in the local blocklist cache.
+  Future<int> getBlocklistCount() async {
+    final db = await database;
+    final result = await db.rawQuery('SELECT COUNT(*) as cnt FROM blocklist');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// Looks up a phone number in the local blocklist.
+  /// Returns the entry if found, null otherwise.
+  Future<Map<String, dynamic>?> lookupBlocklist(String phone) async {
+    final db = await database;
+    final results = await db.query('blocklist',
+      where: 'phone = ?',
+      whereArgs: [phone],
+      limit: 1,
+    );
+    return results.isEmpty ? null : results.first;
+  }
+
+  /// Inserts or updates a blocklist entry.
+  Future<void> upsertBlocklistEntry(String phone, int votes, String? rating, int lastActivity) async {
+    final db = await database;
+    await db.insert('blocklist', {
+      'phone': phone,
+      'votes': votes,
+      'rating': rating,
+      'lastActivity': lastActivity,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  /// Removes a phone number from the local blocklist.
+  Future<void> deleteBlocklistEntry(String phone) async {
+    final db = await database;
+    await db.delete('blocklist', where: 'phone = ?', whereArgs: [phone]);
+  }
+
+  /// Clears all entries from the local blocklist cache.
+  Future<void> clearBlocklist() async {
+    final db = await database;
+    await db.delete('blocklist');
+  }
+
+  /// Returns the current blocklist sync metadata.
+  Future<Map<String, dynamic>> getBlocklistSyncInfo() async {
+    final db = await database;
+    final results = await db.query('blocklist_sync', where: 'id = 1');
+    if (results.isEmpty) {
+      return {'version': 0, 'lastSyncTime': 0, 'syncOffset': 0};
+    }
+    return results.first;
+  }
+
+  /// Updates the blocklist sync metadata after a successful sync.
+  Future<void> updateBlocklistSyncInfo(int version, int lastSyncTime) async {
+    final db = await database;
+    await db.update('blocklist_sync', {
+      'version': version,
+      'lastSyncTime': lastSyncTime,
+    }, where: 'id = 1');
+  }
+
+  /// Sets the random sync offset (only on first sync registration).
+  Future<void> setBlocklistSyncOffset(int offsetMs) async {
+    final db = await database;
+    await db.update('blocklist_sync', {
+      'syncOffset': offsetMs,
+    }, where: 'id = 1');
   }
 
   /// Closes the database.
