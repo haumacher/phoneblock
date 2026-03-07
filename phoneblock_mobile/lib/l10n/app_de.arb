@@ -1520,7 +1520,7 @@
   },
   "matchedWildcardFilter": "Filter: {prefix}",
   "@matchedWildcardFilter": {
-    "description": "Reports text shown for calls blocked by a wildcard filter, with the matched prefix",
+    "description": "Label shown for calls blocked by a wildcard filter, with the matched prefix",
     "placeholders": {
       "prefix": {
         "type": "String",

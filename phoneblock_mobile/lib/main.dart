@@ -1483,8 +1483,10 @@ class _MainScreenState extends State<MainScreen> {
     // Build the display text
     final String displayText;
     if (call.isWildcardBlocked) {
-      // Show "Wildcard-Regel" for wildcard-blocked calls
-      displayText = context.l10n.wildcardBlocked;
+      final prefix = call.label;
+      displayText = (prefix != null && prefix.isNotEmpty)
+          ? context.l10n.matchedWildcardFilter('$prefix*')
+          : context.l10n.wildcardBlocked;
     } else if (isPotentialSpam) {
       // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
       displayText = '$ratingText ?';
