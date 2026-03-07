@@ -1107,6 +1107,33 @@ class FritzBoxService {
         }
       }
 
+      // Step 2b: Check existing DynDNS configuration
+      if (!hostConfigured) {
+        try {
+          final ddnsInfo = await _withReconnect(() async {
+            final svc = _client!.remoteAccess();
+            return svc != null ? await svc.getDDNSInfo() : null;
+          });
+          if (ddnsInfo != null && ddnsInfo.enabled && ddnsInfo.domain.isNotEmpty) {
+            final enterHostResponse = await sendRequest(
+              EnterHostName(id: creation.id, hostName: ddnsInfo.domain),
+            );
+            if (enterHostResponse.statusCode == 200) {
+              hostConfigured = true;
+              if (kDebugMode) {
+                print('setupAnswerBot: Using existing DynDNS domain: ${ddnsInfo.domain} (provider: ${ddnsInfo.providerName})');
+              }
+            } else if (kDebugMode) {
+              print('setupAnswerBot: Existing DynDNS domain ${ddnsInfo.domain} not accepted (status: ${enterHostResponse.statusCode})');
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('setupAnswerBot: DynDNS detection failed: $e');
+          }
+        }
+      }
+
       // Step 3: Fallback to PhoneBlock DynDNS
       if (!hostConfigured) {
         onProgress(AnswerbotSetupStep.configuringDynDns);
