@@ -69,4 +69,5 @@ module de.haumacher.phoneblock {
 	requires transitive jakartaee.pac4j;
 	requires transitive utils.data.fetcher;
 	requires transitive org.eclipse.angus.mail;
+	requires transitive io.nayuki.qrcodegen;
 }

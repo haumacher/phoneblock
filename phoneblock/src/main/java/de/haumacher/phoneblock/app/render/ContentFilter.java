@@ -34,6 +34,7 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.AssignContributionServlet;
 import de.haumacher.phoneblock.app.BasicLoginFilter;
+import de.haumacher.phoneblock.app.EpcQrCodeServlet;
 import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.DeleteAccountServlet;
@@ -315,6 +316,7 @@ public class ContentFilter extends LoginFilter {
 			(path.startsWith("/api/") && !path.equals("/api/")) ||
 			path.startsWith(CardDavServlet.DIR_NAME) ||
 			path.startsWith(AssignContributionServlet.PATH) ||
+			path.startsWith(EpcQrCodeServlet.PATH) ||
 			path.startsWith(CreateAuthTokenServlet.CREATE_TOKEN) ||
 			path.startsWith(DeleteAccountServlet.PATH) ||
 			path.startsWith(EMailVerificationServlet.LOGIN_WEB) ||
