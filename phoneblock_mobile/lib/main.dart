@@ -1889,6 +1889,8 @@ class _MainScreenState extends State<MainScreen> {
             rating: Rating.aLEGITIMATE,
           );
 
+          _markCallAsSeen(call);
+
           // Reload the calls list to reflect the change
           await _loadScreenedCalls();
 
@@ -1990,6 +1992,8 @@ class _MainScreenState extends State<MainScreen> {
             true, // Mark as blocked/SPAM
             rating: rating, // Store the rating type
           );
+
+          _markCallAsSeen(call);
 
           // Reload the calls list to reflect the change
           await _loadScreenedCalls();
