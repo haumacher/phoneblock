@@ -64,6 +64,10 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         // Sync local blocklistMode with actual Fritz!Box state (bidirectional)
         cardDavStatus = await FritzBoxService.instance.syncBlocklistMode();
         config = await FritzBoxStorage.instance.getConfig();
+
+        // Detect pre-existing answerbot setup
+        await FritzBoxService.instance.syncAnswerbotState();
+        config = await FritzBoxStorage.instance.getConfig();
       }
 
       final answerbotInfo = await _fetchAnswerbotInfo(config?.answerbotId);
