@@ -1345,7 +1345,7 @@ class FritzBoxService {
               sipDeviceId: voipClient.internalNumber,
             );
             if (kDebugMode) {
-              debugPrint('syncAnswerbotState: Adopted bot ${bot.id} (username: ${bot.userName}, device: ${voipClient.internalNumber})');
+              print('syncAnswerbotState: Adopted bot ${bot.id} (username: ${bot.userName}, device: ${voipClient.internalNumber})');
             }
             return;
           }
@@ -1353,7 +1353,7 @@ class FritzBoxService {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('syncAnswerbotState: Error detecting answerbot: $e');
+        print('syncAnswerbotState: Error detecting answerbot: $e');
       }
     }
   }
