@@ -17,6 +17,7 @@ class ScreenedCall {
   final String? label; // Formatted phone number for display (e.g., "(DE) 030 12345678")
   final String? location; // City or region where the call originated (e.g., "Berlin")
   final bool isWildcardBlocked; // true if blocked by a local wildcard prefix rule
+  final String? matchedWildcard; // The wildcard prefix that matched (e.g., "+4930"), null if not wildcard-blocked
 
   // Unified source tracking
   final CallSource source; // Where the call came from (mobile or fritzbox)
@@ -38,6 +39,7 @@ class ScreenedCall {
     this.label,
     this.location,
     this.isWildcardBlocked = false,
+    this.matchedWildcard,
     this.source = CallSource.mobile,
     this.duration,
     this.device,
@@ -82,6 +84,7 @@ class ScreenedCall {
       label: map['label'] as String?,
       location: map['location'] as String?,
       isWildcardBlocked: isWildcard,
+      matchedWildcard: map['matchedWildcard'] as String?,
       source: source,
       duration: map['duration'] as int?,
       device: map['device'] as String?,
@@ -102,6 +105,7 @@ class ScreenedCall {
       'rating': isWildcardBlocked ? 'WILDCARD' : (rating != null ? _ratingToString(rating!) : null),
       'label': label,
       'location': location,
+      'matchedWildcard': matchedWildcard,
       'source': source.name,
       'duration': duration,
       'device': device,
@@ -201,7 +205,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -224,7 +228,8 @@ class ScreenedCallsDatabase {
         duration INTEGER,
         device TEXT,
         fritzboxId TEXT UNIQUE,
-        callType INTEGER
+        callType INTEGER,
+        matchedWildcard TEXT
       )
     ''');
 
@@ -420,6 +425,9 @@ class ScreenedCallsDatabase {
         INSERT INTO blocklist_sync (id, version, lastSyncTime, syncOffset) VALUES (1, 0, 0, 0)
       ''');
     }
+    if (oldVersion < 11) {
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN matchedWildcard TEXT');
+    }
   }
 
   /// Inserts a new screened call record.
@@ -437,6 +445,7 @@ class ScreenedCallsDatabase {
       label: call.label,
       location: call.location,
       isWildcardBlocked: call.isWildcardBlocked,
+      matchedWildcard: call.matchedWildcard,
       source: call.source,
       duration: call.duration,
       device: call.device,

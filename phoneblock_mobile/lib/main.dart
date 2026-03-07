@@ -571,6 +571,7 @@ void main() async {
       final ratingStr = args['rating'] as String?;
       final label = args['label'] as String?;
       final location = args['location'] as String?;
+      final matchedWildcard = args['matchedWildcard'] as String?;
 
       // Parse rating if available
       final isWildcard = ratingStr == 'WILDCARD';
@@ -590,6 +591,7 @@ void main() async {
         label: label,
         location: location,
         isWildcardBlocked: isWildcard,
+        matchedWildcard: matchedWildcard,
       );
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -773,6 +775,7 @@ Future<void> syncStoredScreeningResults() async {
           label: data['label'] as String?,
           location: data['location'] as String?,
           isWildcardBlocked: isWildcard,
+          matchedWildcard: data['matchedWildcard'] as String?,
         );
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -1483,7 +1486,7 @@ class _MainScreenState extends State<MainScreen> {
     // Build the display text
     final String displayText;
     if (call.isWildcardBlocked) {
-      final prefix = call.label;
+      final prefix = call.matchedWildcard;
       displayText = (prefix != null && prefix.isNotEmpty)
           ? context.l10n.matchedWildcardFilter('$prefix*')
           : context.l10n.wildcardBlocked;
@@ -1640,7 +1643,7 @@ class _MainScreenState extends State<MainScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    call.isWildcardBlocked ? call.phoneNumber : (call.label ?? call.phoneNumber),
+                    call.label ?? call.phoneNumber,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -2605,7 +2608,7 @@ class _MainScreenState extends State<MainScreen> {
   /// Builds the reports text showing votes and range votes.
   String _buildReportsText(ScreenedCall call) {
     if (call.isWildcardBlocked) {
-      final prefix = call.label;
+      final prefix = call.matchedWildcard;
       if (prefix != null && prefix.isNotEmpty) {
         return context.l10n.matchedWildcardFilter('$prefix*');
       }
