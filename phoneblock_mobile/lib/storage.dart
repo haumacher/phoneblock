@@ -133,6 +133,48 @@ class ScreenedCall {
   }
 }
 
+/// A locally stored wildcard blocking rule.
+///
+/// Blocks all phone numbers starting with [prefix] during call screening.
+/// Stored only on the device (not synced to the server).
+class WildcardBlock {
+  final int? id;
+
+  /// International format prefix, e.g. "+43", "+491234".
+  final String prefix;
+
+  /// Optional user comment explaining the rule.
+  final String? comment;
+
+  /// When this rule was created (Unix milliseconds).
+  final DateTime created;
+
+  WildcardBlock({
+    this.id,
+    required this.prefix,
+    this.comment,
+    required this.created,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'prefix': prefix,
+      'comment': comment,
+      'created': created.millisecondsSinceEpoch,
+    };
+  }
+
+  factory WildcardBlock.fromMap(Map<String, dynamic> map) {
+    return WildcardBlock(
+      id: map['id'] as int?,
+      prefix: map['prefix'] as String,
+      comment: map['comment'] as String?,
+      created: DateTime.fromMillisecondsSinceEpoch(map['created'] as int),
+    );
+  }
+}
+
 /// Database helper for storing and retrieving screened calls.
 class ScreenedCallsDatabase {
   static final ScreenedCallsDatabase instance = ScreenedCallsDatabase._init();
@@ -154,7 +196,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -214,6 +256,15 @@ class ScreenedCallsDatabase {
       )
     ''');
 
+    // Wildcard blocking rules table (local only)
+    await db.execute('''
+      CREATE TABLE wildcard_blocks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        prefix TEXT NOT NULL UNIQUE,
+        comment TEXT,
+        created INTEGER NOT NULL
+      )
+    ''');
   }
 
   /// Upgrades the database schema.
@@ -303,6 +354,17 @@ class ScreenedCallsDatabase {
     if (oldVersion < 8) {
       // Add sip_username column for identifying the SIP device by username
       await db.execute('ALTER TABLE fritzbox_config ADD COLUMN sip_username TEXT');
+    }
+    if (oldVersion < 9) {
+      // Add wildcard blocking rules table
+      await db.execute('''
+        CREATE TABLE wildcard_blocks (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          prefix TEXT NOT NULL UNIQUE,
+          comment TEXT,
+          created INTEGER NOT NULL
+        )
+      ''');
     }
   }
 
@@ -437,6 +499,63 @@ class ScreenedCallsDatabase {
       where: "source = ?",
       whereArgs: ['fritzbox'],
     );
+  }
+
+  // --- Wildcard blocking rules ---
+
+  /// Inserts a new wildcard blocking rule.
+  ///
+  /// Returns the inserted [WildcardBlock] with its generated ID.
+  /// Throws if a rule with the same [WildcardBlock.prefix] already exists.
+  Future<WildcardBlock> insertWildcardBlock(WildcardBlock block) async {
+    final db = await database;
+    final id = await db.insert('wildcard_blocks', block.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.abort);
+    return WildcardBlock(
+      id: id,
+      prefix: block.prefix,
+      comment: block.comment,
+      created: block.created,
+    );
+  }
+
+  /// Returns all wildcard blocking rules sorted by prefix.
+  Future<List<WildcardBlock>> getAllWildcardBlocks() async {
+    final db = await database;
+    final maps = await db.query('wildcard_blocks', orderBy: 'prefix ASC');
+    return maps.map((m) => WildcardBlock.fromMap(m)).toList();
+  }
+
+  /// Returns all wildcard prefixes as a list of strings.
+  Future<List<String>> getWildcardPrefixes() async {
+    final db = await database;
+    final maps = await db.query('wildcard_blocks', columns: ['prefix'], orderBy: 'prefix ASC');
+    return maps.map((m) => m['prefix'] as String).toList();
+  }
+
+  /// Updates the comment for a wildcard blocking rule.
+  Future<int> updateWildcardBlockComment(int id, String comment) async {
+    final db = await database;
+    return db.update(
+      'wildcard_blocks',
+      {'comment': comment},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Deletes a wildcard blocking rule by ID.
+  Future<int> deleteWildcardBlock(int id) async {
+    final db = await database;
+    return db.delete('wildcard_blocks', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Checks whether a wildcard prefix already exists.
+  Future<bool> wildcardPrefixExists(String prefix) async {
+    final db = await database;
+    final result = await db.query('wildcard_blocks',
+        where: 'prefix = ?', whereArgs: [prefix], limit: 1);
+    return result.isNotEmpty;
   }
 
   /// Closes the database.
