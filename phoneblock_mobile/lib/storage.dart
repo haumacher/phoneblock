@@ -436,6 +436,12 @@ class ScreenedCallsDatabase {
       rating: call.rating,
       label: call.label,
       location: call.location,
+      isWildcardBlocked: call.isWildcardBlocked,
+      source: call.source,
+      duration: call.duration,
+      device: call.device,
+      fritzboxId: call.fritzboxId,
+      callType: call.callType,
     );
   }
 
