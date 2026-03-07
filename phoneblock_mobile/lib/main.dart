@@ -2851,7 +2851,7 @@ Future<void> registerBlocklistSync() async {
     frequency: const Duration(hours: 24),
     initialDelay: Duration(milliseconds: offset),
     constraints: Constraints(networkType: NetworkType.connected),
-    existingWorkPolicy: ExistingWorkPolicy.keep,
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
   );
 }
 
@@ -4047,7 +4047,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
   /// Validates a wildcard prefix and stores it locally.
   Future<void> _addWildcardNumber(BuildContext context, String phoneInput) async {
-    final prefix = _normalizeWildcardPrefix(phoneInput);
+    final prefix = await _normalizeWildcardPrefix(phoneInput);
 
     if (prefix == null || prefix.length < 3) {
       if (context.mounted) {
@@ -4100,9 +4100,10 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
   /// Normalizes user input to an international prefix format.
   ///
-  /// Accepts formats like "0043", "+43", "0049123" and returns "+43", "+49123".
+  /// Accepts formats like "0043", "+43", "0049123", "030" and returns "+43", "+49123", "+4930".
+  /// Uses Android's libphonenumber for national format normalization.
   /// Returns null if the input cannot be normalized.
-  String? _normalizeWildcardPrefix(String input) {
+  Future<String?> _normalizeWildcardPrefix(String input) async {
     var cleaned = input.replaceAll(RegExp(r'[\s\-\(\)\/]'), '');
 
     // Handle 00XX format → +XX
@@ -4110,14 +4111,30 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
       cleaned = '+${cleaned.substring(2)}';
     }
 
-    if (!cleaned.startsWith('+')) return null;
-
-    final afterPlus = cleaned.substring(1);
-    if (afterPlus.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(afterPlus)) {
-      return null;
+    if (cleaned.startsWith('+')) {
+      final afterPlus = cleaned.substring(1);
+      if (afterPlus.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(afterPlus)) {
+        return null;
+      }
+      return cleaned;
     }
 
-    return cleaned;
+    // National format (e.g. "030" for Berlin) — normalize via libphonenumber.
+    // Pad with zeros to form a plausible phone number, normalize, then trim back.
+    if (!RegExp(r'^[0-9]+$').hasMatch(cleaned) || cleaned.isEmpty) {
+      return null;
+    }
+    final padded = cleaned.padRight(11, '0');
+    final normalized = await normalizePhoneNumber(padded, countryCode: '');
+    if (normalized != null && normalized.startsWith('+')) {
+      // Trim back the padded zeros: the normalized prefix has the same
+      // number of meaningful digits as the original input.
+      final prefixLen = normalized.length - (padded.length - cleaned.length);
+      if (prefixLen > 1) {
+        return normalized.substring(0, prefixLen);
+      }
+    }
+    return null;
   }
 
   /// Shows a comment dialog for wildcard rules.
