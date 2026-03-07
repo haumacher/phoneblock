@@ -95,7 +95,7 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
-        // Check local wildcard blocking rules first for fast blocking
+        // Check local wildcard blocking rules
         String matchedPrefix = null;
         String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
         try {
@@ -114,66 +114,33 @@ public class CallChecker extends CallScreeningService {
         // Check local blocklist cache
         int localVotes = lookupLocalBlocklist(number);
 
-        if (matchedPrefix != null || localVotes >= minVotes) {
-            // Block immediately based on local data
-            if (matchedPrefix != null) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by wildcard rule: " + matchedPrefix + "* matches " + number);
-            } else {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Blocking call by local blocklist: " + number + " with " + localVotes + " votes");
-            }
+        // Determine if we should block immediately based on local data
+        final boolean locallyBlocked = matchedPrefix != null || localVotes >= minVotes;
+
+        if (locallyBlocked) {
+            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking locally: " + number
+                + (matchedPrefix != null ? " (wildcard " + matchedPrefix + "*)" : " (" + localVotes + " local votes)"));
             respondToCall(callDetails, new CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
                 .setSkipCallLog(true)
                 .setSkipNotification(true)
                 .build());
-
-            final String blockedPrefix = matchedPrefix;
-            final int blockedLocalVotes = localVotes;
-
-            // Also query the API so the server can track spam activity
-            _pool.schedule(() -> {
-                try {
-                    JSONObject json = queryPhoneBlock(number, authToken);
-                    int votes = json.getInt("votes");
-                    int votesWildcard = json.optInt("votesWildcard", 0);
-                    String rating = json.optString("rating", null);
-                    String label = json.optString("label", null);
-                    String location = json.optString("location", null);
-
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                        if (blockedPrefix != null) {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, "WILDCARD", label, location, blockedPrefix);
-                        } else {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, rating, label, location);
-                        }
-                    });
-                } catch (Exception e) {
-                    Log.d(CallChecker.class.getName(), "onScreenCall: API query for locally blocked call failed: " + number, e);
-                    // Report with local data only
-                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                        if (blockedPrefix != null) {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null, blockedPrefix);
-                        } else {
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, blockedLocalVotes, 0, null, null, null);
-                        }
-                    });
-                }
-            }, 0, TimeUnit.MILLISECONDS);
-            return;
         }
 
-        if (localVotes <= 0) {
-            // No local spam indicators - accept without querying the API to reduce server load
-            Log.d(CallChecker.class.getName(), "onScreenCall: No local spam data, accepting call: " + number);
+        // No local spam indicators at all — accept without querying the API
+        if (!locallyBlocked && localVotes <= 0) {
+            Log.d(CallChecker.class.getName(), "onScreenCall: No local spam data, accepting: " + number);
             acceptCall(callDetails);
             return;
         }
 
-        // Local votes exist but below minVotes threshold - query the API for a definitive answer
+        // Query the API (single location):
+        // - If locally blocked: for server tracking + enriching the call report
+        // - If local votes > 0 but below threshold: for a definitive blocking decision
+        final String blockedPrefix = matchedPrefix;
+        final int blockedLocalVotes = localVotes;
         AtomicBoolean canceled = new AtomicBoolean();
-
-        // Array to hold timeout future reference (needs to be final for lambda access)
         final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
 
         ScheduledFuture<?> queryFuture = _pool.schedule(() -> {
@@ -186,90 +153,78 @@ public class CallChecker extends CallScreeningService {
                 String label = json.optString("label", null);
                 String location = json.optString("location", null);
 
-                // Check if number should be blocked based on direct votes or range votes
-                final boolean shouldBlock;
-                final String blockReason;
-
-                if (votes >= minVotes && !archived) {
-                    shouldBlock = true;
-                    blockReason = votes + " votes";
-                } else if (blockRanges && votesWildcard >= minRangeVotes) {
-                    shouldBlock = true;
-                    blockReason = votesWildcard + " range votes";
-                } else {
-                    shouldBlock = false;
-                    blockReason = "";
+                if (locallyBlocked) {
+                    // Already responded — just report with enriched API data
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                        if (blockedPrefix != null) {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, "WILDCARD", label, location, blockedPrefix);
+                        } else {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, votesWildcard, rating, label, location);
+                        }
+                    });
+                    return;
                 }
 
-                // Capture final values for lambda
-                final int finalVotesWildcard = votesWildcard;
-                final String finalLabel = label;
-                final String finalLocation = location;
+                // Not locally blocked — decide based on API response
+                final boolean shouldBlock = (votes >= minVotes && !archived)
+                    || (blockRanges && votesWildcard >= minRangeVotes);
 
-                if (shouldBlock) {
-                    if (canceled.compareAndSet(false, true)) {
-                        // Cancel timeout since we got a result
-                        if (timeoutFuture[0] != null) {
-                            timeoutFuture[0].cancel(false);
-                        }
-                        Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking SPAM call: " + number + " (" + blockReason + ", rating: " + rating + ")");
+                if (canceled.compareAndSet(false, true)) {
+                    if (timeoutFuture[0] != null) {
+                        timeoutFuture[0].cancel(false);
+                    }
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                        if (shouldBlock) {
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking by API: " + number + " (" + votes + " votes, " + votesWildcard + " range votes)");
                             respondToCall(callDetails, new CallResponse.Builder()
                                 .setDisallowCall(true)
                                 .setRejectCall(true)
                                 .setSkipCallLog(true)
                                 .setSkipNotification(true)
                                 .build());
-                            // Report blocked call (persists even when app is not running)
-                            // Use rawNumber for display, normalized number is only for API queries
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, votes, finalVotesWildcard, rating, finalLabel, finalLocation);
-                        });
-                    }
-                    return;
-                } else {
-                    if (canceled.compareAndSet(false, true)) {
-                        // Cancel timeout since we got a result
-                        if (timeoutFuture[0] != null) {
-                            timeoutFuture[0].cancel(false);
-                        }
-                        Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                            Log.d(CallChecker.class.getName(), "onScreenCall: Letting call pass: " + number + " (" + votes + " votes, " + finalVotesWildcard + " range votes)");
+                        } else {
+                            Log.d(CallChecker.class.getName(), "onScreenCall: Accepting by API: " + number + " (" + votes + " votes, " + votesWildcard + " range votes)");
                             acceptCall(callDetails);
-                            // Report accepted call (persists even when app is not running)
-                            // Use rawNumber for display, normalized number is only for API queries
-                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, false, votes, finalVotesWildcard, rating, finalLabel, finalLocation);
-                        });
-                    }
+                        }
+                        MainActivity.reportScreenedCall(CallChecker.this, rawNumber, shouldBlock, votes, votesWildcard, rating, label, location);
+                    });
+                }
+            } catch (Exception e) {
+                Log.d(CallChecker.class.getName(), "onScreenCall: API query failed: " + number, e);
+
+                if (locallyBlocked) {
+                    // Already responded — report with local data only
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                        if (blockedPrefix != null) {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, 0, 0, "WILDCARD", null, null, blockedPrefix);
+                        } else {
+                            MainActivity.reportScreenedCall(CallChecker.this, rawNumber, true, blockedLocalVotes, 0, null, null, null);
+                        }
+                    });
                     return;
                 }
-            } catch (MalformedURLException e) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock URL, cannot screen call: " + number);
-            } catch (IOException ex) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: failed to query PhoneBlock, cannot screen call: " + number, ex);
-            } catch (JSONException ex) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: Invalid PhoneBlock result, cannot screen call: " + number, ex);
-            }
 
-            if (canceled.compareAndSet(false, true)) {
-                // Cancel timeout since we're handling the error
-                if (timeoutFuture[0] != null) {
-                    timeoutFuture[0].cancel(false);
+                if (canceled.compareAndSet(false, true)) {
+                    if (timeoutFuture[0] != null) {
+                        timeoutFuture[0].cancel(false);
+                    }
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> acceptCall(callDetails));
                 }
-                Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                    acceptCall(callDetails);
-                });
             }
         }, 0, TimeUnit.MILLISECONDS);
 
-        timeoutFuture[0] = _pool.schedule(() -> {
-            if (canceled.compareAndSet(false, true)) {
-                Handler.createAsync(Looper.getMainLooper()).post(() -> {
-                    Log.d(CallChecker.class.getName(), "onScreenCall: PhoneBlock query timeout, cannot screen call: " + number);
-                    acceptCall(callDetails);
-                });
-            }
-            queryFuture.cancel(true);
-        }, 4500, TimeUnit.MILLISECONDS);
+        // Timeout only needed when the API decides (not locally blocked)
+        if (!locallyBlocked) {
+            timeoutFuture[0] = _pool.schedule(() -> {
+                if (canceled.compareAndSet(false, true)) {
+                    Handler.createAsync(Looper.getMainLooper()).post(() -> {
+                        Log.d(CallChecker.class.getName(), "onScreenCall: API timeout, accepting: " + number);
+                        acceptCall(callDetails);
+                    });
+                }
+                queryFuture.cancel(true);
+            }, 4500, TimeUnit.MILLISECONDS);
+        }
     }
 
     private @NonNull JSONObject queryPhoneBlock(String number, String authToken) throws IOException, JSONException {
