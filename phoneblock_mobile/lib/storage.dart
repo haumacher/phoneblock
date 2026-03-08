@@ -704,7 +704,7 @@ class ScreenedCallsDatabase {
     final db = await database;
     final results = await db.query('blocklist_sync', where: 'id = 1');
     if (results.isEmpty) {
-      return {'version': 0, 'lastSyncTime': 0, 'syncOffset': 0};
+      return {'version': 0, 'lastSyncTime': 0, 'syncOffset': 0, 'syncCount': 0};
     }
     return results.first;
   }
