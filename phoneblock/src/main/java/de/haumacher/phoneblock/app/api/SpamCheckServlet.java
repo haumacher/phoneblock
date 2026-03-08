@@ -72,11 +72,14 @@ public class SpamCheckServlet extends HttpServlet {
 				DBPersonalization personalized = blocklist.resolvePersonalizationByHash(auth.getUserId(), hash);
 				if (personalized != null) {
 					if (personalized.isBlocked()) {
-						// User has personally blocked this number — use a high synthetic vote count
-						// that always exceeds any configurable minVotes threshold.
-						PhoneInfo info = NumberAnalyzer.phoneInfoFromId(personalized.getPhone())
-							.setRating(Rating.B_MISSED)
-							.setVotes(1000);
+						// User has personally blocked this number — look up actual community data too.
+						PhoneInfo info = db.getPhoneApiInfo(personalized.getPhone());
+						info.setBlackListed(true);
+						// Ensure votes are at least 1000 so the call is always blocked
+						// regardless of the user's minVotes setting.
+						if (info.getVotes() < 1000) {
+							info.setVotes(1000);
+						}
 						ServletUtil.sendResult(req, resp, info);
 					} else {
 						// User has personally whitelisted this number.

@@ -30,6 +30,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #isWhiteListed() */
 	public static final String WHITE_LISTED__PROP = "whiteListed";
 
+	/** @see #isBlackListed() */
+	public static final String BLACK_LISTED__PROP = "blackListed";
+
 	/** @see #isArchived() */
 	public static final String ARCHIVED__PROP = "archived";
 
@@ -54,6 +57,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private int _votesWildcard = 0;
 
 	private boolean _whiteListed = false;
+
+	private boolean _blackListed = false;
 
 	private boolean _archived = false;
 
@@ -182,6 +187,27 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetWhiteListed(boolean value) {
 		_listener.beforeSet(this, WHITE_LISTED__PROP, value);
 		_whiteListed = value;
+	}
+
+	/**
+	 * Whether this number is on the requesting user's personal block list.
+	 */
+	public final boolean isBlackListed() {
+		return _blackListed;
+	}
+
+	/**
+	 * @see #isBlackListed()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setBlackListed(boolean value) {
+		internalSetBlackListed(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isBlackListed()} without chain call utility. */
+	protected final void internalSetBlackListed(boolean value) {
+		_listener.beforeSet(this, BLACK_LISTED__PROP, value);
+		_blackListed = value;
 	}
 
 	/**
@@ -337,6 +363,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			RATING__PROP, 
 			VOTES_WILDCARD__PROP, 
 			WHITE_LISTED__PROP, 
+			BLACK_LISTED__PROP, 
 			ARCHIVED__PROP, 
 			DATE_ADDED__PROP, 
 			LAST_UPDATE__PROP, 
@@ -356,6 +383,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case RATING__PROP: return getRating();
 			case VOTES_WILDCARD__PROP: return getVotesWildcard();
 			case WHITE_LISTED__PROP: return isWhiteListed();
+			case BLACK_LISTED__PROP: return isBlackListed();
 			case ARCHIVED__PROP: return isArchived();
 			case DATE_ADDED__PROP: return getDateAdded();
 			case LAST_UPDATE__PROP: return getLastUpdate();
@@ -373,6 +401,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
 			case VOTES_WILDCARD__PROP: internalSetVotesWildcard((int) value); break;
 			case WHITE_LISTED__PROP: internalSetWhiteListed((boolean) value); break;
+			case BLACK_LISTED__PROP: internalSetBlackListed((boolean) value); break;
 			case ARCHIVED__PROP: internalSetArchived((boolean) value); break;
 			case DATE_ADDED__PROP: internalSetDateAdded((long) value); break;
 			case LAST_UPDATE__PROP: internalSetLastUpdate((long) value); break;
@@ -406,6 +435,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(getVotesWildcard());
 		out.name(WHITE_LISTED__PROP);
 		out.value(isWhiteListed());
+		out.name(BLACK_LISTED__PROP);
+		out.value(isBlackListed());
 		out.name(ARCHIVED__PROP);
 		out.value(isArchived());
 		out.name(DATE_ADDED__PROP);
@@ -430,6 +461,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			case VOTES_WILDCARD__PROP: setVotesWildcard(in.nextInt()); break;
 			case WHITE_LISTED__PROP: setWhiteListed(in.nextBoolean()); break;
+			case BLACK_LISTED__PROP: setBlackListed(in.nextBoolean()); break;
 			case ARCHIVED__PROP: setArchived(in.nextBoolean()); break;
 			case DATE_ADDED__PROP: setDateAdded(in.nextLong()); break;
 			case LAST_UPDATE__PROP: setLastUpdate(in.nextLong()); break;
@@ -456,6 +488,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** XML attribute or element name of a {@link #isWhiteListed} property. */
 	private static final String WHITE_LISTED__XML_ATTR = "white-listed";
+
+	/** XML attribute or element name of a {@link #isBlackListed} property. */
+	private static final String BLACK_LISTED__XML_ATTR = "black-listed";
 
 	/** XML attribute or element name of a {@link #isArchived} property. */
 	private static final String ARCHIVED__XML_ATTR = "archived";
@@ -490,6 +525,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
 		out.writeAttribute(VOTES_WILDCARD__XML_ATTR, Integer.toString(getVotesWildcard()));
 		out.writeAttribute(WHITE_LISTED__XML_ATTR, Boolean.toString(isWhiteListed()));
+		out.writeAttribute(BLACK_LISTED__XML_ATTR, Boolean.toString(isBlackListed()));
 		out.writeAttribute(ARCHIVED__XML_ATTR, Boolean.toString(isArchived()));
 		out.writeAttribute(DATE_ADDED__XML_ATTR, Long.toString(getDateAdded()));
 		out.writeAttribute(LAST_UPDATE__XML_ATTR, Long.toString(getLastUpdate()));
@@ -552,6 +588,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setWhiteListed(Boolean.parseBoolean(value));
 				break;
 			}
+			case BLACK_LISTED__XML_ATTR: {
+				setBlackListed(Boolean.parseBoolean(value));
+				break;
+			}
 			case ARCHIVED__XML_ATTR: {
 				setArchived(Boolean.parseBoolean(value));
 				break;
@@ -599,6 +639,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case WHITE_LISTED__XML_ATTR: {
 				setWhiteListed(Boolean.parseBoolean(in.getElementText()));
+				break;
+			}
+			case BLACK_LISTED__XML_ATTR: {
+				setBlackListed(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			case ARCHIVED__XML_ATTR: {
