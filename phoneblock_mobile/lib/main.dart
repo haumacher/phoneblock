@@ -3872,6 +3872,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
         ],
       ),
     );
