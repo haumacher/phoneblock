@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock screenar automatiskt inkommande samtal och blockerar SPAM-samtal.",
   "blocked": "Blockerad",
   "accepted": "Accepterad",
+  "notBlocked": "Inte blockerad",
   "missed": "Missad",
   "votes": "{count} röster",
   "viewOnPhoneBlock": "Visa på PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Ytterligare",
   "add": "Lägg till",
   "wildcardBlocked": "Jokerteckenregel",
+  "matchedWildcardFilter": "Filter: {prefix}",
   "blocklistCache": "Blocklist cache",
   "blocklistCachedEntries": "{count} antal",
   "blocklistLastSync": "Senaste synkronisering",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Synkronisera...",
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
-  "notBlocked": "Inte blockerad",
-  "matchedWildcardFilter": "Filter: {prefix}"
+  "notificationsTitle": "Meddelanden",
+  "notificationsDescription": "Visa meddelanden om filtrerade samtal"
 }

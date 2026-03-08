@@ -529,6 +529,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get errorUpdatingComment => 'Fout bij het bijwerken van de opmerking';
 
   @override
+  String get notificationsTitle => 'Meldingen';
+
+  @override
+  String get notificationsDescription =>
+      'Meldingen over gefilterde oproepen weergeven';
+
+  @override
   String get appearance => 'Uiterlijk';
 
   @override

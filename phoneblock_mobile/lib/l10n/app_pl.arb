@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock automatycznie sprawdza połączenia przychodzące i blokuje połączenia SPAM.",
   "blocked": "Zablokowany",
   "accepted": "Przyjęte",
+  "notBlocked": "Nie zablokowany",
   "missed": "Brakuje",
   "votes": "{count} głosów",
   "viewOnPhoneBlock": "Pokaż na PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Dalej",
   "add": "Dodaj",
   "wildcardBlocked": "Reguła symboli wieloznacznych",
+  "matchedWildcardFilter": "Filtr: {prefix}",
   "blocklistCache": "Pamięć podręczna listy bloków",
   "blocklistCachedEntries": "{count} liczb",
   "blocklistLastSync": "Ostatnia synchronizacja",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Synchronizacja...",
   "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
   "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się",
-  "notBlocked": "Nie zablokowany",
-  "matchedWildcardFilter": "Filtr: {prefix}"
+  "notificationsTitle": "Powiadomienia",
+  "notificationsDescription": "Wyświetlanie powiadomień o odfiltrowanych połączeniach"
 }

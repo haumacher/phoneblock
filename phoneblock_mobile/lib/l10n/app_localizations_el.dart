@@ -529,6 +529,13 @@ class AppLocalizationsEl extends AppLocalizations {
   String get errorUpdatingComment => 'Σφάλμα κατά την ενημέρωση του σχολίου';
 
   @override
+  String get notificationsTitle => 'Ειδοποιήσεις';
+
+  @override
+  String get notificationsDescription =>
+      'Εμφάνιση ειδοποιήσεων για φιλτραρισμένες κλήσεις';
+
+  @override
   String get appearance => 'Εμφάνιση';
 
   @override

@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock 会自动筛选来电并阻止垃圾邮件电话。",
   "blocked": "受阻",
   "accepted": "已接受",
+  "notBlocked": "未封锁",
   "missed": "错过",
   "votes": "{count}票数",
   "viewOnPhoneBlock": "在 PhoneBlock 上显示",
@@ -279,6 +280,7 @@
   "next": "更多",
   "add": "添加",
   "wildcardBlocked": "通配符规则",
+  "matchedWildcardFilter": "过滤器：<x1>前缀</x1",
   "blocklistCache": "拦截列表缓存",
   "blocklistCachedEntries": "{count}数字",
   "blocklistLastSync": "上次同步",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "同步...",
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
-  "notBlocked": "未封锁",
-  "matchedWildcardFilter": "过滤器：<x1>前缀</x1"
+  "notificationsTitle": "通知",
+  "notificationsDescription": "显示已过滤通话的通知"
 }

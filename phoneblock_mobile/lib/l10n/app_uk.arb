@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock автоматично перевірятиме вхідні дзвінки та блокуватиме СПАМ-дзвінки.",
   "blocked": "Заблоковано.",
   "accepted": "Прийнято",
+  "notBlocked": "Не заблоковано",
   "missed": "Промахнувся.",
   "votes": "{count} голоси",
   "viewOnPhoneBlock": "Показати на PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Далі",
   "add": "Додати",
   "wildcardBlocked": "Правило підстановки символів",
+  "matchedWildcardFilter": "Фільтр: {prefix}",
   "blocklistCache": "Кеш блокчейну",
   "blocklistCachedEntries": "{count} чисел",
   "blocklistLastSync": "Остання синхронізація",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Синхронізувати...",
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
-  "notBlocked": "Не заблоковано",
-  "matchedWildcardFilter": "Фільтр: {prefix}"
+  "notificationsTitle": "Сповіщення",
+  "notificationsDescription": "Показувати сповіщення про відфільтровані дзвінки"
 }

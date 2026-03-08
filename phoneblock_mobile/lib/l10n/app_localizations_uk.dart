@@ -527,6 +527,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get errorUpdatingComment => 'Помилка при оновленні коментаря';
 
   @override
+  String get notificationsTitle => 'Сповіщення';
+
+  @override
+  String get notificationsDescription =>
+      'Показувати сповіщення про відфільтровані дзвінки';
+
+  @override
   String get appearance => 'Зовнішній вигляд';
 
   @override

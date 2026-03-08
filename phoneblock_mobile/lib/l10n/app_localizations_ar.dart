@@ -526,6 +526,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorUpdatingComment => 'خطأ عند تحديث التعليق';
 
   @override
+  String get notificationsTitle => 'الإشعارات';
+
+  @override
+  String get notificationsDescription =>
+      'إظهار تنبيهات حول المكالمات التي تمت تصفيتها';
+
+  @override
   String get appearance => 'المظهر';
 
   @override

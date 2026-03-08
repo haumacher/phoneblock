@@ -525,6 +525,12 @@ class AppLocalizationsDa extends AppLocalizations {
   String get errorUpdatingComment => 'Fejl ved opdatering af kommentar';
 
   @override
+  String get notificationsTitle => 'Meddelelser';
+
+  @override
+  String get notificationsDescription => 'Vis meddelelser om filtrerede opkald';
+
+  @override
   String get appearance => 'Udseende';
 
   @override

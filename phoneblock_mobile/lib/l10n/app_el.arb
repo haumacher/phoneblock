@@ -7,6 +7,7 @@
   "noCallsDescription": "Το PhoneBlock θα ελέγχει αυτόματα τις εισερχόμενες κλήσεις και θα μπλοκάρει τις κλήσεις SPAM.",
   "blocked": "Αποκλεισμένο",
   "accepted": "Αποδεκτό",
+  "notBlocked": "Δεν έχει μπλοκαριστεί",
   "missed": "Missed",
   "votes": "{count} ψήφων",
   "viewOnPhoneBlock": "Εμφάνιση στο PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Περαιτέρω",
   "add": "Προσθέστε",
   "wildcardBlocked": "Κανόνας Wildcard",
+  "matchedWildcardFilter": "Φίλτρο: {prefix}",
   "blocklistCache": "Προσωρινή μνήμη αποκλεισμού",
   "blocklistCachedEntries": "{count} αριθμοί",
   "blocklistLastSync": "Τελευταίος συγχρονισμός",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Συγχρονισμός...",
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
-  "notBlocked": "Δεν έχει μπλοκαριστεί",
-  "matchedWildcardFilter": "Φίλτρο: {prefix}"
+  "notificationsTitle": "Ειδοποιήσεις",
+  "notificationsDescription": "Εμφάνιση ειδοποιήσεων για φιλτραρισμένες κλήσεις"
 }

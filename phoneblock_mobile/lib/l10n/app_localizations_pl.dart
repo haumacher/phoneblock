@@ -529,6 +529,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get errorUpdatingComment => 'Błąd podczas aktualizacji komentarza';
 
   @override
+  String get notificationsTitle => 'Powiadomienia';
+
+  @override
+  String get notificationsDescription =>
+      'Wyświetlanie powiadomień o odfiltrowanych połączeniach';
+
+  @override
   String get appearance => 'Wygląd';
 
   @override

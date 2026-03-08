@@ -528,6 +528,12 @@ class AppLocalizationsNb extends AppLocalizations {
   String get errorUpdatingComment => 'Feil ved oppdatering av kommentaren';
 
   @override
+  String get notificationsTitle => 'Varsler';
+
+  @override
+  String get notificationsDescription => 'Vis varsler om filtrerte anrop';
+
+  @override
   String get appearance => 'Utseende';
 
   @override

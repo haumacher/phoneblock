@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock screent automatisch inkomende gesprekken en blokkeert SPAM-oproepen.",
   "blocked": "Geblokkeerd",
   "accepted": "Geaccepteerd",
+  "notBlocked": "Niet geblokkeerd",
   "missed": "Gemist",
   "votes": "{count}",
   "viewOnPhoneBlock": "Tonen op PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Verder",
   "add": "Voeg  toe",
   "wildcardBlocked": "Wildcard-regel",
+  "matchedWildcardFilter": "Filter: {prefix}",
   "blocklistCache": "Cache voor blokkadelijst",
   "blocklistCachedEntries": "{count}",
   "blocklistLastSync": "Laatste synchronisatie",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Synchroniseren...",
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
-  "notBlocked": "Niet geblokkeerd",
-  "matchedWildcardFilter": "Filter: {prefix}"
+  "notificationsTitle": "Meldingen",
+  "notificationsDescription": "Meldingen over gefilterde oproepen weergeven"
 }

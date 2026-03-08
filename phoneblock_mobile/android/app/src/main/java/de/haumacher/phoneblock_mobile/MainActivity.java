@@ -248,7 +248,9 @@ public class MainActivity extends FlutterActivity {
                 prefs.edit().putString("pending_screened_calls", callsArray.toString()).apply();
 
                 // Update notification showing all notable calls (blocked or suspicious)
-                updateCallsNotification(context, callsArray);
+                if (areNotificationsEnabled(context)) {
+                    updateCallsNotification(context, callsArray);
+                }
                 Log.d(MainActivity.class.getName(), "Stored " + (wasBlocked ? "blocked" : "suspicious") + " call for later sync: " + phoneNumber);
             } catch (JSONException e) {
                 Log.e(MainActivity.class.getName(), "Error storing screening result in SharedPreferences", e);
@@ -336,6 +338,15 @@ public class MainActivity extends FlutterActivity {
 
             case "setThemeMode":
                 setThemeMode((String) methodCall.arguments);
+                result.success(null);
+                break;
+
+            case "getNotificationsEnabled":
+                result.success(getNotificationsEnabled());
+                break;
+
+            case "setNotificationsEnabled":
+                setNotificationsEnabled((Boolean) methodCall.arguments);
                 result.success(null);
                 break;
 
@@ -536,6 +547,37 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("theme_mode", themeMode).apply();
         Log.d(MainActivity.class.getName(), "setThemeMode: " + themeMode);
+    }
+
+    /**
+     * Gets whether app notifications are enabled.
+     * @return true if notifications are enabled, false otherwise. Defaults to true.
+     */
+    private boolean getNotificationsEnabled() {
+        SharedPreferences prefs = getPreferences(this);
+        boolean value = prefs.getBoolean("notifications_enabled", true);
+        Log.d(MainActivity.class.getName(), "getNotificationsEnabled: " + value);
+        return value;
+    }
+
+    /**
+     * Sets whether app notifications are enabled.
+     * @param enabled true to enable notifications, false to disable.
+     */
+    private void setNotificationsEnabled(boolean enabled) {
+        SharedPreferences prefs = getPreferences(this);
+        prefs.edit().putBoolean("notifications_enabled", enabled).apply();
+        Log.d(MainActivity.class.getName(), "setNotificationsEnabled: " + enabled);
+    }
+
+    /**
+     * Checks whether notifications are enabled in preferences.
+     * @param context Application context
+     * @return true if notifications are enabled, false otherwise.
+     */
+    private static boolean areNotificationsEnabled(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        return prefs.getBoolean("notifications_enabled", true);
     }
 
     /**

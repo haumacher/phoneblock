@@ -527,6 +527,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorUpdatingComment => 'Fel vid uppdatering av kommentaren';
 
   @override
+  String get notificationsTitle => 'Meddelanden';
+
+  @override
+  String get notificationsDescription =>
+      'Visa meddelanden om filtrerade samtal';
+
+  @override
   String get appearance => 'Utseende';
 
   @override
