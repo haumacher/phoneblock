@@ -532,6 +532,50 @@ Configuration for the blocklist download API endpoint (`/api/blocklist`).
 
 ---
 
+## FTC Do Not Call Import Configuration
+
+**JNDI Prefix:** `ftc/`
+**System Property Prefix:** `ftc.`
+**Source:** `FtcImportService.java`
+
+Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data import. When enabled, downloads daily CSV files from ftc.gov containing US spam phone number complaints and stores them in separate FTC tables for hash-based lookup by the mobile app.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `ftc/enabled` | Boolean | `false` | Enable FTC Do Not Call data import |
+| `ftc/schedule/hour` | Integer | `6` | Hour of day (UTC) to run daily import (0-23) |
+| `ftc/schedule/minute` | Integer | `0` | Minute of hour to run daily import (0-59) |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="ftc/enabled" value="true" type="java.lang.Boolean"/>
+  <Environment name="ftc/schedule/hour" value="6" type="java.lang.Integer"/>
+  <Environment name="ftc/schedule/minute" value="0" type="java.lang.Integer"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Dftc.enabled=true \
+-Dftc.schedule.hour=6 \
+-Dftc.schedule.minute=0
+```
+
+**Note:**
+- Disabled by default; must be explicitly enabled
+- On first run, bootstraps by importing the last 5 weeks of available data
+- Subsequent runs import only new days since the last successful import
+- FTC CSV files are published weekdays only; weekends and holidays are skipped automatically
+- FTC data is stored in separate tables (FTC_NUMBERS, FTC_REPORTS, FTC_SUBJECTS) and does not modify the community NUMBERS table
+- The imported data is used as a fallback in the mobile app's hash-based spam check when no community votes exist
+
+---
+
 ## Complete Example Configuration
 
 Here's a complete example Tomcat `context.xml` file with common production settings:
