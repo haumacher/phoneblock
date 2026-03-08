@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 
 /**
@@ -324,6 +325,18 @@ class TestNumberAnalyzer {
 		assertNotNull(result.getDial(), "Dial format should never be null");
 		assertNotNull(result.getZeroZero(), "ZeroZero format should never be null");
 		assertNotNull(result.getPlus(), "Plus format should never be null");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"+49891234567, +49, '(DE) 0891234567'",
+		"+390123456789, +49, '(IT) 0123456789'",
+	})
+	void testPhoneInfoFromNumberIncludesLabel(String input, String dialPrefix, String expectedLabel) {
+		PhoneNumer number = NumberAnalyzer.analyze(input, dialPrefix);
+		assertNotNull(number);
+		PhoneInfo info = NumberAnalyzer.phoneInfoFromNumber(number);
+		assertEquals(expectedLabel, info.getLabel());
 	}
 
 	@ParameterizedTest

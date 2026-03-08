@@ -2667,35 +2667,22 @@ class _MainScreenState extends State<MainScreen> {
     String label;
     Color color;
 
-    if (source == CallSource.fritzbox) {
-      // Fritz!Box calls: show based on actual call type
-      if (wasBlocked) {
-        // Rejected by call barring
-        icon = Icons.block;
-        label = context.l10n.blocked;
-        color = Colors.red[400]!;
-      } else if (call.callType == FritzBoxCallType.missed) {
-        // Missed call
-        icon = Icons.phone_missed;
-        label = context.l10n.missed;
-        color = Colors.orange[400]!;
-      } else {
-        // Answered call - show device name if available
-        icon = Icons.phone_callback;
-        label = call.device ?? context.l10n.accepted;
-        color = Colors.green[400]!;
-      }
+    if (wasBlocked) {
+      icon = Icons.block;
+      color = Colors.red[400]!;
+      label = (source == CallSource.fritzbox && call.device != null)
+          ? call.device!
+          : context.l10n.blocked;
+    } else if (source == CallSource.fritzbox && call.callType == FritzBoxCallType.missed) {
+      icon = Icons.phone_missed;
+      color = Colors.orange[400]!;
+      label = context.l10n.missed;
     } else {
-      // Mobile calls: blocked/not blocked by call screening
-      if (wasBlocked) {
-        icon = Icons.block;
-        label = context.l10n.blocked;
-        color = Colors.red[400]!;
-      } else {
-        icon = Icons.check_circle_outline;
-        label = context.l10n.notBlocked;
-        color = Colors.green[400]!;
-      }
+      icon = Icons.check_circle_outline;
+      color = Colors.green[400]!;
+      label = (source == CallSource.fritzbox && call.device != null)
+          ? call.device!
+          : context.l10n.notBlocked;
     }
 
     return [
