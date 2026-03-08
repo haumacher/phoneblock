@@ -2,8 +2,17 @@
 
 ## Version 1.9.4 (2026-03-08)
 
+**Key Features:**
+- Created timestamp tracking for personal blacklist/whitelist entries (DB migration 18)
+- `blackListed` field in PhoneInfo API response for personal blocklist detection (#266)
+
+**Improvements:**
+- Return real community votes for personally blocked numbers
+- Include label and location in all API responses (personally blocked, whitelisted, non-spam numbers) (#270)
+- Updated OpenAPI spec to document all API response fields
+
 **Bug Fixes:**
-- Fixed missing label and location in API responses for personally blocked, whitelisted, and non-spam numbers (#270)
+- Fixed missing example values removed from prefix hash parameters in API spec
 
 ## Version 1.9.3 (2026-03-07)
 
