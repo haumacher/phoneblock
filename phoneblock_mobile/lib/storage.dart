@@ -209,7 +209,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 12,
+      version: 13,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -297,12 +297,13 @@ class ScreenedCallsDatabase {
         id INTEGER PRIMARY KEY,
         version INTEGER NOT NULL DEFAULT 0,
         lastSyncTime INTEGER NOT NULL DEFAULT 0,
-        syncOffset INTEGER NOT NULL DEFAULT 0
+        syncOffset INTEGER NOT NULL DEFAULT 0,
+        syncCount INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
     await db.execute('''
-      INSERT INTO blocklist_sync (id, version, lastSyncTime, syncOffset) VALUES (1, 0, 0, 0)
+      INSERT INTO blocklist_sync (id, version, lastSyncTime, syncOffset, syncCount) VALUES (1, 0, 0, 0, 0)
     ''');
   }
 
@@ -435,6 +436,9 @@ class ScreenedCallsDatabase {
     }
     if (oldVersion < 12) {
       await db.execute('ALTER TABLE screened_calls ADD COLUMN isPersonallyBlocked INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 13) {
+      await db.execute('ALTER TABLE blocklist_sync ADD COLUMN syncCount INTEGER NOT NULL DEFAULT 0');
     }
   }
 
@@ -680,6 +684,21 @@ class ScreenedCallsDatabase {
     await db.delete('blocklist');
   }
 
+  /// Resets the blocklist for a full resync.
+  ///
+  /// Clears all cached entries and resets version and syncCount to 0,
+  /// so the next sync fetches the complete blocklist from the server.
+  Future<void> resetForFullSync() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('blocklist');
+      await txn.update('blocklist_sync', {
+        'version': 0,
+        'syncCount': 0,
+      }, where: 'id = 1');
+    });
+  }
+
   /// Returns the current blocklist sync metadata.
   Future<Map<String, dynamic>> getBlocklistSyncInfo() async {
     final db = await database;
@@ -738,10 +757,10 @@ class ScreenedCallsDatabase {
         }
       }
 
-      await txn.update('blocklist_sync', {
-        'version': newVersion,
-        'lastSyncTime': DateTime.now().millisecondsSinceEpoch,
-      }, where: 'id = 1');
+      await txn.rawUpdate(
+        'UPDATE blocklist_sync SET version = ?, lastSyncTime = ?, syncCount = syncCount + 1 WHERE id = 1',
+        [newVersion, DateTime.now().millisecondsSinceEpoch],
+      );
     });
 
     onComplete(upserted, deleted);
