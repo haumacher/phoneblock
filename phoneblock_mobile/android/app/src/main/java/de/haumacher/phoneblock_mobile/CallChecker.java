@@ -164,7 +164,9 @@ public class CallChecker extends CallScreeningService {
         boolean block = false;
         String matchedPrefix = null;
 
-        if (votes >= minVotes && !archived) {
+        if (blackListed) {
+            block = true;
+        } else if (votes >= minVotes && !archived) {
             block = true;
         } else if (blockRanges && votesWildcard >= minRangeVotes) {
             block = true;
