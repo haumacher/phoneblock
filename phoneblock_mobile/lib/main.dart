@@ -1120,6 +1120,9 @@ class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
   bool _isLoading = true;
   bool _answerbotEnabled = false;
+  int _minVotes = 4;
+  bool _blockRanges = true;
+  int _minRangeVotes = 10;
   FritzBoxConnectionState _fritzboxState = FritzBoxConnectionState.notConfigured;
   CardDavStatus _cardDavStatus = CardDavStatus.notConfigured;
   StreamSubscription<ScreenedCall>? _callScreenedSubscription;
@@ -1129,6 +1132,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _loadScreenedCalls();
+    _loadBlockingSettings();
     _setupCallScreeningListener();
     _checkPendingSharedNumber();
     _loadAnswerbotEnabled();
@@ -1198,6 +1202,28 @@ class _MainScreenState extends State<MainScreen> {
     } catch (e) {
       if (kDebugMode) {
         print("Error loading answerbot enabled setting: $e");
+      }
+    }
+  }
+
+  /// Loads blocking settings (minVotes, blockRanges, minRangeVotes) from
+  /// SharedPreferences so the call list can determine which numbers would
+  /// have been blocked.
+  Future<void> _loadBlockingSettings() async {
+    try {
+      final minVotes = await platform.invokeMethod<int>("getMinVotes");
+      final blockRanges = await platform.invokeMethod<bool>("getBlockRanges");
+      final minRangeVotes = await platform.invokeMethod<int>("getMinRangeVotes");
+      if (mounted) {
+        setState(() {
+          _minVotes = minVotes ?? 4;
+          _blockRanges = blockRanges ?? true;
+          _minRangeVotes = minRangeVotes ?? 10;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error loading blocking settings: $e");
       }
     }
   }
@@ -1416,8 +1442,14 @@ class _MainScreenState extends State<MainScreen> {
     // Use API rating if available, otherwise use generic labels
     final bool hasApiRating = call.rating != null && call.rating != Rating.uNKNOWN;
     final bool hasSpamIndicators = call.votes > 0 || call.votesWildcard > 0;
-    // Show as potential spam if not blocked but has spam indicators (votes)
-    final bool isPotentialSpam = !wasBlocked && hasSpamIndicators;
+    // A number should have been blocked if it meets the user's blocking criteria.
+    final bool shouldBeBlocked = wasBlocked
+        || call.isPersonallyBlocked
+        || call.votes >= _minVotes
+        || (_blockRanges && call.votesWildcard >= _minRangeVotes);
+    // Show "SPAM ?" only for numbers with some spam indicators that don't
+    // meet the user's blocking threshold.
+    final bool isPotentialSpam = !shouldBeBlocked && hasSpamIndicators;
 
     final Rating displayRating;
     if (hasApiRating) {
@@ -1441,12 +1473,12 @@ class _MainScreenState extends State<MainScreen> {
       displayText = (prefix != null && prefix.isNotEmpty)
           ? context.l10n.matchedWildcardFilter('$prefix*')
           : context.l10n.wildcardBlocked;
+    } else if (shouldBeBlocked) {
+      // Show the rating for calls that meet the user's blocking criteria
+      displayText = ratingText;
     } else if (isPotentialSpam) {
       // Show "{rating} ?" for potential spam (e.g., "SPAM ?")
       displayText = '$ratingText ?';
-    } else if (wasBlocked) {
-      // Show the rating for blocked calls
-      displayText = ratingText;
     } else {
       // Show "Legitim" for non-blocked calls without spam indicators
       displayText = context.l10n.ratingLegitimate;
@@ -2363,9 +2395,10 @@ class _MainScreenState extends State<MainScreen> {
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
-              // Reload answerbot enabled state when returning from settings
+              // Reload settings when returning from settings screen
               if (context.mounted) {
                 await _loadAnswerbotEnabled();
+                await _loadBlockingSettings();
               }
             },
           ),
