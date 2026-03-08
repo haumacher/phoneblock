@@ -793,13 +793,15 @@
 											"phone": "+491234567890",
 											"label": "(DE) 01234 567890",
 											"comment": "Spam caller",
-											"rating": "G_FRAUD"
+											"rating": "G_FRAUD",
+											"created": 1709913600000
 										},
 										{
 											"phone": "+491234567891",
 											"label": "(DE) 01234 567891",
 											"comment": null,
-											"rating": null
+											"rating": null,
+											"created": 1709913600000
 										}
 									]
 								}
@@ -967,13 +969,15 @@
 											"phone": "+491234567893",
 											"label": "(DE) 01234 567893",
 											"comment": "My doctor",
-											"rating": "A_LEGITIMATE"
+											"rating": "A_LEGITIMATE",
+											"created": 1709913600000
 										},
 										{
 											"phone": "+491234567894",
 											"label": "(DE) 01234 567894",
 											"comment": null,
-											"rating": null
+											"rating": null,
+											"created": 1709913600000
 										}
 									]
 								}
@@ -1396,6 +1400,12 @@
 							"G_FRAUD"
 						],
 						"nullable": true
+					},
+					"created": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Timestamp when this entry was added to the personalization list (milliseconds since epoch).",
+						"example": 1709913600000
 					}
 				},
 				"required": [

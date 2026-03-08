@@ -1082,4 +1082,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get blocklistSyncFailed => 'فشل مزامنة قائمة الحظر';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }

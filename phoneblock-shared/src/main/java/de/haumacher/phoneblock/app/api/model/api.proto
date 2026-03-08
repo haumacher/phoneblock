@@ -450,6 +450,9 @@ message PersonalizedNumber {
 	/** User's rating for this number (may be null). */
 	@Nullable
 	Rating rating;
+
+	/** Timestamp when this entry was added to the personalization list (milliseconds since epoch). */
+	long created;
 }
 
 /** A list of phone numbers (used for blacklist/whitelist responses). */

@@ -24,6 +24,7 @@ import de.haumacher.phoneblock.app.api.model.PersonalizedNumber;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBPhoneComment;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserComment;
@@ -112,18 +113,26 @@ public class PersonalizationServlet extends HttpServlet {
 			}
 
 			BlockList blockList = session.getMapper(BlockList.class);
-			List<String> phoneIds;
+			List<DBPersonalization> entries;
 
 			String servletPath = req.getServletPath();
 			if (BLACKLIST_PATH.equals(servletPath)) {
-				phoneIds = blockList.getPersonalizations(userId);
-				LOG.debug("Retrieved {} blocked numbers for user '{}'", phoneIds.size(), userName);
+				entries = blockList.getPersonalizationsWithCreated(userId);
+				LOG.debug("Retrieved {} blocked numbers for user '{}'", entries.size(), userName);
 			} else if (WHITELIST_PATH.equals(servletPath)) {
-				phoneIds = blockList.getWhiteList(userId);
-				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", phoneIds.size(), userName);
+				entries = blockList.getWhiteListWithCreated(userId);
+				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", entries.size(), userName);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown endpoint");
 				return;
+			}
+
+			// Extract phone IDs and created timestamps
+			List<String> phoneIds = new ArrayList<>();
+			Map<String, Long> createdMap = new HashMap<>();
+			for (DBPersonalization entry : entries) {
+				phoneIds.add(entry.getPhone());
+				createdMap.put(entry.getPhone(), entry.getCreated());
 			}
 
 			// Fetch comments and ratings for the numbers
@@ -152,7 +161,8 @@ public class PersonalizationServlet extends HttpServlet {
 					.setPhone(phoneInternational)
 					.setLabel(label)
 					.setComment(commentRating != null ? commentRating.getComment() : null)
-					.setRating(commentRating != null ? commentRating.getRating() : null);
+					.setRating(commentRating != null ? commentRating.getRating() : null)
+					.setCreated(createdMap.getOrDefault(phoneId, 0L));
 				numbers.add(pn);
 			}
 

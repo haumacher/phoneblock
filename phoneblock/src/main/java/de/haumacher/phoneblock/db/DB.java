@@ -1059,9 +1059,9 @@ public class DB {
 						blocklist.removePersonalization(userId, phone);
 					}
 					if (block) {
-						blocklist.addPersonalization(userId, phone, sha1);
+						blocklist.addPersonalization(userId, phone, sha1, System.currentTimeMillis());
 					} else {
-						blocklist.addExclude(userId, phone, sha1);
+						blocklist.addExclude(userId, phone, sha1, System.currentTimeMillis());
 					}
 				}
 				

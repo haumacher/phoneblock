@@ -25,40 +25,60 @@ public interface BlockList {
 	 * All numbers that the user with the given user ID has explicitly blocked.
 	 */
 	@Select("""
-			select PHONE from PERSONALIZATION 
-			where USERID = #{userId} and BLOCKED 
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and BLOCKED
 			order by PHONE
 			""")
 	List<String> getPersonalizations(long userId);
 
 	/**
+	 * All numbers that the user with the given user ID has explicitly blocked, with creation timestamp.
+	 */
+	@Select("""
+			select PHONE, CREATED from PERSONALIZATION
+			where USERID = #{userId} and BLOCKED
+			order by PHONE
+			""")
+	List<DBPersonalization> getPersonalizationsWithCreated(long userId);
+
+	/**
 	 * All numbers that the user with the given user ID has explicitly allowed.
 	 */
 	@Select("""
-			select PHONE from PERSONALIZATION 
-			where USERID = #{userId} and NOT BLOCKED 
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and NOT BLOCKED
 			order by PHONE
 			""")
 	Set<String> getExcluded(long userId);
-	
+
 	/**
 	 * List of all numbers that the user with the given user ID has explicitly allowed.
 	 */
 	@Select("""
-			select PHONE from PERSONALIZATION 
-			where USERID = #{userId} and NOT BLOCKED 
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and NOT BLOCKED
 			order by PHONE
 			""")
 	List<String> getWhiteList(long userId);
 
 	/**
+	 * List of all numbers that the user with the given user ID has explicitly allowed, with creation timestamp.
+	 */
+	@Select("""
+			select PHONE, CREATED from PERSONALIZATION
+			where USERID = #{userId} and NOT BLOCKED
+			order by PHONE
+			""")
+	List<DBPersonalization> getWhiteListWithCreated(long userId);
+
+	/**
 	 * Adds a blocklist entry for the user with the given user ID.
 	 */
 	@Insert("""
-			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED)
-			values (#{userId}, #{phone}, #{sha1}, true)
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED)
+			values (#{userId}, #{phone}, #{sha1}, true, #{created})
 			""")
-	void addPersonalization(long userId, String phone, byte[] sha1);
+	void addPersonalization(long userId, String phone, byte[] sha1, long created);
 	
 	/**
 	 * Removes a blocklist entry for the user with the given user ID.
@@ -85,10 +105,10 @@ public interface BlockList {
 	 * Adds an exclusion from the blocklist for the user with the given user ID.
 	 */
 	@Insert("""
-			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED)
-			values (#{userId}, #{phone}, #{sha1}, false)
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED)
+			values (#{userId}, #{phone}, #{sha1}, false, #{created})
 			""")
-	void addExclude(long userId, String phone, byte[] sha1);
+	void addExclude(long userId, String phone, byte[] sha1, long created);
 
 	/**
 	 * Resolves a personalization entry by its SHA1 hash.

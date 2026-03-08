@@ -239,11 +239,11 @@ public class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 			
-			blockList.addExclude(1, "012300000", null);
-			blockList.addExclude(2, "012300000", null);
-			blockList.addExclude(1, "034500000", null);
-			blockList.addExclude(1, "067800000", null);
-			blockList.addExclude(2, "099900000", null);
+			blockList.addExclude(1, "012300000", null, System.currentTimeMillis());
+			blockList.addExclude(2, "012300000", null, System.currentTimeMillis());
+			blockList.addExclude(1, "034500000", null, System.currentTimeMillis());
+			blockList.addExclude(1, "067800000", null, System.currentTimeMillis());
+			blockList.addExclude(2, "099900000", null, System.currentTimeMillis());
 
 			assertEquals(new HashSet<>(List.of("012300000", "034500000", "067800000")), blockList.getExcluded(1));
 
@@ -255,15 +255,15 @@ public class TestDB {
 
 			assertEquals(new HashSet<>(List.of("012300000", "067800000")), blockList.getExcluded(1));
 
-			blockList.addPersonalization(1, "065400000", null);
-			blockList.addPersonalization(1, "032100000", null);
-			blockList.addPersonalization(2, "032100000", null);
-			blockList.addPersonalization(2, "098700000", null);
+			blockList.addPersonalization(1, "065400000", null, System.currentTimeMillis());
+			blockList.addPersonalization(1, "032100000", null, System.currentTimeMillis());
+			blockList.addPersonalization(2, "032100000", null, System.currentTimeMillis());
+			blockList.addPersonalization(2, "098700000", null, System.currentTimeMillis());
 			
 			assertEquals(List.of("032100000", "065400000"), blockList.getPersonalizations(1));
-			
+
 			blockList.removePersonalization(1, "065400000");
-			
+
 			assertEquals(List.of("032100000"), blockList.getPersonalizations(1));
 			
 			blockList.removePersonalization(2, "032100000");
@@ -277,9 +277,9 @@ public class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 
-			blockList.addExclude(1, "012300000", null);
+			blockList.addExclude(1, "012300000", null, System.currentTimeMillis());
 			try {
-				blockList.addExclude(1, "012300000", null);
+				blockList.addExclude(1, "012300000", null, System.currentTimeMillis());
 				fail("Expecting duplicate key constraint violation.");
 			} catch (PersistenceException ex) {
 				// Expected.
@@ -749,7 +749,7 @@ public class TestDB {
 			assertNull(blocklist.resolvePersonalizationByHash(userId, sha1));
 
 			// Add personal block.
-			blocklist.addPersonalization(userId, phone, sha1);
+			blocklist.addPersonalization(userId, phone, sha1, System.currentTimeMillis());
 			session.commit();
 
 			// Should find phone by hash, marked as blocked.
@@ -760,7 +760,7 @@ public class TestDB {
 
 			// Remove and add as whitelist.
 			blocklist.removePersonalization(userId, phone);
-			blocklist.addExclude(userId, phone, sha1);
+			blocklist.addExclude(userId, phone, sha1, System.currentTimeMillis());
 			session.commit();
 
 			// Should still resolve by hash, now marked as not blocked.

@@ -10,6 +10,7 @@ public class DBPersonalization {
 
 	private String phone;
 	private boolean blocked;
+	private long created;
 
 	public String getPhone() {
 		return phone;
@@ -25,6 +26,14 @@ public class DBPersonalization {
 
 	public void setBlocked(boolean blocked) {
 		this.blocked = blocked;
+	}
+
+	public long getCreated() {
+		return created;
+	}
+
+	public void setCreated(long created) {
+		this.created = created;
 	}
 
 }
